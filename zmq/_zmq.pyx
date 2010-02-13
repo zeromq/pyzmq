@@ -26,7 +26,7 @@
 # Use the fast send and recv that doesn't make copies of data.
 _FAST = True
 
-# cimport stdlib
+from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
@@ -43,6 +43,8 @@ except ImportError:
         import simlejson as json
     except ImportError:
         json = None
+
+include "allocate.pxi"
 
 #-----------------------------------------------------------------------------
 # Import the C header files
@@ -135,8 +137,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_flush (void *s)
     int zmq_recv (void *s, zmq_msg_t *msg, int flags)
     
-    enum: ZMQ_POLLIN
-    enum: ZMQ_POLLOUT
+    enum: ZMQ_POLLIN # 1
+    enum: ZMQ_POLLOUT # 2
 
     ctypedef struct zmq_pollitem_t:
         void *socket
@@ -147,6 +149,7 @@ cdef extern from "zmq.h" nogil:
         short revents
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
+
     void *zmq_stopwatch_start ()
     unsigned long zmq_stopwatch_stop (void *watch_)
     void zmq_sleep (int seconds_)
@@ -179,6 +182,8 @@ MCAST_LOOP = ZMQ_MCAST_LOOP
 SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
 POLL = ZMQ_POLL
+POLLIN = ZMQ_POLLIN
+POLLOUT = ZMQ_POLLOUT
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -423,6 +428,36 @@ cdef class Stopwatch:
         zmq_sleep(seconds)
 
 
+def poll(sockets, long timeout=2):
+    """Poll a set of 0MQ sockets."""
+    cdef int rc, i
+    cdef zmq_pollitem_t *pollitems = NULL
+    cdef int nsockets = len(sockets)
+    cdef Socket current_socket
+    pollitems_o = allocate(nsockets*sizeof(zmq_pollitem_t),<void**>&pollitems)
+
+    for i in range(nsockets):
+        s = sockets[i][0]
+        events = sockets[i][1]
+        if isinstance(s, Socket):
+            current_socket = s
+            pollitems[i].socket = current_socket.handle
+            pollitems[i].events = events
+            pollitems[i].revents = 0
+        else:
+            raise NotImplementedError('This only works for ZMQ sockets.')
+
+    rc = zmq_poll(pollitems, nsockets, timeout)
+    if rc != 0:
+        raise ZMQError(zmq_strerror(errno))
+    
+    results = []
+    for i in range(nsockets):
+        results.append((sockets[i][0], pollitems[i].revents))
+
+    return results
+
+
 __all__ = [
     'Context',
     'Socket',
@@ -451,5 +486,8 @@ __all__ = [
     'MCAST_LOOP',
     'SNDBUF',
     'RCVBUF',
-    'POLL'
+    'POLL',
+    'POLLIN',
+    'POLLOUT',
+    'poll'
 ]

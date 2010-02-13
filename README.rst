@@ -3,7 +3,7 @@ Python bindings for 0MQ
 =======================
 
 This package contains Python bindings for `0QM <http://www.zeromq.org>`_.
-0MQ is lightweight and fast messaging implementation.
+0MQ is a lightweight and fast messaging implementation.
 
 Building and installation
 =========================
