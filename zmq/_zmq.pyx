@@ -30,9 +30,13 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
+from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
+    ctypedef int PyGILState_STATE
+    PyGILState_STATE    PyGILState_Ensure()
+    void                PyGILState_Release(PyGILState_STATE)
 
 import cPickle as pickle
 
@@ -139,6 +143,7 @@ cdef extern from "zmq.h" nogil:
     
     enum: ZMQ_POLLIN # 1
     enum: ZMQ_POLLOUT # 2
+    enum: ZMQ_POLLERR # 4
 
     ctypedef struct zmq_pollitem_t:
         void *socket
@@ -184,6 +189,7 @@ RCVBUF = ZMQ_RCVBUF
 POLL = ZMQ_POLL
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
+POLLERR = ZMQ_POLLERR
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -219,6 +225,13 @@ cdef class Context:
             if rc != 0:
                 raise ZMQError(zmq_strerror(errno))
 
+
+cdef void free_python_msg(void *data, void *hint) with gil:
+    """A function for DECREF'ing Python based messages."""
+    if hint != NULL:
+        Py_DECREF(<object>hint)
+
+
 cdef class Socket:
     """Manage the lifecycle of the ZMQ socket."""
 
@@ -227,11 +240,14 @@ cdef class Socket:
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
     cdef public Context context
+    # A flag to determine if send will copy a message before sending.
+    cpdef public copy_on_send
 
     def __cinit__(self, Context context, int socket_type):
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
+        self.copy_on_send = True
         self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
             raise ZMQError(zmq_strerror(errno))
@@ -302,25 +318,32 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        # if not isinstance(msg, str):
-        #     raise TypeError('expected str, got: %r' % msg)
-        # if not isinstance(flags, int):
-        #     raise TypeError('expected str, got: %r' % msg)
+        if not isinstance(msg, str):
+            raise TypeError('expected str, got: %r' % msg)
+        if not isinstance(flags, int):
+            raise TypeError('expected str, got: %r' % msg)
 
         # If zmq_msg_init_* fails do we need to call zmq_msg_close?
-        # if _FAST:
-            # Use zmq_msg_init_data and don't make a copy of the msg data.
+
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        rc = zmq_msg_init_data(&data, <void *>msg_c, msg_c_len, NULL, NULL)
+        if self.copy_on_send:
+            # Copy the msg before sending. This avoids any complications with
+            # the GIL, etc.
+            rc = zmq_msg_init_size(&data, msg_c_len)
+            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+        else:
+            # Use zmq_msg_init_data and don't make a copy of the msg data.
+            # This requires messing with the GIL and MAY give better
+            # performance for larger messages. But free_python_msg, which
+            # does the PyDECREF aquires the GIL and in some apps may decrease
+            # performance.
+            Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
+            rc = zmq_msg_init_data(
+                &data, <void *>msg_c, msg_c_len, 
+                free_python_msg, <void *>msg
+            )
         if rc != 0:
             raise ZMQError(zmq_strerror(errno))
-        # else:
-        #     # More simple minded approach, but copies the data.
-        #     msg_c = msg
-        #     rc = zmq_msg_init_size(&data, strlen(msg_c))
-        #     if rc != 0:
-        #         raise ZMQError(zmq_strerror(errno))
-        #     memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
         with nogil:
             rc = zmq_send(self.handle, &data, flags)
@@ -345,8 +368,8 @@ cdef class Socket:
         cdef zmq_msg_t data
         # cdef char *msg_c
 
-        # if not isinstance(flags, int):
-        #     raise TypeError('expected str, got: %r' % msg)
+        if not isinstance(flags, int):
+            raise TypeError('expected str, got: %r' % msg)
 
         rc = zmq_msg_init(&data)
         if rc != 0:
@@ -361,16 +384,10 @@ cdef class Socket:
             if rc != 0:
                 raise ZMQError(zmq_strerror(errno))
 
-        # if _FAST:
-            # This does copy the data, but should be faster and safer.
         msg = PyString_FromStringAndSize(
             <char *>zmq_msg_data(&data), 
             zmq_msg_size(&data)
         )
-        # else:
-            # Simple minded approach, but probably slower.
-            # msg_c = <char *>zmq_msg_data(&data)
-            # msg = msg_c
 
         rc = zmq_msg_close(&data)
         if rc != 0:
