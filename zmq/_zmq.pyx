@@ -240,14 +240,11 @@ cdef class Socket:
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
     cdef public Context context
-    # A flag to determine if send will copy a message before sending.
-    cpdef public copy_on_send
 
     def __cinit__(self, Context context, int socket_type):
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
-        self.copy_on_send = True
         self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
             raise ZMQError(zmq_strerror(errno))
@@ -326,22 +323,11 @@ cdef class Socket:
         # If zmq_msg_init_* fails do we need to call zmq_msg_close?
 
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        if self.copy_on_send:
-            # Copy the msg before sending. This avoids any complications with
-            # the GIL, etc.
-            rc = zmq_msg_init_size(&data, msg_c_len)
-            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
-        else:
-            # Use zmq_msg_init_data and don't make a copy of the msg data.
-            # This requires messing with the GIL and MAY give better
-            # performance for larger messages. But free_python_msg, which
-            # does the PyDECREF aquires the GIL and in some apps may decrease
-            # performance.
-            Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
-            rc = zmq_msg_init_data(
-                &data, <void *>msg_c, msg_c_len, 
-                free_python_msg, <void *>msg
-            )
+        # Copy the msg before sending. This avoids any complications with
+        # the GIL, etc.
+        rc = zmq_msg_init_size(&data, msg_c_len)
+        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+
         if rc != 0:
             raise ZMQError(zmq_strerror(errno))
 
