@@ -23,20 +23,14 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-# Use the fast send and recv that doesn't make copies of data.
-_FAST = True
 
 from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
-from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
-    ctypedef int PyGILState_STATE
-    PyGILState_STATE    PyGILState_Ensure()
-    void                PyGILState_Release(PyGILState_STATE)
 
 import cPickle as pickle
 
@@ -224,12 +218,6 @@ cdef class Context:
             rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError(zmq_strerror(errno))
-
-
-cdef void free_python_msg(void *data, void *hint) with gil:
-    """A function for DECREF'ing Python based messages."""
-    if hint != NULL:
-        Py_DECREF(<object>hint)
 
 
 cdef class Socket:
