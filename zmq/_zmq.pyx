@@ -434,7 +434,19 @@ cdef class Stopwatch:
 
 
 def poll(sockets, long timeout=2):
-    """Poll a set of 0MQ sockets."""
+    """Poll a set of 0MQ or network sockets.
+
+    Parameters
+    ----------
+    sockets : list of tuples of (socket, flags)
+        Each element of this list is a two-tuple containing a socket
+        and a flags. The socket may be a 0MQ socket or any object with
+        a :meth:`fileno` method. The flags can be zmq.POLLIN (for detecting
+        for incoming messages), zmq.POLLOUT (for detecting that send is OK)
+        or zmq.POLLIN|zmq.POLLOUT for detecting both.
+    timeout : int
+        The number of microseconds to poll for. Negative means no timeout.
+    """
     cdef int rc, i
     cdef zmq_pollitem_t *pollitems = NULL
     cdef int nsockets = len(sockets)
@@ -450,10 +462,18 @@ def poll(sockets, long timeout=2):
             pollitems[i].events = events
             pollitems[i].revents = 0
         else:
-            raise NotImplementedError('This only works for ZMQ sockets.')
+            try:
+                fileno = s.fileno()
+            except AttributeError:
+                raise TypeError('Object must have a fileno method: %r' % s)
+            else:
+                pollitems[i].socket = NULL
+                pollitems[i].fd = fileno
+                pollitems[i].events = events
+                pollitems[i].revents = 0
 
     rc = zmq_poll(pollitems, nsockets, timeout)
-    if rc != 0:
+    if rc == -1:
         raise ZMQError(zmq_strerror(errno))
     
     results = []
@@ -462,6 +482,17 @@ def poll(sockets, long timeout=2):
 
     return results
 
+
+def poll_as_lists(sockets):
+    """Return the result of poll as a lists of sockets ready for r/w."""
+    readers = []
+    writers = []
+    for s,flags in sockets:
+        if flags&POLLIN:
+            readers.append(s)
+        if flags&POLLOUT:
+            writers.append(s)
+    return readers, writers
 
 
 __all__ = [
