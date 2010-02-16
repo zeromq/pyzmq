@@ -33,6 +33,7 @@ cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
 import cPickle as pickle
+import random
 
 try:
     import json
@@ -283,6 +284,19 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_strerror(errno))
 
+    def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
+        """Bind this socket to a random port in a range"""
+        for i in range(max_tries):
+            try:
+                port = random.randrange(min_port, max_port)
+                self.bind('%s:%s' % (addr, port))
+            except ZMQError:
+                pass
+            else:
+                return port
+        raise ZMQError("Could not bind socket to random port.")
+        
+
     def connect(self, addr):
         cdef int rc
         if not isinstance(addr, str):
@@ -447,6 +461,7 @@ def poll(sockets, long timeout=2):
         results.append((sockets[i][0], pollitems[i].revents))
 
     return results
+
 
 
 __all__ = [
