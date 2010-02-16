@@ -21,39 +21,39 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import zmq
+from unittest import TestCase
 
+import zmq
 from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
-class TestP2p(BaseZMQTestCase):
+class TestReqRep(BaseZMQTestCase):
 
     def test_basic(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
 
-        msg1 = 'message1'
+        msg1 = 'message 1'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 
     def test_multiple(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
 
         for i in range(10):
-            msg = i*' '
-            s1.send(msg)
+            msg1 = i*' '
+            msg2 = self.ping_pong(s1, s2, msg1)
+            self.assertEquals(msg1, msg2)
 
-        for i in range(10):
-            msg = i*' '
-            s2.send(msg)
+    def test_bad_send_recv(self):
+        s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
+        self.assertRaises(zmq.ZMQError, s1.recv)
+        self.assertRaises(zmq.ZMQError, s2.send, 'asdf')
 
-        for i in range(10):
-            msg = s1.recv()
-            self.assertEquals(msg, i*' ')
-
-        for i in range(10):
-            msg = s2.recv()
-            self.assertEquals(msg, i*' ')
+        # I have to have this or we die on an Abort trap.
+        msg1 = 'asdf'
+        msg2 = self.ping_pong(s1, s2, msg1)
+        self.assertEquals(msg1, msg2)
 

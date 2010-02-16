@@ -21,39 +21,34 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import zmq
+from unittest import TestCase
 
+import zmq
 from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
-class TestP2p(BaseZMQTestCase):
+class TestPubSub(BaseZMQTestCase):
 
     def test_basic(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
-
-        msg1 = 'message1'
-        msg2 = self.ping_pong(s1, s2, msg1)
+        s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        s2.setsockopt(zmq.SUBSCRIBE,'')
+        import time; time.sleep(0.1)
+        msg1 = 'message'
+        s1.send(msg1)
+        msg2 = s2.recv()
         self.assertEquals(msg1, msg2)
 
-    def test_multiple(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
-
-        for i in range(10):
-            msg = i*' '
-            s1.send(msg)
-
-        for i in range(10):
-            msg = i*' '
-            s2.send(msg)
-
-        for i in range(10):
-            msg = s1.recv()
-            self.assertEquals(msg, i*' ')
-
-        for i in range(10):
-            msg = s2.recv()
-            self.assertEquals(msg, i*' ')
-
+    def test_topic(self):
+        s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        s2.setsockopt(zmq.SUBSCRIBE,'x')
+        import time; time.sleep(0.1)
+        msg1 = 'message'
+        s1.send(msg1)
+        self.assertEquals(s2.recv(zmq.NOBLOCK),None)
+        msg1 = 'xmessage'
+        s1.send(msg1)
+        msg2 = s2.recv()
+        self.assertEquals(msg1, msg2)
