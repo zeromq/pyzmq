@@ -433,8 +433,8 @@ cdef class Stopwatch:
         zmq_sleep(seconds)
 
 
-def poll(sockets, long timeout=2):
-    """Poll a set of 0MQ or network sockets.
+def _poll(sockets, long timeout=-1):
+    """Poll a set of 0MQ sockets, native file descs. or sockets.
 
     Parameters
     ----------
@@ -461,16 +461,26 @@ def poll(sockets, long timeout=2):
             pollitems[i].socket = current_socket.handle
             pollitems[i].events = events
             pollitems[i].revents = 0
-        else:
+        elif isinstance(s, int):
+            pollitems[i].socket = NULL
+            pollitems[i].fd = s
+            pollitems[i].events = events
+            pollitems[i].revents = 0
+        elif hasattr(s, fileno):
             try:
-                fileno = s.fileno()
-            except AttributeError:
-                raise TypeError('Object must have a fileno method: %r' % s)
+                fileno = int(s.fileno())
+            except:
+                raise ValueError('fileno() must return an valid integer fd')
             else:
                 pollitems[i].socket = NULL
                 pollitems[i].fd = fileno
                 pollitems[i].events = events
                 pollitems[i].revents = 0
+        else:
+            raise TypeError(
+                "Socket must be a 0MQ socket, an integer fd or have "
+                "a fileno() method: %r" % s
+            )
 
     rc = zmq_poll(pollitems, nsockets, timeout)
     if rc == -1:
@@ -483,16 +493,61 @@ def poll(sockets, long timeout=2):
     return results
 
 
-def poll_as_lists(sockets):
-    """Return the result of poll as a lists of sockets ready for r/w."""
-    readers = []
-    writers = []
-    for s,flags in sockets:
-        if flags&POLLIN:
-            readers.append(s)
-        if flags&POLLOUT:
-            writers.append(s)
-    return readers, writers
+class Poller(object):
+    """An stateful poll interface that mirrors Python's built-in poll."""
+
+    def __init__(self):
+        self.sockets = {}
+
+    def register(self, socket, flags=POLLIN|POLLOUT):
+        """Register a 0MQ socket or native fd for I/O monitoring."""
+        self.sockets[socket] = flags
+
+    def modify(self, socket, flags=POLLIN|POLLOUT):
+        """Modify the flags for an already registered 0MQ socket or native fd."""
+        self.register(socket, flags)
+
+    def unregister(self, socket):
+        """Remove a 0MQ socket or native fd for I/O monitoring."""
+        del self.sockets[socket]
+
+    def poll(self, timeout=None):
+        """Poll the registered 0MQ or native fds for I/O."""
+        if timeout is None:
+            timeout = -1
+        return _poll(self.sockets.items(), timeout=timeout)
+
+
+def select(rlist, wlist, xlist, timeout=None):
+    """Return the result of poll as a lists of sockets ready for r/w.
+
+    This has the same interface as Python's built-in :func:`select` function.
+    """
+    if timeout is None:
+        timeout = -1
+    sockets = []
+    for s in set(rlist+wlist+xlist):
+        flags = 0
+        if s in rlist:
+            flags |= POLLIN
+        if s in wlist:
+            flags |= POLLOUT
+        if s in xlist:
+            flags |= POLLERR
+        sockets.append(s)
+    return_sockets = _poll(sockets, timeout)
+    return_rlist = []
+    return_wlist = []
+    return_xlist = []
+    for s,flags in return_sockets:
+        if flags &POLLIN:
+            return_rlist.append(s)
+        if flags & POLLOUT:
+            return_wlist.append(s)
+        if flags & POLLERR:
+            return_xlist.append(s)
+    return return_rlist, return_wlist, return_xlist
+    
 
 
 __all__ = [
@@ -526,5 +581,9 @@ __all__ = [
     'POLL',
     'POLLIN',
     'POLLOUT',
-    'poll'
+    'POLLERR',
+    '_poll',
+    'select',
+    'Poller'
 ]
+
