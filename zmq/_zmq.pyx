@@ -346,8 +346,7 @@ cdef class Socket:
             if errno == EAGAIN:
                 return False
             else:
-                if rc != 0:
-                    raise ZMQError(zmq_strerror(errno))
+                raise ZMQError(zmq_strerror(errno))
         else:
             return True
 
@@ -369,7 +368,7 @@ cdef class Socket:
         if rc != 0:
             if errno == EAGAIN:
                 return None
-            if rc != 0:
+            else:
                 raise ZMQError(zmq_strerror(errno))
 
         msg = PyString_FromStringAndSize(
@@ -403,6 +402,7 @@ cdef class Socket:
         else:
             s = self.recv(flags)
             return json.loads(s)
+
 
 cdef class Stopwatch:
     """A simple stopwatch based on zmq_stopwatch_start/stop."""

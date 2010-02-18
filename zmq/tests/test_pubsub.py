@@ -41,6 +41,11 @@ class TestPubSub(BaseZMQTestCase):
         msg2 = s2.recv()
         self.assertEquals(msg1, msg2)
 
+    # This test is failing on Windows due a problem with errno not 
+    # being thread safe. In socket_base.cpp:recv, if zmq.NOBLOCK is set
+    # xrecv is called and returns an error code of 11 (EAGAIN), but when
+    # the Python bindings get errno, it has been set back to 0. Our hypothesis
+    # is that another thread is doing this.
     def test_topic(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
         s2.setsockopt(zmq.SUBSCRIBE,'x')
