@@ -15,6 +15,9 @@ First, edit the `include_dirs` and `library_dirs` fields of the
 ``setup.cfg`` file in this directory to point to the directories that
 contain the library and header file for your 0MQ installation.
 
+On Windows, it is easiest to simply copy ``libzmq.dll`` and ``zmq.h``
+into the ``zmq`` subdirectory and set ``library_dirs`` to ``.\zmq``.
+
 Second, run this command::
 
     python setup.py install
