@@ -387,7 +387,8 @@ cdef class Socket:
 
     def recv_pyobj(self, flags=0):
         s = self.recv(flags)
-        return pickle.loads(s)
+        if s is not None:
+            return pickle.loads(s)
 
     def send_json(self, obj, flags=0):
         if json is None:
@@ -401,7 +402,8 @@ cdef class Socket:
             raise ImportError('json or simplejson library is required.')
         else:
             s = self.recv(flags)
-            return json.loads(s)
+            if s is not None:
+                return json.loads(s)
 
 
 cdef class Stopwatch:
