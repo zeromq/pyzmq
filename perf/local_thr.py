@@ -22,8 +22,12 @@ import time
 import zmq
 
 def main ():
+    use_poll = '-p' in sys.argv
+    if use_poll:
+        sys.argv.remove('-p')
+
     if len (sys.argv) != 4:
-        print 'usage: local_thr <bind-to> <message-size> <message-count>'
+        print 'usage: local_thr [-p use-poll] <bind-to> <message-size> <message-count>'
         sys.exit (1)
 
     try:
@@ -34,13 +38,17 @@ def main ():
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    ctx = zmq.Context (1, 1);   
+    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
     s = zmq.Socket (ctx, zmq.SUB)
-
-    s.setsockopt (zmq.SUBSCRIBE , "");
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+    s.setsockopt (zmq.SUBSCRIBE , "");
+
+    if use_poll:
+        print 'using poll'
+        p = zmq.Poller()
+        p.register(s)
 
     s.bind (bind_to)
 
@@ -50,9 +58,12 @@ def main ():
     start = time.clock ()
 
     for i in range (1, message_count):
-        msg = s.recv ()
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLIN)
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
         assert len (msg) == message_size
- 
+
     end = time.clock ()
 
     elapsed = (end - start) * 1000000
