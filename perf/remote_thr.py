@@ -22,8 +22,12 @@ import zmq
 import time
 
 def main ():
+    use_poll = '-p' in sys.argv
+    if use_poll:
+        sys.argv.remove('-p')
+
     if len (sys.argv) != 4:
-        print 'usage: remote_thr <connect-to> <message-size> <message-count>'
+        print 'usage: remote_thr [-p use-poll] <connect-to> <message-size> <message-count>'
         sys.exit (1)
 
     try:
@@ -34,20 +38,28 @@ def main ():
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    ctx = zmq.Context (1, 1);   
+    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
     s = zmq.Socket (ctx, zmq.PUB)
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
 
+    if use_poll:
+        print 'using poll'
+        p = zmq.Poller()
+        p.register(s)
+
     s.connect (connect_to)
 
-    msg = ''.join ([' ' for n in range (0, message_size)])
+    msg = ' ' * message_size
 
     for i in range (0, message_count):
-        s.send (msg)
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLOUT)
+        s.send (msg, zmq.NOBLOCK if use_poll else 0)
 
-    time.sleep (10)
+    time.sleep (1)
 
 if __name__ == "__main__":
     main ()

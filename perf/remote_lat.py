@@ -22,8 +22,12 @@ import time
 import zmq
 
 def main ():
+    use_poll = '-p' in sys.argv
+    if use_poll:
+        sys.argv.remove('-p')
+
     if len(sys.argv) != 4:
-        print 'usage: remote_lat <connect-to> <message-size> <roundtrip-count>'
+        print 'usage: remote_lat [-p use-poll] <connect-to> <message-size> <roundtrip-count>'
         sys.exit (1)
 
     try:
@@ -34,21 +38,34 @@ def main ():
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    ctx = zmq.Context (1, 1);   
+    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
     s = zmq.Socket (ctx, zmq.REQ)
     print connect_to
     s.connect (connect_to)
 
-    msg = ''.join ([' ' for n in range (0, message_size)])
+    if use_poll:
+        p = zmq.Poller()
+        p.register(s)
+
+    msg = ' ' * message_size
 
     start = time.clock ()
 
     for i in range (0, roundtrip_count):
-        s.send (msg)
-        msg = s.recv ()
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLOUT)
+        s.send (msg, zmq.NOBLOCK if use_poll else 0)
+
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLIN)
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
         assert len (msg) == message_size
 
     end = time.clock ()
+
+    time.sleep(1)
 
     elapsed = (end - start) * 1000000
     latency = elapsed / roundtrip_count / 2
@@ -59,4 +76,4 @@ def main ():
 
 if __name__ == "__main__":
     main ()
-    
+

@@ -21,9 +21,13 @@ import sys
 import time
 import zmq
 
-def main ():
+def main():
+    use_poll = '-p' in sys.argv
+    if use_poll:
+        sys.argv.remove('-p')
+
     if len (sys.argv) != 4:
-        print 'usage: local_lat <bind-to> <message-size> <roundtrip-count>'
+        print 'usage: local_lat [-p use-poll] <bind-to> <message-size> <roundtrip-count>'
         sys.exit (1)
 
     try:
@@ -34,16 +38,27 @@ def main ():
         print 'message-size and roundtrip-count must be integers'
         sys.exit (1)
 
-    ctx = zmq.Context (1, 1);   
+    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
     s = zmq.Socket (ctx, zmq.REP)
+
+    if use_poll:
+        print 'using poll'
+        p = zmq.Poller()
+        p.register(s)
+
     s.bind (bind_to)
 
     for i in range (0, roundtrip_count):
-        msg = s.recv ()
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLIN)
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
         assert len (msg) == message_size
-        s.send (msg)
 
-    time.sleep (1)
+        if use_poll:
+            res = p.poll()
+            assert(res[0][1] & zmq.POLLOUT)
+        s.send(msg, zmq.NOBLOCK if use_poll else 0)
 
-if __name__ == "__main__":
-    main ()
+if __name__ == '__main__':
+    main()
