@@ -41,10 +41,15 @@ else:
     zmq_source = os.path.join('zmq','_zmq.pyx')
     cmdclass = {'build_ext': build_ext}
 
+if sys.platform == 'win32':
+    libzmq = 'libzmq'
+else:
+    libzmq = 'zmq'
+
 zmq = Extension(
     'zmq._zmq',
     sources = [zmq_source],
-    libraries = ['zmq']
+    libraries = [libzmq]
 )
 
 #-----------------------------------------------------------------------------

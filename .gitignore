@@ -1,1 +1,6 @@
-.pyc
+*.pyc
+build
+*.egg-info
+*.so
+*.pyd
+*.dll
