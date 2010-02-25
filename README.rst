@@ -1,6 +1,6 @@
-=======================
-Python bindings for 0MQ
-=======================
+==============================
+PyZMQ: Python bindings for 0MQ
+==============================
 
 This package contains Python bindings for `0QM <http://www.zeromq.org>`_.
 0MQ is a lightweight and fast messaging implementation.
@@ -14,6 +14,9 @@ and install 0MQ itself. After you have done this, follow these steps:
 First, edit the `include_dirs` and `library_dirs` fields of the
 ``setup.cfg`` file in this directory to point to the directories that
 contain the library and header file for your 0MQ installation.
+
+Cython is not required to build pyzmq, but it is required if you
+want to develop pyzmq.
 
 On Windows, it is easiest to simply copy ``libzmq.dll`` and ``zmq.h``
 into the ``zmq`` subdirectory and set ``library_dirs`` to ``.\zmq``.
@@ -34,9 +37,11 @@ This will build the C extension inplace and then put this directory on your
 
 each time you change the ``.pyx`` files.
 
-Todo
-====
+Authors
+=======
 
-* Test on Windows.
-* Write examples and tests.
-* Implement poll.
+This project was started by Brian E. Granger (ellisonbg AT gmail DOT com).
+
+The following people have contributed to the project:
+
+* Carlos Rocha.
