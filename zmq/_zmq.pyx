@@ -315,15 +315,13 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
-    def send(self, msg, flags=0):
+    def send(self, msg, int flags=0):
         cdef int rc, rc2
         cdef zmq_msg_t data
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
         if not isinstance(msg, str):
-            raise TypeError('expected str, got: %r' % msg)
-        if not isinstance(flags, int):
             raise TypeError('expected str, got: %r' % msg)
 
         # If zmq_msg_init_* fails do we need to call zmq_msg_close?
@@ -354,12 +352,9 @@ cdef class Socket:
         else:
             return True
 
-    def recv(self, flags=0):
+    def recv(self, int flags=0):
         cdef int rc
         cdef zmq_msg_t data
-
-        if not isinstance(flags, int):
-            raise TypeError('expected str, got: %r' % msg)
 
         rc = zmq_msg_init(&data)
         if rc != 0:
@@ -374,18 +369,20 @@ cdef class Socket:
             else:
                 raise ZMQError(zmq_strerror(zmq_errno()))
 
-        msg = PyString_FromStringAndSize(
-            <char *>zmq_msg_data(&data), 
-            zmq_msg_size(&data)
-        )
+        try:
+            msg = PyString_FromStringAndSize(
+                <char *>zmq_msg_data(&data), 
+                zmq_msg_size(&data)
+            )
+        finally:
+            rc = zmq_msg_close(&data)
 
-        rc = zmq_msg_close(&data)
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
         return msg
 
-    def send_pyobj(self, obj, flags=0):
-        msg = pickle.dumps(obj, 2)
+    def send_pyobj(self, obj, flags=0, protocol=-1):
+        msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags)
 
     def recv_pyobj(self, flags=0):
