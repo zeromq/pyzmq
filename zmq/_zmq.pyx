@@ -196,7 +196,7 @@ def strerror(errnum):
     return zmq_strerror(errnum)
 
 class ZMQError(Exception):
-    """Base exception class for ZMQ errors in Python."""
+    """Base exception class for 0MQ errors in Python."""
     pass
 
 #-----------------------------------------------------------------------------
@@ -204,7 +204,20 @@ class ZMQError(Exception):
 #-----------------------------------------------------------------------------
 
 cdef class Context:
-    """Manage the lifecycle of a ZMQ context."""
+    """Manage the lifecycle of a 0MQ context.
+
+    Context(app_threads=1, io_threads=1, flags=0)
+
+    Parameters
+    ----------
+    app_threads : int
+        The number of application threads.
+    io_threads : int
+        The number of IO threads.
+    flags : int
+        Any of the Context flags.  Use zmq.POLL to put all sockets into
+        non blocking mode and use poll.
+    """
 
     cdef void *handle
 
@@ -222,12 +235,30 @@ cdef class Context:
                 raise ZMQError(zmq_strerror(zmq_errno()))
 
     def create_socket(self, int socket_type):
-        """Create a Socket associated with this Context."""
+        """Create a Socket associated with this Context.
+
+        Parameters
+        ----------
+        socket_type : int
+            The socket type, which can be any of the 0MQ socket types: 
+            REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+        """
         return Socket(self, socket_type)
 
 
 cdef class Socket:
-    """Manage the lifecycle of the ZMQ socket."""
+    """A 0MQ socket.
+
+    Socket(context, socket_type)
+
+    Parameters
+    ----------
+    context : Context
+        The 0MQ Context this Socket belongs to.
+    socket_type : int
+        The socket type, which can be any of the 0MQ socket types: 
+        REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+    """
 
     cdef void *handle
     cdef public int socket_type
@@ -251,6 +282,19 @@ cdef class Socket:
                 raise ZMQError(zmq_strerror(zmq_errno()))
 
     def setsockopt(self, option, optval):
+        """Set socket options.
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : str
+            The name of the option to set. Can be any of: SUBSCRIBE, 
+            UNSUBSCRIBE, IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.
+        optval : int or str
+            The value of the option to set.
+"""
         cdef int optval_int_c
         cdef int rc
 
@@ -281,6 +325,19 @@ cdef class Socket:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
     def bind(self, addr):
+        """Bind the socket to an address.
+
+        This causes the socket to listen on a network port. Sockets on the
+        other side of this connection will use :meth:`Sockiet.connect` to
+        connect to this socket.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            tcp, upd, pgm, iproc and ipc.
+        """
         cdef int rc
         if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
@@ -289,7 +346,24 @@ cdef class Socket:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
     def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
-        """Bind this socket to a random port in a range"""
+        """Bind this socket to a random port in a range.
+
+        Parameters
+        ----------
+        addr : str
+            The address string without the port to pass to :meth:`Socket.bind`.
+        min_port : int
+            The minimum port in the range of ports to try.
+        max_port : int
+            The maximum port in the range of ports to try.
+        max_tries : int
+            The number of attempt to bind.
+
+        Returns
+        -------
+        port : int
+            The port the socket was bound to.
+        """
         for i in range(max_tries):
             try:
                 port = random.randrange(min_port, max_port)
@@ -302,6 +376,15 @@ cdef class Socket:
         
 
     def connect(self, addr):
+        """Connect to a remote 0MQ socket.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            tcp, upd, pgm, iproc and ipc.
+        """
         cdef int rc
         if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
@@ -310,12 +393,33 @@ cdef class Socket:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
     def flush(self):
+        """Flush the socket.
+
+        Flushes all the pre-sent messages - i.e. those that have been sent 
+        with the NOFLUSH flag - to the socket. This functionality improves
+        performance in cases where several messages are sent during a single 
+        business operation.
+        """
         cdef int rc
         rc = zmq_flush(self.handle)
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
     def send(self, msg, int flags=0):
+        """Send a message.
+
+        This queues the message to be sent by the IO thread at a later time.
+
+        Parameters
+        ----------
+        flags : int
+            Any supported flag: NOBLOCK, NOFLUSH.
+
+        Returns
+        -------
+        result : bool
+            True if message was send, False if message was not sent (EAGAIN).
+        """
         cdef int rc, rc2
         cdef zmq_msg_t data
         cdef char *msg_c
@@ -353,6 +457,21 @@ cdef class Socket:
             return True
 
     def recv(self, int flags=0):
+        """Receive a message.
+
+        Parameters
+        ----------
+        flags : int
+            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
+            will return None if a message is not ready. If NOBLOCK is not
+            set, then this method will block until a message arrives.
+
+        Returns
+        -------
+        msg : str
+            The returned message or None of NOBLOCK is set and no message
+            has arrived.
+        """
         cdef int rc
         cdef zmq_msg_t data
 
@@ -382,15 +501,49 @@ cdef class Socket:
         return msg
 
     def send_pyobj(self, obj, flags=0, protocol=-1):
+        """Send a Python object as a message using pickle to serialize.
+
+        Parameters
+        ----------
+        obj : Python object
+            The Python object to send.
+        flags : int
+            Any valid send flag.
+        protocol : int
+            The pickle protocol number to use. Default of -1 will select
+            the highest supported number. Use 0 for multiple platform
+            support.
+        """
         msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags)
 
     def recv_pyobj(self, flags=0):
+        """Receive a Python object as a message using pickle to serialize.
+
+        Parameters
+        ----------
+        flags : int
+            Any valid recv flag.
+
+        Returns
+        -------
+        obj : Python object
+            The Python object that arrives as a message.
+        """
         s = self.recv(flags)
         if s is not None:
             return pickle.loads(s)
 
     def send_json(self, obj, flags=0):
+        """Send a Python object as a message using json to serialize.
+
+        Parameters
+        ----------
+        obj : Python object
+            The Python object to send.
+        flags : int
+            Any valid send flag.
+        """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
@@ -398,6 +551,18 @@ cdef class Socket:
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
+        """Receive a Python object as a message using json to serialize.
+
+        Parameters
+        ----------
+        flags : int
+            Any valid recv flag.
+
+        Returns
+        -------
+        obj : Python object
+            The Python object that arrives as a message.
+        """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
@@ -502,7 +667,16 @@ class Poller(object):
         self.sockets = {}
 
     def register(self, socket, flags=POLLIN|POLLOUT):
-        """Register a 0MQ socket or native fd for I/O monitoring."""
+        """Register a 0MQ socket or native fd for I/O monitoring.
+
+        Parameters
+        ----------
+        socket : zmq.Socket or native socket
+            A zmq.Socket or any Python object having a :meth:`fileno` 
+            method that returns a valid file descriptor.
+        flags : int
+            The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
+        """
         self.sockets[socket] = flags
 
     def modify(self, socket, flags=POLLIN|POLLOUT):
@@ -510,11 +684,23 @@ class Poller(object):
         self.register(socket, flags)
 
     def unregister(self, socket):
-        """Remove a 0MQ socket or native fd for I/O monitoring."""
+        """Remove a 0MQ socket or native fd for I/O monitoring.
+
+        Parameters
+        ----------
+        socket : Socket
+            The socket instance to stop polling.
+        """
         del self.sockets[socket]
 
     def poll(self, timeout=None):
-        """Poll the registered 0MQ or native fds for I/O."""
+        """Poll the registered 0MQ or native fds for I/O.
+
+        Parameters
+        ----------
+        timeout : int
+            The timeout in microseconds. If None, no timeout (infinite).
+        """
         if timeout is None:
             timeout = -1
         return _poll(self.sockets.items(), timeout=timeout)
