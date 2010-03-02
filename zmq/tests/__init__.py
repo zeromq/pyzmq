@@ -43,12 +43,6 @@ class BaseZMQTestCase(TestCase):
         s2.connect('%s:%s' % (interface, port))
         return s1, s2
 
-        s1 = zmq.Socket(self.context, zmq.P2P)
-        port = s1.bind_to_random_port('tcp://127.0.0.1')
-        s2 = zmq.Socket(self.context, zmq.P2P)
-        s2.connect('tcp://127.0.0.1:%s' % port)
-
-
     def ping_pong(self, s1, s2, msg):
         s1.send(msg)
         msg2 = s2.recv()
