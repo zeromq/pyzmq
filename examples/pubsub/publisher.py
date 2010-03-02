@@ -21,14 +21,20 @@ def main():
     s = ctx.create_socket(zmq.PUB)
     s.bind(bind_to)
 
+    print "Waiting 1s..."
     # We need to sleep to allow the subscriber time to connect
     time.sleep(1.0)
+    print "   Done."
 
+    print "Sending arrays..."
     for i in range(array_count):
         a = numpy.random.rand(array_size, array_size)
         s.send_pyobj(a)
+    print "   Done."
+    print "Waiting 1s..."
 
     time.sleep(1.0)
+    print "   Done."
 
 if __name__ == "__main__":
     main()
