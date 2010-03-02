@@ -18,7 +18,7 @@ def main():
         sys.exit (1)
 
     ctx = zmq.Context(1,1)
-    s = ctx.create_socket(zmq.PUB)
+    s = ctx.socket(zmq.PUB)
     s.bind(bind_to)
 
     # We need to sleep to allow the subscriber time to connect

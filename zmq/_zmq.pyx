@@ -234,7 +234,7 @@ cdef class Context:
             if rc != 0:
                 raise ZMQError(zmq_strerror(zmq_errno()))
 
-    def create_socket(self, int socket_type):
+    def socket(self, int socket_type):
         """Create a Socket associated with this Context.
 
         Parameters

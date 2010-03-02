@@ -17,7 +17,7 @@ def main():
         sys.exit (1)
 
     ctx = zmq.Context(1,1)
-    s = ctx.create_socket(zmq.SUB)
+    s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
     s.setsockopt(zmq.SUBSCRIBE,'')
 
