@@ -19,12 +19,15 @@ def main():
     ctx = zmq.Context(1,1)
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
+    print "   Done."
     s.setsockopt(zmq.SUBSCRIBE,'')
 
     start = time.clock()
 
+    print "Receiving arrays..."
     for i in range(array_count):
         a = s.recv_pyobj()
+    print "   Done."
 
     end = time.clock()
 
