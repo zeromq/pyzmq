@@ -39,7 +39,7 @@ try:
     import json
 except ImportError:
     try:
-        import simlejson as json
+        import simplejson as json
     except ImportError:
         json = None
 
