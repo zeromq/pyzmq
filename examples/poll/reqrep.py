@@ -18,7 +18,7 @@ poller = zmq.Poller()
 poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
 poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
 
-# Now make sure that both are send ready.
+# Make sure that s1 is in state 0 and s2 is in POLLOUT
 socks = dict(poller.poll())
 assert socks[s1] == 0
 assert socks[s2] == zmq.POLLOUT
@@ -52,6 +52,9 @@ assert socks[s2] == zmq.POLLIN
 s2.recv()
 socks = dict(poller.poll())
 assert socks[s2] == zmq.POLLOUT
+
+poller.unregister(s1)
+poller.unregister(s2)
 
 # Wait for everything to finish.
 time.sleep(1.0)

@@ -39,5 +39,8 @@ s2.recv()
 socks = dict(poller.poll())
 assert socks[s2] == 0
 
+poller.unregister(s1)
+poller.unregister(s2)
+
 # Wait for everything to finish.
 time.sleep(1.0)

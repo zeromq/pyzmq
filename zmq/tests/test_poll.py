@@ -33,47 +33,126 @@ from zmq.tests import PollZMQTestCase
 
 class TestPoll(PollZMQTestCase):
 
-    def test_basic(self):
+    def test_p2p(self):
         s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+
+        # Sleep to allow sockets to connect.
+        time.sleep(1.0)
+
         poller = zmq.Poller()
-        poller.register(s1)
-        poller.register(s2)
-        socks = poller.poll()
-        for s, mask in socks:
-            self.assertEquals(mask, zmq.POLLOUT)
-        s1.send('foo')
-        s2.send('bar')
-        # This sleep of 100 us is needed so that the proceeding sends are
-        # carried out and show up in the recv'ing queues.
-        time.sleep(0.0001)
-        socks = poller.poll()
-        for s, mask in socks:
-            self.assertEquals(mask, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+
+        # Now make sure that both are send ready.
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT)
+        self.assertEquals(socks[s2], zmq.POLLOUT)
+
+        # Now do a send on both, wait and test for zmq.POLLOUT|zmq.POLLIN
+        s1.send('msg1')
+        s2.send('msg2')
+        time.sleep(1.0)
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT|zmq.POLLIN)
+        self.assertEquals(socks[s2], zmq.POLLOUT|zmq.POLLIN)
+
+        # Make sure that both are in POLLOUT after recv.
         s1.recv()
         s2.recv()
-        socks = poller.poll()
-        for s, mask in socks:
-            self.assertEquals(mask, zmq.POLLOUT)
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT)
+        self.assertEquals(socks[s2], zmq.POLLOUT)
+
         poller.unregister(s1)
         poller.unregister(s2)
+
+        # Wait for everything to finish.
+        time.sleep(1.0)
 
     def test_reqrep(self):
-        s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
+        s1, s2 = self.create_bound_pair(zmq.REP, zmq.REQ)
+
+        # Sleep to allow sockets to connect.
+        time.sleep(1.0)
+
         poller = zmq.Poller()
-        poller.register(s1)
-        poller.register(s2)
-        socks = poller.poll()
-        # I needed this to get rid of an error:
-        # Assertion failed: err == ECONNREFUSED || err == ETIMEDOUT (tcp_connecter.cpp:283)
-        # Abort trap.
-        time.sleep(0.0001)
-        for s, mask in socks:
-            if s is s1:
-                self.assertEquals(mask, zmq.POLLOUT)
-            if s is s2:
-                self.assertEquals(mask, 0)
-        # If I do s1.send('asdf') and then poll I don't get the right
-        # flags back. I am getting POLLIN for both.
+        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+
+        # Make sure that s1 is in state 0 and s2 is in POLLOUT
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], 0)
+        self.assertEquals(socks[s2], zmq.POLLOUT)
+
+        # Make sure that s2 goes immediately into state 0 after send.
+        s2.send('msg1')
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s2], 0)
+
+        # Make sure that s1 goes into POLLIN state after a time.sleep().
+        time.sleep(0.5)
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLIN)
+
+        # Make sure that s1 goes into POLLOUT after recv.
+        s1.recv()
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT)
+
+        # Make sure s1 goes into state 0 after send.
+        s1.send('msg2')
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], 0)
+
+        # Wait and then see that s2 is in POLLIN.
+        time.sleep(0.5)
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s2], zmq.POLLIN)
+
+        # Make sure that s2 is in POLLOUT after recv.
+        s2.recv()
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s2], zmq.POLLOUT)
+
         poller.unregister(s1)
         poller.unregister(s2)
 
+        # Wait for everything to finish.
+        time.sleep(1.0)
+
+    def test_pubsub(self):
+        s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        s2.setsockopt(zmq.SUBSCRIBE, '')
+
+        # Sleep to allow sockets to connect.
+        time.sleep(1.0)
+
+        poller = zmq.Poller()
+        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+
+        # Now make sure that both are send ready.
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT)
+        self.assertEquals(socks[s2], 0)
+
+        # Make sure that s1 stays in POLLOUT after a send.
+        s1.send('msg1')
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s1], zmq.POLLOUT)
+
+        # Make sure that s2 is POLLIN after waiting.
+        time.sleep(1.0)
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s2], zmq.POLLIN)
+
+        # Make sure that s2 goes into 0 after recv.
+        s2.recv()
+        socks = dict(poller.poll())
+        self.assertEquals(socks[s2], 0)
+
+        poller.unregister(s1)
+        poller.unregister(s2)
+
+        # Wait for everything to finish.
+        time.sleep(1.0)

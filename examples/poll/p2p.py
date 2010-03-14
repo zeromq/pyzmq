@@ -38,5 +38,8 @@ socks = dict(poller.poll())
 assert socks[s1] == zmq.POLLOUT
 assert socks[s2] == zmq.POLLOUT
 
+poller.unregister(s1)
+poller.unregister(s2)
+
 # Wait for everything to finish.
 time.sleep(1.0)
