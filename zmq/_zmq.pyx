@@ -262,6 +262,7 @@ cdef class Socket:
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
     cdef public Context context
+    cdef public object closed
 
     def __cinit__(self, Context context, int socket_type):
         self.handle = NULL
@@ -270,13 +271,29 @@ cdef class Socket:
         self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
             raise ZMQError(zmq_strerror(zmq_errno()))
+        self.closed = False
 
     def __dealloc__(self):
+        self.close()
+
+    def close(self):
+        """Close the socket.
+
+        This can be called to close the socket by hand. If this is not
+        called, the socket will automatically be closed when it is
+        garbage collected.
+        """
         cdef int rc
-        if self.handle != NULL:
+        if self.handle != NULL and not self.closed:
             rc = zmq_close(self.handle)
             if rc != 0:
                 raise ZMQError(zmq_strerror(zmq_errno()))
+            self.handle = NULL
+            self.closed = True
+
+    def _check_closed(self):
+        if self.closed:
+            raise ZMQError("Cannot complete operation, Socket is closed.")
 
     def setsockopt(self, option, optval):
         """Set socket options.
@@ -294,6 +311,8 @@ cdef class Socket:
 """
         cdef int optval_int_c
         cdef int rc
+
+        self._check_closed()
 
         if not isinstance(option, int):
             raise TypeError('expected int, got: %r' % option)
@@ -336,6 +355,9 @@ cdef class Socket:
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
+
+        self._check_closed()
+
         if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
@@ -383,6 +405,9 @@ cdef class Socket:
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
+
+        self._check_closed()
+
         if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
@@ -408,6 +433,8 @@ cdef class Socket:
         cdef zmq_msg_t data
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
+
+        self._check_closed()
 
         if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
@@ -458,6 +485,8 @@ cdef class Socket:
         """
         cdef int rc
         cdef zmq_msg_t data
+
+        self._check_closed()
 
         rc = zmq_msg_init(&data)
         if rc != 0:
