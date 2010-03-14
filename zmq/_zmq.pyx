@@ -126,7 +126,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_RCVBUF # 12
 
     enum: ZMQ_NOBLOCK # 1
-    enum: ZMQ_NOFLUSH # 2
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
@@ -134,7 +133,6 @@ cdef extern from "zmq.h" nogil:
     int zmq_bind (void *s, char *addr)
     int zmq_connect (void *s, char *addr)
     int zmq_send (void *s, zmq_msg_t *msg, int flags)
-    int zmq_flush (void *s)
     int zmq_recv (void *s, zmq_msg_t *msg, int flags)
     
     enum: ZMQ_POLLIN # 1
@@ -160,7 +158,6 @@ cdef extern from "zmq.h" nogil:
 #-----------------------------------------------------------------------------
 
 NOBLOCK = ZMQ_NOBLOCK
-NOFLUSH = ZMQ_NOFLUSH
 P2P = ZMQ_P2P
 PUB = ZMQ_PUB
 SUB = ZMQ_SUB
@@ -392,19 +389,6 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
-    def flush(self):
-        """Flush the socket.
-
-        Flushes all the pre-sent messages - i.e. those that have been sent 
-        with the NOFLUSH flag - to the socket. This functionality improves
-        performance in cases where several messages are sent during a single 
-        business operation.
-        """
-        cdef int rc
-        rc = zmq_flush(self.handle)
-        if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
-
     def send(self, msg, int flags=0):
         """Send a message.
 
@@ -413,7 +397,7 @@ cdef class Socket:
         Parameters
         ----------
         flags : int
-            Any supported flag: NOBLOCK, NOFLUSH.
+            Any supported flag: NOBLOCK.
 
         Returns
         -------
@@ -744,7 +728,6 @@ __all__ = [
     'ZMQError',
     'Stopwatch',
     'NOBLOCK',
-    'NOFLUSH',
     'P2P',
     'PUB',
     'SUB',
