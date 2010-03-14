@@ -45,4 +45,4 @@ This project was started by Brian E. Granger (ellisonbg AT gmail DOT com).
 The following people have contributed to the project:
 
 * Carlos Rocha (carlos DOT rocha AT gmail DOT com).
-* Andrew Gwozdziewycz (http://github.com/apgwoz)
+* Andrew Gwozdziewycz (git AT apgwoz DOT com)
