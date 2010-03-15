@@ -27,7 +27,7 @@ except ImportError:
     else:
         raise
 import logging
-import select
+import socket
 import time
 
 from _zmq import (
