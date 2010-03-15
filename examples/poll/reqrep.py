@@ -38,13 +38,13 @@ poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
 
 # Make sure that s1 is in state 0 and s2 is in POLLOUT
 socks = dict(poller.poll())
-assert socks[s1] == 0
+assert not socks.has_key(s1)
 assert socks[s2] == zmq.POLLOUT
 
 # Make sure that s2 goes immediately into state 0 after send.
 s2.send('msg1')
 socks = dict(poller.poll())
-assert socks[s2] == 0
+assert not socks.has_key(s2)
 
 # Make sure that s1 goes into POLLIN state after a time.sleep().
 time.sleep(0.5)
@@ -59,7 +59,7 @@ assert socks[s1] == zmq.POLLOUT
 # Make sure s1 goes into state 0 after send.
 s1.send('msg2')
 socks = dict(poller.poll())
-assert socks[s1] == 0
+assert not socks.has_key(s1)
 
 # Wait and then see that s2 is in POLLIN.
 time.sleep(0.5)
