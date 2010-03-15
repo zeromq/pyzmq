@@ -32,7 +32,8 @@ import time
 
 from _zmq import (
     Poller,
-    POLLIN, POLLOUT, POLLERR
+    POLLIN, POLLOUT, POLLERR,
+    ZMQError
 )
 
 
@@ -256,6 +257,8 @@ class IOLoop(object):
 
             try:
                 event_pairs = self._impl.poll(poll_timeout)
+            except ZMQError, e:
+                raise
             except Exception, e:
                 if e.errno == errno.EINTR:
                     logging.warning("Interrupted system call", exc_info=1)
