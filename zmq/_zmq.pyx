@@ -646,7 +646,7 @@ def _poll(sockets, long timeout=-1):
             pollitems[i].fd = s
             pollitems[i].events = events
             pollitems[i].revents = 0
-        elif hasattr(s, fileno):
+        elif hasattr(s, 'fileno'):
             try:
                 fileno = int(s.fileno())
             except:
@@ -668,7 +668,14 @@ def _poll(sockets, long timeout=-1):
     
     results = []
     for i in range(nsockets):
-        results.append((sockets[i][0], pollitems[i].revents))
+        s = sockets[i][0]
+        # Return the fd for sockets, for compat. with select.poll.
+        if hasattr(s, 'fileno'):
+            s = s.fileno()
+        revents = pollitems[i].revents
+        # Only return sockets with non-zero status for compat. with select.poll.
+        if revents > 0:
+            results.append((s, revents))
 
     return results
 

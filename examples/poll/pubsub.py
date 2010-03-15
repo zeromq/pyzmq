@@ -40,7 +40,7 @@ poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
 # Now make sure that both are send ready.
 socks = dict(poller.poll())
 assert socks[s1] == zmq.POLLOUT
-assert socks[s2] == 0
+assert not socks.has_key(s2)
 
 # Make sure that s1 stays in POLLOUT after a send.
 s1.send('msg1')
@@ -55,7 +55,7 @@ assert socks[s2] == zmq.POLLIN
 # Make sure that s2 goes into 0 after recv.
 s2.recv()
 socks = dict(poller.poll())
-assert socks[s2] == 0
+assert not socks.has_key(s2)
 
 poller.unregister(s1)
 poller.unregister(s2)
