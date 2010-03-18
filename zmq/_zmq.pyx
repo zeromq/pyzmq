@@ -58,6 +58,7 @@ cdef extern from "string.h" nogil:
     size_t strlen(char *s)
 
 cdef extern from "zmq.h" nogil:
+    ctypedef int int64_t
     enum: ZMQ_HAUSNUMERO
     enum: ENOTSUP
     enum: EPROTONOSUPPORT
@@ -309,7 +310,7 @@ cdef class Socket:
         optval : int or str
             The value of the option to set.
 """
-        cdef int optval_int_c
+        cdef int64_t optval_int_c
         cdef int rc
 
         self._check_closed()
@@ -332,7 +333,7 @@ cdef class Socket:
             optval_int_c = optval
             rc = zmq_setsockopt(
                 self.handle, option,
-                &optval_int_c, sizeof(int)
+                &optval_int_c, sizeof(int64_t)
             )
         else:
             raise ZMQError(zmq_strerror(EINVAL))
