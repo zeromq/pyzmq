@@ -1,5 +1,6 @@
 import os
 import uuid
+import pprint
 
 def msg_header(msg_id, username, session):
     return {
@@ -30,6 +31,9 @@ def extract_header(msg_or_header):
 class Bunch(object):
     def __repr__(self):
         return repr(self.__dict__)
+
+    def __str__(self):
+        return pprint.pformat(self.__dict__)
 
 
 def msg2obj(msg):

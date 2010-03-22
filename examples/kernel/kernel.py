@@ -35,7 +35,7 @@ class OutStream(object):
                 data = ''.join(self._buffer)
                 content = {u'name':self.name, u'data':data}
                 msg = self.session.msg(u'stream', content=content, parent=self.parent_header)
-                print>>sys.__stdout__, repr(msg)
+                print>>sys.__stdout__, msg2obj(msg)
                 self.pub_socket.send_json(msg)
                 self._buffer_len = 0
                 self._buffer = []
@@ -118,7 +118,8 @@ class Kernel(object):
         try:
             code = parent[u'content'][u'code']
         except:
-            print>>sys.__stderr__, "Got bad msg: ", parent
+            print>>sys.__stderr__, "Got bad msg: "
+            print>>sys.__stderr__, msg2obj(parent)
             return
         pyin_msg = self.session.msg(u'pyin',{u'code':code}, parent=parent)
         self.pub_socket.send_json(pyin_msg)
@@ -141,14 +142,13 @@ class Kernel(object):
         else:
             reply_content = {'status' : 'ok'}
         reply_msg = self.session.msg(u'execute_reply', reply_content, parent)
-        print>>sys.__stdout__, "Reply: ", repr(reply_msg)
+        print>>sys.__stdout__, msg2obj(reply_msg)
         self.reply_socket.send_json(reply_msg, ident=ident)
 
     def start(self):
         while True:
             ident, msg = self.reply_socket.recv_json(ident=True)
-            print>>sys.__stdout__, "Got ident: ", repr(ident)
-            print>>sys.__stdout__, "Got msg: ", msg
+            print>>sys.__stdout__, msg2obj(msg)
             if msg[u'msg_type'] == u'execute_request':
                 self.execute_request(ident, msg)
 
@@ -174,7 +174,7 @@ def main():
     stdout = OutStream(session, pub_socket, u'stdout')
     stderr = OutStream(session, pub_socket, u'stderr')
     sys.stdout = stdout
-    # sys.stderr = stderr
+    sys.stderr = stderr
 
     display_hook = DisplayHook(session, pub_socket)
     sys.displayhook = display_hook
