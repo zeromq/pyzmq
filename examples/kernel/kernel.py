@@ -1,52 +1,41 @@
 import __builtin__
 import sys
-import time
 import traceback
-import uuid
 
 import zmq
 
-from session import KernelSession
-
-
-
-def stream2msg(sender_id, msg_id, name, data):
-    return dict(
-        sender_id=sender_id,
-        msg_id=msg_id,
-        msg_type='stream',
-        content=dict(
-            name=name,
-            data=data
-        )
-    )
+from session import Session, msg2obj, extract_header
 
 
 class OutStream(object):
     """A file like object that publishes the stream to a 0MQ PUB socket."""
 
-    def __init__(self, socket, name='stdout', max_buffer=200):
-        self.socket = socket
+    def __init__(self, session, pub_socket, name, max_buffer=200):
+        self.session = session
+        self.pub_socket = pub_socket
         self.name = name
         self._buffer = []
         self._buffer_len = 0
         self.max_buffer = max_buffer
-        self.msg_id = 0
-        self.sender_id = str(uuid.uuid4())
+        self.parent_header = {}
+
+    def set_parent(self, parent):
+        self.parent_header = extract_header(parent)
 
     def close(self):
-        self.socket = None
+        self.pub_socket = None
 
     def flush(self):
-        if self.socket is None:
-            raise ValueError('I/O operation on closed file')
+        if self.pub_socket is None:
+            raise ValueError(u'I/O operation on closed file')
         else:
             if self._buffer:
                 data = ''.join(self._buffer)
-                msg = stream2msg(self.sender_id, self.msg_id, self.name, data)
+                content = {u'name':self.name, u'data':data}
+                msg = self.session.msg(u'stream', content=content, parent=self.parent_header)
                 print>>sys.__stdout__, repr(msg)
                 self.msg_id += 1
-                self.socket.send_json(msg)
+                self.pub_socket.send_json(msg)
                 self._buffer_len = 0
                 self._buffer = []
 
@@ -62,7 +51,7 @@ class OutStream(object):
     readline=read
 
     def write(self, s):
-        if self.socket is None:
+        if self.pub_socket is None:
             raise ValueError('I/O operation on closed file')
         else:
             self._buffer.append(s)
@@ -76,7 +65,7 @@ class OutStream(object):
             self.flush()
 
     def writelines(self, sequence):
-        if self.socket is None:
+        if self.pub_socket is None:
             raise ValueError('I/O operation on closed file')
         else:
             for s in sequence:
@@ -85,82 +74,72 @@ class OutStream(object):
 
 class DisplayHook(object):
 
-    def __init__(self, socket):
-        self.socket = socket
-        self.sender_id = str(uuid.uuid4())
-        self.msg_id = 0
+    def __init__(self, session, pub_socket):
+        self.session = session
+        self.pub_socket = pub_socket
+        self.parent_header = {}
 
     def __call__(self, obj):
         __builtin__._ = obj
-        msg = dict(
-            sender_id=self.sender_id,
-            msg_id=self.msg_id,
-            msg_type=u'pyout',
-            content=dict(
-                data=repr(obj)
-            )
-        )
-        self.msg_id += 1
-        self.socket.send_json(msg)
+        msg = self.session.msg(u'pyout', {u'data':repr(obj)}, parent=self.parent_header)
+        self.pub_socket.send_json(msg)
+
+    def set_parent(self, parent):
+        self.parent_header = extract_header(parent)
 
 
 class RawInput(object):
 
-    def __init__(self, socket):
+    def __init__(self, session, socket):
+        self.session = session
         self.socket = socket
 
     def __call__(self, prompt=None):
-        msg =  dict(
-        
-        )
+        msg = self.session.msg(u'raw_input')
         self.send_json(msg)
         reply = None
         while reply is None:
             reply = self.recv_json(zmq.NOBLOCK)
-        return reply['content']['data']
+        return reply[u'content'][u'data']
 
 
 class Kernel(object):
 
-    def __init__(self, socket):
-        self.socket = socket
+    def __init__(self, session, reply_socket, pub_socket):
+        self.session = session
+        self.reply_socket = reply_socket
+        self.pub_socket = pub_socket
         self.user_ns = {}
         self.history = []
-        self.sender_id = str(uuid.uuid4())
-        self.msg_id = 0
 
-    def execute_request(self, ident, msg):
-        code = msg[u'content'][u'code']
+    def execute_request(self, ident, parent):
+        code = parent[u'content'][u'code']
+        pyin_msg = self.session.msg(u'pyin',{u'code':code}, parent=parent)
+        self.pub_socket.send_json(pyin_msg)
         try:
             exec code in self.user_ns, self.user_ns
         except:
-            result = 'error'
-            print>>sys.stderr, traceback.format_exc()
+            result = u'error'
+            etype, evalue, tb = sys.exc_info()
+            tb = traceback.format_exception(etype, evalue, tb)
+            exc_content = {
+                u'status' : u'error',
+                u'traceback' : tb,
+                u'etype' : unicode(etype),
+                u'evalue' : unicode(evalue)
+            }
+            exc_msg = self.session.msg(u'pyerr', exc_content, parent)
+            self.pub_socket.send_json(exc_msg)
+            reply_content = exc_content
         else:
-            result = 'ok'
-        reply_msg = self.execute_reply(result, msg)
+            reply_content = {'status' : 'ok'}
+        reply_msg = self.session.msg(u'execute_reply', reply_content, parent)
         print>>sys.__stdout__, "Reply: ", repr(reply_msg)
-        self.socket.send_json(reply_msg, ident=ident)
-        
-    def execute_reply(self, result, msg):
-        reply_msg = dict(
-            sender_id=self.sender_id,
-            msg_id=self.msg_id,
-            parent_msg_id=msg[u'msg_id'],
-            parent_sender_id=msg[u'sender_id'],
-            msg_type=u'execute_reply',
-            content=dict(
-                data=result
-            )
-        )
-        self.msg_id += 1
-        return reply_msg
+        self.reply_socket.send_json(reply_msg, ident=ident)
 
     def start(self):
         while True:
-            # msg = self.socket.recv()
-            # print>>sys.__stdout__, "Got msg: ", repr(msg)
-            ident, msg = self.socket.recv_json(ident=True)
+            ident, msg = self.reply_socket.recv_json(ident=True)
             print>>sys.__stdout__, "Got ident: ", repr(ident)
             print>>sys.__stdout__, "Got msg: ", msg
             if msg[u'msg_type'] == u'execute_request':
@@ -170,20 +149,23 @@ class Kernel(object):
 def main():
     c = zmq.Context(1, 1)
 
-    session = Session(username='kernel')
+    session = Session(username=u'kernel')
 
-    reply = c.socket(zmq.XREP)
-    reply.bind('tcp://192.168.2.109:5555')
-    kernel = Kernel(reply)
+    reply_socket = c.socket(zmq.XREP)
+    reply_socket.bind('tcp://192.168.2.109:5555')
 
-    stream = c.socket(zmq.PUB)
-    stream.bind('tcp://192.168.2.109:5556')
-    stdout = OutStream(stream, 'stdout')
-    stderr = OutStream(stream, 'stderr')
+    pub_socket = c.socket(zmq.PUB)
+    pub_socket.bind('tcp://192.168.2.109:5556')
+
+    stdout = OutStream(session, pub_socket, u'stdout')
+    stderr = OutStream(session, pub_socket, u'stderr')
     sys.stdout = stdout
     sys.stderr = stderr
 
+    display_hook = DisplayHook(session, pub_socket)
+    sys.displayhook = display_hook
 
+    kernel = Kernel(session, reply_socket, pub_socket)
 
     print>>sys.__stdout__, "Starting the kernel..."
     kernel.start()
@@ -192,10 +174,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-"""
-* Make sender_id, msg_id global to the process.
-* Figure out how to handle parent id stuff.
-* Make a factory for blank messages of all types.
-* raw_input
 
-"""

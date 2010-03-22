@@ -9,6 +9,22 @@ def msg_header(msg_id, username, session):
     }
 
 
+def extract_header(msg_or_header):
+    """Given a message or header, return the header."""
+    try:
+        # See if msg_or_header is the entire message.
+        h = msg_or_header['header']
+    except KeyError:
+        try:
+            # See if msg_or_header is just the header
+            h = msg_or_header['msg_id']
+        except KeyError:
+            raise
+        else:
+            h = msg_or_header
+    return h
+
+
 class Bunch(object): pass
 
 
@@ -37,7 +53,7 @@ class Session(object):
     def msg(self, msg_type, content=None, parent=None):
         msg = {}
         msg['header'] = self.msg_header()
-        msg['parent_header'] = {} if parent is None else parent['header']
+        msg['parent_header'] = {} if parent is None else extract_header(parent)
         msg['msg_type'] = msg_type
         msg['content'] = {} if content is None else content
         return msg
