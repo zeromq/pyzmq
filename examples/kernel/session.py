@@ -9,6 +9,19 @@ def msg_header(msg_id, username, session):
     }
 
 
+class Bunch(object): pass
+
+
+def msg2obj(msg):
+    """Convert a message to a simple object with attributes."""
+    obj = Bunch()
+    for k, v in msg.iteritems():
+        if isinstance(v, dict):
+            v = msg2obj(v)
+        setattr(obj, k, v)
+    return obj
+
+
 class Session(object):
 
     def __init__(self, username=os.environ.get('USER','username')):
@@ -29,3 +42,13 @@ class Session(object):
         msg['content'] = {} if content is None else content
         return msg
 
+
+def test_msg2obj():
+    am = dict(x=1)
+    ao = msg2obj(am)
+    assert ao.x == am['x']
+
+    am['y'] = dict(z=1)
+    ao = msg2obj(am)
+    assert ao.y.z == am['y']['z']
+    
