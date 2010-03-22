@@ -30,6 +30,7 @@ class Console(code.InteractiveConsole):
         self.session = session
         self.request_socket = request_socket
         self.sub_socket = sub_socket
+        self.backgrounded = 0
 
     def handle_pyin(self, omsg):
         if omsg.msg_type != 'pyin':
@@ -65,38 +66,63 @@ class Console(code.InteractiveConsole):
             outstream = sys.stderr
             print >> outstream, '*** ERROR ***'
         print >> outstream, omsg.content.data,
-        
+
+    def _recv(self, socket):
+        msg = socket.recv_json(zmq.NOBLOCK)
+        omsg =  msg if msg is None else session.msg2obj(msg)
+        return omsg
+
+    def handle_output(self, omsg):
+        # Filter, don't echo our own inputs back out
+        self.handle_pyin(omsg)
+        self.handle_pyout(omsg)
+        self.handle_pyerr(omsg)
+        self.handle_stream(omsg)
+
     def recv_output(self):
         while True:
-            msg = self.sub_socket.recv_json(zmq.NOBLOCK)
-            omsg =  msg if msg is None else session.msg2obj(msg)
+            omsg = self._recv(self.sub_socket)
             if omsg is None:
                 break
-            # Filter, don't echo our own inputs back out
-            self.handle_pyin(omsg)
-            self.handle_pyout(omsg)
-            self.handle_pyerr(omsg)
-            self.handle_stream(omsg)
+            self.handle_output(omsg)
 
     def recv_reply(self):
-        msg = self.request_socket.recv_json(zmq.NOBLOCK)
-        obj =  msg if msg is None else session.msg2obj(msg)
-        return obj
-    
+        return self._recv(self.request_socket)
+
     def runcode(self, code):
-        code = '\n'.join(self.buffer)
-        msg = self.session.msg('execute_request', dict(code=code))
+        # We can't pickle code objects, so fetch the actual source
+        src = '\n'.join(self.buffer)
+
+        # for non-background inputs, if we do have previoiusly backgrounded
+        # jobs, check to see if they've produced results
+        if not src.endswith(';'):
+            while self.backgrounded > 0:
+                #print 'checking background'
+                rep = self.recv_reply()
+                self.recv_output()
+                if rep:
+                    self.backgrounded -= 1
+                time.sleep(0.1)
+
+        # Send code execution message to kernel
+        msg = self.session.msg('execute_request', dict(code=src))
         self.request_socket.send_json(msg)
-        
-        for i in range(1000):
-            self.recv_output()
+
+        # Fake asynchronicity by letting the user put ';' at the end of the line
+        if src.endswith(';'):
+            self.backgrounded += 1
+            return
+
+        # For foreground jobs, wait for reply
+        while True:
             end = self.recv_reply()
             if end is not None:
                 self.recv_output()
                 if end.content.status == 'error':
                     self.print_pyerr(end.content)
                 break
-            time.sleep(0.1)
+            self.recv_output()
+            time.sleep(0.05)
         else:
             # We exited without hearing back from the kernel!
             print >> sys.stderr, 'ERROR!!! kernel never got back to us!!!'
@@ -136,18 +162,3 @@ if __name__ == '__main__':
     sess = session.Session()
     client = InteractiveClient(sess, request_socket, sub_socket)
     client.interact()
-
-"""
-import time
-x = 2
-for i in range(5):
-    print x**i
-    time.sleep(1)
-
-
-import numpy as np
-n = 800
-a = np.random.uniform(size=(n,n))
-a = a+a.T
-e = np.linalg.eig(a)
-"""
