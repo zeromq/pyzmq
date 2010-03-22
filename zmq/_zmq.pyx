@@ -600,13 +600,13 @@ cdef class Socket:
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
-            s = self.recv(flags)
-            if s is not None:
+            msg = self.recv(flags)
+            if msg is not None:
                 if ident:
-                    ident, s = split_ident(s)
-                    return (ident, json.loads(s))
+                    ident, msg_buf = split_ident(msg)
+                    return (ident, json.loads(str(msg_buf)))
                 else:
-                    return json.loads(s)
+                    return json.loads(msg)
 
 
 def split_ident(msg):

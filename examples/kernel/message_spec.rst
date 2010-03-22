@@ -8,7 +8,8 @@ General Message Format
 General message format::
 
     {
-        msg_id : 10,
+        
+        msg_id : 10,    # start with 0
         sender_id : uuid
         parent_id : (uuid, id)    # None/0/-1? if empty
         msg_type : 'string_message_type',
