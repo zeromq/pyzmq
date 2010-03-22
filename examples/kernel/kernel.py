@@ -34,7 +34,6 @@ class OutStream(object):
                 content = {u'name':self.name, u'data':data}
                 msg = self.session.msg(u'stream', content=content, parent=self.parent_header)
                 print>>sys.__stdout__, repr(msg)
-                self.msg_id += 1
                 self.pub_socket.send_json(msg)
                 self._buffer_len = 0
                 self._buffer = []
@@ -113,7 +112,11 @@ class Kernel(object):
         self.history = []
 
     def execute_request(self, ident, parent):
-        code = parent[u'content'][u'code']
+        try:
+            code = parent[u'content'][u'code']
+        except:
+            print>>sys.__stderr__, "Got bad msg: ", parent
+            return
         pyin_msg = self.session.msg(u'pyin',{u'code':code}, parent=parent)
         self.pub_socket.send_json(pyin_msg)
         try:
@@ -160,7 +163,7 @@ def main():
     stdout = OutStream(session, pub_socket, u'stdout')
     stderr = OutStream(session, pub_socket, u'stderr')
     sys.stdout = stdout
-    sys.stderr = stderr
+    # sys.stderr = stderr
 
     display_hook = DisplayHook(session, pub_socket)
     sys.displayhook = display_hook

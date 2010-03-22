@@ -11,6 +11,8 @@ def msg_header(msg_id, username, session):
 
 def extract_header(msg_or_header):
     """Given a message or header, return the header."""
+    if not msg_or_header:
+        return {}
     try:
         # See if msg_or_header is the entire message.
         h = msg_or_header['header']
