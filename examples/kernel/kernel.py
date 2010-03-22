@@ -1,5 +1,6 @@
 import __builtin__
 import sys
+import time
 import traceback
 
 from code import CommandCompiler
@@ -114,6 +115,23 @@ class Kernel(object):
         self.history = []
         self.compiler = CommandCompiler()
 
+    def abort_queue(self):
+        while True:
+            ident_msg = self.reply_socket.recv_json(zmq.NOBLOCK, ident=True)
+            if ident_msg is None:
+                break
+            ident, msg = ident_msg
+            print>>sys.__stdout__, "Aborting:"
+            print>>sys.__stdout__, msg2obj(msg)
+            msg_type = msg['msg_type']
+            reply_type = msg_type.split('_')[0] + '_reply'
+            reply_msg = self.session.msg(reply_type, {'status' : 'aborted'}, msg)
+            print>>sys.__stdout__, msg2obj(reply_msg)
+            self.reply_socket.send_json(reply_msg, ident=ident)
+            # We need to wait a bit for requests to come in. This can probably
+            # be set shorter for true asynchronous clients.
+            time.sleep(0.1)
+
     def execute_request(self, ident, parent):
         try:
             code = parent[u'content'][u'code']
@@ -144,6 +162,8 @@ class Kernel(object):
         reply_msg = self.session.msg(u'execute_reply', reply_content, parent)
         print>>sys.__stdout__, msg2obj(reply_msg)
         self.reply_socket.send_json(reply_msg, ident=ident)
+        if reply_msg['content']['status'] == u'error':
+            self.abort_queue()
 
     def start(self):
         while True:
