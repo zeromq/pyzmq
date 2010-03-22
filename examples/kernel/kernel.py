@@ -2,6 +2,8 @@ import __builtin__
 import sys
 import traceback
 
+from code import CommandCompiler
+
 import zmq
 
 from session import Session, msg2obj, extract_header
@@ -110,6 +112,7 @@ class Kernel(object):
         self.pub_socket = pub_socket
         self.user_ns = {}
         self.history = []
+        self.compiler = CommandCompiler()
 
     def execute_request(self, ident, parent):
         try:
@@ -120,7 +123,8 @@ class Kernel(object):
         pyin_msg = self.session.msg(u'pyin',{u'code':code}, parent=parent)
         self.pub_socket.send_json(pyin_msg)
         try:
-            exec code in self.user_ns, self.user_ns
+            comp_code = self.compiler(code, '<zmq-kernel>')
+            exec comp_code in self.user_ns, self.user_ns
         except:
             result = u'error'
             etype, evalue, tb = sys.exc_info()
@@ -152,13 +156,20 @@ class Kernel(object):
 def main():
     c = zmq.Context(1, 1)
 
+    ip = '192.168.2.109'
+    ip = '127.0.0.1'
+    port_base = 5555
+    connection = ('tcp://%s' % ip) + ':%i'
+    rep_conn = connection % port_base
+    pub_conn = connection % (port_base+1)
+
     session = Session(username=u'kernel')
 
     reply_socket = c.socket(zmq.XREP)
-    reply_socket.bind('tcp://192.168.2.109:5555')
+    reply_socket.bind(rep_conn)
 
     pub_socket = c.socket(zmq.PUB)
-    pub_socket.bind('tcp://192.168.2.109:5556')
+    pub_socket.bind(pub_conn)
 
     stdout = OutStream(session, pub_socket, u'stdout')
     stderr = OutStream(session, pub_socket, u'stderr')
