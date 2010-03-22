@@ -27,7 +27,9 @@ def extract_header(msg_or_header):
     return h
 
 
-class Bunch(object): pass
+class Bunch(object):
+    def __repr__(self):
+        return repr(self.__dict__)
 
 
 def msg2obj(msg):

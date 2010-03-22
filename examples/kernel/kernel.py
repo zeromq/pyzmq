@@ -157,7 +157,7 @@ def main():
     c = zmq.Context(1, 1)
 
     ip = '192.168.2.109'
-    ip = '127.0.0.1'
+    #ip = '127.0.0.1'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     rep_conn = connection % port_base

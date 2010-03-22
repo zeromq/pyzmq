@@ -75,6 +75,7 @@ class Console(code.InteractiveConsole):
             # Filter, don't echo our own inputs back out
             self.handle_pyin(omsg)
             self.handle_pyout(omsg)
+            self.handle_pyerr(omsg)
             self.handle_stream(omsg)
 
     def recv_reply(self):
@@ -116,7 +117,7 @@ class InteractiveClient(object):
 if __name__ == '__main__':
     # Defaults
     ip = '192.168.2.109'
-    ip = '127.0.0.1'
+    #ip = '127.0.0.1'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     req_conn = connection % port_base
