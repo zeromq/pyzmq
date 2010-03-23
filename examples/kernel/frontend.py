@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""A simple interactive frontend that talks to a kernel over 0mq.
+"""A simple interactive frontend that talks to a kernel over 0MQ.
 """
 
 #-----------------------------------------------------------------------------

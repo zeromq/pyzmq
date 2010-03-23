@@ -1,5 +1,14 @@
 #!/usr/bin/env python
-"""A simple interactive kernel that talks to a frontend over 0mq.
+"""A simple interactive kernel that talks to a frontend over 0MQ.
+
+Things to do:
+
+* Finish implementing `raw_input`.
+* Implement `set_parent` logic. Right before doing exec, the Kernel should
+  call set_parent on all the PUB objects with the message about to be executed.
+* Implement random port and security key logic.
+* Implement control messages.
+* Implement event loop and poll version.
 """
 
 import __builtin__
