@@ -2,6 +2,37 @@ import os
 import uuid
 import pprint
 
+
+class Message(object):
+    """A simple message object that maps dict keys to attributes.
+
+    A Message can be created from a dict and a dict from a Message instance
+    simply by calling dict(msg_obj)."""
+    
+    def __init__(self, msg_dict):
+        dct = self.__dict__
+        for k, v in msg_dict.iteritems():
+            if isinstance(v, dict):
+                v = Message(v)
+            dct[k] = v
+
+    # Having this iterator lets dict(msg_obj) work out of the box.
+    def __iter__(self):
+        return iter(self.__dict__.iteritems())
+    
+    def __repr__(self):
+        return repr(self.__dict__)
+
+    def __str__(self):
+        return pprint.pformat(self.__dict__)
+
+    def __contains__(self, k):
+        return k in self.__dict__
+
+    def __getitem__(self, k):
+        return self.__dict__[k]
+
+
 def msg_header(msg_id, username, session):
     return {
         'msg_id' : msg_id,
@@ -28,24 +59,6 @@ def extract_header(msg_or_header):
     return h
 
 
-class Bunch(object):
-    def __repr__(self):
-        return repr(self.__dict__)
-
-    def __str__(self):
-        return pprint.pformat(self.__dict__)
-
-
-def msg2obj(msg):
-    """Convert a message to a simple object with attributes."""
-    obj = Bunch()
-    for k, v in msg.iteritems():
-        if isinstance(v, dict):
-            v = msg2obj(v)
-        setattr(obj, k, v)
-    return obj
-
-
 class Session(object):
 
     def __init__(self, username=os.environ.get('USER','username')):
@@ -69,10 +82,16 @@ class Session(object):
 
 def test_msg2obj():
     am = dict(x=1)
-    ao = msg2obj(am)
+    ao = Message(am)
     assert ao.x == am['x']
 
     am['y'] = dict(z=1)
-    ao = msg2obj(am)
+    ao = Message(am)
     assert ao.y.z == am['y']['z']
     
+    k1, k2 = 'y', 'z'
+    assert ao[k1][k2] == am[k1][k2]
+    
+    am2 = dict(ao)
+    assert am['x'] == am2['x']
+    assert am['y']['z'] == am2['y']['z']

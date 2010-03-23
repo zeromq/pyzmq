@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """A simple interactive frontend that talks to a kernel over 0mq.
 """
 
@@ -33,34 +34,42 @@ class Console(code.InteractiveConsole):
         self.backgrounded = 0
         self.messages = {}
 
+        # Set system prompts
+        sys.ps1 = 'Py>>> '
+        sys.ps2 = '  ... '
+        sys.ps3 = 'Out : '
+        # Build dict of handlers for message types
+        self.handlers = {}
+        for msg_type in ['pyin', 'pyout', 'pyerr', 'stream']:
+            self.handlers[msg_type] = getattr(self, 'handle_%s' % msg_type)
+
     def handle_pyin(self, omsg):
-        if omsg.msg_type != 'pyin':
-            return
         if omsg.parent_header.session == self.session.session:
             return
-        print '[IN from other]', omsg.parent_header.username
-        print omsg.content.code
+        c = omsg.content.code.rstrip()
+        if c:
+            print '[IN from %s]' % omsg.parent_header.username
+            print c
 
     def handle_pyout(self, omsg):
-        if omsg.msg_type != 'pyout':
-            return
-        print ']]]', omsg.content.data
+        #print omsg # dbg
+        if omsg.parent_header.session == self.session.session:
+            print "%s%s" % (sys.ps3, omsg.content.data)
+        else:
+            print '[Out from %s]' % omsg.parent_header.username
+            print omsg.content.data
 
     def print_pyerr(self, err):
         print >> sys.stderr, err.etype,':', err.evalue
         print >> sys.stderr, ''.join(err.traceback)       
 
     def handle_pyerr(self, omsg):
-        if omsg.msg_type != 'pyerr':
-            return
         if omsg.parent_header.session == self.session.session:
             return
-        print '[ERR from other]', omsg.parent_header.username
+        print >> sys.stderr, '[ERR from %s]' % omsg.parent_header.username
         self.print_pyerr(omsg.content)
         
     def handle_stream(self, omsg):
-        if omsg.msg_type != 'stream':
-            return
         if omsg.content.name == 'stdout':
             outstream = sys.stdout
         else:
@@ -70,15 +79,12 @@ class Console(code.InteractiveConsole):
 
     def _recv(self, socket):
         msg = socket.recv_json(zmq.NOBLOCK)
-        omsg =  msg if msg is None else session.msg2obj(msg)
-        return omsg
+        return msg if msg is None else session.Message(msg)
 
     def handle_output(self, omsg):
-        # Filter, don't echo our own inputs back out
-        self.handle_pyin(omsg)
-        self.handle_pyout(omsg)
-        self.handle_pyerr(omsg)
-        self.handle_stream(omsg)
+        handler = self.handlers.get(omsg.msg_type, None)
+        if handler is not None:
+            handler(omsg)
 
     def recv_output(self):
         while True:
@@ -88,16 +94,20 @@ class Console(code.InteractiveConsole):
             self.handle_output(omsg)
 
     def handle_reply(self, rep):
+        # Handle any side effects on output channels
         self.recv_output()
+        # Now, dispatch on the possible reply types we must handle
         if rep is None:
             return
-        
         if rep.content.status == 'error':
-            self.print_pyerr(rep.content)
-        if rep.content.status == 'aborted':
+            self.print_pyerr(rep.content)            
+        elif rep.content.status == 'aborted':
             print >> sys.stderr, "ERROR: ABORTED"
-            print >> sys.stderr, rep.content.parent_content
-            print >> sys.stderr, self.messages[rep.content.parent_header.msg_id]
+            ab = self.messages[rep.parent_header.msg_id].content
+            if 'code' in ab:
+                print >> sys.stderr, ab.code
+            else:
+                print >> sys.stderr, ab
 
     def recv_reply(self):
         rep = self._recv(self.request_socket)
@@ -121,7 +131,7 @@ class Console(code.InteractiveConsole):
         # Send code execution message to kernel
         msg = self.session.msg('execute_request', dict(code=src))
         self.request_socket.send_json(msg)
-        omsg = session.msg2obj(msg)
+        omsg = session.Message(msg)
         self.messages[omsg.header.msg_id] = omsg
 
         # Fake asynchronicity by letting the user put ';' at the end of the line
@@ -146,17 +156,17 @@ class InteractiveClient(object):
         self.session = session
         self.request_socket = request_socket
         self.sub_socket = sub_socket
-        self.console = Console(None, '<0mq-console>',
+        self.console = Console(None, '<zmq-console>',
                                session, request_socket, sub_socket)
         
     def interact(self):
         self.console.interact()
 
 
-if __name__ == '__main__':
+def main():
     # Defaults
-    ip = '192.168.2.109'
-    #ip = '127.0.0.1'
+    #ip = '192.168.2.109'
+    ip = '127.0.0.1'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     req_conn = connection % port_base
@@ -175,3 +185,7 @@ if __name__ == '__main__':
     sess = session.Session()
     client = InteractiveClient(sess, request_socket, sub_socket)
     client.interact()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+"""A simple interactive kernel that talks to a frontend over 0mq.
+"""
+
 import __builtin__
 import sys
 import time
@@ -7,7 +11,7 @@ from code import CommandCompiler
 
 import zmq
 
-from session import Session, msg2obj, extract_header
+from session import Session, Message, extract_header
 
 
 class OutStream(object):
@@ -35,8 +39,9 @@ class OutStream(object):
             if self._buffer:
                 data = ''.join(self._buffer)
                 content = {u'name':self.name, u'data':data}
-                msg = self.session.msg(u'stream', content=content, parent=self.parent_header)
-                print>>sys.__stdout__, msg2obj(msg)
+                msg = self.session.msg(u'stream', content=content,
+                                       parent=self.parent_header)
+                print>>sys.__stdout__, Message(msg)
                 self.pub_socket.send_json(msg)
                 self._buffer_len = 0
                 self._buffer = []
@@ -83,7 +88,8 @@ class DisplayHook(object):
 
     def __call__(self, obj):
         __builtin__._ = obj
-        msg = self.session.msg(u'pyout', {u'data':repr(obj)}, parent=self.parent_header)
+        msg = self.session.msg(u'pyout', {u'data':repr(obj)},
+                               parent=self.parent_header)
         self.pub_socket.send_json(msg)
 
     def set_parent(self, parent):
@@ -122,11 +128,11 @@ class Kernel(object):
                 break
             ident, msg = ident_msg
             print>>sys.__stdout__, "Aborting:"
-            print>>sys.__stdout__, msg2obj(msg)
+            print>>sys.__stdout__, Message(msg)
             msg_type = msg['msg_type']
             reply_type = msg_type.split('_')[0] + '_reply'
             reply_msg = self.session.msg(reply_type, {'status' : 'aborted'}, msg)
-            print>>sys.__stdout__, msg2obj(reply_msg)
+            print>>sys.__stdout__, Message(reply_msg)
             self.reply_socket.send_json(reply_msg, ident=ident)
             # We need to wait a bit for requests to come in. This can probably
             # be set shorter for true asynchronous clients.
@@ -137,12 +143,13 @@ class Kernel(object):
             code = parent[u'content'][u'code']
         except:
             print>>sys.__stderr__, "Got bad msg: "
-            print>>sys.__stderr__, msg2obj(parent)
+            print>>sys.__stderr__, Message(parent)
             return
         pyin_msg = self.session.msg(u'pyin',{u'code':code}, parent=parent)
         self.pub_socket.send_json(pyin_msg)
         try:
             comp_code = self.compiler(code, '<zmq-kernel>')
+            sys.displayhook.set_parent(parent)
             exec comp_code in self.user_ns, self.user_ns
         except:
             result = u'error'
@@ -160,7 +167,7 @@ class Kernel(object):
         else:
             reply_content = {'status' : 'ok'}
         reply_msg = self.session.msg(u'execute_reply', reply_content, parent)
-        print>>sys.__stdout__, msg2obj(reply_msg)
+        print>>sys.__stdout__, Message(reply_msg)
         self.reply_socket.send_json(reply_msg, ident=ident)
         if reply_msg['content']['status'] == u'error':
             self.abort_queue()
@@ -168,7 +175,7 @@ class Kernel(object):
     def start(self):
         while True:
             ident, msg = self.reply_socket.recv_json(ident=True)
-            print>>sys.__stdout__, msg2obj(msg)
+            print>>sys.__stdout__, Message(msg)
             if msg[u'msg_type'] == u'execute_request':
                 self.execute_request(ident, msg)
 
@@ -176,8 +183,8 @@ class Kernel(object):
 def main():
     c = zmq.Context(1, 1)
 
-    ip = '192.168.2.109'
-    #ip = '127.0.0.1'
+    #ip = '192.168.2.109'
+    ip = '127.0.0.1'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     rep_conn = connection % port_base
@@ -201,11 +208,10 @@ def main():
 
     kernel = Kernel(session, reply_socket, pub_socket)
 
-    print>>sys.__stdout__, "Starting the kernel..."
+    print >>sys.__stdout__, "Starting the kernel..."
+    print >>sys.__stdout__, "Use Ctrl-\\ (NOT Ctrl-C!) to terminate."
     kernel.start()
 
 
 if __name__ == '__main__':
     main()
-
-

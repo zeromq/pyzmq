@@ -2,23 +2,26 @@
 Message Specification
 =====================
 
+Note: not all of these have yet been fully fleshed out, but the key ones are,
+see kernel and frontend files for actual implementation details.
+
 General Message Format
 =====================
 
 General message format::
 
     {
-        
-        msg_id : 10,    # start with 0
-        sender_id : uuid
-        parent_id : (uuid, id)    # None/0/-1? if empty
+        header : { 'msg_id' : 10,    # start with 0
+	           'username' : 'name',
+		   'session' : uuid
+		   },
+	parent_header : dict,
         msg_type : 'string_message_type',
-        content : 'blackbox'
+        content : blackbox_dict , # Must be a dict
     }
 
 Side effect: (PUB/SUB)
 ======================
-
 
 # msg_type = 'stream'
 content = {
@@ -26,10 +29,9 @@ content = {
     data : 'blob',
 }
 
-# msg_type = 'file'
+# msg_type = 'pyin'
 content = {
-    path = 'cool.jpg',
-    data : 'blob'
+    code = 'x=1',
 }
 
 # msg_type = 'pyout'
@@ -43,6 +45,12 @@ content = {
     traceback : 'full traceback',
     exc_type : 'TypeError',
     exc_value :  'msg'
+}
+
+# msg_type = 'file'
+content = {
+    path = 'cool.jpg',
+    data : 'blob'
 }
 
 Request/Reply
@@ -62,7 +70,8 @@ Reply:
 
 # msg_type = 'execute_reply'
 content = {
-    
+  'status' : 'ok' OR 'error' OR 'abort'
+  # data depends on status value
 }
 
 Complete
