@@ -31,6 +31,7 @@ class Console(code.InteractiveConsole):
         self.request_socket = request_socket
         self.sub_socket = sub_socket
         self.backgrounded = 0
+        self.messages = {}
 
     def handle_pyin(self, omsg):
         if omsg.msg_type != 'pyin':
@@ -86,8 +87,22 @@ class Console(code.InteractiveConsole):
                 break
             self.handle_output(omsg)
 
+    def handle_reply(self, rep):
+        self.recv_output()
+        if rep is None:
+            return
+        
+        if rep.content.status == 'error':
+            self.print_pyerr(rep.content)
+        if rep.content.status == 'aborted':
+            print >> sys.stderr, "ERROR: ABORTED"
+            print >> sys.stderr, rep.content.parent_content
+            print >> sys.stderr, self.messages[rep.content.parent_header.msg_id]
+
     def recv_reply(self):
-        return self._recv(self.request_socket)
+        rep = self._recv(self.request_socket)
+        self.handle_reply(rep)
+        return rep
 
     def runcode(self, code):
         # We can't pickle code objects, so fetch the actual source
@@ -99,14 +114,15 @@ class Console(code.InteractiveConsole):
             while self.backgrounded > 0:
                 #print 'checking background'
                 rep = self.recv_reply()
-                self.recv_output()
                 if rep:
                     self.backgrounded -= 1
-                time.sleep(0.1)
+                time.sleep(0.05)
 
         # Send code execution message to kernel
         msg = self.session.msg('execute_request', dict(code=src))
         self.request_socket.send_json(msg)
+        omsg = session.msg2obj(msg)
+        self.messages[omsg.header.msg_id] = omsg
 
         # Fake asynchronicity by letting the user put ';' at the end of the line
         if src.endswith(';'):
@@ -115,11 +131,8 @@ class Console(code.InteractiveConsole):
 
         # For foreground jobs, wait for reply
         while True:
-            end = self.recv_reply()
-            if end is not None:
-                self.recv_output()
-                if end.content.status == 'error':
-                    self.print_pyerr(end.content)
+            rep = self.recv_reply()
+            if rep is not None:
                 break
             self.recv_output()
             time.sleep(0.05)
