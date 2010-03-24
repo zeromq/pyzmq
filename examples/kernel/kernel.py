@@ -21,7 +21,7 @@ from code import CommandCompiler
 import zmq
 
 from session import Session, Message, extract_header
-
+from completer import KernelCompleter
 
 class OutStream(object):
     """A file like object that publishes the stream to a 0MQ PUB socket."""
@@ -132,6 +132,8 @@ class Kernel(object):
         self.user_ns = {}
         self.history = []
         self.compiler = CommandCompiler()
+        self.completer = KernelCompleter(self.user_ns)
+        
 
     def abort_queue(self):
         while True:
@@ -184,13 +186,24 @@ class Kernel(object):
         if reply_msg['content']['status'] == u'error':
             self.abort_queue()
 
+    def execute_completion(self, ident, parent):
+        matches = {'matches' : self.complete(parent) }
+        completion_msg = self.session.send(self.reply_socket, 'complete_reply',
+                                           matches, parent, ident)
+        print >> sys.__stdout__, completion_msg
+
+    def complete(self, msg):
+        return self.completer.complete(msg.line, msg.text)
+
     def start(self):
         while True:
             ident, msg = self.reply_socket.recv_json(ident=True)
-            print>>sys.__stdout__, Message(msg)
-            if msg[u'msg_type'] == u'execute_request':
+            msg = Message(msg)
+            print>>sys.__stdout__, msg
+            if msg.msg_type == u'execute_request':
                 self.execute_request(ident, msg)
-
+            elif msg.msg_type == u'complete_request':
+                self.execute_completion(ident, msg)
 
 def main():
     c = zmq.Context(1, 1)

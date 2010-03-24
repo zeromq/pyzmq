@@ -85,7 +85,7 @@ content = {
 
 # msg_type = 'complete_reply'
 content = {
-    completions : ['a.foo', 'a.bar']
+    matches : ['a.foo', 'a.bar']
 }
 
 Control

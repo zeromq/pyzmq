@@ -81,9 +81,9 @@ class Session(object):
         msg['content'] = {} if content is None else content
         return msg
 
-    def send(self, socket, msg_type, content=None, parent=None):
+    def send(self, socket, msg_type, content=None, parent=None, ident=False):
         msg = self.msg(msg_type, content, parent)
-        socket.send_json(msg)
+        socket.send_json(msg, ident)
         omsg = Message(msg)
         self.messages[omsg.header.msg_id] = omsg
         return omsg

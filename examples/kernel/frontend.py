@@ -80,7 +80,7 @@ class Console(code.InteractiveConsole):
             outstream = sys.stdout
         else:
             outstream = sys.stderr
-            print >> outstream, '*** ERROR ***'
+            print >> outstream, '*ERR*',
         print >> outstream, omsg.content.data,
 
     def handle_output(self, omsg):
