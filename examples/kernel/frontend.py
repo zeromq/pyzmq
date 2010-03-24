@@ -33,10 +33,10 @@ class Console(code.InteractiveConsole):
         self.request_socket = request_socket
         self.sub_socket = sub_socket
         self.backgrounded = 0
-        self.session.messages = {}
+        self.messages = {}
 
         # Set tab completion
-        self.completer = completer.ClientCompleter(session, request_socket)
+        self.completer = completer.ClientCompleter(self, session, request_socket)
         readline.parse_and_bind('tab: complete')
         readline.parse_and_bind('set show-all-if-ambiguous on')
         readline.set_completer(self.completer.complete)
@@ -106,7 +106,7 @@ class Console(code.InteractiveConsole):
             self.print_pyerr(rep.content)            
         elif rep.content.status == 'aborted':
             print >> sys.stderr, "ERROR: ABORTED"
-            ab = self.session.messages[rep.parent_header.msg_id].content
+            ab = self.messages[rep.parent_header.msg_id].content
             if 'code' in ab:
                 print >> sys.stderr, ab.code
             else:
@@ -134,6 +134,7 @@ class Console(code.InteractiveConsole):
         # Send code execution message to kernel
         omsg = self.session.send(self.request_socket,
                                  'execute_request', dict(code=src))
+        self.messages[omsg.header.msg_id] = omsg
         
         # Fake asynchronicity by letting the user put ';' at the end of the line
         if src.endswith(';'):

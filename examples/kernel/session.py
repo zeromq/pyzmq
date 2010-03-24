@@ -57,6 +57,8 @@ def extract_header(msg_or_header):
             raise
         else:
             h = msg_or_header
+    if not isinstance(h, dict):
+        h = dict(h)
     return h
 
 
@@ -66,7 +68,6 @@ class Session(object):
         self.username = username
         self.session = str(uuid.uuid4())
         self.msg_id = 0
-        self.messages = {}
 
     def msg_header(self):
         h = msg_header(self.msg_id, self.username, self.session)
@@ -76,8 +77,7 @@ class Session(object):
     def msg(self, msg_type, content=None, parent=None):
         msg = {}
         msg['header'] = self.msg_header()
-        msg['parent_header'] = {} if parent is None else \
-                               dict(extract_header(parent))
+        msg['parent_header'] = {} if parent is None else extract_header(parent)
         msg['msg_type'] = msg_type
         msg['content'] = {} if content is None else content
         return msg
@@ -86,7 +86,6 @@ class Session(object):
         msg = self.msg(msg_type, content, parent)
         socket.send_json(msg, ident=ident)
         omsg = Message(msg)
-        self.messages[omsg.header.msg_id] = omsg
         return omsg
 
     def recv(self, socket, mode=zmq.NOBLOCK):

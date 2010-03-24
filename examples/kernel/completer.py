@@ -1,5 +1,9 @@
 """Tab-completion over zmq"""
 
+# Trying to get print statements to work during completion, not very
+# successfully...
+from __future__ import print_function
+
 import itertools
 import readline
 import rlcompleter
@@ -32,12 +36,16 @@ class ClientCompleter(object):
     state=0,1,2,... When state=0 it should compute ALL the completion matches,
     and then return them for each value of state."""
     
-    def __init__(self, session, socket):
+    def __init__(self, client, session, socket):
+         # ugly, but we get called asynchronously and need access to some
+         # client state, like backgrounded code
+        self.client = client
         self.session = session
         self.socket = socket
         self.matches = []
 
     def request_completion(self, text):
+        # Get full line to give to the kernel in case it wants more info.
         line = readline.get_line_buffer()
         # send completion request to kernel
         msg = self.session.send(self.socket,
@@ -53,16 +61,22 @@ class ClientCompleter(object):
             time.sleep(0.1)
         else:
             # timeout
+            print ('TIMEOUT')  # Can't see this message...
             matches = None
         return matches
     
     def complete(self, text, state):
-        # Get full line to give to the kernel in case it wants more info.
+        
+        if self.client.backgrounded > 0:
+            print("\n[Not completing, background tasks active]")
+            print(readline.get_line_buffer(), end='')
+            return None
+        
         if state==0:
             matches = self.request_completion(text)
             if matches is None:
                 self.matches = []
-                print >> sys.stderr, 'WARNING: Kernel timeout on tab completion.'
+                print('WARNING: Kernel timeout on tab completion.')
             else:
                 self.matches = matches
 

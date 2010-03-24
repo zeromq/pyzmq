@@ -134,6 +134,10 @@ class Kernel(object):
         self.compiler = CommandCompiler()
         self.completer = KernelCompleter(self.user_ns)
         
+        # Build dict of handlers for message types
+        self.handlers = {}
+        for msg_type in ['execute_request', 'complete_request']:
+            self.handlers[msg_type] = getattr(self, msg_type)
 
     def abort_queue(self):
         while True:
@@ -186,7 +190,7 @@ class Kernel(object):
         if reply_msg['content']['status'] == u'error':
             self.abort_queue()
 
-    def execute_completion(self, ident, parent):
+    def complete_request(self, ident, parent):
         matches = {'matches' : self.complete(parent),
                    'status' : 'ok'}
         completion_msg = self.session.send(self.reply_socket, 'complete_reply',
@@ -201,10 +205,12 @@ class Kernel(object):
             ident, msg = self.reply_socket.recv_json(ident=True)
             omsg = Message(msg)
             print>>sys.__stdout__, omsg
-            if msg['msg_type'] == u'execute_request':
-                self.execute_request(ident, msg)
-            elif msg['msg_type'] == u'complete_request':
-                self.execute_completion(ident, omsg)
+            handler = self.handlers.get(omsg.msg_type, None)
+            if handler is None:
+                print >> sys.__stderr__, "UNKNOWN MESSAGE TYPE:", omsg
+            else:
+                handler(ident, omsg)
+
 
 def main():
     c = zmq.Context(1, 1)
@@ -238,6 +244,11 @@ def main():
 
     kernel = Kernel(session, reply_socket, pub_socket)
 
+    # For debugging convenience, put sleep and a string in the namespace, so we
+    # have them every time we start.
+    kernel.user_ns['sleep'] = time.sleep
+    kernel.user_ns['s'] = 'Test string'
+    
     print >>sys.__stdout__, "Use Ctrl-\\ (NOT Ctrl-C!) to terminate."
     kernel.start()
 
