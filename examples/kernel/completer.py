@@ -24,6 +24,7 @@ class KernelCompleter(object):
             matches.append(comp)
         return matches
     
+
 class ClientCompleter(object):
     """Client-side completion machinery.
 
@@ -44,14 +45,16 @@ class ClientCompleter(object):
                                 dict(text=text, line=line))
 
         # Give the kernel up to 1s to respond
-        for i in range(10):
+        for i in range(3):
             rep = self.session.recv(self.socket)
-            if msg is not None:
-                matches = ['a','b','c']  # dbg
+            if rep is not None and rep.msg_type == 'complete_reply':
+                matches = rep.content.matches
+                break
             time.sleep(0.1)
         else:
             # timeout
             matches = None
+        print 'matches:', matches
         return matches
     
     def complete(self, text, state):
