@@ -16,6 +16,7 @@ import uuid
 # our own
 import zmq
 import session
+import completer
 
 #-----------------------------------------------------------------------------
 # Classes and functions
@@ -33,6 +34,11 @@ class Console(code.InteractiveConsole):
         self.sub_socket = sub_socket
         self.backgrounded = 0
         self.messages = {}
+
+        # Set tab completion
+        self.completer = completer.ClientCompleter(session, request_socket)
+        readline.parse_and_bind("tab: complete")
+        readline.set_completer(self.completer.complete)
 
         # Set system prompts
         sys.ps1 = 'Py>>> '
@@ -129,11 +135,13 @@ class Console(code.InteractiveConsole):
                 time.sleep(0.05)
 
         # Send code execution message to kernel
-        msg = self.session.msg('execute_request', dict(code=src))
-        self.request_socket.send_json(msg)
-        omsg = session.Message(msg)
-        self.messages[omsg.header.msg_id] = omsg
-
+        ## msg = self.session.msg('execute_request', dict(code=src))
+        ## self.request_socket.send_json(msg)
+        ## omsg = session.Message(msg)
+        ## self.messages[omsg.header.msg_id] = omsg
+        omsg = self.session.send(self.request_socket,
+                                 'execute_request', dict(code=src))
+        
         # Fake asynchronicity by letting the user put ';' at the end of the line
         if src.endswith(';'):
             self.backgrounded += 1
@@ -167,6 +175,7 @@ def main():
     # Defaults
     #ip = '192.168.2.109'
     ip = '127.0.0.1'
+    #ip = '99.146.222.252'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     req_conn = connection % port_base

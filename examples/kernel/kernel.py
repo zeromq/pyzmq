@@ -197,10 +197,14 @@ def main():
 
     #ip = '192.168.2.109'
     ip = '127.0.0.1'
+    #ip = '192.168.4.128'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     rep_conn = connection % port_base
     pub_conn = connection % (port_base+1)
+
+    print >>sys.__stdout__, "Starting the kernel..."
+    print >>sys.__stdout__, "On:",rep_conn, pub_conn
 
     session = Session(username=u'kernel')
 
@@ -220,7 +224,6 @@ def main():
 
     kernel = Kernel(session, reply_socket, pub_socket)
 
-    print >>sys.__stdout__, "Starting the kernel..."
     print >>sys.__stdout__, "Use Ctrl-\\ (NOT Ctrl-C!) to terminate."
     kernel.start()
 

@@ -65,6 +65,7 @@ class Session(object):
         self.username = username
         self.session = str(uuid.uuid4())
         self.msg_id = 0
+        self.messages = []
 
     def msg_header(self):
         h = msg_header(self.msg_id, self.username, self.session)
@@ -78,6 +79,13 @@ class Session(object):
         msg['msg_type'] = msg_type
         msg['content'] = {} if content is None else content
         return msg
+
+    def send(self, socket, msg_type, content=None, parent=None):
+        msg = self.msg('execute_request', dict(code=src))
+        socket.send_json(msg)
+        omsg = Message(msg)
+        self.messages[omsg.header.msg_id] = omsg
+        return omsg
 
 
 def test_msg2obj():
