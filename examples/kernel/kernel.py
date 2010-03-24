@@ -187,7 +187,8 @@ class Kernel(object):
             self.abort_queue()
 
     def execute_completion(self, ident, parent):
-        matches = {'matches' : self.complete(parent) }
+        matches = {'matches' : self.complete(parent),
+                   'status' : 'ok'}
         completion_msg = self.session.send(self.reply_socket, 'complete_reply',
                                            matches, parent, ident)
         print >> sys.__stdout__, completion_msg
