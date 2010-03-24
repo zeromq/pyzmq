@@ -44,8 +44,8 @@ class ClientCompleter(object):
                                 'complete_request',
                                 dict(text=text, line=line))
 
-        # Give the kernel up to 1s to respond
-        for i in range(3):
+        # Give the kernel up to 0.5s to respond
+        for i in range(5):
             rep = self.session.recv(self.socket)
             if rep is not None and rep.msg_type == 'complete_reply':
                 matches = rep.content.matches

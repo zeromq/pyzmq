@@ -37,7 +37,8 @@ class Console(code.InteractiveConsole):
 
         # Set tab completion
         self.completer = completer.ClientCompleter(session, request_socket)
-        readline.parse_and_bind("tab: complete")
+        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind('set show-all-if-ambiguous on')
         readline.set_completer(self.completer.complete)
 
         # Set system prompts
