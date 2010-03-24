@@ -96,6 +96,9 @@ class DisplayHook(object):
         self.parent_header = {}
 
     def __call__(self, obj):
+        if obj is None:
+            return
+
         __builtin__._ = obj
         msg = self.session.msg(u'pyout', {u'data':repr(obj)},
                                parent=self.parent_header)
