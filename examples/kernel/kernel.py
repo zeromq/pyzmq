@@ -193,7 +193,7 @@ class Kernel(object):
         print >> sys.__stdout__, completion_msg
 
     def complete(self, msg):
-        return self.completer.complete(msg.line, msg.text)
+        return self.completer.complete(msg.content.line, msg.content.text)
 
     def start(self):
         while True:
