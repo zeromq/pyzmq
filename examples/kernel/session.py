@@ -2,6 +2,7 @@ import os
 import uuid
 import pprint
 
+import zmq
 
 class Message(object):
     """A simple message object that maps dict keys to attributes.
@@ -81,11 +82,15 @@ class Session(object):
         return msg
 
     def send(self, socket, msg_type, content=None, parent=None):
-        msg = self.msg('execute_request', dict(code=src))
+        msg = self.msg(msg_type, content, parent)
         socket.send_json(msg)
         omsg = Message(msg)
         self.messages[omsg.header.msg_id] = omsg
         return omsg
+
+    def recv(self, socket, mode=zmq.NOBLOCK):
+        msg = socket.recv_json(mode)
+        return msg if msg is None else session.Message(msg)
 
 
 def test_msg2obj():

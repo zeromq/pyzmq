@@ -25,26 +25,35 @@ class ClientCompleter(object):
         self.session = session
         self.socket = socket
         self.matches = []
-    
-    def complete(self, text, state):
-        # Get full line to give to the kernel in case it wants more info.
-        
-        line = readline.get_line_buffer()
-        #print 'Completing client-side for:', line, text, state # dbg
 
+    def request_completion(self, text):
+        line = readline.get_line_buffer()
         # send completion request to kernel
-        msg = self.session.msg('complete_request',
-                               dict(text=text, line=line))
-        self.socket.send_json(msg)
-        omsg = session.Messages(msg)
-        self.messages[omsg.header.msg_id] = omsg
+        msg = self.session.send(self.socket,
+                                'complete_request',
+                                dict(text=text, line=line))
 
         # Give the kernel up to 1s to respond
         for i in range(10):
-            rep = self.socket.recv_json(
-        
+            rep = self.session.recv(self.socket)
+            if msg is not None:
+                matches = ['a','b','c']  # dbg
+            time.sleep(0.1)
+        else:
+            # timeout
+            matches = None
+        return matches
+    
+    def complete(self, text, state):
+        # Get full line to give to the kernel in case it wants more info.
         if state==0:
-            self.matches = ['a','b','c']
+            matches = self.request_completion(text)
+            if matches is None:
+                self.matches = []
+                print >> sys.stderr, 'WARNING: Kernel timeout on tab completion.'
+            else:
+                self.matches = matches
+
         try:
             return self.matches[state]
         except IndexError:

@@ -33,7 +33,7 @@ class Console(code.InteractiveConsole):
         self.request_socket = request_socket
         self.sub_socket = sub_socket
         self.backgrounded = 0
-        self.messages = {}
+        self.session.messages = {}
 
         # Set tab completion
         self.completer = completer.ClientCompleter(session, request_socket)
@@ -83,10 +83,6 @@ class Console(code.InteractiveConsole):
             print >> outstream, '*** ERROR ***'
         print >> outstream, omsg.content.data,
 
-    def _recv(self, socket):
-        msg = socket.recv_json(zmq.NOBLOCK)
-        return msg if msg is None else session.Message(msg)
-
     def handle_output(self, omsg):
         handler = self.handlers.get(omsg.msg_type, None)
         if handler is not None:
@@ -94,7 +90,7 @@ class Console(code.InteractiveConsole):
 
     def recv_output(self):
         while True:
-            omsg = self._recv(self.sub_socket)
+            omsg = self.session.recv(self.sub_socket)
             if omsg is None:
                 break
             self.handle_output(omsg)
@@ -109,14 +105,14 @@ class Console(code.InteractiveConsole):
             self.print_pyerr(rep.content)            
         elif rep.content.status == 'aborted':
             print >> sys.stderr, "ERROR: ABORTED"
-            ab = self.messages[rep.parent_header.msg_id].content
+            ab = self.session.messages[rep.parent_header.msg_id].content
             if 'code' in ab:
                 print >> sys.stderr, ab.code
             else:
                 print >> sys.stderr, ab
 
     def recv_reply(self):
-        rep = self._recv(self.request_socket)
+        rep = self.session.recv(self.request_socket)
         self.handle_reply(rep)
         return rep
 
@@ -135,10 +131,6 @@ class Console(code.InteractiveConsole):
                 time.sleep(0.05)
 
         # Send code execution message to kernel
-        ## msg = self.session.msg('execute_request', dict(code=src))
-        ## self.request_socket.send_json(msg)
-        ## omsg = session.Message(msg)
-        ## self.messages[omsg.header.msg_id] = omsg
         omsg = self.session.send(self.request_socket,
                                  'execute_request', dict(code=src))
         
