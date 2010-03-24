@@ -198,12 +198,12 @@ class Kernel(object):
     def start(self):
         while True:
             ident, msg = self.reply_socket.recv_json(ident=True)
-            msg = Message(msg)
-            print>>sys.__stdout__, msg
-            if msg.msg_type == u'execute_request':
+            omsg = Message(msg)
+            print>>sys.__stdout__, omsg
+            if msg['msg_type'] == u'execute_request':
                 self.execute_request(ident, msg)
-            elif msg.msg_type == u'complete_request':
-                self.execute_completion(ident, msg)
+            elif msg['msg_type'] == u'complete_request':
+                self.execute_completion(ident, omsg)
 
 def main():
     c = zmq.Context(1, 1)
