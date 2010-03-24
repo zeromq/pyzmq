@@ -90,7 +90,7 @@ class Session(object):
 
     def recv(self, socket, mode=zmq.NOBLOCK):
         msg = socket.recv_json(mode)
-        return msg if msg is None else session.Message(msg)
+        return msg if msg is None else Message(msg)
 
 
 def test_msg2obj():
