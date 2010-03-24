@@ -54,7 +54,6 @@ class ClientCompleter(object):
         else:
             # timeout
             matches = None
-        print 'matches:', matches
         return matches
     
     def complete(self, text, state):
