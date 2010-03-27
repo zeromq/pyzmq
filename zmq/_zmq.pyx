@@ -663,7 +663,9 @@ def _poll(sockets, long timeout=-1):
                 "a fileno() method: %r" % s
             )
 
-    rc = zmq_poll(pollitems, nsockets, timeout)
+    # int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
+    with nogil:
+        rc = zmq_poll(pollitems, nsockets, timeout)
     if rc == -1:
         raise ZMQError(zmq_strerror(zmq_errno()))
     
