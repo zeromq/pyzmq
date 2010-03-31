@@ -23,7 +23,7 @@ def main(addr, who):
     ctx = zmq.Context(1, 1)
 
     socket = ctx.socket(zmq.PUB)
-    socket.connect(addr)
+    socket.bind(addr)
 
     while True:
         msg = raw_input("%s> " % who)
