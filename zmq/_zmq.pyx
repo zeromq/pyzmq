@@ -428,7 +428,7 @@ cdef class Socket:
         Returns
         -------
         result : bool
-            True if message was send, False if message was not sent (EAGAIN).
+            True if message was send, raises error otherwise.
         """
         cdef int rc, rc2
         cdef zmq_msg_t data
@@ -461,12 +461,9 @@ cdef class Socket:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
         if rc != 0:
-            if zmq_errno() == EAGAIN:
-                return False
-            else:
-                raise ZMQError(zmq_strerror(zmq_errno()))
-        else:
-            return True
+            raise ZMQError(zmq_strerror(zmq_errno()))
+
+        return True
 
     def recv(self, int flags=0):
         """Receive a message.
@@ -481,8 +478,7 @@ cdef class Socket:
         Returns
         -------
         msg : str
-            The returned message or None of NOBLOCK is set and no message
-            has arrived.
+            The returned message
         """
         cdef int rc
         cdef zmq_msg_t data
@@ -497,10 +493,7 @@ cdef class Socket:
             rc = zmq_recv(self.handle, &data, flags)
 
         if rc != 0:
-            if zmq_errno() == EAGAIN:
-                return None
-            else:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError(zmq_strerror(zmq_errno()))
 
         try:
             msg = PyString_FromStringAndSize(
