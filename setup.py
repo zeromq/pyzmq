@@ -25,21 +25,54 @@
 
 import os, sys
 
-from distutils.core import setup
+from distutils.core import setup, Command
 from distutils.extension import Extension
+
+from unittest import TextTestRunner, TestLoader
+from glob import glob
+from os.path import splitext, basename, join as pjoin, walk
+
+
+#-----------------------------------------------------------------------------
+# Extra commands
+#-----------------------------------------------------------------------------
+
+class TestCommand(Command):
+    user_options = [ ]
+
+    def initialize_options(self):
+        self._dir = os.getcwd()
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        '''
+        Finds all the tests modules in zmq/tests/, and runs them.
+        '''
+        testfiles = [ ]
+        for t in glob(pjoin(self._dir, 'zmq/tests', '*.py')):
+            if not t.endswith('__init__.py'):
+                testfiles.append('.'.join(
+                    ['zmq.tests', splitext(basename(t))[0]])
+                )
+        tests = TestLoader().loadTestsFromNames(testfiles)
+        t = TextTestRunner(verbosity = 1)
+        t.run(tests)
+
 
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
+cmdclass = {'test':TestCommand }
 try:
     from Cython.Distutils import build_ext
 except ImportError:
     zmq_source = os.path.join('zmq','_zmq.c')
-    cmdclass = {}
 else:
     zmq_source = os.path.join('zmq','_zmq.pyx')
-    cmdclass = {'build_ext': build_ext}
+    cmdclass['build_ext'] =  build_ext
 
 if sys.platform == 'win32':
     libzmq = 'libzmq'
