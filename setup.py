@@ -61,11 +61,31 @@ class TestCommand(Command):
         t.run(tests)
 
 
+class CleanCommand(Command):
+    user_options = [ ]
+
+    def initialize_options(self):
+        self._clean_me = [pjoin('zmq', '_zmq.so') ]
+        for root, dirs, files in os.walk('.'):
+            for f in files:
+                if f.endswith('.pyc'):
+                    self._clean_me.append(pjoin(root, f))
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for clean_me in self._clean_me:
+            try:
+                os.unlink(clean_me)
+            except:
+                pass
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
-cmdclass = {'test':TestCommand }
+cmdclass = {'test':TestCommand, 'clean':CleanCommand }
 try:
     from Cython.Distutils import build_ext
 except ImportError:
