@@ -151,9 +151,6 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    void *zmq_stopwatch_start ()
-    unsigned long zmq_stopwatch_stop (void *watch_)
-    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -395,7 +392,6 @@ cdef class Socket:
             else:
                 return port
         raise ZMQError("Could not bind socket to random port.")
-        
 
     def connect(self, addr):
         """Connect to a remote 0MQ socket.
@@ -587,35 +583,6 @@ cdef class Socket:
                 return json.loads(s)
 
 
-cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop."""
-
-    cdef void *watch
-
-    def __cinit__(self):
-        self.watch = NULL
-
-    def start(self):
-        if self.watch == NULL:
-            self.watch = zmq_stopwatch_start()
-        else:
-            raise ZMQError('Stopwatch is already runing.')
-
-    def stop(self):
-        if self.watch == NULL:
-            raise ZMQError('Must start the Stopwatch before calling stop.')
-        else:
-            time = zmq_stopwatch_stop(self.watch)
-            self.watch = NULL
-            return time
-
-    def clear(self):
-        self.watch = NULL
-
-    def sleep(self, int seconds):
-        zmq_sleep(seconds)
-
-
 def _poll(sockets, long timeout=-1):
     """Poll a set of 0MQ sockets, native file descs. or sockets.
 
@@ -739,7 +706,7 @@ def select(rlist, wlist, xlist, timeout=None):
     if timeout is None:
         timeout = -1
     sockets = []
-    for s in set(rlist+wlist+xlist):
+    for s in set(rlist + wlist + xlist):
         flags = 0
         if s in rlist:
             flags |= POLLIN
@@ -747,19 +714,17 @@ def select(rlist, wlist, xlist, timeout=None):
             flags |= POLLOUT
         if s in xlist:
             flags |= POLLERR
-        sockets.append(s)
+        sockets.append((s, flags))
     return_sockets = _poll(sockets, timeout)
-    return_rlist = []
-    return_wlist = []
-    return_xlist = []
-    for s,flags in return_sockets:
-        if flags &POLLIN:
-            return_rlist.append(s)
+    rlist, wlist, xlist = [], [], []
+    for s, flags in return_sockets:
+        if flags & POLLIN:
+            rlist.append(s)
         if flags & POLLOUT:
-            return_wlist.append(s)
+            wlist.append(s)
         if flags & POLLERR:
-            return_xlist.append(s)
-    return return_rlist, return_wlist, return_xlist
+            xlist.append(s)
+    return rlist, wlist, xlist
     
 
 
@@ -767,7 +732,6 @@ __all__ = [
     'Context',
     'Socket',
     'ZMQError',
-    'Stopwatch',
     'NOBLOCK',
     'P2P',
     'PAIR',
