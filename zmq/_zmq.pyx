@@ -103,7 +103,8 @@ cdef extern from "zmq.h" nogil:
     void *zmq_init (int app_threads, int io_threads, int flags)
     int zmq_term (void *context)
 
-    enum: ZMQ_P2P # 0
+    enum: ZMQ_P2P # deprecated, use ZMQ_PAIR
+    enum: ZMQ_PAIR
     enum: ZMQ_PUB # 1
     enum: ZMQ_SUB # 2
     enum: ZMQ_REQ # 3
@@ -159,7 +160,8 @@ cdef extern from "zmq.h" nogil:
 #-----------------------------------------------------------------------------
 
 NOBLOCK = ZMQ_NOBLOCK
-P2P = ZMQ_P2P
+PAIR = ZMQ_PAIR
+P2P = ZMQ_P2P  # Deprecated, use PAIR
 PUB = ZMQ_PUB
 SUB = ZMQ_SUB
 REQ = ZMQ_REQ
@@ -239,7 +241,7 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
         """
         return Socket(self, socket_type)
 
@@ -255,7 +257,7 @@ cdef class Socket:
         The 0MQ Context this Socket belongs to.
     socket_type : int
         The socket type, which can be any of the 0MQ socket types: 
-        REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
     """
 
     cdef void *handle
@@ -768,6 +770,7 @@ __all__ = [
     'Stopwatch',
     'NOBLOCK',
     'P2P',
+    'PAIR',
     'PUB',
     'SUB',
     'REQ',

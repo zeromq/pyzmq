@@ -34,7 +34,7 @@ from zmq.tests import PollZMQTestCase
 class TestPoll(PollZMQTestCase):
 
     def test_p2p(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         # Sleep to allow sockets to connect.
         time.sleep(1.0)
