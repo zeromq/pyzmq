@@ -57,10 +57,13 @@ cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
     size_t strlen(char *s)
 
-cdef extern from *:
-    # This isn't necessarily a signed long long, but this will let Cython
-    # get it right.
-    ctypedef signed long long int64_t
+cdef extern from "zmq_compat.h":
+    ctypedef signed long long int64_t "pyzmq_int64_t"
+
+# cdef extern from *:
+#     # This isn't necessarily a signed long long, but this will let Cython
+#     # get it right.
+#     ctypedef signed long long int64_t
 
 cdef extern from "zmq.h" nogil:
     enum: ZMQ_HAUSNUMERO
