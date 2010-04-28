@@ -107,8 +107,8 @@ cdef extern from "zmq.h" nogil:
     void *zmq_init (int app_threads, int io_threads, int flags)
     int zmq_term (void *context)
 
-    enum: ZMQ_P2P # deprecated, use ZMQ_PAIR
-    enum: ZMQ_PAIR
+    enum: ZMQ_P2P # 0, deprecated, use ZMQ_PAIR
+    enum: ZMQ_PAIR # 0
     enum: ZMQ_PUB # 1
     enum: ZMQ_SUB # 2
     enum: ZMQ_REQ # 3
@@ -130,12 +130,15 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MCAST_LOOP # 10
     enum: ZMQ_SNDBUF # 11
     enum: ZMQ_RCVBUF # 12
+    enum: ZMQ_RCVMORE # 13
 
     enum: ZMQ_NOBLOCK # 1
+    enum: ZMQ_SNDMORE # 2
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
     int zmq_setsockopt (void *s, int option, void *optval, size_t optvallen)
+    int zmq_getsockopt (void *s, int option, void *optval, size_t *optvallen)
     int zmq_bind (void *s, char *addr)
     int zmq_connect (void *s, char *addr)
     int zmq_send (void *s, zmq_msg_t *msg, int flags)
@@ -183,6 +186,8 @@ RECOVERY_IVL = ZMQ_RECOVERY_IVL
 MCAST_LOOP = ZMQ_MCAST_LOOP
 SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
+RCVMORE = ZMQ_RCVMORE
+SNDMORE = ZMQ_SNDMORE
 POLL = ZMQ_POLL
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
@@ -299,7 +304,7 @@ cdef class Socket:
         if self.closed:
             raise ZMQError("Cannot complete operation, Socket is closed.")
 
-    def setsockopt(self, option, optval):
+    def setsockopt(self, int option, optval):
         """Set socket options.
 
         See the 0MQ documentation for details on specific options.
@@ -312,19 +317,15 @@ cdef class Socket:
             RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.
         optval : int or str
             The value of the option to set.
-"""
+        """
         cdef int64_t optval_int_c
         cdef int rc
 
         self._check_closed()
 
-        if not isinstance(option, int):
-            raise TypeError('expected int, got: %r' % option)
-
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
             if not isinstance(optval, str):
                 raise TypeError('expected str, got: %r' % optval)
-            opt_val_str_c = optval
             rc = zmq_setsockopt(
                 self.handle, option,
                 PyString_AsString(optval), PyString_Size(optval)
@@ -344,6 +345,47 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
 
+    def getsockopt(self, int option):
+        """Get the value of a socket option.
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : str
+            The name of the option to set. Can be any of: SUBSCRIBE, 
+            UNSUBSCRIBE, IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+
+        Returns
+        -------
+        The value of the option as a string or int.
+        """
+        cdef int64_t optval_int_c
+        cdef char *optval_str_c
+        cdef size_t sz
+        cdef int rc
+
+        self._check_closed()
+
+        # Not sure these string options make sense
+        if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
+            rc = zmq_getsockopt(self.handle, option, <void *>optval_str_c, &sz)
+            if rc != 0:
+                raise ZMQError(zmq_strerror(zmq_errno()))
+            result = optval_str_c
+        elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
+                        MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
+            sz = sizeof(int64_t)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
+            if rc != 0:
+                raise ZMQError(zmq_strerror(zmq_errno()))
+            result = optval_int_c
+        else:
+            raise ZMQError(zmq_strerror(EINVAL))
+
+        return result
+
     def bind(self, addr):
         """Bind the socket to an address.
 
@@ -355,7 +397,7 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
@@ -404,7 +446,7 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
@@ -425,7 +467,7 @@ cdef class Socket:
         Parameters
         ----------
         flags : int
-            Any supported flag: NOBLOCK.
+            Any supported flag: NOBLOCK, SNDMORE.
 
         Returns
         -------
@@ -515,6 +557,51 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
         return msg
+
+    def send_multipart(self, msg_parts, int flags=0):
+        """Send a sequence of messages as a multipart message.
+
+        Parameters
+        ----------
+        msg_parts : iterable
+            A sequence of messages to send as a multipart message.
+        flags : int
+            Any supported flag: NOBLOCK, SNDMORE.
+        """
+        for msg in msg_parts[:-1]:
+            self.send(msg, SNDMORE|flags)
+        # Send the last part without the SNDMORE flag.
+        self.send(msg_parts[-1], flags)
+
+    def recv_multipart(self, int flags=0):
+        """Receive a multipart message as a list of messages.
+
+        Parameters
+        ----------
+        flags : int
+            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
+            will return None if a message is not ready. If NOBLOCK is not
+            set, then this method will block until a message arrives.
+
+        Returns
+        -------
+        msg_parts : list
+            A list of messages in the multipart message.
+        """
+        parts = []
+        while True:
+            part = self.recv(flags)
+            parts.append(part)
+            if self.rcvmore():
+                continue
+            else:
+                break
+        return parts
+
+    def rcvmore(self):
+        """Are there more parts to a multipart message."""
+        more = self.getsockopt(RCVMORE)
+        return bool(more)
 
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
@@ -759,6 +846,8 @@ __all__ = [
     'MCAST_LOOP',
     'SNDBUF',
     'RCVBUF',
+    'SNDMORE',
+    'RCVMORE',
     'POLL',
     'POLLIN',
     'POLLOUT',
