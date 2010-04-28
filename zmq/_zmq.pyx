@@ -369,7 +369,7 @@ cdef class Socket:
         self._check_closed()
 
         # Not sure these string options make sense
-        if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
+        if option in [IDENTITY]:
             rc = zmq_getsockopt(self.handle, option, <void *>optval_str_c, &sz)
             if rc != 0:
                 raise ZMQError(zmq_strerror(zmq_errno()))
