@@ -34,6 +34,7 @@ cdef extern from "Python.h":
 
 import cPickle as pickle
 import random
+import struct
 
 try:
     import json
@@ -559,6 +560,7 @@ cdef class Socket:
 
         if rc != 0:
             raise ZMQError(zmq_strerror(zmq_errno()))
+
         return msg
 
     def send_multipart(self, msg_parts, int flags=0):
@@ -606,7 +608,7 @@ cdef class Socket:
         more = self.getsockopt(RCVMORE)
         return bool(more)
 
-    def send_pyobj(self, obj, flags=0, protocol=-1):
+    def send_pyobj(self, obj, flags=0, protocol=-1, ident=None):
         """Send a Python object as a message using pickle to serialize.
 
         Parameters
@@ -619,11 +621,16 @@ cdef class Socket:
             The pickle protocol number to use. Default of -1 will select
             the highest supported number. Use 0 for multiple platform
             support.
+        ident : str
+            The identity of the remote endpoint, with the length prefix
+            included. This is prefixed to the message.
         """
         msg = pickle.dumps(obj, protocol)
+        if ident is not None:
+            msg = join_ident(ident, msg)
         return self.send(msg, flags)
 
-    def recv_pyobj(self, flags=0):
+    def recv_pyobj(self, flags=0, ident=False):
         """Receive a Python object as a message using pickle to serialize.
 
         Parameters
@@ -635,12 +642,18 @@ cdef class Socket:
         -------
         obj : Python object
             The Python object that arrives as a message.
+        ident : bool
+            If True, split off the identity and return (identity, obj).
         """
         s = self.recv(flags)
         if s is not None:
-            return pickle.loads(s)
+            if ident:
+                ident, s = split_ident(s)
+                return (ident, pickle.loads(s))
+            else:
+                return pickle.loads(s)
 
-    def send_json(self, obj, flags=0):
+    def send_json(self, obj, flags=0, ident=None):
         """Send a Python object as a message using json to serialize.
 
         Parameters
@@ -649,20 +662,27 @@ cdef class Socket:
             The Python object to send.
         flags : int
             Any valid send flag.
+        ident : str
+            The identity of the remote endpoint, with the length prefix
+            included. This is prefixed to the message.
         """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = json.dumps(obj, separators=(',',':'))
+            if ident is not None:
+                msg = join_ident(ident, msg)
             return self.send(msg, flags)
 
-    def recv_json(self, flags=0):
+    def recv_json(self, flags=0, ident=False):
         """Receive a Python object as a message using json to serialize.
 
         Parameters
         ----------
         flags : int
             Any valid recv flag.
+        ident : bool
+            If True, split off the identity and return (identity, obj).
 
         Returns
         -------
@@ -672,9 +692,29 @@ cdef class Socket:
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
-            s = self.recv(flags)
-            if s is not None:
-                return json.loads(s)
+            msg = self.recv(flags)
+            if msg is not None:
+                if ident:
+                    ident, msg_buf = split_ident(msg)
+                    return (ident, json.loads(str(msg_buf)))
+                else:
+                    return json.loads(msg)
+
+
+def split_ident(msg):
+    """Split a message into (identity, msg)."""
+    # '\x11\x00\xbf\x1c\x9d\xd26\xb7J\xc6\x89\x9cb\x9f\xa8\xc98Yleft 15'
+    ident_offset = struct.unpack('B', msg[0])[0] + 1
+    ident_str = msg[:ident_offset]
+    msg_buf = buffer(msg, ident_offset)
+    return (ident_str, msg_buf)
+
+
+def join_ident(ident, msg):
+    """Prefix an identity to a message."""
+    if not isinstance(msg, str):
+        msg = str(msg)
+    return ident + msg
 
 
 def _poll(sockets, long timeout=-1):
@@ -857,6 +897,8 @@ __all__ = [
     'POLLERR',
     '_poll',
     'select',
-    'Poller'
+    'Poller',
+    'split_ident',
+    'join_ident'
 ]
 
