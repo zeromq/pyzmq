@@ -357,8 +357,8 @@ cdef class Socket:
         Parameters
         ----------
         option : str
-            The name of the option to set. Can be any of: SUBSCRIBE, 
-            UNSUBSCRIBE, IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            The name of the option to set. Can be any of: 
+            IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
             RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
 
         Returns
@@ -366,18 +366,18 @@ cdef class Socket:
         The value of the option as a string or int.
         """
         cdef int64_t optval_int_c
-        cdef char *optval_str_c
+        cdef char identity_str_c [255]
         cdef size_t sz
         cdef int rc
 
         self._check_closed()
 
-        # Not sure these string options make sense
         if option in [IDENTITY]:
-            rc = zmq_getsockopt(self.handle, option, <void *>optval_str_c, &sz)
+            sz = 255
+            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError(zmq_strerror(zmq_errno()))
-            result = optval_str_c
+            result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
