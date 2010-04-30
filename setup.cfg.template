@@ -2,3 +2,6 @@
 # Edit these to point to your installed zeromq library and header dirs.
 library_dirs = /usr/local/zeromq2-dev/lib
 include_dirs = /usr/local/zeromq2-dev/include
+# On some platforms you will have to set the following to point to the dir
+# where your libraries are OR set LD_LIBRARY_PATH.
+# runtime_library_dirs = /usr/local/zeromq2-dev/lib
