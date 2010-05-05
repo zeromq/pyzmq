@@ -33,8 +33,8 @@ from zmq.tests import PollZMQTestCase
 
 class TestPoll(PollZMQTestCase):
 
-    def test_p2p(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+    def test_pair(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         # Sleep to allow sockets to connect.
         time.sleep(1.0)
@@ -156,3 +156,18 @@ class TestPoll(PollZMQTestCase):
 
         # Wait for everything to finish.
         time.sleep(1.0)
+
+class TestSelect(PollZMQTestCase):
+
+    def test_pair(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+
+        # Sleep to allow sockets to connect.
+        time.sleep(1.0)
+
+        rlist, wlist, xlist = zmq.select([s1, s2], [s1, s2], [s1, s2])
+
+        self.assert_(s1 in wlist)
+        self.assert_(s2 in wlist)
+        self.assert_(s1 not in rlist)
+        self.assert_(s2 not in rlist)

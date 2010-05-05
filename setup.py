@@ -112,7 +112,7 @@ zmq = Extension(
 setup(
     name = "pyzmq",
     version = "0.1",
-    packages = ['zmq'],
+    packages = ['zmq', 'zmq.tests'],
     ext_modules = [zmq],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",

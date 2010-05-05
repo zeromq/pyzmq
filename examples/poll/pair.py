@@ -1,4 +1,4 @@
-"""A thorough test of polling P2P sockets."""
+"""A thorough test of polling PAIR sockets."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,8 +23,8 @@ import zmq
 
 addr = 'tcp://127.0.0.1:5555'
 ctx = zmq.Context(1,1,zmq.POLL)
-s1 = ctx.socket(zmq.P2P)
-s2 = ctx.socket(zmq.P2P)
+s1 = ctx.socket(zmq.PAIR)
+s2 = ctx.socket(zmq.PAIR)
 
 s1.bind(addr)
 s2.connect(addr)

@@ -32,14 +32,14 @@ from zmq.tests import BaseZMQTestCase
 class TestP2p(BaseZMQTestCase):
 
     def test_basic(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         msg1 = 'message1'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 
     def test_multiple(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         for i in range(10):
             msg = i*' '

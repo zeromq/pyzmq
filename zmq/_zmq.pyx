@@ -34,6 +34,7 @@ cdef extern from "Python.h":
 
 import cPickle as pickle
 import random
+import struct
 
 try:
     import json
@@ -57,8 +58,15 @@ cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
     size_t strlen(char *s)
 
+cdef extern from "zmq_compat.h":
+    ctypedef signed long long int64_t "pyzmq_int64_t"
+
+# cdef extern from *:
+#     # This isn't necessarily a signed long long, but this will let Cython
+#     # get it right.
+#     ctypedef signed long long int64_t
+
 cdef extern from "zmq.h" nogil:
-    ctypedef int int64_t
     enum: ZMQ_HAUSNUMERO
     enum: ENOTSUP
     enum: EPROTONOSUPPORT
@@ -103,7 +111,8 @@ cdef extern from "zmq.h" nogil:
     void *zmq_init (int app_threads, int io_threads, int flags)
     int zmq_term (void *context)
 
-    enum: ZMQ_P2P # 0
+    enum: ZMQ_P2P # 0, deprecated, use ZMQ_PAIR
+    enum: ZMQ_PAIR # 0
     enum: ZMQ_PUB # 1
     enum: ZMQ_SUB # 2
     enum: ZMQ_REQ # 3
@@ -125,12 +134,15 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MCAST_LOOP # 10
     enum: ZMQ_SNDBUF # 11
     enum: ZMQ_RCVBUF # 12
+    enum: ZMQ_RCVMORE # 13
 
     enum: ZMQ_NOBLOCK # 1
+    enum: ZMQ_SNDMORE # 2
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
     int zmq_setsockopt (void *s, int option, void *optval, size_t optvallen)
+    int zmq_getsockopt (void *s, int option, void *optval, size_t *optvallen)
     int zmq_bind (void *s, char *addr)
     int zmq_connect (void *s, char *addr)
     int zmq_send (void *s, zmq_msg_t *msg, int flags)
@@ -150,16 +162,14 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    void *zmq_stopwatch_start ()
-    unsigned long zmq_stopwatch_stop (void *watch_)
-    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
 #-----------------------------------------------------------------------------
 
 NOBLOCK = ZMQ_NOBLOCK
-P2P = ZMQ_P2P
+PAIR = ZMQ_PAIR
+P2P = ZMQ_P2P  # Deprecated, use PAIR
 PUB = ZMQ_PUB
 SUB = ZMQ_SUB
 REQ = ZMQ_REQ
@@ -180,6 +190,8 @@ RECOVERY_IVL = ZMQ_RECOVERY_IVL
 MCAST_LOOP = ZMQ_MCAST_LOOP
 SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
+RCVMORE = ZMQ_RCVMORE
+SNDMORE = ZMQ_SNDMORE
 POLL = ZMQ_POLL
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
@@ -249,7 +261,7 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
         """
         return Socket(self, socket_type)
 
@@ -265,7 +277,7 @@ cdef class Socket:
         The 0MQ Context this Socket belongs to.
     socket_type : int
         The socket type, which can be any of the 0MQ socket types: 
-        REQ, REP, PUB, SUB, P2P, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
     """
 
     cdef void *handle
@@ -306,7 +318,7 @@ cdef class Socket:
         if self.closed:
             raise ZMQError("Cannot complete operation, Socket is closed.")
 
-    def setsockopt(self, option, optval):
+    def setsockopt(self, int option, optval):
         """Set socket options.
 
         See the 0MQ documentation for details on specific options.
@@ -319,19 +331,15 @@ cdef class Socket:
             RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.
         optval : int or str
             The value of the option to set.
-"""
+        """
         cdef int64_t optval_int_c
         cdef int rc
 
         self._check_closed()
 
-        if not isinstance(option, int):
-            raise TypeError('expected int, got: %r' % option)
-
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
             if not isinstance(optval, str):
                 raise TypeError('expected str, got: %r' % optval)
-            opt_val_str_c = optval
             rc = zmq_setsockopt(
                 self.handle, option,
                 PyString_AsString(optval), PyString_Size(optval)
@@ -351,6 +359,47 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError(zmq_errno())
 
+    def getsockopt(self, int option):
+        """Get the value of a socket option.
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : str
+            The name of the option to set. Can be any of: 
+            IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+
+        Returns
+        -------
+        The value of the option as a string or int.
+        """
+        cdef int64_t optval_int_c
+        cdef char identity_str_c [255]
+        cdef size_t sz
+        cdef int rc
+
+        self._check_closed()
+
+        if option in [IDENTITY]:
+            sz = 255
+            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
+            if rc != 0:
+                raise ZMQError(zmq_strerror(zmq_errno()))
+            result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
+        elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
+                        MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
+            sz = sizeof(int64_t)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
+            if rc != 0:
+                raise ZMQError(zmq_strerror(zmq_errno()))
+            result = optval_int_c
+        else:
+            raise ZMQError(zmq_strerror(EINVAL))
+
+        return result
+
     def bind(self, addr):
         """Bind the socket to an address.
 
@@ -362,7 +411,7 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
@@ -403,7 +452,6 @@ cdef class Socket:
             else:
                 return port
         raise ZMQError("Could not bind socket to random port.")
-        
 
     def connect(self, addr):
         """Connect to a remote 0MQ socket.
@@ -412,7 +460,7 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:555'. Protocols supported are
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, iproc and ipc.
         """
         cdef int rc
@@ -433,7 +481,7 @@ cdef class Socket:
         Parameters
         ----------
         flags : int
-            Any supported flag: NOBLOCK.
+            Any supported flag: NOBLOCK, SNDMORE.
 
         Returns
         -------
@@ -517,7 +565,52 @@ cdef class Socket:
             raise ZMQError(zmq_errno())
         return msg
 
-    def send_pyobj(self, obj, flags=0, protocol=-1):
+    def send_multipart(self, msg_parts, int flags=0):
+        """Send a sequence of messages as a multipart message.
+
+        Parameters
+        ----------
+        msg_parts : iterable
+            A sequence of messages to send as a multipart message.
+        flags : int
+            Any supported flag: NOBLOCK, SNDMORE.
+        """
+        for msg in msg_parts[:-1]:
+            self.send(msg, SNDMORE|flags)
+        # Send the last part without the SNDMORE flag.
+        self.send(msg_parts[-1], flags)
+
+    def recv_multipart(self, int flags=0):
+        """Receive a multipart message as a list of messages.
+
+        Parameters
+        ----------
+        flags : int
+            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
+            will return None if a message is not ready. If NOBLOCK is not
+            set, then this method will block until a message arrives.
+
+        Returns
+        -------
+        msg_parts : list
+            A list of messages in the multipart message.
+        """
+        parts = []
+        while True:
+            part = self.recv(flags)
+            parts.append(part)
+            if self.rcvmore():
+                continue
+            else:
+                break
+        return parts
+
+    def rcvmore(self):
+        """Are there more parts to a multipart message."""
+        more = self.getsockopt(RCVMORE)
+        return bool(more)
+
+    def send_pyobj(self, obj, flags=0, protocol=-1, ident=None):
         """Send a Python object as a message using pickle to serialize.
 
         Parameters
@@ -530,11 +623,16 @@ cdef class Socket:
             The pickle protocol number to use. Default of -1 will select
             the highest supported number. Use 0 for multiple platform
             support.
+        ident : str
+            The identity of the remote endpoint, with the length prefix
+            included. This is prefixed to the message.
         """
         msg = pickle.dumps(obj, protocol)
+        if ident is not None:
+            msg = join_ident(ident, msg)
         return self.send(msg, flags)
 
-    def recv_pyobj(self, flags=0):
+    def recv_pyobj(self, flags=0, ident=False):
         """Receive a Python object as a message using pickle to serialize.
 
         Parameters
@@ -546,12 +644,18 @@ cdef class Socket:
         -------
         obj : Python object
             The Python object that arrives as a message.
+        ident : bool
+            If True, split off the identity and return (identity, obj).
         """
         s = self.recv(flags)
         if s is not None:
-            return pickle.loads(s)
+            if ident:
+                ident, s = split_ident(s)
+                return (ident, pickle.loads(s))
+            else:
+                return pickle.loads(s)
 
-    def send_json(self, obj, flags=0):
+    def send_json(self, obj, flags=0, ident=None):
         """Send a Python object as a message using json to serialize.
 
         Parameters
@@ -560,20 +664,27 @@ cdef class Socket:
             The Python object to send.
         flags : int
             Any valid send flag.
+        ident : str
+            The identity of the remote endpoint, with the length prefix
+            included. This is prefixed to the message.
         """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = json.dumps(obj, separators=(',',':'))
+            if ident is not None:
+                msg = join_ident(ident, msg)
             return self.send(msg, flags)
 
-    def recv_json(self, flags=0):
+    def recv_json(self, flags=0, ident=False):
         """Receive a Python object as a message using json to serialize.
 
         Parameters
         ----------
         flags : int
             Any valid recv flag.
+        ident : bool
+            If True, split off the identity and return (identity, obj).
 
         Returns
         -------
@@ -583,38 +694,29 @@ cdef class Socket:
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
-            s = self.recv(flags)
-            if s is not None:
-                return json.loads(s)
+            msg = self.recv(flags)
+            if msg is not None:
+                if ident:
+                    ident, msg_buf = split_ident(msg)
+                    return (ident, json.loads(str(msg_buf)))
+                else:
+                    return json.loads(msg)
 
 
-cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop."""
+def split_ident(msg):
+    """Split a message into (identity, msg)."""
+    # '\x11\x00\xbf\x1c\x9d\xd26\xb7J\xc6\x89\x9cb\x9f\xa8\xc98Yleft 15'
+    ident_offset = struct.unpack('B', msg[0])[0] + 1
+    ident_str = msg[:ident_offset]
+    msg_buf = buffer(msg, ident_offset)
+    return (ident_str, msg_buf)
 
-    cdef void *watch
 
-    def __cinit__(self):
-        self.watch = NULL
-
-    def start(self):
-        if self.watch == NULL:
-            self.watch = zmq_stopwatch_start()
-        else:
-            raise ZMQError('Stopwatch is already runing.')
-
-    def stop(self):
-        if self.watch == NULL:
-            raise ZMQError('Must start the Stopwatch before calling stop.')
-        else:
-            time = zmq_stopwatch_stop(self.watch)
-            self.watch = NULL
-            return time
-
-    def clear(self):
-        self.watch = NULL
-
-    def sleep(self, int seconds):
-        zmq_sleep(seconds)
+def join_ident(ident, msg):
+    """Prefix an identity to a message."""
+    if not isinstance(msg, str):
+        msg = str(msg)
+    return ident + msg
 
 
 def _poll(sockets, long timeout=-1):
@@ -740,7 +842,7 @@ def select(rlist, wlist, xlist, timeout=None):
     if timeout is None:
         timeout = -1
     sockets = []
-    for s in set(rlist+wlist+xlist):
+    for s in set(rlist + wlist + xlist):
         flags = 0
         if s in rlist:
             flags |= POLLIN
@@ -748,19 +850,17 @@ def select(rlist, wlist, xlist, timeout=None):
             flags |= POLLOUT
         if s in xlist:
             flags |= POLLERR
-        sockets.append(s)
+        sockets.append((s, flags))
     return_sockets = _poll(sockets, timeout)
-    return_rlist = []
-    return_wlist = []
-    return_xlist = []
-    for s,flags in return_sockets:
-        if flags &POLLIN:
-            return_rlist.append(s)
+    rlist, wlist, xlist = [], [], []
+    for s, flags in return_sockets:
+        if flags & POLLIN:
+            rlist.append(s)
         if flags & POLLOUT:
-            return_wlist.append(s)
+            wlist.append(s)
         if flags & POLLERR:
-            return_xlist.append(s)
-    return return_rlist, return_wlist, return_xlist
+            xlist.append(s)
+    return rlist, wlist, xlist
     
 
 
@@ -768,9 +868,9 @@ __all__ = [
     'Context',
     'Socket',
     'ZMQError',
-    'Stopwatch',
     'NOBLOCK',
     'P2P',
+    'PAIR',
     'PUB',
     'SUB',
     'REQ',
@@ -791,12 +891,16 @@ __all__ = [
     'MCAST_LOOP',
     'SNDBUF',
     'RCVBUF',
+    'SNDMORE',
+    'RCVMORE',
     'POLL',
     'POLLIN',
     'POLLOUT',
     'POLLERR',
     '_poll',
     'select',
-    'Poller'
+    'Poller',
+    'split_ident',
+    'join_ident'
 ]
 
