@@ -208,7 +208,9 @@ def strerror(errnum):
 class ZMQError(Exception):
     """Base exception class for 0MQ errors in Python."""
 
-    def __init__(self, error):
+    def __init__(self, error=None):
+        if error is None:
+            error = zmq_errno()
         if type(error) == int:
             self.errstr = strerror(error)
             self.errno = error
@@ -245,14 +247,14 @@ cdef class Context:
         self.handle = NULL
         self.handle = zmq_init(app_threads, io_threads, flags)
         if self.handle == NULL:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
     def __dealloc__(self):
         cdef int rc
         if self.handle != NULL:
             rc = zmq_term(self.handle)
             if rc != 0:
-                raise ZMQError(zmq_errno())
+                raise ZMQError()
 
     def socket(self, int socket_type):
         """Create a Socket associated with this Context.
@@ -293,7 +295,7 @@ cdef class Socket:
         self.socket_type = socket_type
         self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
         self.closed = False
 
     def __dealloc__(self):
@@ -310,7 +312,7 @@ cdef class Socket:
         if self.handle != NULL and not self.closed:
             rc = zmq_close(self.handle)
             if rc != 0:
-                raise ZMQError(zmq_errno())
+                raise ZMQError()
             self.handle = NULL
             self.closed = True
 
@@ -357,7 +359,7 @@ cdef class Socket:
             raise ZMQError(EINVAL)
 
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
     def getsockopt(self, int option):
         """Get the value of a socket option.
@@ -386,17 +388,17 @@ cdef class Socket:
             sz = 255
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
             result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
             result = optval_int_c
         else:
-            raise ZMQError(zmq_strerror(EINVAL))
+            raise ZMQError()
 
         return result
 
@@ -422,7 +424,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
     def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
         """Bind this socket to a random port in a range.
@@ -471,7 +473,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
     def send(self, msg, int flags=0):
         """Send a message.
@@ -507,7 +509,7 @@ cdef class Socket:
         memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
         with nogil:
             rc = zmq_send(self.handle, &data, flags)
@@ -516,10 +518,10 @@ cdef class Socket:
         # Shouldn't the error handling for zmq_msg_close come after that
         # of zmq_send?
         if rc2 != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
         return True
 
@@ -545,13 +547,13 @@ cdef class Socket:
 
         rc = zmq_msg_init(&data)
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
         with nogil:
             rc = zmq_recv(self.handle, &data, flags)
 
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
 
         try:
             msg = PyString_FromStringAndSize(
@@ -562,7 +564,7 @@ cdef class Socket:
             rc = zmq_msg_close(&data)
 
         if rc != 0:
-            raise ZMQError(zmq_errno())
+            raise ZMQError()
         return msg
 
     def send_multipart(self, msg_parts, int flags=0):
@@ -772,7 +774,7 @@ def _poll(sockets, long timeout=-1):
     with nogil:
         rc = zmq_poll(pollitems, nsockets, timeout)
     if rc == -1:
-        raise ZMQError(zmq_errno())
+        raise ZMQError()
     
     results = []
     for i in range(nsockets):
