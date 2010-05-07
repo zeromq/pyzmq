@@ -21,16 +21,23 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from unittest import TestCase
-
 import zmq
+from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
 
-class TestSocket(TestCase):
+class TestSocket(BaseZMQTestCase):
+
+    def test_create(self):
+        ctx = zmq.Context()
+        s = ctx.socket(zmq.PUB)
+        # Superluminal protocol not yet implemented
+        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
+        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
+
 
     def test_close(self):
         ctx = zmq.Context()

@@ -50,6 +50,17 @@ class BaseZMQTestCase(TestCase):
         msg3 = s1.recv()
         return msg3
 
+    def assertRaisesErrno(self, errno, func, *args):
+        try:
+            func(*args)
+        except zmq.ZMQError, e:
+            self.assertEqual(e.errno, errno, "wrong error raised, expected '%s' \
+got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
+        else:
+            self.fail("Function did not raise any error")
+        
+
+
 class PollZMQTestCase(BaseZMQTestCase):
 
     def setUp(self):

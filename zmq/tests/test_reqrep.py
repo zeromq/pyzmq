@@ -49,8 +49,8 @@ class TestReqRep(BaseZMQTestCase):
 
     def test_bad_send_recv(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
-        self.assertRaises(zmq.ZMQError, s1.recv)
-        self.assertRaises(zmq.ZMQError, s2.send, 'asdf')
+        self.assertRaisesErrno(zmq.EFSM, s1.recv)
+        self.assertRaisesErrno(zmq.EFSM, s2.send, 'asdf')
 
         # I have to have this or we die on an Abort trap.
         msg1 = 'asdf'

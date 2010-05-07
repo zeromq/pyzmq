@@ -51,8 +51,8 @@ include "allocate.pxi"
 #-----------------------------------------------------------------------------
 
 cdef extern from "errno.h" nogil:
-    enum: EINVAL
-    enum: EAGAIN
+    enum: ZMQ_EINVAL "EINVAL"
+    enum: ZMQ_EAGAIN "EAGAIN"
 
 cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
@@ -68,17 +68,18 @@ cdef extern from "zmq_compat.h":
 
 cdef extern from "zmq.h" nogil:
     enum: ZMQ_HAUSNUMERO
-    enum: ENOTSUP
-    enum: EPROTONOSUPPORT
-    enum: ENOBUFS
-    enum: ENETDOWN
-    enum: EADDRINUSE
-    enum: EADDRNOTAVAIL
-    enum: ECONNREFUSED
-    enum: EINPROGRESS
-    enum: EMTHREAD
-    enum: EFSM
-    enum: ENOCOMPATPROTO
+    enum: ZMQ_ENOTSUP "ENOTSUP"
+    enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
+    enum: ZMQ_ENOBUFS "ENOBUFS"
+    enum: ZMQ_ENETDOWN "ENETDOWN"
+    enum: ZMQ_EADDRINUSE "EADDRINUSE"
+    enum: ZMQ_EADDRNOTAVAIL "EADDRNOTAVAIL"
+    enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
+    enum: ZMQ_EINPROGRESS "EINPROGRESS"
+    enum: ZMQ_EMTHREAD "EMTHREAD"
+    enum: ZMQ_EFSM "EFSM"
+    enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
+    enum: ZMQ_ETERM "ETERM"
 
     enum: errno
     char *zmq_strerror (int errnum)
@@ -201,6 +202,27 @@ POLLERR = ZMQ_POLLERR
 # Error handling
 #-----------------------------------------------------------------------------
 
+# Often used (these are alse in errno.)
+EAGAIN = ZMQ_EAGAIN
+EINVAL = ZMQ_EINVAL
+
+# For Windows compatability
+ENOTSUP = ZMQ_ENOTSUP
+EPROTONOSUPPORT = ZMQ_EPROTONOSUPPORT
+ENOBUFS = ZMQ_ENOBUFS
+ENETDOWN = ZMQ_ENETDOWN
+EADDRINUSE = ZMQ_EADDRINUSE
+EADDRNOTAVAIL = ZMQ_EADDRNOTAVAIL
+ECONNREFUSED = ZMQ_ECONNREFUSED
+EINPROGRESS = ZMQ_EINPROGRESS
+
+# 0MQ Native
+EMTHREAD = ZMQ_EMTHREAD
+EFSM = ZMQ_EFSM
+ENOCOMPATPROTO = ZMQ_ENOCOMPATPROTO
+ETERM = ZMQ_ETERM
+
+
 def strerror(errnum):
     """Return the error string given the error number."""
     return zmq_strerror(errnum)
@@ -215,7 +237,7 @@ class ZMQError(Exception):
             self.errstr = strerror(error)
             self.errno = error
         else:
-            self.errstr = error
+            self.errstr = str(error)
             self.errno = None 
 
     def __str__(self):
@@ -903,6 +925,20 @@ __all__ = [
     'select',
     'Poller',
     'split_ident',
-    'join_ident'
+    'join_ident',
+    'EAGAIN',    # ERRORNO
+    'EINVAL',
+    'ENOTSUP',
+    'EPROTONOSUPPORT',
+    'ENOBUFS',
+    'ENETDOWN',
+    'EADDRINUSE',
+    'EADDRNOTAVAIL',
+    'ECONNREFUSED',
+    'EINPROGRESS',
+    'EMTHREAD',
+    'EFSM',
+    'ENOCOMPATPROTO',
+    'ETERM',
 ]
 

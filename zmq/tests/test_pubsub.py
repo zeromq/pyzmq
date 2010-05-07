@@ -46,13 +46,16 @@ class TestPubSub(BaseZMQTestCase):
     # xrecv is called and returns an error code of 11 (EAGAIN), but when
     # the Python bindings get errno, it has been set back to 0. Our hypothesis
     # is that another thread is doing this.
+    # 
+    # Note: I modified the test to follow the new ERROR handler not sure
+    #       if the message above still applies. 
     def test_topic(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
         s2.setsockopt(zmq.SUBSCRIBE,'x')
         import time; time.sleep(0.1)
         msg1 = 'message'
         s1.send(msg1)
-        self.assertEquals(s2.recv(zmq.NOBLOCK),None)
+        self.assertRaisesErrno(zmq.EAGAIN, s2.recv, zmq.NOBLOCK)
         msg1 = 'xmessage'
         s1.send(msg1)
         msg2 = s2.recv()

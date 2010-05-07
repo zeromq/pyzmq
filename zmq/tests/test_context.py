@@ -21,16 +21,16 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from unittest import TestCase
-
 import zmq
+from zmq.tests import BaseZMQTestCase
+
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
 
-class TestContext(TestCase):
+class TestContext(BaseZMQTestCase):
 
     def test_init(self):
         c1 = zmq.Context()
@@ -44,6 +44,5 @@ class TestContext(TestCase):
         del c3
 
     def test_fail_init(self):
-        self.assertRaises(zmq.ZMQError, zmq.Context, 1, -1)
-        self.assertRaises(zmq.ZMQError, zmq.Context, 0, 1)
+        self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 1, -1)
 
