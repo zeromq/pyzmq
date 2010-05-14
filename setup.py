@@ -25,21 +25,77 @@
 
 import os, sys
 
-from distutils.core import setup
+from distutils.core import setup, Command
 from distutils.extension import Extension
+
+from unittest import TextTestRunner, TestLoader
+from glob import glob
+from os.path import splitext, basename, join as pjoin, walk
+
+
+#-----------------------------------------------------------------------------
+# Extra commands
+#-----------------------------------------------------------------------------
+
+class TestCommand(Command):
+    """Custom distutils command to run the test suite."""
+
+    user_options = [ ]
+
+    def initialize_options(self):
+        self._dir = os.getcwd()
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """Finds all the tests modules in zmq/tests/, and runs them."""
+        testfiles = [ ]
+        for t in glob(pjoin(self._dir, 'zmq', 'tests', '*.py')):
+            if not t.endswith('__init__.py'):
+                testfiles.append('.'.join(
+                    ['zmq.tests', splitext(basename(t))[0]])
+                )
+        tests = TestLoader().loadTestsFromNames(testfiles)
+        t = TextTestRunner(verbosity = 1)
+        t.run(tests)
+
+
+class CleanCommand(Command):
+    """Custom distutils command to clean the .so and .pyc files."""
+
+    user_options = [ ]
+
+    def initialize_options(self):
+        self._clean_me = [pjoin('zmq', '_zmq.so') ]
+        for root, dirs, files in os.walk('.'):
+            for f in files:
+                if f.endswith('.pyc'):
+                    self._clean_me.append(pjoin(root, f))
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for clean_me in self._clean_me:
+            try:
+                os.unlink(clean_me)
+            except:
+                pass
 
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
+cmdclass = {'test':TestCommand, 'clean':CleanCommand }
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
     zmq_source = os.path.join('zmq','_zmq.c')
-    cmdclass = {}
 else:
     zmq_source = os.path.join('zmq','_zmq.pyx')
-    cmdclass = {'build_ext': build_ext}
+    cmdclass['build_ext'] =  build_ext
 
 if sys.platform == 'win32':
     libzmq = 'libzmq'

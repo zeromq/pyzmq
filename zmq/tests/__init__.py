@@ -50,6 +50,31 @@ class BaseZMQTestCase(TestCase):
         msg3 = s1.recv()
         return msg3
 
+    def ping_pong_json(self, s1, s2, o):
+        s1.send_json(o)
+        o2 = s2.recv_json()
+        s2.send_json(o2)
+        o3 = s1.recv_json()
+        return o3
+
+    def ping_pong_pyobj(self, s1, s2, o):
+        s1.send_pyobj(o)
+        o2 = s2.recv_pyobj()
+        s2.send_pyobj(o2)
+        o3 = s1.recv_pyobj()
+        return o3
+
+    def assertRaisesErrno(self, errno, func, *args):
+        try:
+            func(*args)
+        except zmq.ZMQError, e:
+            self.assertEqual(e.errno, errno, "wrong error raised, expected '%s' \
+got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
+        else:
+            self.fail("Function did not raise any error")
+        
+
+
 class PollZMQTestCase(BaseZMQTestCase):
     pass
 

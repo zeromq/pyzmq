@@ -51,8 +51,8 @@ include "allocate.pxi"
 #-----------------------------------------------------------------------------
 
 cdef extern from "errno.h" nogil:
-    enum: EINVAL
-    enum: EAGAIN
+    enum: ZMQ_EINVAL "EINVAL"
+    enum: ZMQ_EAGAIN "EAGAIN"
 
 cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
@@ -61,24 +61,20 @@ cdef extern from "string.h" nogil:
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
 
-# cdef extern from *:
-#     # This isn't necessarily a signed long long, but this will let Cython
-#     # get it right.
-#     ctypedef signed long long int64_t
-
 cdef extern from "zmq.h" nogil:
     enum: ZMQ_HAUSNUMERO
-    enum: ENOTSUP
-    enum: EPROTONOSUPPORT
-    enum: ENOBUFS
-    enum: ENETDOWN
-    enum: EADDRINUSE
-    enum: EADDRNOTAVAIL
-    enum: ECONNREFUSED
-    enum: EINPROGRESS
-    enum: EMTHREAD
-    enum: EFSM
-    enum: ENOCOMPATPROTO
+    enum: ZMQ_ENOTSUP "ENOTSUP"
+    enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
+    enum: ZMQ_ENOBUFS "ENOBUFS"
+    enum: ZMQ_ENETDOWN "ENETDOWN"
+    enum: ZMQ_EADDRINUSE "EADDRINUSE"
+    enum: ZMQ_EADDRNOTAVAIL "EADDRNOTAVAIL"
+    enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
+    enum: ZMQ_EINPROGRESS "EINPROGRESS"
+    enum: ZMQ_EMTHREAD "EMTHREAD"
+    enum: ZMQ_EFSM "EFSM"
+    enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
+    enum: ZMQ_ETERM "ETERM"
 
     enum: errno
     char *zmq_strerror (int errnum)
@@ -198,12 +194,60 @@ POLLERR = ZMQ_POLLERR
 # Error handling
 #-----------------------------------------------------------------------------
 
+# Often used (these are alse in errno.)
+EAGAIN = ZMQ_EAGAIN
+EINVAL = ZMQ_EINVAL
+
+# For Windows compatability
+ENOTSUP = ZMQ_ENOTSUP
+EPROTONOSUPPORT = ZMQ_EPROTONOSUPPORT
+ENOBUFS = ZMQ_ENOBUFS
+ENETDOWN = ZMQ_ENETDOWN
+EADDRINUSE = ZMQ_EADDRINUSE
+EADDRNOTAVAIL = ZMQ_EADDRNOTAVAIL
+ECONNREFUSED = ZMQ_ECONNREFUSED
+EINPROGRESS = ZMQ_EINPROGRESS
+
+# 0MQ Native
+EMTHREAD = ZMQ_EMTHREAD
+EFSM = ZMQ_EFSM
+ENOCOMPATPROTO = ZMQ_ENOCOMPATPROTO
+ETERM = ZMQ_ETERM
+
+
 def strerror(errnum):
     """Return the error string given the error number."""
     return zmq_strerror(errnum)
 
-class ZMQError(Exception):
+class ZMQBaseError(Exception):
+    pass
+
+class ZMQError(ZMQBaseError):
     """Base exception class for 0MQ errors in Python."""
+
+    def __init__(self, error=None):
+        """Wrap an errno style error.
+
+        Parameters
+        ----------
+        error : int
+            The ZMQ errno or None.  If None, then zmq_errno() is called and
+            used.
+        """
+        if error is None:
+            error = zmq_errno()
+        if type(error) == int:
+            self.errstr = strerror(error)
+            self.errno = error
+        else:
+            self.errstr = str(error)
+            self.errno = None 
+
+    def __str__(self):
+        return self.errstr
+
+class ZMQBindError(ZMQBaseError):
+    """An error for bind_to_random_port."""
     pass
 
 #-----------------------------------------------------------------------------
@@ -229,20 +273,18 @@ cdef class Context:
 
     def __cinit__(self, int app_threads=1, int io_threads=1, int flags=0):
         self.handle = NULL
-        if not app_threads>=1:
-            raise ValueError('app_threads must be at least 1')
-        if not io_threads>0:
-            raise ValueError('io_threads must be 0 or greater')
+        if (not app_threads>=1) or (not io_threads>0):
+            raise ZMQError(EINVAL)
         self.handle = zmq_init(app_threads, io_threads, flags)
         if self.handle == NULL:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
     def __dealloc__(self):
         cdef int rc
         if self.handle != NULL:
             rc = zmq_term(self.handle)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
 
     def socket(self, int socket_type):
         """Create a Socket associated with this Context.
@@ -283,7 +325,7 @@ cdef class Socket:
         self.socket_type = socket_type
         self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
         self.closed = False
 
     def __dealloc__(self):
@@ -300,13 +342,13 @@ cdef class Socket:
         if self.handle != NULL and not self.closed:
             rc = zmq_close(self.handle)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
             self.handle = NULL
             self.closed = True
 
     def _check_closed(self):
         if self.closed:
-            raise ZMQError("Cannot complete operation, Socket is closed.")
+            raise ZMQError(ENOTSUP)
 
     def setsockopt(self, int option, optval):
         """Set socket options.
@@ -344,10 +386,10 @@ cdef class Socket:
                 &optval_int_c, sizeof(int64_t)
             )
         else:
-            raise ZMQError(zmq_strerror(EINVAL))
+            raise ZMQError(EINVAL)
 
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
     def getsockopt(self, int option):
         """Get the value of a socket option.
@@ -376,17 +418,17 @@ cdef class Socket:
             sz = 255
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
             result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             if rc != 0:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+                raise ZMQError()
             result = optval_int_c
         else:
-            raise ZMQError(zmq_strerror(EINVAL))
+            raise ZMQError()
 
         return result
 
@@ -412,7 +454,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
     def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
         """Bind this socket to a random port in a range.
@@ -441,7 +483,7 @@ cdef class Socket:
                 pass
             else:
                 return port
-        raise ZMQError("Could not bind socket to random port.")
+        raise ZMQBindError("Could not bind socket to random port.")
 
     def connect(self, addr):
         """Connect to a remote 0MQ socket.
@@ -461,7 +503,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
     def send(self, msg, int flags=0):
         """Send a message.
@@ -475,8 +517,7 @@ cdef class Socket:
 
         Returns
         -------
-        result : bool
-            True if message was send, False if message was not sent (EAGAIN).
+        None if message was send, raises error otherwise.
         """
         cdef int rc, rc2
         cdef zmq_msg_t data
@@ -497,7 +538,7 @@ cdef class Socket:
         memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
         with nogil:
             rc = zmq_send(self.handle, &data, flags)
@@ -506,15 +547,10 @@ cdef class Socket:
         # Shouldn't the error handling for zmq_msg_close come after that
         # of zmq_send?
         if rc2 != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
         if rc != 0:
-            if zmq_errno() == EAGAIN:
-                return False
-            else:
-                raise ZMQError(zmq_strerror(zmq_errno()))
-        else:
-            return True
+            raise ZMQError()
 
     def recv(self, int flags=0):
         """Receive a message.
@@ -529,8 +565,7 @@ cdef class Socket:
         Returns
         -------
         msg : str
-            The returned message or None of NOBLOCK is set and no message
-            has arrived.
+            The returned message, or raises ZMQError otherwise.
         """
         cdef int rc
         cdef zmq_msg_t data
@@ -539,16 +574,13 @@ cdef class Socket:
 
         rc = zmq_msg_init(&data)
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
         with nogil:
             rc = zmq_recv(self.handle, &data, flags)
 
         if rc != 0:
-            if zmq_errno() == EAGAIN:
-                return None
-            else:
-                raise ZMQError(zmq_strerror(zmq_errno()))
+            raise ZMQError()
 
         try:
             msg = PyString_FromStringAndSize(
@@ -559,8 +591,7 @@ cdef class Socket:
             rc = zmq_msg_close(&data)
 
         if rc != 0:
-            raise ZMQError(zmq_strerror(zmq_errno()))
-
+            raise ZMQError()
         return msg
 
     def send_multipart(self, msg_parts, int flags=0):
@@ -571,7 +602,8 @@ cdef class Socket:
         msg_parts : iterable
             A sequence of messages to send as a multipart message.
         flags : int
-            Any supported flag: NOBLOCK, SNDMORE.
+            Only the NOBLOCK flagis supported, SNDMORE is handled
+            automatically.
         """
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags)
@@ -608,7 +640,7 @@ cdef class Socket:
         more = self.getsockopt(RCVMORE)
         return bool(more)
 
-    def send_pyobj(self, obj, flags=0, protocol=-1, ident=None):
+    def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
 
         Parameters
@@ -621,16 +653,11 @@ cdef class Socket:
             The pickle protocol number to use. Default of -1 will select
             the highest supported number. Use 0 for multiple platform
             support.
-        ident : str
-            The identity of the remote endpoint, with the length prefix
-            included. This is prefixed to the message.
         """
         msg = pickle.dumps(obj, protocol)
-        if ident is not None:
-            msg = join_ident(ident, msg)
         return self.send(msg, flags)
 
-    def recv_pyobj(self, flags=0, ident=False):
+    def recv_pyobj(self, flags=0):
         """Receive a Python object as a message using pickle to serialize.
 
         Parameters
@@ -642,18 +669,11 @@ cdef class Socket:
         -------
         obj : Python object
             The Python object that arrives as a message.
-        ident : bool
-            If True, split off the identity and return (identity, obj).
         """
         s = self.recv(flags)
-        if s is not None:
-            if ident:
-                ident, s = split_ident(s)
-                return (ident, pickle.loads(s))
-            else:
-                return pickle.loads(s)
+        return pickle.loads(s)
 
-    def send_json(self, obj, flags=0, ident=None):
+    def send_json(self, obj, flags=0):
         """Send a Python object as a message using json to serialize.
 
         Parameters
@@ -662,27 +682,20 @@ cdef class Socket:
             The Python object to send.
         flags : int
             Any valid send flag.
-        ident : str
-            The identity of the remote endpoint, with the length prefix
-            included. This is prefixed to the message.
         """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = json.dumps(obj, separators=(',',':'))
-            if ident is not None:
-                msg = join_ident(ident, msg)
             return self.send(msg, flags)
 
-    def recv_json(self, flags=0, ident=False):
+    def recv_json(self, flags=0):
         """Receive a Python object as a message using json to serialize.
 
         Parameters
         ----------
         flags : int
             Any valid recv flag.
-        ident : bool
-            If True, split off the identity and return (identity, obj).
 
         Returns
         -------
@@ -693,12 +706,7 @@ cdef class Socket:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            if msg is not None:
-                if ident:
-                    ident, msg_buf = split_ident(msg)
-                    return (ident, json.loads(str(msg_buf)))
-                else:
-                    return json.loads(msg)
+            return json.loads(msg)
 
 
 def split_ident(msg):
@@ -770,7 +778,7 @@ def _poll(sockets, long timeout=-1):
     with nogil:
         rc = zmq_poll(pollitems, nsockets, timeout)
     if rc == -1:
-        raise ZMQError(zmq_strerror(zmq_errno()))
+        raise ZMQError()
     
     results = []
     for i in range(nsockets):
@@ -865,7 +873,9 @@ def select(rlist, wlist, xlist, timeout=None):
 __all__ = [
     'Context',
     'Socket',
+    'ZMQBaseError',
     'ZMQError',
+    'ZMQBindError',
     'NOBLOCK',
     'P2P',
     'PAIR',
@@ -898,6 +908,21 @@ __all__ = [
     'select',
     'Poller',
     'split_ident',
-    'join_ident'
+    'join_ident',
+    # ERRORNO codes
+    'EAGAIN',
+    'EINVAL',
+    'ENOTSUP',
+    'EPROTONOSUPPORT',
+    'ENOBUFS',
+    'ENETDOWN',
+    'EADDRINUSE',
+    'EADDRNOTAVAIL',
+    'ECONNREFUSED',
+    'EINPROGRESS',
+    'EMTHREAD',
+    'EFSM',
+    'ENOCOMPATPROTO',
+    'ETERM',
 ]
 
