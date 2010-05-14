@@ -51,7 +51,5 @@ class BaseZMQTestCase(TestCase):
         return msg3
 
 class PollZMQTestCase(BaseZMQTestCase):
-
-    def setUp(self):
-        self.context = zmq.Context(1,1, zmq.POLL)
+    pass
 

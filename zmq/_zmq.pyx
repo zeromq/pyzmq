@@ -105,8 +105,6 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src)
     void *zmq_msg_data (zmq_msg_t *msg)
     size_t zmq_msg_size (zmq_msg_t *msg)
-    
-    enum: ZMQ_POLL # 1
 
     void *zmq_init (int app_threads, int io_threads, int flags)
     int zmq_term (void *context)
@@ -192,7 +190,6 @@ SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
 RCVMORE = ZMQ_RCVMORE
 SNDMORE = ZMQ_SNDMORE
-POLL = ZMQ_POLL
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
@@ -225,14 +222,17 @@ cdef class Context:
     io_threads : int
         The number of IO threads.
     flags : int
-        Any of the Context flags.  Use zmq.POLL to put all sockets into
-        non blocking mode and use poll.
+        Any of the Context flags.  None supported at this time.
     """
 
     cdef void *handle
 
     def __cinit__(self, int app_threads=1, int io_threads=1, int flags=0):
         self.handle = NULL
+        if not app_threads>=1:
+            raise ValueError('app_threads must be at least 1')
+        if not io_threads>0:
+            raise ValueError('io_threads must be 0 or greater')
         self.handle = zmq_init(app_threads, io_threads, flags)
         if self.handle == NULL:
             raise ZMQError(zmq_strerror(zmq_errno()))
@@ -891,7 +891,6 @@ __all__ = [
     'RCVBUF',
     'SNDMORE',
     'RCVMORE',
-    'POLL',
     'POLLIN',
     'POLLOUT',
     'POLLERR',

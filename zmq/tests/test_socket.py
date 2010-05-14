@@ -41,3 +41,4 @@ class TestSocket(TestCase):
         self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, '')
         self.assertRaises(zmq.ZMQError, s.send, 'asdf')
         self.assertRaises(zmq.ZMQError, s.recv)
+

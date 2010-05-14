@@ -166,8 +166,8 @@ class TestSelect(PollZMQTestCase):
         time.sleep(1.0)
 
         rlist, wlist, xlist = zmq.select([s1, s2], [s1, s2], [s1, s2])
-
         self.assert_(s1 in wlist)
         self.assert_(s2 in wlist)
         self.assert_(s1 not in rlist)
         self.assert_(s2 not in rlist)
+
