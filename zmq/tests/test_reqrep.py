@@ -66,3 +66,4 @@ class TestReqRep(BaseZMQTestCase):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
         o = dict(a=10,b=range(10))
         o2 = self.ping_pong_pyobj(s1, s2, o)
+
