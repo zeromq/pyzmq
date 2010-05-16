@@ -21,8 +21,10 @@
 import time
 import zmq
 
+print "Running polling tests for PAIR sockets..."
+
 addr = 'tcp://127.0.0.1:5555'
-ctx = zmq.Context(1,1,zmq.POLL)
+ctx = zmq.Context(1,1)
 s1 = ctx.socket(zmq.PAIR)
 s2 = ctx.socket(zmq.PAIR)
 
@@ -61,3 +63,5 @@ poller.unregister(s2)
 
 # Wait for everything to finish.
 time.sleep(1.0)
+
+print "Finished."
