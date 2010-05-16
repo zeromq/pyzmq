@@ -60,5 +60,7 @@ def main():
             assert(res[0][1] & zmq.POLLOUT)
         s.send(msg, zmq.NOBLOCK if use_poll else 0)
 
+    time.sleep(1.0)
+
 if __name__ == '__main__':
     main()

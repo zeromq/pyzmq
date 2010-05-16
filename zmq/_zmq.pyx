@@ -28,9 +28,15 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
+from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
+    cdef void PyEval_InitThreads()
+
+# For some reason we need to call this.  My guess is that we are not doing
+# any Python treading.
+PyEval_InitThreads()
 
 import cPickle as pickle
 import random
@@ -253,6 +259,13 @@ class ZMQBindError(ZMQBaseError):
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
+
+
+cdef void free_python_msg(void *data, void *hint) with gil:
+    """A function for DECREF'ing Python based messages."""
+    if hint != NULL:
+        Py_DECREF(<object>hint)
+
 
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
@@ -505,8 +518,47 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def send(self, msg, int flags=0):
-        """Send a message.
+    def send(self, object msg, int flags=0, bool copy=True):
+        if copy:
+            return self.send_copy(msg, flags)
+        else:
+            return self.send_nocopy(msg, flags)
+
+    def send_nocopy(self, object msg, int flags=0):
+        cdef int rc, rc2
+        cdef zmq_msg_t data
+        cdef char *msg_c
+        cdef Py_ssize_t msg_c_len
+
+        self._check_closed()
+
+        if not isinstance(msg, str):
+            raise TypeError('expected str, got: %r' % msg)
+
+        PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
+        rc = zmq_msg_init_data(
+            &data, <void *>msg_c, msg_c_len,
+            free_python_msg, <void *>msg
+        )
+
+        if rc != 0:
+            raise ZMQError()
+
+        with nogil:
+            rc = zmq_send(self.handle, &data, flags)
+        rc2 = zmq_msg_close(&data)
+
+        # Shouldn't the error handling for zmq_msg_close come after that
+        # of zmq_send?
+        if rc2 != 0:
+            raise ZMQError()
+
+        if rc != 0:
+            raise ZMQError()
+
+    def send_copy(self, object msg, int flags=0):
+        """Send a message by copying its content.
 
         This queues the message to be sent by the IO thread at a later time.
 

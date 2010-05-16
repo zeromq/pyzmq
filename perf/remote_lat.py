@@ -21,6 +21,7 @@ import sys
 import time
 import zmq
 
+
 def main ():
     use_poll = '-p' in sys.argv
     if use_poll:
@@ -49,13 +50,13 @@ def main ():
 
     msg = ' ' * message_size
 
-    start = time.clock ()
+    start = time.clock()
 
     for i in range (0, roundtrip_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send (msg, zmq.NOBLOCK if use_poll else 0)
+        s.send (msg, zmq.NOBLOCK if use_poll else 0, copy=True)
 
         if use_poll:
             res = p.poll()
@@ -63,7 +64,7 @@ def main ():
         msg = s.recv(zmq.NOBLOCK if use_poll else 0)
         assert len (msg) == message_size
 
-    end = time.clock ()
+    end = time.clock()
 
     time.sleep(1)
 
@@ -73,6 +74,8 @@ def main ():
     print "message size: %.0f [B]" % (message_size, )
     print "roundtrip count: %.0f" % (roundtrip_count, )
     print "mean latency: %.3f [us]" % (latency, )
+
+    time.sleep(1.0)
 
 if __name__ == "__main__":
     main ()
