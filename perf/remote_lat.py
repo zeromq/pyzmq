@@ -74,6 +74,10 @@ def main ():
     print "roundtrip count: %.0f" % (roundtrip_count, )
     print "mean latency: %.3f [us]" % (latency, )
 
+    # Let the context finish messaging before ending.
+    # You may need to increase this time for longer or many messages.
+    time.sleep(1)
+
 if __name__ == "__main__":
     main ()
 
