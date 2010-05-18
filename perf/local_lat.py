@@ -60,6 +60,8 @@ def main():
             assert(res[0][1] & zmq.POLLOUT)
         s.send(msg, zmq.NOBLOCK if use_poll else 0)
 
+    # Let the context finish messaging before ending.
+    # You may need to increase this time for longer or many messages.
     time.sleep(1.0)
 
 if __name__ == '__main__':
