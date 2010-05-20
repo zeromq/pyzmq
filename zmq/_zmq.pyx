@@ -267,6 +267,90 @@ cdef void free_python_msg(void *data, void *hint) with gil:
         Py_DECREF(<object>hint)
 
 
+cdef class Message:
+    """A Message class for non-copy send/recvs.
+
+    This class is only needed if you want to do non-copying send and recvs.
+    When you pass a string to this class, like ``Message(s)``, the 
+    ref-count of s is increased by two: once because Message saves s as 
+    an instance attribute and another because a ZMQ message is created that
+    points to the buffer of s. This second ref-count increase makes sure
+    that s lives until all messages that use it have been sent. Once 0MQ
+    sends all the messages and it doesn't need the buffer of s, 0MQ will
+    Py_DECREF(s).
+    """
+
+    cdef zmq_msg_t zmq_msg
+    cdef object data
+    # cdef bool has_data
+    
+    def __cinit__(self, object data=None):
+        cdef int rc
+        # self.has_data = False
+        # Save the data object in case the user wants the the data as a str.
+        self.data = data
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+
+        if data is None:
+            with nogil:
+                rc = zmq_msg_init(&self.zmq_msg)
+            if rc != 0:
+                raise ZMQError()
+        else:
+            PyString_AsStringAndSize(data, &data_c, &data_len_c)
+            # We INCREF the *original* Python object, not self and pass it
+            # as the hint below. This allows other copies of this Message
+            # object to take over the ref counting of data properly.
+            Py_INCREF(data)
+            with nogil:
+                rc = zmq_msg_init_data(
+                    &self.zmq_msg, <void *>data_c, data_len_c, 
+                    <zmq_free_fn *>free_python_msg, <void *>data
+                )
+            if rc != 0:
+                raise ZMQError()
+            # self.has_data = True
+
+    def __dealloc__(self):
+        cdef int rc
+        # This simply decreases the 0MQ ref-count of zmq_msg.
+        rc = zmq_msg_close(&self.zmq_msg)
+        if rc != 0:
+            raise ZMQError()
+
+    def __copy__(self):
+        """Create a shallow copy of the message.
+
+        This does not copy the contents of the Message, just the pointer.
+        """
+        cdef Message new_msg
+        new_msg = Message()
+        # This does not copy the contents, but just increases the ref-count 
+        # of the zmq_msg by one.
+        zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
+        # Copy the ref to data so the copy won't create a copy when str is
+        # called.
+        if self.data is not None:
+            new_msg.data = self.data
+        return new_msg
+
+    def __len__(self):
+        """Return the length of the message in bytes."""
+        return <int>zmq_msg_size(&self.zmq_msg)
+
+    def __str__(self):
+        """Return the str form of the message."""
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        if self.data is None:
+            data_c = <char *>zmq_msg_data(&self.zmq_msg)
+            data_len_c = zmq_msg_size(&self.zmq_msg)
+            return PyString_FromStringAndSize(data_c, data_len_c)
+        else:
+            return self.data
+
+
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
 
@@ -539,7 +623,7 @@ cdef class Socket:
         Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
         rc = zmq_msg_init_data(
             &data, <void *>msg_c, msg_c_len,
-            free_python_msg, <void *>msg
+            <zmq_free_fn *>free_python_msg, <void *>msg
         )
 
         if rc != 0:
@@ -923,6 +1007,7 @@ def select(rlist, wlist, xlist, timeout=None):
 
 
 __all__ = [
+    'Message',
     'Context',
     'Socket',
     'ZMQBaseError',
