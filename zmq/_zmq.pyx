@@ -163,6 +163,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
+    void *zmq_stopwatch_start ()
+    unsigned long zmq_stopwatch_stop (void *watch_)
+    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -893,6 +896,35 @@ cdef class Socket:
             return json.loads(msg)
 
 
+cdef class Stopwatch:
+    """A simple stopwatch based on zmq_stopwatch_start/stop."""
+
+    cdef void *watch
+
+    def __cinit__(self):
+        self.watch = NULL
+
+    def start(self):
+        if self.watch == NULL:
+            self.watch = zmq_stopwatch_start()
+        else:
+            raise ZMQError('Stopwatch is already runing.')
+
+    def stop(self):
+        if self.watch == NULL:
+            raise ZMQError('Must start the Stopwatch before calling stop.')
+        else:
+            time = zmq_stopwatch_stop(self.watch)
+            self.watch = NULL
+            return time
+
+    def clear(self):
+        self.watch = NULL
+
+    def sleep(self, int seconds):
+        zmq_sleep(seconds)
+
+
 def _poll(sockets, long timeout=-1):
     """Poll a set of 0MQ sockets, native file descs. or sockets.
 
@@ -1042,6 +1074,7 @@ __all__ = [
     'Message',
     'Context',
     'Socket',
+    'Stopwatch',
     'ZMQBaseError',
     'ZMQError',
     'ZMQBindError',
