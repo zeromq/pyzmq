@@ -54,7 +54,7 @@ def main():
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
         assert len(msg) == message_size
 
         if use_poll:
