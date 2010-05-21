@@ -904,6 +904,12 @@ cdef class Stopwatch:
     def __cinit__(self):
         self.watch = NULL
 
+    def __dealloc__(self):
+        try:
+            self.stop()
+        except ZMQError:
+            pass
+
     def start(self):
         if self.watch == NULL:
             self.watch = zmq_stopwatch_start()
@@ -917,9 +923,6 @@ cdef class Stopwatch:
             time = zmq_stopwatch_stop(self.watch)
             self.watch = NULL
             return time
-
-    def clear(self):
-        self.watch = NULL
 
     def sleep(self, int seconds):
         zmq_sleep(seconds)
