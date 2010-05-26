@@ -23,42 +23,48 @@ import zmq
 
 def main():
     use_poll = '-p' in sys.argv
+    use_copy = '-c' in sys.argv
+    if use_copy:
+        sys.argv.remove('-c')
     if use_poll:
         sys.argv.remove('-p')
 
     if len (sys.argv) != 4:
-        print 'usage: local_lat [-p use-poll] <bind-to> <message-size> <roundtrip-count>'
+        print 'usage: local_lat [-c use-copy] [-p use-poll] <bind-to> <message-size> <roundtrip-count>'
         sys.exit (1)
 
     try:
-        bind_to = sys.argv [1]
-        message_size = int (sys.argv [2])
-        roundtrip_count = int (sys.argv [3])
+        bind_to = sys.argv[1]
+        message_size = int(sys.argv[2])
+        roundtrip_count = int(sys.argv[3])
     except (ValueError, OverflowError), e:
         print 'message-size and roundtrip-count must be integers'
-        sys.exit (1)
+        sys.exit(1)
 
-    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
-    s = zmq.Socket (ctx, zmq.REP)
+    ctx = zmq.Context(1, 1)
+    s = ctx.socket(zmq.REP)
 
     if use_poll:
-        print 'using poll'
         p = zmq.Poller()
         p.register(s)
 
-    s.bind (bind_to)
+    s.bind(bind_to)
 
-    for i in range (0, roundtrip_count):
+    for i in range(0, roundtrip_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
-        assert len (msg) == message_size
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        assert len(msg) == message_size
 
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send(msg, zmq.NOBLOCK if use_poll else 0)
+        s.send(msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+
+    # Let the context finish messaging before ending.
+    # You may need to increase this time for longer or many messages.
+    time.sleep(2.0)
 
 if __name__ == '__main__':
     main()

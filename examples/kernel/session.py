@@ -84,14 +84,23 @@ class Session(object):
 
     def send(self, socket, msg_type, content=None, parent=None, ident=None):
         msg = self.msg(msg_type, content, parent)
-        socket.send_json(msg, ident=ident)
+        if ident is not None:
+            socket.send(ident, zmq.SNDMORE)
+        socket.send_json(msg)
         omsg = Message(msg)
         return omsg
 
     def recv(self, socket, mode=zmq.NOBLOCK):
-        msg = socket.recv_json(mode)
-        return msg if msg is None else Message(msg)
-
+        try:
+            msg = socket.recv_json(mode)
+        except zmq.ZMQError, e:
+            if e.errno == zmq.EAGAIN:
+                # We can convert EAGAIN to None as we know in this case
+                # recv_json won't return None.
+                return None
+            else:
+                raise
+        return Message(msg)
 
 def test_msg2obj():
     am = dict(x=1)

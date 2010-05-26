@@ -116,10 +116,17 @@ class RawInput(object):
 
     def __call__(self, prompt=None):
         msg = self.session.msg(u'raw_input')
-        self.send_json(msg)
-        reply = None
-        while reply is None:
-            reply = self.recv_json(zmq.NOBLOCK)
+        self.socket.send_json(msg)
+        while True:
+            try:
+                reply = self.socket.recv_json(zmq.NOBLOCK)
+            except zmq.ZMQError, e:
+                if e.errno == zmq.EAGAIN:
+                    pass
+                else:
+                    raise
+            else:
+                break
         return reply[u'content'][u'data']
 
 
@@ -141,17 +148,22 @@ class Kernel(object):
 
     def abort_queue(self):
         while True:
-            ident_msg = self.reply_socket.recv_json(zmq.NOBLOCK, ident=True)
-            if ident_msg is None:
-                break
-            ident, msg = ident_msg
+            try:
+                ident = self.reply_socket.recv(zmq.NOBLOCK)
+            except zmq.ZMQError, e:
+                if e.errno == zmq.EAGAIN:
+                    break
+            else:
+                assert self.reply_socket.rcvmore(), "Unexpected missing message part."
+                msg = self.reply_socket.recv_json()
             print>>sys.__stdout__, "Aborting:"
             print>>sys.__stdout__, Message(msg)
             msg_type = msg['msg_type']
             reply_type = msg_type.split('_')[0] + '_reply'
             reply_msg = self.session.msg(reply_type, {'status' : 'aborted'}, msg)
             print>>sys.__stdout__, Message(reply_msg)
-            self.reply_socket.send_json(reply_msg, ident=ident)
+            self.reply_socket.send(ident,zmq.SNDMORE)
+            self.reply_socket.send_json(reply_msg)
             # We need to wait a bit for requests to come in. This can probably
             # be set shorter for true asynchronous clients.
             time.sleep(0.1)
@@ -186,7 +198,8 @@ class Kernel(object):
             reply_content = {'status' : 'ok'}
         reply_msg = self.session.msg(u'execute_reply', reply_content, parent)
         print>>sys.__stdout__, Message(reply_msg)
-        self.reply_socket.send_json(reply_msg, ident=ident)
+        self.reply_socket.send(ident, zmq.SNDMORE)
+        self.reply_socket.send_json(reply_msg)
         if reply_msg['content']['status'] == u'error':
             self.abort_queue()
 
@@ -202,7 +215,9 @@ class Kernel(object):
 
     def start(self):
         while True:
-            ident, msg = self.reply_socket.recv_json(ident=True)
+            ident = self.reply_socket.recv()
+            assert self.reply_socket.rcvmore(), "Unexpected missing message part."
+            msg = self.reply_socket.recv_json()
             omsg = Message(msg)
             print>>sys.__stdout__, omsg
             handler = self.handlers.get(omsg.msg_type, None)
@@ -215,9 +230,7 @@ class Kernel(object):
 def main():
     c = zmq.Context(1, 1)
 
-    #ip = '192.168.2.109'
     ip = '127.0.0.1'
-    #ip = '192.168.4.128'
     port_base = 5555
     connection = ('tcp://%s' % ip) + ':%i'
     rep_conn = connection % port_base

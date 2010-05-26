@@ -29,41 +29,18 @@ from zmq.tests import BaseZMQTestCase
 # Tests
 #-----------------------------------------------------------------------------
 
-class TestPair(BaseZMQTestCase):
+class TestMultipart(BaseZMQTestCase):
 
-    def test_basic(self):
-        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+    def test_xrep_xreq(self):
+        xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
 
         msg1 = 'message1'
-        msg2 = self.ping_pong(s1, s2, msg1)
+        xreq.send(msg1)
+        ident = xrep.recv()
+        more = xrep.rcvmore()
+        self.assertEquals(more, True)
+        msg2 = xrep.recv()
         self.assertEquals(msg1, msg2)
-
-    def test_multiple(self):
-        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-
-        for i in range(10):
-            msg = i*' '
-            s1.send(msg)
-
-        for i in range(10):
-            msg = i*' '
-            s2.send(msg)
-
-        for i in range(10):
-            msg = s1.recv()
-            self.assertEquals(msg, i*' ')
-
-        for i in range(10):
-            msg = s2.recv()
-            self.assertEquals(msg, i*' ')
-
-    def test_json(self):
-        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        o = dict(a=10,b=range(10))
-        o2 = self.ping_pong_json(s1, s2, o)
-
-    def test_pyobj(self):
-        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        o = dict(a=10,b=range(10))
-        o2 = self.ping_pong_pyobj(s1, s2, o)
+        more = xrep.rcvmore()
+        self.assertEquals(more, False)
 

@@ -28,10 +28,17 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
+from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
+    cdef void PyEval_InitThreads()
 
+# For some reason we need to call this.  My guess is that we are not doing
+# any Python treading.
+PyEval_InitThreads()
+
+import copy as copy_mod
 import cPickle as pickle
 import random
 import struct
@@ -60,11 +67,6 @@ cdef extern from "string.h" nogil:
 
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
-
-# cdef extern from *:
-#     # This isn't necessarily a signed long long, but this will let Cython
-#     # get it right.
-#     ctypedef signed long long int64_t
 
 cdef extern from "zmq.h" nogil:
     enum: ZMQ_HAUSNUMERO
@@ -106,8 +108,6 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src)
     void *zmq_msg_data (zmq_msg_t *msg)
     size_t zmq_msg_size (zmq_msg_t *msg)
-    
-    enum: ZMQ_POLL # 1
 
     void *zmq_init (int app_threads, int io_threads, int flags)
     int zmq_term (void *context)
@@ -163,6 +163,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
+    void *zmq_stopwatch_start ()
+    unsigned long zmq_stopwatch_stop (void *watch_)
+    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -193,7 +196,6 @@ SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
 RCVMORE = ZMQ_RCVMORE
 SNDMORE = ZMQ_SNDMORE
-POLL = ZMQ_POLL
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
@@ -227,10 +229,21 @@ def strerror(errnum):
     """Return the error string given the error number."""
     return zmq_strerror(errnum)
 
-class ZMQError(Exception):
+class ZMQBaseError(Exception):
+    pass
+
+class ZMQError(ZMQBaseError):
     """Base exception class for 0MQ errors in Python."""
 
     def __init__(self, error=None):
+        """Wrap an errno style error.
+
+        Parameters
+        ----------
+        error : int
+            The ZMQ errno or None.  If None, then zmq_errno() is called and
+            used.
+        """
         if error is None:
             error = zmq_errno()
         if type(error) == int:
@@ -243,9 +256,104 @@ class ZMQError(Exception):
     def __str__(self):
         return self.errstr
 
+class ZMQBindError(ZMQBaseError):
+    """An error for bind_to_random_port."""
+    pass
+
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
+
+
+cdef void free_python_msg(void *data, void *hint) with gil:
+    """A function for DECREF'ing Python based messages."""
+    if hint != NULL:
+        Py_DECREF(<object>hint)
+
+
+cdef class Message:
+    """A Message class for non-copy send/recvs.
+
+    This class is only needed if you want to do non-copying send and recvs.
+    When you pass a string to this class, like ``Message(s)``, the 
+    ref-count of s is increased by two: once because Message saves s as 
+    an instance attribute and another because a ZMQ message is created that
+    points to the buffer of s. This second ref-count increase makes sure
+    that s lives until all messages that use it have been sent. Once 0MQ
+    sends all the messages and it doesn't need the buffer of s, 0MQ will
+    Py_DECREF(s).
+    """
+
+    cdef zmq_msg_t zmq_msg
+    cdef object data
+    # cdef bool has_data
+    
+    def __cinit__(self, object data=None):
+        cdef int rc
+        # self.has_data = False
+        # Save the data object in case the user wants the the data as a str.
+        self.data = data
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+
+        if data is None:
+            with nogil:
+                rc = zmq_msg_init(&self.zmq_msg)
+            if rc != 0:
+                raise ZMQError()
+        else:
+            PyString_AsStringAndSize(data, &data_c, &data_len_c)
+            # We INCREF the *original* Python object, not self and pass it
+            # as the hint below. This allows other copies of this Message
+            # object to take over the ref counting of data properly.
+            Py_INCREF(data)
+            with nogil:
+                rc = zmq_msg_init_data(
+                    &self.zmq_msg, <void *>data_c, data_len_c, 
+                    <zmq_free_fn *>free_python_msg, <void *>data
+                )
+            if rc != 0:
+                raise ZMQError()
+            # self.has_data = True
+
+    def __dealloc__(self):
+        cdef int rc
+        # This simply decreases the 0MQ ref-count of zmq_msg.
+        rc = zmq_msg_close(&self.zmq_msg)
+        if rc != 0:
+            raise ZMQError()
+
+    def __copy__(self):
+        """Create a shallow copy of the message.
+
+        This does not copy the contents of the Message, just the pointer.
+        """
+        cdef Message new_msg
+        new_msg = Message()
+        # This does not copy the contents, but just increases the ref-count 
+        # of the zmq_msg by one.
+        zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
+        # Copy the ref to data so the copy won't create a copy when str is
+        # called.
+        if self.data is not None:
+            new_msg.data = self.data
+        return new_msg
+
+    def __len__(self):
+        """Return the length of the message in bytes."""
+        return <int>zmq_msg_size(&self.zmq_msg)
+
+    def __str__(self):
+        """Return the str form of the message."""
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        if self.data is None:
+            data_c = <char *>zmq_msg_data(&self.zmq_msg)
+            data_len_c = zmq_msg_size(&self.zmq_msg)
+            return PyString_FromStringAndSize(data_c, data_len_c)
+        else:
+            return self.data
+
 
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
@@ -259,14 +367,15 @@ cdef class Context:
     io_threads : int
         The number of IO threads.
     flags : int
-        Any of the Context flags.  Use zmq.POLL to put all sockets into
-        non blocking mode and use poll.
+        Any of the Context flags.  None supported at this time.
     """
 
     cdef void *handle
 
     def __cinit__(self, int app_threads=1, int io_threads=1, int flags=0):
         self.handle = NULL
+        if (not app_threads>=1) or (not io_threads>0):
+            raise ZMQError(EINVAL)
         self.handle = zmq_init(app_threads, io_threads, flags)
         if self.handle == NULL:
             raise ZMQError()
@@ -340,7 +449,7 @@ cdef class Socket:
 
     def _check_closed(self):
         if self.closed:
-            raise ZMQError("Cannot complete operation, Socket is closed.")
+            raise ZMQError(ENOTSUP)
 
     def setsockopt(self, int option, optval):
         """Set socket options.
@@ -475,7 +584,7 @@ cdef class Socket:
                 pass
             else:
                 return port
-        raise ZMQError("Could not bind socket to random port.")
+        raise ZMQBindError("Could not bind socket to random port.")
 
     def connect(self, addr):
         """Connect to a remote 0MQ socket.
@@ -497,27 +606,58 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def send(self, msg, int flags=0):
-        """Send a message.
+    #-------------------------------------------------------------------------
+    # Sending and receiving messages
+    #-------------------------------------------------------------------------
+
+    def send(self, object data, int flags=0, bool copy=True):
+        """Send a message on this socket.
 
         This queues the message to be sent by the IO thread at a later time.
 
         Parameters
         ----------
+        data : object, str, Message
+            The content of the message.
         flags : int
             Any supported flag: NOBLOCK, SNDMORE.
+        copy : bool
+            Should the message be sent in a copying or non-copying manner.
 
         Returns
         -------
-        result : bool
-            True if message was send, raises error otherwise.
+        None if message was send, raises an exception otherwise.
         """
+        self._check_closed()
+        if isinstance(data, Message):
+            return self._send_message(data, flags)
+        elif copy:
+            return self._send_copy(data, flags)
+        else:
+            msg = Message(data)
+            return self._send_message(msg, flags)
+            # return self._send_nocopy(msg, flags)
+
+    def _send_message(self, Message msg, int flags=0):
+        """Send a Message on this socket in a non-copy manner."""
+        cdef int rc
+        cdef Message msg_copy
+
+        # Always copy so the original message isn't garbage collected.
+        # This doesn't do a real copy, just a reference.
+        msg_copy = copy_mod.copy(msg)
+        with nogil:
+            rc = zmq_send(self.handle, &msg.zmq_msg, flags)
+
+        if rc != 0:
+            raise ZMQError()
+
+    def _send_copy(self, object msg, int flags=0):
+        """Send a message on this socket by copying its content."""
         cdef int rc, rc2
         cdef zmq_msg_t data
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
-
-        self._check_closed()
 
         if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
@@ -545,9 +685,39 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-        return True
+    def _send_nocopy(self, object msg, int flags=0):
+        """Send a Python string on this socket in a non-copy manner."""
+        cdef int rc, rc2
+        cdef zmq_msg_t data
+        cdef char *msg_c
+        cdef Py_ssize_t msg_c_len
 
-    def recv(self, int flags=0):
+        if not isinstance(msg, str):
+            raise TypeError('expected str, got: %r' % msg)
+
+        PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
+        rc = zmq_msg_init_data(
+            &data, <void *>msg_c, msg_c_len,
+            <zmq_free_fn *>free_python_msg, <void *>msg
+        )
+
+        if rc != 0:
+            raise ZMQError()
+
+        with nogil:
+            rc = zmq_send(self.handle, &data, flags)
+        rc2 = zmq_msg_close(&data)
+
+        # Shouldn't the error handling for zmq_msg_close come after that
+        # of zmq_send?
+        if rc2 != 0:
+            raise ZMQError()
+
+        if rc != 0:
+            raise ZMQError()
+
+    def recv(self, int flags=0, copy=True):
         """Receive a message.
 
         Parameters
@@ -556,16 +726,38 @@ cdef class Socket:
             Any supported flag: NOBLOCK. If NOBLOCK is set, this method
             will return None if a message is not ready. If NOBLOCK is not
             set, then this method will block until a message arrives.
-
+        copy : bool
+            Should the message be receive in a copying or non-copying manner.
+            If True a Message object is returned, if False a string copy of 
+            message is returned.
         Returns
         -------
         msg : str
-            The returned message
+            The returned message, or raises ZMQError otherwise.
         """
+        self._check_closed()
+        if copy:
+            return self._recv_copy(flags)
+        else:
+            return self._recv_message(flags)
+
+    def _recv_message(self, int flags=0):
+        """Receive a message in a non-copying manner and return a Message."""
+        cdef int rc
+        cdef Message msg
+        msg = Message()
+
+        with nogil:
+            rc = zmq_recv(self.handle, &msg.zmq_msg, flags)
+
+        if rc != 0:
+            raise ZMQError()
+        return msg
+
+    def _recv_copy(self, int flags=0):
+        """Receive a message in a copying manner as a string."""
         cdef int rc
         cdef zmq_msg_t data
-
-        self._check_closed()
 
         rc = zmq_msg_init(&data)
         if rc != 0:
@@ -589,7 +781,7 @@ cdef class Socket:
             raise ZMQError()
         return msg
 
-    def send_multipart(self, msg_parts, int flags=0):
+    def send_multipart(self, msg_parts, int flags=0, copy=True):
         """Send a sequence of messages as a multipart message.
 
         Parameters
@@ -597,14 +789,15 @@ cdef class Socket:
         msg_parts : iterable
             A sequence of messages to send as a multipart message.
         flags : int
-            Any supported flag: NOBLOCK, SNDMORE.
+            Only the NOBLOCK flagis supported, SNDMORE is handled
+            automatically.
         """
         for msg in msg_parts[:-1]:
-            self.send(msg, SNDMORE|flags)
+            self.send(msg, SNDMORE|flags, copy=copy)
         # Send the last part without the SNDMORE flag.
         self.send(msg_parts[-1], flags)
 
-    def recv_multipart(self, int flags=0):
+    def recv_multipart(self, int flags=0, copy=True):
         """Receive a multipart message as a list of messages.
 
         Parameters
@@ -621,7 +814,7 @@ cdef class Socket:
         """
         parts = []
         while True:
-            part = self.recv(flags)
+            part = self.recv(flags, copy=copy)
             parts.append(part)
             if self.rcvmore():
                 continue
@@ -634,7 +827,7 @@ cdef class Socket:
         more = self.getsockopt(RCVMORE)
         return bool(more)
 
-    def send_pyobj(self, obj, flags=0, protocol=-1, ident=None):
+    def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
 
         Parameters
@@ -647,16 +840,11 @@ cdef class Socket:
             The pickle protocol number to use. Default of -1 will select
             the highest supported number. Use 0 for multiple platform
             support.
-        ident : str
-            The identity of the remote endpoint, with the length prefix
-            included. This is prefixed to the message.
         """
         msg = pickle.dumps(obj, protocol)
-        if ident is not None:
-            msg = join_ident(ident, msg)
         return self.send(msg, flags)
 
-    def recv_pyobj(self, flags=0, ident=False):
+    def recv_pyobj(self, flags=0):
         """Receive a Python object as a message using pickle to serialize.
 
         Parameters
@@ -668,18 +856,11 @@ cdef class Socket:
         -------
         obj : Python object
             The Python object that arrives as a message.
-        ident : bool
-            If True, split off the identity and return (identity, obj).
         """
         s = self.recv(flags)
-        if s is not None:
-            if ident:
-                ident, s = split_ident(s)
-                return (ident, pickle.loads(s))
-            else:
-                return pickle.loads(s)
+        return pickle.loads(s)
 
-    def send_json(self, obj, flags=0, ident=None):
+    def send_json(self, obj, flags=0):
         """Send a Python object as a message using json to serialize.
 
         Parameters
@@ -688,27 +869,20 @@ cdef class Socket:
             The Python object to send.
         flags : int
             Any valid send flag.
-        ident : str
-            The identity of the remote endpoint, with the length prefix
-            included. This is prefixed to the message.
         """
         if json is None:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = json.dumps(obj, separators=(',',':'))
-            if ident is not None:
-                msg = join_ident(ident, msg)
             return self.send(msg, flags)
 
-    def recv_json(self, flags=0, ident=False):
+    def recv_json(self, flags=0):
         """Receive a Python object as a message using json to serialize.
 
         Parameters
         ----------
         flags : int
             Any valid recv flag.
-        ident : bool
-            If True, split off the identity and return (identity, obj).
 
         Returns
         -------
@@ -719,28 +893,39 @@ cdef class Socket:
             raise ImportError('json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            if msg is not None:
-                if ident:
-                    ident, msg_buf = split_ident(msg)
-                    return (ident, json.loads(str(msg_buf)))
-                else:
-                    return json.loads(msg)
+            return json.loads(msg)
 
 
-def split_ident(msg):
-    """Split a message into (identity, msg)."""
-    # '\x11\x00\xbf\x1c\x9d\xd26\xb7J\xc6\x89\x9cb\x9f\xa8\xc98Yleft 15'
-    ident_offset = struct.unpack('B', msg[0])[0] + 1
-    ident_str = msg[:ident_offset]
-    msg_buf = buffer(msg, ident_offset)
-    return (ident_str, msg_buf)
+cdef class Stopwatch:
+    """A simple stopwatch based on zmq_stopwatch_start/stop."""
 
+    cdef void *watch
 
-def join_ident(ident, msg):
-    """Prefix an identity to a message."""
-    if not isinstance(msg, str):
-        msg = str(msg)
-    return ident + msg
+    def __cinit__(self):
+        self.watch = NULL
+
+    def __dealloc__(self):
+        try:
+            self.stop()
+        except ZMQError:
+            pass
+
+    def start(self):
+        if self.watch == NULL:
+            self.watch = zmq_stopwatch_start()
+        else:
+            raise ZMQError('Stopwatch is already runing.')
+
+    def stop(self):
+        if self.watch == NULL:
+            raise ZMQError('Must start the Stopwatch before calling stop.')
+        else:
+            time = zmq_stopwatch_stop(self.watch)
+            self.watch = NULL
+            return time
+
+    def sleep(self, int seconds):
+        zmq_sleep(seconds)
 
 
 def _poll(sockets, long timeout=-1):
@@ -889,9 +1074,13 @@ def select(rlist, wlist, xlist, timeout=None):
 
 
 __all__ = [
+    'Message',
     'Context',
     'Socket',
+    'Stopwatch',
+    'ZMQBaseError',
     'ZMQError',
+    'ZMQBindError',
     'NOBLOCK',
     'P2P',
     'PAIR',
@@ -917,16 +1106,14 @@ __all__ = [
     'RCVBUF',
     'SNDMORE',
     'RCVMORE',
-    'POLL',
     'POLLIN',
     'POLLOUT',
     'POLLERR',
     '_poll',
     'select',
     'Poller',
-    'split_ident',
-    'join_ident',
-    'EAGAIN',    # ERRORNO
+    # ERRORNO codes
+    'EAGAIN',
     'EINVAL',
     'ENOTSUP',
     'EPROTONOSUPPORT',

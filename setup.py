@@ -38,6 +38,8 @@ from os.path import splitext, basename, join as pjoin, walk
 #-----------------------------------------------------------------------------
 
 class TestCommand(Command):
+    """Custom distutils command to run the test suite."""
+
     user_options = [ ]
 
     def initialize_options(self):
@@ -47,11 +49,9 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        '''
-        Finds all the tests modules in zmq/tests/, and runs them.
-        '''
+        """Finds all the tests modules in zmq/tests/, and runs them."""
         testfiles = [ ]
-        for t in glob(pjoin(self._dir, 'zmq/tests', '*.py')):
+        for t in glob(pjoin(self._dir, 'zmq', 'tests', '*.py')):
             if not t.endswith('__init__.py'):
                 testfiles.append('.'.join(
                     ['zmq.tests', splitext(basename(t))[0]])
@@ -62,6 +62,8 @@ class TestCommand(Command):
 
 
 class CleanCommand(Command):
+    """Custom distutils command to clean the .so and .pyc files."""
+
     user_options = [ ]
 
     def initialize_options(self):
@@ -86,6 +88,7 @@ class CleanCommand(Command):
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand }
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
@@ -120,3 +123,4 @@ setup(
     license = "LGPL",
     cmdclass = cmdclass
 )
+
