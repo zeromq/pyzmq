@@ -311,6 +311,7 @@ cdef class Message:
                     <zmq_free_fn *>free_python_msg, <void *>data
                 )
             if rc != 0:
+                Py_DECREF(data)
                 raise ZMQError()
 
     def __dealloc__(self):
@@ -685,7 +686,7 @@ cdef class Socket:
 
     def _send_nocopy(self, object msg, int flags=0):
         """Send a Python string on this socket in a non-copy manner."""
-        cdef int rc, rc2
+        cdef int rc
         cdef zmq_msg_t data
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
@@ -701,17 +702,18 @@ cdef class Socket:
         )
 
         if rc != 0:
+            Py_DECREF(msg)
             raise ZMQError()
 
         with nogil:
             rc = zmq_send(self.handle, &data, flags)
-        rc2 = zmq_msg_close(&data)
 
-        # Shouldn't the error handling for zmq_msg_close come after that
-        # of zmq_send?
-        if rc2 != 0:
+        if rc != 0:
+            Py_DECREF(msg)
+            zmq_msg_close(&data)
             raise ZMQError()
 
+        rc = zmq_msg_close(&data)
         if rc != 0:
             raise ZMQError()
 
