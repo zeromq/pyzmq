@@ -286,11 +286,9 @@ cdef class Message:
 
     cdef zmq_msg_t zmq_msg
     cdef object data
-    # cdef bool has_data
     
     def __cinit__(self, object data=None):
         cdef int rc
-        # self.has_data = False
         # Save the data object in case the user wants the the data as a str.
         self.data = data
         cdef char *data_c = NULL
@@ -314,7 +312,6 @@ cdef class Message:
                 )
             if rc != 0:
                 raise ZMQError()
-            # self.has_data = True
 
     def __dealloc__(self):
         cdef int rc
@@ -634,6 +631,8 @@ cdef class Socket:
         elif copy:
             return self._send_copy(data, flags)
         else:
+            # I am not sure which non-copy implemntation to use here.
+            # It probably doesn't matter though.
             msg = Message(data)
             return self._send_message(msg, flags)
             # return self._send_nocopy(msg, flags)
@@ -662,11 +661,10 @@ cdef class Socket:
         if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
 
-        # If zmq_msg_init_* fails do we need to call zmq_msg_close?
-
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
+        # If zmq_msg_init_* fails do we need to call zmq_msg_close?
         rc = zmq_msg_init_size(&data, msg_c_len)
         memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
