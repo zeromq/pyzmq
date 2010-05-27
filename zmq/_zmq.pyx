@@ -702,6 +702,8 @@ cdef class Socket:
         )
 
         if rc != 0:
+            # If zmq_msg_init_data fails, does it first call zmq_free_fn
+            # which would mean we don't need to call Py_DECREF here?
             Py_DECREF(msg)
             raise ZMQError()
 
@@ -709,6 +711,8 @@ cdef class Socket:
             rc = zmq_send(self.handle, &data, flags)
 
         if rc != 0:
+            # If zmq_send fails, does it first call zmq_free_fn
+            # which would mean we don't need to call Py_DECREF here?
             Py_DECREF(msg)
             zmq_msg_close(&data)
             raise ZMQError()
