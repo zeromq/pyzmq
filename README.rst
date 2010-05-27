@@ -17,11 +17,8 @@ and edit the `include_dirs` and `library_dirs` fields of the ``setup.cfg``
 file to point to the directories that contain the library and header file for
 your 0MQ installation.
 
-Cython is not required to build pyzmq, but it is required if you
-want to develop pyzmq.
-
-On Windows, it is easiest to simply copy ``libzmq.dll`` and ``zmq.h``
-into the ``zmq`` subdirectory and set ``library_dirs`` to ``.\zmq``.
+Cython is not required to build pyzmq, but it is required if you want to
+develop pyzmq.
 
 Second, run this command::
 
@@ -38,6 +35,16 @@ This will build the C extension inplace and then put this directory on your
     python setup.py build_ext --inplace
 
 each time you change the ``.pyx`` files.
+
+On Windows, it is easiest to simply copy ``libzmq.dll`` and ``zmq.h``
+into the ``zmq`` subdirectory and set ``library_dirs`` to ``.\zmq``.
+
+On Linux, you will need to do one of the following:
+
+* Set ``LD_LIBRARY_PATH`` to point to the :file:`lib` directory of 0MQ.
+* Build the extension using the ``-rpath`` flag::
+
+    python setup.py build_ext --rpath=/opt/zeromq-dev/lib --inplace
 
 Authors
 =======
