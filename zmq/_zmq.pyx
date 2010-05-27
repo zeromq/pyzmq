@@ -280,7 +280,7 @@ cdef class Message:
     an instance attribute and another because a ZMQ message is created that
     points to the buffer of s. This second ref-count increase makes sure
     that s lives until all messages that use it have been sent. Once 0MQ
-    sends all the messages and it doesn't need the buffer of s, 0MQ will
+    sends all the messages and it doesn't need the buffer of s, 0MQ will call
     Py_DECREF(s).
     """
 
@@ -301,7 +301,7 @@ cdef class Message:
                 raise ZMQError()
         else:
             PyString_AsStringAndSize(data, &data_c, &data_len_c)
-            # We INCREF the *original* Python object, not self and pass it
+            # We INCREF the *original* Python object (not self) and pass it
             # as the hint below. This allows other copies of this Message
             # object to take over the ref counting of data properly.
             Py_INCREF(data)
@@ -325,7 +325,14 @@ cdef class Message:
         """Create a shallow copy of the message.
 
         This does not copy the contents of the Message, just the pointer.
+        This will increment the 0MQ ref count of the message, but not
+        the ref count of the Python object. That is only done once when
+        the Python is first turned into a 0MQ message.
         """
+        return self.fast_copy()
+
+    cdef Message fast_copy(self):
+        """Fast, cdef'd version of shallow copy of the message."""
         cdef Message new_msg
         new_msg = Message()
         # This does not copy the contents, but just increases the ref-count 
@@ -624,7 +631,7 @@ cdef class Socket:
 
         Returns
         -------
-        None if message was send, raises an exception otherwise.
+        None if message was sent, raises an exception otherwise.
         """
         self._check_closed()
         if isinstance(data, Message):
@@ -645,7 +652,8 @@ cdef class Socket:
 
         # Always copy so the original message isn't garbage collected.
         # This doesn't do a real copy, just a reference.
-        msg_copy = copy_mod.copy(msg)
+        msg_copy = msg.fast_copy()
+        # msg_copy = copy_mod.copy(msg)
         with nogil:
             rc = zmq_send(self.handle, &msg.zmq_msg, flags)
 
@@ -685,7 +693,12 @@ cdef class Socket:
             raise ZMQError()
 
     def _send_nocopy(self, object msg, int flags=0):
-        """Send a Python string on this socket in a non-copy manner."""
+        """Send a Python string on this socket in a non-copy manner.
+
+        This method is not being used currently, as the same functionality
+        is provided by self._send_message(Message(data)). This may eventually
+        be removed.
+        """
         cdef int rc
         cdef zmq_msg_t data
         cdef char *msg_c
@@ -702,8 +715,8 @@ cdef class Socket:
         )
 
         if rc != 0:
-            # If zmq_msg_init_data fails, does it first call zmq_free_fn
-            # which would mean we don't need to call Py_DECREF here?
+            # If zmq_msg_init_data fails it does not call zmq_free_fn, 
+            # so we Py_DECREF.
             Py_DECREF(msg)
             raise ZMQError()
 
@@ -711,8 +724,7 @@ cdef class Socket:
             rc = zmq_send(self.handle, &data, flags)
 
         if rc != 0:
-            # If zmq_send fails, does it first call zmq_free_fn
-            # which would mean we don't need to call Py_DECREF here?
+            # If zmq_send fails it does not call zmq_free_fn, so we Py_DECREF.
             Py_DECREF(msg)
             zmq_msg_close(&data)
             raise ZMQError()
@@ -731,7 +743,7 @@ cdef class Socket:
             will return None if a message is not ready. If NOBLOCK is not
             set, then this method will block until a message arrives.
         copy : bool
-            Should the message be receive in a copying or non-copying manner.
+            Should the message be received in a copying or non-copying manner.
             If True a Message object is returned, if False a string copy of 
             message is returned.
         Returns
@@ -741,6 +753,8 @@ cdef class Socket:
         """
         self._check_closed()
         if copy:
+            # This could be implemented by simple calling _recv_message and
+            # then casting to a str.
             return self._recv_copy(flags)
         else:
             return self._recv_message(flags)
