@@ -24,7 +24,7 @@ import zmq
 print "Running polling tests for REQ/REP sockets..."
 
 addr = 'tcp://127.0.0.1:5555'
-ctx = zmq.Context(1,1)
+ctx = zmq.Context()
 s1 = ctx.socket(zmq.REP)
 s2 = ctx.socket(zmq.REQ)
 

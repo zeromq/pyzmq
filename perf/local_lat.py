@@ -41,7 +41,7 @@ def main():
         print 'message-size and roundtrip-count must be integers'
         sys.exit(1)
 
-    ctx = zmq.Context(1, 1)
+    ctx = zmq.Context()
     s = ctx.socket(zmq.REP)
 
     if use_poll:

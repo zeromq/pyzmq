@@ -38,14 +38,13 @@ class TestContext(BaseZMQTestCase):
         c1 = zmq.Context()
         self.assert_(isinstance(c1, zmq.Context))
         del c1
-        c2 = zmq.Context(1,1)
+        c2 = zmq.Context()
         self.assert_(isinstance(c2, zmq.Context))
         del c2
-        c3 = zmq.Context(1,1)
+        c3 = zmq.Context()
         self.assert_(isinstance(c3, zmq.Context))
         del c3
 
     def test_fail_init(self):
-        self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 1, -1)
-        self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 0, 1)
+        self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 0)
 

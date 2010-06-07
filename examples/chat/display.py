@@ -23,7 +23,7 @@ import zmq
 def main(addr):
     
     print "Connecting to: ", addr
-    context = zmq.Context(1, 1)
+    context = zmq.Context()
     socket = context.socket(zmq.SUB)
 
     socket.setsockopt(zmq.SUBSCRIBE, "")

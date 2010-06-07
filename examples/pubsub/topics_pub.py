@@ -45,7 +45,7 @@ def main():
                   'stocks.general','stocks.GOOG','stocks.AAPL',
                   'weather']
 
-    ctx = zmq.Context(1,1)
+    ctx = zmq.Context()
     s = ctx.socket(zmq.PUB)
     s.bind(bind_to)
 

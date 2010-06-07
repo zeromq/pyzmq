@@ -41,7 +41,7 @@ def main ():
         print 'message-size and message-count must be integers'
         sys.exit(1)
 
-    ctx = zmq.Context(1, 1)
+    ctx = zmq.Context()
     s = ctx.socket(zmq.PUB)
 
     #  Add your socket options here.

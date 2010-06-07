@@ -109,10 +109,9 @@ cdef extern from "zmq.h" nogil:
     void *zmq_msg_data (zmq_msg_t *msg)
     size_t zmq_msg_size (zmq_msg_t *msg)
 
-    void *zmq_init (int app_threads, int io_threads, int flags)
+    void *zmq_init (int io_threads)
     int zmq_term (void *context)
 
-    enum: ZMQ_P2P # 0, deprecated, use ZMQ_PAIR
     enum: ZMQ_PAIR # 0
     enum: ZMQ_PUB # 1
     enum: ZMQ_SUB # 2
@@ -124,7 +123,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_DOWNSTREAM # 8
 
     enum: ZMQ_HWM # 1
-    enum: ZMQ_LWM # 2
     enum: ZMQ_SWAP # 3
     enum: ZMQ_AFFINITY # 4
     enum: ZMQ_IDENTITY # 5
@@ -163,9 +161,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    void *zmq_stopwatch_start ()
-    unsigned long zmq_stopwatch_stop (void *watch_)
-    void zmq_sleep (int seconds_)
+    # void *zmq_stopwatch_start ()
+    # unsigned long zmq_stopwatch_stop (void *watch_)
+    # void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -173,7 +171,6 @@ cdef extern from "zmq.h" nogil:
 
 NOBLOCK = ZMQ_NOBLOCK
 PAIR = ZMQ_PAIR
-P2P = ZMQ_P2P  # Deprecated, use PAIR
 PUB = ZMQ_PUB
 SUB = ZMQ_SUB
 REQ = ZMQ_REQ
@@ -183,7 +180,6 @@ XREP = ZMQ_XREP
 UPSTREAM = ZMQ_UPSTREAM
 DOWNSTREAM = ZMQ_DOWNSTREAM
 HWM = ZMQ_HWM
-LWM = ZMQ_LWM
 SWAP = ZMQ_SWAP
 AFFINITY = ZMQ_AFFINITY
 IDENTITY = ZMQ_IDENTITY
@@ -363,25 +359,22 @@ cdef class Message:
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
 
-    Context(app_threads=1, io_threads=1, flags=0)
+    This class no longer takes any flags or the number of application
+    threads.
 
     Parameters
     ----------
-    app_threads : int
-        The number of application threads.
     io_threads : int
         The number of IO threads.
-    flags : int
-        Any of the Context flags.  None supported at this time.
     """
 
     cdef void *handle
 
-    def __cinit__(self, int app_threads=1, int io_threads=1, int flags=0):
+    def __cinit__(self, int io_threads=1):
         self.handle = NULL
-        if (not app_threads>=1) or (not io_threads>0):
+        if not io_threads > 0:
             raise ZMQError(EINVAL)
-        self.handle = zmq_init(app_threads, io_threads, flags)
+        self.handle = zmq_init(io_threads)
         if self.handle == NULL:
             raise ZMQError()
 
@@ -465,7 +458,7 @@ cdef class Socket:
         ----------
         option : str
             The name of the option to set. Can be any of: SUBSCRIBE, 
-            UNSUBSCRIBE, IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            UNSUBSCRIBE, IDENTITY, HWM, SWAP, AFFINITY, RATE, 
             RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.
         optval : int or str
             The value of the option to set.
@@ -482,7 +475,7 @@ cdef class Socket:
                 self.handle, option,
                 PyString_AsString(optval), PyString_Size(optval)
             )
-        elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
+        elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF]:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
@@ -506,7 +499,7 @@ cdef class Socket:
         ----------
         option : str
             The name of the option to set. Can be any of: 
-            IDENTITY, HWM, LWM, SWAP, AFFINITY, RATE, 
+            IDENTITY, HWM, SWAP, AFFINITY, RATE, 
             RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
 
         Returns
@@ -526,7 +519,7 @@ cdef class Socket:
             if rc != 0:
                 raise ZMQError()
             result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
-        elif option in [HWM, LWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
+        elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
@@ -914,36 +907,36 @@ cdef class Socket:
             return json.loads(msg)
 
 
-cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop."""
-
-    cdef void *watch
-
-    def __cinit__(self):
-        self.watch = NULL
-
-    def __dealloc__(self):
-        try:
-            self.stop()
-        except ZMQError:
-            pass
-
-    def start(self):
-        if self.watch == NULL:
-            self.watch = zmq_stopwatch_start()
-        else:
-            raise ZMQError('Stopwatch is already runing.')
-
-    def stop(self):
-        if self.watch == NULL:
-            raise ZMQError('Must start the Stopwatch before calling stop.')
-        else:
-            time = zmq_stopwatch_stop(self.watch)
-            self.watch = NULL
-            return time
-
-    def sleep(self, int seconds):
-        zmq_sleep(seconds)
+# cdef class Stopwatch:
+#     """A simple stopwatch based on zmq_stopwatch_start/stop."""
+# 
+#     cdef void *watch
+# 
+#     def __cinit__(self):
+#         self.watch = NULL
+# 
+#     def __dealloc__(self):
+#         try:
+#             self.stop()
+#         except ZMQError:
+#             pass
+# 
+#     def start(self):
+#         if self.watch == NULL:
+#             self.watch = zmq_stopwatch_start()
+#         else:
+#             raise ZMQError('Stopwatch is already runing.')
+# 
+#     def stop(self):
+#         if self.watch == NULL:
+#             raise ZMQError('Must start the Stopwatch before calling stop.')
+#         else:
+#             time = zmq_stopwatch_stop(self.watch)
+#             self.watch = NULL
+#             return time
+# 
+#     def sleep(self, int seconds):
+#         zmq_sleep(seconds)
 
 
 def _poll(sockets, long timeout=-1):
@@ -1095,12 +1088,11 @@ __all__ = [
     'Message',
     'Context',
     'Socket',
-    'Stopwatch',
+    # 'Stopwatch',
     'ZMQBaseError',
     'ZMQError',
     'ZMQBindError',
     'NOBLOCK',
-    'P2P',
     'PAIR',
     'PUB',
     'SUB',
@@ -1111,7 +1103,6 @@ __all__ = [
     'UPSTREAM',
     'DOWNSTREAM',
     'HWM',
-    'LWM',
     'SWAP',
     'AFFINITY',
     'IDENTITY',

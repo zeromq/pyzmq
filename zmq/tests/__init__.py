@@ -33,7 +33,7 @@ import zmq
 class BaseZMQTestCase(TestCase):
 
     def setUp(self):
-        self.context = zmq.Context(1,1)
+        self.context = zmq.Context()
 
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""

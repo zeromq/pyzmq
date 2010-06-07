@@ -42,7 +42,7 @@ def main():
     connect_to = sys.argv[1]
     topics = sys.argv[2:]
 
-    ctx = zmq.Context(1,1)
+    ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
 

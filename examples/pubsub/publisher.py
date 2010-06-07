@@ -42,7 +42,7 @@ def main():
         print 'array-size and array-count must be integers'
         sys.exit (1)
 
-    ctx = zmq.Context(1,1)
+    ctx = zmq.Context()
     s = ctx.socket(zmq.PUB)
     s.bind(bind_to)
 

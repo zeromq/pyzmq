@@ -228,7 +228,7 @@ class Kernel(object):
 
 
 def main():
-    c = zmq.Context(1, 1)
+    c = zmq.Context()
 
     ip = '127.0.0.1'
     port_base = 5555
