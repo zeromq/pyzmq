@@ -1,3 +1,5 @@
+"""The display part of a simply two process chat app."""
+
 #
 #    Copyright (c) 2010 Andrew Gwozdziewycz
 #
@@ -18,10 +20,10 @@
 
 import zmq
 
-
 def main(addr):
-    print addr
-    context = zmq.Context(1, 1)
+    
+    print "Connecting to: ", addr
+    context = zmq.Context()
     socket = context.socket(zmq.SUB)
 
     socket.setsockopt(zmq.SUBSCRIBE, "")

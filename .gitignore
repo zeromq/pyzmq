@@ -4,3 +4,4 @@ build
 *.so
 *.pyd
 *.dll
+setup.cfg

@@ -1,3 +1,5 @@
+"""The prompt part of a simply two process chat app."""
+
 #
 #    Copyright (c) 2010 Andrew Gwozdziewycz
 #
@@ -20,14 +22,13 @@ import zmq
 
 def main(addr, who):
 
-    ctx = zmq.Context(1, 1)
-
+    ctx = zmq.Context()
     socket = ctx.socket(zmq.PUB)
-    socket.connect(addr)
+    socket.bind(addr)
 
     while True:
         msg = raw_input("%s> " % who)
-        assert socket.send_pyobj((msg, who))
+        socket.send_pyobj((msg, who))
 
 
 if __name__ == '__main__':

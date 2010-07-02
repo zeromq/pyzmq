@@ -29,17 +29,17 @@ from zmq.tests import BaseZMQTestCase
 # Tests
 #-----------------------------------------------------------------------------
 
-class TestP2p(BaseZMQTestCase):
+class TestPair(BaseZMQTestCase):
 
     def test_basic(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         msg1 = 'message1'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 
     def test_multiple(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         for i in range(10):
             msg = i*' '
@@ -56,4 +56,14 @@ class TestP2p(BaseZMQTestCase):
         for i in range(10):
             msg = s2.recv()
             self.assertEquals(msg, i*' ')
+
+    def test_json(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        o = dict(a=10,b=range(10))
+        o2 = self.ping_pong_json(s1, s2, o)
+
+    def test_pyobj(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        o = dict(a=10,b=range(10))
+        o2 = self.ping_pong_pyobj(s1, s2, o)
 

@@ -33,8 +33,10 @@ from zmq.tests import PollZMQTestCase
 
 class TestPoll(PollZMQTestCase):
 
-    def test_p2p(self):
-        s1, s2 = self.create_bound_pair(zmq.P2P, zmq.P2P)
+    # This test is failing due to this issue:
+    # http://github.com/sustrik/zeromq2/issues#issue/26
+    def test_pair(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
         # Sleep to allow sockets to connect.
         time.sleep(1.0)
@@ -42,12 +44,11 @@ class TestPoll(PollZMQTestCase):
         poller = zmq.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
-
-        # Now make sure that both are send ready.
+        # Poll result should contain both sockets
         socks = dict(poller.poll())
+        # Now make sure that both are send ready.
         self.assertEquals(socks[s1], zmq.POLLOUT)
         self.assertEquals(socks[s2], zmq.POLLOUT)
-
         # Now do a send on both, wait and test for zmq.POLLOUT|zmq.POLLIN
         s1.send('msg1')
         s2.send('msg2')
@@ -55,7 +56,6 @@ class TestPoll(PollZMQTestCase):
         socks = dict(poller.poll())
         self.assertEquals(socks[s1], zmq.POLLOUT|zmq.POLLIN)
         self.assertEquals(socks[s2], zmq.POLLOUT|zmq.POLLIN)
-
         # Make sure that both are in POLLOUT after recv.
         s1.recv()
         s2.recv()
@@ -135,7 +135,6 @@ class TestPoll(PollZMQTestCase):
         socks = dict(poller.poll())
         self.assertEquals(socks[s1], zmq.POLLOUT)
         self.assertEquals(socks.has_key(s2), 0)
-
         # Make sure that s1 stays in POLLOUT after a send.
         s1.send('msg1')
         socks = dict(poller.poll())
@@ -156,3 +155,20 @@ class TestPoll(PollZMQTestCase):
 
         # Wait for everything to finish.
         time.sleep(1.0)
+
+class TestSelect(PollZMQTestCase):
+
+    # This test is failing due to this issue:
+    # http://github.com/sustrik/zeromq2/issues#issue/26
+    def test_pair(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+
+        # Sleep to allow sockets to connect.
+        time.sleep(1.0)
+
+        rlist, wlist, xlist = zmq.select([s1, s2], [s1, s2], [s1, s2])
+        self.assert_(s1 in wlist)
+        self.assert_(s2 in wlist)
+        self.assert_(s1 not in rlist)
+        self.assert_(s2 not in rlist)
+

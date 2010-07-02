@@ -22,30 +22,25 @@
 #-----------------------------------------------------------------------------
 
 import zmq
+
 from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
+class TestMultipart(BaseZMQTestCase):
 
-class TestSocket(BaseZMQTestCase):
+    def test_xrep_xreq(self):
+        xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
 
-    def test_create(self):
-        ctx = zmq.Context()
-        s = ctx.socket(zmq.PUB)
-        # Superluminal protocol not yet implemented
-        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
-        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
-
-
-    def test_close(self):
-        ctx = zmq.Context()
-        s = ctx.socket(zmq.PUB)
-        s.close()
-        self.assertRaises(zmq.ZMQError, s.bind, '')
-        self.assertRaises(zmq.ZMQError, s.connect, '')
-        self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, '')
-        self.assertRaises(zmq.ZMQError, s.send, 'asdf')
-        self.assertRaises(zmq.ZMQError, s.recv)
+        msg1 = 'message1'
+        xreq.send(msg1)
+        ident = xrep.recv()
+        more = xrep.rcvmore()
+        self.assertEquals(more, True)
+        msg2 = xrep.recv()
+        self.assertEquals(msg1, msg2)
+        more = xrep.rcvmore()
+        self.assertEquals(more, False)
 

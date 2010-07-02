@@ -23,59 +23,69 @@ import zmq
 
 def main ():
     use_poll = '-p' in sys.argv
+    use_copy = '-c' in sys.argv
+    if use_copy:
+        sys.argv.remove('-c')
     if use_poll:
         sys.argv.remove('-p')
 
     if len (sys.argv) != 4:
-        print 'usage: local_thr [-p use-poll] <bind-to> <message-size> <message-count>'
-        sys.exit (1)
+        print 'usage: local_thr [-c use-copy] [-p use-poll] <bind-to> <message-size> <message-count>'
+        sys.exit(1)
 
     try:
-        bind_to = sys.argv [1]
-        message_size = int (sys.argv [2])
-        message_count = int (sys.argv [3])
+        bind_to = sys.argv[1]
+        message_size = int(sys.argv[2])
+        message_count = int(sys.argv[3])
     except (ValueError, OverflowError), e:
         print 'message-size and message-count must be integers'
-        sys.exit (1)
+        sys.exit(1)
 
-    ctx = zmq.Context (1, 1, zmq.POLL if use_poll else 0)
-    s = zmq.Socket (ctx, zmq.SUB)
+    ctx = zmq.Context()
+    s = ctx.socket(zmq.SUB)
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
-    s.setsockopt (zmq.SUBSCRIBE , "");
+    s.setsockopt(zmq.SUBSCRIBE , "");
 
     if use_poll:
-        print 'using poll'
         p = zmq.Poller()
         p.register(s)
 
-    s.bind (bind_to)
+    s.bind(bind_to)
 
-    msg = s.recv ()
+    # Wait for the other side to connect.
+    time.sleep(2.0)
+
+    msg = s.recv()
     assert len (msg) == message_size
 
-    start = time.clock ()
+    start = time.clock()
 
     for i in range (1, message_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0)
-        assert len (msg) == message_size
+        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        assert len(msg) == message_size
 
-    end = time.clock ()
+    end = time.clock()
 
     elapsed = (end - start) * 1000000
     if elapsed == 0:
     	elapsed = 1
-    throughput = (1000000.0 * float (message_count)) / float (elapsed)
-    megabits = float (throughput * message_size * 8) / 1000000
+    throughput = (1000000.0 * float(message_count)) / float(elapsed)
+    megabits = float(throughput * message_size * 8) / 1000000
 
     print "message size: %.0f [B]" % (message_size, )
     print "message count: %.0f" % (message_count, )
     print "mean throughput: %.0f [msg/s]" % (throughput, )
     print "mean throughput: %.3f [Mb/s]" % (megabits, )
 
+    # Let the context finish messaging before ending.
+    # You may need to increase this time for longer or many messages.
+    time.sleep(2.0)
+
 if __name__ == "__main__":
     main ()
+

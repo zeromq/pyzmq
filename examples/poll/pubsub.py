@@ -21,8 +21,10 @@
 import time
 import zmq
 
+print "Running polling tets for PUB/SUB sockets..."
+
 addr = 'tcp://127.0.0.1:5555'
-ctx = zmq.Context(1,1,zmq.POLL)
+ctx = zmq.Context()
 s1 = ctx.socket(zmq.PUB)
 s2 = ctx.socket(zmq.SUB)
 s2.setsockopt(zmq.SUBSCRIBE, '')
@@ -62,3 +64,5 @@ poller.unregister(s2)
 
 # Wait for everything to finish.
 time.sleep(1.0)
+
+print "Finished."
