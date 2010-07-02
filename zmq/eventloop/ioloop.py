@@ -19,100 +19,29 @@
 import bisect
 import errno
 import os
+import logging
+import time
+import traceback
+
+try:
+    import signal
+except ImportError:
+    signal = None
+
 try:
     import fcntl
 except ImportError:
-    if os.name != 'posix':
-        import socket
+    if os.name == 'nt':
+        import win32_support
+        import win32_support as fcntl
     else:
         raise
-import logging
-import socket
-import time
 
-from _zmq import (
+from zmq import (
     Poller,
     POLLIN, POLLOUT, POLLERR,
     ZMQError
 )
-
-
-class Pipe(object):
-    """Create an OS independent asynchronous pipe"""
-    def __init__(self):
-        self.reader = None
-        self.writer = None
-        self.reader_fd = -1
-        if os.name == 'posix':
-            self.reader_fd, w = os.pipe()
-            IOLoop.set_nonblocking(self.reader_fd)
-            IOLoop.set_nonblocking(w)
-            IOLoop.set_close_exec(self.reader_fd)
-            IOLoop.set_close_exec(w)
-            self.reader = os.fdopen(self.reader_fd, "r", 0)
-            self.writer = os.fdopen(w, "w", 0)
-        else:
-            # Based on Zope async.py: http://svn.zope.org/zc.ngi/trunk/src/zc/ngi/async.py
-
-            self.writer = socket.socket()
-            # Disable buffering -- pulling the trigger sends 1 byte,
-            # and we want that sent immediately, to wake up asyncore's
-            # select() ASAP.
-            self.writer.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
-            count = 0
-            while 1:
-                count += 1
-                # Bind to a local port; for efficiency, let the OS pick
-                # a free port for us.
-                # Unfortunately, stress tests showed that we may not
-                # be able to connect to that port ("Address already in
-                # use") despite that the OS picked it.  This appears
-                # to be a race bug in the Windows socket implementation.
-                # So we loop until a connect() succeeds (almost always
-                # on the first try).  See the long thread at
-                # http://mail.zope.org/pipermail/zope/2005-July/160433.html
-                # for hideous details.
-                a = socket.socket()
-                a.bind(("127.0.0.1", 0))
-                connect_address = a.getsockname()  # assigned (host, port) pair
-                a.listen(1)
-                try:
-                    self.writer.connect(connect_address)
-                    break    # success
-                except socket.error, detail:
-                    if detail[0] != errno.WSAEADDRINUSE:
-                        # "Address already in use" is the only error
-                        # I've seen on two WinXP Pro SP2 boxes, under
-                        # Pythons 2.3.5 and 2.4.1.
-                        raise
-                    # (10048, 'Address already in use')
-                    # assert count <= 2 # never triggered in Tim's tests
-                    if count >= 10:  # I've never seen it go above 2
-                        a.close()
-                        self.writer.close()
-                        raise BindError("Cannot bind trigger!")
-                    # Close `a` and try again.  Note:  I originally put a short
-                    # sleep() here, but it didn't appear to help or hurt.
-                    a.close()
-
-            self.reader, addr = a.accept()
-            self.reader.setblocking(0)
-            self.writer.setblocking(0)
-            a.close()
-            self.reader_fd = self.reader.fileno()
-
-    def read(self):
-        try:
-            return self.reader.recv(1)
-        except socket.error, ex:
-            if ex.args[0] == errno.EWOULDBLOCK:
-                raise IOError
-            raise
-
-    def write(self, data):
-        return self.writer.send(data)
-
 
 class IOLoop(object):
     """A level-triggered I/O loop.
@@ -161,19 +90,29 @@ class IOLoop(object):
     def __init__(self, impl=None):
         self._impl = impl or Poller()
         if hasattr(self._impl, 'fileno'):
-            self.set_close_exec(self._impl.fileno())
+            self._set_close_exec(self._impl.fileno())
         self._handlers = {}
         self._events = {}
         self._callbacks = set()
         self._timeouts = []
         self._running = False
         self._stopped = False
+        self._blocking_log_threshold = None
 
         # Create a pipe that we send bogus data to when we want to wake
         # the I/O loop when it is idle
-        trigger = Pipe()
-        self._waker_reader = self._waker_writer = trigger
-        self.add_handler(trigger.reader_fd, self._read_waker, self.READ)
+        if os.name != 'nt':
+            r, w = os.pipe()
+            self._set_nonblocking(r)
+            self._set_nonblocking(w)
+            self._set_close_exec(r)
+            self._set_close_exec(w)
+            self._waker_reader = os.fdopen(r, "r", 0)
+            self._waker_writer = os.fdopen(w, "w", 0)
+        else:
+            self._waker_reader = self._waker_writer = win32_support.Pipe()
+            r = self._waker_writer.reader_fd
+        self.add_handler(r, self._read_waker, self.READ)
 
     @classmethod
     def instance(cls):
@@ -217,6 +156,23 @@ class IOLoop(object):
         except (OSError, IOError):
             logging.debug("Error deleting fd from IOLoop", exc_info=True)
 
+    def set_blocking_log_threshold(self, s):
+        """Logs a stack trace if the ioloop is blocked for more than s seconds.
+        Pass None to disable.  Requires python 2.6 on a unixy platform.
+        """
+        if not hasattr(signal, "setitimer"):
+            logging.error("set_blocking_log_threshold requires a signal module "
+                       "with the setitimer method")
+            return
+        self._blocking_log_threshold = s
+        if s is not None:
+            signal.signal(signal.SIGALRM, self._handle_alarm)
+
+    def _handle_alarm(self, signal, frame):
+        logging.warning('IOLoop blocked for %f seconds in\n%s',
+                     self._blocking_log_threshold,
+                     ''.join(traceback.format_stack(frame)))
+
     def start(self):
         """Starts the I/O loop.
 
@@ -255,16 +211,25 @@ class IOLoop(object):
             if not self._running:
                 break
 
+            if self._blocking_log_threshold is not None:
+                # clear alarm so it doesn't fire while poll is waiting for
+                # events.
+                signal.setitimer(signal.ITIMER_REAL, 0, 0)
+
             try:
                 event_pairs = self._impl.poll(poll_timeout)
             except ZMQError, e:
                 raise
             except Exception, e:
-                if e.errno == errno.EINTR:
+                if hasattr(e, 'errno') and e.errno == errno.EINTR:
                     logging.warning("Interrupted system call", exc_info=1)
                     continue
                 else:
                     raise
+
+            if self._blocking_log_threshold is not None:
+                signal.setitimer(signal.ITIMER_REAL,
+                                 self._blocking_log_threshold, 0)
 
             # Pop one fd at a time from the set of pending fds and run
             # its handler. Since that handler may perform actions on
@@ -289,6 +254,8 @@ class IOLoop(object):
                                   fd, exc_info=True)
         # reset the stopped flag so another start/stop pair can be issued
         self._stopped = False
+        if self._blocking_log_threshold is not None:
+            signal.setitimer(signal.ITIMER_REAL, 0, 0)
 
     def stop(self):
         """Stop the loop after the current event loop iteration is complete.
@@ -362,19 +329,21 @@ class IOLoop(object):
         except IOError:
             pass
 
-    @staticmethod
-    def set_nonblocking(fd):
+    def _set_nonblocking(self, fd):
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
-    @staticmethod
-    def set_close_exec(fd):
+    def _set_close_exec(self, fd):
         flags = fcntl.fcntl(fd, fcntl.F_GETFD)
         fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
 
 
 class _Timeout(object):
     """An IOLoop timeout, a UNIX timestamp and a callback"""
+
+    # Reduce memory overhead when there are lots of pending callbacks
+    __slots__ = ['deadline', 'callback']
+
     def __init__(self, deadline, callback):
         self.deadline = deadline
         self.callback = callback

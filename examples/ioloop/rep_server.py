@@ -1,9 +1,9 @@
 import zmq
-from zmq import ioloop
+from zmq.eventloop import ioloop
 
 loop = ioloop.IOLoop.instance()
 
-ctx = zmq.Context(1, 1, zmq.POLL)
+ctx = zmq.Context()
 s = ctx.socket(zmq.REP)
 s.bind('tcp://127.0.0.1:5555')
 
