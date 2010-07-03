@@ -134,7 +134,9 @@ class ZMQStream(object):
             raise
 
     def _handle_events(self, fd, events):
-        print "handling events"
+        """This method is the actual handler for IOLoop, that gets called whenever
+        an event on my socket is posted. It dispatches to _handle_recv, etc."""
+        # print "handling events"
         if not self.socket:
             logging.warning("Got events for closed stream %s", fd)
             return
@@ -159,7 +161,7 @@ class ZMQStream(object):
             self.io_loop.update_handler(self.socket, self._state)
             
     def _handle_recv(self):
-        print "handling recv"
+        # print "handling recv"
         try:
             msg = self.socket.recv_multipart()
         except zmq.ZMQError:
