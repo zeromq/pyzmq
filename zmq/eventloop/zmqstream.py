@@ -99,6 +99,13 @@ class ZMQStream(object):
         self._add_io_state(zmq.POLLOUT)
         self._send_callback = callback
         
+    def on_err(self, callback):
+        """register a callback to be called on each send
+        with no arguments (?)
+        """
+        # self._add_io_state(zmq.POLLOUT)
+        self._errback = callback
+        
                 
     def send(self, msg, callback=None):
         """send a message, optionally also register
@@ -113,6 +120,8 @@ class ZMQStream(object):
         callback = callback or self._send_callback
         if callback is not None:
             self.on_send(callback)
+        else:
+            self.on_send(lambda : None)
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
