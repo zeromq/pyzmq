@@ -33,17 +33,26 @@ class ZMQStream(object):
         register a callback to be run every time the socket has something to receive
     on_send(callback):
         register a callback to be run every time you call send
+    on_err(callback):
+        register a callback to be run every time there is an error
     send(msg, callback=None)
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
+        There is also send_multipart()
     
     Two other methods for deactivating the callbacks:
     stop_on_recv():
         turn off the recv callback
     stop_on_send():
         turn off the send callback
+    stop_on_err():
+        turn off the error callback
 
     """
+    
+    socket = None
+    io_loop = None
+    
     def __init__(self, socket, io_loop=None):
         self.socket = socket
         self.io_loop = io_loop or ioloop.IOLoop.instance()
@@ -53,18 +62,27 @@ class ZMQStream(object):
         self._recv_callback = None
         self._send_callback = None
         self._close_callback = None
+        self._errback = None
         self._state = zmq.POLLERR
         self.io_loop.add_handler(self.socket, self._handle_events, self._state)
+        
+        # shortcircuit some socket methods
+        self.bind = self.socket.bind
+        self.connect = self.socket.connect
     
     def stop_on_recv(self):
-        """disable callbacks and automatic receiving"""
+        """disable callback and automatic receiving"""
         self._recv_callback = None
         self._drop_io_state(zmq.POLLIN)
     
     def stop_on_send(self):
-        """disable callbacks on sending"""
+        """disable callback on sending"""
         self._send_callback = None
         self._drop_io_state(zmq.POLLOUT)
+    
+    def stop_on_err(self):
+        self._errback = None
+        # self._drop_io_state(zmq.POLLOUT)
     
     def on_recv(self, callback):
         """register a callback to be called on each recv.
@@ -193,8 +211,10 @@ class ZMQStream(object):
     def _handle_error(self):
         # if evt & zmq.POLLERR:
         logging.warning("handling error..")
-        time.sleep(1)
-            # self.update_state()
+        if self._errback is not None:
+            self._errback()
+        else:
+            raise zmq.ZMQError()
 
 
         # raise zmq.ZMQError()
