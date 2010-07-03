@@ -380,3 +380,13 @@ class PeriodicCallback(object):
         except:
             logging.error("Error in periodic callback", exc_info=True)
         self.start()
+
+class DelayedCallback(PeriodicCallback):
+    """Schedules the given callback to be called once.
+
+    The callback is called after the object is created by callback_time milliseconds.
+    """
+    
+    def _run(self):
+        PeriodicCallback._run(self)
+        self._stop()
