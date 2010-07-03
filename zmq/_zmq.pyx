@@ -543,7 +543,7 @@ cdef class Socket:
         addr : str
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
-            tcp, upd, pgm, iproc and ipc.
+            tcp, upd, pgm, inproc and ipc.
         """
         cdef int rc
 
@@ -592,7 +592,7 @@ cdef class Socket:
         addr : str
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
-            tcp, upd, pgm, iproc and ipc.
+            tcp, upd, pgm, inproc and ipc.
         """
         cdef int rc
 
