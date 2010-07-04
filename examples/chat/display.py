@@ -35,7 +35,7 @@ def main(addrs):
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) <= 2:
+    if len(sys.argv) < 2:
         print "usage: display.py <address> [,<address>...]"
         raise SystemExit
     main(sys.argv[1:])
