@@ -1046,10 +1046,17 @@ class Poller(object):
 
         Parameters
         ----------
-        timeout : int
-            The timeout in microseconds. If None, no timeout (infinite).
+        timeout : float, int
+            The timeout in milliseconds. If None, no timeout (infinite). This
+            is in milliseconds to be compatible with :func:`select.poll`. The
+            underlying zmq_poll uses microseconds and we convert to that in
+            this function.
         """
         if timeout is None:
+            timeout = -1
+        # Convert from ms -> us for zmq_poll.
+        timeout = int(timeout*1000.0)
+        if timeout < 0:
             timeout = -1
         return _poll(self.sockets.items(), timeout=timeout)
 
@@ -1058,8 +1065,19 @@ def select(rlist, wlist, xlist, timeout=None):
     """Return the result of poll as a lists of sockets ready for r/w.
 
     This has the same interface as Python's built-in :func:`select` function.
+
+    Parameters
+    ----------
+    timeout : float, int
+        The timeout in seconds. This is in seconds to be compatible with
+        :func:`select.select`. The underlying zmq_poll uses microseconds and
+        we convert to that in this function.
     """
     if timeout is None:
+        timeout = -1
+    # Convert from sec -> us for zmq_poll.
+    timeout = int(timeout*1000000.0)
+    if timeout < 0:
         timeout = -1
     sockets = []
     for s in set(rlist + wlist + xlist):

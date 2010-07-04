@@ -185,7 +185,10 @@ class IOLoop(object):
         self._running = True
         while True:
             # Never use an infinite timeout here - it can stall epoll
-            poll_timeout = 0.2
+            # In pyzmq, we need to multiply the timeout by 1000 because
+            # the poll interface in pyzmq that is used here takes the timeout
+            # in ms. The value of 0.2 that exists in tornado is in seconds.
+            poll_timeout = 0.2*1000
 
             # Prevent IO event starvation by delaying new callbacks
             # to the next iteration of the event loop.
