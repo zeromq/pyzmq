@@ -108,15 +108,15 @@ class TestPubLog(BaseZMQTestCase):
     
     def test_root_topic(self):
         logger, handler, sub = self.connect_handler()
-        handler.bind(self.iface)
+        handler.socket.bind(self.iface)
         sub2 = sub.context.socket(zmq.SUB)
         sub2.connect(self.iface)
         sub2.setsockopt(zmq.SUBSCRIBE, '')
         handler.root_topic = 'twoonly'
-        msg = 'ignored'
-        logger.info(msg)
+        msg1 = 'ignored'
+        logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
-        topic,msg = sub2.recv_multipart()
+        topic,msg2 = sub2.recv_multipart()
         self.assertEquals(topic, 'twoonly.INFO')
         self.assertEquals(msg2, msg1+'\n')
         

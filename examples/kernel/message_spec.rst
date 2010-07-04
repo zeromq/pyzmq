@@ -95,3 +95,18 @@ Control
 content = {
 
 }
+
+# msg_type = 'query'
+content = {
+    command : '' # the command to be requested
+
+}
+
+Parallel
+--------
+
+# msg_type = 'relay'
+header: id
+content = {
+    message
+}
