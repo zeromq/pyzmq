@@ -22,6 +22,7 @@ import logging
 import time
 import zmq
 import ioloop
+import Queue as queue # Queue is a bad name for a module
 
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
@@ -56,7 +57,7 @@ class ZMQStream(object):
     def __init__(self, socket, io_loop=None):
         self.socket = socket
         self.io_loop = io_loop or ioloop.IOLoop.instance()
-        self._tosend = None
+        self._send_queue = queue.Queue()
         # self._recv_buffer = ""
         # self._send_buffer = ""
         self._recv_callback = None
@@ -116,7 +117,7 @@ class ZMQStream(object):
         """send a multipart message
         """
         # self._check_closed()
-        self._tosend = msg
+        self._send_queue.put(msg)
         callback = callback or self._send_callback
         if callback is not None:
             self.on_send(callback)
@@ -142,7 +143,7 @@ class ZMQStream(object):
 
     def sending(self):
         """Returns true if we are currently sending to the stream."""
-        return self._tosend is not None
+        return not self._send_queue.empty()
 
     def closed(self):
         return self.socket is None
@@ -181,7 +182,7 @@ class ZMQStream(object):
         state = zmq.POLLERR
         if self.receiving():
             state |= zmq.POLLIN
-        if self._tosend is not None:
+        if self.sending():
             state |= zmq.POLLOUT
         if state != self._state:
             self._state = state
@@ -204,16 +205,18 @@ class ZMQStream(object):
 
     def _handle_send(self):
         # print "handling send"
-        if not self._tosend:
+        if not self.sending():
             return
-        self.socket.send_multipart(self._tosend)
-        self._tosend = None
+        
+        msg = self._send_queue.get()
+        self.socket.send_multipart(msg)
         if self._send_callback:
             callback = self._send_callback
             self._run_callback(callback)
         
         # unregister from event loop:
-        self._drop_io_state(zmq.POLLOUT)
+        if not self.sending():
+            self._drop_io_state(zmq.POLLOUT)
         
         # self.update_state()
     
