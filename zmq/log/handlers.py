@@ -22,6 +22,12 @@ class PUBHandler(logging.Handler):
     OR
     >>> handler = PUBHandler('inproc://loc')
     these are equivalent.
+    
+    log messages handled by this handler are broadcast with ZMQ topics
+    this.root_topic comes first, followed by the log level (DEBUG,INFO,etc.),
+    followed by any additional subtopics specified in the message by:
+    log.debug("subtopic.subsub::the real message")
+    
     """
     root_topic=""
     socket = None
@@ -64,9 +70,11 @@ class PUBHandler(logging.Handler):
         
         if self.root_topic:
             topic_list.append(self.root_topic)
+        
+        topic_list.append(record.levelname)
+        
         if topic:
             topic_list.append(topic)
-        topic_list.append(record.levelname)
         
         topic = '.'.join(topic_list)
         # print topic, msg
