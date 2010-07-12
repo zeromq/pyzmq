@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""This launches an echoing rep socket device,
+and runs a blocking numpy action. The rep socket should
+remain responsive to pings during this time."""
 import time
 import numpy
 import zmq

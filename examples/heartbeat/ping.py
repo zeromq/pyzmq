@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Min RK, 2010
+"""This simply pings the pong script, and measures how fast it responds."""
 import time
 import numpy
 import zmq
@@ -19,6 +21,6 @@ while True:
         tic = time.time()
         req.send(msg)
         resp = req.recv()
-        print msg, time.time()-tic
+        print "%s: %.2f ms" % (msg, 1000*(time.time()-tic))
         assert msg == resp
 
