@@ -82,7 +82,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
-
+    
     enum: errno
     char *zmq_strerror (int errnum)
     int zmq_errno()
@@ -161,6 +161,12 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
+    enum: ZMQ_STREAMER # 1
+    enum: ZMQ_FORWARDER # 2
+    enum: ZMQ_QUEUE # 3
+    
+    int zmq_device (int device, void * insocket, void * outsocket)
+    
     # void *zmq_stopwatch_start ()
     # unsigned long zmq_stopwatch_stop (void *watch_)
     # void zmq_sleep (int seconds_)
@@ -195,6 +201,11 @@ SNDMORE = ZMQ_SNDMORE
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
+
+STREAMER = ZMQ_STREAMER
+FORWARDER = ZMQ_FORWARDER
+QUEUE = ZMQ_QUEUE
+
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -1101,6 +1112,83 @@ def select(rlist, wlist, xlist, timeout=None):
     return rlist, wlist, xlist
     
 
+import threading
+class _DeviceThread(threading.Thread):
+    """A wrapped Thread for use in the Device"""
+    device = None
+    def __init__(self, device):
+        self.device = device
+        threading.Thread.__init__(self)
+        
+    def run(self):
+        return self.device.run()
+
+cdef class Device:
+    """A 0MQ Device.
+
+    Device(device_type, in_socket, out_socket)
+
+    Parameters
+    ----------
+    device_type : int
+        The 0MQ Device type
+    {in|out}_socket : Socket
+        ZMQ Sockets for in/out behavior
+    """
+    cdef public int device_type
+    cdef public Socket in_socket
+    cdef public Socket out_socket
+    def __cinit__(self, int device_type, Socket in_socket, Socket out_socket):
+        
+        self.device_type = device_type
+        self.in_socket = in_socket
+        self.out_socket = out_socket
+        thread = _DeviceThread(self)
+        thread.start()
+    
+    cdef int _run(self) nogil:
+        cdef int rc = 0
+        cdef int device_type = self.device_type
+        cdef void *ins = self.in_socket.handle
+        cdef void *outs = self.out_socket.handle
+        with nogil:
+            rc = zmq_device(device_type, ins, outs)
+        return rc
+    
+    def run(self):
+        return self._run()
+    
+
+# cdef class Device:
+#     """A 0MQ Device.
+# 
+#     Device(device_type, in_socket, out_socket)
+# 
+#     Parameters
+#     ----------
+#     device_type : int
+#         The 0MQ Device type
+#     {in|out}_socket : Socket
+#         ZMQ Sockets for in/out behavior
+#     """
+#     cdef int rc
+#     cdef public int device_type
+#     cdef public Socket in_socket
+#     cdef public Socket out_socket
+# 
+#     def __cinit__(self, int device_type, Socket in_socket, Socket out_socket):
+#         cdef int rc = 0
+#         self.device_type = device_type
+#         self.in_socket = in_socket
+#         self.out_socket = out_socket
+#         cdef void *ins = in_socket.handle
+#         cdef void *outs = out_socket.handle
+#         with nogil:
+#             rc = zmq_device(device_type, ins, outs)
+#         if not rc == 0:
+#             raise ZMQError()
+#         # print 'a'
+
 
 __all__ = [
     'Message',
@@ -1136,9 +1224,13 @@ __all__ = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
+    'STREAMER',
+    'FORWARDER',
+    'QUEUE',
     '_poll',
     'select',
     'Poller',
+    'Device',
     # ERRORNO codes
     'EAGAIN',
     'EINVAL',
