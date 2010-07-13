@@ -13,14 +13,16 @@ ctx = zmq.Context()
 
 
 dev = zmq.ThreadsafeDevice(zmq.FORWARDER, zmq.REP, -1)
+print "b"
 dev.bind_in('tcp://127.0.0.1:10111')
 dev.setsockopt_in(zmq.IDENTITY, "whoda")
 dev.start()
+print "c"
 #wait for connections
 time.sleep(1)
 
 A = numpy.random.random((2**11,2**12))
-
+print "starting blocking loop"
 while True:
     tic = time.time()
     numpy.dot(A,A.transpose())

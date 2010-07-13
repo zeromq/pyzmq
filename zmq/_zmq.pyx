@@ -1127,6 +1127,10 @@ cdef class Device:
     """A 0MQ Device.
 
     Device(device_type, in_socket, out_socket)
+    
+    Beware, this uses a child thread, but as zmq sockets are not threadsafe,
+    if you use the sockets in the main thread after starting the device, 
+    odd things might happen.
 
     Parameters
     ----------
@@ -1134,8 +1138,17 @@ cdef class Device:
         The 0MQ Device type
     {in|out}_socket : Socket
         ZMQ Sockets for in/out behavior
+        
+    Attributes
+    ----------
+    daemon: int
+        sets whether the thread should be run as a daemon
+        Default is true, because if it is False, the thread will not
+        exit unless it is killed
+
     """
     cdef public int device_type
+    cdef public int daemon
     cdef public Socket in_socket
     cdef public Socket out_socket
     def __cinit__(self, int device_type, Socket in_socket, Socket out_socket):
@@ -1143,6 +1156,7 @@ cdef class Device:
         self.device_type = device_type
         self.in_socket = in_socket
         self.out_socket = out_socket
+        self.daemon=True
         # thread = _DeviceThread(self)
         # thread.start()
     
@@ -1156,11 +1170,14 @@ cdef class Device:
         return rc
     
     def run(self):
+        """The runner method. Do not call me directly, instead call self.start()"""
         return self._run()
     
     def start(self):
         """start the thread"""
         thread = _DeviceThread(self)
+        if self.daemon:
+            thread.setDaemon(True)
         thread.start()
     
 cdef class ThreadsafeDevice:
@@ -1185,11 +1202,23 @@ cdef class ThreadsafeDevice:
     Methods
     -------
     bind_{in_out}(iface)
-        passthrough for in_socket.bind(iface), to be called in the thread
+        passthrough for {in|out}_socket.bind(iface), to be called in the thread
+    connect_{in_out}(iface)
+        passthrough for {in|out}_socket.connect(iface), to be called in the thread
+    setsockopt_{in_out}(opt,value)
+        passthrough for {in|out}_socket.setsockopt(opt, value), to be called in the thread
+    
+    Attributes
+    ----------
+    daemon: int
+        sets whether the thread should be run as a daemon
+        Default is true, because if it is false, the thread will not
+        exit unless it is killed
     """
     cdef public int device_type
     cdef public int in_type
     cdef public int out_type
+    cdef public int daemon
     cdef Socket in_socket
     cdef Socket out_socket
     cdef list in_binds
@@ -1198,7 +1227,7 @@ cdef class ThreadsafeDevice:
     cdef list out_connects
     cdef list in_sockopts
     cdef list out_sockopts
-    # cdef public Context ctx
+    
     def __cinit__(self, int device_type, int in_type, int out_type):
         
         self.device_type = device_type
@@ -1210,6 +1239,7 @@ cdef class ThreadsafeDevice:
         self.out_binds = list()
         self.out_connects = list()
         self.out_sockopts = list()
+        self.daemon = True
     
     cdef int _run(self) nogil:
         cdef int rc = 0
@@ -1222,33 +1252,37 @@ cdef class ThreadsafeDevice:
     
     def bind_in(self,iface):
         """enqueue interface for binding on in_socket
-        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
         self.in_binds.append(iface)
     
     def connect_in(self, iface):
         """enqueue interface for connecting on in_socket
-        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
         self.in_connects.append(iface)
     
     def setsockopt_in(self, opt, value):
-        "enqueue setsockopt(opt, value) for in_socket"
+        """enqueue setsockopt(opt, value) for in_socket
+        e.g. setsockopt_out(zmq.SUBSCRIBE, 'controller')"""
+
         self.in_sockopts.append((opt, value))
     
     def bind_out(self,iface):
         """enqueue interface for binding on out_socket
-        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
         self.out_binds.append(iface)
     
     def connect_out(self, iface):
         """enqueue interface for connecting on out_socket
-        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
         self.out_connects.append(iface)
     
     def setsockopt_out(self, opt, value):
-        "enqueue setsockopt(opt, value) for out_socket"
+        """"enqueue setsockopt(opt, value) for out_socket
+        e.g. setsockopt_out(zmq.IDENTITY, 'alice')"""
         self.out_sockopts.append((opt, value))
     
     def run(self):
+        """The runner method. Do not call me directly, instead call self.start()"""
         ctx = Context()
         
         self.in_socket = ctx.socket(self.in_type)
@@ -1277,6 +1311,8 @@ cdef class ThreadsafeDevice:
     def start(self):
         """start the thread"""
         thread = _DeviceThread(self)
+        if self.daemon:
+            thread.setDaemon(True)
         thread.start()
         
 
