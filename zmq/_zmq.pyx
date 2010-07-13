@@ -1143,8 +1143,8 @@ cdef class Device:
         self.device_type = device_type
         self.in_socket = in_socket
         self.out_socket = out_socket
-        thread = _DeviceThread(self)
-        thread.start()
+        # thread = _DeviceThread(self)
+        # thread.start()
     
     cdef int _run(self) nogil:
         cdef int rc = 0
@@ -1158,36 +1158,127 @@ cdef class Device:
     def run(self):
         return self._run()
     
-
-# cdef class Device:
-#     """A 0MQ Device.
-# 
-#     Device(device_type, in_socket, out_socket)
-# 
-#     Parameters
-#     ----------
-#     device_type : int
-#         The 0MQ Device type
-#     {in|out}_socket : Socket
-#         ZMQ Sockets for in/out behavior
-#     """
-#     cdef int rc
-#     cdef public int device_type
-#     cdef public Socket in_socket
-#     cdef public Socket out_socket
-# 
-#     def __cinit__(self, int device_type, Socket in_socket, Socket out_socket):
-#         cdef int rc = 0
-#         self.device_type = device_type
-#         self.in_socket = in_socket
-#         self.out_socket = out_socket
-#         cdef void *ins = in_socket.handle
-#         cdef void *outs = out_socket.handle
-#         with nogil:
-#             rc = zmq_device(device_type, ins, outs)
-#         if not rc == 0:
-#             raise ZMQError()
-#         # print 'a'
+    def start(self):
+        """start the thread"""
+        thread = _DeviceThread(self)
+        thread.start()
+    
+cdef class ThreadsafeDevice:
+    """A Threadsafe 0MQ Device.
+    It behaves the same as the Device, but creates the sockets as part of the run() command
+    
+    ThreadsafeDevice(device_type, in_socket_type, out_socket_type)
+    
+    Similar to Device, but socket types instead of sockets themselves are passed, and
+    the sockets are created in the work thread, to avoid issues with thread safety.
+    As a result, additional bind_{in|out} and connect_{in|out} methods and setsockopt
+    allow users to specify connections for the sockets to be specified
+    
+    Parameters
+    ----------
+    device_type : int
+        The 0MQ Device type
+    {in|out}_type : int
+        zmq socket types, to be passed later to context.socket(). e.g. zmq.PUB, zmq.SUB, zmq.REQ.
+        If out_type is < 0, then in_socket is used for both in_socket and out_socket.
+        
+    Methods
+    -------
+    bind_{in_out}(iface)
+        passthrough for in_socket.bind(iface), to be called in the thread
+    """
+    cdef public int device_type
+    cdef public int in_type
+    cdef public int out_type
+    cdef Socket in_socket
+    cdef Socket out_socket
+    cdef list in_binds
+    cdef list out_binds
+    cdef list in_connects
+    cdef list out_connects
+    cdef list in_sockopts
+    cdef list out_sockopts
+    # cdef public Context ctx
+    def __cinit__(self, int device_type, int in_type, int out_type):
+        
+        self.device_type = device_type
+        self.in_type = in_type
+        self.out_type = out_type
+        self.in_binds = list()
+        self.in_connects = list()
+        self.in_sockopts = list()
+        self.out_binds = list()
+        self.out_connects = list()
+        self.out_sockopts = list()
+    
+    cdef int _run(self) nogil:
+        cdef int rc = 0
+        cdef int device_type = self.device_type
+        cdef void *ins = self.in_socket.handle
+        cdef void *outs = self.out_socket.handle
+        with nogil:
+            rc = zmq_device(device_type, ins, outs)
+        return rc
+    
+    def bind_in(self,iface):
+        """enqueue interface for binding on in_socket
+        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        self.in_binds.append(iface)
+    
+    def connect_in(self, iface):
+        """enqueue interface for connecting on in_socket
+        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        self.in_connects.append(iface)
+    
+    def setsockopt_in(self, opt, value):
+        "enqueue setsockopt(opt, value) for in_socket"
+        self.in_sockopts.append((opt, value))
+    
+    def bind_out(self,iface):
+        """enqueue interface for binding on out_socket
+        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        self.out_binds.append(iface)
+    
+    def connect_out(self, iface):
+        """enqueue interface for connecting on out_socket
+        i.e. tcp://127.0.0.1:10101 or inproc://foo"""
+        self.out_connects.append(iface)
+    
+    def setsockopt_out(self, opt, value):
+        "enqueue setsockopt(opt, value) for out_socket"
+        self.out_sockopts.append((opt, value))
+    
+    def run(self):
+        ctx = Context()
+        
+        self.in_socket = ctx.socket(self.in_type)
+        
+        for iface in self.in_binds:
+            self.in_socket.bind(iface)
+        for iface in self.in_connects:
+            self.in_socket.connect(iface)
+        for opt,value in self.in_sockopts:
+            self.in_socket.setsockopt(opt, value)
+        
+        if self.out_type < 0:
+            self.out_socket = self.in_socket
+        else:
+            self.out_socket = ctx.socket(self.out_type)
+        
+        for iface in self.out_binds:
+            self.out_socket.bind(iface)
+        for iface in self.out_connects:
+            self.out_socket.connect(iface)
+        for opt,value in self.out_sockopts:
+            self.out_socket.setsockopt(opt, value)
+        
+        return self._run()
+    
+    def start(self):
+        """start the thread"""
+        thread = _DeviceThread(self)
+        thread.start()
+        
 
 
 __all__ = [
@@ -1231,6 +1322,7 @@ __all__ = [
     'select',
     'Poller',
     'Device',
+    'ThreadsafeDevice',
     # ERRORNO codes
     'EAGAIN',
     'EINVAL',
