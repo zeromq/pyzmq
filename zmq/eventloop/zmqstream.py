@@ -108,16 +108,16 @@ class ZMQStream(object):
         self._errback = callback
         
                 
-    def send(self, msg, callback=None):
+    def send(self, msg, flags=0, copy=False, callback=None):
         """send a message, optionally also register
         """
-        return self.send_multipart([msg], callback=callback)
+        return self.send_multipart([msg], flags, copy, callback=callback)
 
-    def send_multipart(self, msg, callback=None):
+    def send_multipart(self, msg, flags=0, copy=False, callback=None):
         """send a multipart message
         """
         # self._check_closed()
-        self._send_queue.put(msg)
+        self._send_queue.put((msg, flags, copy))
         callback = callback or self._send_callback
         if callback is not None:
             self.on_send(callback)
@@ -209,7 +209,7 @@ class ZMQStream(object):
             return
         
         msg = self._send_queue.get()
-        self.socket.send_multipart(msg)
+        self.socket.send_multipart(*msg)
         if self._send_callback:
             callback = self._send_callback
             self._run_callback(callback)

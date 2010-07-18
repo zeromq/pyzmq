@@ -78,7 +78,8 @@ class PUBHandler(logging.Handler):
         
         topic = '.'.join(topic_list)
         # print topic, msg
-        self.socket.send_multipart((topic, msg))
+        # map str, since sometimes we get unicode, and zmq can't deal with it
+        self.socket.send_multipart(map(str, (topic, msg)))
 
 class TopicLogger(logging.Logger):
     """a simple wrapper that takes an additional argument to log methods
