@@ -11,19 +11,16 @@ from zmq.eventloop import ioloop, zmqstream
 
 
 class HeartBeater(object):
-    """A basic HeartBeater class"""
-    def __init__(self, loop, context,period=1000):
+    """A basic HeartBeater class
+    pingstream: a PUB stream
+    pongstream: an XREP stream"""
+    
+    def __init__(self, loop, pingstream, pongstream, period=1000):
         self.loop = loop
-        self.context = context
         self.period = period
         
-        pub = context.socket(zmq.PUB)
-        pub.bind('tcp://127.0.0.1:5555')
-        xrep = context.socket(zmq.XREP)
-        xrep.bind('tcp://127.0.0.1:5556')
-        
-        self.pingstream = zmqstream.ZMQStream(pub, self.loop)
-        self.pongstream = zmqstream.ZMQStream(xrep, self.loop)
+        self.pingstream = pingstream
+        self.pongstream = pongstream
         self.pongstream.on_recv(self.handle_pong)
         
         self.hearts = set()
@@ -31,7 +28,7 @@ class HeartBeater(object):
         self.lifetime = 0
         self.tic = time.time()
         
-        self.caller = ioloop.PeriodicCallback(self.reevaluate, period, self.loop)
+        self.caller = ioloop.PeriodicCallback(self.beat, period, self.loop)
         self.caller.start()
     
     def beat(self):
@@ -47,7 +44,7 @@ class HeartBeater(object):
         map(self.handle_new_heart, newhearts)
         map(self.handle_heart_failure, heartfailures)
         self.responses = set()
-        print "beating hearts: ",self.hearts
+        print "%i beating hearts: %s"%(len(self.hearts),self.hearts)
         self.pingstream.send(str(self.lifetime))
     
     def handle_new_heart(self, heart):
@@ -71,7 +68,15 @@ class HeartBeater(object):
 
 if __name__ == '__main__':
     loop = ioloop.IOLoop()
-    ctx = zmq.Context()
-    hb = HeartBeater(loop,ctx)
+    context = zmq.Context()
+    pub = context.socket(zmq.PUB)
+    pub.bind('tcp://127.0.0.1:5555')
+    xrep = context.socket(zmq.XREP)
+    xrep.bind('tcp://127.0.0.1:5556')
+    
+    outstream = zmqstream.ZMQStream(pub, loop)
+    instream = zmqstream.ZMQStream(xrep, loop)
+    
+    hb = HeartBeater(loop, outstream, instream)
     
     loop.start()
