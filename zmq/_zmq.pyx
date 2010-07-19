@@ -1285,26 +1285,29 @@ cdef class ThreadsafeDevice:
         """The runner method. Do not call me directly, instead call self.start()"""
         ctx = Context()
         
+        # create the sockets
         self.in_socket = ctx.socket(self.in_type)
-        
-        for iface in self.in_binds:
-            self.in_socket.bind(iface)
-        for iface in self.in_connects:
-            self.in_socket.connect(iface)
-        for opt,value in self.in_sockopts:
-            self.in_socket.setsockopt(opt, value)
-        
         if self.out_type < 0:
             self.out_socket = self.in_socket
         else:
             self.out_socket = ctx.socket(self.out_type)
         
+        # set sockopts (must be done first, in case of zmq.IDENTITY)
+        for opt,value in self.in_sockopts:
+            self.in_socket.setsockopt(opt, value)
+        for opt,value in self.out_sockopts:
+            self.out_socket.setsockopt(opt, value)
+        
+        for iface in self.in_binds:
+            self.in_socket.bind(iface)
+        for iface in self.in_connects:
+            self.in_socket.connect(iface)
+        
+        
         for iface in self.out_binds:
             self.out_socket.bind(iface)
         for iface in self.out_connects:
             self.out_socket.connect(iface)
-        for opt,value in self.out_sockopts:
-            self.out_socket.setsockopt(opt, value)
         
         return self._run()
     
