@@ -62,15 +62,6 @@ class TestMonitoredQueue(BaseZMQTestCase):
             del socket
         del self.device
         
-    # We are disabling this test while an issue is being resolved.
-    # def test_basic(self):
-    #     s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
-    #     s2.setsockopt(zmq.SUBSCRIBE,'')
-    #     import time; time.sleep(0.5)
-    #     msg1 = 'message'
-    #     s1.send(msg1)
-    #     msg2 = s2.recv()  # This is blocking!
-    #     self.assertEquals(msg1, msg2)
     def test_reply(self):
         alice, bob, mon = self.build_device("")
         alices = "hello bob".split()
