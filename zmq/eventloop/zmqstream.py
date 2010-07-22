@@ -122,7 +122,7 @@ class ZMQStream(object):
         if callback is not None:
             self.on_send(callback)
         else:
-            self.on_send(lambda : None)
+            self.on_send(lambda _: None)
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
@@ -212,7 +212,7 @@ class ZMQStream(object):
         self.socket.send_multipart(*msg)
         if self._send_callback:
             callback = self._send_callback
-            self._run_callback(callback)
+            self._run_callback(callback, msg)
         
         # unregister from event loop:
         if not self.sending():
