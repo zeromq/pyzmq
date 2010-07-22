@@ -1125,9 +1125,13 @@ cdef void z_free (void *data, void *hint) nogil:
 
 # the MonitoredQueue C function:
 cdef int monitored_queue_ (void *insocket_, void *outsocket_,
-                        void *sidesocket_) nogil:
+                        void *sidesocket_, int swap_ids) nogil:
+    
+    cdef int ids_done
     cdef zmq_msg_t msg
     cdef int rc = zmq_msg_init (&msg)
+    cdef zmq_msg_t id_msg
+    rc = zmq_msg_init (&id_msg)
     cdef zmq_msg_t side_msg
     rc = zmq_msg_init (&side_msg)
     cdef zmq_msg_t in_msg
@@ -1162,6 +1166,7 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
 
         # //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1)
+        ids_done=0
         # assert (rc > 0)
 
         # //  The algorithm below asumes ratio of request and replies processed
@@ -1174,6 +1179,21 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
             rc = zmq_msg_copy(&side_msg, &in_msg)
             rc = zmq_send (sidesocket_, &side_msg, ZMQ_SNDMORE)
             while (True):
+                if swap_ids and not ids_done:
+                    # recv two ids into msg, id_msg
+                    rc = zmq_recv (insocket_, &msg, 0)
+                    rc = zmq_recv (insocket_, &id_msg, 0)
+                    # send second id (id_msg) first
+                    rc = zmq_msg_copy(&side_msg, &id_msg)
+                    rc = zmq_send (outsocket_, &id_msg, ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    # send first id (msg) first
+                    rc = zmq_msg_copy(&side_msg, &msg)
+                    rc = zmq_send (outsocket_, &msg, ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    
+                    # only do it once:
+                    ids_done = 1
 
                 rc = zmq_recv (insocket_, &msg, 0)
                 # assert (rc == 0)
@@ -1194,12 +1214,28 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                     break
         #     }
         # }
+        ids_done=0
 
         # //  Process a reply.
         if (items [1].revents & ZMQ_POLLIN):
             rc = zmq_msg_copy(&side_msg, &out_msg)
             rc = zmq_send (sidesocket_, &side_msg, ZMQ_SNDMORE)
             while (True):
+                if swap_ids and not ids_done:
+                    # recv two ids into msg, id_msg
+                    rc = zmq_recv (outsocket_, &msg, 0)
+                    rc = zmq_recv (outsocket_, &id_msg, 0)
+                    # send second id (id_msg) first
+                    rc = zmq_msg_copy(&side_msg, &id_msg)
+                    rc = zmq_send (insocket_, &id_msg, ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    # send first id (msg) first
+                    rc = zmq_msg_copy(&side_msg, &msg)
+                    rc = zmq_send (insocket_, &msg, ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    
+                    # only do it once:
+                    ids_done = 1
 
                 rc = zmq_recv (outsocket_, &msg, 0)
                 # assert (rc == 0)
@@ -1325,9 +1361,14 @@ cdef class MonitoredQueue(Device):
     """
     
     cdef public Socket monitor_socket
+    cdef int swap_ids
     
     def __cinit__(self, Socket in_socket, Socket out_socket, Socket monitor_socket, *args, **kwargs):
         self.monitor_socket = monitor_socket
+        if in_socket.socket_type == XREP and out_socket.socket_type == XREP:
+            self.swap_ids = 1
+        else:
+            self.swap_ids = 0
         # in_socket/out_socket handled by Device 
     
     def __init__(self, Socket in_socket, Socket out_socket, Socket monitor_socket):
@@ -1340,8 +1381,9 @@ cdef class MonitoredQueue(Device):
         cdef void *ins = self.in_socket.handle
         cdef void *outs = self.out_socket.handle
         cdef void *mons = self.monitor_socket.handle
+        # cdef int swap_ids
         with nogil:
-            rc = monitored_queue_(ins, outs, mons)
+            rc = monitored_queue_(ins, outs, mons, self.swap_ids)
         return rc
 
         
@@ -1520,12 +1562,17 @@ cdef class TSMonitoredQueue_(TSDevice):
     cdef list mon_binds
     cdef list mon_connects
     cdef list mon_sockopts
+    cdef int swap_ids
     
     def __cinit__(self, int device_type, int in_type, int out_type, int mon_type, *args, **kwargs):
         self.mon_type = mon_type
         self.mon_binds = list()
         self.mon_connects = list()
         self.mon_sockopts = list()
+        if in_type == XREP and out_type == XREP:
+            self.swap_ids = 1
+        else:
+            self.swap_ids = 0
         
     
     def __init__(self, int device_type, int in_type, int out_type, int mon_socket):
@@ -1572,7 +1619,7 @@ cdef class TSMonitoredQueue_(TSDevice):
         cdef void *outs = self.out_socket.handle
         cdef void *mons = self.mon_socket.handle
         with nogil:
-            rc = monitored_queue_(ins, outs, mons)
+            rc = monitored_queue_(ins, outs, mons,self.swap_ids)
         return rc
         
         
