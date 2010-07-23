@@ -28,6 +28,7 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
+# from python_abstract cimport PyObject_AsCharBuffer
 from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
@@ -566,7 +567,7 @@ cdef class Socket:
 
         self._check_closed()
 
-        if not isinstance(addr, str):
+        if not isinstance(addr, (str,unicode)):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -615,7 +616,7 @@ cdef class Socket:
 
         self._check_closed()
 
-        if not isinstance(addr, str):
+        if not isinstance(addr, (str,unicode)):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
