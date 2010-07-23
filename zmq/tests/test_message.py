@@ -51,8 +51,15 @@ class TestMessage(TestCase):
         for i in range(16):
             s = (2**i)*'x'
             m = zmq.Message(s)
-            self.assertEquals(s, str(s))
-            self.assert_(s is str(s))
+            self.assertEquals(s, str(m))
+            self.assert_(s is str(m))
+
+    def test_unicode(self):
+        """Test the str representations of the Messages."""
+        for i in range(16):
+            s = (2**i)*u'x'
+            m = zmq.Message(s)
+            self.assertEquals(s, str(m))
 
     def test_len(self):
         """Test the len of the Messages."""

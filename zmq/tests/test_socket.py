@@ -37,7 +37,19 @@ class TestSocket(BaseZMQTestCase):
         # Superluminal protocol not yet implemented
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
-
+    
+    def test_unicode(self):
+        ctx = zmq.Context()
+        p = ctx.socket(zmq.PUB)
+        p.bind(u"inproc://foo")
+        s = ctx.socket(zmq.SUB)
+        s.connect(u"inproc://foo")
+        s.setsockopt(zmq.SUBSCRIBE, u"test")
+        msg = [ "test", u"msg content" ]
+        p.send_multipart(msg)
+        rcvd = s.recv_multipart()
+        for a,b in zip(msg, rcvd):
+            self.assertEquals(a,b)
 
     def test_close(self):
         ctx = zmq.Context()

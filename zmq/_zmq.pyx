@@ -469,7 +469,7 @@ cdef class Socket:
         self._check_closed()
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, str):
+            if not isinstance(optval, (str,unicode)):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
@@ -549,7 +549,7 @@ cdef class Socket:
 
         self._check_closed()
 
-        if not isinstance(addr, str):
+        if not isinstance(addr, (str,unicode)):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -598,7 +598,7 @@ cdef class Socket:
 
         self._check_closed()
 
-        if not isinstance(addr, str):
+        if not isinstance(addr, (str,unicode)):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
@@ -660,7 +660,7 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, str):
+        if not isinstance(msg, (str,unicode)):
             raise TypeError('expected str, got: %r' % msg)
 
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
@@ -697,7 +697,7 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, str):
+        if not isinstance(msg, (str,unicode)):
             raise TypeError('expected str, got: %r' % msg)
 
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
