@@ -34,6 +34,9 @@ from python_ref cimport Py_DECREF, Py_INCREF
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
+    
+    cdef Py_ssize_t PyObject_AsCharBuffer(object obj, char **cbuf, Py_ssize_t *s)
+    cdef object PyBuffer_FromMemory(void *ptr, Py_ssize_t s)
 
 # For some reason we need to call this.  My guess is that we are not doing
 # any Python treading.
@@ -300,11 +303,13 @@ cdef class Message:
 
     cdef zmq_msg_t zmq_msg
     cdef object data
+    cdef object buf
     
     def __cinit__(self, object data=None):
         cdef int rc
         # Save the data object in case the user wants the the data as a str.
         self.data = data
+        self.buf = None
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
 
@@ -313,20 +318,25 @@ cdef class Message:
                 rc = zmq_msg_init(&self.zmq_msg)
             if rc != 0:
                 raise ZMQError()
+            return
+        elif isinstance(data, buffer):
+            rc = PyObject_AsCharBuffer(data, &data_c, &data_len_c)
+            if rc != 0:
+                raise ZMQError("Couldn't get buffer")
         else:
             PyString_AsStringAndSize(data, &data_c, &data_len_c)
-            # We INCREF the *original* Python object (not self) and pass it
-            # as the hint below. This allows other copies of this Message
-            # object to take over the ref counting of data properly.
-            Py_INCREF(data)
-            with nogil:
-                rc = zmq_msg_init_data(
-                    &self.zmq_msg, <void *>data_c, data_len_c, 
-                    <zmq_free_fn *>free_python_msg, <void *>data
-                )
-            if rc != 0:
-                Py_DECREF(data)
-                raise ZMQError()
+        # We INCREF the *original* Python object (not self) and pass it
+        # as the hint below. This allows other copies of this Message
+        # object to take over the ref counting of data properly.
+        Py_INCREF(data)
+        with nogil:
+            rc = zmq_msg_init_data(
+                &self.zmq_msg, <void *>data_c, data_len_c, 
+                <zmq_free_fn *>free_python_msg, <void *>data
+            )
+        if rc != 0:
+            Py_DECREF(data)
+            raise ZMQError()
 
     def __dealloc__(self):
         cdef int rc
@@ -372,6 +382,19 @@ cdef class Message:
             return PyString_FromStringAndSize(data_c, data_len_c)
         else:
             return self.data
+    
+    cdef object _getbuffer(self):
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        data_c = <char *>zmq_msg_data(&self.zmq_msg)
+        data_len_c = zmq_msg_size(&self.zmq_msg)
+        self.buf = PyBuffer_FromMemory(data_c, data_len_c)
+    
+    @property
+    def buffer(self):
+        if self.buf is None:
+            self._getbuffer()
+        return self.buf
 
 
 cdef class Context:
@@ -1285,7 +1308,7 @@ cdef class Device:
     
     Beware, this uses a child thread, but as zmq sockets are not threadsafe,
     if you use the sockets in the main thread after starting the device, 
-    odd things might happen.
+    odd things might happen. See TSDevice for a threadsafe version
 
     Parameters
     ----------
