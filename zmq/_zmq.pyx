@@ -28,14 +28,13 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
+# from python_string cimport PyString_InternFromString
 from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
-    
-    cdef Py_ssize_t PyObject_AsCharBuffer(object obj, char **cbuf, Py_ssize_t *s)
-    cdef object PyBuffer_FromMemory(void *ptr, Py_ssize_t s)
+    # 
 
 # For some reason we need to call this.  My guess is that we are not doing
 # any Python treading.
@@ -55,6 +54,8 @@ except ImportError:
         json = None
 
 include "allocate.pxi"
+include "asbuffer.pxi"
+include "frombuffer.pxi"
 
 #-----------------------------------------------------------------------------
 # Import the C header files
@@ -301,12 +302,11 @@ cdef class Message:
             if rc != 0:
                 raise ZMQError()
             return
-        elif isinstance(data, buffer):
-            rc = PyObject_AsCharBuffer(data, &data_c, &data_len_c)
-            if rc != 0:
-                raise ZMQError("Couldn't get buffer")
-        else:
+        elif isinstance(data, (str, unicode)):
             PyString_AsStringAndSize(data, &data_c, &data_len_c)
+        else:
+            # try buffer interface
+            asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
@@ -360,9 +360,10 @@ cdef class Message:
         """Return the str form of the message."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-        if self.data is None:
+        if self.data is None or not isinstance(self.data, (str,unicode)):
             data_c = <char *>zmq_msg_data(&self.zmq_msg)
             data_len_c = zmq_msg_size(&self.zmq_msg)
+            # return PyString_InternFromString(data_c)
             return PyString_FromStringAndSize(data_c, data_len_c)
         else:
             return self.data
@@ -372,7 +373,9 @@ cdef class Message:
         cdef Py_ssize_t data_len_c
         data_c = <char *>zmq_msg_data(&self.zmq_msg)
         data_len_c = zmq_msg_size(&self.zmq_msg)
-        self.buf = PyBuffer_FromMemory(data_c, data_len_c)
+        # read-only, because we don't want to allow
+        # editing of the message in-place
+        self.buf = frombuffer_r(data_c, data_len_c)
     
     @property
     def buffer(self):

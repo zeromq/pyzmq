@@ -111,11 +111,18 @@ zmq = Extension(
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
+# write NEWSTYLE/OLDSTYLE switch
+with open(pjoin("zmq", "versioner.pxi"), 'w') as f:
+    # newstyle memory object available in >=2.7
+    # but let's restrict it to 3.0?
+    pyver = sys.version_info[0] + 0.1*sys.version_info[1]
+    newstyle = (pyver >= 3)
+    f.write("DEF NEWSTYLE=%s\n"%newstyle)
 
 setup(
     name = "pyzmq",
     version = "0.1",
-    packages = ['zmq', 'zmq.tests', 'zmq.eventloop'],
+    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'z'],
     ext_modules = [zmq],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
