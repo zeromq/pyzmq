@@ -366,6 +366,8 @@ cdef class Message:
         # called.
         if self.data is not None:
             new_msg.data = self.data
+        if self.buf is not None:
+            new_msg.buf = self.buf
         return new_msg
 
     def __len__(self):
@@ -510,7 +512,7 @@ cdef class Socket:
         self._check_closed()
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, str):
+            if not isinstance(optval, (str,unicode)):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
@@ -701,7 +703,7 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, str):
+        if not isinstance(msg, (str,unicode)):
             raise TypeError('expected str, got: %r' % msg)
 
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
@@ -738,7 +740,7 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, str):
+        if not isinstance(msg, (str,unicode)):
             raise TypeError('expected str, got: %r' % msg)
 
         PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
