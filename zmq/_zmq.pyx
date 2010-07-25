@@ -28,7 +28,6 @@ from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
-# from python_string cimport PyString_InternFromString
 from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
@@ -302,10 +301,13 @@ cdef class Message:
             if rc != 0:
                 raise ZMQError()
             return
-        elif isinstance(data, (str, unicode)):
-            PyString_AsStringAndSize(data, &data_c, &data_len_c)
+        elif isinstance(data, (str,unicode)):
+            try:
+                PyString_AsStringAndSize(data, &data_c, &data_len_c)
+            except:
+                asbuffer_r(data, <void **>&data_c, &data_len_c)
         else:
-            # try buffer interface
+            # always use buffer interface?
             asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
@@ -360,11 +362,13 @@ cdef class Message:
         """Return the str form of the message."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-        if self.data is None or not isinstance(self.data, (str,unicode)):
+        if self.data is None or not isinstance(self.data, (str, unicode)):
             data_c = <char *>zmq_msg_data(&self.zmq_msg)
             data_len_c = zmq_msg_size(&self.zmq_msg)
-            # return PyString_InternFromString(data_c)
-            return PyString_FromStringAndSize(data_c, data_len_c)
+            try:
+                return PyString_FromStringAndSize(data_c, data_len_c)
+            except:
+                return unicode(self.buffer, 'utf16')
         else:
             return self.data
     
@@ -688,10 +692,12 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, (str,unicode)):
-            raise TypeError('expected str, got: %r' % msg)
-
-        PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        # if not isinstance(msg, (str,unicode)):
+        #     raise TypeError('expected str, got: %r' % msg)
+        try:
+            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        except:
+            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
         # If zmq_msg_init_* fails do we need to call zmq_msg_close?
@@ -728,7 +734,10 @@ cdef class Socket:
         if not isinstance(msg, (str,unicode)):
             raise TypeError('expected str, got: %r' % msg)
 
-        PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        try:
+            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
+        except:
+            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
         Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
         rc = zmq_msg_init_data(
             &data, <void *>msg_c, msg_c_len,
