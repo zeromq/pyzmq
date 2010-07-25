@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 #
 #    Copyright (c) 2010 Brian E. Granger
 #
@@ -55,11 +57,12 @@ class TestMessage(TestCase):
             self.assert_(s is str(m))
 
     def test_unicode(self):
-        """Test the str representations of the Messages."""
+        """Test the unicode representations of the Messages."""
         for i in range(16):
-            s = (2**i)*u'x'
+            s = (2**i)*u'§'
             m = zmq.Message(s)
-            self.assertEquals(s, str(m))
+            self.assertEquals(s, unicode(m))
+            self.assert_(s is unicode(m))
 
     def test_len(self):
         """Test the len of the Messages."""
@@ -105,4 +108,37 @@ class TestMessage(TestCase):
             del m2
             self.assertEquals(grc(s), 2)
             del s
+    
+    def test_buffer_in(self):
+        """test using a buffer as input"""
+        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf16')
+        m = zmq.Message(buffer(ins))
+        outs = unicode(m.buffer,'utf16')
+        self.assertEquals(ins,outs)
+        
+    def test_buffer_out(self):
+        """receiving buffered output"""
+        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf')
+        m = zmq.Message(ins)
+        outb = m.buffer
+        self.assertTrue(isinstance(outb, buffer))
+        self.assertEquals(unicode(m),unicode(outb, 'utf16'))
+        self.assert_(outb is m.buffer)
+        self.assert_(m.buffer is m.buffer)
+    
+    def test_buffer_numpy(self):
+        """test non-copyhing numpy array messages"""
+        try:
+            import numpy
+        except ImportError:
+            return
+        shapes = map(numpy.random.randint, [2]*5,[16]*5)
+        for i in range(1,len(shapes)+1):
+            shape = shapes[:i]
+            A = numpy.random.random(shape)
+            m = zmq.Message(A)
+            self.assertEquals(A.data, m.buffer)
+            B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
+            self.assertEquals((A==B).all(), True)
+        
 
