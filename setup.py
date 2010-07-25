@@ -122,7 +122,7 @@ with open(pjoin("zmq", "versioner.pxi"), 'w') as f:
 setup(
     name = "pyzmq",
     version = "0.1",
-    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'z'],
+    packages = ['zmq', 'zmq.tests', 'zmq.eventloop'],
     ext_modules = [zmq],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
