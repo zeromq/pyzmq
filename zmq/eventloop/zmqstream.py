@@ -30,7 +30,7 @@ class ZMQStream(object):
     For use with zmq.eventloop.ioloop
 
     There are 3 main methods:
-    on_recv(callback):
+    on_recv(callback,copy=True):
         register a callback to be run every time the socket has something to receive
     on_send(callback):
         register a callback to be run every time you call send
@@ -66,7 +66,7 @@ class ZMQStream(object):
         self._errback = None
         self._state = zmq.POLLERR
         self.io_loop.add_handler(self.socket, self._handle_events, self._state)
-        
+        self._recv_copy = False
         # shortcircuit some socket methods
         self.bind = self.socket.bind
         self.connect = self.socket.connect
@@ -85,12 +85,13 @@ class ZMQStream(object):
         self._errback = None
         # self._drop_io_state(zmq.POLLOUT)
     
-    def on_recv(self, callback):
+    def on_recv(self, callback,copy=True):
         """register a callback to be called on each recv.
         callback must take exactly one argument, which will be a
         list, returned by socket.recv_multipart()."""
         # assert not self._recv_callback, "Already receiving"
         self._recv_callback = callback
+        self._recv_copy = copy
         self._add_io_state(zmq.POLLIN)
     
     def on_send(self, callback):
@@ -191,7 +192,7 @@ class ZMQStream(object):
     def _handle_recv(self):
         # print "handling recv"
         try:
-            msg = self.socket.recv_multipart()
+            msg = self.socket.recv_multipart(copy=self._recv_copy)
         except zmq.ZMQError:
             logging.warning("RECV Error")
         else:
