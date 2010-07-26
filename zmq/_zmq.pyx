@@ -40,17 +40,39 @@ cdef extern from "Python.h":
 PyEval_InitThreads()
 
 import copy as copy_mod
-import cPickle as pickle
 import random
 import struct
 
 try:
-    import json
+    import cjson
+    json = cjson
+    raise ImportError
 except ImportError:
+    cjson = None
     try:
-        import simplejson as json
-    except ImportError:
-        json = None
+        import json
+    except:
+        try:
+            import simplejson as json
+        except ImportError:
+            json = None
+
+try:
+    import cPickle
+    pickle = cPickle
+except:
+    cPickle = None
+    import pickle
+
+def jsonify(o): 
+    return json.dumps(o, separators=(',',':'))
+
+if cjson is not None:
+    from_json = json.decode
+    to_json = json.encode
+else:
+    to_json = jsonify
+    from_json = json.loads
 
 include "allocate.pxi"
 include "asbuffer.pxi"
@@ -939,9 +961,9 @@ cdef class Socket:
             Any valid send flag.
         """
         if json is None:
-            raise ImportError('json or simplejson library is required.')
+            raise ImportError('cjson, json or simplejson library is required.')
         else:
-            msg = json.dumps(obj, separators=(',',':'))
+            msg = to_json(obj)
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
@@ -958,10 +980,10 @@ cdef class Socket:
             The Python object that arrives as a message.
         """
         if json is None:
-            raise ImportError('json or simplejson library is required.')
+            raise ImportError('cjson, json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            return json.loads(msg)
+            return from_json(msg)
 
 
 # cdef class Stopwatch:
