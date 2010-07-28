@@ -640,12 +640,15 @@ cdef class Socket:
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc.
+        
+            if addr is unicode, it is encoded to utf-8 first.
         """
         cdef int rc
 
         self._check_closed()
-
-        if not isinstance(addr, (str,unicode)):
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -689,12 +692,14 @@ cdef class Socket:
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc.
+            if addr is unicode, it is encoded to utf-8 first.
         """
         cdef int rc
 
         self._check_closed()
-
-        if not isinstance(addr, (str,unicode)):
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
