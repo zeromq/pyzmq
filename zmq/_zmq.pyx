@@ -40,6 +40,7 @@ PyEval_InitThreads()
 import copy as copy_mod
 import random
 import struct
+import codecs
 
 try:
     import cjson
@@ -393,6 +394,10 @@ cdef class Message:
         else:
             return self.data
     
+    def __unicode__(self):
+        """returns a unicode representation, assuming the buffer is utf-8"""
+        return codecs.utf_8_decode(self.buffer)[0]
+    
     cdef object _getbuffer(self):
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
@@ -606,7 +611,9 @@ cdef class Socket:
             raise TypeError("unicode strings only")
         
         return self.setsockopt(option, optval.encode(encoding))
-
+    
+    setsockopt_string = setsockopt_unicode
+    
     def getsockopt_unicode(self, int option,encoding='utf-8'):
         """Get the value of a socket option.
 
@@ -626,7 +633,9 @@ cdef class Socket:
         if option not in [IDENTITY]:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
-
+    
+    getsockopt_string = getsockopt_unicode
+    
     def bind(self, addr):
         """Bind the socket to an address.
 
@@ -944,10 +953,22 @@ cdef class Socket:
         return bool(more)
 
     def send_unicode(self, u, int flags=0,encoding='utf-8'):
-        """sends a unicode string"""
+        """Send a Python unicode object as a message with an encoding.
+
+        Parameters
+        ----------
+        u : Python unicode object
+            The unicode string to send.
+        flags : int
+            Any valid send flag.
+        encoding : str
+            the encoding to be used, default is 'utf-8'
+        """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=False)
+    
+    send_string = send_unicode
         
     def recv_unicode(self, int flags=0,encoding='utf-8'):
         """recv a unicode string, as sent by send_unicode
@@ -959,11 +980,13 @@ cdef class Socket:
             name of 
         Returns
         -------
-        obj : Python object
-            The Python object that arrives as a message.
-"""
+        s : unicode string
+            The Python unicode string that arrives as message bytes.
+        """
         msg = self.recv(flags=flags, copy=False)
         return unicode(msg.buffer, encoding)
+    
+    recv_string = recv_unicode
 
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.

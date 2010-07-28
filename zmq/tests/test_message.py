@@ -63,7 +63,7 @@ class TestMessage(TestCase):
         for i in range(16):
             s = (2**i)*u'§'
             m = zmq.Message(s.encode('utf8'))
-            self.assertEquals(s, unicode(str(m), 'utf8'))
+            self.assertEquals(s, unicode(m))
     
 
     def test_len(self):

@@ -44,6 +44,8 @@ class TestSocket(BaseZMQTestCase):
         """test using unicode simple strings"""
         topic = u"tést"
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        self.assertEquals(s.send_string, s.send_unicode)
+        self.assertEquals(p.recv_string, p.recv_unicode)
         self.assertRaises(TypeError, s.setsockopt, zmq.SUBSCRIBE, topic)
         self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
         self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
@@ -61,6 +63,8 @@ class TestSocket(BaseZMQTestCase):
     
     def test_send_unicode(self):
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        self.assertEquals(a.setsockopt_string, a.setsockopt_unicode)
+        self.assertEquals(b.getsockopt_string, b.getsockopt_unicode)
         u =  u"çπ§"
         self.assertRaises(TypeError, a.send, u,copy=False)
         self.assertRaises(TypeError, a.send, u,copy=True)
