@@ -26,14 +26,12 @@
 
 from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
-from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
 from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
-    # 
 
 # For some reason we need to call this.  My guess is that we are not doing
 # any Python treading.
@@ -333,11 +331,8 @@ cdef class Message:
             if rc != 0:
                 raise ZMQError()
             return
-        if isinstance(data, str):
-            PyString_AsStringAndSize(data, &data_c, &data_len_c)
-        else:
-        # always use buffer interface?
-            asbuffer_r(data, <void **>&data_c, &data_len_c)
+        # always use buffer interface:
+        asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
@@ -764,10 +759,8 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if isinstance(msg, str):
-            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        else: # buffer interface (numpy, etc.)
-            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        # copy to c array:
+        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
             
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
@@ -805,10 +798,9 @@ cdef class Socket:
         if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
 
-        try:
-            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        except:
-            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        # copy to c-array:
+        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        
         Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
         rc = zmq_msg_init_data(
             &data, <void *>msg_c, msg_c_len,
