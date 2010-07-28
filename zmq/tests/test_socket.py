@@ -40,51 +40,38 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
     
-    def test_unicode_ascii(self):
-        """test using unicode simple strings"""
-        p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        s.setsockopt(zmq.SUBSCRIBE, u"test")
-        time.sleep(0.1)
-        msg = [ "test", u"msg content" ]
-        p.send_multipart(msg)
-        rcvd = s.recv_multipart()
-        for a,b in zip(msg, rcvd):
-            self.assertEquals(a,b)
-    
     def test_unicode_sockopts(self):
+        """test using unicode simple strings"""
+        topic = u"tést"
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        s.setsockopt(zmq.SUBSCRIBE, u'ascii')
-        utopic =  u"çπ§"
-        self.assertRaises(UnicodeEncodeError, s.setsockopt, zmq.SUBSCRIBE,utopic)
-        s.setsockopt(zmq.SUBSCRIBE, str(buffer(utopic)))
-        msg = ['ascii', 'yes']
-        time.sleep(0.1)
-        p.send_multipart(msg)
-        rcvd = s.recv_multipart()
-        for a,b in zip(msg, rcvd):
-            self.assertEquals(a,b)
-        msg = [utopic, 'yes']
-        # time.sleep(0.1)
-        p.send_multipart(msg)
-        rcvd = s.recv_multipart()
-        rcvd[0] = rcvd[0].decode('utf16')
-        for a,b in zip(msg, rcvd):
-            self.assertEquals(a,b)
-        
-        
+        self.assertRaises(TypeError, s.setsockopt, zmq.SUBSCRIBE, topic)
+        self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
+        self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
+        s.setsockopt_unicode(zmq.SUBSCRIBE, topic)
+        s.setsockopt_unicode(zmq.IDENTITY, topic, 'utf16')
+        self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
+        self.assertRaises(TypeError, s.getsockopt_unicode, zmq.SUBSCRIBE)
+        st = s.getsockopt(zmq.IDENTITY)
+        self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
+        time.sleep(0.1) # wait for connection/subscription
+        p.send_unicode(topic,zmq.SNDMORE)
+        p.send_unicode(topic*2, encoding='utf32')
+        self.assertEquals(topic, s.recv_unicode())
+        self.assertEquals(topic*2, s.recv_unicode(encoding='utf32'))
     
-    def test_unicode_nonascii(self):
-        """test sending non-ascii unicode characters"""
-        p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        s.setsockopt(zmq.SUBSCRIBE, "test")
-        time.sleep(0.1)
-        msg = [ u"test", u"msg∆˚¬content∂" ]
-        p.send_multipart(msg)
-        rcvd = s.recv_multipart()
-        rcvd[1] = rcvd[1].decode('utf16')
-        for a,b in zip(msg,rcvd):
-            self.assertEquals(a,b)
-    
+    def test_send_unicode(self):
+        a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        u =  u"çπ§"
+        self.assertRaises(TypeError, a.send, u,copy=False)
+        self.assertRaises(TypeError, a.send, u,copy=True)
+        a.send_unicode(u)
+        s = b.recv()
+        self.assertEquals(s,u.encode('utf8'))
+        self.assertEquals(s.decode('utf8'),u)
+        a.send_unicode(u,encoding='utf32')
+        s = b.recv_unicode(encoding='utf32')
+        self.assertEquals(s,u)
+        
     # def test_nonunicode(self):
 
     def test_close(self):

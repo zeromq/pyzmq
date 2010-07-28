@@ -321,7 +321,12 @@ cdef class Message:
         self.buf = None
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-
+        if isinstance(data, unicode):
+            # still initialize the msg, else dealloc will cause Bus Error
+            with nogil:
+                rc = zmq_msg_init(&self.zmq_msg)
+            raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
+        
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
@@ -330,13 +335,8 @@ cdef class Message:
             return
         if isinstance(data, str):
             PyString_AsStringAndSize(data, &data_c, &data_len_c)
-        elif isinstance(data, unicode):
-            try: # simple string
-                PyString_AsStringAndSize(data, &data_c, &data_len_c)
-            except:
-                asbuffer_r(data, <void **>&data_c, &data_len_c)
         else:
-            # always use buffer interface?
+        # always use buffer interface?
             asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
@@ -391,24 +391,12 @@ cdef class Message:
         """Return the str form of the message."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-        if self.data is None or not isinstance(self.data, (str, unicode)):
+        if self.data is None or not isinstance(self.data, str):
             data_c = <char *>zmq_msg_data(&self.zmq_msg)
             data_len_c = zmq_msg_size(&self.zmq_msg)
             return PyString_FromStringAndSize(data_c, data_len_c)
-            # unused:
-            # try:
-            #     # PyString_FromStringAndSize won't fail if we get utf16 buffer
-            #     # so we can't tell if the String is correct
-            #     # PyUnicode_FromStringAndSize will raise an error
-            #     # if we try to read a utf16 buffer as something else
-            #     return PyUnicode_FromStringAndSize(data_c, data_len_c)
-            # except:
-            #     try:
-            #         return PyUnicode_FromEncodedObject(self.buffer, 'utf16', NULL)
-            #     except:
-            #         return PyString_FromStringAndSize(data_c, data_len_c)
-        # else:
-        return self.data
+        else:
+            return self.data
     
     cdef object _getbuffer(self):
         cdef char *data_c = NULL
@@ -537,9 +525,11 @@ cdef class Socket:
         cdef int rc
 
         self._check_closed()
+        if isinstance(optval, unicode):
+            raise TypeError("unicode not allowed, use setsockopt_unicode")
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, (str,unicode)):
+            if not isinstance(optval, str):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
@@ -600,6 +590,47 @@ cdef class Socket:
             raise ZMQError()
 
         return result
+    
+    def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
+        """Set socket options with a unicode object
+        it is simply a wrapper for setsockopt to protect from encoding ambiguity
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : int
+            The name of the option to set. Can be any of: SUBSCRIBE, 
+            UNSUBSCRIBE, IDENTITY
+        optval : unicode
+            The value of the option to set.
+        encoding : str
+            The encoding to be used, default is utf8
+        """
+        if not isinstance(optval, unicode):
+            raise TypeError("unicode strings only")
+        
+        return self.setsockopt(option, optval.encode(encoding))
+
+    def getsockopt_unicode(self, int option,encoding='utf-8'):
+        """Get the value of a socket option.
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : unicode string
+            The name of the option to set. Can be any of: 
+            IDENTITY, HWM, SWAP, AFFINITY, RATE, 
+            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+
+        Returns
+        -------
+        The value of the option as a string or int.
+        """
+        if option not in [IDENTITY]:
+            raise TypeError("option %i will not return a string to be decoded"%option)
+        return self.getsockopt(option).decode(encoding)
 
     def bind(self, addr):
         """Bind the socket to an address.
@@ -697,6 +728,9 @@ cdef class Socket:
         None if message was sent, raises an exception otherwise.
         """
         self._check_closed()
+        if isinstance(data, unicode):
+            raise TypeError("unicode not allowed, use send_unicode")
+        
         if isinstance(data, Message):
             return self._send_message(data, flags)
         elif copy:
@@ -732,11 +766,6 @@ cdef class Socket:
 
         if isinstance(msg, str):
             PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        elif isinstance(msg, unicode):
-            try: # simple string
-                PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-            except: # utf16 buffer
-                asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
         else: # buffer interface (numpy, etc.)
             asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
             
@@ -773,7 +802,7 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, (str,unicode)):
+        if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
 
         try:
@@ -830,7 +859,7 @@ cdef class Socket:
             return self._recv_copy(flags)
         else:
             return self._recv_message(flags)
-
+    
     def _recv_message(self, int flags=0):
         """Receive a message in a non-copying manner and return a Message."""
         cdef int rc
@@ -916,6 +945,28 @@ cdef class Socket:
         """Are there more parts to a multipart message."""
         more = self.getsockopt(RCVMORE)
         return bool(more)
+
+    def send_unicode(self, u, int flags=0,encoding='utf-8'):
+        """sends a unicode string"""
+        if not isinstance(u, basestring):
+            raise TypeError("unicode/str objects only")
+        return self.send(u.encode(encoding), flags=flags, copy=False)
+        
+    def recv_unicode(self, int flags=0,encoding='utf-8'):
+        """recv a unicode string, as sent by send_unicode
+        Parameters
+        ----------
+        flags : int
+            Any valid recv flag.
+        encoding : str
+            name of 
+        Returns
+        -------
+        obj : Python object
+            The Python object that arrives as a message.
+"""
+        msg = self.recv(flags=flags, copy=False)
+        return unicode(msg.buffer, encoding)
 
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
