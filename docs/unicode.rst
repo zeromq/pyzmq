@@ -4,7 +4,7 @@ PyZMQ and Unicode
 =================
 
 PyZMQ is built with an eye towards an easy transition to Python 3, and part of that is dealing with unicode objects.
-This is an overview of what that means
+This is an overview of some of what we found, and what it means for PyZMQ.
 
 First, Unicode in Python 2 and 3
 ********************************
