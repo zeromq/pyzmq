@@ -396,7 +396,7 @@ cdef class Message:
     
     def __unicode__(self):
         """returns a unicode representation, assuming the buffer is utf-8"""
-        return codecs.utf_8_decode(self.buffer)[0]
+        return codecs.decode(self.buffer, 'utf-8')
     
     cdef object _getbuffer(self):
         cdef char *data_c = NULL
@@ -984,7 +984,7 @@ cdef class Socket:
             The Python unicode string that arrives as message bytes.
         """
         msg = self.recv(flags=flags, copy=False)
-        return unicode(msg.buffer, encoding)
+        return codecs.decode(msg.buffer, encoding)
     
     recv_string = recv_unicode
 

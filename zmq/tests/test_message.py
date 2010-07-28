@@ -128,7 +128,7 @@ class TestMessage(TestCase):
         self.assert_(m.buffer is m.buffer)
     
     def test_buffer_numpy(self):
-        """test non-copyhing numpy array messages"""
+        """test non-copying numpy array messages"""
         try:
             import numpy
         except ImportError:
