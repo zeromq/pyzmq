@@ -201,6 +201,7 @@ class IOLoop(object):
 
             if self._callbacks:
                 poll_timeout = 0.0
+            
 
             if self._timeouts:
                 now = time.time()
@@ -209,7 +210,7 @@ class IOLoop(object):
                     self._run_callback(timeout.callback)
                 if self._timeouts:
                     milliseconds = self._timeouts[0].deadline - now
-                    poll_timeout = min(milliseconds, poll_timeout)
+                    poll_timeout = min(milliseconds*1000, poll_timeout)
 
             if not self._running:
                 break
@@ -392,4 +393,4 @@ class DelayedCallback(PeriodicCallback):
     
     def _run(self):
         PeriodicCallback._run(self)
-        self._stop()
+        self.stop()
