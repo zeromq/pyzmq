@@ -26,14 +26,12 @@
 
 from stdlib cimport *
 from python_string cimport PyString_FromStringAndSize
-from python_string cimport PyString_AsStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
 from python_ref cimport Py_DECREF, Py_INCREF
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
-    # 
 
 # For some reason we need to call this.  My guess is that we are not doing
 # any Python treading.
@@ -42,6 +40,7 @@ PyEval_InitThreads()
 import copy as copy_mod
 import random
 import struct
+import codecs
 
 try:
     import cjson
@@ -338,23 +337,20 @@ cdef class Message:
         self.buf = None
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-
+        if isinstance(data, unicode):
+            # still initialize the msg, else dealloc will cause Bus Error
+            with nogil:
+                rc = zmq_msg_init(&self.zmq_msg)
+            raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
+        
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
             if rc != 0:
                 raise ZMQError()
             return
-        if isinstance(data, str):
-            PyString_AsStringAndSize(data, &data_c, &data_len_c)
-        elif isinstance(data, unicode):
-            try: # simple string
-                PyString_AsStringAndSize(data, &data_c, &data_len_c)
-            except:
-                asbuffer_r(data, <void **>&data_c, &data_len_c)
-        else:
-            # always use buffer interface?
-            asbuffer_r(data, <void **>&data_c, &data_len_c)
+        # always use buffer interface:
+        asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
@@ -408,24 +404,16 @@ cdef class Message:
         """Return the str form of the message."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-        if self.data is None or not isinstance(self.data, (str, unicode)):
+        if self.data is None or not isinstance(self.data, str):
             data_c = <char *>zmq_msg_data(&self.zmq_msg)
             data_len_c = zmq_msg_size(&self.zmq_msg)
             return PyString_FromStringAndSize(data_c, data_len_c)
-            # unused:
-            # try:
-            #     # PyString_FromStringAndSize won't fail if we get utf16 buffer
-            #     # so we can't tell if the String is correct
-            #     # PyUnicode_FromStringAndSize will raise an error
-            #     # if we try to read a utf16 buffer as something else
-            #     return PyUnicode_FromStringAndSize(data_c, data_len_c)
-            # except:
-            #     try:
-            #         return PyUnicode_FromEncodedObject(self.buffer, 'utf16', NULL)
-            #     except:
-            #         return PyString_FromStringAndSize(data_c, data_len_c)
-        # else:
-        return self.data
+        else:
+            return self.data
+    
+    def __unicode__(self):
+        """returns a unicode representation, assuming the buffer is utf-8"""
+        return codecs.decode(self.buffer, 'utf-8')
     
     cdef object _getbuffer(self):
         cdef char *data_c = NULL
@@ -554,9 +542,11 @@ cdef class Socket:
         cdef int rc
 
         self._check_closed()
+        if isinstance(optval, unicode):
+            raise TypeError("unicode not allowed, use setsockopt_unicode")
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, (str,unicode)):
+            if not isinstance(optval, str):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
@@ -617,7 +607,52 @@ cdef class Socket:
             raise ZMQError()
 
         return result
+    
+    def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
+        """Set socket options with a unicode object
+        it is simply a wrapper for setsockopt to protect from encoding ambiguity
 
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : int
+            The name of the option to set. Can be any of: SUBSCRIBE, 
+            UNSUBSCRIBE, IDENTITY
+        optval : unicode
+            The value of the option to set.
+        encoding : str
+            The encoding to be used, default is utf8
+        """
+        if not isinstance(optval, unicode):
+            raise TypeError("unicode strings only")
+        
+        return self.setsockopt(option, optval.encode(encoding))
+    
+    setsockopt_string = setsockopt_unicode
+    
+    def getsockopt_unicode(self, int option,encoding='utf-8'):
+        """Get the value of a socket option.
+
+        See the 0MQ documentation for details on specific options.
+
+        Parameters
+        ----------
+        option : unicode string
+            The name of the option to set. Can be any of: 
+            IDENTITY, HWM, SWAP, AFFINITY, RATE, 
+            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+
+        Returns
+        -------
+        The value of the option as a string or int.
+        """
+        if option not in [IDENTITY]:
+            raise TypeError("option %i will not return a string to be decoded"%option)
+        return self.getsockopt(option).decode(encoding)
+    
+    getsockopt_string = getsockopt_unicode
+    
     def bind(self, addr):
         """Bind the socket to an address.
 
@@ -631,12 +666,15 @@ cdef class Socket:
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc.
+        
+            if addr is unicode, it is encoded to utf-8 first.
         """
         cdef int rc
 
         self._check_closed()
-
-        if not isinstance(addr, (str,unicode)):
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -680,12 +718,14 @@ cdef class Socket:
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc.
+            if addr is unicode, it is encoded to utf-8 first.
         """
         cdef int rc
 
         self._check_closed()
-
-        if not isinstance(addr, (str,unicode)):
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, str):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
@@ -714,6 +754,9 @@ cdef class Socket:
         None if message was sent, raises an exception otherwise.
         """
         self._check_closed()
+        if isinstance(data, unicode):
+            raise TypeError("unicode not allowed, use send_unicode")
+        
         if isinstance(data, Message):
             return self._send_message(data, flags)
         elif copy:
@@ -747,15 +790,8 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if isinstance(msg, str):
-            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        elif isinstance(msg, unicode):
-            try: # simple string
-                PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-            except: # utf16 buffer
-                asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-        else: # buffer interface (numpy, etc.)
-            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        # copy to c array:
+        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
             
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
@@ -790,13 +826,12 @@ cdef class Socket:
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
 
-        if not isinstance(msg, (str,unicode)):
+        if not isinstance(msg, str):
             raise TypeError('expected str, got: %r' % msg)
 
-        try:
-            PyString_AsStringAndSize(msg, &msg_c, &msg_c_len)
-        except:
-            asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        # copy to c-array:
+        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+        
         Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
         rc = zmq_msg_init_data(
             &data, <void *>msg_c, msg_c_len,
@@ -847,7 +882,7 @@ cdef class Socket:
             return self._recv_copy(flags)
         else:
             return self._recv_message(flags)
-
+    
     def _recv_message(self, int flags=0):
         """Receive a message in a non-copying manner and return a Message."""
         cdef int rc
@@ -933,6 +968,42 @@ cdef class Socket:
         """Are there more parts to a multipart message."""
         more = self.getsockopt(RCVMORE)
         return bool(more)
+
+    def send_unicode(self, u, int flags=0,encoding='utf-8'):
+        """Send a Python unicode object as a message with an encoding.
+
+        Parameters
+        ----------
+        u : Python unicode object
+            The unicode string to send.
+        flags : int
+            Any valid send flag.
+        encoding : str
+            the encoding to be used, default is 'utf-8'
+        """
+        if not isinstance(u, basestring):
+            raise TypeError("unicode/str objects only")
+        return self.send(u.encode(encoding), flags=flags, copy=False)
+    
+    send_string = send_unicode
+        
+    def recv_unicode(self, int flags=0,encoding='utf-8'):
+        """recv a unicode string, as sent by send_unicode
+        Parameters
+        ----------
+        flags : int
+            Any valid recv flag.
+        encoding : str
+            name of 
+        Returns
+        -------
+        s : unicode string
+            The Python unicode string that arrives as message bytes.
+        """
+        msg = self.recv(flags=flags, copy=False)
+        return codecs.decode(msg.buffer, encoding)
+    
+    recv_string = recv_unicode
 
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
