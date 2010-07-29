@@ -45,6 +45,8 @@ cdef object asbuffer(object ob, int writable, int format,
     cdef str bfmt = None
     cdef Py_buffer view
     cdef int flags = PyBUF_SIMPLE
+    # if not is_buffer(ob):
+    #     raise TypeError("%s not a buffer"%(type(ob)))
     if PyObject_CheckBuffer(ob):
         flags = PyBUF_ANY_CONTIGUOUS
         if writable:

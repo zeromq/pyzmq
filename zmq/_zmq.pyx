@@ -80,11 +80,6 @@ include "frombuffer.pxi"
 #-----------------------------------------------------------------------------
 # Import the C header files
 #-----------------------------------------------------------------------------
-# unused unicode imports:
-# from python_unicode cimport PyUnicode_FromEncodedObject
-# cdef extern from "unicodeobject.h":
-#     # this should be in Cython's python_unicode.pxd, but it isn't
-#     cdef object PyUnicode_FromStringAndSize(char *ptr, Py_ssize_t size)
 
 cdef extern from "errno.h" nogil:
     enum: ZMQ_EINVAL "EINVAL"
@@ -311,29 +306,31 @@ cdef class Message:
 
     cdef zmq_msg_t zmq_msg
     cdef object data
-    cdef object buf
+    cdef object _buf
+    cdef object _bytes
+    cdef bool _failed_init
     
     def __cinit__(self, object data=None):
         cdef int rc
+        self._failed_init = True
         # Save the data object in case the user wants the the data as a str.
         self.data = data
-        self.buf = None
+        self._buf = None
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
+        
         if isinstance(data, unicode):
-            # still initialize the msg, else dealloc will cause Bus Error
-            with nogil:
-                rc = zmq_msg_init(&self.zmq_msg)
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
         
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
+            self._failed_init = False
             if rc != 0:
                 raise ZMQError()
             return
-        # always use buffer interface:
-        asbuffer_r(data, <void **>&data_c, &data_len_c)
+        else:
+            asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
@@ -343,6 +340,7 @@ cdef class Message:
                 &self.zmq_msg, <void *>data_c, data_len_c, 
                 <zmq_free_fn *>free_python_msg, <void *>data
             )
+        self._failed_init = False
         if rc != 0:
             Py_DECREF(data)
             raise ZMQError()
@@ -350,9 +348,10 @@ cdef class Message:
     def __dealloc__(self):
         cdef int rc
         # This simply decreases the 0MQ ref-count of zmq_msg.
-        rc = zmq_msg_close(&self.zmq_msg)
-        if rc != 0:
-            raise ZMQError()
+        if not self._failed_init:
+            rc = zmq_msg_close(&self.zmq_msg)
+            if rc != 0:
+                raise ZMQError()
 
     def __copy__(self):
         """Create a shallow copy of the message.
@@ -375,8 +374,8 @@ cdef class Message:
         # called.
         if self.data is not None:
             new_msg.data = self.data
-        if self.buf is not None:
-            new_msg.buf = self.buf
+        if self._buf is not None:
+            new_msg._buf = self._buf
         return new_msg
 
     def __len__(self):
@@ -385,14 +384,10 @@ cdef class Message:
 
     def __str__(self):
         """Return the str form of the message."""
-        cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
-        if self.data is None or not isinstance(self.data, str):
-            data_c = <char *>zmq_msg_data(&self.zmq_msg)
-            data_len_c = zmq_msg_size(&self.zmq_msg)
-            return PyString_FromStringAndSize(data_c, data_len_c)
-        else:
+        if isinstance(self.data, str):
             return self.data
+        else:
+            return str(self.bytes)
     
     def __unicode__(self):
         """returns a unicode representation, assuming the buffer is utf-8"""
@@ -405,14 +400,30 @@ cdef class Message:
         data_len_c = zmq_msg_size(&self.zmq_msg)
         # read-only, because we don't want to allow
         # editing of the message in-place
-        self.buf = frombuffer_r(data_c, data_len_c)
+        self._buf = frombuffer_r(data_c, data_len_c)
     
     @property
     def buffer(self):
-        if self.buf is None:
+        if self._buf is None:
             self._getbuffer()
-        return self.buf
+        return self._buf
 
+    cdef object _getbytes(self):
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        # if self.data is None or not isinstance(self.data, str):
+        # always make a copy:
+        data_c = <char *>zmq_msg_data(&self.zmq_msg)
+        data_len_c = zmq_msg_size(&self.zmq_msg)
+        self._bytes = PyString_FromStringAndSize(data_c, data_len_c)
+        # else:
+        #     self._bytes = self.data
+    
+    @property
+    def bytes(self):
+        if self._bytes is None:
+            self._getbytes()
+        return self._bytes
 
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
@@ -736,20 +747,26 @@ cdef class Socket:
         -------
         None if message was sent, raises an exception otherwise.
         """
+        cdef char * msg_c
+        cdef Py_ssize_t msg_c_len
+        
         self._check_closed()
+        
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_unicode")
         
         if isinstance(data, Message):
-            return self._send_message(data, flags)
-        elif copy:
-            return self._send_copy(data, flags)
+            msg = data
         else:
-            # I am not sure which non-copy implemntation to use here.
-            # It probably doesn't matter though.
             msg = Message(data)
-            return self._send_message(msg, flags)
-            # return self._send_nocopy(msg, flags)
+        
+        if copy:
+            # msg.bytes never returns the input data object
+            # it is always a copy, but always the same copy
+            data = msg.bytes
+            msg = Message(data)
+            
+        return self._send_message(msg, flags)
 
     def _send_message(self, Message msg, int flags=0):
         """Send a Message on this socket in a non-copy manner."""
@@ -759,84 +776,9 @@ cdef class Socket:
         # Always copy so the original message isn't garbage collected.
         # This doesn't do a real copy, just a reference.
         msg_copy = msg.fast_copy()
-        # msg_copy = copy_mod.copy(msg)
         with nogil:
             rc = zmq_send(self.handle, &msg.zmq_msg, flags)
 
-        if rc != 0:
-            raise ZMQError()
-
-    def _send_copy(self, object msg, int flags=0):
-        """Send a message on this socket by copying its content."""
-        cdef int rc, rc2
-        cdef zmq_msg_t data
-        cdef char *msg_c
-        cdef Py_ssize_t msg_c_len
-
-        # copy to c array:
-        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-            
-        # Copy the msg before sending. This avoids any complications with
-        # the GIL, etc.
-        # If zmq_msg_init_* fails do we need to call zmq_msg_close?
-        rc = zmq_msg_init_size(&data, msg_c_len)
-        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
-
-        if rc != 0:
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_send(self.handle, &data, flags)
-        rc2 = zmq_msg_close(&data)
-
-        # Shouldn't the error handling for zmq_msg_close come after that
-        # of zmq_send?
-        if rc2 != 0:
-            raise ZMQError()
-
-        if rc != 0:
-            raise ZMQError()
-
-    def _send_nocopy(self, object msg, int flags=0):
-        """Send a Python string on this socket in a non-copy manner.
-
-        This method is not being used currently, as the same functionality
-        is provided by self._send_message(Message(data)). This may eventually
-        be removed.
-        """
-        cdef int rc
-        cdef zmq_msg_t data
-        cdef char *msg_c
-        cdef Py_ssize_t msg_c_len
-
-        if not isinstance(msg, str):
-            raise TypeError('expected str, got: %r' % msg)
-
-        # copy to c-array:
-        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-        
-        Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
-        rc = zmq_msg_init_data(
-            &data, <void *>msg_c, msg_c_len,
-            <zmq_free_fn *>free_python_msg, <void *>msg
-        )
-
-        if rc != 0:
-            # If zmq_msg_init_data fails it does not call zmq_free_fn, 
-            # so we Py_DECREF.
-            Py_DECREF(msg)
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_send(self.handle, &data, flags)
-
-        if rc != 0:
-            # If zmq_send fails it does not call zmq_free_fn, so we Py_DECREF.
-            Py_DECREF(msg)
-            zmq_msg_close(&data)
-            raise ZMQError()
-
-        rc = zmq_msg_close(&data)
         if rc != 0:
             raise ZMQError()
 
@@ -859,12 +801,11 @@ cdef class Socket:
             The returned message, or raises ZMQError otherwise.
         """
         self._check_closed()
+        m = self._recv_message(flags)
         if copy:
-            # This could be implemented by simple calling _recv_message and
-            # then casting to a str.
-            return self._recv_copy(flags)
+            return m.bytes
         else:
-            return self._recv_message(flags)
+            return m
     
     def _recv_message(self, int flags=0):
         """Receive a message in a non-copying manner and return a Message."""
@@ -874,33 +815,6 @@ cdef class Socket:
 
         with nogil:
             rc = zmq_recv(self.handle, &msg.zmq_msg, flags)
-
-        if rc != 0:
-            raise ZMQError()
-        return msg
-
-    def _recv_copy(self, int flags=0):
-        """Receive a message in a copying manner as a string."""
-        cdef int rc
-        cdef zmq_msg_t data
-
-        rc = zmq_msg_init(&data)
-        if rc != 0:
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_recv(self.handle, &data, flags)
-
-        if rc != 0:
-            raise ZMQError()
-
-        try:
-            msg = PyString_FromStringAndSize(
-                <char *>zmq_msg_data(&data), 
-                zmq_msg_size(&data)
-            )
-        finally:
-            rc = zmq_msg_close(&data)
 
         if rc != 0:
             raise ZMQError()

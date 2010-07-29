@@ -56,6 +56,18 @@ class TestMessage(TestCase):
             self.assertEquals(s, str(m))
             self.assert_(s is str(m))
 
+    def test_bytes(self):
+        """Test the Message.bytes property."""
+        for i in range(1,16):
+            s = (2**i)*'x'
+            m = zmq.Message(s)
+            b = m.bytes
+            self.assertEquals(s, m.bytes)
+            # check that it copies
+            self.assert_(b is not s)
+            # check that it copies only once
+            self.assert_(b is m.bytes)
+
     def test_unicode(self):
         """Test the unicode representations of the Messages."""
         s = u'asdf'
@@ -84,6 +96,7 @@ class TestMessage(TestCase):
             self.assertEquals(grc(s), 5)
             self.assertEquals(s, str(m))
             self.assertEquals(s, str(m2))
+            self.assertEquals(s, m.bytes)
             self.assert_(s is str(m))
             self.assert_(s is str(m2))
             del m2
@@ -103,6 +116,8 @@ class TestMessage(TestCase):
             self.assertEquals(grc(s), 5)
             self.assertEquals(s, str(m))
             self.assertEquals(s, str(m2))
+            self.assertEquals(s, m2.bytes)
+            self.assertEquals(s, m.bytes)
             self.assert_(s is str(m))
             self.assert_(s is str(m2))
             del m
@@ -115,8 +130,11 @@ class TestMessage(TestCase):
         """test using a buffer as input"""
         ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf16')
         m = zmq.Message(buffer(ins))
-        # outs = unicode(m.buffer,'utf16')
-        # self.assertEquals(ins,outs)
+    
+    def test_bad_buffer_in(self):
+        """test using a bad object"""
+        self.assertRaises(TypeError, zmq.Message, 5)
+        self.assertRaises(TypeError, zmq.Message, object())
         
     def test_buffer_out(self):
         """receiving buffered output"""
