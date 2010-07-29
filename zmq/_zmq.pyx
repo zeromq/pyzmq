@@ -747,9 +747,6 @@ cdef class Socket:
         -------
         None if message was sent, raises an exception otherwise.
         """
-        cdef char * msg_c
-        cdef Py_ssize_t msg_c_len
-        
         self._check_closed()
         
         if isinstance(data, unicode):
@@ -801,7 +798,9 @@ cdef class Socket:
             The returned message, or raises ZMQError otherwise.
         """
         self._check_closed()
+        
         m = self._recv_message(flags)
+        
         if copy:
             return m.bytes
         else:
