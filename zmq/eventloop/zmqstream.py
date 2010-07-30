@@ -89,6 +89,7 @@ class ZMQStream(object):
         """register a callback to be called on each recv.
         callback must take exactly one argument, which will be a
         list, returned by socket.recv_multipart()."""
+        
         # assert not self._recv_callback, "Already receiving"
         self._recv_callback = callback
         self._recv_copy = copy
@@ -96,7 +97,19 @@ class ZMQStream(object):
     
     def on_send(self, callback):
         """register a callback to be called on each send
-        with no arguments (?)
+        There will be two arguments: the message being sent, 
+        and the return result of socket.send_multipart(msg).
+        
+        Non-copying sends return a Queue object that will
+        be empty when the send is complete. This allows
+        users to track when an object is safe to write to
+        again.
+        
+        The second argument will always be None if copy=True
+        on the send.
+        
+        
+        callback(msg, queue_or_None)
         """
         self._add_io_state(zmq.POLLOUT)
         self._send_callback = callback
@@ -123,7 +136,7 @@ class ZMQStream(object):
         if callback is not None:
             self.on_send(callback)
         else:
-            self.on_send(lambda _: None)
+            self.on_send(lambda *args: None)
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
@@ -210,10 +223,10 @@ class ZMQStream(object):
             return
         
         msg = self._send_queue.get()
-        self.socket.send_multipart(*msg)
+        queue = self.socket.send_multipart(*msg)
         if self._send_callback:
             callback = self._send_callback
-            self._run_callback(callback, msg)
+            self._run_callback(callback, msg, queue)
         
         # unregister from event loop:
         if not self.sending():
