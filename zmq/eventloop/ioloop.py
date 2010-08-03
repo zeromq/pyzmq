@@ -209,7 +209,7 @@ class IOLoop(object):
                     self._run_callback(timeout.callback)
                 if self._timeouts:
                     milliseconds = self._timeouts[0].deadline - now
-                    poll_timeout = min(milliseconds, poll_timeout)
+                    poll_timeout = min(1000*milliseconds, poll_timeout)
 
             if not self._running:
                 break
@@ -291,7 +291,11 @@ class IOLoop(object):
         self._timeouts.remove(timeout)
 
     def add_callback(self, callback):
-        """Calls the given callback on the next I/O loop iteration."""
+        """Calls the given callback on the next I/O loop iteration.
+
+        This is thread safe because set.add is an atomic operation. The rest
+        of the API is not thread safe.
+        """
         self._callbacks.add(callback)
         self._wake()
 
