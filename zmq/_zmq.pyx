@@ -34,8 +34,9 @@ cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
 
-# For some reason we need to call this.  My guess is that we are not doing
-# any Python treading.
+# Older versions of Cython would not take care of called this automatically.
+# In newer versions of Cython (at least 0.12.1) this is called automatically.
+# We should wait for a few releases and then remove this call.
 PyEval_InitThreads()
 
 import copy as copy_mod
