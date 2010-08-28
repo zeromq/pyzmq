@@ -747,7 +747,7 @@ cdef class Socket:
             set, then this method will block until a message arrives.
         copy : bool
             Should the message be received in a copying or non-copying manner.
-            If True a Message object is returned, if False a string copy of 
+            If False a Message object is returned, if True a string copy of
             message is returned.
         Returns
         -------
