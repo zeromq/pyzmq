@@ -61,6 +61,9 @@ include "allocate.pxi"
 cdef extern from "errno.h" nogil:
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EAGAIN "EAGAIN"
+    enum: ZMQ_EFAULT "EFAULT"
+    enum: ZMQ_ENOMEM "ENOMEM"
+    enum: ZMQ_ENODEV "ENODEV"
 
 cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
@@ -125,8 +128,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REP # 4
     enum: ZMQ_XREQ # 5
     enum: ZMQ_XREP # 6
-    enum: ZMQ_UPSTREAM # 7
-    enum: ZMQ_DOWNSTREAM # 8
+    enum: ZMQ_PULL # 7
+    enum: ZMQ_PUSH # 8
 
     enum: ZMQ_HWM # 1
     enum: ZMQ_SWAP # 3
@@ -172,9 +175,11 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_QUEUE #3
     int zmq_device (int device_, void *insocket_, void *outsocket_)
 
-    # void *zmq_stopwatch_start ()
-    # unsigned long zmq_stopwatch_stop (void *watch_)
-    # void zmq_sleep (int seconds_)
+cdef extern from "zmq_utils.h" nogil:
+
+    void *zmq_stopwatch_start ()
+    unsigned long zmq_stopwatch_stop (void *watch_)
+    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -188,8 +193,8 @@ REQ = ZMQ_REQ
 REP = ZMQ_REP
 XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
-UPSTREAM = ZMQ_UPSTREAM
-DOWNSTREAM = ZMQ_DOWNSTREAM
+PULL = ZMQ_PULL
+PUSH = ZMQ_PUSH
 HWM = ZMQ_HWM
 SWAP = ZMQ_SWAP
 AFFINITY = ZMQ_AFFINITY
@@ -218,6 +223,9 @@ QUEUE = ZMQ_QUEUE
 # Often used (these are alse in errno.)
 EAGAIN = ZMQ_EAGAIN
 EINVAL = ZMQ_EINVAL
+EFAULT = ZMQ_EFAULT
+ENOMEM = ZMQ_ENOMEM
+ENODEV = ZMQ_ENODEV
 
 # For Windows compatability
 ENOTSUP = ZMQ_ENOTSUP
@@ -414,7 +422,7 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
         """
         return Socket(self, socket_type)
 
@@ -430,7 +438,7 @@ cdef class Socket:
         The 0MQ Context this Socket belongs to.
     socket_type : int
         The socket type, which can be any of the 0MQ socket types: 
-        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
     cdef void *handle
@@ -929,36 +937,36 @@ cdef class Socket:
             return json.loads(msg)
 
 
-# cdef class Stopwatch:
-#     """A simple stopwatch based on zmq_stopwatch_start/stop."""
-# 
-#     cdef void *watch
-# 
-#     def __cinit__(self):
-#         self.watch = NULL
-# 
-#     def __dealloc__(self):
-#         try:
-#             self.stop()
-#         except ZMQError:
-#             pass
-# 
-#     def start(self):
-#         if self.watch == NULL:
-#             self.watch = zmq_stopwatch_start()
-#         else:
-#             raise ZMQError('Stopwatch is already runing.')
-# 
-#     def stop(self):
-#         if self.watch == NULL:
-#             raise ZMQError('Must start the Stopwatch before calling stop.')
-#         else:
-#             time = zmq_stopwatch_stop(self.watch)
-#             self.watch = NULL
-#             return time
-# 
-#     def sleep(self, int seconds):
-#         zmq_sleep(seconds)
+cdef class Stopwatch:
+    """A simple stopwatch based on zmq_stopwatch_start/stop."""
+
+    cdef void *watch
+
+    def __cinit__(self):
+        self.watch = NULL
+
+    def __dealloc__(self):
+        try:
+            self.stop()
+        except ZMQError:
+            pass
+
+    def start(self):
+        if self.watch == NULL:
+            self.watch = zmq_stopwatch_start()
+        else:
+            raise ZMQError('Stopwatch is already runing.')
+
+    def stop(self):
+        if self.watch == NULL:
+            raise ZMQError('Must start the Stopwatch before calling stop.')
+        else:
+            time = zmq_stopwatch_stop(self.watch)
+            self.watch = NULL
+            return time
+
+    def sleep(self, int seconds):
+        zmq_sleep(seconds)
 
 
 def _poll(sockets, long timeout=-1):
@@ -1162,8 +1170,8 @@ __all__ = [
     'REP',
     'XREQ',
     'XREP',
-    'UPSTREAM',
-    'DOWNSTREAM',
+    'PULL',
+    'PUSH',
     'HWM',
     'SWAP',
     'AFFINITY',
@@ -1202,5 +1210,8 @@ __all__ = [
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
+    'EFAULT',
+    'ENOMEM',
+    'ENODEV'
 ]
 

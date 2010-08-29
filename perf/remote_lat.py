@@ -53,10 +53,10 @@ def main ():
 
     msg = ' ' * message_size
 
-    # clock = zmq.Stopwatch()
-    # clock.start()
+    clock = zmq.Stopwatch()
     start = 0
-    start = time.clock()
+    clock.start()
+    # start = time.clock()
 
     for i in range (0, roundtrip_count):
         if use_poll:
@@ -70,14 +70,14 @@ def main ():
         msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
         assert len (msg) == message_size
 
-    # end = clock.stop()
-    end = time.clock()
+    end = clock.stop()
+    # end = time.clock()
 
     time.sleep(1)
 
-    # elapsed = (end - start)
-    elapsed = (end - start) * 1000000
-    latency = elapsed / roundtrip_count / 2
+    elapsed = (end - start)
+    # elapsed = (end - start) * 1000000 # use with time.clock
+    latency = elapsed / (roundtrip_count * 2)
 
     print "message size: %.0f [B]" % (message_size, )
     print "roundtrip count: %.0f" % (roundtrip_count, )

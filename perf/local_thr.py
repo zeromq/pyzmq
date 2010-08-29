@@ -60,7 +60,10 @@ def main ():
     msg = s.recv()
     assert len (msg) == message_size
 
-    start = time.clock()
+    clock = zmq.Stopwatch()
+    start = 0
+    clock.start()
+    # start = time.clock()
 
     for i in range (1, message_count):
         if use_poll:
@@ -69,9 +72,11 @@ def main ():
         msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
         assert len(msg) == message_size
 
-    end = time.clock()
+        end = clock.stop()
+        # end = time.clock()
 
-    elapsed = (end - start) * 1000000
+    elapsed = (end - start)
+    # elapsed = (end - start) * 1000000 # use with time.clock
     if elapsed == 0:
     	elapsed = 1
     throughput = (1000000.0 * float(message_count)) / float(elapsed)
