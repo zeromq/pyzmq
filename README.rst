@@ -84,3 +84,6 @@ The following people have contributed to the project:
 * Fernando Perez (fernando DOT perez AT berkeley DOT edu)
 * Nicholas Piel (nicholas AT nichol DOT as)
 * Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
+* Justin Riley (justin DOT t DOT riley AT gmail DOT com)
+* Ivo Danihelka (ivo AT denihelka DOT net)
+* Thomas Supra (tomspur AT fedoraproject DOT org)
