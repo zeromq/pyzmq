@@ -70,6 +70,9 @@ cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
 
 cdef extern from "zmq.h" nogil:
+
+    void _zmq_version "zmq_version"(int *major, int *minor, int *patch)
+
     enum: ZMQ_HAUSNUMERO
     enum: ZMQ_ENOTSUP "ENOTSUP"
     enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
@@ -91,6 +94,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MAX_VSM_SIZE # 30
     enum: ZMQ_DELIMITER # 31
     enum: ZMQ_VSM # 32
+    enum: ZMQ_MSG_MORE # 1
+    enum: ZMQ_MSG_SHARED # 128
 
     ctypedef struct zmq_msg_t:
         void *content
@@ -269,6 +274,13 @@ class ZMQBindError(ZMQBaseError):
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
+
+
+def zmq_version():
+    """Return the version of ZeroMQ itself."""
+    cdef int major, minor, patch
+    _zmq_version(&major, &minor, &patch)
+    return '%i.%i.%i' % (major, minor, patch)
 
 
 cdef void free_python_msg(void *data, void *hint) with gil:
@@ -1134,6 +1146,7 @@ def device(device_type, isocket, osocket):
 
 
 __all__ = [
+    'zmq_version',
     'Message',
     'Context',
     'Socket',
