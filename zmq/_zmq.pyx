@@ -244,14 +244,14 @@ class ZMQError(ZMQBaseError):
         if error is None:
             error = zmq_errno()
         if type(error) == int:
-            self.errstr = strerror(error)
+            self.strerror = strerror(error)
             self.errno = error
         else:
-            self.errstr = str(error)
-            self.errno = None 
+            self.strerror = str(error)
+            self.errno = None
 
     def __str__(self):
-        return self.errstr
+        return self.strerror
 
 class ZMQBindError(ZMQBaseError):
     """An error for bind_to_random_port."""
