@@ -9,5 +9,7 @@ graft examples
 graft zmq
 graft perf
 
+exclude setup.cfg
+
 global-exclude *.pyc
 global-exclude .git*
