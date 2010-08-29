@@ -42,7 +42,7 @@ Linux
 
 On Linux, you will need to do one of the following:
 
-* Set ``LD_LIBRARY_PATH`` to point to the :file:`lib` directory of 0MQ.
+* Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of 0MQ.
 * Build the extension using the ``-rpath`` flag::
 
     $ python setup.py build_ext --rpath=/opt/zeromq-dev/lib --inplace
