@@ -162,6 +162,11 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
+    enum: ZMQ_STREAMER #1
+    enum: ZMQ_FORWARDER #2
+    enum: ZMQ_QUEUE #3
+    int zmq_device (int device_, void *insocket_, void *outsocket_)
+
     # void *zmq_stopwatch_start ()
     # unsigned long zmq_stopwatch_stop (void *watch_)
     # void zmq_sleep (int seconds_)
@@ -196,6 +201,10 @@ SNDMORE = ZMQ_SNDMORE
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
+STREAMER = ZMQ_STREAMER
+FORWARDER = ZMQ_FORWARDER
+QUEUE = ZMQ_QUEUE
+
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -1101,6 +1110,27 @@ def select(rlist, wlist, xlist, timeout=None):
             xlist.append(s)
     return rlist, wlist, xlist
     
+def device(device_type, isocket, osocket):
+    """Start a zeromq device.
+
+    Parameters
+    ----------
+    device_type : (QUEUE, FORWARDER, STREAMER)
+        The type of device to start.
+    isocket : Socket
+        The Socket instance for the incoming traffic.
+    osocket : Socket
+        The Socket instance for the outbound traffic.
+    """
+    cdef Socket _isocket = isocket
+    cdef Socket _osocket = osocket
+    cdef void *ihandle = _isocket.handle
+    cdef void *ohandle = _osocket.handle
+    cdef int dtype = device_type
+    cdef int result = 0
+    with nogil:
+        result = zmq_device(dtype, ihandle, ohandle)
+    return result
 
 
 __all__ = [
@@ -1139,6 +1169,10 @@ __all__ = [
     'POLLERR',
     '_poll',
     'select',
+    'STREAMER',
+    'FORWARDER',
+    'QUEUE',
+    'device',
     'Poller',
     # ERRORNO codes
     'EAGAIN',

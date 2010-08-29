@@ -83,3 +83,4 @@ The following people have contributed to the project:
 * Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Fernando Perez (fernando DOT perez AT berkeley DOT edu)
 * Nicholas Piel (nicholas AT nichol DOT as)
+* Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
