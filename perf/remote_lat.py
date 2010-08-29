@@ -53,16 +53,16 @@ def main ():
 
     msg = ' ' * message_size
 
-    clock = zmq.Stopwatch()
-    clock.start()
+    # clock = zmq.Stopwatch()
+    # clock.start()
     start = 0
-    # start = time.clock()
+    start = time.clock()
 
     for i in range (0, roundtrip_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send (msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        s.send(msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
 
         if use_poll:
             res = p.poll()
@@ -70,13 +70,13 @@ def main ():
         msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
         assert len (msg) == message_size
 
-    end = clock.stop()
-    # end = time.clock()
+    # end = clock.stop()
+    end = time.clock()
 
     time.sleep(1)
 
-    elapsed = (end - start)
-    # elapsed = (end - start) * 1000000
+    # elapsed = (end - start)
+    elapsed = (end - start) * 1000000
     latency = elapsed / roundtrip_count / 2
 
     print "message size: %.0f [B]" % (message_size, )
