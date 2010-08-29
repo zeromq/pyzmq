@@ -112,6 +112,12 @@ zmq = Extension(
 # Main setup
 #-----------------------------------------------------------------------------
 
+long_desc = \
+"""
+PyZMQ is a lightweight and super-fast messaging library built on top of
+the ZeroMQ library (http://www.zeromq.org). 
+"""
+
 setup(
     name = "pyzmq",
     version = "2.0.7",
@@ -119,8 +125,23 @@ setup(
     ext_modules = [zmq],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
-    description = "Cython based Python bindings for 0MQ.",
+    url = 'http://github.com/zeromq/pyzmq',
+    download_url = 'http://github.com/zeromq/pyzmq/downloads',
+    description = "Python bindings for 0MQ.",
+    long_description = long_desc, 
     license = "LGPL",
-    cmdclass = cmdclass
+    cmdclass = cmdclass,
+    classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Financial and Insurance Industry',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
+        'Topic :: System :: Networking'
+    ]
 )
 
