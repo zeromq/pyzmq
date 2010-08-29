@@ -1,0 +1,13 @@
+include COPYING.LESSER
+include README.rst
+include setup.cfg.template
+include setup.py
+include setupegg.py
+
+graft docs
+graft examples
+graft zmq
+graft perf
+
+global-exclude *.pyc
+global-exclude .git*
