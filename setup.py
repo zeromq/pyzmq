@@ -114,7 +114,7 @@ zmq = Extension(
 
 setup(
     name = "pyzmq",
-    version = "0.1",
+    version = "2.0.7",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop'],
     ext_modules = [zmq],
     author = "Brian E. Granger",

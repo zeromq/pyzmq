@@ -27,3 +27,5 @@ from zmq import _zmq
 from zmq._zmq import *
 
 __all__ = _zmq.__all__
+
+__version__ = '2.0.7'
