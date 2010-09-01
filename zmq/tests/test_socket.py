@@ -25,6 +25,10 @@
 import time
 import zmq
 from zmq.tests import BaseZMQTestCase
+try:
+    from queue import Queue
+except:
+    from Queue import Queue
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -41,7 +45,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
     
     def test_unicode_sockopts(self):
-        """test using unicode simple strings"""
+        """test setting/getting sockopts with unicode strings"""
         topic = u"tést"
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         self.assertEquals(s.send_string, s.send_unicode)
@@ -62,6 +66,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(topic*2, s.recv_unicode(encoding='utf32'))
     
     def test_send_unicode(self):
+        "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         self.assertEquals(a.setsockopt_string, a.setsockopt_unicode)
         self.assertEquals(b.getsockopt_string, b.getsockopt_unicode)
@@ -76,8 +81,51 @@ class TestSocket(BaseZMQTestCase):
         s = b.recv_unicode(encoding='utf32')
         self.assertEquals(s,u)
         
-    # def test_nonunicode(self):
-
+    def test_pending_message(self):
+        "test the PendingMessage object for tracking when zmq is done with a buffer"
+        a = self.context.socket(zmq.XREQ)
+        a.setsockopt(zmq.IDENTITY, "a")
+        b = self.context.socket(zmq.XREP)
+        addr = 'tcp://127.0.0.1:12345'
+        a.connect(addr)
+        p1 = a.send('something', copy=False)
+        self.assert_(isinstance(p1, zmq.PendingMessage))
+        self.assertTrue(p1.pending)
+        p2 = a.send_multipart(['something', 'else'], copy=False)
+        self.assert_(isinstance(p2, zmq.PendingMessage))
+        self.assertEquals(p2.pending, True)
+        self.assertEquals(p1.pending, True)
+        b.bind(addr)
+        msg = b.recv_multipart()
+        self.assertEquals(p1.pending, False)
+        self.assertEquals(msg, ['a', 'something'])
+        msg = b.recv_multipart()
+        self.assertEquals(p2.pending, False)
+        self.assertEquals(msg, ['a', 'something', 'else'])
+        m = zmq.Message("again")
+        self.assertEquals(m.pending, True)
+        # print m.bytes
+        p1 = a.send(m, copy=False)
+        p2 = a.send(m, copy=False)
+        self.assertEquals(m.pending, True)
+        self.assertEquals(p1.pending, True)
+        self.assertEquals(p2.pending, True)
+        msg = b.recv_multipart()
+        self.assertEquals(m.pending, True)
+        self.assertEquals(msg, ['a', 'again'])
+        msg = b.recv_multipart()
+        self.assertEquals(m.pending, True)
+        self.assertEquals(msg, ['a', 'again'])
+        self.assertEquals(p1.pending, True)
+        self.assertEquals(p2.pending, True)
+        pm = m.pending_message
+        del m
+        time.sleep(0.1)
+        # q.get()
+        self.assertEquals(p1.pending, False)
+        self.assertEquals(p2.pending, False)
+        
+    
     def test_close(self):
         ctx = zmq.Context()
         s = ctx.socket(zmq.PUB)

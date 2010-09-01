@@ -29,6 +29,8 @@ from python_string cimport PyString_FromStringAndSize
 from python_string cimport PyString_AsString, PyString_Size
 from python_ref cimport Py_DECREF, Py_INCREF
 
+from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
+
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
@@ -41,6 +43,10 @@ import copy as copy_mod
 import random
 import struct
 import codecs
+try:    # 3.x
+    from queue import Queue
+except: # 2.x
+    from Queue import Queue
 
 try:
     import cjson
@@ -74,17 +80,11 @@ else:
     from_json = json.loads
 
 include "allocate.pxi"
-include "asbuffer.pxi"
-include "frombuffer.pxi"
+#include "buffers.pxi"
 
 #-----------------------------------------------------------------------------
 # Import the C header files
 #-----------------------------------------------------------------------------
-# unused unicode imports:
-# from python_unicode cimport PyUnicode_FromEncodedObject
-# cdef extern from "unicodeobject.h":
-#     # this should be in Cython's python_unicode.pxd, but it isn't
-#     cdef object PyUnicode_FromStringAndSize(char *ptr, Py_ssize_t size)
 
 cdef extern from "errno.h" nogil:
     enum: ZMQ_EINVAL "EINVAL"
@@ -310,8 +310,45 @@ class ZMQBindError(ZMQBaseError):
 cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
+        queue = (<object>hint)[1]
+        if not queue.empty():
+            queue.get()
         Py_DECREF(<object>hint)
 
+
+cdef class PendingMessage(object):
+    """This is a simple wrapper for Queues. It's `pending` property
+    will be True iff all the queues are empty.  It can be constructed
+    from Messages, queues, or other PendingMessage objects.
+    
+    socket.send( ... copy=False) returns a PendingMessage object
+    """
+    
+    cdef set queues
+    cdef set peers
+    
+    def __cinit__(self, *towatch):
+        self.queues = set()
+        self.peers = set()
+        for obj in towatch:
+            if isinstance(obj, Queue):
+                self.queues.add(obj)
+            elif isinstance(obj, PendingMessage):
+                self.peers.add(obj)
+            elif isinstance(obj, Message):
+                self.peers.add(obj.pending_message)
+            else:
+                raise TypeError("Require Queues or Messages, not %s"%type(obj))
+    
+    @property
+    def pending(self):
+        for queue in self.queues:
+            if not queue.empty():
+                return True
+        for pm in self.peers:
+            if pm.pending:
+                return True
+        return False
 
 cdef class Message:
     """A Message class for non-copy send/recvs.
@@ -328,44 +365,61 @@ cdef class Message:
 
     cdef zmq_msg_t zmq_msg
     cdef object data
-    cdef object buf
+    cdef object _buf
+    cdef object _bytes
+    cdef bool _failed_init
+    cdef public object msg_queue
+    cdef public object send_queue
+    cdef public object pending_message
     
     def __cinit__(self, object data=None):
         cdef int rc
-        # Save the data object in case the user wants the the data as a str.
-        self.data = data
-        self.buf = None
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
+        cdef object free_tup
+
+        # Save the data object in case the user wants the the data as a str.
+        self.data = data
+        self._failed_init = True
+        self._buf = None
+        self.msg_queue = Queue()
+        self.send_queue = Queue()
+        self.pending_message = PendingMessage(self.msg_queue, self.send_queue)
+        
         if isinstance(data, unicode):
-            # still initialize the msg, else dealloc will cause Bus Error
-            with nogil:
-                rc = zmq_msg_init(&self.zmq_msg)
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
         
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
+            self._failed_init = False
             if rc != 0:
                 raise ZMQError()
             return
-        # always use buffer interface:
-        asbuffer_r(data, <void **>&data_c, &data_len_c)
+        else:
+            asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
-        Py_INCREF(data)
+        free_tup = (data, self.send_queue)
+        Py_INCREF(free_tup)
         with nogil:
             rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
-                <zmq_free_fn *>free_python_msg, <void *>data
+                <zmq_free_fn *>free_python_msg, <void *>free_tup
             )
+        self._failed_init = False
+        self.msg_queue.put(0)
         if rc != 0:
-            Py_DECREF(data)
+            Py_DECREF(free_tup)
             raise ZMQError()
-
+    
     def __dealloc__(self):
         cdef int rc
+        if self._failed_init:
+            return
+        if not self.msg_queue.empty():
+            self.msg_queue.get() # pop 1
         # This simply decreases the 0MQ ref-count of zmq_msg.
         rc = zmq_msg_close(&self.zmq_msg)
         if rc != 0:
@@ -392,8 +446,14 @@ cdef class Message:
         # called.
         if self.data is not None:
             new_msg.data = self.data
-        if self.buf is not None:
-            new_msg.buf = self.buf
+        if self._buf is not None:
+            new_msg._buf = self._buf
+        
+        new_msg.msg_queue = self.msg_queue
+        new_msg.send_queue = self.send_queue
+        new_msg.pending_message = self.pending_message
+        
+        self.msg_queue.put(2)
         return new_msg
 
     def __len__(self):
@@ -402,18 +462,19 @@ cdef class Message:
 
     def __str__(self):
         """Return the str form of the message."""
-        cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
-        if self.data is None or not isinstance(self.data, str):
-            data_c = <char *>zmq_msg_data(&self.zmq_msg)
-            data_len_c = zmq_msg_size(&self.zmq_msg)
-            return PyString_FromStringAndSize(data_c, data_len_c)
-        else:
+        if isinstance(self.data, str):
             return self.data
+        else:
+            return str(self.bytes)
     
     def __unicode__(self):
         """returns a unicode representation, assuming the buffer is utf-8"""
         return codecs.decode(self.buffer, 'utf-8')
+    
+    @property
+    def pending(self):
+        return self.pending_message.pending
+        # return False
     
     cdef object _getbuffer(self):
         cdef char *data_c = NULL
@@ -422,14 +483,34 @@ cdef class Message:
         data_len_c = zmq_msg_size(&self.zmq_msg)
         # read-only, because we don't want to allow
         # editing of the message in-place
-        self.buf = frombuffer_r(data_c, data_len_c)
+        if self.data is not None:
+            # return buffer on input object, to preserve refcounting
+            return viewfromobject_r(self.data)
+        else:
+            return frombuffer_r(data_c, data_len_c)
     
     @property
     def buffer(self):
-        if self.buf is None:
-            self._getbuffer()
-        return self.buf
+        if self._buf is None:
+            self._buf = self._getbuffer()
+        return self._buf
 
+    cdef object _copybytes(self):
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        # always make a copy:
+        data_c = <char *>zmq_msg_data(&self.zmq_msg)
+        data_len_c = zmq_msg_size(&self.zmq_msg)
+        return PyString_FromStringAndSize(data_c, data_len_c)
+    
+    @property
+    def bytes(self):
+        if self._bytes is None:
+            self._bytes = self._copybytes()
+        return self._bytes
+    
+    def copy(self):
+        return self._copybytes()
 
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
@@ -751,37 +832,48 @@ cdef class Socket:
 
         Returns
         -------
-        None if message was sent, raises an exception otherwise.
+            if copy:
+                None if message was sent, raises an exception otherwise.
+            else:
+                a PendingMessage object, whose `pending` property will be
+                True until the send is completed.
         """
         self._check_closed()
+        
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_unicode")
         
-        if isinstance(data, Message):
-            return self._send_message(data, flags)
-        elif copy:
+        if copy:
+            # msg.bytes never returns the input data object
+            # it is always a copy, but always the same copy
+            if isinstance(data, Message):
+                data = data.buffer
             return self._send_copy(data, flags)
         else:
-            # I am not sure which non-copy implemntation to use here.
-            # It probably doesn't matter though.
-            msg = Message(data)
+            if isinstance(data, Message):
+                msg = data
+            else:
+                msg = Message(data)
             return self._send_message(msg, flags)
-            # return self._send_nocopy(msg, flags)
 
     def _send_message(self, Message msg, int flags=0):
         """Send a Message on this socket in a non-copy manner."""
         cdef int rc
         cdef Message msg_copy
-
         # Always copy so the original message isn't garbage collected.
         # This doesn't do a real copy, just a reference.
         msg_copy = msg.fast_copy()
-        # msg_copy = copy_mod.copy(msg)
+        if msg.send_queue.empty():
+            msg.send_queue.put(3) # pending send
+        
         with nogil:
-            rc = zmq_send(self.handle, &msg.zmq_msg, flags)
+            rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
 
         if rc != 0:
+            msg.send_queue.get()
             raise ZMQError()
+        return PendingMessage(msg.msg_queue, msg.send_queue)
+            
 
     def _send_copy(self, object msg, int flags=0):
         """Send a message on this socket by copying its content."""
@@ -789,13 +881,13 @@ cdef class Socket:
         cdef zmq_msg_t data
         cdef char *msg_c
         cdef Py_ssize_t msg_c_len
-
+        
         # copy to c array:
         asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-            
+        
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
-        # If zmq_msg_init_* fails do we need to call zmq_msg_close?
+        # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
         rc = zmq_msg_init_size(&data, msg_c_len)
         memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
@@ -813,50 +905,7 @@ cdef class Socket:
 
         if rc != 0:
             raise ZMQError()
-
-    def _send_nocopy(self, object msg, int flags=0):
-        """Send a Python string on this socket in a non-copy manner.
-
-        This method is not being used currently, as the same functionality
-        is provided by self._send_message(Message(data)). This may eventually
-        be removed.
-        """
-        cdef int rc
-        cdef zmq_msg_t data
-        cdef char *msg_c
-        cdef Py_ssize_t msg_c_len
-
-        if not isinstance(msg, str):
-            raise TypeError('expected str, got: %r' % msg)
-
-        # copy to c-array:
-        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-        
-        Py_INCREF(msg) # We INCREF to prevent Python from gc'ing msg
-        rc = zmq_msg_init_data(
-            &data, <void *>msg_c, msg_c_len,
-            <zmq_free_fn *>free_python_msg, <void *>msg
-        )
-
-        if rc != 0:
-            # If zmq_msg_init_data fails it does not call zmq_free_fn, 
-            # so we Py_DECREF.
-            Py_DECREF(msg)
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_send(self.handle, &data, flags)
-
-        if rc != 0:
-            # If zmq_send fails it does not call zmq_free_fn, so we Py_DECREF.
-            Py_DECREF(msg)
-            zmq_msg_close(&data)
-            raise ZMQError()
-
-        rc = zmq_msg_close(&data)
-        if rc != 0:
-            raise ZMQError()
-
+    
     def recv(self, int flags=0, copy=True):
         """Receive a message.
 
@@ -876,12 +925,13 @@ cdef class Socket:
             The returned message, or raises ZMQError otherwise.
         """
         self._check_closed()
+        
+        m = self._recv_message(flags)
+        
         if copy:
-            # This could be implemented by simple calling _recv_message and
-            # then casting to a str.
-            return self._recv_copy(flags)
+            return m.bytes
         else:
-            return self._recv_message(flags)
+            return m
     
     def _recv_message(self, int flags=0):
         """Receive a message in a non-copying manner and return a Message."""
@@ -891,33 +941,6 @@ cdef class Socket:
 
         with nogil:
             rc = zmq_recv(self.handle, &msg.zmq_msg, flags)
-
-        if rc != 0:
-            raise ZMQError()
-        return msg
-
-    def _recv_copy(self, int flags=0):
-        """Receive a message in a copying manner as a string."""
-        cdef int rc
-        cdef zmq_msg_t data
-
-        rc = zmq_msg_init(&data)
-        if rc != 0:
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_recv(self.handle, &data, flags)
-
-        if rc != 0:
-            raise ZMQError()
-
-        try:
-            msg = PyString_FromStringAndSize(
-                <char *>zmq_msg_data(&data), 
-                zmq_msg_size(&data)
-            )
-        finally:
-            rc = zmq_msg_close(&data)
 
         if rc != 0:
             raise ZMQError()
@@ -936,8 +959,8 @@ cdef class Socket:
         """
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy)
-        # Send the last part without the SNDMORE flag.
-        self.send(msg_parts[-1], flags)
+        # Send the last part without the extra SNDMORE flag.
+        return self.send(msg_parts[-1], flags, copy=copy)
 
     def recv_multipart(self, int flags=0, copy=True):
         """Receive a multipart message as a list of messages.
@@ -1795,6 +1818,7 @@ def TSMonitoredQueue(int in_type, int out_type, int mon_type):
     return TSMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
 
 __all__ = [
+    'PendingMessage',
     'Message',
     'Context',
     'Socket',
