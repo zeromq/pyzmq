@@ -24,11 +24,13 @@
 #-----------------------------------------------------------------------------
 
 
-from stdlib cimport *
-from python_string cimport PyString_FromStringAndSize
-from python_string cimport PyString_AsStringAndSize
-from python_string cimport PyString_AsString, PyString_Size
-from python_ref cimport Py_DECREF, Py_INCREF
+from libc.stdint cimport int64_t
+from libc.stdlib cimport *
+from cpython cimport PyString_FromStringAndSize
+from cpython cimport PyString_AsStringAndSize
+from cpython cimport PyString_AsString, PyString_Size
+from cpython cimport Py_DECREF, Py_INCREF
+from cpython cimport bool
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -68,9 +70,6 @@ cdef extern from "errno.h" nogil:
 cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
     size_t strlen(char *s)
-
-cdef extern from "zmq_compat.h":
-    ctypedef signed long long int64_t "pyzmq_int64_t"
 
 cdef extern from "zmq.h" nogil:
 
