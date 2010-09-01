@@ -29,3 +29,13 @@ from zmq._zmq import *
 __all__ = _zmq.__all__
 
 __version__ = '2.0.8dev'
+
+def include_dir():
+    """
+    Return the path that the pyzmq package is installed into.  You
+    should add this path to the Cython search path if you need to
+    include any of the installed .pxd files.
+    """
+
+    import os.path
+    return os.path.dirname(os.path.dirname(__file__))

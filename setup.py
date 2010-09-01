@@ -122,6 +122,7 @@ setup(
     name = "pyzmq",
     version = "2.0.8dev",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop'],
+    package_data = { 'zmq': ['*.pxd'] },
     ext_modules = [zmq],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
