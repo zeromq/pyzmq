@@ -1321,7 +1321,7 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
     cdef int64_t more
     cdef size_t moresz
 
-    cdef zmq_pollitem_t items [3]
+    cdef zmq_pollitem_t items [2]
     items [0].socket = insocket_
     items [0].fd = 0
     items [0].events = ZMQ_POLLIN
@@ -1339,9 +1339,7 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
 
         # //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1)
-        ids_done=0
-        # assert (rc > 0)
-
+        
         # //  The algorithm below asumes ratio of request and replies processed
         # //  under full load to be 1:1. Although processing requests replies
         # //  first is tempting it is suspectible to DoS attacks (overloading
@@ -1349,67 +1347,60 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
         # 
         # //  Process a request.
         if (items [0].revents & ZMQ_POLLIN):
+            # send in_prefix to side socket
             rc = zmq_msg_copy(&side_msg, &in_msg)
             rc = zmq_send (sidesocket_, &side_msg, ZMQ_SNDMORE)
+            if swap_ids:# both xrep, must send second identity first
+                # recv two ids into msg, id_msg
+                rc = zmq_recv (insocket_, &msg, 0)
+                rc = zmq_recv (insocket_, &id_msg, 0)
+                
+                # send second id (id_msg) first
+                #!!!! always send a copy before the original !!!!
+                rc = zmq_msg_copy(&side_msg, &id_msg)
+                rc = zmq_send (outsocket_, &side_msg, ZMQ_SNDMORE)
+                rc = zmq_send (sidesocket_, &id_msg, ZMQ_SNDMORE)
+                # send first id (msg) second
+                rc = zmq_msg_copy(&side_msg, &msg)
+                rc = zmq_send (outsocket_, &side_msg, ZMQ_SNDMORE)
+                rc = zmq_send (sidesocket_, &msg, ZMQ_SNDMORE)
             while (True):
-                if swap_ids and not ids_done:
-                    # recv two ids into msg, id_msg
-                    rc = zmq_recv (insocket_, &msg, 0)
-                    rc = zmq_recv (insocket_, &id_msg, 0)
-                    # send second id (id_msg) first
-                    rc = zmq_msg_copy(&side_msg, &id_msg)
-                    rc = zmq_send (outsocket_, &id_msg, ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
-                    # send first id (msg) first
-                    rc = zmq_msg_copy(&side_msg, &msg)
-                    rc = zmq_send (outsocket_, &msg, ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
-                    
-                    # only do it once:
-                    ids_done = 1
-
                 rc = zmq_recv (insocket_, &msg, 0)
                 # assert (rc == 0)
 
                 moresz = sizeof (more)
                 rc = zmq_getsockopt (insocket_, ZMQ_RCVMORE, &more, &moresz)
                 # assert (rc == 0)
+
                 rc = zmq_msg_copy(&side_msg, &msg)
                 if more:
-                    rc = zmq_send (outsocket_, &msg, ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    rc = zmq_send (outsocket_, &side_msg, ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &msg,ZMQ_SNDMORE)
                 else:
-                    rc = zmq_send (outsocket_, &msg, 0)
-                    rc = zmq_send (sidesocket_, &side_msg,0)
+                    rc = zmq_send (outsocket_, &side_msg, 0)
+                    rc = zmq_send (sidesocket_, &msg,0)
                 # assert (rc == 0)
 
                 if (not more):
                     break
-        #     }
-        # }
-        ids_done=0
-
-        # //  Process a reply.
         if (items [1].revents & ZMQ_POLLIN):
             rc = zmq_msg_copy(&side_msg, &out_msg)
             rc = zmq_send (sidesocket_, &side_msg, ZMQ_SNDMORE)
+            if swap_ids:
+                # recv two ids into msg, id_msg
+                rc = zmq_recv (outsocket_, &msg, 0)
+                rc = zmq_recv (outsocket_, &id_msg, 0)
+                
+                # send second id (id_msg) first
+                rc = zmq_msg_copy(&side_msg, &id_msg)
+                rc = zmq_send (insocket_, &side_msg, ZMQ_SNDMORE)
+                rc = zmq_send (sidesocket_, &id_msg,ZMQ_SNDMORE)
+                
+                # send first id (msg) second
+                rc = zmq_msg_copy(&side_msg, &msg)
+                rc = zmq_send (insocket_, &side_msg, ZMQ_SNDMORE)
+                rc = zmq_send (sidesocket_, &msg,ZMQ_SNDMORE)
             while (True):
-                if swap_ids and not ids_done:
-                    # recv two ids into msg, id_msg
-                    rc = zmq_recv (outsocket_, &msg, 0)
-                    rc = zmq_recv (outsocket_, &id_msg, 0)
-                    # send second id (id_msg) first
-                    rc = zmq_msg_copy(&side_msg, &id_msg)
-                    rc = zmq_send (insocket_, &id_msg, ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
-                    # send first id (msg) first
-                    rc = zmq_msg_copy(&side_msg, &msg)
-                    rc = zmq_send (insocket_, &msg, ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
-                    
-                    # only do it once:
-                    ids_done = 1
-
                 rc = zmq_recv (outsocket_, &msg, 0)
                 # assert (rc == 0)
 
@@ -1418,11 +1409,11 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                 # assert (rc == 0)
                 rc = zmq_msg_copy(&side_msg, &msg)
                 if more:
-                    rc = zmq_send (insocket_, &msg,ZMQ_SNDMORE)
-                    rc = zmq_send (sidesocket_, &side_msg,ZMQ_SNDMORE)
+                    rc = zmq_send (insocket_, &side_msg,ZMQ_SNDMORE)
+                    rc = zmq_send (sidesocket_, &msg,ZMQ_SNDMORE)
                 else:
-                    rc = zmq_send (insocket_, &msg,0)
-                    rc = zmq_send (sidesocket_, &side_msg,0)
+                    rc = zmq_send (insocket_, &side_msg,0)
+                    rc = zmq_send (sidesocket_, &msg,0)
                 # errno_assert (rc == 0)
 
                 if (not more):
