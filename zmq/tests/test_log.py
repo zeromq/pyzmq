@@ -39,7 +39,7 @@ class TestPubLog(BaseZMQTestCase):
     
     @property
     def logger(self):
-        print dir(self)
+        # print dir(self)
         logger = logging.getLogger('zmqtest')
         logger.setLevel(logging.DEBUG)
         return logger

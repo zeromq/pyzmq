@@ -43,6 +43,8 @@ class TestSocket(BaseZMQTestCase):
         # Superluminal protocol not yet implemented
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
+        s.close()
+        del ctx
     
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
@@ -68,6 +70,7 @@ class TestSocket(BaseZMQTestCase):
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        self.sockets.extend([a,b])
         self.assertEquals(a.setsockopt_string, a.setsockopt_unicode)
         self.assertEquals(b.getsockopt_string, b.getsockopt_unicode)
         u =  u"çπ§"
@@ -83,11 +86,17 @@ class TestSocket(BaseZMQTestCase):
         
     def test_pending_message(self):
         "test the PendingMessage object for tracking when zmq is done with a buffer"
+        addr = 'tcp://127.0.0.1'
+        a = self.context.socket(zmq.XREQ)
+        port = a.bind_to_random_port(addr)
+        a.close()
+        del a 
+        iface = "%s:%i"%(addr,port)
         a = self.context.socket(zmq.XREQ)
         a.setsockopt(zmq.IDENTITY, "a")
         b = self.context.socket(zmq.XREP)
-        addr = 'tcp://127.0.0.1:12345'
-        a.connect(addr)
+        self.sockets.extend([a,b])
+        a.connect(iface)
         p1 = a.send('something', copy=False)
         self.assert_(isinstance(p1, zmq.PendingMessage))
         self.assertTrue(p1.pending)
@@ -95,7 +104,7 @@ class TestSocket(BaseZMQTestCase):
         self.assert_(isinstance(p2, zmq.PendingMessage))
         self.assertEquals(p2.pending, True)
         self.assertEquals(p1.pending, True)
-        b.bind(addr)
+        b.bind(iface)
         msg = b.recv_multipart()
         self.assertEquals(p1.pending, False)
         self.assertEquals(msg, ['a', 'something'])
@@ -125,7 +134,8 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p1.pending, False)
         self.assertEquals(p2.pending, False)
         
-    
+        
+
     def test_close(self):
         ctx = zmq.Context()
         s = ctx.socket(zmq.PUB)
@@ -135,4 +145,6 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, '')
         self.assertRaises(zmq.ZMQError, s.send, 'asdf')
         self.assertRaises(zmq.ZMQError, s.recv)
+        del ctx
+    
 
