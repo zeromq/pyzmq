@@ -35,3 +35,4 @@ while True:
     socket.send(data)
     data = socket.recv()
     print time()-start, data
+
