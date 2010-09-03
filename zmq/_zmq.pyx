@@ -170,9 +170,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    enum: ZMQ_STREAMER #1
+    enum: ZMQ_QUEUE #1
     enum: ZMQ_FORWARDER #2
-    enum: ZMQ_QUEUE #3
+    enum: ZMQ_STREAMER #3
     int zmq_device (int device_, void *insocket_, void *outsocket_)
 
 cdef extern from "zmq_utils.h" nogil:
@@ -211,9 +211,9 @@ SNDMORE = ZMQ_SNDMORE
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
-STREAMER = ZMQ_STREAMER
-FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
+FORWARDER = ZMQ_FORWARDER
+STREAMER = ZMQ_STREAMER
 
 
 #-----------------------------------------------------------------------------
@@ -1190,9 +1190,9 @@ __all__ = [
     'POLLERR',
     '_poll',
     'select',
-    'STREAMER',
-    'FORWARDER',
     'QUEUE',
+    'FORWARDER',
+    'STREAMER',
     'device',
     'Poller',
     # ERRORNO codes
