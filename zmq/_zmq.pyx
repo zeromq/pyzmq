@@ -24,11 +24,12 @@
 #-----------------------------------------------------------------------------
 
 
-from stdlib cimport *
-from python_string cimport PyString_FromStringAndSize
-from python_string cimport PyString_AsStringAndSize
-from python_string cimport PyString_AsString, PyString_Size
-from python_ref cimport Py_DECREF, Py_INCREF
+from libc.stdlib cimport *
+from cpython cimport PyString_FromStringAndSize
+from cpython cimport PyString_AsStringAndSize
+from cpython cimport PyString_AsString, PyString_Size
+from cpython cimport Py_DECREF, Py_INCREF
+from cpython cimport bool
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t

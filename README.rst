@@ -50,8 +50,8 @@ On Linux, you will need to do one of the following:
 Development
 -----------
 
-If you want to develop this package, instead of ``python setup.py install``
-do::
+To develop PyZMQ, you will need to install Cython, version 0.13 or greater.
+After installing Cython, instead of doing ``python setup.py install`` do::
 
     $ python setup.py build_ext --inplace
     $ python setupegg.py develop
@@ -87,3 +87,4 @@ The following people have contributed to the project:
 * Justin Riley (justin DOT t DOT riley AT gmail DOT com)
 * Ivo Danihelka (ivo AT denihelka DOT net)
 * Thomas Supra (tomspur AT fedoraproject DOT org)
+* Douglas Creager (dcreager AT dcreager DOT net)
