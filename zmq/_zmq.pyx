@@ -130,6 +130,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_XREP # 6
     enum: ZMQ_PULL # 7
     enum: ZMQ_PUSH # 8
+    enum: ZMQ_UPSTREAM # 7
+    enum: ZMQ_DOWNSTREAM # 8
+
 
     enum: ZMQ_HWM # 1
     enum: ZMQ_SWAP # 3
@@ -195,6 +198,8 @@ XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
+UPSTREAM = ZMQ_UPSTREAM
+DOWNSTREAM = ZMQ_DOWNSTREAM
 HWM = ZMQ_HWM
 SWAP = ZMQ_SWAP
 AFFINITY = ZMQ_AFFINITY
@@ -1172,6 +1177,8 @@ __all__ = [
     'XREP',
     'PULL',
     'PUSH',
+    'UPSTREAM',
+    'DOWNSTREAM',
     'HWM',
     'SWAP',
     'AFFINITY',
