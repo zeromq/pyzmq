@@ -432,7 +432,7 @@ cdef class Context:
         """
         cdef int rc
         if self.handle != NULL and not self.closed:
-            rc = zmq_close(self.handle)
+            rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
             self.handle = NULL
