@@ -405,6 +405,7 @@ cdef class Context:
     """
 
     cdef void *handle
+    cdef public object closed
 
     def __cinit__(self, int io_threads=1):
         self.handle = NULL
@@ -413,6 +414,7 @@ cdef class Context:
         self.handle = zmq_init(io_threads)
         if self.handle == NULL:
             raise ZMQError()
+        self.closed = False
 
     def __dealloc__(self):
         cdef int rc
@@ -420,6 +422,21 @@ cdef class Context:
             rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
+
+    def close(self):
+        """Close the context.
+
+        This can be called to close the context by hand. If this is not
+        called, the context will automatically be closed when it is
+        garbage collected.
+        """
+        cdef int rc
+        if self.handle != NULL and not self.closed:
+            rc = zmq_close(self.handle)
+            if rc != 0:
+                raise ZMQError()
+            self.handle = NULL
+            self.closed = True
 
     def socket(self, int socket_type):
         """Create a Socket associated with this Context.
@@ -430,6 +447,8 @@ cdef class Context:
             The socket type, which can be any of the 0MQ socket types: 
             REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
         """
+        if self.closed:
+            raise ZMQError(ENOTSUP)
         return Socket(self, socket_type)
 
 
