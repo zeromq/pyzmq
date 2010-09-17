@@ -1,3 +1,5 @@
+from libc.stdlib cimport free, malloc
+
 # From mpi4py
 #---------------------------------------------------------------------
 

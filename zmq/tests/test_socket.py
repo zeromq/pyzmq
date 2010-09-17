@@ -50,8 +50,8 @@ class TestSocket(BaseZMQTestCase):
         """test setting/getting sockopts with unicode strings"""
         topic = u"tést"
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        self.assertEquals(s.send_string, s.send_unicode)
-        self.assertEquals(p.recv_string, p.recv_unicode)
+        self.assertEquals(s.send_unicode, s.send_unicode)
+        self.assertEquals(p.recv_unicode, p.recv_unicode)
         self.assertRaises(TypeError, s.setsockopt, zmq.SUBSCRIBE, topic)
         self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
         self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
@@ -71,8 +71,8 @@ class TestSocket(BaseZMQTestCase):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         self.sockets.extend([a,b])
-        self.assertEquals(a.setsockopt_string, a.setsockopt_unicode)
-        self.assertEquals(b.getsockopt_string, b.getsockopt_unicode)
+        self.assertEquals(a.setsockopt_unicode, a.setsockopt_unicode)
+        self.assertEquals(b.getsockopt_unicode, b.getsockopt_unicode)
         u =  u"çπ§"
         self.assertRaises(TypeError, a.send, u,copy=False)
         self.assertRaises(TypeError, a.send, u,copy=True)
@@ -84,8 +84,8 @@ class TestSocket(BaseZMQTestCase):
         s = b.recv_unicode(encoding='utf32')
         self.assertEquals(s,u)
         
-    def test_pending_message(self):
-        "test the PendingMessage object for tracking when zmq is done with a buffer"
+    def test_tracker(self):
+        "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
         a = self.context.socket(zmq.XREQ)
         port = a.bind_to_random_port(addr)
@@ -98,10 +98,10 @@ class TestSocket(BaseZMQTestCase):
         self.sockets.extend([a,b])
         a.connect(iface)
         p1 = a.send('something', copy=False)
-        self.assert_(isinstance(p1, zmq.PendingMessage))
+        self.assert_(isinstance(p1, zmq.MessageTracker))
         self.assertTrue(p1.pending)
         p2 = a.send_multipart(['something', 'else'], copy=False)
-        self.assert_(isinstance(p2, zmq.PendingMessage))
+        self.assert_(isinstance(p2, zmq.MessageTracker))
         self.assertEquals(p2.pending, True)
         self.assertEquals(p1.pending, True)
         b.bind(iface)
@@ -127,7 +127,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(msg, ['a', 'again'])
         self.assertEquals(p1.pending, True)
         self.assertEquals(p2.pending, True)
-        pm = m.pending_message
+        pm = m.tracker
         del m
         time.sleep(0.1)
         # q.get()

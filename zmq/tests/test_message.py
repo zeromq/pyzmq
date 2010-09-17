@@ -75,7 +75,7 @@ class TestMessage(BaseZMQTestCase):
         for i in range(16):
             s = (2**i)*u'§'
             m = zmq.Message(s.encode('utf8'))
-            self.assertEquals(s, unicode(m))
+            self.assertEquals(s, unicode(str(m),'utf8'))
     
 
     def test_len(self):
@@ -134,10 +134,10 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals(grc(s), 2)
             del s
     
-    def test_pending_message(self):
+    def test_tracker(self):
         m = zmq.Message('asdf')
         self.assert_(m.pending)
-        pm = zmq.PendingMessage(m)
+        pm = zmq.MessageTracker(m)
         self.assert_(pm.pending)
         del m
         self.assertFalse(pm.pending)
@@ -166,24 +166,24 @@ class TestMessage(BaseZMQTestCase):
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         s = "message"
         m = zmq.Message(s)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
         
         a.send(m, copy=False)
         time.sleep(0.1)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
         a.send(m, copy=False)
         time.sleep(0.1)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
         a.send(m, copy=True)
         time.sleep(0.1)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
         a.send(m, copy=True)
         time.sleep(0.1)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
         for i in range(4):
             r = b.recv()
             self.assertEquals(s,r)
-        self.assertEquals(s, m.copy())
+        self.assertEquals(s, m.bytes)
     
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""

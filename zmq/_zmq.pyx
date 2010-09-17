@@ -24,10 +24,13 @@
 #-----------------------------------------------------------------------------
 
 
-from stdlib cimport *
-from python_string cimport PyString_FromStringAndSize
-from python_string cimport PyString_AsString, PyString_Size
-from python_ref cimport Py_DECREF, Py_INCREF
+from libc.stdlib cimport *
+from cpython cimport PyString_FromStringAndSize
+from cpython cimport PyString_AsString, PyString_Size
+from cpython cimport Py_DECREF, Py_INCREF
+from cpython cimport bool
+
+from allocate cimport allocate
 
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
@@ -35,11 +38,13 @@ cdef extern from "Python.h":
     ctypedef int Py_ssize_t
     cdef void PyEval_InitThreads()
 
-# For some reason we need to call this.  My guess is that we are not doing
-# any Python treading.
+# Older versions of Cython would not take care of called this automatically.
+# In newer versions of Cython (at least 0.12.1) this is called automatically.
+# We should wait for a few releases and then remove this call.
 PyEval_InitThreads()
 
 import copy as copy_mod
+import time
 import random
 import struct
 import codecs
@@ -79,9 +84,6 @@ else:
     to_json = jsonify
     from_json = json.loads
 
-include "allocate.pxi"
-#include "buffers.pxi"
-
 #-----------------------------------------------------------------------------
 # Import the C header files
 #-----------------------------------------------------------------------------
@@ -89,6 +91,9 @@ include "allocate.pxi"
 cdef extern from "errno.h" nogil:
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EAGAIN "EAGAIN"
+    enum: ZMQ_EFAULT "EFAULT"
+    enum: ZMQ_ENOMEM "ENOMEM"
+    enum: ZMQ_ENODEV "ENODEV"
 
 cdef extern from "string.h" nogil:
     void *memcpy(void *dest, void *src, size_t n)
@@ -98,6 +103,9 @@ cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
 
 cdef extern from "zmq.h" nogil:
+
+    void _zmq_version "zmq_version"(int *major, int *minor, int *patch)
+
     enum: ZMQ_HAUSNUMERO
     enum: ZMQ_ENOTSUP "ENOTSUP"
     enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
@@ -119,10 +127,12 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MAX_VSM_SIZE # 30
     enum: ZMQ_DELIMITER # 31
     enum: ZMQ_VSM # 32
+    enum: ZMQ_MSG_MORE # 1
+    enum: ZMQ_MSG_SHARED # 128
 
     ctypedef struct zmq_msg_t:
         void *content
-        unsigned char shared
+        unsigned char flags
         unsigned char vsm_size
         unsigned char vsm_data [ZMQ_MAX_VSM_SIZE]
     
@@ -148,6 +158,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REP # 4
     enum: ZMQ_XREQ # 5
     enum: ZMQ_XREP # 6
+    enum: ZMQ_PULL # 7
+    enum: ZMQ_PUSH # 8
     enum: ZMQ_UPSTREAM # 7
     enum: ZMQ_DOWNSTREAM # 8
 
@@ -188,23 +200,18 @@ cdef extern from "zmq.h" nogil:
         short events
         short revents
 
-    ctypedef struct zmq_msg_t:
-        void *content
-        unsigned char flags
-        unsigned char vsm_size
-        unsigned char vsm_data [ZMQ_MAX_VSM_SIZE]
-    
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    enum: ZMQ_STREAMER # 1
-    enum: ZMQ_FORWARDER # 2
-    enum: ZMQ_QUEUE # 3
-    
-    int zmq_device (int device, void * insocket, void * outsocket)
-    
-    # void *zmq_stopwatch_start ()
-    # unsigned long zmq_stopwatch_stop (void *watch_)
-    # void zmq_sleep (int seconds_)
+    enum: ZMQ_STREAMER #1
+    enum: ZMQ_FORWARDER #2
+    enum: ZMQ_QUEUE #3
+    int zmq_device (int device_, void *insocket_, void *outsocket_)
+
+cdef extern from "zmq_utils.h" nogil:
+
+    void *zmq_stopwatch_start ()
+    unsigned long zmq_stopwatch_stop (void *watch_)
+    void zmq_sleep (int seconds_)
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -218,6 +225,8 @@ REQ = ZMQ_REQ
 REP = ZMQ_REP
 XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
+PULL = ZMQ_PULL
+PUSH = ZMQ_PUSH
 UPSTREAM = ZMQ_UPSTREAM
 DOWNSTREAM = ZMQ_DOWNSTREAM
 HWM = ZMQ_HWM
@@ -236,7 +245,6 @@ SNDMORE = ZMQ_SNDMORE
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
-
 STREAMER = ZMQ_STREAMER
 FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
@@ -249,6 +257,9 @@ QUEUE = ZMQ_QUEUE
 # Often used (these are alse in errno.)
 EAGAIN = ZMQ_EAGAIN
 EINVAL = ZMQ_EINVAL
+EFAULT = ZMQ_EFAULT
+ENOMEM = ZMQ_ENOMEM
+ENODEV = ZMQ_ENODEV
 
 # For Windows compatability
 ENOTSUP = ZMQ_ENOTSUP
@@ -289,14 +300,14 @@ class ZMQError(ZMQBaseError):
         if error is None:
             error = zmq_errno()
         if type(error) == int:
-            self.errstr = strerror(error)
+            self.strerror = strerror(error)
             self.errno = error
         else:
-            self.errstr = str(error)
-            self.errno = None 
+            self.strerror = str(error)
+            self.errno = None
 
     def __str__(self):
-        return self.errstr
+        return self.strerror
 
 class ZMQBindError(ZMQBaseError):
     """An error for bind_to_random_port."""
@@ -307,21 +318,28 @@ class ZMQBindError(ZMQBaseError):
 #-----------------------------------------------------------------------------
 
 
+def zmq_version():
+    """Return the version of ZeroMQ itself."""
+    cdef int major, minor, patch
+    _zmq_version(&major, &minor, &patch)
+    return '%i.%i.%i' % (major, minor, patch)
+
+
 cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
-        queue = (<object>hint)[1]
-        if not queue.empty():
-            queue.get()
+        send_pending = (<object>hint)[1]
+        if isinstance(send_pending, Queue) and not send_pending.empty():
+            send_pending.get()
         Py_DECREF(<object>hint)
 
 
-cdef class PendingMessage(object):
+cdef class MessageTracker(object):
     """This is a simple wrapper for Queues. It's `pending` property
     will be True iff all the queues are empty.  It can be constructed
-    from Messages, queues, or other PendingMessage objects.
+    from Messages, queues, or other MessageTracker objects.
     
-    socket.send( ... copy=False) returns a PendingMessage object
+    socket.send( ... copy=False) returns a MessageTracker object
     """
     
     cdef set queues
@@ -333,10 +351,10 @@ cdef class PendingMessage(object):
         for obj in towatch:
             if isinstance(obj, Queue):
                 self.queues.add(obj)
-            elif isinstance(obj, PendingMessage):
+            elif isinstance(obj, MessageTracker):
                 self.peers.add(obj)
             elif isinstance(obj, Message):
-                self.peers.add(obj.pending_message)
+                self.peers.add(obj.tracker)
             else:
                 raise TypeError("Require Queues or Messages, not %s"%type(obj))
     
@@ -349,6 +367,10 @@ cdef class PendingMessage(object):
             if pm.pending:
                 return True
         return False
+    
+    def wait(self):
+        while self.pending:
+            time.sleep(.001)
 
 cdef class Message:
     """A Message class for non-copy send/recvs.
@@ -364,13 +386,14 @@ cdef class Message:
     """
 
     cdef zmq_msg_t zmq_msg
-    cdef object data
-    cdef object _buf
-    cdef object _bytes
+    cdef object _data # the actual message data
+    cdef object _buffer # a Python Buffer/View of the message contents
+    cdef object _bytes # a bytes/str representation of a message; always copied
     cdef bool _failed_init
-    cdef public object msg_queue
-    cdef public object send_queue
-    cdef public object pending_message
+    # Queues for tracking zmq ref counting, for use in 
+    cdef public object zmq_refcount
+    cdef public object send_pending
+    cdef public object tracker
     
     def __cinit__(self, object data=None):
         cdef int rc
@@ -379,12 +402,13 @@ cdef class Message:
         cdef object free_tup
 
         # Save the data object in case the user wants the the data as a str.
-        self.data = data
+        self._data = data
         self._failed_init = True
-        self._buf = None
-        self.msg_queue = Queue()
-        self.send_queue = Queue()
-        self.pending_message = PendingMessage(self.msg_queue, self.send_queue)
+        self._buffer = None
+        self._bytes = None
+        self.zmq_refcount = Queue()
+        self.send_pending = Queue()
+        self.tracker = MessageTracker(self.zmq_refcount, self.send_pending)
         
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -392,34 +416,34 @@ cdef class Message:
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
-            self._failed_init = False
             if rc != 0:
                 raise ZMQError()
+            self._failed_init = False
             return
         else:
             asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
-        free_tup = (data, self.send_queue)
+        free_tup = (data, self.send_pending)
         Py_INCREF(free_tup)
         with nogil:
             rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
                 <zmq_free_fn *>free_python_msg, <void *>free_tup
             )
-        self._failed_init = False
-        self.msg_queue.put(0)
         if rc != 0:
             Py_DECREF(free_tup)
             raise ZMQError()
+        self._failed_init = False
+        self.zmq_refcount.put(0)
     
     def __dealloc__(self):
         cdef int rc
         if self._failed_init:
             return
-        if not self.msg_queue.empty():
-            self.msg_queue.get() # pop 1
+        if not self.zmq_refcount.empty():
+            self.zmq_refcount.get() # pop 1
         # This simply decreases the 0MQ ref-count of zmq_msg.
         rc = zmq_msg_close(&self.zmq_msg)
         if rc != 0:
@@ -444,16 +468,18 @@ cdef class Message:
         zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
         # Copy the ref to data so the copy won't create a copy when str is
         # called.
-        if self.data is not None:
-            new_msg.data = self.data
-        if self._buf is not None:
-            new_msg._buf = self._buf
+        if self._data is not None:
+            new_msg._data = self._data
+        if self._buffer is not None:
+            new_msg._buffer = self._buffer
+        if self._bytes is not None:
+            new_msg._bytes = self._bytes
         
-        new_msg.msg_queue = self.msg_queue
-        new_msg.send_queue = self.send_queue
-        new_msg.pending_message = self.pending_message
+        new_msg.zmq_refcount = self.zmq_refcount
+        new_msg.send_pending = self.send_pending
+        new_msg.tracker = self.tracker
         
-        self.msg_queue.put(2)
+        self.zmq_refcount.put(2)
         return new_msg
 
     def __len__(self):
@@ -462,40 +488,42 @@ cdef class Message:
 
     def __str__(self):
         """Return the str form of the message."""
-        if isinstance(self.data, str):
-            return self.data
+        if isinstance(self._data, str):
+            return self._data
         else:
             return str(self.bytes)
     
-    def __unicode__(self):
-        """returns a unicode representation, assuming the buffer is utf-8"""
-        return codecs.decode(self.buffer, 'utf-8')
-    
     @property
     def pending(self):
-        return self.pending_message.pending
+        return self.tracker.pending
         # return False
     
     cdef object _getbuffer(self):
+        """Create a Python buffer/view of the message data.
+        This will be called only once, by the `buffer` property's
+        constructor."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
-        data_c = <char *>zmq_msg_data(&self.zmq_msg)
-        data_len_c = zmq_msg_size(&self.zmq_msg)
         # read-only, because we don't want to allow
         # editing of the message in-place
-        if self.data is not None:
+        if self._data is None:
             # return buffer on input object, to preserve refcounting
-            return viewfromobject_r(self.data)
-        else:
+            data_c = <char *>zmq_msg_data(&self.zmq_msg)
+            data_len_c = zmq_msg_size(&self.zmq_msg)
             return frombuffer_r(data_c, data_len_c)
+        else:
+            return viewfromobject_r(self._data)
     
     @property
     def buffer(self):
-        if self._buf is None:
-            self._buf = self._getbuffer()
-        return self._buf
+        if self._buffer is None:
+            self._buffer = self._getbuffer()
+        return self._buffer
 
     cdef object _copybytes(self):
+        """Create a Python bytes object from a copy of the message data.
+        This will be called only once, by the `bytes` property's
+        constructor."""
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
         # always make a copy:
@@ -509,9 +537,6 @@ cdef class Message:
             self._bytes = self._copybytes()
         return self._bytes
     
-    def copy(self):
-        return self._copybytes()
-
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
 
@@ -525,6 +550,7 @@ cdef class Context:
     """
 
     cdef void *handle
+    cdef public object closed
 
     def __cinit__(self, int io_threads=1):
         self.handle = NULL
@@ -533,6 +559,7 @@ cdef class Context:
         self.handle = zmq_init(io_threads)
         if self.handle == NULL:
             raise ZMQError()
+        self.closed = False
 
     def __dealloc__(self):
         cdef int rc
@@ -541,6 +568,21 @@ cdef class Context:
             if rc != 0:
                 raise ZMQError()
 
+    def close(self):
+        """Close the context.
+
+        This can be called to close the context by hand. If this is not
+        called, the context will automatically be closed when it is
+        garbage collected.
+        """
+        cdef int rc
+        if self.handle != NULL and not self.closed:
+            rc = zmq_term(self.handle)
+            if rc != 0:
+                raise ZMQError()
+            self.handle = NULL
+            self.closed = True
+
     def socket(self, int socket_type):
         """Create a Socket associated with this Context.
 
@@ -548,8 +590,10 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
         """
+        if self.closed:
+            raise ZMQError(ENOTSUP)
         return Socket(self, socket_type)
 
 
@@ -564,7 +608,7 @@ cdef class Socket:
         The 0MQ Context this Socket belongs to.
     socket_type : int
         The socket type, which can be any of the 0MQ socket types: 
-        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, UPSTREAM, DOWNSTREAM.
+        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
     cdef void *handle
@@ -710,8 +754,6 @@ cdef class Socket:
         
         return self.setsockopt(option, optval.encode(encoding))
     
-    setsockopt_string = setsockopt_unicode
-    
     def getsockopt_unicode(self, int option,encoding='utf-8'):
         """Get the value of a socket option.
 
@@ -731,8 +773,6 @@ cdef class Socket:
         if option not in [IDENTITY]:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
-    
-    getsockopt_string = getsockopt_unicode
     
     def bind(self, addr):
         """Bind the socket to an address.
@@ -798,8 +838,8 @@ cdef class Socket:
         addr : str
             The address string. This has the form 'protocol://interface:port',
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
-            tcp, upd, pgm, inproc and ipc.
-            if addr is unicode, it is encoded to utf-8 first.
+            tcp, upd, pgm, inproc and ipc. If addr is unicode, 
+            it is encoded to utf-8 first.
         """
         cdef int rc
 
@@ -832,11 +872,11 @@ cdef class Socket:
 
         Returns
         -------
-            if copy:
-                None if message was sent, raises an exception otherwise.
-            else:
-                a PendingMessage object, whose `pending` property will be
-                True until the send is completed.
+        if copy:
+            None if message was sent, raises an exception otherwise.
+        else:
+            a MessageTracker object, whose `pending` property will be
+            True until the send is completed.
         """
         self._check_closed()
         
@@ -860,19 +900,20 @@ cdef class Socket:
         """Send a Message on this socket in a non-copy manner."""
         cdef int rc
         cdef Message msg_copy
+
         # Always copy so the original message isn't garbage collected.
         # This doesn't do a real copy, just a reference.
         msg_copy = msg.fast_copy()
-        if msg.send_queue.empty():
-            msg.send_queue.put(3) # pending send
+        if msg.send_pending.empty():
+            msg.send_pending.put(3) # pending send
         
         with nogil:
             rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
 
         if rc != 0:
-            msg.send_queue.get()
+            msg.send_pending.get()
             raise ZMQError()
-        return PendingMessage(msg.msg_queue, msg.send_queue)
+        return msg.tracker
             
 
     def _send_copy(self, object msg, int flags=0):
@@ -900,10 +941,7 @@ cdef class Socket:
 
         # Shouldn't the error handling for zmq_msg_close come after that
         # of zmq_send?
-        if rc2 != 0:
-            raise ZMQError()
-
-        if rc != 0:
+        if rc != 0 or rc2 != 0:
             raise ZMQError()
     
     def recv(self, int flags=0, copy=True):
@@ -992,7 +1030,7 @@ cdef class Socket:
         more = self.getsockopt(RCVMORE)
         return bool(more)
 
-    def send_unicode(self, u, int flags=0,encoding='utf-8'):
+    def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
         """Send a Python unicode object as a message with an encoding.
 
         Parameters
@@ -1006,12 +1044,11 @@ cdef class Socket:
         """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
-        return self.send(u.encode(encoding), flags=flags, copy=False)
+        return self.send(u.encode(encoding), flags=flags, copy=copy)
     
-    send_string = send_unicode
-        
     def recv_unicode(self, int flags=0,encoding='utf-8'):
-        """recv a unicode string, as sent by send_unicode
+        """Receive a unicode string, as sent by send_unicode.
+        
         Parameters
         ----------
         flags : int
@@ -1026,8 +1063,6 @@ cdef class Socket:
         msg = self.recv(flags=flags, copy=False)
         return codecs.decode(msg.buffer, encoding)
     
-    recv_string = recv_unicode
-
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """Send a Python object as a message using pickle to serialize.
 
@@ -1097,36 +1132,36 @@ cdef class Socket:
             return from_json(msg)
 
 
-# cdef class Stopwatch:
-#     """A simple stopwatch based on zmq_stopwatch_start/stop."""
-# 
-#     cdef void *watch
-# 
-#     def __cinit__(self):
-#         self.watch = NULL
-# 
-#     def __dealloc__(self):
-#         try:
-#             self.stop()
-#         except ZMQError:
-#             pass
-# 
-#     def start(self):
-#         if self.watch == NULL:
-#             self.watch = zmq_stopwatch_start()
-#         else:
-#             raise ZMQError('Stopwatch is already runing.')
-# 
-#     def stop(self):
-#         if self.watch == NULL:
-#             raise ZMQError('Must start the Stopwatch before calling stop.')
-#         else:
-#             time = zmq_stopwatch_stop(self.watch)
-#             self.watch = NULL
-#             return time
-# 
-#     def sleep(self, int seconds):
-#         zmq_sleep(seconds)
+cdef class Stopwatch:
+    """A simple stopwatch based on zmq_stopwatch_start/stop."""
+
+    cdef void *watch
+
+    def __cinit__(self):
+        self.watch = NULL
+
+    def __dealloc__(self):
+        try:
+            self.stop()
+        except ZMQError:
+            pass
+
+    def start(self):
+        if self.watch == NULL:
+            self.watch = zmq_stopwatch_start()
+        else:
+            raise ZMQError('Stopwatch is already runing.')
+
+    def stop(self):
+        if self.watch == NULL:
+            raise ZMQError('Must start the Stopwatch before calling stop.')
+        else:
+            time = zmq_stopwatch_stop(self.watch)
+            self.watch = NULL
+            return time
+
+    def sleep(self, int seconds):
+        zmq_sleep(seconds)
 
 
 def _poll(sockets, long timeout=-1):
@@ -1290,6 +1325,27 @@ def select(rlist, wlist, xlist, timeout=None):
             xlist.append(s)
     return rlist, wlist, xlist
     
+def device(device_type, isocket, osocket):
+    """Start a zeromq device.
+
+    Parameters
+    ----------
+    device_type : (QUEUE, FORWARDER, STREAMER)
+        The type of device to start.
+    isocket : Socket
+        The Socket instance for the incoming traffic.
+    osocket : Socket
+        The Socket instance for the outbound traffic.
+    """
+    cdef Socket _isocket = isocket
+    cdef Socket _osocket = osocket
+    cdef void *ihandle = _isocket.handle
+    cdef void *ohandle = _osocket.handle
+    cdef int dtype = device_type
+    cdef int result = 0
+    with nogil:
+        result = zmq_device(dtype, ihandle, ohandle)
+    return result
 
 ########### monitored_queue adapted from zmq::queue.cpp #######
 # basic free for msg_init_data:
@@ -1809,7 +1865,8 @@ def TSMonitoredQueue(int in_type, int out_type, int mon_type):
     return TSMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
 
 __all__ = [
-    'PendingMessage',
+    'zmq_version',
+    'MessageTracker',
     'Message',
     'Context',
     'Socket',
@@ -1825,6 +1882,8 @@ __all__ = [
     'REP',
     'XREQ',
     'XREP',
+    'PULL',
+    'PUSH',
     'UPSTREAM',
     'DOWNSTREAM',
     'HWM',
@@ -1843,13 +1902,13 @@ __all__ = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
+    '_poll',
+    'select',
     'STREAMER',
     'FORWARDER',
     'QUEUE',
-    '_poll',
-    'select',
+    'device',
     'Poller',
-    # 'sidequeue',
     'Device',
     'TSDevice',
     'MonitoredQueue',
@@ -1869,5 +1928,8 @@ __all__ = [
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
+    'EFAULT',
+    'ENOMEM',
+    'ENODEV'
 ]
 

@@ -35,15 +35,15 @@ from zmq.tests import BaseZMQTestCase
 class TestDevice(BaseZMQTestCase):
 
     def test_constants(self):
-        """from zmq.h"""
+        """check constants from zmq.h"""
         #define ZMQ_STREAMER 1
         #define ZMQ_FORWARDER 2
         #define ZMQ_QUEUE 3
-        a = getattr(zmq, 'STREAMER', None)
+        a = getattr(zmq, 'QUEUE', None)
         self.assertEquals(a, 1)
         a = getattr(zmq, 'FORWARDER', None)
         self.assertEquals(a, 2)
-        a = getattr(zmq, 'QUEUE', None)
+        a = getattr(zmq, 'STREAMER', None)
         self.assertEquals(a, 3)
     
     def test_device_types(self):
