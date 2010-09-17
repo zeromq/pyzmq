@@ -329,15 +329,18 @@ cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
         send_pending = (<object>hint)[1]
-        if isinstance(send_pending, Queue) and not send_pending.empty():
-            send_pending.get()
+        
+        if isinstance(send_pending, Queue):
+            assert send_pending.empty(), "somebody else wrote to my Queue!"
+            send_pending.put(0)
         Py_DECREF(<object>hint)
 
 
 cdef class MessageTracker(object):
-    """This is a simple wrapper for Queues. It's `pending` property
-    will be True iff all the queues are empty.  It can be constructed
-    from Messages, queues, or other MessageTracker objects.
+    """The MessageTracker object tracks whether a 
+    
+    It can be constructed from any number of Messages, Queues, 
+    or other MessageTracker objects.
     
     socket.send( ... copy=False) returns a MessageTracker object
     """
@@ -359,17 +362,17 @@ cdef class MessageTracker(object):
                 raise TypeError("Require Queues or Messages, not %s"%type(obj))
     
     @property
-    def pending(self):
+    def done(self):
         for queue in self.queues:
-            if not queue.empty():
-                return True
+            if queue.empty():
+                return False
         for pm in self.peers:
-            if pm.pending:
-                return True
-        return False
+            if not pm.done:
+                return False
+        return True
     
     def wait(self):
-        while self.pending:
+        while not self.done:
             time.sleep(.001)
 
 cdef class Message:
@@ -391,7 +394,7 @@ cdef class Message:
     cdef object _bytes # a bytes/str representation of a message; always copied
     cdef bool _failed_init
     # Queues for tracking zmq ref counting, for use in 
-    cdef public object zmq_refcount
+    # cdef public object zmq_refcount
     cdef public object send_pending
     cdef public object tracker
     
@@ -406,9 +409,9 @@ cdef class Message:
         self._failed_init = True
         self._buffer = None
         self._bytes = None
-        self.zmq_refcount = Queue()
+        # self.zmq_refcount = Queue()
         self.send_pending = Queue()
-        self.tracker = MessageTracker(self.zmq_refcount, self.send_pending)
+        self.tracker = MessageTracker(self.send_pending)
         
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -436,14 +439,14 @@ cdef class Message:
             Py_DECREF(free_tup)
             raise ZMQError()
         self._failed_init = False
-        self.zmq_refcount.put(0)
+        # self.zmq_refcount.put(0)
     
     def __dealloc__(self):
         cdef int rc
         if self._failed_init:
             return
-        if not self.zmq_refcount.empty():
-            self.zmq_refcount.get() # pop 1
+        # if not self.zmq_refcount.empty():
+            # self.zmq_refcount.get() # pop 1
         # This simply decreases the 0MQ ref-count of zmq_msg.
         rc = zmq_msg_close(&self.zmq_msg)
         if rc != 0:
@@ -475,11 +478,11 @@ cdef class Message:
         if self._bytes is not None:
             new_msg._bytes = self._bytes
         
-        new_msg.zmq_refcount = self.zmq_refcount
+        # new_msg.zmq_refcount = self.zmq_refcount
         new_msg.send_pending = self.send_pending
         new_msg.tracker = self.tracker
         
-        self.zmq_refcount.put(2)
+        # self.zmq_refcount.put(2)
         return new_msg
 
     def __len__(self):
@@ -494,8 +497,8 @@ cdef class Message:
             return str(self.bytes)
     
     @property
-    def pending(self):
-        return self.tracker.pending
+    def done(self):
+        return self.tracker.done
         # return False
     
     cdef object _getbuffer(self):
@@ -904,8 +907,6 @@ cdef class Socket:
         # Always copy so the original message isn't garbage collected.
         # This doesn't do a real copy, just a reference.
         msg_copy = msg.fast_copy()
-        if msg.send_pending.empty():
-            msg.send_pending.put(3) # pending send
         
         with nogil:
             rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)

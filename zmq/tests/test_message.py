@@ -136,11 +136,11 @@ class TestMessage(BaseZMQTestCase):
     
     def test_tracker(self):
         m = zmq.Message('asdf')
-        self.assert_(m.pending)
+        self.assert_(not m.done)
         pm = zmq.MessageTracker(m)
-        self.assert_(pm.pending)
+        self.assert_(not pm.done)
         del m
-        self.assertFalse(pm.pending)
+        self.assertFalse(not pm.done)
     
     def test_buffer_in(self):
         """test using a buffer as input"""
