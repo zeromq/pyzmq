@@ -39,7 +39,7 @@ except ImportError:
 from zmq import (
     Poller,
     POLLIN, POLLOUT, POLLERR,
-    ZMQError
+    ZMQError, ETERM
 )
 
 class IOLoop(object):
@@ -221,7 +221,13 @@ class IOLoop(object):
             try:
                 event_pairs = self._impl.poll(poll_timeout)
             except ZMQError, e:
-                raise
+                if e.errno == ETERM:
+                    # This happens when the zmq Context is closed; we should just exit.
+                    self._running = False
+                    self._stopped = True
+                    break
+                else:
+                    raise
             except Exception, e:
                 if hasattr(e, 'errno') and e.errno == errno.EINTR:
                     logging.warning("Interrupted system call", exc_info=1)
