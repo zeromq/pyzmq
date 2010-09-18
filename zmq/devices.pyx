@@ -38,6 +38,10 @@ cdef extern from "Python.h":
 # We should wait for a few releases and then remove this call.
 PyEval_InitThreads()
 
+import time
+from threading import Thread
+from multiprocessing import Process
+
 from zmq import XREP,QUEUE,FORWARDER
 
 ########### monitored_queue adapted from zmq::queue.cpp #######
@@ -181,17 +185,6 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket, int 
 
 ##### end monitored_queue
 
-import threading
-class _DeviceThread(threading.Thread):
-    """A wrapped Thread for use in the Device"""
-    device = None
-    def __init__(self, device):
-        threading.Thread.__init__(self)
-        self.device = device
-        
-    def run(self):
-        return self.device.run()
-
 cdef class Device:
     """A Threadsafe 0MQ Device.
     
@@ -245,6 +238,7 @@ cdef class Device:
     cdef list out_connects
     cdef list in_sockopts
     cdef list out_sockopts
+    cdef int done
     
     
     def __cinit__(self, int device_type, int in_type, int out_type, *args, **kwargs):
@@ -258,19 +252,11 @@ cdef class Device:
         self.out_connects = list()
         self.out_sockopts = list()
         self.daemon = True
+        self.done = False
     
     def __init__(self, int device_type, int in_type, int out_type):
         """force signature"""
-        pass
     
-    # def __deallocate__(self):
-    #     del self.in_binds
-    #     del self.in_connects
-    #     del self.in_sockopts
-    #     del self.out_binds
-    #     del self.out_connects
-    #     del self.out_sockopts
-    # 
     def bind_in(self,iface):
         """enqueue interface for binding on in_socket
         e.g. tcp://127.0.0.1:10101 or inproc://foo"""
@@ -340,14 +326,71 @@ cdef class Device:
         cdef void *outs = self.out_socket.handle
         with nogil:
             rc = zmq_device(device_type, ins, outs)
+        self.done = True
         return rc
     
     def start(self):
-        """start the thread"""
-        thread = _DeviceThread(self)
-        if self.daemon:
-            thread.setDaemon(True)
-        thread.start()
+        """Start the device. Override me in subclass for other launchers."""
+        return self.run()
+
+    def join(self,timeout=None):
+        tic = time.time()
+        toc = tic
+        while not self.done and not (timeout is not None and toc-tic > timeout):
+            time.sleep(.001)
+            toc = time.time()
+
+
+class BackgroundDevice(Device):
+    """Base class for launching Devices in background processes and threads"""
+    
+    launcher=None
+    launch_class=None
+    
+    def start(self):
+        self.launcher = self.launch_class(target=self.run)
+        self.launcher.daemon = self.daemon
+        return self.launcher.start()
+    
+    def join(self, timeout=None):
+        return self.launcher.join(timeout=timeout)
+
+class ThreadDevice(BackgroundDevice):
+    """A Device that will be run in a background Thread. 
+    
+    See `Device` for details."""
+    
+    launch_class=Thread
+
+class ProcessDevice(BackgroundDevice):
+    """A Device that will be run in a background Process.
+    
+    See `Device` for details."""
+    launch_class=Process
+    
+# cdef class ThreadedDevice(Device):
+#     """run a Device in a background Thread. See Device for details.
+#     """
+#     cdef object thread
+#     def start(self):
+#         self.thread = Thread(target=self.run)
+#         self.thread.daemon = self.daemon
+#         return self.thread.start()
+#     
+#     def join(self, timeout=None):
+#         return self.thread.join(timeout)
+# 
+# class ProcessDevice(Device):
+#     """run a Device in a background Process.  See Device for details.
+#     """
+#     # cdef object process
+#     def start(self):
+#         self.process = Process(target=self.run)
+#         self.process.daemon = self.daemon
+#         return self.process.start()
+#     
+#     def join(self, timeout=None):
+#         return self.process.join(timeout)
         
 cdef class MonitoredQueue_(Device):
     """Threadsafe MonitoredQueue object. See Device for most of the spec.
@@ -361,9 +404,6 @@ cdef class MonitoredQueue_(Device):
     If it comes from out_sock, it will be prefixed with 'out'
     
     A PUB socket is perhaps the most logical for the mon_socket, but it is not restricted.
-    
-    For a non-threasafe edition to which you can pass actual Sockets,
-    see MonitoredQueue
     
     """
     cdef public int mon_type
@@ -388,11 +428,6 @@ cdef class MonitoredQueue_(Device):
     def __init__(self, int device_type, int in_type, int out_type, int mon_socket):
         Device.__init__(self, QUEUE, in_type, out_type)
     
-    # def __deallocate__(self):
-    #     del self.mon_binds
-    #     del self.mon_connects
-    #     del self.mon_sockopts
-    # 
     def bind_mon(self,iface):
         """enqueue interface for binding on mon_socket
         e.g. tcp://127.0.0.1:10101 or inproc://foo"""
@@ -432,10 +467,14 @@ cdef class MonitoredQueue_(Device):
             rc = monitored_queue_(ins, outs, mons,self.swap_ids)
         return rc
         
-        
-    
+class ThreadMonitoredQueue_(ThreadDevice, MonitoredQueue_):
+    pass
+
+class ProcessMonitoredQueue_(ProcessDevice, MonitoredQueue_):
+    pass
+
 def MonitoredQueue(int in_type, int out_type, int mon_type):
-    """Threadsafe MonitoredQueue. See Device for most of the spec.
+    """Base Threadsafe MonitoredQueue. See Device for most of the spec.
     This ignores the device_type, and adds a <method>_mon version 
     of each <method>_{in|out} method for configuring the monitor socket.
     
@@ -448,15 +487,50 @@ def MonitoredQueue(int in_type, int out_type, int mon_type):
     A PUB socket is perhaps the most logical for the mon_socket, 
     but it is not restricted.
     
-    For a non-threasafe edition to which you can pass actual Sockets,
-    see MonitoredQueue
-    
     """
     return MonitoredQueue_(QUEUE, in_type, out_type, mon_type)
 
+def ThreadMonitoredQueue(int in_type, int out_type, int mon_type):
+    """Threadsafe MonitoredQueue in a Thread. See Device for most of the spec.
+    This ignores the device_type, and adds a <method>_mon version 
+    of each <method>_{in|out} method for configuring the monitor socket.
+    
+    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
+    except each message is also sent out on the monitor socket.
+    
+    If a message comes from in_sock, it will be prefixed with 'in'
+    If it comes from out_sock, it will be prefixed with 'out'
+    
+    A PUB socket is perhaps the most logical for the mon_socket, 
+    but it is not restricted.
+    
+    """
+    return ThreadMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
+
+def ProcessMonitoredQueue(int in_type, int out_type, int mon_type):
+    """MonitoredQueue in a Process. See Device for most of the spec.
+    This ignores the device_type, and adds a <method>_mon version 
+    of each <method>_{in|out} method for configuring the monitor socket.
+    
+    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
+    except each message is also sent out on the monitor socket.
+    
+    If a message comes from in_sock, it will be prefixed with 'in'
+    If it comes from out_sock, it will be prefixed with 'out'
+    
+    A PUB socket is perhaps the most logical for the mon_socket, 
+    but it is not restricted.
+    
+    """
+    return ProcessMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
+
 __all__ = [
     'Device',
+    'ThreadDevice',
+    'ProcessDevice',
     'MonitoredQueue',
+    'ThreadMonitoredQueue',
+    'ProcessMonitoredQueue',
     'monitored_queue'
 ]
 
