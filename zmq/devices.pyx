@@ -25,15 +25,9 @@
 
 
 from libc.stdlib cimport free,malloc
-# from cpython cimport PyString_FromStringAndSize
-# from cpython cimport PyString_AsString, PyString_Size
-# from cpython cimport Py_DECREF, Py_INCREF
 from cpython cimport bool
 
-# from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 from _zmq cimport *
-from zmq import XREP,XREQ,REP,REQ,PUB,SUB,QUEUE,FORWARDER
-# C constants
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -44,10 +38,7 @@ cdef extern from "Python.h":
 # We should wait for a few releases and then remove this call.
 PyEval_InitThreads()
 
-import time
-import random
-import struct
-import codecs
+from zmq import XREP,QUEUE,FORWARDER
 
 ########### monitored_queue adapted from zmq::queue.cpp #######
 # basic free for msg_init_data:
@@ -178,13 +169,15 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                     break
     return 0
 
-# def monitored_queue(Socket in_socket,Socket out_socket,Socket mon_socket):
-#     """"""
-#     cdef void *ins=in_socket.handle
-#     cdef void *outs=out_socket.handle
-#     cdef void *mons=mon_socket.handle
-#     with nogil:
-#         sidequeue_(ins, outs, mons)
+def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket, int swap_ids=False):
+    """Start a monitored_queue device"""
+    cdef void *ins=in_socket.handle
+    cdef void *outs=out_socket.handle
+    cdef void *mons=mon_socket.handle
+    cdef int rc
+    with nogil:
+        rc = monitored_queue_(ins, outs, mons, swap_ids)
+    return rc
 
 ##### end monitored_queue
 
@@ -200,125 +193,20 @@ class _DeviceThread(threading.Thread):
         return self.device.run()
 
 cdef class Device:
-    """A 0MQ Device.
-
-    Device(device_type, in_socket, out_socket)
-    
-    Beware, this uses a child thread, but as zmq sockets are not threadsafe,
-    if you use the sockets in the main thread after starting the device, 
-    odd things might happen. See TSDevice for a threadsafe version
-
-    Parameters
-    ----------
-    device_type : int
-        The 0MQ Device type
-    {in|out}_socket : Socket
-        ZMQ Sockets for in/out behavior
-        
-    Attributes
-    ----------
-    daemon: int
-        sets whether the thread should be run as a daemon
-        Default is true, because if it is False, the thread will not
-        exit unless it is killed
-
-    """
-    cdef public int device_type
-    cdef public int daemon
-    cdef public Socket in_socket
-    cdef public Socket out_socket
-    
-    def __cinit__(self, *args, **kwargs):
-        """this is complicated to allow subclassing with different signatures"""
-        cdef int i=0
-        if isinstance(args[0], int):
-            self.device_type = args[0]
-            i+=1
-        else:
-            self.device_type = FORWARDER
-        self.in_socket = args[i]
-        self.out_socket = args[i+1]
-        self.daemon=True
-    
-    def __init__(self, int device_type, Socket in_socket, Socket out_socket):
-        """This is just to force init signature."""
-        pass
-    
-    cdef int _run(self) nogil:
-        cdef int rc = 0
-        cdef int device_type = self.device_type
-        cdef void *ins = self.in_socket.handle
-        cdef void *outs = self.out_socket.handle
-        with nogil:
-            rc = zmq_device(device_type, ins, outs)
-        return rc
-    
-    def run(self):
-        """The runner method. Do not call me directly, instead call self.start()"""
-        return self._run()
-    
-    def start(self):
-        """start the thread"""
-        thread = _DeviceThread(self)
-        if self.daemon:
-            thread.setDaemon(True)
-        thread.start()
-
-cdef class MonitoredQueue(Device):
-    """A MonitoredQueue 0MQ Device.
-    
-    mq = MonitoredQueue(in_sock, out_sock, mon_sock)
-    
-    As far as in_sock and out_sock, this functions exactly the same as
-    mq = Device(zmq.QUEUE, in_sock, out_sock)
-    
-    however, every message relayed through the device is also sent via the mon_sock
-    If it comes from in_sock, it will be prefixed with 'in'
-    If it comes from out_sock, it will be prefixed with 'out'
-    
-    A PUB socket is perhaps the most logical for the mon_sock, but it is not restricted.
-    
-    For Threadsafe edition, see zmq.TSMonitoredQueue
-    
-    """
-    
-    cdef public Socket monitor_socket
-    cdef int swap_ids
-    
-    def __cinit__(self, Socket in_socket, Socket out_socket, Socket monitor_socket, *args, **kwargs):
-        self.monitor_socket = monitor_socket
-        if in_socket.socket_type == XREP and out_socket.socket_type == XREP:
-            self.swap_ids = 1
-        else:
-            self.swap_ids = 0
-        # in_socket/out_socket handled by Device 
-    
-    def __init__(self, Socket in_socket, Socket out_socket, Socket monitor_socket):
-        """This is just to force init signature"""
-        Device.__init__(self, QUEUE, in_socket, out_socket)
-    #     self.monitor_socket = monitor_socket
-    
-    cdef int _run(self) nogil:
-        cdef int rc = 0
-        cdef void *ins = self.in_socket.handle
-        cdef void *outs = self.out_socket.handle
-        cdef void *mons = self.monitor_socket.handle
-        # cdef int swap_ids
-        with nogil:
-            rc = monitored_queue_(ins, outs, mons, self.swap_ids)
-        return rc
-
-        
-cdef class TSDevice:
     """A Threadsafe 0MQ Device.
-    It behaves the same as the Device, but creates the sockets as part of the run() command
     
-    ThreadsafeDevice(device_type, in_socket_type, out_socket_type)
+    For threadsafety, you do not pass Sockets to this, but rather Socket types:
     
-    Similar to Device, but socket types instead of sockets themselves are passed, and
+    Device(device_type, in_socket_type, out_socket_type)
+    
+    For instance:
+    
+    dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
+    
+    Similar to zmq.device, but socket types instead of sockets themselves are passed, and
     the sockets are created in the work thread, to avoid issues with thread safety.
-    As a result, additional bind_{in|out} and connect_{in|out} methods and setsockopt
-    allow users to specify connections for the sockets to be specified
+    As a result, additional bind_{in|out} and connect_{in|out} methods and setsockopt_{in|out}
+    allow users to specify connections for the sockets.
     
     Parameters
     ----------
@@ -461,11 +349,10 @@ cdef class TSDevice:
             thread.setDaemon(True)
         thread.start()
         
-cdef class TSMonitoredQueue_(TSDevice):
-    """Threadsafe edition of MonitoredQueue. See TSDevice for most of the spec.
-    This ignores the device_type
-    And adds a <method>_mon version of each <method>_{in|out} method, 
-    for configuring the monitor socket.
+cdef class MonitoredQueue_(Device):
+    """Threadsafe MonitoredQueue object. See Device for most of the spec.
+    This ignores the device_type, and adds a <method>_mon version of each 
+    <method>_{in|out} method, for configuring the monitor socket.
     
     A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE, 
     except each message is also sent out on the monitor socket.
@@ -486,7 +373,8 @@ cdef class TSMonitoredQueue_(TSDevice):
     cdef list mon_sockopts
     cdef int swap_ids
     
-    def __cinit__(self, int device_type, int in_type, int out_type, int mon_type, *args, **kwargs):
+    def __cinit__(self, int device_type, int in_type, int out_type, 
+                                    int mon_type, *args, **kwargs):
         self.mon_type = mon_type
         self.mon_binds = list()
         self.mon_connects = list()
@@ -498,7 +386,7 @@ cdef class TSMonitoredQueue_(TSDevice):
         
     
     def __init__(self, int device_type, int in_type, int out_type, int mon_socket):
-        TSDevice.__init__(self, QUEUE, in_type, out_type)
+        Device.__init__(self, QUEUE, in_type, out_type)
     
     # def __deallocate__(self):
     #     del self.mon_binds
@@ -521,7 +409,7 @@ cdef class TSMonitoredQueue_(TSDevice):
         self.mon_sockopts.append((opt, value))
     
     def _setup_sockets(self):
-        TSDevice._setup_sockets(self)
+        Device._setup_sockets(self)
         ctx = self.context
         self.mon_socket = ctx.socket(self.mon_type)
         
@@ -546,30 +434,29 @@ cdef class TSMonitoredQueue_(TSDevice):
         
         
     
-def TSMonitoredQueue(int in_type, int out_type, int mon_type):
-    """Threadsafe edition of MonitoredQueue. See TSDevice for most of the spec.
-    This ignores the device_type
-    And adds a <method>_mon version of each <method>_{in|out} method, 
-    for configuring the monitor socket.
+def MonitoredQueue(int in_type, int out_type, int mon_type):
+    """Threadsafe MonitoredQueue. See Device for most of the spec.
+    This ignores the device_type, and adds a <method>_mon version 
+    of each <method>_{in|out} method for configuring the monitor socket.
     
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE, 
+    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
     except each message is also sent out on the monitor socket.
     
     If a message comes from in_sock, it will be prefixed with 'in'
     If it comes from out_sock, it will be prefixed with 'out'
     
-    A PUB socket is perhaps the most logical for the mon_socket, but it is not restricted.
+    A PUB socket is perhaps the most logical for the mon_socket, 
+    but it is not restricted.
     
     For a non-threasafe edition to which you can pass actual Sockets,
     see MonitoredQueue
     
     """
-    return TSMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
+    return MonitoredQueue_(QUEUE, in_type, out_type, mon_type)
 
 __all__ = [
     'Device',
-    'TSDevice',
     'MonitoredQueue',
-    'TSMonitoredQueue',
+    'monitored_queue'
 ]
 

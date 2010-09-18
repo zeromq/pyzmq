@@ -38,7 +38,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
     pass
     
     def build_device(self, mon_sub=""):
-        self.device = devices.TSMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB)
+        self.device = devices.MonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB)
         alice = self.context.socket(zmq.PAIR)
         bob = self.context.socket(zmq.PAIR)
         mon = self.context.socket(zmq.SUB)

@@ -48,26 +48,26 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(a, 3)
     
     def test_device_types(self):
-        a = self.context.socket(zmq.SUB)
+        # a = self.context.socket(zmq.SUB)
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
-            dev = devices.Device(devtype, a, a)
+            dev = devices.Device(devtype, zmq.PAIR,zmq.PAIR)
             self.assertEquals(dev.device_type, devtype)
             del dev
         # del a
     
     def test_device_attributes(self):
-        a = self.context.socket(zmq.SUB)
-        b = self.context.socket(zmq.PUB)
-        dev = devices.Device(zmq.FORWARDER, a, b)
-        self.assert_(dev.in_socket is a)
-        self.assert_(dev.out_socket is b)
+        # a = self.context.socket(zmq.SUB)
+        # b = self.context.socket(zmq.PUB)
+        dev = devices.Device(zmq.FORWARDER, zmq.SUB, zmq.PUB)
+        self.assert_(dev.in_type == zmq.SUB)
+        self.assert_(dev.out_type == zmq.PUB)
         self.assertEquals(dev.device_type, zmq.FORWARDER)
         self.assertEquals(dev.daemon, True)
         # del a
         del dev
     
     def test_tsdevice_attributes(self):
-        dev = devices.TSDevice(zmq.QUEUE, zmq.SUB, zmq.PUB)
+        dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
         self.assertEquals(dev.in_type, zmq.SUB)
         self.assertEquals(dev.out_type, zmq.PUB)
         self.assertEquals(dev.device_type, zmq.QUEUE)
@@ -76,7 +76,7 @@ class TestDevice(BaseZMQTestCase):
         
     
     def test_single_socket_forwarder_connect(self):
-        dev = devices.TSDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.Device(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
         dev.connect_in('tcp://127.0.0.1:%i'%port)
@@ -87,7 +87,7 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(msg, req.recv())
         del dev
         del req
-        dev = devices.TSDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.Device(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
         dev.connect_out('tcp://127.0.0.1:%i'%port)
@@ -100,7 +100,7 @@ class TestDevice(BaseZMQTestCase):
         del req
         
     def test_single_socket_forwarder_bind(self):
-        dev = devices.TSDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.Device(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = 12345
         req.connect('tcp://127.0.0.1:%i'%port)
@@ -112,7 +112,7 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(msg, req.recv())
         del dev
         del req
-        dev = devices.TSDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.Device(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = 12346
         req.connect('tcp://127.0.0.1:%i'%port)
