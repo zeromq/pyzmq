@@ -25,6 +25,7 @@ import time
 from unittest import TestCase
 
 import zmq
+from zmq import devices
 from zmq.tests import BaseZMQTestCase
 
 
@@ -37,7 +38,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
     pass
     
     def build_device(self, mon_sub=""):
-        self.device = zmq.TSMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB)
+        self.device = devices.TSMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB)
         alice = self.context.socket(zmq.PAIR)
         bob = self.context.socket(zmq.PAIR)
         mon = self.context.socket(zmq.SUB)

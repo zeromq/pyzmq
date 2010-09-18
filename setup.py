@@ -93,8 +93,10 @@ try:
     from Cython.Distutils import build_ext
 except ImportError:
     zmq_source = os.path.join('zmq','_zmq.c')
+    device_source = os.path.join('zmq','devices.c')
 else:
     zmq_source = os.path.join('zmq','_zmq.pyx')
+    device_source = os.path.join('zmq','devices.pyx')
     cmdclass['build_ext'] =  build_ext
 
 if sys.platform == 'win32':
@@ -107,6 +109,11 @@ zmq = Extension(
     sources = [zmq_source],
     libraries = [libzmq]
 )
+devices = Extension(
+    'zmq.devices',
+    sources = [device_source],
+    libraries = [libzmq]
+)
 
 #-----------------------------------------------------------------------------
 # Main setup
@@ -116,7 +123,7 @@ setup(
     name = "pyzmq",
     version = "0.1",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log'],
-    ext_modules = [zmq],
+    ext_modules = [zmq, devices],
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
     description = "Cython based Python bindings for 0MQ.",
