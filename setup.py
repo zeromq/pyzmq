@@ -120,7 +120,7 @@ the ZeroMQ library (http://www.zeromq.org).
 
 setup(
     name = "pyzmq",
-    version = "2.0.8dev",
+    version = "2.0.8",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop'],
     ext_modules = [zmq],
     author = "Brian E. Granger",
