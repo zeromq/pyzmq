@@ -88,4 +88,5 @@ The following people have contributed to the project:
 * Ivo Danihelka (ivo AT denihelka DOT net)
 * Thomas Supra (tomspur AT fedoraproject DOT org)
 * Douglas Creager (dcreager AT dcreager DOT net)
-* Erick Tryzelaar <erick DOT tryzelaar AT gmail DOT com>
+* Erick Tryzelaar (erick DOT tryzelaar AT gmail DOT com)
+* Min Ragan-Kelley (benjaminrk AT gmail DOT com)
