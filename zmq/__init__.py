@@ -28,4 +28,4 @@ from zmq._zmq import *
 
 __all__ = _zmq.__all__
 
-__version__ = '2.0.8dev'
+__version__ = '2.0.8'
