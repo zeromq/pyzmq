@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 """
+
+For use with heart.py
+
 A basic heartbeater using PUB and XREP sockets. pings are sent out on the PUB, and hearts
 are tracked based on their XREQ identities.
-For use with heart.py
+
+You can start many hearts with heart.py, and the heartbeater will monitor all of them, and notice when they stop responding.
+
+Authors
+-------
+* MinRK
 """
 
 import time

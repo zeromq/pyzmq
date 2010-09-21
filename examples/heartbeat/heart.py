@@ -1,24 +1,27 @@
 #!/usr/bin/env python
 """This launches an echoing rep socket device,
 and runs a blocking numpy action. The rep socket should
-remain responsive to pings during this time."""
+remain responsive to pings during this time. Use heartbeater.py to
+ping this heart, and see the responsiveness.
+
+Authors
+-------
+* MinRK
+"""
+
 import time
 import numpy
 import zmq
+from zmq import devices
 
 ctx = zmq.Context()
 
-# rep = ctx.socket(zmq.REP)
-# rep.bind('tcp://127.0.0.1:10111')
-
-
-dev = zmq.ThreadsafeDevice(zmq.FORWARDER, zmq.SUB, zmq.XREQ)
-print "b"
+dev = devices.ThreadDevice(zmq.FORWARDER, zmq.SUB, zmq.XREQ)
 dev.setsockopt_in(zmq.SUBSCRIBE, "")
 dev.connect_in('tcp://127.0.0.1:5555')
 dev.connect_out('tcp://127.0.0.1:5556')
 dev.start()
-print "c"
+
 #wait for connections
 time.sleep(1)
 

@@ -1,6 +1,14 @@
 #!/usr/bin/env python
-# Min RK, 2010
-"""This simply pings the pong script, and measures how fast it responds."""
+"""For use with pong.py
+
+This script simply pings a process started by pong.py or tspong.py, to 
+demonstrate that zmq remains responsive while Python blocks.
+
+Authors
+-------
+* MinRK
+"""
+
 import time
 import numpy
 import zmq
