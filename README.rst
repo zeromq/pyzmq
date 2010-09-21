@@ -81,16 +81,16 @@ Currently, we are using the following steps to release PyZMQ:
 * Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
   directories.
 * Check ``MANIFEST.in``.
-* Register the release with pypi:
+* Register the release with pypi::
 
     python setup.py register
 
-* Build source distributions and upload:
+* Build source distributions and upload::
 
     python setup.py sdist --formats=zip,gztar upload
 
 * Upload the tarball and ``.zip`` file to github.
-* Branch the release
+* Branch the release::
 
     git co -b 2.0.8 master
     git push origin 2.0.8
