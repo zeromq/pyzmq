@@ -423,7 +423,7 @@ cdef class Context:
             if rc != 0:
                 raise ZMQError()
 
-    def close(self):
+    def term(self):
         """Close the context.
 
         This can be called to close the context by hand. If this is not
