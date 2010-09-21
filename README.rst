@@ -72,6 +72,31 @@ To run the test suite after installing, just do::
 
     $ python setup.py test
 
+How to release PyZMQ
+--------------------
+
+Currently, we are using the following steps to release PyZMQ:
+
+* Change the version number in ``setup.py`` and ``__init__.py``.
+* Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
+  directories.
+* Check ``MANIFEST.in``.
+* Register the release with pypi:
+
+    python setup.py register
+
+* Build source distributions and upload:
+
+    python setup.py sdist --formats=zip,gztar upload
+
+* Upload the tarball and ``.zip`` file to github.
+* Branch the release
+
+    git co -b 2.0.8 master
+    git push origin 2.0.8
+
+* Announce on list.
+
 Authors
 =======
 
