@@ -36,7 +36,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import XREP,QUEUE,FORWARDER
+from zmq import XREP, QUEUE, FORWARDER, device
 
 
 cdef class Device:
@@ -99,7 +99,12 @@ cdef class Device:
     cdef int done # bool flag for when I'm done
     
     
-    def __cinit__(self, int device_type, int in_type, int out_type, *args, **kwargs):
+    # def __cinit__(self, int device_type, int in_type, int out_type, *args, **kwargs):
+        # pass
+    
+    def __init__(self, int device_type, int in_type, int out_type):
+        """Force signature if __init__, since __cinit__ requires 
+        *args, **kwargs signature for subclassing."""
         self.device_type = device_type
         self.in_type = in_type
         self.out_type = out_type
@@ -111,10 +116,6 @@ cdef class Device:
         self.out_sockopts = list()
         self.daemon = True
         self.done = False
-    
-    def __init__(self, int device_type, int in_type, int out_type):
-        """Force signature if __init__, since __cinit__ requires 
-        *args, **kwargs signature for subclassing."""
     
     def bind_in(self,iface):
         """Enqueue interface for binding on in_socket
@@ -197,13 +198,12 @@ cdef class Device:
         self._setup_sockets()
         return self._run()
     
-    cdef int _run(self) nogil:
+    cdef int _run(self):
         cdef int rc = 0
         cdef int device_type = self.device_type
-        cdef void *ins = self.in_socket.handle
-        cdef void *outs = self.out_socket.handle
-        with nogil:
-            rc = zmq_device(device_type, ins, outs)
+        cdef Socket ins = self.in_socket
+        cdef Socket outs = self.out_socket
+        rc = device(device_type, ins, outs)
         self.done = True
         return rc
     
@@ -380,8 +380,7 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                     break
     return 0
 
-def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
-                                                            int swap_ids):
+def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket):
     """Start a monitored_queue device, which behaves just like a zmq QUEUE
     device as far as in_socket and out_socket are concerned, except that 
     all messages *also* go out on mon_socket. mon_socket also prefixes
@@ -410,11 +409,11 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     cdef void *ins=in_socket.handle
     cdef void *outs=out_socket.handle
     cdef void *mons=mon_socket.handle
+    cdef bool swap_ids
     
-    if not swap_ids:
-        # force swap_ids if both XREP
-        swap_ids = (in_socket.socket_type == XREP and 
-                    out_socket.socket_type == XREP)
+    # force swap_ids if both XREP
+    swap_ids = (in_socket.socket_type == XREP and 
+                out_socket.socket_type == XREP)
     
     cdef int rc
     with nogil:
@@ -422,7 +421,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     return rc
 
         
-cdef class MonitoredQueue_(Device):
+cdef class MonitoredQueue(Device):
     """Threadsafe MonitoredQueue object. See Device for most of the spec.
     This ignores the device_type, and adds a <method>_mon version of each 
     <method>_{in|out} method, for configuring the monitor socket.
@@ -442,23 +441,14 @@ cdef class MonitoredQueue_(Device):
     cdef list mon_binds # list of interfaces to bind mons to
     cdef list mon_connects # list of interfaces to connect mons to
     cdef list mon_sockopts # list of tuples for mon.setsockopt
-    cdef int swap_ids # flag for swapping IDs on dual-XREP socket
     
-    def __cinit__(self, int device_type, int in_type, int out_type, 
-                                    int mon_type, *args, **kwargs):
+    def __init__(self, int in_type, int out_type, int mon_type):
+        Device.__init__(self, QUEUE, in_type, out_type)
         self.mon_type = mon_type
         self.mon_binds = list()
         self.mon_connects = list()
         self.mon_sockopts = list()
-        if in_type == XREP and out_type == XREP:
-            self.swap_ids = 1
-        else:
-            self.swap_ids = 0
         
-    
-    def __init__(self, int device_type, int in_type, int out_type, 
-                                                        int mon_socket):
-        Device.__init__(self, QUEUE, in_type, out_type)
     
     def bind_mon(self,iface):
         """Enqueue interface for binding on mon_socket
@@ -499,71 +489,21 @@ cdef class MonitoredQueue_(Device):
         for iface in self.mon_connects:
             self.mon_socket.connect(iface)
     
-    cdef int _run(self) nogil:
+    cdef int _run(self):
         cdef int rc = 0
-        cdef void *ins = self.in_socket.handle
-        cdef void *outs = self.out_socket.handle
-        cdef void *mons = self.mon_socket.handle
-        with nogil:
-            rc = monitored_queue_(ins, outs, mons,self.swap_ids)
+        cdef Socket ins = self.in_socket
+        cdef Socket outs = self.out_socket
+        cdef Socket mons = self.mon_socket
+        rc = monitored_queue(ins, outs, mons)
         return rc
         
-class ThreadMonitoredQueue_(ThreadDevice, MonitoredQueue_):
+class ThreadMonitoredQueue(ThreadDevice, MonitoredQueue):
+    """MonitoredQueue in a Thread. See MonitoredQueue for more."""
     pass
 
-class ProcessMonitoredQueue_(ProcessDevice, MonitoredQueue_):
+class ProcessMonitoredQueue(ProcessDevice, MonitoredQueue):
+    """MonitoredQueue in a Process. See MonitoredQueue for more."""
     pass
-
-def MonitoredQueue(int in_type, int out_type, int mon_type):
-    """Base Threadsafe MonitoredQueue. See Device for most of the spec.
-    This ignores the device_type, and adds a <method>_mon version 
-    of each <method>_{in|out} method for configuring the monitor socket.
-    
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
-    except each message is also sent out on the monitor socket.
-    
-    If a message comes from in_sock, it will be prefixed with 'in'
-    If it comes from out_sock, it will be prefixed with 'out'
-    
-    A PUB socket is perhaps the most logical for the mon_socket, 
-    but it is not restricted.
-    
-    """
-    return MonitoredQueue_(QUEUE, in_type, out_type, mon_type)
-
-def ThreadMonitoredQueue(int in_type, int out_type, int mon_type):
-    """Threadsafe MonitoredQueue in a Thread. See Device for most of the spec.
-    This ignores the device_type, and adds a <method>_mon version 
-    of each <method>_{in|out} method for configuring the monitor socket.
-    
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
-    except each message is also sent out on the monitor socket.
-    
-    If a message comes from in_sock, it will be prefixed with 'in'
-    If it comes from out_sock, it will be prefixed with 'out'
-    
-    A PUB socket is perhaps the most logical for the mon_socket, 
-    but it is not restricted.
-    
-    """
-    return ThreadMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
-
-def ProcessMonitoredQueue(int in_type, int out_type, int mon_type):
-    """MonitoredQueue in a Process. See Device for most of the spec.
-    This ignores the device_type, and adds a <method>_mon version 
-    of each <method>_{in|out} method for configuring the monitor socket.
-    
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a QUEUE,
-    except each message is also sent out on the monitor socket.
-    
-    If a message comes from in_sock, it will be prefixed with 'in'
-    If it comes from out_sock, it will be prefixed with 'out'
-    
-    A PUB socket is perhaps the most logical for the mon_socket, 
-    but it is not restricted.
-    
-    """
-    return ProcessMonitoredQueue_(QUEUE, in_type, out_type, mon_type)
 
 __all__ = [
     'Device',
