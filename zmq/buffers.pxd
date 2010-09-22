@@ -1,11 +1,20 @@
-# copied,adapted from mpi4py
-# Jul 23, 2010 18:00 PST (r539)
-# http://code.google.com/p/mpi4py/source/browse/trunk/src/MPI/asbuffer.pxi
-# Copyright (c) 2009, Lisandro Dalcin.
-# All rights reserved.
-# BSD License: http://www.opensource.org/licenses/bsd-license.php
-# 
-#------------------------------------------------------------------------------
+"""Python version-independent methods for converting between objects and 
+C/Python buffers.
+
+copied,adapted from mpi4py
+Jul 23, 2010 18:00 PST (r539)
+http://code.google.com/p/mpi4py/source/browse/trunk/src/MPI/asbuffer.pxi
+Copyright (c) 2009, Lisandro Dalcin.
+All rights reserved.
+BSD License: http://www.opensource.org/licenses/bsd-license.php
+
+Code not from mpi4py:
+
+Authors
+-------
+*MinRK
+"""
+
 # Python 3 buffer interface (PEP 3118)
 cdef extern from "Python.h":
     int PY_MAJOR_VERSION
@@ -49,13 +58,50 @@ cdef extern from "Python.h":
 
 #------------------------------------------------------------------------------
 # asbuffer: C buffer from python object
+#------------------------------------------------------------------------------
 
 cdef inline int is_buffer(object ob):
+    """Version independent check for whether an object is a buffer.
+    
+    Parameters
+    ----------
+    object : object
+        Any Python object
+
+    Returns
+    -------
+    bool : whether object is a buffer or not.
+    """
+    
     return (PyObject_CheckBuffer(ob) or
             PyObject_CheckReadBuffer(ob))
 
+
 cdef inline object asbuffer(object ob, int writable, int format,
                      void **base, Py_ssize_t *size, Py_ssize_t *itemsize):
+    """Turn an object into a C buffer in a Python version-independent way.
+    
+    Parameters
+    ----------
+    ob : object
+        The object to be turned into a buffer.
+        Must provide a Python Buffer interface
+    writable : int
+        Whether the resulting buffer should be allowed to write
+        to the object.
+    format : int
+        The format of the buffer.  See Python buffer docs.
+    base : void **
+        The pointer that will be used to store the resulting C buffer.
+    size : Py_ssize_t *
+        The size of the buffer(s).
+    itemsize : Py_ssize_t *
+        The size of an item, if the buffer is non-contiguous.
+    
+    Returns
+    -------
+    An object describing the buffer format. Generally a str, such as 'B'.
+    """
 
     cdef void *bptr = NULL
     cdef Py_ssize_t blen = 0, bitemlen = 0
@@ -105,20 +151,26 @@ cdef inline object asbuffer(object ob, int writable, int format,
     if itemsize: itemsize[0] = <Py_ssize_t>bitemlen
     return bfmt
 
+
 cdef inline object asbuffer_r(object ob, void **base, Py_ssize_t *size):
+    """Wrapper for standard calls to asbuffer with a readonly buffer."""
     asbuffer(ob, 0, 0, base, size, NULL)
     return ob
 
+
 cdef inline object asbuffer_w(object ob, void **base, Py_ssize_t *size):
+    """Wrapper for standard calls to asbuffer with a writable buffer."""
     asbuffer(ob, 1, 0, base, size, NULL)
     return ob
 
 #------------------------------------------------------------------------------
 # frombuffer: python buffer/view from C buffer
+#------------------------------------------------------------------------------
 
 cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
-    # Python 3 model, will work on Python >= 2.6
-    # we only use it for Python >= 3
+    """Python 3 version of frombuffer.  This is the Python 3 model, 
+    but will work on Python >= 2.6.  Currently, we use it only on >= 3.0.
+    """
     cdef Py_buffer pybuf
     cdef Py_ssize_t *shape = [s]
     cdef str astr=""
@@ -127,33 +179,68 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     pybuf.shape = shape
     return PyMemoryView_FromBuffer(&pybuf)
 
+
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
-    # must use this for Python <= 2.6
-    # we use it for all Python < 3
+    """Python 2 version of frombuffer. This must be used for Python <= 2.6,
+    but we use it for all Python < 3.
+    """
     if readonly:
         return PyBuffer_FromMemory(ptr, s)
     else:
         return PyBuffer_FromReadWriteMemory(ptr, s)
 
-cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
 
+cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
+    """Create a Python Buffer/View of a C array. 
+    
+    Parameters
+    ----------
+    ptr : void *
+        Pointer to the array to be copied.
+    s : size_t
+        Length of the buffer.
+    readonly : int
+        whether the resulting object should be allowed to write to the buffer.
+    
+    Returns
+    -------
+    Python Buffer/View of the C buffer.
+    """
     if PY_MAJOR_VERSION < 3:
         return frombuffer_2(ptr, s, readonly)
     else:
         return frombuffer_3(ptr, s, readonly)
 
+
 cdef inline object frombuffer_r(void *ptr, Py_ssize_t s):
+    """wrapper for readonly view frombuffer"""
     return frombuffer(ptr, s, 1)
 
+
 cdef inline object frombuffer_w(void *ptr, Py_ssize_t s):
+    """wrapper for writable view frombuffer"""
     return frombuffer(ptr, s, 0)
 
 #------------------------------------------------------------------------------
 # viewfromobject: python buffer/view from python object, refcounts intact
 # frombuffer(asbuffer(obj)) would lose track of refs
+#------------------------------------------------------------------------------
 
 cdef inline object viewfromobject(object obj, int readonly):
-
+    """Construct a Python Buffer/View object from another Python object
+    in a Python version independent way.
+    
+    Parameters
+    ----------
+    obj : object
+        The input object to be cast as a buffer
+    readonly : int
+        Whether the result should be prevented from overwriting the original.
+    
+    Returns
+    -------
+    Buffer/View of the original object.
+    """
     if PY_MAJOR_VERSION < 3:
         if readonly:
             return PyBuffer_FromObject(obj, 0, Py_END_OF_BUFFER)
@@ -162,9 +249,13 @@ cdef inline object viewfromobject(object obj, int readonly):
     else:
         return PyMemoryView_FromObject(obj)
 
+
 cdef inline object viewfromobject_r(object obj):
+    """wrapper for readonly viewfromobject"""
     return viewfromobject(obj, 1)
 
+
 cdef inline object viewfromobject_w(object obj):
+    """wrapper for writable viewfromobject"""
     return viewfromobject(obj, 0)
 

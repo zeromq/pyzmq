@@ -170,8 +170,8 @@ cdef class MessageTracker(object):
     socket.send( ... copy=False) returns a MessageTracker object
     """
     
-    cdef set queues
-    cdef set peers
+    cdef set queues # Message Queue objects to track
+    cdef set peers # other Message or MessageTracker objects
     
 
 cdef class Message:
@@ -191,16 +191,17 @@ cdef class Message:
     cdef object _data # the actual message data
     cdef object _buffer # a Python Buffer/View of the message contents
     cdef object _bytes # a bytes/str representation of a message; always copied
-    cdef bool _failed_init
+    cdef bool _failed_init # flag to handle failed zmq_msg_init
     # Queues for tracking zmq ref counting, for use in 
     # cdef public object zmq_refcount
-    cdef public object send_pending
-    cdef public object tracker
+    cdef public object tracker_queue # Queue for use with zmq free func
+    cdef public object tracker # MessageTracker object
     
-    cdef Message fast_copy(self)
-    cdef object _getbuffer(self)
-    cdef object _copybytes(self)
-    
+    cdef Message fast_copy(self) # create new Message object
+    cdef object _getbuffer(self) # construct self._buffer
+    cdef object _copybytes(self) # construct self._bytes
+
+
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
 
@@ -213,8 +214,9 @@ cdef class Context:
         The number of IO threads.
     """
 
-    cdef void *handle
-    cdef public object closed
+    cdef void *handle # the C handle for the underlying zmq object
+    cdef public object closed # bool property for a closed context
+
 
 cdef class Socket:
     """A 0MQ socket.
@@ -230,18 +232,18 @@ cdef class Socket:
         REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
-    cdef void *handle
-    cdef public int socket_type
+    cdef void *handle # the C handle for the underlying zmq object
+    cdef public int socket_type # the 0MQ socket type - REQ,REP, etc.
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
-    cdef public Context context
-    cdef public object closed
+    cdef public Context context # the zmq Context object that owns this
+    cdef public object closed # bool property for a closed socket
 
 
 cdef class Stopwatch:
     """A simple stopwatch based on zmq_stopwatch_start/stop."""
 
-    cdef void *watch
+    cdef void *watch # the C handle for the underlying zmq object
 
 
 
