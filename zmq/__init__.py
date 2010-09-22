@@ -26,4 +26,12 @@
 from zmq import _zmq
 from zmq._zmq import *
 
-__all__ = _zmq.__all__
+import os
+
+
+def get_includes():
+    return os.path.dirname(__file__)
+
+
+__all__ = _zmq.__all__ + ['get_includes']
+
