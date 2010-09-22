@@ -29,7 +29,7 @@ from zmq import _zmq
 from zmq._zmq import *
 
 
-__version__ = '2.0.8'
+__version__ = '2.0.9dev'
 
 
 def get_includes():

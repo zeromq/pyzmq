@@ -127,7 +127,7 @@ the ZeroMQ library (http://www.zeromq.org).
 
 setup(
     name = "pyzmq",
-    version = "2.0.8",
+    version = "2.0.9dev",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log'],
     ext_modules = [zmq, devices],
     package_data = dict(zmq=['*.pxd']),
