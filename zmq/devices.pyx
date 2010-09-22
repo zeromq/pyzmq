@@ -1,7 +1,7 @@
-"""Python bindings for 0MQ."""
+"""Device objects for running 0MQ Devices in the background in a threadsafe manner."""
 
 #
-#    Copyright (c) 2010 Brian E. Granger
+#    Copyright (c) 2010 Min Ragan-Kelley
 #
 #    This file is part of pyzmq.
 #
@@ -31,12 +31,6 @@ from _zmq cimport *
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
-    cdef void PyEval_InitThreads()
-
-# Older versions of Cython would not take care of called this automatically.
-# In newer versions of Cython (at least 0.12.1) this is called automatically.
-# We should wait for a few releases and then remove this call.
-PyEval_InitThreads()
 
 import time
 from threading import Thread
@@ -44,14 +38,227 @@ from multiprocessing import Process
 
 from zmq import XREP,QUEUE,FORWARDER
 
-########### monitored_queue adapted from zmq::queue.cpp #######
+
+cdef class Device:
+    """A Threadsafe 0MQ Device.
+    
+    For threadsafety, you do not pass Sockets to this, but rather Socket types:
+    
+    Device(device_type, in_socket_type, out_socket_type)
+    
+    For instance:
+    
+    dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
+    
+    Similar to zmq.device, but socket types instead of sockets themselves are
+    passed, and the sockets are created in the work thread, to avoid issues with 
+    thread safety. As a result, additional bind_{in|out} and connect_{in|out}
+    methods and setsockopt_{in|out}
+    allow users to specify connections for the sockets.
+    
+    Parameters
+    ----------
+    device_type : int
+        The 0MQ Device type
+    {in|out}_type : int
+        zmq socket types, to be passed later to context.socket(). e.g. zmq.PUB,
+        zmq.SUB, zmq.REQ. If out_type is < 0, then in_socket is used for both
+        in_socket and out_socket.
+        
+    Methods
+    -------
+    bind_{in_out}(iface)
+        passthrough for {in|out}_socket.bind(iface), to be called in the thread
+    connect_{in_out}(iface)
+        passthrough for {in|out}_socket.connect(iface), to be called in the
+        thread
+    setsockopt_{in_out}(opt,value)
+        passthrough for {in|out}_socket.setsockopt(opt, value), to be called in
+        the thread
+    
+    Attributes
+    ----------
+    daemon: int
+        sets whether the thread should be run as a daemon
+        Default is true, because if it is false, the thread will not
+        exit unless it is killed
+    """
+    cdef public int device_type # zmq Device Type
+    cdef public int in_type # socket_type for in_socket
+    cdef public int out_type # socket_type for out_socket
+    cdef public int daemon # daemon flag, see Thread.daemon
+    cdef Context context # context for creating sockets
+    cdef Socket in_socket # the in_socket passed to zmq.device
+    cdef Socket out_socket # the out_socket passed to zmq.device
+    cdef list in_binds # list of interfaces to bind ins to
+    cdef list out_binds # list of interfaces to bind outs to
+    cdef list in_connects # list of interfaces to connect ins to
+    cdef list out_connects # list of interfaces to connect outs to
+    cdef list in_sockopts # list of tuples for in.setsockopt
+    cdef list out_sockopts # list of tuples for out.setsockopt
+    cdef int done # bool flag for when I'm done
+    
+    
+    def __cinit__(self, int device_type, int in_type, int out_type, *args, **kwargs):
+        self.device_type = device_type
+        self.in_type = in_type
+        self.out_type = out_type
+        self.in_binds = list()
+        self.in_connects = list()
+        self.in_sockopts = list()
+        self.out_binds = list()
+        self.out_connects = list()
+        self.out_sockopts = list()
+        self.daemon = True
+        self.done = False
+    
+    def __init__(self, int device_type, int in_type, int out_type):
+        """Force signature if __init__, since __cinit__ requires 
+        *args, **kwargs signature for subclassing."""
+    
+    def bind_in(self,iface):
+        """Enqueue interface for binding on in_socket
+        e.g. tcp://127.0.0.1:10101 or inproc://foo.
+        
+        See zmq.Socket.bind for details.
+        """
+        self.in_binds.append(iface)
+    
+    def connect_in(self, iface):
+        """Enqueue interface for connecting on in_socket
+        e.g. tcp://127.0.0.1:10101 or inproc://foo.
+        
+        See zmq.Socket.connect for details.
+        """
+        self.in_connects.append(iface)
+    
+    def setsockopt_in(self, opt, value):
+        """Enqueue setsockopt(opt, value) for in_socket
+        e.g. setsockopt_out(zmq.SUBSCRIBE, 'controller').
+        
+        See zmq.Socket.setsockopt for details.
+        """
+        self.in_sockopts.append((opt, value))
+    
+    def bind_out(self,iface):
+        """Enqueue interface for binding on out_socket
+        e.g. tcp://127.0.0.1:10101 or inproc://foo.
+        
+        See zmq.Socket.bind for details.
+        """
+        self.out_binds.append(iface)
+    
+    def connect_out(self, iface):
+        """Enqueue interface for connecting on out_socket
+        e.g. tcp://127.0.0.1:10101 or inproc://foo.
+        
+        See zmq.Socket.connect for details.
+        """
+        self.out_connects.append(iface)
+    
+    def setsockopt_out(self, opt, value):
+        """"Enqueue setsockopt(opt, value) for out_socket
+        e.g. setsockopt_out(zmq.IDENTITY, 'alice').
+        
+        See zmq.Socket.setsockopt for details.
+        """
+        self.out_sockopts.append((opt, value))
+    
+    def _setup_sockets(self):
+        ctx = Context()
+        self.context = ctx
+        
+        # create the sockets
+        self.in_socket = ctx.socket(self.in_type)
+        if self.out_type < 0:
+            self.out_socket = self.in_socket
+        else:
+            self.out_socket = ctx.socket(self.out_type)
+        
+        # set sockopts (must be done first, in case of zmq.IDENTITY)
+        for opt,value in self.in_sockopts:
+            self.in_socket.setsockopt(opt, value)
+        for opt,value in self.out_sockopts:
+            self.out_socket.setsockopt(opt, value)
+        
+        for iface in self.in_binds:
+            self.in_socket.bind(iface)
+        for iface in self.out_binds:
+            self.out_socket.bind(iface)
+        
+        for iface in self.in_connects:
+            self.in_socket.connect(iface)
+        for iface in self.out_connects:
+            self.out_socket.connect(iface)
+    
+    def run(self):
+        """The runner method. Do not call me directly, instead call
+        self.start(), just like a Thread."""
+        self._setup_sockets()
+        return self._run()
+    
+    cdef int _run(self) nogil:
+        cdef int rc = 0
+        cdef int device_type = self.device_type
+        cdef void *ins = self.in_socket.handle
+        cdef void *outs = self.out_socket.handle
+        with nogil:
+            rc = zmq_device(device_type, ins, outs)
+        self.done = True
+        return rc
+    
+    def start(self):
+        """Start the device. Override me in subclass for other launchers."""
+        return self.run()
+
+    def join(self,timeout=None):
+        tic = time.time()
+        toc = tic
+        while not self.done and not (timeout is not None and toc-tic > timeout):
+            time.sleep(.001)
+            toc = time.time()
+
+
+class BackgroundDevice(Device):
+    """Base class for launching Devices in background processes and threads"""
+    
+    launcher=None
+    launch_class=None
+    
+    def start(self):
+        self.launcher = self.launch_class(target=self.run)
+        self.launcher.daemon = self.daemon
+        return self.launcher.start()
+    
+    def join(self, timeout=None):
+        return self.launcher.join(timeout=timeout)
+
+class ThreadDevice(BackgroundDevice):
+    """A Device that will be run in a background Thread. 
+    
+    See `Device` for details."""
+    
+    launch_class=Thread
+
+class ProcessDevice(BackgroundDevice):
+    """A Device that will be run in a background Process.
+    
+    See `Device` for details."""
+    launch_class=Process
+
+#-----------------------------------------------------------------------------
+# MonitoredQueue
+#-----------------------------------------------------------------------------
+
 # basic free for msg_init_data:
 cdef void z_free (void *data, void *hint) nogil:
     free (data)
 
-# the MonitoredQueue C function:
+# the MonitoredQueue C function, adapted from zmq::queue.cpp :
 cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                         void *sidesocket_, int swap_ids) nogil:
+    """The actual C function for a monitored_queue device. See 
+    monitored_queue() for details."""
     
     cdef int ids_done
     cdef zmq_msg_t msg
@@ -173,224 +380,47 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                     break
     return 0
 
-def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket, int swap_ids=False):
-    """Start a monitored_queue device"""
+def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
+                                                            int swap_ids):
+    """Start a monitored_queue device, which behaves just like a zmq QUEUE
+    device as far as in_socket and out_socket are concerned, except that 
+    all messages *also* go out on mon_socket. mon_socket also prefixes
+    the messages coming from each with 'in' or 'out', so all messages
+    sent by mon_socket are multipart.
+    
+    The only difference between this and a QUEUE as far as in/out are concerned
+    is that it works with two XREP sockets by swapping the IDENT prefixes.
+    
+    Parameters
+    ----------
+    in_socket : Socket
+        One of the sockets to the Queue. 
+        Its messages will be prefixed with 'in'.
+    out_socket : Socket
+        One of the sockets to the Queue. 
+        Its messages will be prefixed with 'out'.
+        The only difference between in/out socket is this prefix.
+    mon_socket : Socket
+        This socket sends out every message received by each of the others
+        with an in/out prefix specifying which one it was.
+    swap_ids : int
+        whether the ids should be swapped. Always True if both are XREP, since
+        the alternative can't work.
+    """
     cdef void *ins=in_socket.handle
     cdef void *outs=out_socket.handle
     cdef void *mons=mon_socket.handle
+    
+    if not swap_ids:
+        # force swap_ids if both XREP
+        swap_ids = (in_socket.socket_type == XREP and 
+                    out_socket.socket_type == XREP)
+    
     cdef int rc
     with nogil:
         rc = monitored_queue_(ins, outs, mons, swap_ids)
     return rc
 
-##### end monitored_queue
-
-cdef class Device:
-    """A Threadsafe 0MQ Device.
-    
-    For threadsafety, you do not pass Sockets to this, but rather Socket types:
-    
-    Device(device_type, in_socket_type, out_socket_type)
-    
-    For instance:
-    
-    dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
-    
-    Similar to zmq.device, but socket types instead of sockets themselves are passed, and
-    the sockets are created in the work thread, to avoid issues with thread safety.
-    As a result, additional bind_{in|out} and connect_{in|out} methods and setsockopt_{in|out}
-    allow users to specify connections for the sockets.
-    
-    Parameters
-    ----------
-    device_type : int
-        The 0MQ Device type
-    {in|out}_type : int
-        zmq socket types, to be passed later to context.socket(). e.g. zmq.PUB, zmq.SUB, zmq.REQ.
-        If out_type is < 0, then in_socket is used for both in_socket and out_socket.
-        
-    Methods
-    -------
-    bind_{in_out}(iface)
-        passthrough for {in|out}_socket.bind(iface), to be called in the thread
-    connect_{in_out}(iface)
-        passthrough for {in|out}_socket.connect(iface), to be called in the thread
-    setsockopt_{in_out}(opt,value)
-        passthrough for {in|out}_socket.setsockopt(opt, value), to be called in the thread
-    
-    Attributes
-    ----------
-    daemon: int
-        sets whether the thread should be run as a daemon
-        Default is true, because if it is false, the thread will not
-        exit unless it is killed
-    """
-    cdef public int device_type
-    cdef public int in_type
-    cdef public int out_type
-    cdef public int daemon
-    cdef Context context
-    cdef Socket in_socket
-    cdef Socket out_socket
-    cdef list in_binds
-    cdef list out_binds
-    cdef list in_connects
-    cdef list out_connects
-    cdef list in_sockopts
-    cdef list out_sockopts
-    cdef int done
-    
-    
-    def __cinit__(self, int device_type, int in_type, int out_type, *args, **kwargs):
-        self.device_type = device_type
-        self.in_type = in_type
-        self.out_type = out_type
-        self.in_binds = list()
-        self.in_connects = list()
-        self.in_sockopts = list()
-        self.out_binds = list()
-        self.out_connects = list()
-        self.out_sockopts = list()
-        self.daemon = True
-        self.done = False
-    
-    def __init__(self, int device_type, int in_type, int out_type):
-        """force signature"""
-    
-    def bind_in(self,iface):
-        """enqueue interface for binding on in_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
-        self.in_binds.append(iface)
-    
-    def connect_in(self, iface):
-        """enqueue interface for connecting on in_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
-        self.in_connects.append(iface)
-    
-    def setsockopt_in(self, opt, value):
-        """enqueue setsockopt(opt, value) for in_socket
-        e.g. setsockopt_out(zmq.SUBSCRIBE, 'controller')"""
-        self.in_sockopts.append((opt, value))
-    
-    def bind_out(self,iface):
-        """enqueue interface for binding on out_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
-        self.out_binds.append(iface)
-    
-    def connect_out(self, iface):
-        """enqueue interface for connecting on out_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
-        self.out_connects.append(iface)
-    
-    def setsockopt_out(self, opt, value):
-        """"enqueue setsockopt(opt, value) for out_socket
-        e.g. setsockopt_out(zmq.IDENTITY, 'alice')"""
-        self.out_sockopts.append((opt, value))
-    
-    def _setup_sockets(self):
-        ctx = Context()
-        self.context = ctx
-        
-        # create the sockets
-        self.in_socket = ctx.socket(self.in_type)
-        if self.out_type < 0:
-            self.out_socket = self.in_socket
-        else:
-            self.out_socket = ctx.socket(self.out_type)
-        
-        # set sockopts (must be done first, in case of zmq.IDENTITY)
-        for opt,value in self.in_sockopts:
-            self.in_socket.setsockopt(opt, value)
-        for opt,value in self.out_sockopts:
-            self.out_socket.setsockopt(opt, value)
-        
-        for iface in self.in_binds:
-            self.in_socket.bind(iface)
-        for iface in self.out_binds:
-            self.out_socket.bind(iface)
-        
-        for iface in self.in_connects:
-            self.in_socket.connect(iface)
-        for iface in self.out_connects:
-            self.out_socket.connect(iface)
-    
-    def run(self):
-        """The runner method. Do not call me directly, instead call self.start()"""
-        self._setup_sockets()
-        return self._run()
-    
-    cdef int _run(self) nogil:
-        cdef int rc = 0
-        cdef int device_type = self.device_type
-        cdef void *ins = self.in_socket.handle
-        cdef void *outs = self.out_socket.handle
-        with nogil:
-            rc = zmq_device(device_type, ins, outs)
-        self.done = True
-        return rc
-    
-    def start(self):
-        """Start the device. Override me in subclass for other launchers."""
-        return self.run()
-
-    def join(self,timeout=None):
-        tic = time.time()
-        toc = tic
-        while not self.done and not (timeout is not None and toc-tic > timeout):
-            time.sleep(.001)
-            toc = time.time()
-
-
-class BackgroundDevice(Device):
-    """Base class for launching Devices in background processes and threads"""
-    
-    launcher=None
-    launch_class=None
-    
-    def start(self):
-        self.launcher = self.launch_class(target=self.run)
-        self.launcher.daemon = self.daemon
-        return self.launcher.start()
-    
-    def join(self, timeout=None):
-        return self.launcher.join(timeout=timeout)
-
-class ThreadDevice(BackgroundDevice):
-    """A Device that will be run in a background Thread. 
-    
-    See `Device` for details."""
-    
-    launch_class=Thread
-
-class ProcessDevice(BackgroundDevice):
-    """A Device that will be run in a background Process.
-    
-    See `Device` for details."""
-    launch_class=Process
-    
-# cdef class ThreadedDevice(Device):
-#     """run a Device in a background Thread. See Device for details.
-#     """
-#     cdef object thread
-#     def start(self):
-#         self.thread = Thread(target=self.run)
-#         self.thread.daemon = self.daemon
-#         return self.thread.start()
-#     
-#     def join(self, timeout=None):
-#         return self.thread.join(timeout)
-# 
-# class ProcessDevice(Device):
-#     """run a Device in a background Process.  See Device for details.
-#     """
-#     # cdef object process
-#     def start(self):
-#         self.process = Process(target=self.run)
-#         self.process.daemon = self.daemon
-#         return self.process.start()
-#     
-#     def join(self, timeout=None):
-#         return self.process.join(timeout)
         
 cdef class MonitoredQueue_(Device):
     """Threadsafe MonitoredQueue object. See Device for most of the spec.
@@ -403,15 +433,16 @@ cdef class MonitoredQueue_(Device):
     If a message comes from in_sock, it will be prefixed with 'in'
     If it comes from out_sock, it will be prefixed with 'out'
     
-    A PUB socket is perhaps the most logical for the mon_socket, but it is not restricted.
+    A PUB socket is perhaps the most logical for the mon_socket, but it is not
+    restricted.
     
     """
-    cdef public int mon_type
-    cdef Socket mon_socket
-    cdef list mon_binds
-    cdef list mon_connects
-    cdef list mon_sockopts
-    cdef int swap_ids
+    cdef public int mon_type # socket_type for mon_socket, e.g. PUB
+    cdef Socket mon_socket # mon_socket for monitored_queue
+    cdef list mon_binds # list of interfaces to bind mons to
+    cdef list mon_connects # list of interfaces to connect mons to
+    cdef list mon_sockopts # list of tuples for mon.setsockopt
+    cdef int swap_ids # flag for swapping IDs on dual-XREP socket
     
     def __cinit__(self, int device_type, int in_type, int out_type, 
                                     int mon_type, *args, **kwargs):
@@ -425,22 +456,32 @@ cdef class MonitoredQueue_(Device):
             self.swap_ids = 0
         
     
-    def __init__(self, int device_type, int in_type, int out_type, int mon_socket):
+    def __init__(self, int device_type, int in_type, int out_type, 
+                                                        int mon_socket):
         Device.__init__(self, QUEUE, in_type, out_type)
     
     def bind_mon(self,iface):
-        """enqueue interface for binding on mon_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
+        """Enqueue interface for binding on mon_socket
+        e.g. 'tcp://127.0.0.1:10101' or 'inproc://foo'.
+        
+        See zmq.Socket.bind for details.
+        """
         self.mon_binds.append(iface)
     
     def connect_mon(self, iface):
-        """enqueue interface for connecting on mon_socket
-        e.g. tcp://127.0.0.1:10101 or inproc://foo"""
+        """Enqueue interface for connecting on mon_socket
+        e.g. tcp://127.0.0.1:10101 or inproc://foo.
+        
+        See zmq.Socket.connect for details.
+        """
         self.mon_connects.append(iface)
     
     def setsockopt_mon(self, opt, value):
-        """"enqueue setsockopt(opt, value) for mon_socket
-        e.g. setsockopt_mon(zmq.IDENTITY, 'alice')"""
+        """Enqueue setsockopt(opt, value) for mon_socket
+        e.g. setsockopt_mon(zmq.IDENTITY, 'alice').
+        
+        See zmq.Socket.setsockopt for details.
+        """
         self.mon_sockopts.append((opt, value))
     
     def _setup_sockets(self):

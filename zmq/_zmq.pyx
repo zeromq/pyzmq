@@ -31,17 +31,10 @@ from cpython cimport Py_DECREF, Py_INCREF
 from cpython cimport bool
 
 from allocate cimport allocate
-
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
-    cdef void PyEval_InitThreads()
-
-# Older versions of Cython would not take care of called this automatically.
-# In newer versions of Cython (at least 0.12.1) this is called automatically.
-# We should wait for a few releases and then remove this call.
-PyEval_InitThreads()
 
 import copy as copy_mod
 import time
@@ -153,8 +146,10 @@ def strerror(errnum):
     """Return the error string given the error number."""
     return zmq_strerror(errnum)
 
+
 class ZMQBaseError(Exception):
     pass
+
 
 class ZMQError(ZMQBaseError):
     """Base exception class for 0MQ errors in Python."""
@@ -180,6 +175,7 @@ class ZMQError(ZMQBaseError):
     def __str__(self):
         return self.strerror
 
+
 class ZMQBindError(ZMQBaseError):
     """An error for bind_to_random_port."""
     pass
@@ -199,16 +195,17 @@ def zmq_version():
 cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
-        send_pending = (<object>hint)[1]
-        
-        if isinstance(send_pending, Queue):
-            assert send_pending.empty(), "somebody else wrote to my Queue!"
-            send_pending.put(0)
         Py_DECREF(<object>hint)
+        
+        tracker_queue = (<object>hint)[1]
+        
+        if isinstance(tracker_queue, Queue):
+            assert tracker_queue.empty(), "somebody else wrote to my Queue!"
+            tracker_queue.put(0)
 
 
 cdef class MessageTracker(object):
-    """The MessageTracker object tracks whether a 
+    """The MessageTracker object tracks whether one or more messages are still in use by 
     
     It can be constructed from any number of Messages, Queues, 
     or other MessageTracker objects.
@@ -243,6 +240,7 @@ cdef class MessageTracker(object):
         while not self.done:
             time.sleep(.001)
 
+
 cdef class Message:
     """A Message class for non-copy send/recvs.
 
@@ -264,12 +262,12 @@ cdef class Message:
 
         # Save the data object in case the user wants the the data as a str.
         self._data = data
-        self._failed_init = True
-        self._buffer = None
-        self._bytes = None
-        # self.zmq_refcount = Queue()
-        self.send_pending = Queue()
-        self.tracker = MessageTracker(self.send_pending)
+        self._failed_init = True # bool switch for dealloc
+        self._buffer = None # buffer view of data
+        self._bytes = None # bytes copy of data
+        # Queue and MessageTracker for monitoring when zmq is done with data:
+        self.tracker_queue = Queue()
+        self.tracker = MessageTracker(self.tracker_queue)
         
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -286,7 +284,7 @@ cdef class Message:
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
-        free_tup = (data, self.send_pending)
+        free_tup = (data, self.tracker_queue)
         Py_INCREF(free_tup)
         with nogil:
             rc = zmq_msg_init_data(
@@ -337,7 +335,7 @@ cdef class Message:
             new_msg._bytes = self._bytes
         
         # new_msg.zmq_refcount = self.zmq_refcount
-        new_msg.send_pending = self.send_pending
+        new_msg.tracker_queue = self.tracker_queue
         new_msg.tracker = self.tracker
         
         # self.zmq_refcount.put(2)
@@ -397,7 +395,8 @@ cdef class Message:
         if self._bytes is None:
             self._bytes = self._copybytes()
         return self._bytes
-    
+
+
 cdef class Context:
     """Manage the lifecycle of a 0MQ context.
 
@@ -585,8 +584,8 @@ cdef class Socket:
         return result
     
     def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
-        """Set socket options with a unicode object
-        it is simply a wrapper for setsockopt to protect from encoding ambiguity
+        """Set socket options with a unicode object it is simply a wrapper 
+        for setsockopt to protect from encoding ambiguity.
 
         See the 0MQ documentation for details on specific options.
 
@@ -760,7 +759,7 @@ cdef class Socket:
             rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
 
         if rc != 0:
-            msg.send_pending.get()
+            msg.tracker_queue.get()
             raise ZMQError()
         return msg.tracker
             
@@ -1010,6 +1009,9 @@ cdef class Stopwatch:
     def sleep(self, int seconds):
         zmq_sleep(seconds)
 
+#-------------------------------------------------------------------------
+# Polling related methods
+#-------------------------------------------------------------------------
 
 def _poll(sockets, long timeout=-1):
     """Poll a set of 0MQ sockets, native file descs. or sockets.
