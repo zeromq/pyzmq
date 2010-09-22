@@ -34,6 +34,12 @@ from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
+    cdef void PyEval_InitThreads()
+
+# It seems that in only *some* version of Python/Cython we need to call this
+# by hand to get threads initialized. Not clear why this is the case though.
+# If we don't have this, pyzmq will segfault.
+PyEval_InitThreads()
 
 import copy as copy_mod
 import time
