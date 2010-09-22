@@ -18,11 +18,10 @@ from zmq import devices
 ctx = zmq.Context()
 
 dev = devices.ThreadDevice(zmq.FORWARDER, zmq.REP, -1)
-print "b"
 dev.bind_in('tcp://127.0.0.1:10111')
 dev.setsockopt_in(zmq.IDENTITY, "whoda")
 dev.start()
-print "c"
+
 #wait for connections
 time.sleep(1)
 
