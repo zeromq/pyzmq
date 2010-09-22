@@ -124,6 +124,7 @@ setup(
     version = "0.1",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log'],
     ext_modules = [zmq, devices],
+    package_data = dict(zmq=['*.pxd']),
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
     description = "Cython based Python bindings for 0MQ.",
