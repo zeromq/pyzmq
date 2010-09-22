@@ -33,6 +33,7 @@ from libc.stdlib cimport free,malloc
 from cpython cimport bool
 
 from _zmq cimport *
+from buffers cimport asbuffer_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -47,7 +48,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import XREP, QUEUE, FORWARDER, device
+from zmq import XREP, QUEUE, FORWARDER, device, ZMQError
 
 #-----------------------------------------------------------------------------
 # Classes
@@ -263,7 +264,8 @@ cdef void z_free (void *data, void *hint) nogil:
 
 # the MonitoredQueue C function, adapted from zmq::queue.cpp :
 cdef int monitored_queue_ (void *insocket_, void *outsocket_,
-                        void *sidesocket_, int swap_ids) nogil:
+                        void *sidesocket_, zmq_msg_t in_msg, 
+                        zmq_msg_t out_msg, int swap_ids) nogil:
     """The actual C function for a monitored queue device. 
 
     See ``monitored_queue()`` for details.
@@ -276,15 +278,6 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
     rc = zmq_msg_init (&id_msg)
     cdef zmq_msg_t side_msg
     rc = zmq_msg_init (&side_msg)
-    cdef zmq_msg_t in_msg
-    cdef void *in_data = malloc (2)
-    memcpy (in_data, "in", 2)
-    rc = zmq_msg_init_data (&in_msg, in_data, 2, z_free, NULL)
-    
-    cdef zmq_msg_t out_msg
-    cdef void *out_data = malloc (3)
-    memcpy (out_data, "out", 3)
-    rc = zmq_msg_init_data (&out_msg, out_data, 3, z_free, NULL)
     # assert (rc == 0)
 
     cdef int64_t more
@@ -299,6 +292,7 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
     items [1].fd = 0
     items [1].events = ZMQ_POLLIN
     items [1].revents = 0
+    # I don't think sidesocket should be polled?
     # items [2].socket = sidesocket_
     # items [2].fd = 0
     # items [2].events = ZMQ_POLLIN
@@ -389,13 +383,15 @@ cdef int monitored_queue_ (void *insocket_, void *outsocket_,
                     break
     return 0
 
-def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket):
+def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
+                    str in_prefix='in', str out_prefix='out'):
     """Start a monitored queue device.
 
     A monitored queue behaves just like a zmq QUEUE device as far as in_socket
     and out_socket are concerned, except that all messages *also* go out on
-    mon_socket. mon_socket also prefixes the messages coming from each with
-    'in' or 'out', so all messages sent by mon_socket are multipart.
+    mon_socket. mon_socket also prefixes the messages coming from each with a
+    prefix, by defaout 'in' and 'out', so all messages sent by mon_socket are
+    multipart.
     
     The only difference between this and a QUEUE as far as in/out are
     concerned is that it works with two XREP sockets by swapping the IDENT
@@ -412,22 +408,41 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket):
     mon_socket : Socket
         This socket sends out every message received by each of the others
         with an in/out prefix specifying which one it was.
-    swap_ids : int
-        Whether the ids should be swapped. Always True if both are XREP, since
-        the alternative can't work.
+    in_prefix : str
+        Prefix added to broadcast messages from in_socket.
+    out_prefix : str
+        Prefix added to broadcast messages from out_socket.
     """
+    
     cdef void *ins=in_socket.handle
     cdef void *outs=out_socket.handle
     cdef void *mons=mon_socket.handle
+    cdef zmq_msg_t in_msg
+    cdef zmq_msg_t out_msg
     cdef bool swap_ids
-    
+    cdef char *msg_c = NULL
+    cdef Py_ssize_t msg_c_len
+    cdef int rc
+
     # force swap_ids if both XREP
     swap_ids = (in_socket.socket_type == XREP and 
                 out_socket.socket_type == XREP)
     
-    cdef int rc
+    # build zmq_msg objects from str prefixes
+    asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
+    rc = zmq_msg_init_size(&in_msg, msg_c_len)
+    if rc != 0:
+        raise ZMQError()
+    memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
+    
+    asbuffer_r(out_prefix, <void **>&msg_c, &msg_c_len)
+    rc = zmq_msg_init_size(&out_msg, msg_c_len)
+    if rc != 0:
+        raise ZMQError()
+    memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
+    
     with nogil:
-        rc = monitored_queue_(ins, outs, mons, swap_ids)
+        rc = monitored_queue_(ins, outs, mons, in_msg, out_msg, swap_ids)
     return rc
 
 
@@ -452,13 +467,19 @@ cdef class MonitoredQueue(Device):
     cdef list mon_binds       # List of interfaces to bind mons to.
     cdef list mon_connects    # List of interfaces to connect mons to.
     cdef list mon_sockopts    # List of tuples for mon.setsockopt.
+    cdef str in_prefix        # prefix added to in_socket messages
+    cdef str out_prefix       # prefix added to out_socket messages
     
-    def __init__(self, int in_type, int out_type, int mon_type):
+    def __init__(self, int in_type, int out_type, int mon_type, 
+                        str in_prefix='in', str out_prefix='out'):
         Device.__init__(self, QUEUE, in_type, out_type)
+        
         self.mon_type = mon_type
         self.mon_binds = list()
         self.mon_connects = list()
         self.mon_sockopts = list()
+        self.in_prefix = in_prefix
+        self.out_prefix = out_prefix
 
     def bind_mon(self, addr):
         """Enqueue ZMQ address for binding on mon_socket.
@@ -501,7 +522,7 @@ cdef class MonitoredQueue(Device):
         cdef Socket ins = self.in_socket
         cdef Socket outs = self.out_socket
         cdef Socket mons = self.mon_socket
-        rc = monitored_queue(ins, outs, mons)
+        rc = monitored_queue(ins, outs, mons, self.in_prefix, self.out_prefix)
         return rc
 
 class ThreadMonitoredQueue(ThreadDevice, MonitoredQueue):

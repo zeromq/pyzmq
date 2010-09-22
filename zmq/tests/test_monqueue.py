@@ -37,8 +37,9 @@ class TestMonitoredQueue(BaseZMQTestCase):
     sockets = []
     pass
     
-    def build_device(self, mon_sub=""):
-        self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB)
+    def build_device(self, mon_sub="", in_prefix='in', out_prefix='out'):
+        self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB,
+                                            in_prefix, out_prefix)
         alice = self.context.socket(zmq.PAIR)
         bob = self.context.socket(zmq.PAIR)
         mon = self.context.socket(zmq.SUB)
@@ -121,6 +122,34 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.assertEquals(['in']+alices3, mons)
         mons = mon.recv_multipart()
         self.assertEquals(['out']+bobs, mons)
+        self.teardown_device()
+    
+    def test_prefix(self):
+        alice, bob, mon = self.build_device("", 'foo', 'bar')
+        alices = "hello bob".split()
+        alice.send_multipart(alices)
+        alices2 = "hello again".split()
+        alice.send_multipart(alices2)
+        alices3 = "hello again and again".split()
+        alice.send_multipart(alices3)
+        bobs = bob.recv_multipart()
+        self.assertEquals(alices, bobs)
+        mons = mon.recv_multipart()
+        self.assertEquals(['foo']+bobs, mons)
+        bobs = bob.recv_multipart()
+        self.assertEquals(alices2, bobs)
+        bobs = bob.recv_multipart()
+        self.assertEquals(alices3, bobs)
+        mons = mon.recv_multipart()
+        self.assertEquals(['foo']+alices2, mons)
+        bobs = "hello alice".split()
+        bob.send_multipart(bobs)
+        alices = alice.recv_multipart()
+        self.assertEquals(alices, bobs)
+        mons = mon.recv_multipart()
+        self.assertEquals(['foo']+alices3, mons)
+        mons = mon.recv_multipart()
+        self.assertEquals(['bar']+bobs, mons)
         self.teardown_device()
     
     def test_monitor_subscribe(self):
