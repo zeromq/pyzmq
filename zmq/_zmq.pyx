@@ -42,9 +42,9 @@ import random
 import struct
 import codecs
 try:    # 3.x
-    from queue import Queue
+    from queue import Queue, Empty
 except: # 2.x
-    from Queue import Queue
+    from Queue import Queue, Empty
 
 try:
     import cjson
@@ -184,6 +184,9 @@ class ZMQBindError(ZMQBaseError):
 # Code
 #-----------------------------------------------------------------------------
 
+class NotDone(Exception):
+    """For raising in MessageTracker.wait"""
+    pass
 
 def zmq_version():
     """Return the version of ZeroMQ itself."""
@@ -195,25 +198,28 @@ def zmq_version():
 cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
-        Py_DECREF(<object>hint)
         
         tracker_queue = (<object>hint)[1]
+        Py_INCREF(tracker_queue)
+        Py_DECREF(<object>hint)
         
         if isinstance(tracker_queue, Queue):
-            assert tracker_queue.empty(), "somebody else wrote to my Queue!"
+            # don't assert before DECREF:
+            # assert tracker_queue.empty(), "somebody else wrote to my Queue!"
             tracker_queue.put(0)
+        Py_DECREF(tracker_queue)
 
 
 cdef class MessageTracker(object):
-    """The MessageTracker object tracks whether one or more messages are still in use by 
+    """The MessageTracker object tracks whether one or more messages are still
+    in use by underlying 0MQ.
     
-    It can be constructed from any number of Messages, Queues, 
-    or other MessageTracker objects.
+     It can be constructed from any number of Messages, Queues, or other
+    MessageTracker objects.
     
-    socket.send( ... copy=False) returns a MessageTracker object
-    """
+     socket.send( ... copy=False) returns a MessageTracker object """
     
-    def __cinit__(self, *towatch):
+    def __init__(self, *towatch):
         self.queues = set()
         self.peers = set()
         for obj in towatch:
@@ -236,7 +242,43 @@ cdef class MessageTracker(object):
                 return False
         return True
     
-    def wait(self):
+    def wait(self, timeout=-1):
+        """Wait until I am done, then return.
+        
+        Parameters
+        ----------
+        timeout : int
+            Maximum time in (s) to wait before raising NotDone.
+        
+        Raises NotDone if `timeout` reached before I am done.
+        """
+        tic = time.time()
+        if timeout is False or timeout < 0:
+            remaining = 3600*24*7 # a week
+        else:
+            remaining = timeout
+        done = False
+        try:
+            for queue in self.queues:
+                if remaining < 0:
+                    raise NotDone
+                queue.get(timeout=remaining)
+                queue.put(0)
+                toc = time.time()
+                remaining -= (toc-tic)
+                tic = toc
+        except Empty:
+            raise NotDone
+        
+        for peer in self.peers:
+            if remaining < 0:
+                raise NotDone
+            peer.wait(timeout=remaining)
+            toc = time.time()
+            remaining -= (toc-tic)
+            tic = toc
+    
+    def old_wait(self):
         while not self.done:
             time.sleep(.001)
 
@@ -355,7 +397,19 @@ cdef class Message:
     @property
     def done(self):
         return self.tracker.done
-        # return False
+    
+    def wait(self, timeout=-1):
+        """Wait for me to be done, or until `timeout`.
+        
+        Parameters
+        ----------
+        timeout : int
+            Maximum time in (s) to wait before raising NotDone.
+        
+        Raises NotDone if `timeout` reached before I am done.
+        """
+        return self.tracker.wait(timeout=timeout)
+
     
     cdef object _getbuffer(self):
         """Create a Python buffer/view of the message data.
@@ -1199,6 +1253,7 @@ def device(device_type, isocket, osocket):
 
 __all__ = [
     'zmq_version',
+    'NotDone',
     'MessageTracker',
     'Message',
     'Context',

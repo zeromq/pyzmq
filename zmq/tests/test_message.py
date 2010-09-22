@@ -136,11 +136,27 @@ class TestMessage(BaseZMQTestCase):
     
     def test_tracker(self):
         m = zmq.Message('asdf')
-        self.assert_(not m.done)
+        self.assertFalse(m.done)
         pm = zmq.MessageTracker(m)
-        self.assert_(not pm.done)
+        self.assertFalse(pm.done)
         del m
-        self.assertFalse(not pm.done)
+        self.assertTrue(pm.done)
+    
+    def test_multi_tracker(self):
+        m = zmq.Message('asdf')
+        m2 = zmq.Message('whoda')
+        mt = zmq.MessageTracker(m,m2)
+        self.assertFalse(m.done)
+        self.assertFalse(mt.done)
+        self.assertRaises(zmq.NotDone, mt.wait, 0.1)
+        del m
+        time.sleep(0.1)
+        self.assertRaises(zmq.NotDone, mt.wait, 0.1)
+        self.assertFalse(mt.done)
+        del m2
+        self.assertTrue(mt.wait() is None)
+        self.assertTrue(mt.done)
+        
     
     def test_buffer_in(self):
         """test using a buffer as input"""
