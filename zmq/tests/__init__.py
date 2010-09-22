@@ -34,6 +34,14 @@ class BaseZMQTestCase(TestCase):
 
     def setUp(self):
         self.context = zmq.Context()
+        self.sockets = []
+    
+    def tearDown(self):
+        while self.sockets:
+            sock = self.sockets.pop()
+            sock.close()
+        del self.context
+            
 
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
@@ -41,6 +49,7 @@ class BaseZMQTestCase(TestCase):
         port = s1.bind_to_random_port(interface)
         s2 = zmq.Socket(self.context, type2)
         s2.connect('%s:%s' % (interface, port))
+        self.sockets.extend([s1,s2])
         return s1, s2
 
     def ping_pong(self, s1, s2, msg):

@@ -20,14 +20,14 @@
 
 import zmq
 
-def main(addr):
+def main(addrs):
     
-    print "Connecting to: ", addr
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-
     socket.setsockopt(zmq.SUBSCRIBE, "")
-    socket.connect(addr)
+    for addr in addrs:
+        print "Connecting to: ", addr
+        socket.connect(addr)
 
     while True:
         msg = socket.recv_pyobj()
@@ -35,7 +35,7 @@ def main(addr):
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) != 2:
-        print "usage: display.py <address>"
+    if len(sys.argv) < 2:
+        print "usage: display.py <address> [,<address>...]"
         raise SystemExit
-    main(sys.argv[1])
+    main(sys.argv[1:])

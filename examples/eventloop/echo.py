@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+"""A trivial ZMQ echo server using the eventloop.
+
+Authors
+-------
+* MinRK
+"""
+
 import zmq
 from zmq.eventloop import ioloop
 

@@ -15,12 +15,14 @@
 
 """A utility class to send to and recv from a non-blocking socket."""
 
-# import errno
-# import socket
 import logging
 import time
 import zmq
 import ioloop
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
@@ -28,7 +30,7 @@ class ZMQStream(object):
     For use with zmq.eventloop.ioloop
 
     There are 3 main methods:
-    on_recv(callback):
+    on_recv(callback,copy=True):
         register a callback to be run every time the socket has something to receive
     on_send(callback):
         register a callback to be run every time you call send
@@ -37,6 +39,7 @@ class ZMQStream(object):
     send(msg, callback=None)
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
+        
         There is also send_multipart()
     
     Two other methods for deactivating the callbacks:
@@ -46,6 +49,8 @@ class ZMQStream(object):
         turn off the send callback
     stop_on_err():
         turn off the error callback
+    
+    All of which simply call on_<evt>(None).
 
     """
     
@@ -55,72 +60,129 @@ class ZMQStream(object):
     def __init__(self, socket, io_loop=None):
         self.socket = socket
         self.io_loop = io_loop or ioloop.IOLoop.instance()
-        self._tosend = None
-        # self._recv_buffer = ""
-        # self._send_buffer = ""
+        
+        self._send_queue = Queue()
         self._recv_callback = None
         self._send_callback = None
         self._close_callback = None
         self._errback = None
+        self._recv_copy = False
+        
         self._state = zmq.POLLERR
         self.io_loop.add_handler(self.socket, self._handle_events, self._state)
         
         # shortcircuit some socket methods
         self.bind = self.socket.bind
         self.connect = self.socket.connect
+        self.setsockopt = self.socket.setsockopt
+        self.getsockopt = self.socket.getsockopt
     
     def stop_on_recv(self):
-        """disable callback and automatic receiving"""
-        self._recv_callback = None
-        self._drop_io_state(zmq.POLLIN)
+        """Disable callback and automatic receiving."""
+        return self.on_recv(None)
     
     def stop_on_send(self):
-        """disable callback on sending"""
-        self._send_callback = None
-        self._drop_io_state(zmq.POLLOUT)
+        """Disable callback on sending."""
+        return self.on_send(None)
     
     def stop_on_err(self):
-        self._errback = None
-        # self._drop_io_state(zmq.POLLOUT)
+        """Disable callback on errors."""
+        return self.on_err(None)
     
-    def on_recv(self, callback):
-        """register a callback to be called on each recv.
-        callback must take exactly one argument, which will be a
-        list, returned by socket.recv_multipart()."""
-        # assert not self._recv_callback, "Already receiving"
+    def on_recv(self, callback, copy=True):
+        """Register a callback to be called when a message is ready to recv.
+        There can be only one callback registered at a time, so each
+        call to on_recv replaces previously registered callbacks.
+        
+        on_recv(None) disables recv event polling.
+        
+        Parameters
+        ----------
+        
+        callback : callable
+            callback must take exactly one argument, which will be a
+            list, as returned by socket.recv_multipart()
+            if callback is None, recv callbacks are disabled.
+        copy : bool
+            copy is passed directly to recv, so if copy is False,
+            callback will receive Message objects. If copy is True,
+            then callback will receive bytes/str objects.
+        
+        Returns : None
+        """
+        
+        assert callback is None or callable(callback)
         self._recv_callback = callback
-        self._add_io_state(zmq.POLLIN)
+        self._recv_copy = copy
+        if callback is None:
+            self._drop_io_state(zmq.POLLIN)
+        else:
+            self._add_io_state(zmq.POLLIN)
     
     def on_send(self, callback):
-        """register a callback to be called on each send
-        with no arguments (?)
+        """Register a callback to be called on each send
+        There will be two arguments: the message being sent (always a list), 
+        and the return result of socket.send_multipart(msg).
+        
+        Non-copying sends return a MessageTracker object whose
+        `done` attribute will be True when the send is complete. 
+        This allows users to track when an object is safe to write to
+        again.
+        
+        The second argument will always be None if copy=True
+        on the send.
+        
+        on_send(None) disables recv event polling.
+        
+        Parameters
+        ----------
+        
+        callback : callable
+            callback must take exactly two arguments, which will be
+            There will be two arguments: the message being sent (always a list), 
+            and the return result of socket.send_multipart(msg) - 
+            MessageTracker or None.
+            
+            if callback is None, send callbacks are disabled.
         """
-        self._add_io_state(zmq.POLLOUT)
         self._send_callback = callback
+        if callback is None:
+            self._drop_io_state(zmq.POLLOUT)
+        else:
+            self._add_io_state(zmq.POLLOUT)
         
     def on_err(self, callback):
-        """register a callback to be called on each send
-        with no arguments (?)
+        """register a callback to be called on POLLERR events
+        with no arguments.
+        
+        Parameters
+        ----------
+        
+        callback : callable
+            callback will be passed no arguments.
         """
         # self._add_io_state(zmq.POLLOUT)
         self._errback = callback
         
                 
-    def send(self, msg, callback=None):
-        """send a message, optionally also register
+    def send(self, msg, flags=0, copy=False, callback=None):
+        """Send a message, optionally also register a new callback for sends.
+        See zmq.socket.send for details.
         """
-        return self.send_multipart([msg], callback=callback)
+        return self.send_multipart([msg], flags=flags, copy=copy, callback=callback)
 
-    def send_multipart(self, msg, callback=None):
-        """send a multipart message
+    def send_multipart(self, msg, flags=0, copy=False, callback=None):
+        """Send a multipart message, optionally also register a new callback for sends.
+        See zmq.socket.send_multipart for details.
         """
         # self._check_closed()
-        self._tosend = msg
+        self._send_queue.put((msg, flags, copy))
         callback = callback or self._send_callback
         if callback is not None:
             self.on_send(callback)
         else:
-            self.on_send(lambda : None)
+            # noop callback
+            self.on_send(lambda *args: None)
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
@@ -136,17 +198,19 @@ class ZMQStream(object):
                 self._run_callback(self._close_callback)
 
     def receiving(self):
-        """Returns true if we are currently receiving from the stream."""
+        """Returns True if we are currently receiving from the stream."""
         return self._recv_callback is not None
 
     def sending(self):
-        """Returns true if we are currently sending to the stream."""
-        return self._tosend is not None
+        """Returns True if we are currently sending to the stream."""
+        return not self._send_queue.empty()
 
     def closed(self):
         return self.socket is None
 
     def _run_callback(self, callback, *args, **kwargs):
+        """Wrap running callbacks in try/except to allow us to
+        close our socket."""
         try:
             callback(*args, **kwargs)
         except:
@@ -180,18 +244,18 @@ class ZMQStream(object):
         state = zmq.POLLERR
         if self.receiving():
             state |= zmq.POLLIN
-        if self._tosend is not None:
+        if self.sending():
             state |= zmq.POLLOUT
         if state != self._state:
             self._state = state
             self.io_loop.update_handler(self.socket, self._state)
             
     def _handle_recv(self):
-        # print "handling recv"
+        """Handle a recv event."""
         try:
-            msg = self.socket.recv_multipart()
+            msg = self.socket.recv_multipart(copy=self._recv_copy)
         except zmq.ZMQError:
-            logging.warning("RECV Error")
+            logging.error("RECV Error")
         else:
             if self._recv_callback:
                 callback = self._recv_callback
@@ -202,41 +266,43 @@ class ZMQStream(object):
         
 
     def _handle_send(self):
-        # print "handling send"
-        if not self._tosend:
+        """Handle a send event."""
+        if not self.sending():
             return
-        self.socket.send_multipart(self._tosend)
-        self._tosend = None
+        
+        msg = self._send_queue.get()
+        queue = self.socket.send_multipart(*msg)
         if self._send_callback:
             callback = self._send_callback
-            self._run_callback(callback)
+            self._run_callback(callback, msg, queue)
         
         # unregister from event loop:
-        self._drop_io_state(zmq.POLLOUT)
+        if not self.sending():
+            self._drop_io_state(zmq.POLLOUT)
         
         # self.update_state()
     
     def _handle_error(self):
+        """Handle a POLLERR event."""
         # if evt & zmq.POLLERR:
-        logging.warning("handling error..")
+        logging.error("handling error..")
         if self._errback is not None:
             self._errback()
         else:
             raise zmq.ZMQError()
-
-
-        # raise zmq.ZMQError()
 
     def _check_closed(self):
         if not self.socket:
             raise IOError("Stream is closed")
 
     def _add_io_state(self, state):
+        """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
             self.io_loop.update_handler(self.socket, self._state)
     
     def _drop_io_state(self, state):
+        """Stop poller from watching an io_state."""
         if self._state & state:
             self._state = self._state & (~state)
             self.io_loop.update_handler(self.socket, self._state)

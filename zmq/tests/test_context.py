@@ -25,8 +25,6 @@ import zmq
 from zmq.tests import BaseZMQTestCase
 
 
-from zmq.tests import BaseZMQTestCase
-
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
