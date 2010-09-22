@@ -1,7 +1,7 @@
-"""Python version-independent methods for converting between objects and 
-C/Python buffers.
+"""Python version-independent methods for C/Python buffers.
 
-copied,adapted from mpi4py
+This module was copied and dapted from mpi4py:
+
 Jul 23, 2010 18:00 PST (r539)
 http://code.google.com/p/mpi4py/source/browse/trunk/src/MPI/asbuffer.pxi
 Copyright (c) 2009, Lisandro Dalcin.
@@ -12,8 +12,12 @@ Code not from mpi4py:
 
 Authors
 -------
-*MinRK
+* MinRK
 """
+
+#-----------------------------------------------------------------------------
+# Python includes.
+#-----------------------------------------------------------------------------
 
 # Python 3 buffer interface (PEP 3118)
 cdef extern from "Python.h":
@@ -56,9 +60,9 @@ cdef extern from "Python.h":
     object PyBuffer_FromReadWriteObject(object, Py_ssize_t offset, Py_ssize_t size)
 
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 # asbuffer: C buffer from python object
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 cdef inline int is_buffer(object ob):
     """Version independent check for whether an object is a buffer.
@@ -78,7 +82,8 @@ cdef inline int is_buffer(object ob):
 
 
 cdef inline object asbuffer(object ob, int writable, int format,
-                     void **base, Py_ssize_t *size, Py_ssize_t *itemsize):
+                            void **base, Py_ssize_t *size,
+                            Py_ssize_t *itemsize):
     """Turn an object into a C buffer in a Python version-independent way.
     
     Parameters
@@ -168,8 +173,10 @@ cdef inline object asbuffer_w(object ob, void **base, Py_ssize_t *size):
 #------------------------------------------------------------------------------
 
 cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
-    """Python 3 version of frombuffer.  This is the Python 3 model, 
-    but will work on Python >= 2.6.  Currently, we use it only on >= 3.0.
+    """Python 3 version of frombuffer.
+
+    This is the Python 3 model, but will work on Python >= 2.6. Currently,
+    we use it only on >= 3.0.
     """
     cdef Py_buffer pybuf
     cdef Py_ssize_t *shape = [s]
@@ -181,8 +188,9 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
 
 
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
-    """Python 2 version of frombuffer. This must be used for Python <= 2.6,
-    but we use it for all Python < 3.
+    """Python 2 version of frombuffer. 
+
+    This must be used for Python <= 2.6, but we use it for all Python < 3.
     """
     if readonly:
         return PyBuffer_FromMemory(ptr, s)
@@ -213,12 +221,12 @@ cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
 
 
 cdef inline object frombuffer_r(void *ptr, Py_ssize_t s):
-    """wrapper for readonly view frombuffer"""
+    """Wrapper for readonly view frombuffer."""
     return frombuffer(ptr, s, 1)
 
 
 cdef inline object frombuffer_w(void *ptr, Py_ssize_t s):
-    """wrapper for writable view frombuffer"""
+    """Wrapper for writable view frombuffer."""
     return frombuffer(ptr, s, 0)
 
 #------------------------------------------------------------------------------
@@ -227,8 +235,9 @@ cdef inline object frombuffer_w(void *ptr, Py_ssize_t s):
 #------------------------------------------------------------------------------
 
 cdef inline object viewfromobject(object obj, int readonly):
-    """Construct a Python Buffer/View object from another Python object
-    in a Python version independent way.
+    """Construct a Python Buffer/View object from another Python object.
+
+    This work in a Python version independent manner.
     
     Parameters
     ----------
@@ -251,11 +260,11 @@ cdef inline object viewfromobject(object obj, int readonly):
 
 
 cdef inline object viewfromobject_r(object obj):
-    """wrapper for readonly viewfromobject"""
+    """Wrapper for readonly viewfromobject."""
     return viewfromobject(obj, 1)
 
 
 cdef inline object viewfromobject_w(object obj):
-    """wrapper for writable viewfromobject"""
+    """Wrapper for writable viewfromobject."""
     return viewfromobject(obj, 0)
 

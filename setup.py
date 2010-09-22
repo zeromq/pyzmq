@@ -67,7 +67,7 @@ class CleanCommand(Command):
     user_options = [ ]
 
     def initialize_options(self):
-        self._clean_me = [pjoin('zmq', '_zmq.so') ]
+        self._clean_me = [pjoin('zmq', '_zmq.so'), pjoin('zmq', 'devices.so')]
         for root, dirs, files in os.walk('.'):
             for f in files:
                 if f.endswith('.pyc'):

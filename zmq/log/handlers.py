@@ -1,24 +1,29 @@
 #!/usr/bin/env python
-"""
-pyzmq logging handlers. This mainly defines the PUBHandler object for publishing
-logging messages over a zmq.PUB socket.
+"""pyzmq logging handlers.
 
-The PUBHandler can be used with the regular logging module, as in:
->>> import logging
->>> handler = PUBHandler('tcp://127.0.0.1:12345')
->>> handler.root_topic = 'foo'
->>> logger = logging.getLogger('foobar')
->>> logger.addHandler(logging.DEBUG, handler)
-After this point, all messages logged by `logger` will be published
-on the PUB socket.
+This mainly defines the PUBHandler object for publishing logging messages over
+a zmq.PUB socket.
+
+The PUBHandler can be used with the regular logging module, as in::
+
+    >>> import logging
+    >>> handler = PUBHandler('tcp://127.0.0.1:12345')
+    >>> handler.root_topic = 'foo'
+    >>> logger = logging.getLogger('foobar')
+    >>> logger.addHandler(logging.DEBUG, handler)
+
+After this point, all messages logged by ``logger`` will be published on the
+PUB socket.
 
 Code adapted from StarCluster:
+
     http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py
 
 Authors
 -------
 * Min RK
 """
+
 #
 #    Copyright (c) 2010 Min Ragan-Kelley
 #
@@ -55,21 +60,26 @@ TOPIC_DELIM="::" # delimiter for splitting topics on the receiving end.
 
 
 class PUBHandler(logging.Handler):
-    """A basic logging handler that emits log messages through a ZMQ PUB socket.
+    """A basic logging handler that emits log messages through a PUB socket.
+
     Takes a PUB socket already bound to interfaces or an interface to bind to.
-    
-    >>> sock = context.socket(zmq.PUB)
-    >>> sock.bind('inproc://log')
-    >>> handler = PUBHandler(sock)
-    OR
-    >>> handler = PUBHandler('inproc://loc')
-    these are equivalent.
-    
+
+    Example::
+
+        sock = context.socket(zmq.PUB)
+        sock.bind('inproc://log')
+        handler = PUBHandler(sock)
+
+    Or::
+
+        handler = PUBHandler('inproc://loc')
+
+    These are equivalent.
+
     Log messages handled by this handler are broadcast with ZMQ topics
-    this.root_topic comes first, followed by the log level (DEBUG,INFO,etc.),
-    followed by any additional subtopics specified in the message by:
-    log.debug("subtopic.subsub::the real message")
-    
+    ``this.root_topic`` comes first, followed by the log level
+    (DEBUG,INFO,etc.), followed by any additional subtopics specified in the
+    message by: log.debug("subtopic.subsub::the real message")
     """
     root_topic=""
     socket = None
@@ -94,7 +104,6 @@ class PUBHandler(logging.Handler):
             self.ctx = context or zmq.Context()
             self.socket = self.ctx.socket(zmq.PUB)
             self.socket.bind(interface_or_socket)
-        
 
     def format(self,record):
         """Format a record."""
@@ -113,43 +122,48 @@ class PUBHandler(logging.Handler):
         except:
             self.handleError(record)
         topic_list = []
-        
+
         if self.root_topic:
             topic_list.append(self.root_topic)
-        
+
         topic_list.append(record.levelname)
-        
+
         if topic:
             topic_list.append(topic)
-        
+
         topic = '.'.join(topic_list)
-        
+
         # map str, since sometimes we get unicode, and zmq can't deal with it
         self.socket.send_multipart(map(str, (topic, msg)))
 
 
 class TopicLogger(logging.Logger):
     """A simple wrapper that takes an additional argument to log methods.
-    All the regular methods exist, but instead of one msg argument, two
-    arguments: topic,msg are passed.
-    
-    i.e. logger.debug('msg') would become: logger.debug('topic.sub', 'msg')
-    """
-    
-    def log(self, level, topic, msg, *args, **kwargs):
-        """Log 'msg % args' with the integer severity 'level' 
-        and ZMQ PUB topic 'topic'
-        
-        To pass exception information, use the keyword argument exc_info
-        with a True value, e.g.
 
-        logger.log(level, "zmq.fun", "We have a %s", 
-                "mysterious problem", exc_info=1)
+    All the regular methods exist, but instead of one msg argument, two
+    arguments: topic, msg are passed.
+
+    That is::
+
+        logger.debug('msg')
+
+    Would become::
+
+        logger.debug('topic.sub', 'msg')
+    """
+    def log(self, level, topic, msg, *args, **kwargs):
+        """Log 'msg % args' with level and topic.
+
+        To pass exception information, use the keyword argument exc_info
+        with a True value::
+
+            logger.log(level, "zmq.fun", "We have a %s", 
+                    "mysterious problem", exc_info=1)
         """
         logging.Logger.log(self, level, '%s::%s'%(topic,msg), *args, **kwargs)
 
-# generate the methods of TopicLogger, since they are just adding a
-# topic prefix to a message
+# Generate the methods of TopicLogger, since they are just adding a
+# topic prefix to a message.
 for name in "debug warn warning error critical fatal".split():
     meth = getattr(logging.Logger,name)
     setattr(TopicLogger, name, 
