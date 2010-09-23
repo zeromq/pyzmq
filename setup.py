@@ -25,8 +25,13 @@
 
 import os, sys
 
-from distutils.core import setup, Command
-from distutils.extension import Extension
+#attempt to import setuptools, which adds the "setup.py develop" option
+try:
+    import setuptools
+except ImportError:
+    pass
+
+from distutils.core import setup, Command, Extension
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
