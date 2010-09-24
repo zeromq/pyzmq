@@ -25,7 +25,7 @@
 
 from zmq.core import constants
 from zmq.core.constants import *
-from zmq.core.error import ZMQError, ZMQBindError
+from zmq.core.error import *
 from zmq.core.message import Message, PendingMessage
 from zmq.core.context import Context
 from zmq.core.socket import Socket
