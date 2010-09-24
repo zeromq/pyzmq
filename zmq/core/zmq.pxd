@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""All the C imports for 0MQ"""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -155,55 +155,4 @@ cdef extern from "zmq_utils.h" nogil:
     void *zmq_stopwatch_start ()
     unsigned long zmq_stopwatch_stop (void *watch_)
     void zmq_sleep (int seconds_)
-
-
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
-
-cdef class MessageTracker(object):
-    """A class for tracking if 0MQ is done using one or more messages."""
-
-    cdef set queues  # Message Queue objects to track.
-    cdef set peers   # Other Message or MessageTracker objects.
-    
-
-cdef class Message:
-    """A Message class for non-copy send/recvs."""
-
-    cdef zmq_msg_t zmq_msg
-    cdef object _data      # The actual message data as a Python object.
-    cdef object _buffer    # A Python Buffer/View of the message contents
-    cdef object _bytes     # A bytes/str copy of the message.
-    cdef bool _failed_init # Flag to handle failed zmq_msg_init
-    cdef public object tracker_queue  # Queue for use with zmq_free_fn.
-    cdef public object tracker        # MessageTracker object.
-
-    cdef Message fast_copy(self) # Create shallow copy of Message object.
-    cdef object _getbuffer(self) # Construct self._buffer.
-    cdef object _copybytes(self) # Construct self._bytes.
-
-
-cdef class Context:
-    """Manage the lifecycle of a 0MQ context."""
-
-    cdef void *handle         # The C handle for the underlying zmq object.
-    cdef public object closed # bool property for a closed context.
-
-
-cdef class Socket:
-    """A 0MQ socket."""
-
-    cdef void *handle           # The C handle for the underlying zmq object.
-    cdef public int socket_type # The 0MQ socket type - REQ,REP, etc.
-    # Hold on to a reference to the context to make sure it is not garbage
-    # collected until the socket it done with it.
-    cdef public Context context # The zmq Context object that owns this.
-    cdef public object closed   # bool property for a closed socket.
-
-
-cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop."""
-
-    cdef void *watch # The C handle for the underlying zmq object
 
