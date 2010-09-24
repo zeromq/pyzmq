@@ -31,7 +31,7 @@ cdef extern from "Python.h":
 # If we don't have this, pyzmq will segfault.
 PyEval_InitThreads()
 
-from zmq cimport zmq_device, _zmq_version
+from czmq cimport zmq_device, _zmq_version
 from zmq.core.socket cimport Socket as cSocket
 
 from zmq import core

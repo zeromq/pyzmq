@@ -89,14 +89,38 @@ class CleanCommand(Command):
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand }
 
+includes = [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+# print includes
+
+def pxd(subdir, name):
+    return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
+
+def pyx(subdir, name):
+    return os.path.abspath(pjoin('zmq', subdir, name+'.pyx'))
+
+def dotc(subdir, name):
+    return pjoin('zmq', subdir, name+'.c')
+
+base = pxd('core', 'zmq')
+
+submodules = dict(
+    core = {'constants': [base],
+            'error':[base],
+            'poll':[base], 
+            'stopwatch':[base],
+            'context':[pxd('core', 'socket'), base],
+            'message':[base],
+            'socket':[pxd('core', 'context'), pxd('core', 'message'), base],
+            },
+    devices = {}
+)
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    zmq_source = os.path.join('zmq','_zmq.c')
-    device_source = os.path.join('zmq','devices.c')
+    suffix = '.c'
 else:
-    zmq_source = os.path.join('zmq','_zmq.pyx')
-    device_source = os.path.join('zmq','devices.pyx')
+    suffix = '.pyx'
     cmdclass['build_ext'] =  build_ext
 
 if sys.platform == 'win32':
@@ -104,17 +128,31 @@ if sys.platform == 'win32':
 else:
     libzmq = 'zmq'
 
-zmq = Extension(
-    'zmq._zmq',
-    sources = [zmq_source],
-    libraries = [libzmq]
+init = Extension(
+    'zmq.__init__',
+    sources = [pjoin('zmq', '__init__'+suffix)],
+    libraries = [libzmq],
+    include_dirs = includes
 )
-devices = Extension(
-    'zmq.devices',
-    sources = [device_source],
-    libraries = [libzmq]
-)
-
+extensions = [init]
+for submod, packages in submodules.iteritems():
+    for pkg in sorted(packages):
+        sources = [pjoin('zmq', submod, pkg+suffix)]
+        if suffix == '.pyx':
+            # pxdfile = pxd(submod, pkg)
+            # if os.path.isfile(pxdfile):
+            #     sources.append(pxdfile)
+            sources.extend(packages[pkg])
+        print sources
+        ext = Extension(
+            'zmq.%s.%s'%(submod, pkg),
+            # 'zmq.core'+pkg,
+            sources = sources,
+            libraries = [libzmq],
+            include_dirs = includes
+        )
+        extensions.append(ext)
+        
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
@@ -128,8 +166,8 @@ the ZeroMQ library (http://www.zeromq.org).
 setup(
     name = "pyzmq",
     version = "2.0.9dev",
-    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log'],
-    ext_modules = [zmq, devices],
+    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core', 'zmq.devices'],
+    ext_modules = extensions,
     package_data = dict(zmq=['*.pxd']),
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",

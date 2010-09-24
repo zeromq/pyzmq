@@ -1,4 +1,4 @@
-"""0MQ Stopwatch class declaration."""
+"""0MQ Context class declaration."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
