@@ -23,18 +23,17 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import os
-
-from zmq import _zmq
-from zmq._zmq import *
+from zmq.core import *
 
 
 __version__ = '2.0.9dev'
 
 
 def get_includes():
-    return os.path.dirname(__file__)
+    from os.path import join, dirname
+    base = dirname(__file__)
+    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
 
 
-__all__ = _zmq.__all__ + ['get_includes']
+__all__ = zmq.core.__all__ + ['get_includes']
 

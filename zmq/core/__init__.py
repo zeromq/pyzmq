@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""Python bindings for core 0MQ objects."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,11 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import os
-
-from zmq import _zmq
-from zmq._zmq import *
-
-
-__version__ = '2.0.9dev'
-
-
-def get_includes():
-    return os.path.dirname(__file__)
-
-
-__all__ = _zmq.__all__ + ['get_includes']
-
+from zmq.core import constants
+from zmq.core.constants import *
+from zmq.core.error import ZMQError, ZMQBindError
+from zmq.core.message import Message, PendingMessage
+from zmq.core.context import Context
+from zmq.core.socket import Socket
+from zmq.core.poll import Poller, select
+from zmq.core.stopwatch import Stopwatch

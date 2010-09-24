@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""Devices for running in the background"""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import os
-
-from zmq import _zmq
-from zmq._zmq import *
-
-
-__version__ = '2.0.9dev'
-
-
-def get_includes():
-    return os.path.dirname(__file__)
-
-
-__all__ = _zmq.__all__ + ['get_includes']
+from zmq.core import device
+from zmq.devices.base import *
+from zmq.devices.monitoredqueue import *
 
