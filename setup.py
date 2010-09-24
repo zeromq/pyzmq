@@ -101,7 +101,7 @@ def pyx(subdir, name):
 def dotc(subdir, name):
     return pjoin('zmq', subdir, name+'.c')
 
-base = pxd('core', 'zmq')
+base = pxd('core', 'czmq')
 
 submodules = dict(
     core = {'constants': [base],
@@ -112,7 +112,10 @@ submodules = dict(
             'message':[base],
             'socket':[pxd('core', 'context'), pxd('core', 'message'), base],
             },
-    devices = {}
+    devices = {
+            'base':[pxd('core', 'socket'), pxd('core', 'context'), base],
+            'monitoredqueue':[pxd('devices', 'base')],
+    }
 )
 
 try:

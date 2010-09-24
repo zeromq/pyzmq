@@ -26,7 +26,7 @@
 from zmq.core import constants
 from zmq.core.constants import *
 from zmq.core.error import *
-from zmq.core.message import Message, PendingMessage
+from zmq.core.message import Message, MessageTracker
 from zmq.core.context import Context
 from zmq.core.socket import Socket
 from zmq.core.poll import Poller, select
