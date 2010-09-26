@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""0MQ polling related functions and classes."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger

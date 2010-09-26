@@ -1,4 +1,4 @@
-"""Classes for running 0MQ Devices in the background.
+"""MonitoredQueue classes and functions.
 
 Authors
 -------

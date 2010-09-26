@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""0MQ Error classes and functions."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger

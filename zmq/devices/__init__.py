@@ -1,4 +1,4 @@
-"""Devices for running in the background"""
+"""0MQ Device classes for running in background threads or processes."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
