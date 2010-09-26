@@ -101,20 +101,20 @@ def pyx(subdir, name):
 def dotc(subdir, name):
     return pjoin('zmq', subdir, name+'.c')
 
-base = pxd('core', 'czmq')
+czmq = pxd('core', 'czmq')
 
 submodules = dict(
-    core = {'constants': [base],
-            'error':[base],
-            'poll':[base], 
-            'stopwatch':[base],
-            'context':[pxd('core', 'socket'), base],
-            'message':[base],
-            'socket':[pxd('core', 'context'), pxd('core', 'message'), base],
+    core = {'constants': [czmq],
+            'error':[czmq],
+            'poll':[czmq], 
+            'stopwatch':[czmq],
+            'context':[pxd('core', 'socket'), czmq],
+            'message':[czmq],
+            'socket':[pxd('core', 'context'), pxd('core', 'message'), czmq],
             },
     devices = {
-            'base':[pxd('core', 'socket'), pxd('core', 'context'), base],
-            'monitoredqueue':[pxd('devices', 'base')],
+            'base':[pxd('core', 'socket'), pxd('core', 'context'), czmq],
+            'monitoredqueue':[pxd('devices', 'base'), czmq],
     }
 )
 
@@ -142,14 +142,9 @@ for submod, packages in submodules.iteritems():
     for pkg in sorted(packages):
         sources = [pjoin('zmq', submod, pkg+suffix)]
         if suffix == '.pyx':
-            # pxdfile = pxd(submod, pkg)
-            # if os.path.isfile(pxdfile):
-            #     sources.append(pxdfile)
             sources.extend(packages[pkg])
-        print sources
         ext = Extension(
             'zmq.%s.%s'%(submod, pkg),
-            # 'zmq.core'+pkg,
             sources = sources,
             libraries = [libzmq],
             include_dirs = includes
@@ -171,7 +166,10 @@ setup(
     version = "2.0.9dev",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core', 'zmq.devices'],
     ext_modules = extensions,
-    package_data = dict(zmq=['*.pxd']),
+    package_data = {'zmq':['*.pxd'],
+                    'zmq.core':['*.pxd'],
+                    'zmq.devices':['*.pxd'],
+    },
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
     url = 'http://github.com/zeromq/pyzmq',
