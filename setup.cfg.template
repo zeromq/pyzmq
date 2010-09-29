@@ -1,6 +1,6 @@
 [build_ext]
 
 # Edit these to point to your installed zeromq library and header dirs.
-library_dirs = /usr/local/zeromq-dev/lib
-include_dirs = /usr/local/zeromq-dev/include
+library_dirs = /usr/local/lib
+include_dirs = /usr/local/include
 
