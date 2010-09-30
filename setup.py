@@ -116,7 +116,7 @@ submodules = dict(
     },
     devices = {
             'basedevice':[pxd('core', 'socket'), pxd('core', 'context'), czmq],
-            'monitoredqueue':[pxd('devices', 'base'), czmq],
+            'monitoredqueue':[pxd('devices', 'basedevice'), czmq],
     },
     utils = {
             'initthreads':[czmq]
