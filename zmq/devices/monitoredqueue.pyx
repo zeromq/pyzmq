@@ -37,14 +37,14 @@ cdef extern from "Python.h":
 
 from buffers cimport asbuffer_r
 from czmq cimport *
-from zmq.devices.base cimport Device
+from zmq.devices.basedevice cimport Device
 
 import time
 from threading import Thread
 from multiprocessing import Process
 
 from zmq import XREP, QUEUE, FORWARDER, ZMQError
-from zmq.devices.base import ThreadDevice, ProcessDevice
+from zmq.devices.basedevice import ThreadDevice, ProcessDevice
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue functions

@@ -30,7 +30,7 @@ Authors
 #-----------------------------------------------------------------------------
 
 from zmq.core.socket cimport Socket
-from zmq.devices.base cimport Device
+from zmq.devices.basedevice cimport Device
 
 #-----------------------------------------------------------------------------
 # Classes

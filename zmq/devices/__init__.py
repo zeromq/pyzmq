@@ -24,6 +24,6 @@
 #-----------------------------------------------------------------------------
 
 from zmq import device
-from zmq.devices.base import *
+from zmq.devices.basedevice import *
 from zmq.devices.monitoredqueue import *
 
