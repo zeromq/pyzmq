@@ -1,4 +1,4 @@
-"""Utility to initialize threads"""
+"""Utility to initialize threads."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger

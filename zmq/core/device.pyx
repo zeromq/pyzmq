@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""Python binding for 0MQ device function."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger

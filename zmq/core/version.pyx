@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""PyZMQ and 0MQ version functions."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
