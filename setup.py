@@ -207,7 +207,7 @@ setup(
     name = "pyzmq",
     version = "2.0.9dev",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
-                'zmq.devices'],
+                'zmq.devices', 'zmq.utils'],
     ext_modules = extensions,
     package_data = package_data,
     author = "Brian E. Granger",
