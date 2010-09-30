@@ -111,10 +111,15 @@ submodules = dict(
             'context':[pxd('core', 'socket'), czmq],
             'message':[czmq],
             'socket':[pxd('core', 'context'), pxd('core', 'message'), czmq],
-            },
+            'device':[czmq],
+            'version':[czmq],
+    },
     devices = {
             'base':[pxd('core', 'socket'), pxd('core', 'context'), czmq],
             'monitoredqueue':[pxd('devices', 'base'), czmq],
+    },
+    utils = {
+            'initthreads':[czmq]
     }
 )
 
@@ -131,13 +136,13 @@ if sys.platform == 'win32':
 else:
     libzmq = 'zmq'
 
-init = Extension(
-    'zmq.__init__',
-    sources = [pjoin('zmq', '__init__'+suffix)],
-    libraries = [libzmq],
-    include_dirs = includes
-)
-extensions = [init]
+# init = Extension(
+#     'zmq.utils.initthreads',
+#     sources = [pjoin('zmq', 'utils', 'initthreads'+suffix)],
+#     libraries = [libzmq],
+#     include_dirs = includes
+# )
+extensions = []
 for submod, packages in submodules.iteritems():
     for pkg in sorted(packages):
         sources = [pjoin('zmq', submod, pkg+suffix)]
