@@ -23,38 +23,8 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-cdef extern from "Python.h":
-    cdef void PyEval_InitThreads()
-
-# It seems that in only *some* version of Python/Cython we need to call this
-# by hand to get threads initialized. Not clear why this is the case though.
-# If we don't have this, pyzmq will segfault.
-PyEval_InitThreads()
-
-from czmq cimport zmq_device, _zmq_version
+from czmq cimport zmq_device
 from zmq.core.socket cimport Socket as cSocket
-
-from zmq import core
-from zmq.core.context import Context
-from zmq.core.socket import Socket
-from zmq.core.message import Message, MessageTracker
-from zmq.core.error import *
-from zmq.core.constants import *
-from zmq.core.poll import Poller, select
-from zmq.core.stopwatch import Stopwatch
-
-
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
-
-__version__ = '2.0.9dev'
-
-def zmq_version():
-    """Return the version of ZeroMQ itself."""
-    cdef int major, minor, patch
-    _zmq_version(&major, &minor, &patch)
-    return '%i.%i.%i' % (major, minor, patch)
 
 #-----------------------------------------------------------------------------
 # Basic device API
@@ -77,12 +47,5 @@ def device(int device_type, cSocket isocket, cSocket osocket):
         result = zmq_device(device_type, isocket.handle, osocket.handle)
     return result
 
-
-def get_includes():
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
-
-
-# __all__ = ['get_includes']
+__all__ = ['device']
 
