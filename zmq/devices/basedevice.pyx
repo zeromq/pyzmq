@@ -37,7 +37,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import device, ZMQError
+from zmq.core import device, ZMQError
 
 #-----------------------------------------------------------------------------
 # Classes

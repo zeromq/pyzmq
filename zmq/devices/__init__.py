@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq import device
+from zmq.core.device import device
 from zmq.devices import basedevice, monitoredqueue
 
 from zmq.devices.basedevice import *

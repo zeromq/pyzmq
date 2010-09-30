@@ -43,7 +43,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import XREP, QUEUE, FORWARDER, ZMQError
+from zmq.core import XREP, QUEUE, FORWARDER, ZMQError
 from zmq.devices.basedevice import ThreadDevice, ProcessDevice
 
 #-----------------------------------------------------------------------------
