@@ -67,3 +67,5 @@ class ZMQBindError(ZMQBaseError):
 class NotDone(ZMQBaseError):
     """For raising in MessageTracker.wait"""
     pass
+
+__all__ = ['strerror', 'ZMQBaseError', 'ZMQBindError', 'ZMQError', 'NotDone']

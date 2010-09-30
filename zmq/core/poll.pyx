@@ -198,4 +198,4 @@ def select(rlist, wlist, xlist, timeout=None):
 # Symbols to export
 #-----------------------------------------------------------------------------
 
-# __all__ = [ 'Poller', 'select', '_poll']
+__all__ = [ 'Poller', 'select' ]
