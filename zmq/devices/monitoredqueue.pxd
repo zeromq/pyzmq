@@ -37,21 +37,8 @@ from zmq.devices.basedevice cimport Device
 #-----------------------------------------------------------------------------
 
 cdef class MonitoredQueue(Device):
-    """Threadsafe MonitoredQueue object.
-
-    See Device for most of the spec. This ignores the device_type, and adds a
-    <method>_mon version of each <method>_{in|out} method, for configuring the
-    monitor socket.
-
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a
-    QUEUE, except each message is also sent out on the monitor socket.
-
-    If a message comes from in_sock, it will be prefixed with 'in'. If it
-    comes from out_sock, it will be prefixed with 'out'
-
-    A PUB socket is perhaps the most logical for the mon_socket, but it is not
-    restricted.
-    """
+    """Threadsafe MonitoredQueue object."""
+    
     cdef public int mon_type  # Socket type for mon_socket, e.g. PUB.
     cdef Socket mon_socket    # mon_socket for monitored_queue.
     cdef list mon_binds       # List of interfaces to bind mons to.

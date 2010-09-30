@@ -37,50 +37,8 @@ from zmq.core.context cimport Context
 #-----------------------------------------------------------------------------
 
 cdef class Device:
-    """A Threadsafe 0MQ Device.
+    """Base Threadsafe 0MQ Device."""
     
-    For thread safety, you do not pass Sockets to this, but rather Socket
-    types::
-
-        Device(device_type, in_socket_type, out_socket_type)
-
-    For instance::
-
-    dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
-
-    Similar to zmq.device, but socket types instead of sockets themselves are
-    passed, and the sockets are created in the work thread, to avoid issues
-    with thread safety. As a result, additional bind_{in|out} and
-    connect_{in|out} methods and setsockopt_{in|out} allow users to specify
-    connections for the sockets.
-    
-    Parameters
-    ----------
-    device_type : int
-        The 0MQ Device type
-    {in|out}_type : int
-        zmq socket types, to be passed later to context.socket(). e.g.
-        zmq.PUB, zmq.SUB, zmq.REQ. If out_type is < 0, then in_socket is used
-        for both in_socket and out_socket.
-        
-    Methods
-    -------
-    bind_{in_out}(iface)
-        passthrough for {in|out}_socket.bind(iface), to be called in the thread
-    connect_{in_out}(iface)
-        passthrough for {in|out}_socket.connect(iface), to be called in the
-        thread
-    setsockopt_{in_out}(opt,value)
-        passthrough for {in|out}_socket.setsockopt(opt, value), to be called in
-        the thread
-    
-    Attributes
-    ----------
-    daemon: int
-        sets whether the thread should be run as a daemon
-        Default is true, because if it is false, the thread will not
-        exit unless it is killed
-    """
     cdef public int device_type # ZMQ Device Type.
     cdef public int in_type     # Socket type for in_socket.
     cdef public int out_type    # Socket type for out_socket.
