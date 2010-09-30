@@ -229,3 +229,5 @@ class ProcessDevice(BackgroundDevice):
     """
     launch_class=Process
 
+
+__all__ = [ 'Device', 'ThreadDevice', 'ProcessDevice' ]
