@@ -140,7 +140,7 @@ submodules = dict(
             'context':[pxd('core', 'socket'), czmq],
             'message':[czmq, buffers],
             'socket':[pxd('core', 'context'), pxd('core', 'message'), 
-                      czmq, allocate, buffes],
+                      czmq, allocate, buffers],
             'device':[czmq],
             'version':[czmq],
     },
