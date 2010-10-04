@@ -31,7 +31,12 @@ from distutils.command.sdist import sdist
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
-from os.path import splitext, basename, join as pjoin, walk
+from os.path import splitext, basename, join as pjoin
+
+try:
+    from os.path import walk
+except:
+    from os import walk
 
 
 #-----------------------------------------------------------------------------
