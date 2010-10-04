@@ -185,10 +185,10 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     This is the Python 3 model, but will work on Python >= 2.6. Currently,
     we use it only on >= 3.0.
     """
+    cdef Py_buffer pybuf
+    cdef Py_ssize_t *shape = [s]
+    cdef str astr=""
     if newstyle_available():
-        cdef Py_buffer pybuf
-        cdef Py_ssize_t *shape = [s]
-        cdef str astr=""
         PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
         pybuf.format = "B"
         pybuf.shape = shape
