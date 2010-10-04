@@ -4,12 +4,18 @@ include setup.cfg.template
 include setup.py
 include setupegg.py
 
-graft docs
+recursive-include docs *
+recursive-exclude docs _build
+# graft docs
 graft examples
 graft zmq
 graft perf
 
 exclude setup.cfg
 
+# exclude docs/_static
+# exclude docs/_templates
+
+global-exclude *.so
 global-exclude *.pyc
 global-exclude .git*

@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""0MQ Socket class declaration."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,20 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
+from context cimport Context
 
-from zmq import core, devices
-from zmq.core import *
-
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
+#-----------------------------------------------------------------------------
+# Code
+#-----------------------------------------------------------------------------
 
 
-__all__ = ['get_includes'] + core.__all__
+cdef class Socket:
+    """A 0MQ socket."""
+
+    cdef void *handle           # The C handle for the underlying zmq object.
+    cdef public int socket_type # The 0MQ socket type - REQ,REP, etc.
+    # Hold on to a reference to the context to make sure it is not garbage
+    # collected until the socket it done with it.
+    cdef public Context context # The zmq Context object that owns this.
+    cdef public object closed   # bool property for a closed socket.
 

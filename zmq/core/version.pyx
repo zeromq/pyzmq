@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""PyZMQ and 0MQ version functions."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -22,19 +22,23 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from czmq cimport _zmq_version
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
+#-----------------------------------------------------------------------------
+# Code
+#-----------------------------------------------------------------------------
 
-from zmq import core, devices
-from zmq.core import *
+__version__ = '2.0.9dev'
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
+def zmq_version():
+    """Return the version of ZeroMQ itself."""
+    cdef int major, minor, patch
+    _zmq_version(&major, &minor, &patch)
+    return '%i.%i.%i' % (major, minor, patch)
 
+def pyzmq_version():
+    """Return the version of pyzmq."""
+    return __version__
 
-__all__ = ['get_includes'] + core.__all__
+__all__ = ['zmq_version', 'pyzmq_version', '__version__']
 

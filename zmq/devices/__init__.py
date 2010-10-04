@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""0MQ Device classes for running in background threads or processes."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,12 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
+from zmq.core.device import device
+from zmq.devices import basedevice, monitoredqueue
 
-from zmq import core, devices
-from zmq.core import *
+from zmq.devices.basedevice import *
+from zmq.devices.monitoredqueue import *
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
+__all__ = ['device']+basedevice.__all__+monitoredqueue.__all__
 
-
-__all__ = ['get_includes'] + core.__all__
 

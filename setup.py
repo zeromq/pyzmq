@@ -25,7 +25,9 @@
 
 import os, sys
 
-from distutils.core import setup, Command, Extension
+from distutils.core import setup, Command
+from distutils.extension import Extension
+from distutils.command.sdist import sdist
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -35,6 +37,8 @@ from os.path import splitext, basename, join as pjoin, walk
 #-----------------------------------------------------------------------------
 # Extra commands
 #-----------------------------------------------------------------------------
+
+release = False # flag for whether to include *.c in package_data
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
@@ -66,10 +70,10 @@ class CleanCommand(Command):
     user_options = [ ]
 
     def initialize_options(self):
-        self._clean_me = [pjoin('zmq', '_zmq.so'), pjoin('zmq', 'devices.so')]
+        self._clean_me = []
         for root, dirs, files in os.walk('.'):
             for f in files:
-                if f.endswith('.pyc'):
+                if f.endswith('.pyc') or f.endswith('.so'):
                     self._clean_me.append(pjoin(root, f))
 
     def finalize_options(self):
@@ -82,38 +86,113 @@ class CleanCommand(Command):
             except:
                 pass
 
+
+class CheckSDist(sdist):
+    """Custom sdist Command that ensures Cython has compiled all pyx files to c."""
+    def initialize_options(self):
+        sdist.initialize_options(self)
+        self._pyxfiles = []
+        for root, dirs, files in os.walk('.'):
+            for f in files:
+                if f.endswith('.pyx'):
+                    self._pyxfiles.append(pjoin(root, f))
+    def run(self):
+        for pyxfile in self._pyxfiles:
+            cfile = pyxfile[:-3]+'c'
+            msg = "C-source file '%s' not found."%(cfile)+\
+            " Run 'setup.py cython' before sdist."
+            assert os.path.isfile(cfile), msg
+        sdist.run(self)
+
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand }
 
+includes = [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+
+def pxd(subdir, name):
+    return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
+
+def pyx(subdir, name):
+    return os.path.abspath(pjoin('zmq', subdir, name+'.pyx'))
+
+def dotc(subdir, name):
+    return os.path.abspath(pjoin('zmq', subdir, name+'.c'))
+
+czmq = pxd('core', 'czmq')
+
+submodules = dict(
+    core = {'constants': [czmq],
+            'error':[czmq],
+            'poll':[czmq], 
+            'stopwatch':[czmq],
+            'context':[pxd('core', 'socket'), czmq],
+            'message':[czmq],
+            'socket':[pxd('core', 'context'), pxd('core', 'message'), czmq],
+            'device':[czmq],
+            'version':[czmq],
+    },
+    devices = {
+            'basedevice':[pxd('core', 'socket'), pxd('core', 'context'), czmq],
+            'monitoredqueue':[pxd('devices', 'basedevice'), czmq],
+    },
+    utils = {
+            'initthreads':[czmq]
+    }
+)
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    zmq_source = os.path.join('zmq','_zmq.c')
-    device_source = os.path.join('zmq','devices.c')
+    suffix = '.c'
 else:
-    zmq_source = os.path.join('zmq','_zmq.pyx')
-    device_source = os.path.join('zmq','devices.pyx')
+    
+    suffix = '.pyx'
+    
+    class CythonCommand(build_ext):
+        """Custom distutils command subclassed from Cython.Distutils.build_ext
+        to compile pyx->c, and stop there. All this does is override the 
+        C-compile method build_extension() with a no-op."""
+        def build_extension(self, ext):
+            pass
+    
+    cmdclass['cython'] = CythonCommand
     cmdclass['build_ext'] =  build_ext
+    cmdclass['sdist'] =  CheckSDist
 
 if sys.platform == 'win32':
     libzmq = 'libzmq'
 else:
     libzmq = 'zmq'
 
-zmq = Extension(
-    'zmq._zmq',
-    sources = [zmq_source],
-    libraries = [libzmq]
-)
-devices = Extension(
-    'zmq.devices',
-    sources = [device_source],
-    libraries = [libzmq]
-)
+extensions = []
+for submod, packages in submodules.iteritems():
+    for pkg in sorted(packages):
+        sources = [pjoin('zmq', submod, pkg+suffix)]
+        if suffix == '.pyx':
+            sources.extend(packages[pkg])
+        ext = Extension(
+            'zmq.%s.%s'%(submod, pkg),
+            sources = sources,
+            libraries = [libzmq],
+            include_dirs = includes
+        )
+        extensions.append(ext)
 
+#
+package_data = {'zmq':['*.pxd'],
+                'zmq.core':['*.pxd'],
+                'zmq.devices':['*.pxd'],
+                'zmq.utils':['*.pxd', '*.h'],
+}
+
+if release:
+    for pkg,data in pkgdata.iteritems():
+        data.append('*.c')
+        
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
@@ -127,9 +206,10 @@ the ZeroMQ library (http://www.zeromq.org).
 setup(
     name = "pyzmq",
     version = "2.0.9dev",
-    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log'],
-    ext_modules = [zmq, devices],
-    package_data = dict(zmq=['*.pxd']),
+    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
+                'zmq.devices', 'zmq.utils'],
+    ext_modules = extensions,
+    package_data = package_data,
     author = "Brian E. Granger",
     author_email = "ellisonbg@gmail.com",
     url = 'http://github.com/zeromq/pyzmq',

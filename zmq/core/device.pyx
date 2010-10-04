@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""Python binding for 0MQ device function."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,29 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
+from czmq cimport zmq_device
+from zmq.core.socket cimport Socket as cSocket
 
-from zmq import core, devices
-from zmq.core import *
+#-----------------------------------------------------------------------------
+# Basic device API
+#-----------------------------------------------------------------------------
+# 
+def device(int device_type, cSocket isocket, cSocket osocket):
+    """Start a zeromq device.
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
+    Parameters
+    ----------
+    device_type : (QUEUE, FORWARDER, STREAMER)
+        The type of device to start.
+    isocket : Socket
+        The Socket instance for the incoming traffic.
+    osocket : Socket
+        The Socket instance for the outbound traffic.
+    """
+    cdef int result = 0
+    with nogil:
+        result = zmq_device(device_type, isocket.handle, osocket.handle)
+    return result
 
-
-__all__ = ['get_includes'] + core.__all__
+__all__ = ['device']
 

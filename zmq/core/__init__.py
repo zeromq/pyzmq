@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""Python bindings for core 0MQ objects."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -23,18 +23,19 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
+from zmq.core import constants, error, message, context, socket, poll, stopwatch, version, device
 
-from zmq import core, devices
-from zmq.core import *
+__all__ = []
+for submod in (constants, error, message, context, socket, poll, stopwatch, version, device):
+    __all__.extend(submod.__all__)
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
-
-
-__all__ = ['get_includes'] + core.__all__
+from zmq.core.constants import *
+from zmq.core.error import *
+from zmq.core.message import *
+from zmq.core.context import *
+from zmq.core.socket import *
+from zmq.core.poll import *
+from zmq.core.stopwatch import *
+from zmq.core.device import *
+from zmq.core.version import *
 

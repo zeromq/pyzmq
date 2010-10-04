@@ -1,4 +1,4 @@
-"""Python bindings for 0MQ."""
+"""0MQ Stopwatch class declaration."""
 
 #
 #    Copyright (c) 2010 Brian E. Granger
@@ -20,21 +20,12 @@
 #
 
 #-----------------------------------------------------------------------------
-# Imports
+# Code
 #-----------------------------------------------------------------------------
 
-from zmq.utils import initthreads # initialize threads
-initthreads.init_threads()
 
-from zmq import core, devices
-from zmq.core import *
+cdef class Stopwatch:
+    """A simple stopwatch based on zmq_stopwatch_start/stop."""
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
-    base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
-
-
-__all__ = ['get_includes'] + core.__all__
+    cdef void *watch # The C handle for the underlying zmq object
 
