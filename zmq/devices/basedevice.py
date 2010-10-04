@@ -36,13 +36,13 @@ try:
 except ImportError:
     Process = None
 
-from zmq.core import device, ZMQError
+from zmq.core import device, Context
 
 #-----------------------------------------------------------------------------
 # Classes
 #-----------------------------------------------------------------------------
 
-cdef class Device:
+class Device:
     """A Threadsafe 0MQ Device.
     
     For thread safety, you do not pass Sockets to this, but rather Socket
@@ -88,16 +88,16 @@ cdef class Device:
         exit unless it is killed
     """
 
-    def __init__(self, int device_type, int in_type, int out_type):
+    def __init__(self, device_type, in_type, out_type):
         self.device_type = device_type
         self.in_type = in_type
         self.out_type = out_type
-        self.in_binds = list()
-        self.in_connects = list()
-        self.in_sockopts = list()
-        self.out_binds = list()
-        self.out_connects = list()
-        self.out_sockopts = list()
+        self._in_binds = list()
+        self._in_connects = list()
+        self._in_sockopts = list()
+        self._out_binds = list()
+        self._out_connects = list()
+        self._out_sockopts = list()
         self.daemon = True
         self.done = False
     
@@ -106,69 +106,70 @@ cdef class Device:
 
         See ``zmq.Socket.bind`` for details.
         """
-        self.in_binds.append(addr)
+        self._in_binds.append(addr)
     
     def connect_in(self, addr):
         """Enqueue ZMQ address for connecting on in_socket.
 
         See ``zmq.Socket.connect`` for details.
         """
-        self.in_connects.append(addr)
+        self._in_connects.append(addr)
     
     def setsockopt_in(self, opt, value):
         """Enqueue setsockopt(opt, value) for in_socket
 
         See ``zmq.Socket.setsockopt`` for details.
         """
-        self.in_sockopts.append((opt, value))
+        self._in_sockopts.append((opt, value))
     
     def bind_out(self, iface):
         """Enqueue ZMQ address for binding on out_socket.
 
         See ``zmq.Socket.bind`` for details.
         """
-        self.out_binds.append(iface)
+        self._out_binds.append(iface)
     
     def connect_out(self, iface):
         """Enqueue ZMQ address for connecting on out_socket.
 
         See ``zmq.Socket.connect`` for details.
         """
-        self.out_connects.append(iface)
+        self._out_connects.append(iface)
     
     def setsockopt_out(self, opt, value):
         """Enqueue setsockopt(opt, value) for out_socket
 
         See ``zmq.Socket.setsockopt`` for details.
         """
-        self.out_sockopts.append((opt, value))
+        self._out_sockopts.append((opt, value))
     
     def _setup_sockets(self):
         ctx = Context()
-        self.context = ctx
         
         # create the sockets
-        self.in_socket = ctx.socket(self.in_type)
+        ins = ctx.socket(self.in_type)
         if self.out_type < 0:
-            self.out_socket = self.in_socket
+            ins = ins
         else:
-            self.out_socket = ctx.socket(self.out_type)
+            ins = ctx.socket(self.out_type)
         
         # set sockopts (must be done first, in case of zmq.IDENTITY)
-        for opt,value in self.in_sockopts:
-            self.in_socket.setsockopt(opt, value)
-        for opt,value in self.out_sockopts:
-            self.out_socket.setsockopt(opt, value)
+        for opt,value in self._in_sockopts:
+            ins.setsockopt(opt, value)
+        for opt,value in self._out_sockopts:
+            ins.setsockopt(opt, value)
         
-        for iface in self.in_binds:
-            self.in_socket.bind(iface)
-        for iface in self.out_binds:
-            self.out_socket.bind(iface)
+        for iface in self._in_binds:
+            ins.bind(iface)
+        for iface in self._out_binds:
+            ins.bind(iface)
         
-        for iface in self.in_connects:
-            self.in_socket.connect(iface)
-        for iface in self.out_connects:
-            self.out_socket.connect(iface)
+        for iface in self._in_connects:
+            ins.connect(iface)
+        for iface in self._out_connects:
+            ins.connect(iface)
+        
+        return 
     
     def run(self):
         """The runner method.
@@ -176,15 +177,8 @@ cdef class Device:
         Do not call me directly, instead call ``self.start()``, just like a
         Thread.
         """
-        self._setup_sockets()
-        return self._run()
-    
-    cdef int _run(self):
-        cdef int rc = 0
-        cdef int device_type = self.device_type
-        cdef Socket ins = self.in_socket
-        cdef Socket outs = self.out_socket
-        rc = device(device_type, ins, outs)
+        ins,outs = self._setup_sockets()
+        rc = device(self.device_type, ins, outs)
         self.done = True
         return rc
     
