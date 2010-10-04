@@ -22,6 +22,7 @@ Authors
 # Python 3 buffer interface (PEP 3118)
 cdef extern from "Python.h":
     int PY_MAJOR_VERSION
+    int PY_MINOR_VERSION
     ctypedef int Py_ssize_t
     ctypedef struct PyMemoryViewObject:
         pass
@@ -64,6 +65,12 @@ cdef extern from "Python.h":
 # asbuffer: C buffer from python object
 #-----------------------------------------------------------------------------
 
+cdef inline int newstyle_available():
+    return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 6)
+
+cdef inline int oldstyle_available():
+    return PY_MAJOR_VERSION < 3
+
 cdef inline int is_buffer(object ob):
     """Version independent check for whether an object is a buffer.
     
@@ -76,9 +83,10 @@ cdef inline int is_buffer(object ob):
     -------
     bool : whether object is a buffer or not.
     """
-    
-    return (PyObject_CheckBuffer(ob) or
-            PyObject_CheckReadBuffer(ob))
+    if newstyle_available():
+        return PyObject_CheckBuffer(ob)
+    else:
+        return PyObject_CheckReadBuffer(ob)
 
 
 cdef inline object asbuffer(object ob, int writable, int format,
@@ -113,9 +121,8 @@ cdef inline object asbuffer(object ob, int writable, int format,
     cdef str bfmt = None
     cdef Py_buffer view
     cdef int flags = PyBUF_SIMPLE
-    # if not is_buffer(ob):
-    #     raise TypeError("%s not a buffer"%(type(ob)))
-    if PyObject_CheckBuffer(ob):
+    
+    if newstyle_available() and PyObject_CheckBuffer(ob):
         flags = PyBUF_ANY_CONTIGUOUS
         if writable:
             flags |= PyBUF_WRITABLE
@@ -178,13 +185,14 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     This is the Python 3 model, but will work on Python >= 2.6. Currently,
     we use it only on >= 3.0.
     """
-    cdef Py_buffer pybuf
-    cdef Py_ssize_t *shape = [s]
-    cdef str astr=""
-    PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
-    pybuf.format = "B"
-    pybuf.shape = shape
-    return PyMemoryView_FromBuffer(&pybuf)
+    if newstyle_available():
+        cdef Py_buffer pybuf
+        cdef Py_ssize_t *shape = [s]
+        cdef str astr=""
+        PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
+        pybuf.format = "B"
+        pybuf.shape = shape
+        return PyMemoryView_FromBuffer(&pybuf)
 
 
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
@@ -192,10 +200,12 @@ cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
 
     This must be used for Python <= 2.6, but we use it for all Python < 3.
     """
-    if readonly:
-        return PyBuffer_FromMemory(ptr, s)
-    else:
-        return PyBuffer_FromReadWriteMemory(ptr, s)
+    
+    if oldstyle_available():
+        if readonly:
+            return PyBuffer_FromMemory(ptr, s)
+        else:
+            return PyBuffer_FromReadWriteMemory(ptr, s)
 
 
 cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
@@ -214,7 +224,8 @@ cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
     -------
     Python Buffer/View of the C buffer.
     """
-    if PY_MAJOR_VERSION < 3:
+    # oldstyle first priority for now
+    if oldstyle_available():
         return frombuffer_2(ptr, s, readonly)
     else:
         return frombuffer_3(ptr, s, readonly)
@@ -267,4 +278,3 @@ cdef inline object viewfromobject_r(object obj):
 cdef inline object viewfromobject_w(object obj):
     """Wrapper for writable viewfromobject."""
     return viewfromobject(obj, 0)
-
