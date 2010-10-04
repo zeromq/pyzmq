@@ -40,7 +40,7 @@ class ZMQStream(object):
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
         
-        There is also send_multipart()
+        There is also send_multipart(), send_json, send_
     
     Two other methods for deactivating the callbacks:
     stop_on_recv():
@@ -214,11 +214,18 @@ class ZMQStream(object):
         try:
             callback(*args, **kwargs)
         except:
+            # unregister the callback
+            if self._send_callback is callback:
+                self._send_callback = None
+            if self._recv_callback is callback:
+                self._recv_callback = None
+            if self._errback is callback:
+                self._errback = None
             # Close the socket on an uncaught exception from a user callback
             # (It would eventually get closed when the socket object is
             # gc'd, but we don't want to rely on gc happening before we
             # run out of file descriptors)
-            self.close()
+            # self.close()
             # Re-raise the exception so that IOLoop.handle_callback_exception
             # can see it and log the error
             raise
@@ -271,10 +278,13 @@ class ZMQStream(object):
             return
         
         msg = self._send_queue.get()
-        queue = self.socket.send_multipart(*msg)
+        try:
+            status = self.socket.send_multipart(*msg)
+        except zmq.ZMQError, e:
+            status = e
         if self._send_callback:
             callback = self._send_callback
-            self._run_callback(callback, msg, queue)
+            self._run_callback(callback, msg, status)
         
         # unregister from event loop:
         if not self.sending():
