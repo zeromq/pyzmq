@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+
 from czmq cimport _zmq_version
 
 #-----------------------------------------------------------------------------
@@ -30,15 +31,18 @@ from czmq cimport _zmq_version
 
 __version__ = '2.0.9dev'
 
+
+def pyzmq_version():
+    """Return the version of pyzmq."""
+    return __version__
+
+
 def zmq_version():
     """Return the version of ZeroMQ itself."""
     cdef int major, minor, patch
     _zmq_version(&major, &minor, &patch)
     return '%i.%i.%i' % (major, minor, patch)
 
-def pyzmq_version():
-    """Return the version of pyzmq."""
-    return __version__
 
 __all__ = ['zmq_version', 'pyzmq_version', '__version__']
 

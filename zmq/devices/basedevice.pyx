@@ -29,10 +29,6 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
-# from cpython cimport bool
-
-# from buffers cimport asbuffer_r
-
 import time
 from threading import Thread
 from multiprocessing import Process
@@ -215,12 +211,14 @@ class BackgroundDevice(Device):
     def join(self, timeout=None):
         return self.launcher.join(timeout=timeout)
 
+
 class ThreadDevice(BackgroundDevice):
     """A Device that will be run in a background Thread.
 
     See `Device` for details.
     """
     launch_class=Thread
+
 
 class ProcessDevice(BackgroundDevice):
     """A Device that will be run in a background Process.

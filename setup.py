@@ -88,7 +88,8 @@ class CleanCommand(Command):
 
 
 class CheckSDist(sdist):
-    """Custom sdist Command that ensures Cython has compiled all pyx files to c."""
+    """Custom sdist that ensures Cython has compiled all pyx files to c."""
+
     def initialize_options(self):
         sdist.initialize_options(self)
         self._pyxfiles = []

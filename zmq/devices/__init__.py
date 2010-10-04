@@ -29,6 +29,5 @@ from zmq.devices import basedevice, monitoredqueue
 from zmq.devices.basedevice import *
 from zmq.devices.monitoredqueue import *
 
-__all__ = ['device']+basedevice.__all__+monitoredqueue.__all__
-
+__all__ = ['device'] + basedevice.__all__ + monitoredqueue.__all__
 

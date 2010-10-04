@@ -314,6 +314,7 @@ cdef class MonitoredQueue(Device):
         rc = monitored_queue(ins, outs, mons, self.in_prefix, self.out_prefix)
         return rc
 
+
 class ThreadMonitoredQueue(ThreadDevice, MonitoredQueue):
     """MonitoredQueue in a Thread. See MonitoredQueue for more."""
     pass

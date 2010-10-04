@@ -41,7 +41,6 @@ except: # 2.x
     from Queue import Queue, Empty
 
 from zmq.core.error import ZMQError, NotDone
-# from zmq.core.con
 
 #-----------------------------------------------------------------------------
 # Code

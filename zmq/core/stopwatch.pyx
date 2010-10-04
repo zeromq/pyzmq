@@ -66,4 +66,5 @@ cdef class Stopwatch:
         """Sleep for a number of seconds."""
         zmq_sleep(seconds)
 
+
 __all__ = ['Stopwatch']
