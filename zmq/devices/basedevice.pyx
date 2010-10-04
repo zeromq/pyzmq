@@ -31,7 +31,10 @@ Authors
 
 import time
 from threading import Thread
-from multiprocessing import Process
+try:
+    from multiprocessing import Process
+except ImportError:
+    Process = None
 
 from zmq.core import device, ZMQError
 
@@ -219,7 +222,6 @@ class ThreadDevice(BackgroundDevice):
     """
     launch_class=Thread
 
-
 class ProcessDevice(BackgroundDevice):
     """A Device that will be run in a background Process.
 
@@ -228,4 +230,6 @@ class ProcessDevice(BackgroundDevice):
     launch_class=Process
 
 
-__all__ = [ 'Device', 'ThreadDevice', 'ProcessDevice' ]
+__all__ = [ 'Device', 'ThreadDevice']
+if Process is not None:
+    __all__.append('ProcessDevice')

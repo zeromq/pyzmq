@@ -88,7 +88,7 @@ class TestDevice(BaseZMQTestCase):
         del req
         
     def test_single_socket_forwarder_bind(self):
-        dev = devices.ProcessDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.ThreadDevice(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = 12345
         req.connect('tcp://127.0.0.1:%i'%port)
@@ -100,7 +100,7 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(msg, req.recv())
         del dev
         del req
-        dev = devices.ProcessDevice(zmq.FORWARDER, zmq.REP, -1)
+        dev = devices.ThreadDevice(zmq.FORWARDER, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = 12346
         req.connect('tcp://127.0.0.1:%i'%port)

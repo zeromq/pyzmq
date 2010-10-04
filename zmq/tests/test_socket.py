@@ -63,9 +63,9 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
         time.sleep(0.1) # wait for connection/subscription
         p.send_unicode(topic,zmq.SNDMORE)
-        p.send_unicode(topic*2, encoding='utf32')
+        p.send_unicode(topic*2, encoding='latin-1')
         self.assertEquals(topic, s.recv_unicode())
-        self.assertEquals(topic*2, s.recv_unicode(encoding='utf32'))
+        self.assertEquals(topic*2, s.recv_unicode(encoding='latin-1'))
     
     def test_send_unicode(self):
         "test sending unicode objects"
@@ -80,8 +80,8 @@ class TestSocket(BaseZMQTestCase):
         s = b.recv()
         self.assertEquals(s,u.encode('utf8'))
         self.assertEquals(s.decode('utf8'),u)
-        a.send_unicode(u,encoding='utf32')
-        s = b.recv_unicode(encoding='utf32')
+        a.send_unicode(u,encoding='utf16')
+        s = b.recv_unicode(encoding='utf16')
         self.assertEquals(s,u)
         
     def test_tracker(self):

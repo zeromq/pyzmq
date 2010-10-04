@@ -40,11 +40,9 @@ from czmq cimport *
 from zmq.devices.basedevice cimport Device
 
 import time
-from threading import Thread
-from multiprocessing import Process
 
 from zmq.core import XREP, QUEUE, FORWARDER, ZMQError
-from zmq.devices.basedevice import ThreadDevice, ProcessDevice
+from zmq.devices.basedevice import ThreadDevice,ProcessDevice
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue functions
@@ -319,7 +317,6 @@ class ThreadMonitoredQueue(ThreadDevice, MonitoredQueue):
     """MonitoredQueue in a Thread. See MonitoredQueue for more."""
     pass
 
-
 class ProcessMonitoredQueue(ProcessDevice, MonitoredQueue):
     """MonitoredQueue in a Process. See MonitoredQueue for more."""
     pass
@@ -328,7 +325,8 @@ class ProcessMonitoredQueue(ProcessDevice, MonitoredQueue):
 __all__ = [
     'MonitoredQueue',
     'ThreadMonitoredQueue',
-    'ProcessMonitoredQueue',
     'monitored_queue'
 ]
+if ProcessDevice is not None:
+    __all__.append('ProcessMonitoredQueue')
 
