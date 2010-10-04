@@ -45,6 +45,10 @@ from zmq.core import device, Context
 class Device:
     """A Threadsafe 0MQ Device.
     
+    *Warning* as with most 'threadsafe' Python objects, this is only
+    threadsafe as long as you do not use private methods or attributes.
+    Private names are prefixed with '_', such as 'self._setup_socket()'.
+    
     For thread safety, you do not pass Sockets to this, but rather Socket
     types::
 
@@ -145,31 +149,32 @@ class Device:
     
     def _setup_sockets(self):
         ctx = Context()
+        self._context = ctx
         
         # create the sockets
         ins = ctx.socket(self.in_type)
         if self.out_type < 0:
-            ins = ins
+            outs = ins
         else:
-            ins = ctx.socket(self.out_type)
+            outs = ctx.socket(self.out_type)
         
         # set sockopts (must be done first, in case of zmq.IDENTITY)
         for opt,value in self._in_sockopts:
             ins.setsockopt(opt, value)
         for opt,value in self._out_sockopts:
-            ins.setsockopt(opt, value)
+            outs.setsockopt(opt, value)
         
         for iface in self._in_binds:
             ins.bind(iface)
         for iface in self._out_binds:
-            ins.bind(iface)
+            outs.bind(iface)
         
         for iface in self._in_connects:
             ins.connect(iface)
         for iface in self._out_connects:
-            ins.connect(iface)
+            outs.connect(iface)
         
-        return 
+        return ins,outs
     
     def run(self):
         """The runner method.

@@ -28,6 +28,8 @@ from zmq.devices import basedevice, monitoredqueue
 
 from zmq.devices.basedevice import *
 from zmq.devices.monitoredqueue import *
+from zmq.devices.monitoredqueuedevice import *
 
-__all__ = ['device'] + basedevice.__all__ + monitoredqueue.__all__
-
+__all__ = ['device']
+for submod in (basedevice, monitoredqueue, monitoredqueuedevice):
+    __all__.extend(submod.__all__)
