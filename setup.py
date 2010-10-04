@@ -129,21 +129,24 @@ def dotc(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.c'))
 
 czmq = pxd('core', 'czmq')
+allocate = pxd('utils', 'allocate')
+buffers = pxd('utils', 'buffers')
 
 submodules = dict(
     core = {'constants': [czmq],
             'error':[czmq],
-            'poll':[czmq], 
+            'poll':[czmq, allocate], 
             'stopwatch':[czmq],
             'context':[pxd('core', 'socket'), czmq],
-            'message':[czmq],
-            'socket':[pxd('core', 'context'), pxd('core', 'message'), czmq],
+            'message':[czmq, buffers],
+            'socket':[pxd('core', 'context'), pxd('core', 'message'), 
+                      czmq, allocate, buffes],
             'device':[czmq],
             'version':[czmq],
     },
     devices = {
             'basedevice':[pxd('core', 'socket'), pxd('core', 'context'), czmq],
-            'monitoredqueue':[pxd('devices', 'basedevice'), czmq],
+            'monitoredqueue':[pxd('devices', 'basedevice'), czmq, buffers],
     },
     utils = {
             'initthreads':[czmq]
@@ -175,7 +178,7 @@ else:
     libzmq = 'zmq'
 
 extensions = []
-for submod, packages in submodules.iteritems():
+for submod, packages in submodules.items():
     for pkg in sorted(packages):
         sources = [pjoin('zmq', submod, pkg+suffix)]
         if suffix == '.pyx':
