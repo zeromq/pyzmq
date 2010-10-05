@@ -184,7 +184,7 @@ cdef class Message:
     def __cinit__(self, object data=None):
         cdef int rc
         cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
+        cdef Py_ssize_t data_len_c=0
         cdef object hint
 
         # Save the data object in case the user wants the the data as a str.
