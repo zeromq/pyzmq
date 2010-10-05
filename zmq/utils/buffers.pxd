@@ -41,7 +41,7 @@ cdef extern from "Python.h":
         PyBUF_WRITABLE
         PyBUF_FORMAT
         PyBUF_ANY_CONTIGUOUS
-    int  PyObject_CheckBuffer(object) except 0
+    int  PyObject_CheckBuffer(object)
     int  PyObject_GetBuffer(object, Py_buffer *, int) except -1
     void PyBuffer_Release(Py_buffer *)
     
@@ -55,7 +55,7 @@ cdef extern from "Python.h":
 cdef extern from "Python.h":
     ctypedef void const_void "const void"
     Py_ssize_t Py_END_OF_BUFFER
-    int PyObject_CheckReadBuffer(object) except 0
+    int PyObject_CheckReadBuffer(object)
     int PyObject_AsReadBuffer (object, const_void **, Py_ssize_t *) except -1
     int PyObject_AsWriteBuffer(object, void **, Py_ssize_t *) except -1
     
@@ -70,8 +70,12 @@ cdef extern from "Python.h":
 # asbuffer: C buffer from python object
 #-----------------------------------------------------------------------------
 
+
 cdef inline int newstyle_available():
     return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 6)
+
+cdef inline int memoryview_available():
+    return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 7)
 
 cdef inline int oldstyle_available():
     return PY_MAJOR_VERSION < 3
@@ -89,9 +93,11 @@ cdef inline int is_buffer(object ob):
     bool : whether object is a buffer or not.
     """
     if newstyle_available():
-        return PyObject_CheckBuffer(ob)
-    else:
+        if PyObject_CheckBuffer(ob):
+            return True
+    if oldstyle_available():
         return PyObject_CheckReadBuffer(ob)
+    return False
 
 
 cdef inline object asbuffer(object ob, int writable, int format,
@@ -126,8 +132,16 @@ cdef inline object asbuffer(object ob, int writable, int format,
     cdef str bfmt = None
     cdef Py_buffer view
     cdef int flags = PyBUF_SIMPLE
+    cdef int newstyle =  newstyle_available()
     
-    if newstyle_available() and PyObject_CheckBuffer(ob):
+    # if not is_buffer(ob):
+    #     raise TypeError("%r does not provide a buffer interface."%ob)
+    #
+    if newstyle and oldstyle_available():
+        if isinstance(ob, buffer):
+            newstyle = False
+    #
+    if newstyle:
         flags = PyBUF_ANY_CONTIGUOUS
         if writable:
             flags |= PyBUF_WRITABLE
@@ -141,7 +155,7 @@ cdef inline object asbuffer(object ob, int writable, int format,
                 bfmt = view.format
                 bitemlen = view.itemsize
         PyBuffer_Release(&view)
-    else:
+    else: # oldstyle
         if writable:
             PyObject_AsWriteBuffer(ob, &bptr, &blen)
         else:
@@ -198,6 +212,8 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
         pybuf.format = "B"
         pybuf.shape = shape
         return PyMemoryView_FromBuffer(&pybuf)
+    else:
+        raise NotImplementedError("New style buffers not available.")
 
 
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
@@ -211,6 +227,8 @@ cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
             return PyBuffer_FromMemory(ptr, s)
         else:
             return PyBuffer_FromReadWriteMemory(ptr, s)
+    else:
+        raise NotImplementedError("Old style buffers not available.")
 
 
 cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
@@ -266,7 +284,7 @@ cdef inline object viewfromobject(object obj, int readonly):
     -------
     Buffer/View of the original object.
     """
-    if PY_MAJOR_VERSION < 3:
+    if oldstyle_available():
         if readonly:
             return PyBuffer_FromObject(obj, 0, Py_END_OF_BUFFER)
         else:
