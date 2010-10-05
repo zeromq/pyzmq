@@ -24,6 +24,7 @@
 #-----------------------------------------------------------------------------
 
 import copy
+import sys
 from sys import getrefcount as grc
 import time
 from unittest import TestCase
@@ -34,6 +35,11 @@ from zmq.tests import BaseZMQTestCase
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
+
+def skip():
+    print 'skip ',
+    sys.stdout.flush()
+
 
 class TestMessage(BaseZMQTestCase):
 
@@ -76,7 +82,6 @@ class TestMessage(BaseZMQTestCase):
             s = (2**i)*u'§'
             m = zmq.Message(s.encode('utf8'))
             self.assertEquals(s, unicode(str(m),'utf8'))
-    
 
     def test_len(self):
         """Test the len of the Messages."""
@@ -160,8 +165,12 @@ class TestMessage(BaseZMQTestCase):
     
     def test_buffer_in(self):
         """test using a buffer as input"""
-        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf16')
-        m = zmq.Message(buffer(ins))
+        try:
+            view = memoryview
+        except NameError:
+            view = buffer
+        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf16').encode('utf8')
+        m = zmq.Message(view(ins))
     
     def test_bad_buffer_in(self):
         """test using a bad object"""
@@ -206,6 +215,7 @@ class TestMessage(BaseZMQTestCase):
         try:
             import numpy
         except ImportError:
+            skip()
             return
         shapes = map(numpy.random.randint, [2]*5,[16]*5)
         for i in range(1,len(shapes)+1):
@@ -215,5 +225,20 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals(A.data, m.buffer)
             B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEquals((A==B).all(), True)
+
+    def test_memoryview(self):
+        """test messages from memoryview (only valid for python >= 2.7)"""
+        major,minor = sys.version_info[:2]
+        if not (major >= 3 or (major == 2 and minor >= 7)):
+            skip()
+            return
+
+        s = 'carrotjuice'.encode()
+        v = memoryview(s)
+        m = zmq.Message(s)
+        buf = m.buffer
+        s2 = bytes(buf)
+        self.assertEquals(s2,s)
+        self.assertEquals(m.bytes,s)
         
 
