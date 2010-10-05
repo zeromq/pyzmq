@@ -16,8 +16,12 @@
 """A utility class to send to and recv from a non-blocking socket."""
 
 import logging
-import time
+
 import zmq
+from zmq.core.socket import json, pickle
+if json is not None:
+    from zmq.core.socket import to_json
+
 import ioloop
 try:
     from queue import Queue
@@ -183,6 +187,24 @@ class ZMQStream(object):
         else:
             # noop callback
             self.on_send(lambda *args: None)
+    
+    def send_json(self, obj, flags=0, callback=None):
+        """Send json-serialized version of an object.
+        See zmq.socket.send_json for details.
+        """
+        if json is None:
+            raise ImportError('cjson, json or simplejson library is required.')
+        else:
+            msg = to_json(obj)
+            return self.send(msg, flags=flags, callback=callback)
+
+    def send_pyobj(self, obj, flags=0, protocol=-1, callback=None):
+        """Send a Python object as a message using pickle to serialize.
+
+        See zmq.socket.send_json for details.
+        """
+        msg = pickle.dumps(obj, protocol)
+        return self.send(msg, flags, callback=callback)
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
