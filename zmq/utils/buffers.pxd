@@ -19,6 +19,10 @@ Authors
 # Python includes.
 #-----------------------------------------------------------------------------
 
+
+cdef extern from "pyversion_compat.h":
+    pass
+
 # Python 3 buffer interface (PEP 3118)
 cdef extern from "Python.h":
     int PY_MAJOR_VERSION
@@ -37,11 +41,12 @@ cdef extern from "Python.h":
         PyBUF_WRITABLE
         PyBUF_FORMAT
         PyBUF_ANY_CONTIGUOUS
-    int  PyObject_CheckBuffer(object)
+    int  PyObject_CheckBuffer(object) except 0
     int  PyObject_GetBuffer(object, Py_buffer *, int) except -1
     void PyBuffer_Release(Py_buffer *)
     
-    int PyBuffer_FillInfo(Py_buffer *view, object obj, void *buf, Py_ssize_t len, int readonly, int infoflags) except -1
+    int PyBuffer_FillInfo(Py_buffer *view, object obj, void *buf,
+                Py_ssize_t len, int readonly, int infoflags) except -1
     object PyMemoryView_FromBuffer(Py_buffer *info)
     
     object PyMemoryView_FromObject(object)
@@ -50,7 +55,7 @@ cdef extern from "Python.h":
 cdef extern from "Python.h":
     ctypedef void const_void "const void"
     Py_ssize_t Py_END_OF_BUFFER
-    int PyObject_CheckReadBuffer(object)
+    int PyObject_CheckReadBuffer(object) except 0
     int PyObject_AsReadBuffer (object, const_void **, Py_ssize_t *) except -1
     int PyObject_AsWriteBuffer(object, void **, Py_ssize_t *) except -1
     

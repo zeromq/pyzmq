@@ -130,6 +130,12 @@ class CheckingBuildExt(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+#-----------------------------------------------------------------------------
+# Suppress undefined __get__/__set__ warnings
+#-----------------------------------------------------------------------------
+
+cflags = os.environ.get('CFLAGS', '')
+os.environ['CFLAGS'] = "-Wno-unused-function "+cflags
 
 #-----------------------------------------------------------------------------
 # Extensions

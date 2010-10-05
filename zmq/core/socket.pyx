@@ -402,7 +402,7 @@ cdef class Socket:
         cdef int rc, rc2
         cdef zmq_msg_t data
         cdef char *msg_c
-        cdef Py_ssize_t msg_c_len
+        cdef Py_ssize_t msg_c_len=0
         
         # copy to c array:
         asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
