@@ -18,9 +18,7 @@
 import logging
 
 import zmq
-from zmq.core.socket import json, pickle
-if json is not None:
-    from zmq.core.socket import to_json
+from zmq.core.socket import json, pickle, to_json
 
 import ioloop
 try:
