@@ -73,7 +73,7 @@ class ZMQStream(object):
         self._state = zmq.POLLERR
         self.io_loop.add_handler(self.socket, self._handle_events, self._state)
         
-        shortcircuit some socket methods
+        # shortcircuit some socket methods
         self.bind = self.socket.bind
         self.bind_to_random_port = self.socket.bind_to_random_port
         self.connect = self.socket.connect
@@ -219,22 +219,13 @@ class ZMQStream(object):
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
         self._close_callback = callback
-
-    def _cleanup_socket_links(self):
-        del self.bind
-        del self.bind_to_random_port
-        del self.connect
-        del self.setsockopt
-        del self.getsockopt
-        del self.setsockopt_unicode
-        del self.getsockopt_unicode
     
     def close(self):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            # self.socket.close()
-            self._cleanup_socket_links()
+            dc = ioloop.DelayedCallback(self.socket.close, 500, self.io_loop)
+            dc.start()
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
