@@ -72,9 +72,11 @@ except:
     cPickle = None
     import pickle
 
-if json is not None:
-    from_json = json.loads
-    to_json = json.dumps
+def to_json(obj):
+    return json.dumps(obj, separators=(',',':'))
+
+def from_json(obj):
+    return json.loads(obj)
 
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
