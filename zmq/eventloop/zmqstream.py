@@ -222,7 +222,7 @@ class ZMQStream(object):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            self.socket.close()
+            # self.socket.close()
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
@@ -245,17 +245,17 @@ class ZMQStream(object):
             callback(*args, **kwargs)
         except:
             # unregister the callback
-            if self._send_callback is callback:
-                self._send_callback = None
-            if self._recv_callback is callback:
-                self._recv_callback = None
-            if self._errback is callback:
-                self._errback = None
+            # if self._send_callback is callback:
+            #     self._send_callback = None
+            # if self._recv_callback is callback:
+            #     self._recv_callback = None
+            # if self._errback is callback:
+            #     self._errback = None
             # Close the socket on an uncaught exception from a user callback
             # (It would eventually get closed when the socket object is
             # gc'd, but we don't want to rely on gc happening before we
             # run out of file descriptors)
-            # self.close()
+            self.close()
             # Re-raise the exception so that IOLoop.handle_callback_exception
             # can see it and log the error
             raise
