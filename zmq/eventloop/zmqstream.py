@@ -78,6 +78,8 @@ class ZMQStream(object):
         self.connect = self.socket.connect
         self.setsockopt = self.socket.setsockopt
         self.getsockopt = self.socket.getsockopt
+        self.setsockopt_unicode = self.socket.setsockopt_unicode
+        self.getsockopt_unicode = self.socket.getsockopt_unicode
     
     def stop_on_recv(self):
         """Disable callback and automatic receiving."""
@@ -186,6 +188,14 @@ class ZMQStream(object):
             # noop callback
             self.on_send(lambda *args: None)
     
+    def send_unicode(self, u, flags=0, encoding='utf-8', callback=None):
+        """Send a unicode message with an encoding.
+        See zmq.socket.send_unicode for details.
+        """
+        if not isinstance(u, basestring):
+            raise TypeError("unicode/str objects only")
+        return self.send(u.encode(encoding), flags=flags, callback=callback)
+
     def send_json(self, obj, flags=0, callback=None):
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
