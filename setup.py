@@ -39,12 +39,17 @@ try:
 except:
     from os import walk
 
+#-----------------------------------------------------------------------------# Flags
+#-----------------------------------------------------------------------------
+# ignore unused-function and strict-aliasing warnings, of which there
+# will be many from the Cython generated code:
+ignore_common_warnings=True
+
+release = False # flag for whether to include *.c in package_data
 
 #-----------------------------------------------------------------------------
 # Extra commands
 #-----------------------------------------------------------------------------
-
-release = False # flag for whether to include *.c in package_data
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
@@ -131,11 +136,13 @@ class CheckingBuildExt(build_ext):
             self.build_extension(ext)
 
 #-----------------------------------------------------------------------------
-# Suppress undefined __get__/__set__ warnings
+# Suppress Common warnings
 #-----------------------------------------------------------------------------
 
-cflags = os.environ.get('CFLAGS', '')
-os.environ['CFLAGS'] = "-Wno-unused-function "+cflags
+extra_flags = []
+if ignore_common_warnings:
+    for warning in ('unused-function', 'strict-aliasing'):
+        extra_flags.append('-Wno-'+warning)
 
 #-----------------------------------------------------------------------------
 # Extensions
@@ -213,7 +220,8 @@ for submod, packages in submodules.items():
             'zmq.%s.%s'%(submod, pkg),
             sources = sources,
             libraries = [libzmq],
-            include_dirs = includes
+            include_dirs = includes,
+            extra_compile_args = extra_flags
         )
         extensions.append(ext)
 
