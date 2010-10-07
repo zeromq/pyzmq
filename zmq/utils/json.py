@@ -34,20 +34,16 @@ Authors
 jsonmod = None
 
 try:
-    import jsonlib2 as json
-    jsonmod = 'jsonlib2'
+    import jsonlib2 as jsonmod
 except ImportError:
     try:
-        import jsonlib as json
-        jsonmod = 'jsonlib'
+        import jsonlib as jsonmod
     except ImportError:
         try:
-            import simplejson as json
-            jsonmod = 'simplejson'
+            import simplejson as jsonmod
         except ImportError:
             try:
-                import json
-                jsonmod = 'json'
+                import json as jsonmod
             except ImportError:
                 pass
 
@@ -56,23 +52,23 @@ def jsonlib_dumps(o,**kwargs):
     See jsonlib.dumps for details on kwargs.
     """
     
-    return jsonlib.dumps(o,**kwargs)
+    return jsonmod.dumps(o,**kwargs)
 
 def dumps(o, **kwargs):
     """Serialize object to JSON str.
     See %s.dumps for details on kwargs.
     """%jsonmod
     
-    return json.dumps(o, separators=(',',':'),**kwargs)
+    return jsonmod.dumps(o, separators=(',',':'),**kwargs)
 
 def loads(s,**kwargs):
     """Load object from JSON str.
     See %s.loads for details on kwargs.
     """%jsonmod
     
-    return json.loads(s,**kwargs)
+    return jsonmod.loads(s,**kwargs)
 
-if jsonmod == 'jsonlib':
+if jsonmod is not None and jsonmod.__name__== 'jsonlib':
     dumps = jsonlib_dumps
 
 __all__ = ['jsonmod', 'dumps', 'dumps']
