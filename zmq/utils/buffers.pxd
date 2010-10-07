@@ -80,7 +80,7 @@ cdef inline int memoryview_available():
 cdef inline int oldstyle_available():
     return PY_MAJOR_VERSION < 3
 
-cdef inline int is_buffer(object ob):
+cdef inline int check_buffer(object ob):
     """Version independent check for whether an object is a buffer.
     
     Parameters
@@ -90,14 +90,14 @@ cdef inline int is_buffer(object ob):
 
     Returns
     -------
-    bool : whether object is a buffer or not.
+    int : 0 if no buffer interface, 3 if newstyle buffer interface, 2 if oldstyle.
     """
     if newstyle_available():
         if PyObject_CheckBuffer(ob):
-            return True
+            return 3
     if oldstyle_available():
-        return PyObject_CheckReadBuffer(ob)
-    return False
+        return PyObject_CheckReadBuffer(ob) and 2
+    return 0
 
 
 cdef inline object asbuffer(object ob, int writable, int format,
@@ -132,16 +132,13 @@ cdef inline object asbuffer(object ob, int writable, int format,
     cdef str bfmt = None
     cdef Py_buffer view
     cdef int flags = PyBUF_SIMPLE
-    cdef int newstyle =  newstyle_available()
-    
-    # if not is_buffer(ob):
-    #     raise TypeError("%r does not provide a buffer interface."%ob)
-    #
-    if newstyle and oldstyle_available():
-        if isinstance(ob, buffer):
-            newstyle = False
-    #
-    if newstyle:
+    cdef int mode = 0
+
+    mode = check_buffer(ob)
+    if mode == 0:
+        raise TypeError("%r does not provide a buffer interface."%ob)
+
+    if mode == 3:
         flags = PyBUF_ANY_CONTIGUOUS
         if writable:
             flags |= PyBUF_WRITABLE
