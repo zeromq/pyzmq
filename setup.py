@@ -39,7 +39,8 @@ try:
 except:
     from os import walk
 
-#-----------------------------------------------------------------------------# Flags
+#-----------------------------------------------------------------------------
+# Flags
 #-----------------------------------------------------------------------------
 # ignore unused-function and strict-aliasing warnings, of which there
 # will be many from the Cython generated code:
