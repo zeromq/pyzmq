@@ -65,7 +65,7 @@ class TestCommand(Command):
                     ['zmq.tests', splitext(basename(t))[0]])
                 )
         tests = TestLoader().loadTestsFromNames(testfiles)
-        t = TextTestRunner(verbosity = 1)
+        t = TextTestRunner(verbosity = 2)
         t.run(tests)
 
 
