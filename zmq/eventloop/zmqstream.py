@@ -31,18 +31,18 @@ class ZMQStream(object):
     
     For use with zmq.eventloop.ioloop
 
-    There are 3 main methods:
+    There are 4 main methods:
     on_recv(callback,copy=True):
         register a callback to be run every time the socket has something to receive
     on_send(callback):
         register a callback to be run every time you call send
     on_err(callback):
         register a callback to be run every time there is an error
-    send(msg, callback=None)
+    send(self, msg, flags=0, copy=False, callback=None):
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
         
-        There is also send_multipart(), send_json, send_
+        There are also send_multipart(), send_json, send_pyobj
     
     Two other methods for deactivating the callbacks:
     stop_on_recv():
@@ -53,6 +53,13 @@ class ZMQStream(object):
         turn off the error callback
     
     All of which simply call on_<evt>(None).
+    
+    The entire socket interface, excluding direct recv methods, is also
+    provided, primarily through direct-linking the methods.
+    e.g.
+    >>> stream.bind is stream.socket.bind
+    True
+    
 
     """
     
@@ -224,7 +231,7 @@ class ZMQStream(object):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            dc = ioloop.DelayedCallback(self.socket.close, 500, self.io_loop)
+            dc = ioloop.DelayedCallback(self.socket.close, 100, self.io_loop)
             dc.start()
             self.socket = None
             if self._close_callback:
@@ -247,13 +254,6 @@ class ZMQStream(object):
         try:
             callback(*args, **kwargs)
         except:
-            # unregister the callback
-            # if self._send_callback is callback:
-            #     self._send_callback = None
-            # if self._recv_callback is callback:
-            #     self._recv_callback = None
-            # if self._errback is callback:
-            #     self._errback = None
             # Close the socket on an uncaught exception from a user callback
             # (It would eventually get closed when the socket object is
             # gc'd, but we don't want to rely on gc happening before we
