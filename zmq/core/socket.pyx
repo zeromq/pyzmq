@@ -54,16 +54,7 @@ try:    # 3.x
 except: # 2.x
     from Queue import Queue, Empty
 
-try:
-    import jsonlib as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        try:
-            import json
-        except ImportError:
-            json = None
+from zmq.utils import json
 
 try:
     import cPickle
@@ -71,12 +62,6 @@ try:
 except:
     cPickle = None
     import pickle
-
-def to_json(obj):
-    return json.dumps(obj, separators=(',',':'))
-
-def from_json(obj):
-    return json.loads(obj)
 
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
@@ -583,10 +568,10 @@ cdef class Socket:
         flags : int
             Any valid send flag.
         """
-        if json is None:
-            raise ImportError('jsonlib, json or simplejson library is required.')
+        if json.jsonmod is None:
+            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
-            msg = to_json(obj)
+            msg = json.dumps(obj)
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
@@ -602,11 +587,11 @@ cdef class Socket:
         obj : Python object
             The Python object that arrives as a message.
         """
-        if json is None:
-            raise ImportError('jsonlib, json or simplejson library is required.')
+        if json.jsonmod is None:
+            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            return from_json(msg)
+            return json.loads(msg)
 
 
 __all__ = ['Socket']
