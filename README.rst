@@ -24,8 +24,8 @@ Second, run this command::
 
     $ python setup.py install
 
-Cython is not required to build pyzmq, but it is required if you want to
-develop pyzmq.
+Cython is not required to build pyzmq from a release package, but it is required
+if you want to develop pyzmq, or build directly from our repository on GitHub.
 
 Windows
 -------
