@@ -18,7 +18,7 @@
 import logging
 
 import zmq
-from zmq.core.socket import json, pickle, to_json
+from zmq.core.socket import json, pickle
 
 import ioloop
 try:
@@ -212,7 +212,7 @@ class ZMQStream(object):
         if json is None:
             raise ImportError('cjson, json or simplejson library is required.')
         else:
-            msg = to_json(obj)
+            msg = json.dumps(obj)
             return self.send(msg, flags=flags, callback=callback)
 
     def send_pyobj(self, obj, flags=0, protocol=-1, callback=None):
