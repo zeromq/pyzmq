@@ -54,7 +54,7 @@ try:    # 3.x
 except: # 2.x
     from Queue import Queue, Empty
 
-from zmq.utils import json
+from zmq.utils import jsonapi
 
 try:
     import cPickle
@@ -568,10 +568,10 @@ cdef class Socket:
         flags : int
             Any valid send flag.
         """
-        if json.jsonmod is None:
+        if jsonapi.jsonmod is None:
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
-            msg = json.dumps(obj)
+            msg = jsonapi.dumps(obj)
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
@@ -587,11 +587,11 @@ cdef class Socket:
         obj : Python object
             The Python object that arrives as a message.
         """
-        if json.jsonmod is None:
+        if jsonapi.jsonmod is None:
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            return json.loads(msg)
+            return jsonapi.loads(msg)
 
 
 __all__ = ['Socket']
