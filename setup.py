@@ -28,6 +28,7 @@ import os, sys
 from distutils.core import setup, Command
 from distutils.extension import Extension
 from distutils.command.sdist import sdist
+from distutils.command.build_ext import build_ext
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -110,6 +111,25 @@ class CheckSDist(sdist):
             assert os.path.isfile(cfile), msg
         sdist.run(self)
 
+class CheckingBuildExt(build_ext):
+    """Subclass build_ext to get clearer report if Cython is neccessary."""
+    
+    def check_cython_extensions(self, extensions):
+        for ext in extensions:
+          for src in ext.sources:
+            if not os.path.exists(src):
+                raise IOError('',
+                """Cython-generated file '%s' not found.
+                Cython is required to compile pyzmq from a development branch.
+                Please install Cython or download a release package of pyzmq.
+                """%src)
+    def build_extensions(self):
+        self.check_cython_extensions(self.extensions)
+        self.check_extensions_list(self.extensions)
+
+        for ext in self.extensions:
+            self.build_extension(ext)
+
 
 #-----------------------------------------------------------------------------
 # Extensions
@@ -156,6 +176,7 @@ try:
     from Cython.Distutils import build_ext
 except ImportError:
     suffix = '.c'
+    cmdclass['build_ext'] = CheckingBuildExt
 else:
     
     suffix = '.pyx'
