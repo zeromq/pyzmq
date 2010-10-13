@@ -293,9 +293,13 @@ class ZMQStream(object):
     def _handle_recv(self):
         """Handle a recv event."""
         try:
-            msg = self.socket.recv_multipart(copy=self._recv_copy)
-        except zmq.ZMQError:
-            logging.error("RECV Error")
+            msg = self.socket.recv_multipart(zmq.NOBLOCK, copy=self._recv_copy)
+        except zmq.ZMQError, e:
+            if e.errno == zmq.EAGAIN:
+                # state changed since poll event
+                pass
+            else:
+                logging.error("RECV Error: %s"%zmq.strerror(e.errno))
         else:
             if self._recv_callback:
                 callback = self._recv_callback
