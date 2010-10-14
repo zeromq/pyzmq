@@ -226,55 +226,73 @@ class ZMQStream(object):
         msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags, callback=callback)
     
-    def _finish_flushing(self):
+    def _finish_flush(self):
         """callback for unsetting _flushed flag."""
         self._flushed = False
     
-    def flush(self, limit=None):
-        """Flush pending messages.  
-        This method safely handles all pending incoming/outgoing messages, bypassing the inner loop.
-        
+    def flush(self, flag=zmq.POLLIN|zmq.POLLOUT, limit=None):
+        """Flush pending messages.
+
+        This method safely handles all pending incoming and/or outgoing messages,
+        bypassing the inner loop, passing them to the registered callbacks.
+
         A limit can be specified, to prevent blocking under high load.
-        
-        All the usual callbacks are called.
-        
+
+        :func:`flush` will return the first time ANY of these conditions are met:
+            * No more events matching the flag are pending.
+            * the total number of events handled reaches the limit.
+
+        Note that if flag|POLLIN, recv events will be flushed even if no callback
+        is registered, unlike normal IOLoop operation. This allows flush to be
+        used to remove *and ignore* incoming messages.
+
         Parameters
         ----------
-        limit : None or int
+        flag : int, default=POLLIN|POLLOUT
+                0MQ poll flags.
+                If flag|POLLIN,  recv events will be flushed.
+                If flag|POLLOUT, send events will be flushed.
+                Both flags can be set at once, which is the default.
+        limit : None or int, optional
                 The maximum number of messages to send or receive.
-                If specified, flush will return when *either* 
-                send or recv reaches the limit (not the sum).
-        
+                Both send and recv count against this limit.
+
         Returns
         -------
-        (int, int) : (msgs_received, msgs_sent)
+        int : count of events handled (both send and recv)
         """
+        # unset self._flushed, so callbacks will execute, in case flush has
+        # already been called this iteration
+        already_flushed = self._flushed
+        self._flushed = False
         # initialize counters
-        sent = recvd = 0
+        count = 0
+        def update_flag():
+            return flag & zmq.POLLIN | (self.sending() and flag & zmq.POLLOUT)
         
-        flag = (self.receiving() and zmq.POLLIN) | (self.sending() and zmq.POLLOUT)
-        self.poller.register(self.socket, flag)
+        self.poller.register(self.socket, update_flag())
         events = self.poller.poll(0)
-        while events and (not limit or (sent < limit and recvd < limit)):
+        while events and (not limit or count < limit):
             s,event = events[0]
             if event & zmq.POLLIN: # receiving
                 self._handle_recv()
-                recvd += 1
+                count += 1
             if event & zmq.POLLOUT and self.sending():
                 self._handle_send()
-                sent += 1
-            flag = (self.receiving() and zmq.POLLIN) | (self.sending() and zmq.POLLOUT)
-            self.poller.register(self.socket, flag)
+                count += 1
+            self.poller.register(self.socket, update_flag())
             
             events = self.poller.poll(0)
-        # skip send/recv callbacks this iteration,
-        # but reregister them at the end of the loop
-        if recvd or sent:
-            # only bypass if we did something here
+        if count: # only bypass loop if we actually flushed something
+            # skip send/recv callbacks this iteration
             self._flushed = True
-            dc = ioloop.DelayedCallback(self._finish_flushing, 0, self.io_loop)
-            dc.start()
-        return recvd, sent
+            # reregister them at the end of the loop
+            if not already_flushed: # don't need to do it again
+                dc = ioloop.DelayedCallback(self._finish_flush, 0, self.io_loop)
+                dc.start()
+        elif already_flushed:
+            self._flushed = True
+        return count
     
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
