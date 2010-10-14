@@ -31,7 +31,9 @@ from zmq.core.socket cimport Socket as cSocket
 #-----------------------------------------------------------------------------
 
 def device(int device_type, cSocket isocket, cSocket osocket):
-    """Start a zeromq device.
+    """device(device_type, isocket, osocket)
+
+    Start a zeromq device.
 
     Parameters
     ----------

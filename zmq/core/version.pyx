@@ -33,12 +33,18 @@ __version__ = '2.0.9dev'
 
 
 def pyzmq_version():
-    """Return the version of pyzmq."""
+    """pyzmq_version()
+
+    Return the version of pyzmq.
+    """
     return __version__
 
 
 def zmq_version():
-    """Return the version of ZeroMQ itself."""
+    """zmq_version()
+
+    Return the version of ZeroMQ itself.
+    """
     cdef int major, minor, patch
     _zmq_version(&major, &minor, &patch)
     return '%i.%i.%i' % (major, minor, patch)

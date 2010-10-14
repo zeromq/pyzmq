@@ -26,7 +26,10 @@
 from czmq cimport zmq_strerror, zmq_errno
 
 def strerror(errnum):
-    """Return the error string given the error number."""
+    """strerror(errnum)
+
+    Return the error string given the error number.
+    """
     return zmq_strerror(errnum)
 
 

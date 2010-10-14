@@ -35,7 +35,9 @@ from zmq.core.constants import POLLIN,POLLOUT, POLLERR
 #-----------------------------------------------------------------------------
 
 def _poll(sockets, long timeout=-1):
-    """Poll a set of 0MQ sockets, native file descs. or sockets.
+    """_poll(sockets, timeout=-1)
+
+    Poll a set of 0MQ sockets, native file descs. or sockets.
 
     Parameters
     ----------
@@ -103,13 +105,18 @@ def _poll(sockets, long timeout=-1):
 
 
 class Poller(object):
-    """An stateful poll interface that mirrors Python's built-in poll."""
+    """Poller()
+
+    A stateful poll interface that mirrors Python's built-in poll.
+    """
 
     def __init__(self):
         self.sockets = {}
 
     def register(self, socket, flags=POLLIN|POLLOUT):
-        """Register a 0MQ socket or native fd for I/O monitoring.
+        """p.register(socket, flags=POLLIN|POLLOUT)
+
+        Register a 0MQ socket or native fd for I/O monitoring.
 
         Parameters
         ----------
@@ -122,11 +129,16 @@ class Poller(object):
         self.sockets[socket] = flags
 
     def modify(self, socket, flags=POLLIN|POLLOUT):
-        """Modify the flags for an already registered 0MQ socket or native fd."""
+        """p.modify(socket, flags=POLLIN|POLLOUT)
+
+        Modify the flags for an already registered 0MQ socket or native fd.
+        """
         self.register(socket, flags)
 
     def unregister(self, socket):
-        """Remove a 0MQ socket or native fd for I/O monitoring.
+        """p.unregister(socket)
+
+        Remove a 0MQ socket or native fd for I/O monitoring.
 
         Parameters
         ----------
@@ -136,7 +148,9 @@ class Poller(object):
         del self.sockets[socket]
 
     def poll(self, timeout=None):
-        """Poll the registered 0MQ or native fds for I/O.
+        """p.poll(timeout=None)
+
+        Poll the registered 0MQ or native fds for I/O.
 
         Parameters
         ----------
@@ -156,7 +170,9 @@ class Poller(object):
 
 
 def select(rlist, wlist, xlist, timeout=None):
-    """Return the result of poll as a lists of sockets ready for r/w.
+    """select(rlist, wlist, xlist, timeout=None) -> (rlist, wlist, xlist)
+
+    Return the result of poll as a lists of sockets ready for r/w/exception.
 
     This has the same interface as Python's built-in :func:`select` function.
 

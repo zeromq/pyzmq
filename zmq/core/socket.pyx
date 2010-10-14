@@ -72,9 +72,9 @@ from zmq.core.error import ZMQError, ZMQBindError
 
 
 cdef class Socket:
-    """A 0MQ socket.
+    """Socket(context, socket_type)
 
-    Socket(context, socket_type)
+    A 0MQ socket.
 
     Parameters
     ----------
@@ -98,7 +98,9 @@ cdef class Socket:
         self.close()
 
     def close(self):
-        """Close the socket.
+        """s.close()
+
+        Close the socket.
 
         This can be called to close the socket by hand. If this is not
         called, the socket will automatically be closed when it is
@@ -117,7 +119,9 @@ cdef class Socket:
             raise ZMQError(ENOTSUP)
 
     def setsockopt(self, int option, optval):
-        """Set socket options.
+        """s.setsockopt(option, optval)
+
+        Set socket options.
 
         See the 0MQ documentation for details on specific options.
 
@@ -160,7 +164,9 @@ cdef class Socket:
             raise ZMQError()
 
     def getsockopt(self, int option):
-        """Get the value of a socket option.
+        """s.getsockopt(option)
+
+        Get the value of a socket option.
 
         See the 0MQ documentation for details on specific options.
 
@@ -201,7 +207,9 @@ cdef class Socket:
         return result
     
     def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
-        """Set socket options with a unicode object it is simply a wrapper 
+        """s.setsockopt_unicode(option, optval, encoding='utf-8')
+
+        Set socket options with a unicode object it is simply a wrapper
         for setsockopt to protect from encoding ambiguity.
 
         See the 0MQ documentation for details on specific options.
@@ -220,8 +228,10 @@ cdef class Socket:
             raise TypeError("unicode strings only")
         return self.setsockopt(option, optval.encode(encoding))
     
-    def getsockopt_unicode(self, int option,encoding='utf-8'):
-        """Get the value of a socket option.
+    def getsockopt_unicode(self, int option, encoding='utf-8'):
+        """s.getsockopt_unicode(option, encoding='utf-8')
+
+        Get the value of a socket option.
 
         See the 0MQ documentation for details on specific options.
 
@@ -241,7 +251,9 @@ cdef class Socket:
         return self.getsockopt(option).decode(encoding)
     
     def bind(self, addr):
-        """Bind the socket to an address.
+        """s.bind(addr)
+
+        Bind the socket to an address.
 
         This causes the socket to listen on a network port. Sockets on the
         other side of this connection will use :meth:`Sockiet.connect` to
@@ -267,7 +279,9 @@ cdef class Socket:
             raise ZMQError()
 
     def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
-        """Bind this socket to a random port in a range.
+        """s.bind_to_random_port(addr, min_port=2000, max_port=20000, max_tries=100)
+
+        Bind this socket to a random port in a range.
 
         Parameters
         ----------
@@ -296,7 +310,9 @@ cdef class Socket:
         raise ZMQBindError("Could not bind socket to random port.")
 
     def connect(self, addr):
-        """Connect to a remote 0MQ socket.
+        """s.connect(addr)
+
+        Connect to a remote 0MQ socket.
 
         Parameters
         ----------
@@ -321,8 +337,10 @@ cdef class Socket:
     # Sending and receiving messages
     #-------------------------------------------------------------------------
 
-    def send(self, object data, int flags=0, bool copy=True):
-        """Send a message on this socket.
+    def send(self, object data, int flags=0, copy=True):
+        """s.send(data, flags=0, copy=True)
+
+        Send a message on this socket.
 
         This queues the message to be sent by the IO thread at a later time.
 
@@ -406,7 +424,9 @@ cdef class Socket:
             raise ZMQError()
     
     def recv(self, int flags=0, copy=True):
-        """Receive a message.
+        """s.recv(flags=0, copy=True)
+
+        Receive a message.
 
         Parameters
         ----------
@@ -446,7 +466,9 @@ cdef class Socket:
         return msg
 
     def send_multipart(self, msg_parts, int flags=0, copy=True):
-        """Send a sequence of messages as a multipart message.
+        """s.send_multipart(msg_parts, flags=0, copy=True)
+
+        Send a sequence of messages as a multipart message.
 
         Parameters
         ----------
@@ -462,7 +484,9 @@ cdef class Socket:
         return self.send(msg_parts[-1], flags, copy=copy)
 
     def recv_multipart(self, int flags=0, copy=True):
-        """Receive a multipart message as a list of messages.
+        """s.recv_multipart(flags=0, copy=True)
+
+        Receive a multipart message as a list of messages.
 
         Parameters
         ----------
@@ -487,12 +511,17 @@ cdef class Socket:
         return parts
 
     def rcvmore(self):
-        """Are there more parts to a multipart message."""
+        """s.rcvmore()
+
+        Are there more parts to a multipart message.
+        """
         more = self.getsockopt(RCVMORE)
         return bool(more)
 
     def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
-        """Send a Python unicode object as a message with an encoding.
+        """s.send_unicode(u, flags=0, copy=False, encoding='utf-8')
+
+        Send a Python unicode object as a message with an encoding.
 
         Parameters
         ----------
@@ -507,8 +536,10 @@ cdef class Socket:
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy)
     
-    def recv_unicode(self, int flags=0,encoding='utf-8'):
-        """Receive a unicode string, as sent by send_unicode.
+    def recv_unicode(self, int flags=0, encoding='utf-8'):
+        """s.recv_unicode(flags=0, encoding='utf-8')
+
+        Receive a unicode string, as sent by send_unicode.
         
         Parameters
         ----------
@@ -526,7 +557,9 @@ cdef class Socket:
         return codecs.decode(msg.buffer, encoding)
     
     def send_pyobj(self, obj, flags=0, protocol=-1):
-        """Send a Python object as a message using pickle to serialize.
+        """s.send_pyobj(obj, flags=0, protocol=-1)
+
+        Send a Python object as a message using pickle to serialize.
 
         Parameters
         ----------
@@ -543,7 +576,9 @@ cdef class Socket:
         return self.send(msg, flags)
 
     def recv_pyobj(self, flags=0):
-        """Receive a Python object as a message using pickle to serialize.
+        """s.recv_pyobj(flags=0)
+
+        Receive a Python object as a message using pickle to serialize.
 
         Parameters
         ----------
@@ -559,7 +594,9 @@ cdef class Socket:
         return pickle.loads(s)
 
     def send_json(self, obj, flags=0):
-        """Send a Python object as a message using json to serialize.
+        """s.send_json(obj, flags=0)
+
+        Send a Python object as a message using json to serialize.
 
         Parameters
         ----------
@@ -575,7 +612,9 @@ cdef class Socket:
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
-        """Receive a Python object as a message using json to serialize.
+        """s.recv_json(flags=0)
+
+        Receive a Python object as a message using json to serialize.
 
         Parameters
         ----------

@@ -46,7 +46,10 @@ from zmq.core import XREP, ZMQError
 
 def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
                     str in_prefix='in', str out_prefix='out'):
-    """Start a monitored queue device.
+    """monitored_queue(in_socket, out_socket, mon_socket,
+                       in_prefix='in', out_prefix='out')
+
+    Start a monitored queue device.
 
     A monitored queue behaves just like a zmq QUEUE device as far as in_socket
     and out_socket are concerned, except that all messages *also* go out on

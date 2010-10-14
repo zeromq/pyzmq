@@ -60,17 +60,28 @@ cdef void free_python_msg(void *data, void *hint) with gil:
 
 
 cdef class MessageTracker(object):
-    """A class for tracking if 0MQ is done using one or more messages.
+    """MessageTracker(*towatch)
+
+    A class for tracking if 0MQ is done using one or more messages.
 
     When you send a 0MQ mesage, it is not sent immeidately. The 0MQ IO thread
     send the message at some later time. Often you want to know when 0MQ has
     actually sent the message though. This is complicated by the fact that
     a single 0MQ message can be sent multiple times using differen sockets.
     This class allows you to track all of the 0MQ usages of a message.
+
+    Parameters
+    ----------
+    *towatch : tuple of Queue, MessageTracker, Message instances.
+        This list of objects to track. This class can track the low-level
+        Queues used by the Message class, other MessageTrackers or
+        actual Messsages.
     """
 
     def __init__(self, *towatch):
-        """Create a message tracker to track a set of mesages.
+        """MessageTracker(*towatch)
+
+        Create a message tracker to track a set of mesages.
 
         Parameters
         ----------
@@ -103,7 +114,9 @@ cdef class MessageTracker(object):
         return True
     
     def wait(self, timeout=-1):
-        """Wait until 0MQ is completely done with the messages, then return.
+        """mt.wait(timeout=-1)
+
+        Wait until 0MQ is completely done with the messages, then return.
 
         Parameters
         ----------
@@ -141,12 +154,15 @@ cdef class MessageTracker(object):
             tic = toc
     
     def old_wait(self):
+        """If the new wait works, remove this method."""
         while not self.done:
             time.sleep(.001)
 
 
 cdef class Message:
-    """A Message class for non-copy send/recvs.
+    """Message(data=None)
+
+    A Message class for non-copy send/recvs.
 
     This class is only needed if you want to do non-copying send and recvs.
     When you pass a string to this class, like ``Message(s)``, the 
@@ -156,6 +172,13 @@ cdef class Message:
     that s lives until all messages that use it have been sent. Once 0MQ
     sends all the messages and it doesn't need the buffer of s, 0MQ will call
     Py_DECREF(s).
+
+    Parameters
+    ----------
+
+    data : object, optional
+        any object that provides the buffer interface will be used to
+        construct the 0MQ message data.
     """
 
     def __cinit__(self, object data=None):
@@ -257,7 +280,9 @@ cdef class Message:
         return self.tracker.done
     
     def wait(self, timeout=-1):
-        """Wait for 0MQ to be done with the message, or until timeout.
+        """m.wait(timeout=-1)
+
+        Wait for 0MQ to be done with the message, or until timeout.
         
         Parameters
         ----------

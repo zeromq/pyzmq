@@ -32,7 +32,9 @@ from zmq.core.error import ZMQError
 #-----------------------------------------------------------------------------
 
 cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop.
+    """Stopwatch()
+
+    A simple stopwatch based on zmq_stopwatch_start/stop.
 
     This class should be used for benchmarking and timing ØMQ code.
     """
@@ -47,14 +49,20 @@ cdef class Stopwatch:
             pass
 
     def start(self):
-        """Start the stopwatch."""
+        """s.start()
+
+        Start the stopwatch.
+        """
         if self.watch == NULL:
             self.watch = zmq_stopwatch_start()
         else:
             raise ZMQError('Stopwatch is already runing.')
 
     def stop(self):
-        """Stop the stopwatch."""
+        """s.stop()
+
+        Stop the stopwatch.
+        """
         if self.watch == NULL:
             raise ZMQError('Must start the Stopwatch before calling stop.')
         else:
@@ -63,7 +71,10 @@ cdef class Stopwatch:
             return time
 
     def sleep(self, int seconds):
-        """Sleep for a number of seconds."""
+        """s.sleep(seconds)
+
+        Sleep for a number of seconds.
+        """
         zmq_sleep(seconds)
 
 

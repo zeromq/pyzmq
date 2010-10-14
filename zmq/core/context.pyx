@@ -35,7 +35,9 @@ from constants import *
 
 
 cdef class Context:
-    """Manage the lifecycle of a 0MQ context.
+    """Context(io_threads=1)
+
+    Manage the lifecycle of a 0MQ context.
 
     This class no longer takes any flags or the number of application
     threads.
@@ -63,7 +65,9 @@ cdef class Context:
                 raise ZMQError()
 
     def term(self):
-        """Close or terminate the context.
+        """ctx.term()
+
+        Close or terminate the context.
 
         This can be called to close the context by hand. If this is not
         called, the context will automatically be closed when it is
@@ -78,7 +82,9 @@ cdef class Context:
             self.closed = True
 
     def socket(self, int socket_type):
-        """Create a Socket associated with this Context.
+        """ctx.socket(socket_type)
+
+        Create a Socket associated with this Context.
 
         Parameters
         ----------
