@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from cpython cimport PyString_FromStringAndSize
+from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport Py_DECREF, Py_INCREF
 
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
@@ -330,7 +330,7 @@ cdef class Message:
         # always make a copy:
         data_c = <char *>zmq_msg_data(&self.zmq_msg)
         data_len_c = zmq_msg_size(&self.zmq_msg)
-        return PyString_FromStringAndSize(data_c, data_len_c)
+        return PyBytes_FromStringAndSize(data_c, data_len_c)
     
     @property
     def bytes(self):

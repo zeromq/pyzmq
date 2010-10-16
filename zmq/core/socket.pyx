@@ -24,8 +24,8 @@
 #-----------------------------------------------------------------------------
 
 from libc.stdlib cimport free, malloc
-from cpython cimport PyString_FromStringAndSize
-from cpython cimport PyString_AsString, PyString_Size
+from cpython cimport PyBytes_FromStringAndSize
+from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
 from cpython cimport bool
 
@@ -146,7 +146,7 @@ cdef class Socket:
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
-                PyString_AsString(optval), PyString_Size(optval)
+                PyBytes_AsString(optval), PyBytes_Size(optval)
             )
         elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF]:
@@ -193,7 +193,7 @@ cdef class Socket:
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
-            result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
+            result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
