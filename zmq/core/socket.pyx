@@ -23,6 +23,10 @@
 # Cython Imports
 #-----------------------------------------------------------------------------
 
+# get version-independent aliases:
+cdef extern from "pyversion_compat.h":
+    pass
+
 from libc.stdlib cimport free, malloc
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size

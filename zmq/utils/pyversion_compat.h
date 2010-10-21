@@ -10,6 +10,11 @@
                     "new buffer interface is not available"), -1)
         #define PyBuffer_Release(obj) (PyErr_SetString(PyExc_NotImplementedError, \
                         "new buffer interface is not available"), -1)
+        // Bytes->String
+        #define PyBytes_FromStringAndSize PyString_FromStringAndSize
+        #define PyBytes_FromString PyString_FromString
+        #define PyBytes_AsString PyString_AsString
+        #define PyBytes_Size PyString_Size
     #endif
 
     #define PyMemoryView_FromBuffer(info) (PyErr_SetString(PyExc_NotImplementedError, \
@@ -19,13 +24,8 @@
 #endif
 
 #if PY_VERSION_HEX >= 0x03000000
-    // String->Bytes
-    #define PyString_FromStringAndSize PyBytes_FromStringAndSize
-    #define PyString_FromString PyBytes_FromString
-    #define PyString_AsString PyBytes_AsString
-    #define PyString_Size PyBytes_Size
     // for buffers
-    #define Py_END_OF_BUFFER ((Py_ssize_t) -1)
+    #define Py_END_OF_BUFFER ((Py_ssize_t) 0)
 
     #define PyObject_CheckReadBuffer(object) (0)
 

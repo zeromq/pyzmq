@@ -23,6 +23,10 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+# get version-independent aliases:
+cdef extern from "pyversion_compat.h":
+    pass
+
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport Py_DECREF, Py_INCREF
 

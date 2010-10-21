@@ -19,7 +19,7 @@ Authors
 # Python includes.
 #-----------------------------------------------------------------------------
 
-
+# get version-independent aliases:
 cdef extern from "pyversion_compat.h":
     pass
 
