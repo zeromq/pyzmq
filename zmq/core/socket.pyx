@@ -38,7 +38,6 @@ from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
 from czmq cimport *
 from message cimport Message, MessageTracker
-from context cimport Context
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -91,11 +90,14 @@ cdef class Socket:
         REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
-    def __cinit__(self, Context context, int socket_type):
+    def __cinit__(self, object context, int socket_type):
+        cdef Py_ssize_t c_handle
+        c_handle = context._handle
+
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
-        self.handle = zmq_socket(context.handle, socket_type)
+        self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
