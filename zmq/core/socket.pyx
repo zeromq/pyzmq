@@ -49,6 +49,7 @@ cdef extern from "Python.h":
 
 import copy as copy_mod
 import time
+import sys
 import random
 import struct
 import codecs
@@ -69,6 +70,7 @@ except:
 
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
+from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -146,7 +148,7 @@ cdef class Socket:
             raise TypeError("unicode not allowed, use setsockopt_unicode")
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, str):
+            if not isinstance(optval, bytes):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
@@ -276,7 +278,7 @@ cdef class Socket:
         self._check_closed()
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
-        if not isinstance(addr, str):
+        if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -331,7 +333,7 @@ cdef class Socket:
         self._check_closed()
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
-        if not isinstance(addr, str):
+        if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:

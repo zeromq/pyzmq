@@ -29,6 +29,9 @@ try:
 except ImportError:
     from Queue import Queue
 
+from zmq.utils.strtypes import bytes,unicode,basestring
+
+
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
     

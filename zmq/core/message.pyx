@@ -45,6 +45,7 @@ except: # 2.x
     from Queue import Queue, Empty
 
 from zmq.core.error import ZMQError, NotDone
+from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -273,10 +274,10 @@ cdef class Message:
 
     def __str__(self):
         """Return the str form of the message."""
-        if isinstance(self._data, str):
+        if isinstance(self._data, bytes):
             return self._data
         else:
-            return str(self.bytes)
+            return bytes(self.bytes)
     
     @property
     def done(self):
