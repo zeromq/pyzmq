@@ -15,6 +15,7 @@
 
 """A utility class to send to and recv from a non-blocking socket."""
 
+import sys
 import logging
 
 import zmq
@@ -375,7 +376,8 @@ class ZMQStream(object):
             return
         try:
             msg = self.socket.recv_multipart(zmq.NOBLOCK, copy=self._recv_copy)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError:
+            e = sys.exc_info()[1]
             if e.errno == zmq.EAGAIN:
                 # state changed since poll event
                 pass

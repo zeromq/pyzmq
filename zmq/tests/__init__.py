@@ -21,6 +21,8 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import sys
+
 from unittest import TestCase
 
 import zmq
@@ -76,7 +78,8 @@ class BaseZMQTestCase(TestCase):
     def assertRaisesErrno(self, errno, func, *args):
         try:
             func(*args)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError:
+            e = sys.exc_info()[1]
             self.assertEqual(e.errno, errno, "wrong error raised, expected '%s' \
 got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
         else:

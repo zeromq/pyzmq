@@ -29,6 +29,12 @@ from sys import getrefcount as grc
 import time
 from unittest import TestCase
 
+try:
+    from __builtin__ import unicode
+except ImportError:
+    def unicode(s, encoding='utf-8'):
+        return str(s)
+
 import zmq
 from zmq.tests import BaseZMQTestCase
 
@@ -76,10 +82,10 @@ class TestMessage(BaseZMQTestCase):
 
     def test_unicode(self):
         """Test the unicode representations of the Messages."""
-        s = u'asdf'
+        s = unicode('asdf')
         self.assertRaises(TypeError, zmq.Message, s)
         for i in range(16):
-            s = (2**i)*u'§'
+            s = (2**i)*unicode('§', encoding='utf-8')
             m = zmq.Message(s.encode('utf8'))
             self.assertEquals(s, unicode(str(m),'utf8'))
 

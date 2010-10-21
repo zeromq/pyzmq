@@ -22,7 +22,16 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+
+import sys
 import time
+
+try:
+    from __builtin__ import unicode
+except ImportError:
+    def unicode(s, encoding='utf-8'):
+        return s
+
 import zmq
 from zmq.tests import BaseZMQTestCase
 try:
@@ -33,7 +42,6 @@ except:
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
-
 
 class TestSocket(BaseZMQTestCase):
 
@@ -48,7 +56,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
-        topic = u"tést"
+        topic = unicode("tést",encoding='utf-8')
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         self.assertEquals(s.send_unicode, s.send_unicode)
         self.assertEquals(p.recv_unicode, p.recv_unicode)
@@ -73,7 +81,7 @@ class TestSocket(BaseZMQTestCase):
         self.sockets.extend([a,b])
         self.assertEquals(a.setsockopt_unicode, a.setsockopt_unicode)
         self.assertEquals(b.getsockopt_unicode, b.getsockopt_unicode)
-        u =  u"çπ§"
+        u =  unicode("çπ§", encoding='utf-8')
         self.assertRaises(TypeError, a.send, u,copy=False)
         self.assertRaises(TypeError, a.send, u,copy=True)
         a.send_unicode(u)
