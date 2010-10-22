@@ -275,9 +275,13 @@ cdef class Message:
     def __str__(self):
         """Return the str form of the message."""
         if isinstance(self._data, bytes):
-            return self._data
+            b = self._data
         else:
-            return bytes(self.bytes)
+            b = self.bytes
+        if str is unicode:
+            return b.decode()
+        else:
+            return b
     
     @property
     def done(self):

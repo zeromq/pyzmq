@@ -52,7 +52,7 @@ class ZMQError(ZMQBaseError):
         if error is None:
             error = zmq_errno()
         if type(error) == int:
-            self.strerror = strerror(error)
+            self.strerror = str(strerror(error))
             self.errno = error
         else:
             self.strerror = str(error)

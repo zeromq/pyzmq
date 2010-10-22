@@ -562,7 +562,7 @@ cdef class Socket:
             The Python unicode string that arrives as message bytes.
         """
         msg = self.recv(flags=flags, copy=False)
-        return codecs.decode(msg.buffer, encoding)
+        return codecs.decode(msg.bytes, encoding)
     
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """s.send_pyobj(obj, flags=0, protocol=-1)

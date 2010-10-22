@@ -166,7 +166,7 @@ class Poller(object):
         timeout = int(timeout*1000.0)
         if timeout < 0:
             timeout = -1
-        return _poll(self.sockets.items(), timeout=timeout)
+        return _poll(list(self.sockets.items()), timeout=timeout)
 
 
 def select(rlist, wlist, xlist, timeout=None):
