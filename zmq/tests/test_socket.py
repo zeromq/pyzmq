@@ -26,14 +26,9 @@
 import sys
 import time
 
-try:
-    from __builtin__ import unicode
-except ImportError:
-    def unicode(s, encoding='utf-8'):
-        return s
-
 import zmq
 from zmq.tests import BaseZMQTestCase
+from zmq.utils.strtypes import bytes, unicode
 try:
     from queue import Queue
 except:
@@ -56,7 +51,9 @@ class TestSocket(BaseZMQTestCase):
     
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
-        topic = unicode("tést",encoding='utf-8')
+        topic = "tést"
+        if str is not unicode:
+            topic = topic.decode('utf8')
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         self.assertEquals(s.send_unicode, s.send_unicode)
         self.assertEquals(p.recv_unicode, p.recv_unicode)
@@ -79,9 +76,9 @@ class TestSocket(BaseZMQTestCase):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         self.sockets.extend([a,b])
-        self.assertEquals(a.setsockopt_unicode, a.setsockopt_unicode)
-        self.assertEquals(b.getsockopt_unicode, b.getsockopt_unicode)
-        u =  unicode("çπ§", encoding='utf-8')
+        u = "çπ§"
+        if str is not unicode:
+            u = u.decode('utf8')
         self.assertRaises(TypeError, a.send, u,copy=False)
         self.assertRaises(TypeError, a.send, u,copy=True)
         a.send_unicode(u)
@@ -101,25 +98,25 @@ class TestSocket(BaseZMQTestCase):
         del a 
         iface = "%s:%i"%(addr,port)
         a = self.context.socket(zmq.XREQ)
-        a.setsockopt(zmq.IDENTITY, "a")
+        a.setsockopt(zmq.IDENTITY, "a".encode())
         b = self.context.socket(zmq.XREP)
         self.sockets.extend([a,b])
         a.connect(iface)
-        p1 = a.send('something', copy=False)
+        p1 = a.send('something'.encode(), copy=False)
         self.assert_(isinstance(p1, zmq.MessageTracker))
         self.assertFalse(p1.done)
-        p2 = a.send_multipart(['something', 'else'], copy=False)
+        p2 = a.send_multipart(list(map(str.encode, ['something', 'else'])), copy=False)
         self.assert_(isinstance(p2, zmq.MessageTracker))
         self.assertEquals(p2.done, False)
         self.assertEquals(p1.done, False)
         b.bind(iface)
         msg = b.recv_multipart()
         self.assertEquals(p1.done, True)
-        self.assertEquals(msg, ['a', 'something'])
+        self.assertEquals(msg, (list(map(str.encode, ['a', 'something']))))
         msg = b.recv_multipart()
         self.assertEquals(p2.done, True)
-        self.assertEquals(msg, ['a', 'something', 'else'])
-        m = zmq.Message("again")
+        self.assertEquals(msg, list(map(str.encode, ['a', 'something', 'else'])))
+        m = zmq.Message("again".encode())
         self.assertEquals(m.done, False)
         # print m.bytes
         p1 = a.send(m, copy=False)
@@ -129,10 +126,10 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p2.done, False)
         msg = b.recv_multipart()
         self.assertEquals(m.done, False)
-        self.assertEquals(msg, ['a', 'again'])
+        self.assertEquals(msg, list(map(str.encode, ['a', 'again'])))
         msg = b.recv_multipart()
         self.assertEquals(m.done, False)
-        self.assertEquals(msg, ['a', 'again'])
+        self.assertEquals(msg, list(map(str.encode, ['a', 'again'])))
         self.assertEquals(p1.done, False)
         self.assertEquals(p2.done, False)
         pm = m.tracker
@@ -148,10 +145,10 @@ class TestSocket(BaseZMQTestCase):
         ctx = zmq.Context()
         s = ctx.socket(zmq.PUB)
         s.close()
-        self.assertRaises(zmq.ZMQError, s.bind, '')
-        self.assertRaises(zmq.ZMQError, s.connect, '')
-        self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, '')
-        self.assertRaises(zmq.ZMQError, s.send, 'asdf')
+        self.assertRaises(zmq.ZMQError, s.bind, ''.encode())
+        self.assertRaises(zmq.ZMQError, s.connect, ''.encode())
+        self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, ''.encode())
+        self.assertRaises(zmq.ZMQError, s.send, 'asdf'.encode())
         self.assertRaises(zmq.ZMQError, s.recv)
         del ctx
     

@@ -46,12 +46,12 @@ class TestPubSub(BaseZMQTestCase):
 
     def test_topic(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        s2.setsockopt(zmq.SUBSCRIBE, 'x')
+        s2.setsockopt(zmq.SUBSCRIBE, 'x'.encode())
         import time; time.sleep(0.1)
-        msg1 = 'message'
+        msg1 = 'message'.encode()
         s1.send(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, s2.recv, zmq.NOBLOCK)
-        msg1 = 'xmessage'
+        msg1 = 'xmessage'.encode()
         s1.send(msg1)
         msg2 = s2.recv()
         self.assertEquals(msg1, msg2)
