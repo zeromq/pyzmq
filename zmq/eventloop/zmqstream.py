@@ -405,7 +405,8 @@ class ZMQStream(object):
         msg = self._send_queue.get()
         try:
             status = self.socket.send_multipart(*msg)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError:
+            e = sys.exc_info()[1]
             status = e
         if self._send_callback:
             callback = self._send_callback
