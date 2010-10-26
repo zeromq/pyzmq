@@ -29,7 +29,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from zmq.utils.strtypes import bytes,unicode,basestring
+from zmq.utils.strtypes import bytes, unicode, basestring
 
 
 class ZMQStream(object):
@@ -66,7 +66,6 @@ class ZMQStream(object):
     >>> stream.bind is stream.socket.bind
     True
     
-
     """
     
     socket = None
