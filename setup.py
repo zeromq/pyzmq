@@ -26,6 +26,7 @@
 import os, sys
 
 from distutils.core import setup, Command
+from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
 from distutils.command.sdist import sdist
 from distutils.command.build_ext import build_ext
@@ -44,7 +45,11 @@ except:
 #-----------------------------------------------------------------------------
 # ignore unused-function and strict-aliasing warnings, of which there
 # will be many from the Cython generated code:
-ignore_common_warnings=True
+# note that this is only for gcc-style compilers
+if get_default_compiler() in ('unix', 'mingw32'):
+    ignore_common_warnings=True
+else:
+    ignore_common_warnings=True
 
 release = False # flag for whether to include *.c in package_data
 
