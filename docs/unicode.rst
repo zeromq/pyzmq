@@ -1,5 +1,7 @@
 .. PyZMQ Unicode doc, by Min Ragan-Kelley, 2010
 
+.. _unicode:
+
 PyZMQ and Unicode
 =================
 
