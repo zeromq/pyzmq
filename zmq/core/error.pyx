@@ -25,12 +25,22 @@
 
 from czmq cimport zmq_strerror, zmq_errno
 
+from zmq.utils.strtypes import bytes
+
 def strerror(errnum):
     """strerror(errnum)
 
     Return the error string given the error number.
     """
-    return zmq_strerror(errnum)
+    cdef object str_e
+    # char * will be a bytes object:
+    str_e = zmq_strerror(errnum)
+    if str is bytes:
+        # Python 2: str is bytes, so we already have the right type
+        return str_e
+    else:
+        # Python 3: decode bytes to unicode str
+        return str_e.decode()
 
 
 class ZMQBaseError(Exception):
@@ -52,7 +62,7 @@ class ZMQError(ZMQBaseError):
         if error is None:
             error = zmq_errno()
         if type(error) == int:
-            self.strerror = str(strerror(error))
+            self.strerror = strerror(error)
             self.errno = error
         else:
             self.strerror = str(error)
