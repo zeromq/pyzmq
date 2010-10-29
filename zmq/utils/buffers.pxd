@@ -281,7 +281,7 @@ cdef inline object viewfromobject(object obj, int readonly):
     -------
     Buffer/View of the original object.
     """
-    if oldstyle_available():
+    if not memoryview_available():
         if readonly:
             return PyBuffer_FromObject(obj, 0, Py_END_OF_BUFFER)
         else:

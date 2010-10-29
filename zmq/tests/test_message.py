@@ -282,7 +282,7 @@ class TestMessage(BaseZMQTestCase):
         v = memoryview(s)
         m = zmq.Message(s)
         buf = m.buffer
-        s2 = bytes(buf)
+        s2 = buf.tobytes()
         self.assertEquals(s2,s)
         self.assertEquals(m.bytes,s)
         
