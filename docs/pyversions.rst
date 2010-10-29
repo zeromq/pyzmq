@@ -51,22 +51,31 @@ Bytes and Strings
 
 The most cumbersome part of PyZMQ compatibility from a user's perspective is the fact
 that, since ØMQ uses C-strings, and would like to do so without copying, we must use the
-Py3k :class:`bytes` object, which is backported to 2.6. See the :ref:`Unicode discussion
-<unicode>` doc for more information on strings/bytes. In order to do this in a
+Py3k :class:`bytes` object, which is backported to 2.6. In order to do this in a
 Python-version independent way, we added a small utility that unambiguously defines the
 string types: :class:`bytes`, :class:`unicode`, :obj:`basestring`. This is important,
 because :class:`str` means different things on 2.x and 3.x, and :class:`bytes` is
 undefined on 2.5, and both :class:`unicode` and :obj:`basestring` are undefined on 3.x.
-All typechecking in PyZMQ is done against these types.
+All typechecking in PyZMQ is done against these types:
 
-*<2.5 specific>*
+=================  =================   ====================
+Explicit Type           2.x                      3.x
+=================  =================   ====================
+:obj:`bytes`       :obj:`str`          :obj:`bytes`
+:obj:`unicode`     :obj:`unicode`      :obj:`str`
+:obj:`basestring`  :obj:`basestring`   :obj:`(str, bytes)`
+=================  =================   ====================
 
-Where we best noticed the issue of bytes and string coming up for users was in
-updating the tests to run on every version. Since the ``b'bytes literal'`` syntax was
-not backported to 2.5, we must call ``"message".encode()`` for *every* string in the
-test suite.
+.. Note::
+    
+    2.5 specific
 
-*</2.5 specific>*
+    Where we really noticed the issue of :class:`bytes` vs :obj:`strings` coming up for
+    users was in updating the tests to run on every version. Since the ``b'bytes
+    literal'`` syntax was not backported to 2.5, we must call ``"message".encode()`` for
+    *every* string in the test suite.
+
+.. seealso:: :ref:`Unicode discussion <unicode>` for more information on strings/bytes.
 
 ``PyBytes_*``
 *************
@@ -77,19 +86,20 @@ Python3, this was broken into ``PyBytes_*`` for bytes objects and ``PyUnicode_*`
 unicode objects. We changed all our ``PyString_*`` code to ``PyBytes_*``, which was
 backported to 2.6.
 
-*<2.5 specific>*
 
-Since Python 2.5 doesn't support the ``PyBytes_*`` functions, we had to alias them to the
-``PyString_*`` methods in utils/pyversion_compat.h.
+.. Note::
 
-.. sourcecode:: c++
+    2.5 Specific:
 
-    #define PyBytes_FromStringAndSize PyString_FromStringAndSize
-    #define PyBytes_FromString PyString_FromString
-    #define PyBytes_AsString PyString_AsString
-    #define PyBytes_Size PyString_Size
+    Since Python 2.5 doesn't support the ``PyBytes_*`` functions, we had to alias them to
+    the ``PyString_*`` methods in utils/pyversion_compat.h.
 
-*</2.5 specific>*
+    .. sourcecode:: c++
+
+        #define PyBytes_FromStringAndSize PyString_FromStringAndSize
+        #define PyBytes_FromString PyString_FromString
+        #define PyBytes_AsString PyString_AsString
+        #define PyBytes_Size PyString_Size
 
 Buffers
 -------
@@ -175,7 +185,7 @@ exception block:
         handle(e)
 
 This is certainly not as elegant as either the old or new syntax, but it's the only way we
-have found to work.
+have found to work everywhere.
 
 .. seealso:: PEP-3110_
 
