@@ -432,8 +432,9 @@ cdef class Socket:
         ----------
         flags : int
             Any supported flag: NOBLOCK. If NOBLOCK is set, this method
-            will return None if a message is not ready. If NOBLOCK is not
-            set, then this method will block until a message arrives.
+            will raise a ZMQError with EAGAIN if a message is not ready.
+            If NOBLOCK is not set, then this method will block until a
+            message arrives.
         copy : bool
             Should the message be received in a copying or non-copying manner.
             If False a Message object is returned, if True a string copy of
@@ -492,8 +493,13 @@ cdef class Socket:
         ----------
         flags : int
             Any supported flag: NOBLOCK. If NOBLOCK is set, this method
-            will return None if a message is not ready. If NOBLOCK is not
-            set, then this method will block until a message arrives.
+            will raise a ZMQError with EAGAIN if a message is not ready.
+            If NOBLOCK is not set, then this method will block until a
+            message arrives.
+        copy : bool
+            Should the message be received in a copying or non-copying manner.
+            If False a Message object is returned, if True a string copy of
+            message is returned.
 
         Returns
         -------
