@@ -23,9 +23,13 @@
 # Cython Imports
 #-----------------------------------------------------------------------------
 
+# get version-independent aliases:
+cdef extern from "pyversion_compat.h":
+    pass
+
 from libc.stdlib cimport free, malloc
-from cpython cimport PyString_FromStringAndSize
-from cpython cimport PyString_AsString, PyString_Size
+from cpython cimport PyBytes_FromStringAndSize
+from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
 from cpython cimport bool
 
@@ -34,7 +38,6 @@ from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
 from czmq cimport *
 from message cimport Message, MessageTracker
-from context cimport Context
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -45,6 +48,7 @@ cdef extern from "Python.h":
 
 import copy as copy_mod
 import time
+import sys
 import random
 import struct
 import codecs
@@ -65,6 +69,7 @@ except:
 
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
+from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -85,11 +90,14 @@ cdef class Socket:
         REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
-    def __cinit__(self, Context context, int socket_type):
+    def __cinit__(self, object context, int socket_type):
+        cdef Py_ssize_t c_handle
+        c_handle = context._handle
+
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
-        self.handle = zmq_socket(context.handle, socket_type)
+        self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
@@ -142,11 +150,11 @@ cdef class Socket:
             raise TypeError("unicode not allowed, use setsockopt_unicode")
 
         if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
-            if not isinstance(optval, str):
+            if not isinstance(optval, bytes):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
-                PyString_AsString(optval), PyString_Size(optval)
+                PyBytes_AsString(optval), PyBytes_Size(optval)
             )
         elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF]:
@@ -193,7 +201,7 @@ cdef class Socket:
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
-            result = PyString_FromStringAndSize(<char *>identity_str_c, sz)
+            result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                         MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
             sz = sizeof(int64_t)
@@ -272,7 +280,7 @@ cdef class Socket:
         self._check_closed()
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
-        if not isinstance(addr, str):
+        if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_bind(self.handle, addr)
         if rc != 0:
@@ -327,7 +335,7 @@ cdef class Socket:
         self._check_closed()
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
-        if not isinstance(addr, str):
+        if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         rc = zmq_connect(self.handle, addr)
         if rc != 0:
@@ -402,7 +410,7 @@ cdef class Socket:
         cdef int rc, rc2
         cdef zmq_msg_t data
         cdef char *msg_c
-        cdef Py_ssize_t msg_c_len
+        cdef Py_ssize_t msg_c_len=0
         
         # copy to c array:
         asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
@@ -560,7 +568,7 @@ cdef class Socket:
             The Python unicode string that arrives as message bytes.
         """
         msg = self.recv(flags=flags, copy=False)
-        return codecs.decode(msg.buffer, encoding)
+        return codecs.decode(msg.bytes, encoding)
     
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """s.send_pyobj(obj, flags=0, protocol=-1)

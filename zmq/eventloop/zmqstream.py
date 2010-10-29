@@ -15,6 +15,7 @@
 
 """A utility class to send to and recv from a non-blocking socket."""
 
+import sys
 import logging
 
 import zmq
@@ -27,6 +28,9 @@ try:
     from queue import Queue
 except ImportError:
     from Queue import Queue
+
+from zmq.utils.strtypes import bytes, unicode, basestring
+
 
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
@@ -62,7 +66,6 @@ class ZMQStream(object):
     >>> stream.bind is stream.socket.bind
     True
     
-
     """
     
     socket = None
@@ -375,7 +378,8 @@ class ZMQStream(object):
             return
         try:
             msg = self.socket.recv_multipart(zmq.NOBLOCK, copy=self._recv_copy)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError:
+            e = sys.exc_info()[1]
             if e.errno == zmq.EAGAIN:
                 # state changed since poll event
                 pass
@@ -401,7 +405,8 @@ class ZMQStream(object):
         msg = self._send_queue.get()
         try:
             status = self.socket.send_multipart(*msg)
-        except zmq.ZMQError, e:
+        except zmq.ZMQError:
+            e = sys.exc_info()[1]
             status = e
         if self._send_callback:
             callback = self._send_callback

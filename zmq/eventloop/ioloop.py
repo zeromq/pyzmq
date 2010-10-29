@@ -18,6 +18,7 @@
 import bisect
 import errno
 import os
+import sys
 import logging
 import time
 import traceback
@@ -241,7 +242,8 @@ class IOLoop(object):
 
             try:
                 event_pairs = self._impl.poll(poll_timeout)
-            except ZMQError, e:
+            except ZMQError:
+                e = sys.exc_info()[1]
                 if e.errno == ETERM:
                     # This happens when the zmq Context is closed; we should just exit.
                     self._running = False
@@ -249,7 +251,8 @@ class IOLoop(object):
                     break
                 else:
                     raise
-            except Exception, e:
+            except Exception:
+                e = sys.exc_info[1]
                 # Depending on python version and IOLoop implementation,
                 # different exception types may be thrown and there are
                 # two ways EINTR might be signaled:
@@ -278,7 +281,8 @@ class IOLoop(object):
                     self._handlers[fd](fd, events)
                 except (KeyboardInterrupt, SystemExit):
                     raise
-                except (OSError, IOError), e:
+                except (OSError, IOError):
+                    e = sys.exc_info()[1]
                     if e.args[0] == errno.EPIPE:
                         # Happens when the client closes the connection
                         pass

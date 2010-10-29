@@ -24,23 +24,34 @@
 #-----------------------------------------------------------------------------
 
 import copy
+import sys
 from sys import getrefcount as grc
 import time
+from pprint import pprint
 from unittest import TestCase
 
 import zmq
 from zmq.tests import BaseZMQTestCase
+from zmq.utils.strtypes import unicode,bytes
+
+try:
+    from nose import SkipTest
+except ImportError:
+    class SkipTest(Exception):
+        pass
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
+
+x = 'x'.encode()
 
 class TestMessage(BaseZMQTestCase):
 
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2**i)*'x'
+            s = (2**i)*x
             self.assertEquals(grc(s), 2)
             m = zmq.Message(s)
             self.assertEquals(grc(s), 4)
@@ -51,15 +62,14 @@ class TestMessage(BaseZMQTestCase):
     def test_str(self):
         """Test the str representations of the Messages."""
         for i in range(16):
-            s = (2**i)*'x'
+            s = (2**i)*x
             m = zmq.Message(s)
-            self.assertEquals(s, str(m))
-            self.assert_(s is str(m))
+            self.assertEquals(s, str(m).encode())
 
     def test_bytes(self):
         """Test the Message.bytes property."""
         for i in range(1,16):
-            s = (2**i)*'x'
+            s = (2**i)*x
             m = zmq.Message(s)
             b = m.bytes
             self.assertEquals(s, m.bytes)
@@ -70,72 +80,104 @@ class TestMessage(BaseZMQTestCase):
 
     def test_unicode(self):
         """Test the unicode representations of the Messages."""
-        s = u'asdf'
+        s = unicode('asdf')
         self.assertRaises(TypeError, zmq.Message, s)
+        u = '§'
+        if str is not unicode:
+            u = u.decode('utf8')
         for i in range(16):
-            s = (2**i)*u'§'
+            s = (2**i)*u
             m = zmq.Message(s.encode('utf8'))
-            self.assertEquals(s, unicode(str(m),'utf8'))
-    
+            self.assertEquals(s, unicode(m.bytes,'utf8'))
 
     def test_len(self):
         """Test the len of the Messages."""
         for i in range(16):
-            s = (2**i)*'x'
+            s = (2**i)*x
             m = zmq.Message(s)
-            self.assertEquals(len(s), len(s))
+            self.assertEquals(len(s), len(m))
 
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
+        try:
+            view = memoryview
+        except NameError:
+            view = type(None)
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2**i)*'x'
-            self.assertEquals(grc(s), 2)
+            s = (2**i)*x
+            rc = 2
+            self.assertEquals(grc(s), rc)
             m = zmq.Message(s)
-            self.assertEquals(grc(s), 4)
+            rc += 2
+            self.assertEquals(grc(s), rc)
             m2 = copy.copy(m)
-            self.assertEquals(grc(s), 5)
+            rc += 1
+            self.assertEquals(grc(s), rc)
             b = m2.buffer
-            self.assertEquals(grc(s), 6)
-            self.assertEquals(s, str(m))
-            self.assertEquals(s, str(m2))
+            extra = int(isinstance(b,view))
+            # memoryview incs by 2
+            # buffer by 1
+            rc += 1+extra
+            self.assertEquals(grc(s), rc)
+
+            self.assertEquals(s, str(m).encode())
+            self.assertEquals(s, str(m2).encode())
             self.assertEquals(s, m.bytes)
-            self.assert_(s is str(m))
-            self.assert_(s is str(m2))
+            # self.assert_(s is str(m))
+            # self.assert_(s is str(m2))
             del m2
-            self.assertEquals(grc(s), 5)
+            rc -= 1
+            self.assertEquals(grc(s), rc)
+            rc -= 1+extra
             del b
-            self.assertEquals(grc(s), 4)
+            self.assertEquals(grc(s), rc)
             del m
-            self.assertEquals(grc(s), 2)
+            rc -= 2
+            self.assertEquals(grc(s), rc)
+            self.assertEquals(rc, 2)
             del s
 
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
+        try:
+            view = memoryview
+        except NameError:
+            view = type(None)
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2**i)*'x'
-            self.assertEquals(grc(s), 2)
+            s = (2**i)*x
+            rc = 2
+            self.assertEquals(grc(s), rc)
             m = zmq.Message(s)
-            self.assertEquals(grc(s), 4)
+            rc += 2
+            self.assertEquals(grc(s), rc)
             m2 = copy.copy(m)
-            self.assertEquals(grc(s), 5)
+            rc += 1
+            self.assertEquals(grc(s), rc)
             b = m.buffer
-            self.assertEquals(grc(s), 6)
-            self.assertEquals(s, str(m))
-            self.assertEquals(s, str(m2))
+            extra = int(isinstance(b,view))
+            rc += 1+extra
+            self.assertEquals(grc(s), rc)
+            self.assertEquals(s, str(m).encode())
+            self.assertEquals(s, str(m2).encode())
             self.assertEquals(s, m2.bytes)
             self.assertEquals(s, m.bytes)
-            self.assert_(s is str(m))
-            self.assert_(s is str(m2))
+            # self.assert_(s is str(m))
+            # self.assert_(s is str(m2))
             del b
-            self.assertEquals(grc(s), 6)
+            self.assertEquals(grc(s), rc)
             del m
-            self.assertEquals(grc(s), 4)
+            # m.buffer is kept until m is del'd
+            rc -= 1+extra
+            rc -= 1
+            self.assertEquals(grc(s), rc)
             del m2
-            self.assertEquals(grc(s), 2)
+            rc -= 2
+            self.assertEquals(grc(s), rc)
+            self.assertEquals(rc, 2)
             del s
     
     def test_tracker(self):
-        m = zmq.Message('asdf')
+        m = zmq.Message('asdf'.encode())
         self.assertFalse(m.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
@@ -143,8 +185,8 @@ class TestMessage(BaseZMQTestCase):
         self.assertTrue(pm.done)
     
     def test_multi_tracker(self):
-        m = zmq.Message('asdf')
-        m2 = zmq.Message('whoda')
+        m = zmq.Message('asdf'.encode())
+        m2 = zmq.Message('whoda'.encode())
         mt = zmq.MessageTracker(m,m2)
         self.assertFalse(m.done)
         self.assertFalse(mt.done)
@@ -160,8 +202,15 @@ class TestMessage(BaseZMQTestCase):
     
     def test_buffer_in(self):
         """test using a buffer as input"""
-        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf16')
-        m = zmq.Message(buffer(ins))
+        try:
+            view = memoryview
+        except NameError:
+            view = buffer
+        if unicode is str:
+            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
+        else:
+            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
+        m = zmq.Message(view(ins))
     
     def test_bad_buffer_in(self):
         """test using a bad object"""
@@ -170,17 +219,24 @@ class TestMessage(BaseZMQTestCase):
         
     def test_buffer_out(self):
         """receiving buffered output"""
-        ins = unicode("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√",encoding='utf8')
-        m = zmq.Message(ins.encode('utf8'))
+        try:
+            view = memoryview
+        except NameError:
+            view = buffer
+        if unicode is str:
+            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
+        else:
+            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
+        m = zmq.Message(ins)
         outb = m.buffer
-        self.assertTrue(isinstance(outb, buffer))
+        self.assertTrue(isinstance(outb, view))
         self.assert_(outb is m.buffer)
         self.assert_(m.buffer is m.buffer)
     
     def test_multisend(self):
         """ensure that a message remains intact after multiple sends"""
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        s = "message"
+        s = "message".encode()
         m = zmq.Message(s)
         self.assertEquals(s, m.bytes)
         
@@ -206,7 +262,7 @@ class TestMessage(BaseZMQTestCase):
         try:
             import numpy
         except ImportError:
-            return
+            raise SkipTest
         shapes = map(numpy.random.randint, [2]*5,[16]*5)
         for i in range(1,len(shapes)+1):
             shape = shapes[:i]
@@ -215,5 +271,19 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals(A.data, m.buffer)
             B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEquals((A==B).all(), True)
+
+    def test_memoryview(self):
+        """test messages from memoryview (only valid for python >= 2.7)"""
+        major,minor = sys.version_info[:2]
+        if not (major >= 3 or (major == 2 and minor >= 7)):
+            raise SkipTest
+
+        s = 'carrotjuice'.encode()
+        v = memoryview(s)
+        m = zmq.Message(s)
+        buf = m.buffer
+        s2 = bytes(buf)
+        self.assertEquals(s2,s)
+        self.assertEquals(m.bytes,s)
         
 

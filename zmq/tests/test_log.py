@@ -21,6 +21,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import time
 from unittest import TestCase
 
 import zmq
@@ -36,6 +37,7 @@ import logging
 class TestPubLog(BaseZMQTestCase):
     
     iface = 'inproc://zmqlog'
+    topic='zmq'.encode()
     
     @property
     def logger(self):
@@ -49,10 +51,10 @@ class TestPubLog(BaseZMQTestCase):
         pub,sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
-        handler.root_topic = 'zmq'
+        handler.root_topic = self.topic
         logger.addHandler(handler)
-        sub.setsockopt(zmq.SUBSCRIBE, 'zmq')
-        import time; time.sleep(0.1)
+        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
+        time.sleep(0.1)
         return logger, handler, sub
     
     def test_init_iface(self):
@@ -66,20 +68,20 @@ class TestPubLog(BaseZMQTestCase):
         self.assertTrue(handler.ctx is ctx)
         
         handler.setLevel(logging.DEBUG)
-        handler.root_topic = 'zmq'
+        handler.root_topic = self.topic
         logger.addHandler(handler)
         
         # handler.socket.close()
         sub = ctx.socket(zmq.SUB)
         sub.connect(self.iface)
-        sub.setsockopt(zmq.SUBSCRIBE, 'zmq')
+        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
         import time; time.sleep(0.1)
         msg1 = 'message'
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, 'zmq.INFO')
-        self.assertEquals(msg2, msg1+'\n')
+        self.assertEquals(topic, 'zmq.INFO'.encode())
+        self.assertEquals(msg2, (msg1+'\n').encode())
         logger.removeHandler(handler)
         # handler.socket.close()
     
@@ -88,21 +90,21 @@ class TestPubLog(BaseZMQTestCase):
         logger = self.logger
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
-        handler.root_topic = 'zmq'
+        handler.root_topic = self.topic
         logger.addHandler(handler)
         
         self.assertTrue(handler.socket is pub)
         self.assertTrue(handler.ctx is pub.context)
         self.assertTrue(handler.ctx is self.context)
         # handler.socket.close()
-        sub.setsockopt(zmq.SUBSCRIBE, 'zmq')
+        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
         import time; time.sleep(0.1)
         msg1 = 'message'
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, 'zmq.INFO')
-        self.assertEquals(msg2, msg1+'\n')
+        self.assertEquals(topic, 'zmq.INFO'.encode())
+        self.assertEquals(msg2, (msg1+'\n').encode())
         logger.removeHandler(handler)
         # handler.socket.close()
     
@@ -111,14 +113,14 @@ class TestPubLog(BaseZMQTestCase):
         handler.socket.bind(self.iface)
         sub2 = sub.context.socket(zmq.SUB)
         sub2.connect(self.iface)
-        sub2.setsockopt(zmq.SUBSCRIBE, '')
-        handler.root_topic = 'twoonly'
+        sub2.setsockopt(zmq.SUBSCRIBE, ''.encode())
+        handler.root_topic = 'twoonly'.encode()
         msg1 = 'ignored'
         logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
         topic,msg2 = sub2.recv_multipart()
-        self.assertEquals(topic, 'twoonly.INFO')
-        self.assertEquals(msg2, msg1+'\n')
+        self.assertEquals(topic, 'twoonly.INFO'.encode())
+        self.assertEquals(msg2, (msg1+'\n').encode())
         
         
         

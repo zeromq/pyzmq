@@ -29,6 +29,7 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
+from zmq.utils.strtypes import bytes, unicode
 # priority: jsonlib2 > jsonlib > simplejson > json
 
 jsonmod = None
@@ -47,25 +48,31 @@ except ImportError:
             except ImportError:
                 pass
 
+def _squash_unicode(s):
+    if isinstance(s, unicode):
+        return s.encode('utf8')
+    else:
+        return s
+
 def jsonlib_dumps(o,**kwargs):
     """This one is separate because jsonlib doesn't allow specifying separators.
     See jsonlib.dumps for details on kwargs.
     """
-    
-    return jsonmod.dumps(o,**kwargs)
+    return _squash_unicode(jsonmod.dumps(o,**kwargs))
 
 def dumps(o, **kwargs):
     """Serialize object to JSON str.
     See %s.dumps for details on kwargs.
     """%jsonmod
     
-    return jsonmod.dumps(o, separators=(',',':'),**kwargs)
+    return _squash_unicode(jsonmod.dumps(o, separators=(',',':'),**kwargs))
 
 def loads(s,**kwargs):
     """Load object from JSON str.
     See %s.loads for details on kwargs.
     """%jsonmod
-    
+    if str is unicode and isinstance(s, bytes):
+        s = s.decode('utf8')
     return jsonmod.loads(s,**kwargs)
 
 if jsonmod is not None and jsonmod.__name__== 'jsonlib':

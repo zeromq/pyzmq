@@ -19,6 +19,10 @@ Authors
 # Python includes.
 #-----------------------------------------------------------------------------
 
+# get version-independent aliases:
+cdef extern from "pyversion_compat.h":
+    pass
+
 # Python 3 buffer interface (PEP 3118)
 cdef extern from "Python.h":
     int PY_MAJOR_VERSION
@@ -41,7 +45,8 @@ cdef extern from "Python.h":
     int  PyObject_GetBuffer(object, Py_buffer *, int) except -1
     void PyBuffer_Release(Py_buffer *)
     
-    int PyBuffer_FillInfo(Py_buffer *view, object obj, void *buf, Py_ssize_t len, int readonly, int infoflags) except -1
+    int PyBuffer_FillInfo(Py_buffer *view, object obj, void *buf,
+                Py_ssize_t len, int readonly, int infoflags) except -1
     object PyMemoryView_FromBuffer(Py_buffer *info)
     
     object PyMemoryView_FromObject(object)
@@ -65,13 +70,17 @@ cdef extern from "Python.h":
 # asbuffer: C buffer from python object
 #-----------------------------------------------------------------------------
 
+
 cdef inline int newstyle_available():
     return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 6)
+
+cdef inline int memoryview_available():
+    return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 7)
 
 cdef inline int oldstyle_available():
     return PY_MAJOR_VERSION < 3
 
-cdef inline int is_buffer(object ob):
+cdef inline int check_buffer(object ob):
     """Version independent check for whether an object is a buffer.
     
     Parameters
@@ -81,12 +90,14 @@ cdef inline int is_buffer(object ob):
 
     Returns
     -------
-    bool : whether object is a buffer or not.
+    int : 0 if no buffer interface, 3 if newstyle buffer interface, 2 if oldstyle.
     """
     if newstyle_available():
-        return PyObject_CheckBuffer(ob)
-    else:
-        return PyObject_CheckReadBuffer(ob)
+        if PyObject_CheckBuffer(ob):
+            return 3
+    if oldstyle_available():
+        return PyObject_CheckReadBuffer(ob) and 2
+    return 0
 
 
 cdef inline object asbuffer(object ob, int writable, int format,
@@ -121,8 +132,13 @@ cdef inline object asbuffer(object ob, int writable, int format,
     cdef str bfmt = None
     cdef Py_buffer view
     cdef int flags = PyBUF_SIMPLE
-    
-    if newstyle_available() and PyObject_CheckBuffer(ob):
+    cdef int mode = 0
+
+    mode = check_buffer(ob)
+    if mode == 0:
+        raise TypeError("%r does not provide a buffer interface."%ob)
+
+    if mode == 3:
         flags = PyBUF_ANY_CONTIGUOUS
         if writable:
             flags |= PyBUF_WRITABLE
@@ -136,7 +152,7 @@ cdef inline object asbuffer(object ob, int writable, int format,
                 bfmt = view.format
                 bitemlen = view.itemsize
         PyBuffer_Release(&view)
-    else:
+    else: # oldstyle
         if writable:
             PyObject_AsWriteBuffer(ob, &bptr, &blen)
         else:
@@ -193,6 +209,8 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
         pybuf.format = "B"
         pybuf.shape = shape
         return PyMemoryView_FromBuffer(&pybuf)
+    else:
+        raise NotImplementedError("New style buffers not available.")
 
 
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
@@ -206,6 +224,8 @@ cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):
             return PyBuffer_FromMemory(ptr, s)
         else:
             return PyBuffer_FromReadWriteMemory(ptr, s)
+    else:
+        raise NotImplementedError("Old style buffers not available.")
 
 
 cdef inline object frombuffer(void *ptr, Py_ssize_t s, int readonly):
@@ -261,7 +281,7 @@ cdef inline object viewfromobject(object obj, int readonly):
     -------
     Buffer/View of the original object.
     """
-    if PY_MAJOR_VERSION < 3:
+    if oldstyle_available():
         if readonly:
             return PyBuffer_FromObject(obj, 0, Py_END_OF_BUFFER)
         else:

@@ -34,7 +34,7 @@ class TestMultipart(BaseZMQTestCase):
     def test_xrep_xreq(self):
         xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
 
-        msg1 = 'message1'
+        msg1 = 'message1'.encode()
         xreq.send(msg1)
         ident = xrep.recv()
         more = xrep.rcvmore()

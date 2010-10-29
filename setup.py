@@ -26,6 +26,7 @@
 import os, sys
 
 from distutils.core import setup, Command
+from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
 from distutils.command.sdist import sdist
 from distutils.command.build_ext import build_ext
@@ -39,12 +40,22 @@ try:
 except:
     from os import walk
 
+#-----------------------------------------------------------------------------
+# Flags
+#-----------------------------------------------------------------------------
+# ignore unused-function and strict-aliasing warnings, of which there
+# will be many from the Cython generated code:
+# note that this is only for gcc-style compilers
+if get_default_compiler() in ('unix', 'mingw32'):
+    ignore_common_warnings=True
+else:
+    ignore_common_warnings=True
+
+release = False # flag for whether to include *.c in package_data
 
 #-----------------------------------------------------------------------------
 # Extra commands
 #-----------------------------------------------------------------------------
-
-release = False # flag for whether to include *.c in package_data
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
@@ -130,6 +141,14 @@ class CheckingBuildExt(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+#-----------------------------------------------------------------------------
+# Suppress Common warnings
+#-----------------------------------------------------------------------------
+
+extra_flags = []
+if ignore_common_warnings:
+    for warning in ('unused-function', 'strict-aliasing'):
+        extra_flags.append('-Wno-'+warning)
 
 #-----------------------------------------------------------------------------
 # Extensions
@@ -165,7 +184,7 @@ submodules = dict(
             'version':[czmq],
     },
     devices = {
-            'monitoredqueue':[pxd('devices', 'basedevice'), czmq],
+            'monitoredqueue':[pxd('devices', 'basedevice'), buffers, czmq],
     },
     utils = {
             'initthreads':[czmq]
@@ -207,7 +226,8 @@ for submod, packages in submodules.items():
             'zmq.%s.%s'%(submod, pkg),
             sources = sources,
             libraries = [libzmq],
-            include_dirs = includes
+            include_dirs = includes,
+            extra_compile_args = extra_flags
         )
         extensions.append(ext)
 

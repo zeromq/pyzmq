@@ -23,7 +23,11 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from cpython cimport PyString_FromStringAndSize
+# get version-independent aliases:
+cdef extern from "pyversion_compat.h":
+    pass
+
+from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport Py_DECREF, Py_INCREF
 
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
@@ -41,6 +45,7 @@ except: # 2.x
     from Queue import Queue, Empty
 
 from zmq.core.error import ZMQError, NotDone
+from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -184,7 +189,7 @@ cdef class Message:
     def __cinit__(self, object data=None):
         cdef int rc
         cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
+        cdef Py_ssize_t data_len_c=0
         cdef object hint
 
         # Save the data object in case the user wants the the data as a str.
@@ -269,10 +274,14 @@ cdef class Message:
 
     def __str__(self):
         """Return the str form of the message."""
-        if isinstance(self._data, str):
-            return self._data
+        if isinstance(self._data, bytes):
+            b = self._data
         else:
-            return str(self.bytes)
+            b = self.bytes
+        if str is unicode:
+            return b.decode()
+        else:
+            return b
     
     @property
     def done(self):
@@ -330,7 +339,7 @@ cdef class Message:
         # always make a copy:
         data_c = <char *>zmq_msg_data(&self.zmq_msg)
         data_len_c = zmq_msg_size(&self.zmq_msg)
-        return PyString_FromStringAndSize(data_c, data_len_c)
+        return PyBytes_FromStringAndSize(data_c, data_len_c)
     
     @property
     def bytes(self):

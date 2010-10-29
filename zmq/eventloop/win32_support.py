@@ -3,6 +3,7 @@
 
 import ctypes
 import ctypes.wintypes
+import sys
 import os
 import socket
 import errno
@@ -87,7 +88,8 @@ class Pipe(object):
             try:
                 self.writer.connect(connect_address)
                 break    # success
-            except socket.error, detail:
+            except socket.error:
+                detail = sys.exc_info()[1]
                 if detail[0] != errno.WSAEADDRINUSE:
                     # "Address already in use" is the only error
                     # I've seen on two WinXP Pro SP2 boxes, under
@@ -113,7 +115,8 @@ class Pipe(object):
         """Emulate a file descriptors read method"""
         try:
             return self.reader.recv(1)
-        except socket.error, ex:
+        except socket.error:
+            ex = sys.exc_info()[1]
             if ex.args[0] == errno.EWOULDBLOCK:
                 raise IOError
             raise

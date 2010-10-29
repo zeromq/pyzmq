@@ -45,7 +45,7 @@ from zmq.core import XREP, ZMQError
 
 
 def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
-                    str in_prefix='in', str out_prefix='out'):
+                    object in_prefix='in', object out_prefix='out'):
     """monitored_queue(in_socket, out_socket, mon_socket,
                        in_prefix='in', out_prefix='out')
 
@@ -87,6 +87,10 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     cdef char *msg_c = NULL
     cdef Py_ssize_t msg_c_len
     cdef int rc
+
+    for prefix in (in_prefix, out_prefix):
+        if not isinstance(prefix, bytes):
+            raise TypeError("prefix must be bytes, not %s"%type(prefix))
 
     # force swap_ids if both XREP
     swap_ids = (in_socket.socket_type == XREP and 

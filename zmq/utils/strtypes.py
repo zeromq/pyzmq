@@ -1,7 +1,12 @@
-"""0MQ Socket class declaration."""
+"""Declare basic string types unambiguously for various Python versions.
+
+Authors
+-------
+* MinRK
+"""
 
 #
-#    Copyright (c) 2010 Brian E. Granger
+#    Copyright (c) 2010 Min Ragan-Kelley, Brian Granger
 #
 #    This file is part of pyzmq.
 #
@@ -19,18 +24,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
+import sys
 
+major,mior = sys.version_info[:2]
+if major >= 3:
+    bytes = bytes
+    unicode = str
+    basestring = (bytes, unicode)
+elif major == 2:
+    unicode = unicode
+    bytes = str
+    basestring = basestring
 
-cdef class Socket:
-    """A 0MQ socket."""
-
-    cdef void *handle           # The C handle for the underlying zmq object.
-    cdef public int socket_type # The 0MQ socket type - REQ,REP, etc.
-    # Hold on to a reference to the context to make sure it is not garbage
-    # collected until the socket it done with it.
-    cdef public object context # The zmq Context object that owns this.
-    cdef public object closed   # bool property for a closed socket.
-
+__all__ = ['bytes', 'unicode', 'basestring']

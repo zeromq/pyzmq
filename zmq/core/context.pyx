@@ -96,5 +96,8 @@ cdef class Context:
             raise ZMQError(ENOTSUP)
         return Socket(self, socket_type)
 
+    @property
+    def _handle(self):
+        return <Py_ssize_t> self.handle
 
 __all__ = ['Context']
