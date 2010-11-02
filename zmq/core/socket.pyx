@@ -90,7 +90,7 @@ cdef class Socket:
         REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
     """
 
-    def __cinit__(self, object context, int socket_type):
+    def __cinit__(self, object context, int socket_type, *args, **kwargs):
         cdef Py_ssize_t c_handle
         c_handle = context._handle
 

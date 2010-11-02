@@ -183,6 +183,8 @@ submodules = dict(
             'device':[czmq],
             'version':[czmq],
     },
+    crypto = {'encryptedsocket':[pxd('core', 'socket'), czmq, buffers],
+    },
     devices = {
             'monitoredqueue':[pxd('devices', 'basedevice'), buffers, czmq],
     },
