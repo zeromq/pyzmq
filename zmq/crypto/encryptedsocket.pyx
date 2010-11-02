@@ -31,7 +31,6 @@ from cpython.ref cimport PyObject
 from cpython cimport PyBytes_FromStringAndSize, _PyBytes_Resize
 
 from zmq.core.czmq cimport memcpy
-
 from zmq.utils.buffers cimport asbuffer_r, frombuffer_r
 
 from zmq.core.socket cimport Socket
@@ -50,6 +49,7 @@ import zmq
 cdef char _PADCHAR = '#'
 
 cdef inline object _pad_message(object msg, int blocksize, char padchar=_PADCHAR):
+    """Pad a message, so that len(msg)%blocksize==0"""
     cdef char * c_data
     cdef Py_ssize_t c_data_len
     cdef Py_ssize_t padlen
@@ -75,7 +75,7 @@ cdef inline object _pad_message(object msg, int blocksize, char padchar=_PADCHAR
     return padded_message
 
 cdef inline object _unpad_message(object msg, char padchar=_PADCHAR):
-    """Unpad a message."""
+    """Unpad a message that was padded by _pad_message."""
     cdef char * c_data
     cdef Py_ssize_t c_data_len
     cdef Py_ssize_t true_len
@@ -84,9 +84,7 @@ cdef inline object _unpad_message(object msg, char padchar=_PADCHAR):
     true_len = c_data_len
     while true_len and c_data[true_len-1] == padchar:
         true_len -= 1
-        # c_data[c_data_len]='\0'
     unpadded_message = PyBytes_FromStringAndSize(c_data, true_len)
-    # print true_len, len(unpadded_message)
     return unpadded_message
 
 cdef class EncryptedSocket(Socket):
