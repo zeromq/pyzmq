@@ -75,9 +75,9 @@ class BaseZMQTestCase(TestCase):
         o3 = s1.recv_pyobj()
         return o3
 
-    def assertRaisesErrno(self, errno, func, *args):
+    def assertRaisesErrno(self, errno, func, *args, **kwargs):
         try:
-            func(*args)
+            func(*args, **kwargs)
         except zmq.ZMQError:
             e = sys.exc_info()[1]
             self.assertEqual(e.errno, errno, "wrong error raised, expected '%s' \
