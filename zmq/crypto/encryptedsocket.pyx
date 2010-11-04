@@ -95,6 +95,28 @@ cdef inline object _unpad_message(object msg, char padchar=_PADCHAR):
     unpadded_message = PyBytes_FromStringAndSize(c_data, true_len)
     return unpadded_message
 
+def default_encrypted(f):
+    ns = {}
+    fname = f.__name__
+    sig, docrest = f.__doc__.split('\n',1)
+    sig = sig[:-1] + ", encrypted=None)"
+    exec ("""
+def %(fname)s(self, *args, **kwargs):
+        \"\"\"%(sig)s
+        %(docrest)s
+        additional `encrypted` keyword flag specifies whether the
+        message to/from zmq is encrypted with my cipher. If encrypted
+        is None, self.encrypted is used as a default.
+        \"\"\"
+        save_encrypted = self.encrypted
+        self.encrypted = kwargs.pop('encrypted')
+        result = f(self, *args, **kwargs)
+        self.encrypted = save_encrypted
+        return result
+"""%locals()) in ns
+    return ns[f.__name__]
+
+
 cdef class EncryptedSocket(Socket):
     """EncryptedScoket(ctx, socket_type, cipher, pad=False)
         
@@ -208,7 +230,7 @@ cdef class EncryptedSocket(Socket):
         ----------
         encrypted : bool
             Whether to send an encrypted version of data.
-            If False, just passthrough to Socket.send
+            If False, just passthrough to Socket.send_multipart
             Default: refer to self.encrypted
         
         See zmq.core.Socket for other args.
@@ -231,7 +253,7 @@ cdef class EncryptedSocket(Socket):
         ----------
         encrypted : bool
             Whether to decrypt the message after receiving it
-            If False, just passthrough to Socket.recv
+            If False, just passthrough to Socket.recv_multipart
             Default: refer to self.encrypted
         
         See zmq.core.Socket for other args.
@@ -244,156 +266,13 @@ cdef class EncryptedSocket(Socket):
         if encrypted:
             msgs = [ self._decrypt(msg) for msg in msgs ]
         return msgs
-
-    def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8', encrypted=None):
-        """s.send_unicode(u, flags=0, copy=False, encoding='utf-8')
-
-        Send a Python unicode object as a message with an encoding and optional encryption.
-
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to send an encrypted version of data.
-            If False, just passthrough to Socket.send
-            Default: refer to self.encrypted
-        
-        See zmq.core.Socket for other args.
-        """
-        
-        # default to self.encrypt:
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular send
-            return Socket.send_unicode(self, u, flags=flags, copy=copy, encoding=encoding)
-        
-        if not isinstance(u, basestring):
-            raise TypeError("unicode/str objects only")
-        return self.send(u.encode(encoding), flags=flags, encrypted=True)
     
-    def recv_unicode(self, int flags=0, encoding='utf-8', encrypted=None):
-        """s.recv_unicode(flags=0, encoding='utf-8', encrypted=None)
-
-        Receive a unicode string, as sent by send_unicode.
-        
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to decrypt the message after receiving it
-            If False, just passthrough to Socket.recv
-            Default: refer to self.encrypted
-        
-        See zmq.core.Socket for other args.
-        """
-        # default to self.encrypt:
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular send
-            return Socket.recv_unicode(self, flags=flags, encoding=encoding)
-        
-        msg = self.recv(flags=flags, copy=False, encrypted=True)
-        return codecs.decode(msg, encoding)
-    
-    def send_pyobj(self, obj, flags=0, protocol=-1, encrypted=None):
-        """s.send_pyobj(obj, flags=0, protocol=-1, encrypted=None)
-
-        Send a Python object as a message using pickle to serialize.
-
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to send an encrypted version of data.
-            If False, just passthrough to Socket.send
-            Default: refer to self.encrypted
-
-        See zmq.core.Socket for other args.
-        """
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular send
-            return Socket.send_pyobj(self, obj, flags=flags)
-        
-        msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags, encrypted=True)
-
-    def recv_pyobj(self, flags=0, encrypted=None):
-        """s.recv_pyobj(flags=0, encrypted=None)
-
-        Receive a Python object as a message using pickle to serialize.
-
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to decrypt the message after receiving it
-            If False, just passthrough to Socket.recv
-            Default: refer to self.encrypted
-        
-        See zmq.core.Socket for other args.
-        """
-        # default to self.encrypt:
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular recv
-            return Socket.recv_pyobj(self, flags=flags)
-        
-        s = self.recv(flags, copy=False, encrypted=True)
-        return pickle.loads(s)
-
-    def send_json(self, obj, flags=0, encrypted=None):
-        """s.send_json(obj, flags=0, encrypted=None)
-
-        Send a Python object as a message using json to serialize.
-
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to send an encrypted version of data.
-            If False, just passthrough to Socket.send
-            Default: refer to self.encrypted
-        
-        See zmq.core.Socket for other args.
-        """
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular send
-            return Socket.send_json(self, obj, flags=flags)
-        
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = jsonapi.dumps(obj)
-            return self.send(msg, flags, encrypted=True)
-
-    def recv_json(self, flags=0, encrypted=None):
-        """s.recv_json(flags=0, encrypted=None)
-
-        Receive a Python object as a message using json to serialize.
-
-        Parameters
-        ----------
-        encrypted : bool
-            Whether to decrypt the message after receiving it
-            If False, just passthrough to Socket.recv
-            Default: refer to self.encrypted
-        
-        See zmq.core.Socket for other args.
-        """
-        # default to self.encrypt:
-        if encrypted is None:
-            encrypted = self.encrypted
-        if not encrypted:
-            # do regular recv
-            return Socket.recv_json(self, flags=flags)
-        
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = self.recv(flags, copy=False, encrypted=True)
-            return jsonapi.loads(msg)
+    send_unicode = default_encrypted(Socket.send_unicode)
+    recv_unicode = default_encrypted(Socket.recv_unicode)
+    send_json = default_encrypted(Socket.send_json)
+    recv_json = default_encrypted(Socket.recv_json)
+    send_pyobj = default_encrypted(Socket.send_pyobj)
+    recv_pyobj = default_encrypted(Socket.recv_pyobj)
 
 __all__ = ['EncryptedSocket']
 
