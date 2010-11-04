@@ -96,12 +96,11 @@ cdef inline object _unpad_message(object msg, char padchar=_PADCHAR):
     return unpadded_message
 
 def default_encrypted(f):
-    ns = {}
+    ns = dict(f=f)
     fname = f.__name__
     sig, docrest = f.__doc__.split('\n',1)
     sig = sig[:-1] + ", encrypted=None)"
-    exec ("""
-def %(fname)s(self, *args, **kwargs):
+    exec ("""def %(fname)s(self, *args, **kwargs):
         \"\"\"%(sig)s
         %(docrest)s
         additional `encrypted` keyword flag specifies whether the
@@ -109,12 +108,12 @@ def %(fname)s(self, *args, **kwargs):
         is None, self.encrypted is used as a default.
         \"\"\"
         save_encrypted = self.encrypted
-        self.encrypted = kwargs.pop('encrypted')
+        if 'encrypted' in kwargs:
+            self.encrypted = kwargs.pop('encrypted')
         result = f(self, *args, **kwargs)
         self.encrypted = save_encrypted
-        return result
-"""%locals()) in ns
-    return ns[f.__name__]
+        return result"""%locals()) in ns
+    return ns[fname]
 
 
 cdef class EncryptedSocket(Socket):
