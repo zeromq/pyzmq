@@ -400,7 +400,7 @@ cdef class Socket:
             rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
 
         if rc != 0:
-            msg.tracker_queue.get()
+            # msg.tracker_queue.get()
             raise ZMQError()
         return msg.tracker
             
