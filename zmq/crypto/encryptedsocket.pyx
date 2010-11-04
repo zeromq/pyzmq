@@ -118,17 +118,36 @@ def default_encrypted(f):
 
 cdef class EncryptedSocket(Socket):
     """EncryptedScoket(ctx, socket_type, cipher, pad=False)
-        
-    Encrypted version of zmq.core.Socket.
+
+    Subclass of zmq.core.Socket, allowing for encrypted messages.
+
+    This object Presents the complete Socket interface, but adds an optional
+    `encrypted` keyword argument to send/recv methods.
     
+    The cipher object can be anything having the methods:
+
+        cipher.encrypt(msg) : returning an encrypted version of the message
+        cipher.decrypt(msg) : turning an encrypted message back into cleartext
+
+    Note that this object does no encryption for you; it merely provides an API
+    to conveniently use your own choice of encryption algorithm.
+
+    !!!!!Warning!!!!!!
+        Please be very careful about what encryption scheme you use. This
+        object will not prevent you from making insecure or unstable choices.
+
     Parameters
     ----------
+
+    cipher: Cipher object, such as is returned by 
+        Crypto.Cipher.Blowfish.new(password). This can be any object
+        that has the methods encrypt and decrypt that turn a string or buffer
+        into another string or buffer.
+    pad : int
+        Ensure that the length of a message is evenly divisible
+        by pad, which is commonly required by block schemes,
+        such as AES and blowfish. [Default: False]
     
-    cipher: PyCrypto Cipher object, such as is returned by 
-        Crypto.Cipher.Blowfish.new(password).
-    
-    Presents the complete Socket interface, but adds an optional
-    'encrypted' keyword argument to send/recv methods.
     """
     cdef public object cipher
     cdef public int pad
