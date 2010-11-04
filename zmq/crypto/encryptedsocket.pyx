@@ -96,6 +96,7 @@ cdef inline object _unpad_message(object msg, char padchar=_PADCHAR):
     return unpadded_message
 
 def default_encrypted(f):
+    """Decorator for adding encrypt keyword arg to Socket.send_/recv_ methods."""
     ns = dict(f=f)
     fname = f.__name__
     sig, docrest = f.__doc__.split('\n',1)
@@ -214,7 +215,10 @@ cdef class EncryptedSocket(Socket):
         
         cdata = self._encrypt(data)
         
-        Socket.send(self, cdata, flags=flags, copy=False)
+        mt = Socket.send(self, cdata, flags=flags, copy=False)
+        # ensure return type matches unencrypted case
+        if not copy:
+            return mt
     
     def recv(self, int flags=0, copy=True, encrypted=None):
         """es.recv(flags=0, copy=True, encrypted=None)
@@ -239,6 +243,10 @@ cdef class EncryptedSocket(Socket):
         
         msg = Socket.recv(self, flags=flags, copy=False)
         decrypted = self._decrypt(msg)
+        if not copy:
+            # ensure non-copying recvs return Messages,
+            # even though a copy happened
+            decrypted = zmq.Message(decrypted)
         return decrypted
     
     def send_multipart(self, msgs, flags=0, copy=True, encrypted=True):
@@ -262,7 +270,7 @@ cdef class EncryptedSocket(Socket):
         
         for msg in msgs[:-1]:
             self.send(msg, flags=flags|zmq.SNDMORE, encrypted=True)
-        return self.send(msgs[-1], flags=flags, encrypted=True)
+        return self.send(msgs[-1], flags=flags, copy=copy, encrypted=True)
     
     def recv_multipart(self, flags=0, copy=True, encrypted=True):
         """recv_multipart(flags=0, copy=True, encrypted=True)
@@ -279,10 +287,17 @@ cdef class EncryptedSocket(Socket):
         # default to self.encrypt:
         if encrypted is None:
             encrypted = self.encrypted
+        if not encrypted:
+            # do regular recv
+            return Socket.recv_multipart(self, flags=flags, copy=copy)
         
-        msgs = Socket.recv_multipart(self, flags=flags, copy=copy)
-        if encrypted:
-            msgs = [ self._decrypt(msg) for msg in msgs ]
+        msgs = Socket.recv_multipart(self, flags=flags, copy=False)
+        
+        msgs = [ self._decrypt(m.buffer) for m in msgs ]
+        if not copy:
+            # ensure non-copying recvs return Messages,
+            # even though a copy happened
+            msgs = [ zmq.Message(m) for m in msgs ]
         return msgs
     
     send_unicode = default_encrypted(Socket.send_unicode)
