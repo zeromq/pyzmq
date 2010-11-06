@@ -186,7 +186,7 @@ cdef class Message:
         construct the 0MQ message data.
     """
 
-    def __cinit__(self, object data=None):
+    def __cinit__(self, object data=None, track=True):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
@@ -199,8 +199,10 @@ cdef class Message:
         self._bytes = None        # bytes copy of data
 
         # Queue and MessageTracker for monitoring when zmq is done with data:
-        self.tracker_queue = Queue()
-        self.tracker = MessageTracker(self.tracker_queue)
+        self.tracked = track
+        if track:
+            self.tracker_queue = Queue()
+            self.tracker = MessageTracker(self.tracker_queue)
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -263,9 +265,13 @@ cdef class Message:
             new_msg._buffer = self._buffer
         if self._bytes is not None:
             new_msg._bytes = self._bytes
+
         # Message copies share the tracker and tracker_queue.
-        new_msg.tracker_queue = self.tracker_queue
-        new_msg.tracker = self.tracker
+        new_msg.tracked = self.tracked
+        if self.tracked:
+            new_msg.tracker_queue = self.tracker_queue
+            new_msg.tracker = self.tracker
+
         return new_msg
 
     def __len__(self):
@@ -286,6 +292,8 @@ cdef class Message:
     @property
     def done(self):
         """Is 0MQ completely done with the message?"""
+        if not self.tracked:
+            raise AttributeError("Not a tracked message")
         return self.tracker.done
     
     def wait(self, timeout=-1):
@@ -300,6 +308,8 @@ cdef class Message:
         
         Raises NotDone if ``timeout`` reached before I am done.
         """
+        if not self.tracked:
+            raise AttributeError("Not a tracked message")
         return self.tracker.wait(timeout=timeout)
 
     

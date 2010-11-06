@@ -454,18 +454,18 @@ cdef class Socket:
         """
         self._check_closed()
         
-        m = self._recv_message(flags)
+        m = self._recv_message(flags, track=not copy)
         
         if copy:
             return m.bytes
         else:
             return m
     
-    def _recv_message(self, int flags=0):
+    def _recv_message(self, int flags=0, track=True):
         """Receive a message in a non-copying manner and return a Message."""
         cdef int rc
         cdef Message msg
-        msg = Message()
+        msg = Message(track=track)
 
         with nogil:
             rc = zmq_recv(self.handle, &msg.zmq_msg, flags)

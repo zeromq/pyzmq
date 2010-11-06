@@ -184,6 +184,12 @@ class TestMessage(BaseZMQTestCase):
         del m
         self.assertTrue(pm.done)
     
+    def test_no_tracker(self):
+        m = zmq.Message('asdf'.encode(), track=False)
+        self.assertRaises(AttributeError, getattr, m, 'done')
+        m2 = copy.copy(m)
+        self.assertRaises(AttributeError, getattr, m2, 'done')
+    
     def test_multi_tracker(self):
         m = zmq.Message('asdf'.encode())
         m2 = zmq.Message('whoda'.encode())
@@ -271,7 +277,7 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals(A.data, m.buffer)
             B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEquals((A==B).all(), True)
-
+    
     def test_memoryview(self):
         """test messages from memoryview (only valid for python >= 2.7)"""
         major,minor = sys.version_info[:2]
