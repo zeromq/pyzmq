@@ -103,6 +103,8 @@ cdef class MessageTracker(object):
             elif isinstance(obj, MessageTracker):
                 self.peers.add(obj)
             elif isinstance(obj, Message):
+                if not obj.tracker:
+                    raise AttributeError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
                 raise TypeError("Require Queues or Messages, not %s"%type(obj))
@@ -199,10 +201,12 @@ cdef class Message:
         self._bytes = None        # bytes copy of data
 
         # Queue and MessageTracker for monitoring when zmq is done with data:
-        self.tracked = track
         if track:
             self.tracker_queue = Queue()
             self.tracker = MessageTracker(self.tracker_queue)
+        else:
+            self.tracker_queue = None
+            self.tracker = None
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -266,11 +270,9 @@ cdef class Message:
         if self._bytes is not None:
             new_msg._bytes = self._bytes
 
-        # Message copies share the tracker and tracker_queue.
-        new_msg.tracked = self.tracked
-        if self.tracked:
-            new_msg.tracker_queue = self.tracker_queue
-            new_msg.tracker = self.tracker
+        # Message copies share the tracker and tracker_queue
+        new_msg.tracker_queue = self.tracker_queue
+        new_msg.tracker = self.tracker
 
         return new_msg
 
@@ -292,7 +294,7 @@ cdef class Message:
     @property
     def done(self):
         """Is 0MQ completely done with the message?"""
-        if not self.tracked:
+        if not self.tracker:
             raise AttributeError("Not a tracked message")
         return self.tracker.done
     
@@ -308,7 +310,7 @@ cdef class Message:
         
         Raises NotDone if ``timeout`` reached before I am done.
         """
-        if not self.tracked:
+        if not self.tracker:
             raise AttributeError("Not a tracked message")
         return self.tracker.wait(timeout=timeout)
 

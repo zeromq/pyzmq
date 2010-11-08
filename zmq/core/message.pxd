@@ -45,7 +45,6 @@ cdef class Message:
     cdef object _buffer    # A Python Buffer/View of the message contents
     cdef object _bytes     # A bytes/str copy of the message.
     cdef bool _failed_init # Flag to handle failed zmq_msg_init
-    cdef bool tracked      # Indicates if message is tracked
     cdef public object tracker_queue  # Queue for use with zmq_free_fn.
     cdef public object tracker        # MessageTracker object.
 

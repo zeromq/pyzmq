@@ -454,7 +454,7 @@ cdef class Socket:
         """
         self._check_closed()
         
-        m = self._recv_message(flags, track=not copy)
+        m = self._recv_message(flags, track=False)
         
         if copy:
             return m.bytes

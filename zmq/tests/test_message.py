@@ -189,6 +189,7 @@ class TestMessage(BaseZMQTestCase):
         self.assertRaises(AttributeError, getattr, m, 'done')
         m2 = copy.copy(m)
         self.assertRaises(AttributeError, getattr, m2, 'done')
+        self.assertRaises(AttributeError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
         m = zmq.Message('asdf'.encode())
