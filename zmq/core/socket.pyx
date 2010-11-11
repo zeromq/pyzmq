@@ -346,7 +346,7 @@ cdef class Socket:
     #-------------------------------------------------------------------------
 
     def send(self, object data, int flags=0, copy=True, track=False):
-        """s.send(data, flags=0, copy=True)
+        """s.send(data, flags=0, copy=True, track=False)
 
         Send a message on this socket.
 
@@ -366,7 +366,7 @@ cdef class Socket:
 
         Returns
         -------
-        if copy:
+        if copy or not track:
             None if message was sent, raises an exception otherwise.
         else:
             a class:`MessageTracker` object, whose ``pending`` property will
@@ -437,7 +437,7 @@ cdef class Socket:
             raise ZMQError()
     
     def recv(self, int flags=0, copy=True, track=False):
-        """s.recv(flags=0, copy=True)
+        """s.recv(flags=0, copy=True, track=False)
 
         Receive a message.
 
@@ -492,7 +492,7 @@ cdef class Socket:
         return copy_zmq_msg_bytes(&zmq_msg)
 
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
-        """s.send_multipart(msg_parts, flags=0, copy=True)
+        """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
 
         Send a sequence of messages as a multipart message.
 
@@ -508,6 +508,13 @@ cdef class Socket:
         track : bool
             Should the message(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
+        Returns
+        -------
+        if copy or not track:
+            None if message was sent, raises an exception otherwise.
+        else:
+            a class:`MessageTracker` object, whose ``pending`` property will
+            be ``True`` until the last send is completed.
         """
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
@@ -515,7 +522,7 @@ cdef class Socket:
         return self.send(msg_parts[-1], flags, copy=copy, track=track)
 
     def recv_multipart(self, int flags=0, copy=True, track=False):
-        """s.recv_multipart(flags=0, copy=True)
+        """s.recv_multipart(flags=0, copy=True, track=False)
 
         Receive a multipart message as a list of messages.
 

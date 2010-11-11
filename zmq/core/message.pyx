@@ -63,7 +63,7 @@ cdef void free_python_msg(void *data, void *hint) with gil:
             tracker_queue.put(0)
         tracker_queue = None
 
-cdef object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg) with gil:
+cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg):
     """ Copy the data from a zmq_msg_t """
     cdef char *data_c = NULL
     cdef Py_ssize_t data_len_c
@@ -71,7 +71,6 @@ cdef object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg) with gil:
         data_c = <char *>zmq_msg_data(zmq_msg)
         data_len_c = zmq_msg_size(zmq_msg)
     return PyBytes_FromStringAndSize(data_c, data_len_c)
-
 
 
 cdef class MessageTracker(object):
@@ -177,7 +176,7 @@ cdef class MessageTracker(object):
 
 
 cdef class Message:
-    """Message(data=None)
+    """Message(data=None, track=False)
 
     A Message class for non-copy send/recvs.
 
@@ -198,7 +197,7 @@ cdef class Message:
         construct the 0MQ message data.
     """
 
-    def __cinit__(self, object data=None, track=False):
+    def __cinit__(self, object data=None, track=False, **kwargs):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
@@ -244,6 +243,10 @@ cdef class Message:
             Py_DECREF(hint)
             raise ZMQError()
         self._failed_init = False
+    
+    def __init__(self, object data=None, track=False):
+        """Enforce signature"""
+        pass
 
     def __dealloc__(self):
         cdef int rc
