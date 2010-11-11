@@ -37,7 +37,7 @@ from allocate cimport allocate
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
 
 from czmq cimport *
-from message cimport Message, MessageTracker
+from message cimport Message, copy_zmq_msg_bytes
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -345,7 +345,7 @@ cdef class Socket:
     # Sending and receiving messages
     #-------------------------------------------------------------------------
 
-    def send(self, object data, int flags=0, copy=True):
+    def send(self, object data, int flags=0, copy=True, track=False):
         """s.send(data, flags=0, copy=True)
 
         Send a message on this socket.
@@ -360,6 +360,9 @@ cdef class Socket:
             Any supported flag: NOBLOCK, SNDMORE.
         copy : bool
             Should the message be sent in a copying or non-copying manner.
+        track : bool
+            Should the message be tracked for notification that ZMQ has
+            finished with it (ignored if copy=True).
 
         Returns
         -------
@@ -382,9 +385,11 @@ cdef class Socket:
             return self._send_copy(data, flags)
         else:
             if isinstance(data, Message):
+                if track and not data.tracker:
+                    raise AttributeError('Not a tracked message')
                 msg = data
             else:
-                msg = Message(data)
+                msg = Message(data, track=track)
             return self._send_message(msg, flags)
 
     def _send_message(self, Message msg, int flags=0):
@@ -431,7 +436,7 @@ cdef class Socket:
         if rc != 0 or rc2 != 0:
             raise ZMQError()
     
-    def recv(self, int flags=0, copy=True):
+    def recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True)
 
         Receive a message.
@@ -447,6 +452,10 @@ cdef class Socket:
             Should the message be received in a copying or non-copying manner.
             If False a Message object is returned, if True a string copy of
             message is returned.
+        track : bool
+            Should the message be tracked for notification that ZMQ has
+            finished with it (ignored if copy=True).
+
         Returns
         -------
         msg : str
@@ -454,14 +463,12 @@ cdef class Socket:
         """
         self._check_closed()
         
-        m = self._recv_message(flags, track=False)
-        
         if copy:
-            return m.bytes
+            return self._recv_copy(flags)
         else:
-            return m
+            return self._recv_message(flags, track)
     
-    def _recv_message(self, int flags=0, track=True):
+    def _recv_message(self, int flags=0, track=False):
         """Receive a message in a non-copying manner and return a Message."""
         cdef int rc
         cdef Message msg
@@ -474,7 +481,17 @@ cdef class Socket:
             raise ZMQError()
         return msg
 
-    def send_multipart(self, msg_parts, int flags=0, copy=True):
+    def _recv_copy(self, int flags=0):
+        """Recieve a message and return a copy"""
+        cdef zmq_msg_t zmq_msg
+        with nogil:
+            zmq_msg_init (&zmq_msg)
+            rc = zmq_recv(self.handle, &zmq_msg, flags)
+        if rc != 0:
+            raise ZMQError()
+        return copy_zmq_msg_bytes(&zmq_msg)
+
+    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
         """s.send_multipart(msg_parts, flags=0, copy=True)
 
         Send a sequence of messages as a multipart message.
@@ -486,13 +503,18 @@ cdef class Socket:
         flags : int
             Only the NOBLOCK flagis supported, SNDMORE is handled
             automatically.
+        copy : bool
+            Should the message(s) be sent in a copying or non-copying manner.
+        track : bool
+            Should the message(s) be tracked for notification that ZMQ has
+            finished with it (ignored if copy=True).
         """
         for msg in msg_parts[:-1]:
-            self.send(msg, SNDMORE|flags, copy=copy)
+            self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
-        return self.send(msg_parts[-1], flags, copy=copy)
+        return self.send(msg_parts[-1], flags, copy=copy, track=track)
 
-    def recv_multipart(self, int flags=0, copy=True):
+    def recv_multipart(self, int flags=0, copy=True, track=False):
         """s.recv_multipart(flags=0, copy=True)
 
         Receive a multipart message as a list of messages.
@@ -505,10 +527,12 @@ cdef class Socket:
             If NOBLOCK is not set, then this method will block until a
             message arrives.
         copy : bool
-            Should the message be received in a copying or non-copying manner.
+            Should the message(s) be received in a copying or non-copying manner.
             If False a Message object is returned, if True a string copy of
             message is returned.
-
+        track : bool
+            Should the message(s) be tracked for notification that ZMQ has
+            finished with it (ignored if copy=True).
         Returns
         -------
         msg_parts : list
@@ -516,7 +540,7 @@ cdef class Socket:
         """
         parts = []
         while True:
-            part = self.recv(flags, copy=copy)
+            part = self.recv(flags, copy=copy, track=track)
             parts.append(part)
             if self.rcvmore():
                 continue

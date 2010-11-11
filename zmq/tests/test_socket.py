@@ -102,10 +102,10 @@ class TestSocket(BaseZMQTestCase):
         b = self.context.socket(zmq.XREP)
         self.sockets.extend([a,b])
         a.connect(iface)
-        p1 = a.send('something'.encode(), copy=False)
+        p1 = a.send('something'.encode(), copy=False, track=True)
         self.assert_(isinstance(p1, zmq.MessageTracker))
         self.assertFalse(p1.done)
-        p2 = a.send_multipart(list(map(str.encode, ['something', 'else'])), copy=False)
+        p2 = a.send_multipart(list(map(str.encode, ['something', 'else'])), copy=False, track=True)
         self.assert_(isinstance(p2, zmq.MessageTracker))
         self.assertEquals(p2.done, False)
         self.assertEquals(p1.done, False)
@@ -116,7 +116,7 @@ class TestSocket(BaseZMQTestCase):
         msg = b.recv_multipart()
         self.assertEquals(p2.done, True)
         self.assertEquals(msg, list(map(str.encode, ['a', 'something', 'else'])))
-        m = zmq.Message("again".encode())
+        m = zmq.Message("again".encode(), track=True)
         self.assertEquals(m.done, False)
         # print m.bytes
         p1 = a.send(m, copy=False)
@@ -138,7 +138,8 @@ class TestSocket(BaseZMQTestCase):
         # q.get()
         self.assertEquals(p1.done, True)
         self.assertEquals(p2.done, True)
-        
+        m = zmq.Message('something'.encode(), track=False)
+        self.assertRaises(AttributeError, a.send, m, copy=False, track=True)
         
 
     def test_close(self):

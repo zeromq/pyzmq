@@ -177,7 +177,7 @@ class TestMessage(BaseZMQTestCase):
             del s
     
     def test_tracker(self):
-        m = zmq.Message('asdf'.encode())
+        m = zmq.Message('asdf'.encode(), track=True)
         self.assertFalse(m.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
@@ -192,8 +192,8 @@ class TestMessage(BaseZMQTestCase):
         self.assertRaises(AttributeError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
-        m = zmq.Message('asdf'.encode())
-        m2 = zmq.Message('whoda'.encode())
+        m = zmq.Message('asdf'.encode(), track=True)
+        m2 = zmq.Message('whoda'.encode(), track=True)
         mt = zmq.MessageTracker(m,m2)
         self.assertFalse(m.done)
         self.assertFalse(mt.done)

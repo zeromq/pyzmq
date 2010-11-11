@@ -63,6 +63,16 @@ cdef void free_python_msg(void *data, void *hint) with gil:
             tracker_queue.put(0)
         tracker_queue = None
 
+cdef object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg) with gil:
+    """ Copy the data from a zmq_msg_t """
+    cdef char *data_c = NULL
+    cdef Py_ssize_t data_len_c
+    with nogil:
+        data_c = <char *>zmq_msg_data(zmq_msg)
+        data_len_c = zmq_msg_size(zmq_msg)
+    return PyBytes_FromStringAndSize(data_c, data_len_c)
+
+
 
 cdef class MessageTracker(object):
     """MessageTracker(*towatch)
@@ -188,7 +198,7 @@ cdef class Message:
         construct the 0MQ message data.
     """
 
-    def __cinit__(self, object data=None, track=True):
+    def __cinit__(self, object data=None, track=False):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
@@ -340,19 +350,6 @@ cdef class Message:
             self._buffer = self._getbuffer()
         return self._buffer
 
-    cdef object _copybytes(self):
-        """Create a Python bytes object from a copy of the message data.
-
-        This will be called only once, the first time the ``bytes`` property
-        is accessed. Subsequent calls use a cached copy.
-        """
-        cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
-        # always make a copy:
-        data_c = <char *>zmq_msg_data(&self.zmq_msg)
-        data_len_c = zmq_msg_size(&self.zmq_msg)
-        return PyBytes_FromStringAndSize(data_c, data_len_c)
-    
     @property
     def bytes(self):
         """Get the message content as a Python str/bytes object.
@@ -362,7 +359,7 @@ cdef class Message:
         returned.
         """
         if self._bytes is None:
-            self._bytes = self._copybytes()
+            self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
 
 
