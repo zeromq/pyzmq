@@ -27,12 +27,19 @@ from czmq cimport zmq_poll, zmq_pollitem_t
 from socket cimport Socket
 from allocate cimport allocate
 
+import sys
 from zmq.core.error import ZMQError
 from zmq.core.constants import POLLIN,POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
 # Polling related methods
 #-----------------------------------------------------------------------------
+
+# version-independent typecheck for int/long
+if sys.version_info[0] >= 3:
+    int_t = int
+else:
+    int_t = (int,long)
 
 def _poll(sockets, long timeout=-1):
     """_poll(sockets, timeout=-1)
@@ -64,7 +71,7 @@ def _poll(sockets, long timeout=-1):
             pollitems[i].socket = current_socket.handle
             pollitems[i].events = events
             pollitems[i].revents = 0
-        elif isinstance(s, (int,long)):
+        elif isinstance(s, int_t):
             pollitems[i].socket = NULL
             pollitems[i].fd = s
             pollitems[i].events = events
