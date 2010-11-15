@@ -64,7 +64,7 @@ def _poll(sockets, long timeout=-1):
             pollitems[i].socket = current_socket.handle
             pollitems[i].events = events
             pollitems[i].revents = 0
-        elif isinstance(s, int):
+        elif isinstance(s, (int,long)):
             pollitems[i].socket = NULL
             pollitems[i].fd = s
             pollitems[i].events = events

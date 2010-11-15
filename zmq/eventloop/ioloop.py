@@ -252,7 +252,7 @@ class IOLoop(object):
                 else:
                     raise
             except Exception:
-                e = sys.exc_info[1]
+                e = sys.exc_info()[1]
                 # Depending on python version and IOLoop implementation,
                 # different exception types may be thrown and there are
                 # two ways EINTR might be signaled:
