@@ -113,7 +113,7 @@ cdef class MessageTracker(object):
                 self.peers.add(obj)
             elif isinstance(obj, Message):
                 if not obj.tracker:
-                    raise AttributeError("Not a tracked message")
+                    raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
                 raise TypeError("Require Queues or Messages, not %s"%type(obj))
@@ -308,7 +308,7 @@ cdef class Message:
     def done(self):
         """Is 0MQ completely done with the message?"""
         if not self.tracker:
-            raise AttributeError("Not a tracked message")
+            raise ValueError("Not a tracked message")
         return self.tracker.done
     
     def wait(self, timeout=-1):
@@ -324,7 +324,7 @@ cdef class Message:
         Raises NotDone if ``timeout`` reached before I am done.
         """
         if not self.tracker:
-            raise AttributeError("Not a tracked message")
+            raise ValueError("Not a tracked message")
         return self.tracker.wait(timeout=timeout)
 
     

@@ -386,7 +386,7 @@ cdef class Socket:
         else:
             if isinstance(data, Message):
                 if track and not data.tracker:
-                    raise AttributeError('Not a tracked message')
+                    raise ValueError('Not a tracked message')
                 msg = data
             else:
                 msg = Message(data, track=track)
@@ -405,7 +405,8 @@ cdef class Socket:
             rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
 
         if rc != 0:
-            # msg.tracker_queue.get()
+            # don't pop from the Queue here, because the free_fn will
+            #  still call Queue.get() even if the send fails
             raise ZMQError()
         return msg.tracker
             

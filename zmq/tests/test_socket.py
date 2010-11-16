@@ -139,7 +139,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p1.done, True)
         self.assertEquals(p2.done, True)
         m = zmq.Message('something'.encode(), track=False)
-        self.assertRaises(AttributeError, a.send, m, copy=False, track=True)
+        self.assertRaises(ValueError, a.send, m, copy=False, track=True)
         
 
     def test_close(self):

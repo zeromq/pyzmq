@@ -186,10 +186,10 @@ class TestMessage(BaseZMQTestCase):
     
     def test_no_tracker(self):
         m = zmq.Message('asdf'.encode(), track=False)
-        self.assertRaises(AttributeError, getattr, m, 'done')
+        self.assertRaises(ValueError, getattr, m, 'done')
         m2 = copy.copy(m)
-        self.assertRaises(AttributeError, getattr, m2, 'done')
-        self.assertRaises(AttributeError, zmq.MessageTracker, m)
+        self.assertRaises(ValueError, getattr, m2, 'done')
+        self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
         m = zmq.Message('asdf'.encode(), track=True)
