@@ -254,7 +254,7 @@ the ZeroMQ library (http://www.zeromq.org).
 
 setup(
     name = "pyzmq",
-    version = "2.0.9dev",
+    version = "2.0.10dev",
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
                 'zmq.devices', 'zmq.utils'],
     ext_modules = extensions,
