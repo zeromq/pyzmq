@@ -23,7 +23,7 @@ import logging
 import time
 import traceback
 
-import stack_context
+from zmq.eventloop import stack_context
 
 try:
     import signal

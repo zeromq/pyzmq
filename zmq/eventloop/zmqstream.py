@@ -15,14 +15,16 @@
 
 """A utility class to send to and recv from a non-blocking socket."""
 
+from __future__ import with_statement
+
 import sys
 import logging
 
 import zmq
 from zmq.core.socket import jsonapi, pickle
 
-import ioloop
-import stack_context
+from zmq.eventloop import ioloop
+from zmq.eventloop import stack_context
 
 try:
     from queue import Queue
