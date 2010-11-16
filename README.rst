@@ -108,7 +108,7 @@ Currently, we are using the following steps to release PyZMQ:
     git co -b 2.0.8 master
     git push origin 2.0.8
 
-*Tag the release::
+* Tag the release::
 
     git tag -a -m “Tagging release 2.0.8” 2.0.8
     git push origin —tags
@@ -119,7 +119,8 @@ Currently, we are using the following steps to release PyZMQ:
 Authors
 =======
 
-This project was started by Brian E. Granger (ellisonbg AT gmail DOT com).
+This project was started by and continues to be led by Brian E. Granger
+(ellisonbg AT gmail DOT com).
 
 The following people have contributed to the project:
 
