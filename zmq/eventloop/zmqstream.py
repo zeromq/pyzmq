@@ -349,28 +349,34 @@ class ZMQStream(object):
         if not self.socket:
             logging.warning("Got events for closed stream %s", fd)
             return
-        # dispatch events:
-        if events & zmq.POLLERR:
-            self._handle_error()
-            return
-        if events & zmq.POLLIN:
-            self._handle_recv()
-            if not self.socket:
+        try:
+            # dispatch events:
+            if events & zmq.POLLERR:
+                self._handle_error()
                 return
-        if events & zmq.POLLOUT:
-            self._handle_send()
-            if not self.socket:
-                return
-        
-        # rebuild the poll state
-        state = zmq.POLLERR
-        if self.receiving():
-            state |= zmq.POLLIN
-        if self.sending():
-            state |= zmq.POLLOUT
-        if state != self._state:
-            self._state = state
-            self.io_loop.update_handler(self.socket, self._state)
+            if events & zmq.POLLIN:
+                self._handle_recv()
+                if not self.socket:
+                    return
+            if events & zmq.POLLOUT:
+                self._handle_send()
+                if not self.socket:
+                    return
+
+            # rebuild the poll state
+            state = zmq.POLLERR
+            if self.receiving():
+                state |= zmq.POLLIN
+            if self.sending():
+                state |= zmq.POLLOUT
+            if state != self._state:
+                self._state = state
+                self.io_loop.update_handler(self.socket, self._state)
+        except:
+            logging.error("Uncaught exception, closing connection.",
+                          exc_info=True)
+            self.close()
+            raise
             
     def _handle_recv(self):
         """Handle a recv event."""
