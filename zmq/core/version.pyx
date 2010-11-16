@@ -29,7 +29,7 @@ from czmq cimport _zmq_version
 # Code
 #-----------------------------------------------------------------------------
 
-__version__ = '2.0.10dev'
+__version__ = '2.1.0dev'
 
 
 def pyzmq_version():
