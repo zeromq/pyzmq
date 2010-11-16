@@ -5,6 +5,18 @@ PyZMQ: Python bindings for 0MQ
 This package contains Python bindings for `0QM <http://www.zeromq.org>`_.
 0MQ is a lightweight and fast messaging implementation.
 
+Downloading
+===========
+
+Unless you specifically want to develop PyZMQ, we recommend downloading the
+PyZMQ source code from our github download page here:
+
+https://github.com/zeromq/pyzmq/downloads
+
+While you can also get the latest source code by forking our github
+repository, building from the repository will require that you download and
+install Cython version 0.13 or later.
+
 Building and installation
 =========================
 
@@ -24,8 +36,9 @@ Second, run this command::
 
     $ python setup.py install
 
-Cython is not required to build pyzmq from a release package, but it is required
-if you want to develop pyzmq, or build directly from our repository on GitHub.
+Cython is not required to build pyzmq from a release package, but it is
+required if you want to develop pyzmq, or build directly from our repository
+on GitHub.
 
 Windows
 -------
@@ -77,7 +90,7 @@ How to release PyZMQ
 
 Currently, we are using the following steps to release PyZMQ:
 
-* Change the version number in ``setup.py`` and ``__init__.py``.
+* Change the version number in ``setup.py`` and ``version.pyx``.
 * Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
   directories.
 * Check ``MANIFEST.in``.
@@ -95,6 +108,12 @@ Currently, we are using the following steps to release PyZMQ:
     git co -b 2.0.8 master
     git push origin 2.0.8
 
+*Tag the release::
+
+    git tag -a -m “Tagging release 2.0.8” 2.0.8
+    git push origin —tags
+
+* Make sure the README.rst has an updated list of contributors.
 * Announce on list.
 
 Authors
@@ -115,3 +134,6 @@ The following people have contributed to the project:
 * Douglas Creager (dcreager AT dcreager DOT net)
 * Erick Tryzelaar (erick DOT tryzelaar AT gmail DOT com)
 * Min Ragan-Kelley (benjaminrk AT gmail DOT com)
+* Scott Sadler (github AT mashi DOT org)
+* spez (steve AT hipmunk DOT com)
+* Thomas Kluyver (takowl AT gmail DOT com)
