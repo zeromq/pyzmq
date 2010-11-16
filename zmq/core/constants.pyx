@@ -60,6 +60,13 @@ POLLERR = ZMQ_POLLERR
 STREAMER = ZMQ_STREAMER
 FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
+# new in 2.1.0:
+FD = ZMQ_FD
+EVENTS = ZMQ_EVENTS
+TYPE = ZMQ_TYPE
+LINGER = ZMQ_LINGER
+RECONNECT_IVL = ZMQ_RECONNECT_IVL
+BACKLOG = ZMQ_BACKLOG
 
 
 #-----------------------------------------------------------------------------
@@ -125,6 +132,12 @@ __all__ = [
     'STREAMER',
     'FORWARDER',
     'QUEUE',
+    'FD',
+    'EVENTS',
+    'TYPE',
+    'LINGER',
+    'RECONNECT_IVL',
+    'BACKLOG',
     # ERRORNO codes
     'EAGAIN',
     'EINVAL',

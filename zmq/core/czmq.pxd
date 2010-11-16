@@ -118,6 +118,12 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SNDBUF # 11
     enum: ZMQ_RCVBUF # 12
     enum: ZMQ_RCVMORE # 13
+    enum: ZMQ_FD # 14
+    enum: ZMQ_EVENTS # 15
+    enum: ZMQ_TYPE # 16
+    enum: ZMQ_LINGER # 17
+    enum: ZMQ_RECONNECT_IVL # 18
+    enum: ZMQ_BACKLOG # 19
 
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_SNDMORE # 2
