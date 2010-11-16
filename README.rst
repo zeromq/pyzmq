@@ -113,7 +113,7 @@ Currently, we are using the following steps to release PyZMQ:
     git tag -a -m “Tagging release 2.0.8” 2.0.8
     git push origin —tags
 
-* Make sure the README.rst has an updated list of contributors.
+* Make sure the ``README.rst`` has an updated list of contributors.
 * Announce on list.
 
 Authors
