@@ -63,6 +63,16 @@ cdef void free_python_msg(void *data, void *hint) with gil:
             tracker_queue.put(0)
         tracker_queue = None
 
+cdef object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg) with gil:
+    """ Copy the data from a zmq_msg_t """
+    cdef char *data_c = NULL
+    cdef Py_ssize_t data_len_c
+    with nogil:
+        data_c = <char *>zmq_msg_data(zmq_msg)
+        data_len_c = zmq_msg_size(zmq_msg)
+    return PyBytes_FromStringAndSize(data_c, data_len_c)
+
+
 
 cdef class MessageTracker(object):
     """MessageTracker(*towatch)
@@ -103,6 +113,8 @@ cdef class MessageTracker(object):
             elif isinstance(obj, MessageTracker):
                 self.peers.add(obj)
             elif isinstance(obj, Message):
+                if not obj.tracker:
+                    raise AttributeError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
                 raise TypeError("Require Queues or Messages, not %s"%type(obj))
@@ -186,7 +198,7 @@ cdef class Message:
         construct the 0MQ message data.
     """
 
-    def __cinit__(self, object data=None):
+    def __cinit__(self, object data=None, track=False):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
@@ -199,8 +211,12 @@ cdef class Message:
         self._bytes = None        # bytes copy of data
 
         # Queue and MessageTracker for monitoring when zmq is done with data:
-        self.tracker_queue = Queue()
-        self.tracker = MessageTracker(self.tracker_queue)
+        if track:
+            self.tracker_queue = Queue()
+            self.tracker = MessageTracker(self.tracker_queue)
+        else:
+            self.tracker_queue = None
+            self.tracker = None
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -263,9 +279,11 @@ cdef class Message:
             new_msg._buffer = self._buffer
         if self._bytes is not None:
             new_msg._bytes = self._bytes
-        # Message copies share the tracker and tracker_queue.
+
+        # Message copies share the tracker and tracker_queue
         new_msg.tracker_queue = self.tracker_queue
         new_msg.tracker = self.tracker
+
         return new_msg
 
     def __len__(self):
@@ -286,6 +304,8 @@ cdef class Message:
     @property
     def done(self):
         """Is 0MQ completely done with the message?"""
+        if not self.tracker:
+            raise AttributeError("Not a tracked message")
         return self.tracker.done
     
     def wait(self, timeout=-1):
@@ -300,6 +320,8 @@ cdef class Message:
         
         Raises NotDone if ``timeout`` reached before I am done.
         """
+        if not self.tracker:
+            raise AttributeError("Not a tracked message")
         return self.tracker.wait(timeout=timeout)
 
     
@@ -328,19 +350,6 @@ cdef class Message:
             self._buffer = self._getbuffer()
         return self._buffer
 
-    cdef object _copybytes(self):
-        """Create a Python bytes object from a copy of the message data.
-
-        This will be called only once, the first time the ``bytes`` property
-        is accessed. Subsequent calls use a cached copy.
-        """
-        cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
-        # always make a copy:
-        data_c = <char *>zmq_msg_data(&self.zmq_msg)
-        data_len_c = zmq_msg_size(&self.zmq_msg)
-        return PyBytes_FromStringAndSize(data_c, data_len_c)
-    
     @property
     def bytes(self):
         """Get the message content as a Python str/bytes object.
@@ -350,7 +359,7 @@ cdef class Message:
         returned.
         """
         if self._bytes is None:
-            self._bytes = self._copybytes()
+            self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
 
 
