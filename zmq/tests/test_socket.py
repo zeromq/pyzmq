@@ -34,6 +34,12 @@ try:
 except:
     from Queue import Queue
 
+try:
+    from nose import SkipTest
+except ImportError:
+    class SkipTest(Exception):
+        pass
+
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
@@ -71,6 +77,24 @@ class TestSocket(BaseZMQTestCase):
         p.send_unicode(topic*2, encoding='latin-1')
         self.assertEquals(topic, s.recv_unicode())
         self.assertEquals(topic*2, s.recv_unicode(encoding='latin-1'))
+    
+    def test_2_1_sockopts(self):
+        "test non-uint64 sockopts introduced in zeromq 2.1.0"
+        v = map(int, zmq.zmq_version().split('.', 2)[:2])
+        if not (v[0] >= 2 and v[1] >= 1):
+            raise SkipTest
+        p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        p.setsockopt(zmq.LINGER, 0)
+        self.assertEquals(p.getsockopt(zmq.LINGER), 0)
+        p.setsockopt(zmq.LINGER, -1)
+        self.assertEquals(p.getsockopt(zmq.LINGER), -1)
+        # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
+        self.assertEquals(p.getsockopt(zmq.EVENTS), zmq.POLLOUT)
+        self.assertRaisesErrno(zmq.EINVAL, p.setsockopt,zmq.EVENTS, 2**7-1)
+        self.assertEquals(p.getsockopt(zmq.TYPE), p.socket_type)
+        self.assertEquals(p.getsockopt(zmq.TYPE), zmq.PUB)
+        self.assertEquals(s.getsockopt(zmq.TYPE), s.socket_type)
+        self.assertEquals(s.getsockopt(zmq.TYPE), zmq.SUB)
     
     def test_send_unicode(self):
         "test sending unicode objects"

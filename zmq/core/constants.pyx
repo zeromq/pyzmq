@@ -69,6 +69,12 @@ RECONNECT_IVL = ZMQ_RECONNECT_IVL
 BACKLOG = ZMQ_BACKLOG
 
 
+# collections of sockopts, based on type:
+bytes_sockopts = [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]
+int64_sockopts = [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
+                MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]
+int_sockopts = [FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG]
+
 #-----------------------------------------------------------------------------
 # Error handling
 #-----------------------------------------------------------------------------
@@ -155,6 +161,10 @@ __all__ = [
     'ETERM',
     'EFAULT',
     'ENOMEM',
-    'ENODEV'
+    'ENODEV',
+    # collections
+    'bytes_sockopts',
+    'int_sockopts',
+    'int64_sockopts'
 ]
 

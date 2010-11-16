@@ -67,6 +67,7 @@ except:
     cPickle = None
     import pickle
 
+from zmq.core import constants
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -142,28 +143,36 @@ cdef class Socket:
         optval : int or str
             The value of the option to set.
         """
-        cdef int64_t optval_int_c
+        cdef int64_t optval_int64_c
+        cdef int optval_int_c
         cdef int rc
 
         self._check_closed()
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_unicode")
 
-        if option in [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]:
+        if option in constants.bytes_sockopts:
             if not isinstance(optval, bytes):
                 raise TypeError('expected str, got: %r' % optval)
             rc = zmq_setsockopt(
                 self.handle, option,
                 PyBytes_AsString(optval), PyBytes_Size(optval)
             )
-        elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
-                        MCAST_LOOP, SNDBUF, RCVBUF]:
+        elif option in constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
             rc = zmq_setsockopt(
                 self.handle, option,
-                &optval_int_c, sizeof(int64_t)
+                &optval_int64_c, sizeof(int64_t)
+            )
+        elif option in constants.int_sockopts:
+            if not isinstance(optval, int):
+                raise TypeError('expected int, got: %r' % optval)
+            optval_int_c = optval
+            rc = zmq_setsockopt(
+                self.handle, option,
+                &optval_int_c, sizeof(int)
             )
         else:
             raise ZMQError(EINVAL)
@@ -189,28 +198,34 @@ cdef class Socket:
         -------
         The value of the option as a string or int.
         """
-        cdef int64_t optval_int_c
+        cdef int64_t optval_int64_c
+        cdef int optval_int_c
         cdef char identity_str_c [255]
         cdef size_t sz
         cdef int rc
 
         self._check_closed()
 
-        if option in [IDENTITY]:
+        if option in constants.bytes_sockopts:
             sz = 255
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
-        elif option in [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
-                        MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]:
+        elif option in  constants.int64_sockopts:
             sz = sizeof(int64_t)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
+            if rc != 0:
+                raise ZMQError()
+            result = optval_int64_c
+        elif option in constants.int_sockopts:
+            sz = sizeof(int)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = optval_int_c
         else:
-            raise ZMQError()
+            raise ZMQError(EINVAL)
 
         return result
     
