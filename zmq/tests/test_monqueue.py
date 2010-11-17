@@ -38,6 +38,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
     pass
     
     def build_device(self, mon_sub="".encode(), in_prefix='in'.encode(), out_prefix='out'.encode()):
+        self.skip_if_pgm()
         self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB,
                                             in_prefix, out_prefix)
         alice = self.context.socket(zmq.PAIR)

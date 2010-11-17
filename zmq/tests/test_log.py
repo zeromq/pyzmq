@@ -60,8 +60,8 @@ class TestPubLog(BaseZMQTestCase):
     def test_init_iface(self):
         logger = self.logger
         ctx = self.context
-        handler = handlers.PUBHandler(self.iface)
-        self.assertFalse(handler.ctx is ctx)
+        handler = handlers.PUBHandler(self.iface, ctx)
+        self.assertTrue(handler.ctx is ctx)
         handler.socket.close()
         
         handler = handlers.PUBHandler(self.iface, self.context)

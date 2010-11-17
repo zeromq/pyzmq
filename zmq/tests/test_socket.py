@@ -27,7 +27,7 @@ import sys
 import time
 
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import bytes, unicode
 try:
     from queue import Queue
@@ -41,13 +41,12 @@ except:
 class TestSocket(BaseZMQTestCase):
 
     def test_create(self):
-        ctx = zmq.Context()
-        s = ctx.socket(zmq.PUB)
+        s = self.context.socket(zmq.PUB)
         # Superluminal protocol not yet implemented
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
         s.close()
-        del ctx
+        # del ctx
     
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
@@ -143,14 +142,12 @@ class TestSocket(BaseZMQTestCase):
         
 
     def test_close(self):
-        ctx = zmq.Context()
-        s = ctx.socket(zmq.PUB)
+        s = self.context.socket(zmq.PUB)
         s.close()
         self.assertRaises(zmq.ZMQError, s.bind, ''.encode())
         self.assertRaises(zmq.ZMQError, s.connect, ''.encode())
         self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, ''.encode())
         self.assertRaises(zmq.ZMQError, s.send, 'asdf'.encode())
         self.assertRaises(zmq.ZMQError, s.recv)
-        del ctx
     
 

@@ -27,13 +27,20 @@ from unittest import TestCase
 
 import zmq
 
+try:
+    from nose import SkipTest
+except ImportError:
+    class SkipTest(Exception):
+        pass
+
 #-----------------------------------------------------------------------------
 # Utilities
 #-----------------------------------------------------------------------------
 
 
 class BaseZMQTestCase(TestCase):
-
+    _pgm = None
+    
     def setUp(self):
         self.context = zmq.Context()
         self.sockets = []
@@ -42,9 +49,27 @@ class BaseZMQTestCase(TestCase):
         while self.sockets:
             sock = self.sockets.pop()
             sock.close()
+        self.context.term()
         del self.context
-            
-
+    
+    def has_pgm(self):
+        if self._pgm is None:
+            s = self.context.socket(zmq.PUB)
+            try:
+                s.bind('epgm://:12345')
+            except zmq.ZMQError:
+                e = sys.exc_info()[1]
+                if e.errno == zmq.EPROTONOSUPPORT:
+                    self._pgm = False
+                else:
+                    raise e
+            else:
+                self._pgm = True
+        return self._pgm
+    
+    def skip_if_pgm(self):
+        raise SkipTest("Known Failure on 0MQ 2.0.x+PGM")
+    
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
         s1 = zmq.Socket(self.context, type1)

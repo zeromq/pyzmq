@@ -31,14 +31,8 @@ from pprint import pprint
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import unicode,bytes
-
-try:
-    from nose import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        pass
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -269,7 +263,7 @@ class TestMessage(BaseZMQTestCase):
         try:
             import numpy
         except ImportError:
-            raise SkipTest
+            raise SkipTest("NumPy unavailable")
         shapes = map(numpy.random.randint, [2]*5,[16]*5)
         for i in range(1,len(shapes)+1):
             shape = shapes[:i]

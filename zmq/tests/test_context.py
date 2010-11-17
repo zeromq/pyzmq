@@ -33,6 +33,8 @@ from zmq.tests import BaseZMQTestCase
 class TestContext(BaseZMQTestCase):
 
     def test_init(self):
+        if self.has_pgm():
+            del self.context
         c1 = zmq.Context()
         self.assert_(isinstance(c1, zmq.Context))
         del c1
@@ -42,12 +44,20 @@ class TestContext(BaseZMQTestCase):
         c3 = zmq.Context()
         self.assert_(isinstance(c3, zmq.Context))
         del c3
+        if self.has_pgm():
+            self.context = zmq.Context()
+        
 
     def test_term(self):
-        c = zmq.Context()
+        c = self.context
         c.term()
         self.assert_(c.closed)
 
     def test_fail_init(self):
+        if self.has_pgm():
+            del self.context
+            
         self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 0)
+        if self.has_pgm():
+            self.context = zmq.Context()
 
