@@ -505,7 +505,9 @@ cdef class Socket:
             rc = zmq_recv(self.handle, &zmq_msg, flags)
         if rc != 0:
             raise ZMQError()
-        return copy_zmq_msg_bytes(&zmq_msg)
+        msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
+        zmq_msg_close(&zmq_msg)
+        return msg_bytes
 
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
         """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
