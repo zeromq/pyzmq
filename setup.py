@@ -24,6 +24,7 @@
 #-----------------------------------------------------------------------------
 
 import os, sys
+from traceback import print_exc
 
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
@@ -34,6 +35,11 @@ from distutils.command.build_ext import build_ext
 from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
+
+try:
+    import nose
+except ImportError:
+    nose = None
 
 try:
     from os.path import walk
@@ -67,18 +73,41 @@ class TestCommand(Command):
 
     def finalize_options(self):
         pass
-
-    def run(self):
-        """Finds all the tests modules in zmq/tests/, and runs them."""
+    
+    def run_nose(self):
+        """Run the test suite with nose."""
+        return nose.core.TestProgram(argv=["", '-vvs', pjoin(self._dir, 'zmq', 'tests')], exit=False)
+    
+    def run_unittest(self):
+        """Finds all the tests modules in zmq/tests/ and runs them."""
         testfiles = [ ]
         for t in glob(pjoin(self._dir, 'zmq', 'tests', '*.py')):
-            if not t.endswith('__init__.py'):
+            name = splitext(basename(t))[0]
+            if name.startswith('test_'):
                 testfiles.append('.'.join(
-                    ['zmq.tests', splitext(basename(t))[0]])
+                    ['zmq.tests', name])
                 )
         tests = TestLoader().loadTestsFromNames(testfiles)
         t = TextTestRunner(verbosity = 2)
         t.run(tests)
+    
+    def run(self):
+        """Run the test suite, with nose, or unittest if nose is unavailable"""
+        # crude check for inplace build:
+        try:
+            import zmq
+        except ImportError:
+            print_exc()
+            print ("Could not import zmq!")
+            print ("You must build pyzmq with 'python setup.py build_ext --inplace' for 'python setup.py test' to work.")
+            print ("If you did build pyzmq in-place, then this is a real error.")
+            sys.exit(1)
+        
+        if nose is None:
+            print ("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
+            return self.run_unittest()
+        else:
+            return self.run_nose()
 
 
 class CleanCommand(Command):
