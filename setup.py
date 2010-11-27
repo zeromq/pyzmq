@@ -55,7 +55,7 @@ except:
 if get_default_compiler() in ('unix', 'mingw32'):
     ignore_common_warnings=True
 else:
-    ignore_common_warnings=True
+    ignore_common_warnings=False
 
 release = False # flag for whether to include *.c in package_data
 
