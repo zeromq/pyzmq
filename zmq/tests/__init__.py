@@ -69,7 +69,7 @@ class BaseZMQTestCase(TestCase):
     
     def skip_if_pgm(self):
         major,minor = zmq.zmq_version().split('.',2)[:2]
-        if self.has_pgm() and major == 2 and minor == 0:
+        if self.has_pgm() and major == '2' and minor == '0':
             raise SkipTest("Known Failure on 0MQ 2.0.x+PGM")
     
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
