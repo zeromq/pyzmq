@@ -62,6 +62,7 @@ class TestPubLog(BaseZMQTestCase):
         ctx = self.context
         handler = handlers.PUBHandler(self.iface, ctx)
         self.assertTrue(handler.ctx is ctx)
+        logger.removeHandler(handler)
         handler.socket.close()
         
         handler = handlers.PUBHandler(self.iface, self.context)
@@ -71,7 +72,6 @@ class TestPubLog(BaseZMQTestCase):
         handler.root_topic = self.topic
         logger.addHandler(handler)
         
-        handler.socket.close()
         sub = ctx.socket(zmq.SUB)
         sub.connect(self.iface)
         sub.setsockopt(zmq.SUBSCRIBE, self.topic)
@@ -106,7 +106,7 @@ class TestPubLog(BaseZMQTestCase):
         self.assertEquals(topic, 'zmq.INFO'.encode())
         self.assertEquals(msg2, (msg1+'\n').encode())
         logger.removeHandler(handler)
-        # handler.socket.close()
+        handler.socket.close()
     
     def test_root_topic(self):
         logger, handler, sub = self.connect_handler()
