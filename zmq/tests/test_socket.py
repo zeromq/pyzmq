@@ -80,7 +80,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_2_1_sockopts(self):
         "test non-uint64 sockopts introduced in zeromq 2.1.0"
-        v = map(int, zmq.zmq_version().split('.', 2)[:2])
+        v = list(map(int, zmq.zmq_version().split('.', 2)[:2]))
         if not (v[0] >= 2 and v[1] >= 1):
             raise SkipTest
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
