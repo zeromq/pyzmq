@@ -103,6 +103,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_XREP # 6
     enum: ZMQ_PULL # 7
     enum: ZMQ_PUSH # 8
+    enum: ZMQ_XPUB # 9
+    enum: ZMQ_XSUB # 10
     enum: ZMQ_UPSTREAM # 7
     enum: ZMQ_DOWNSTREAM # 8
 
