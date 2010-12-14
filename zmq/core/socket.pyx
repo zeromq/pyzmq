@@ -161,7 +161,7 @@ cdef class Socket:
         elif option in constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
-            optval_int_c = optval
+            optval_int64_c = optval
             rc = zmq_setsockopt(
                 self.handle, option,
                 &optval_int64_c, sizeof(int64_t)
