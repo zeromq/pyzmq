@@ -88,6 +88,9 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.LINGER), 0)
         p.setsockopt(zmq.LINGER, -1)
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
+        self.assertEquals(p.getsockopt(zmq.HWM), 0)
+        p.setsockopt(zmq.HWM, 11)
+        self.assertEquals(p.getsockopt(zmq.HWM), 11)
         # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
         self.assertEquals(p.getsockopt(zmq.EVENTS), zmq.POLLOUT)
         self.assertRaisesErrno(zmq.EINVAL, p.setsockopt,zmq.EVENTS, 2**7-1)
@@ -96,6 +99,13 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.getsockopt(zmq.TYPE), s.socket_type)
         self.assertEquals(s.getsockopt(zmq.TYPE), zmq.SUB)
     
+    def test_sockopt_roundtrip(self):
+        "test set/getsockopt roundtrip."
+        p = self.context.socket(zmq.PUB)
+        self.assertEquals(p.getsockopt(zmq.HWM), 0)
+        p.setsockopt(zmq.HWM, 11)
+        self.assertEquals(p.getsockopt(zmq.HWM), 11)
+        
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
