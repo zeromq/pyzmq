@@ -50,8 +50,9 @@ class TestSocket(BaseZMQTestCase):
         ctx = zmq.Context()
         s = ctx.socket(zmq.PUB)
         # Superluminal protocol not yet implemented
-        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://')
-        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://')
+        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://a')
+        self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://a')
+        self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
         s.close()
         del ctx
     
