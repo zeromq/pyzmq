@@ -11,7 +11,10 @@ import sys
 import re
 
 from warnings import warn
-from ConfigParser import ConfigParser
+try:
+    from configparser import ConfigParser
+except:
+    from ConfigParser import ConfigParser
 
 pjoin = os.path.join
 
