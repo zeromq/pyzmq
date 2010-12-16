@@ -132,7 +132,7 @@ class TestPoll(PollZMQTestCase):
 
         poller = zmq.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
-        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN)
 
         # Now make sure that both are send ready.
         socks = dict(poller.poll())
