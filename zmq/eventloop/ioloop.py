@@ -38,6 +38,13 @@ except ImportError:
         import win32_support as fcntl
     else:
         raise
+        
+try:
+    assert bytes != str  # NameError in Python <= 2.5, assert fails in 2.6/2.7
+    def b(x):            # Wrapper to turn simple strings into bytes in Py3k
+        return x.encode('ascii')
+except (NameError, AssertionError):
+    b = lambda x: x
 
 from zmq import (
     Poller,
@@ -338,7 +345,7 @@ class IOLoop(object):
 
     def _wake(self):
         try:
-            self._waker_writer.write("x")
+            self._waker_writer.write(b("x"))
         except IOError:
             pass
 
