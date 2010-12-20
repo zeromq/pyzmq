@@ -24,6 +24,7 @@ import time
 import traceback
 
 from zmq.eventloop import stack_context
+from zmq.utils.strtypes import asbytes
 
 try:
     import signal
@@ -338,7 +339,7 @@ class IOLoop(object):
 
     def _wake(self):
         try:
-            self._waker_writer.write("x")
+            self._waker_writer.write(asbytes("x"))
         except IOError:
             pass
 
@@ -363,9 +364,10 @@ class IOLoop(object):
         logging.error("Exception in callback %r", callback, exc_info=True)
 
     def _read_waker(self, fd, events):
+        s=None
         try:
-            while True:
-                self._waker_reader.read()
+            while True and s is None:
+                s = self._waker_reader.read()
         except IOError:
             pass
 
@@ -392,6 +394,9 @@ class _Timeout(object):
         return cmp((self.deadline, id(self.callback)),
                    (other.deadline, id(other.callback)))
 
+    def __lt__(self, other):
+        return (self.deadline, id(self.callback)) < \
+                   (other.deadline, id(other.callback))
 
 class PeriodicCallback(object):
     """Schedules the given callback to be called periodically.

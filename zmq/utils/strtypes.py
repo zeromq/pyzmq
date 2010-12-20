@@ -31,9 +31,11 @@ if major >= 3:
     bytes = bytes
     unicode = str
     basestring = (bytes, unicode)
+    asbytes = lambda s: s.encode('utf8')
 elif major == 2:
     unicode = unicode
     bytes = str
     basestring = basestring
+    asbytes = str
 
-__all__ = ['bytes', 'unicode', 'basestring']
+__all__ = ['asbytes', 'bytes', 'unicode', 'basestring']
