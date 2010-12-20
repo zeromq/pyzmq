@@ -79,7 +79,7 @@ class TestIOLoop(BaseZMQTestCase):
         """test timeout comparisons"""
         t = ioloop._Timeout(1,2)
         t2 = ioloop._Timeout(1,3)
-        self.assertTrue(t < t2)
+        self.assertEquals(t < t2, id(2) < id(3))
         t2 = ioloop._Timeout(1,2)
         self.assertFalse(t < t2)
         t2 = ioloop._Timeout(2,1)
