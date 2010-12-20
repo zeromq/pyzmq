@@ -50,9 +50,13 @@ from __future__ import with_statement
 
 import contextlib
 import functools
-import itertools
 import logging
 import threading
+
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip   # In Python 3, zip produces an iterator
 
 class _State(threading.local):
     def __init__(self):
@@ -114,7 +118,7 @@ def wrap(fn):
         # NullContext to clear the state and then recreate from contexts.
         if (len(_state.contexts) > len(contexts) or
             any(a is not b
-                for a, b in itertools.izip(_state.contexts, contexts))):
+                for a, b in izip(_state.contexts, contexts))):
             # contexts have been removed or changed, so start over
             new_contexts = ([NullContext()] +
                             [StackContext(c) for c in contexts])
