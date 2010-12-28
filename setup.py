@@ -36,6 +36,8 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 
+from zmqversion import check_zmq_version
+
 try:
     import nose
 except ImportError:
@@ -58,6 +60,9 @@ else:
     ignore_common_warnings=False
 
 release = False # flag for whether to include *.c in package_data
+
+# the minimum zeromq version this will work against:
+min_zmq = (2,1,0)
 
 #-----------------------------------------------------------------------------
 # Extra commands
@@ -163,12 +168,19 @@ class CheckingBuildExt(build_ext):
                 Cython is required to compile pyzmq from a development branch.
                 Please install Cython or download a release package of pyzmq.
                 """%src)
+    
     def build_extensions(self):
         self.check_cython_extensions(self.extensions)
         self.check_extensions_list(self.extensions)
-
+        
         for ext in self.extensions:
             self.build_extension(ext)
+    
+    def run(self):
+        # check version, to prevent confusing undefined constant errors
+        check_zmq_version(min_zmq)
+        build_ext.run(self)
+    
 
 #-----------------------------------------------------------------------------
 # Suppress Common warnings
@@ -236,8 +248,13 @@ else:
         def build_extension(self, ext):
             pass
     
+    class CheckZMQBuildExt(build_ext):
+        def run(self):
+            check_zmq_version(min_zmq)
+            return build_ext.run(self)
+    
     cmdclass['cython'] = CythonCommand
-    cmdclass['build_ext'] =  build_ext
+    cmdclass['build_ext'] =  CheckZMQBuildExt
     cmdclass['sdist'] =  CheckSDist
 
 if sys.platform == 'win32':
@@ -268,7 +285,7 @@ package_data = {'zmq':['*.pxd'],
 }
 
 if release:
-    for pkg,data in pkgdata.iteritems():
+    for pkg,data in package_data.iteritems():
         data.append('*.c')
         
 #-----------------------------------------------------------------------------
