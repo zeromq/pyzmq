@@ -505,3 +505,44 @@ ul.search li div.context {
 ul.keywordmatches li.goodmatch a {
     font-weight: bold;
 }
+/* from numpy:*/
+td.field-body > blockquote {
+    margin-top: 0.1em;
+    margin-bottom: 0.5em;
+}
+/* spacing in see also definition lists */
+dl.last > dd {
+    margin-top: 1px;
+    margin-bottom: 5px;
+    margin-left: 30px;
+}
+
+.field-list th {
+  color: rgb(0,102,204);
+  background: #eee;
+}
+
+table.field-list th {
+/*  border-left: 1px solid #aaa !important;*/
+  padding-left: 5px;
+  white-space: nowrap;
+}
+
+table.field-list { 
+  border-collapse: separate;
+  border-spacing: 10px;
+}
+
+th.field-name {
+/*  border-left: 1px solid #aaa !important;*/
+padding-left: .5em;
+padding-right: .5em;
+text-align: right;
+  
+}
+
+.rubric {
+  color: rgb(0,50,150);
+  background-color: ;
+  font-style: italic;
+}
