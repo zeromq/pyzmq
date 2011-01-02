@@ -32,6 +32,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'sphinx.ext.doctest',
               'ipython_console_highlighting',
               'inheritance_diagram',
+              'sphinxtogithub',
               'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -183,7 +184,7 @@ htmlhelp_basename = 'PyZMQdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'PyZMQ.tex', u'PyZMQ Documentation',
-   u'Brian E. Granger, Min Ragan-Kelley', 'manual'),
+   u'Brian E. Granger \and Min Ragan-Kelley', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
