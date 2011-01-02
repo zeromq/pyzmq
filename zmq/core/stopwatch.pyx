@@ -36,7 +36,7 @@ cdef class Stopwatch:
 
     A simple stopwatch based on zmq_stopwatch_start/stop.
 
-    This class should be used for benchmarking and timing ØMQ code.
+    This class should be used for benchmarking and timing 0MQ code.
     """
     
     def __cinit__(self):
