@@ -41,8 +41,8 @@ class MyDocumenter(SphinxAutodoc.Documenter):
         if myname.endswith('()'):
             myname = myname[:-2]
             
-        if (docstr 
-            and docstr.startswith(myname + '(')
+        if (docstr
+            and (myname + '(') in docstr
             and '\n' in docstr
             and docstr[docstr.index('\n')-1] == ')'):
             docstr = docstr[docstr.index('\n')+1:]
@@ -61,7 +61,7 @@ class MyDocumenter(SphinxAutodoc.Documenter):
         # Try to parse docstring
         docstr = self.get_attr(self.object, '__doc__', None)
         if (docstr 
-            and docstr.startswith(myname + '(')
+            and (myname + '(') in docstr
             and '\n' in docstr
             and docstr[docstr.index('\n')-1] == ')'):
             args = docstr[len(myname)+1:docstr.index('\n')-1]
@@ -105,3 +105,7 @@ class MyClassDocumenter(MyDocumenter, SphinxAutodoc.ClassDocumenter):
 SphinxAutodoc.ClassDocumenter = MyClassDocumenter 
 SphinxAutodoc.MethodDocumenter = MyMethodDocumenter 
 SphinxAutodoc.FunctionDocumenter = MyFunctionDocumenter
+
+# don't use AttributeDocumenter on 'method_descriptor' members:
+AD = SphinxAutodoc.AttributeDocumenter
+AD.method_types = tuple(list(AD.method_types) + [type(str.count)])
