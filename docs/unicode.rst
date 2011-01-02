@@ -82,9 +82,9 @@ interface (aka memoryview). In Python 2.x, unicode objects do provide the buffer
 interface, but as they do not in Python 3, where pyzmq requires bytes, we
 specifically reject unicode objects.
 
-The relevant methods here are **socket.send/recv**, **socket.get/setsockopt**,
-**socket.bind/connect**. The important consideration for send/recv and
-set/getsockopt is that when you put in something, you should really get the same
+The relevant methods here are ``socket.send/recv``, ``socket.get/setsockopt``,
+``socket.bind/connect``. The important consideration for send/recv and
+set/getsockopt is that when you put in something, you really should get the same
 object back with its partner method. We can easily coerce unicode objects to
 bytes with send/setsockopt, but the problem is that the pair method of
 recv/getsockopt will always be bytes, and there should be symmetry. We certainly
@@ -138,8 +138,7 @@ Overview of the relevant methods:
             
             `unicode(message)` decodes `message.buffer` with utf-8
     
-.. py:function::    socket.send_unicode(self, unicode s, flags=0, 
-                                                encoding='utf-8')
+.. py:function::    socket.send_unicode(self, unicode s, flags=0, encoding='utf-8')
 
         takes a ``unicode`` string `s`, and sends the ``bytes`` 
         after encoding without an extra copy, via:
@@ -164,8 +163,7 @@ Overview of the relevant methods:
 
         returns ``bytes`` (or ``int``), never ``unicode``
     
-.. py:function::    socket.setsockopt_unicode(self, opt, unicode optval,
-                                                encoding='utf-8')
+.. py:function::    socket.setsockopt_unicode(self, opt, unicode optval, encoding='utf-8')
 
         accepts ``unicode`` string for `optval`
         
