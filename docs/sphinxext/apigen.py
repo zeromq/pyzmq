@@ -104,6 +104,8 @@ class ApiDocWriter(object):
         >>> docwriter._get_object_name("  class Klass:  ")
         'Klass'
         '''
+        if line.startswith('cdef'):
+            line = line.split(None,1)[1]
         name = line.split()[1].split('(')[0].strip()
         # in case we have classes which are not derived from object
         # ie. old style classes
@@ -145,6 +147,8 @@ class ApiDocWriter(object):
         # XXX maybe check for extensions as well?
         if os.path.exists(path + '.py'): # file
             path += '.py'
+        elif os.path.exists(path + '.pyx'): # file
+            path += '.pyx'
         elif os.path.exists(os.path.join(path, '__init__.py')):
             path = os.path.join(path, '__init__.py')
         else:
@@ -180,6 +184,16 @@ class ApiDocWriter(object):
                 if not name.startswith('_'):
                     functions.append(name)
             elif line.startswith('class '):
+                # exclude private stuff
+                name = self._get_object_name(line)
+                if not name.startswith('_'):
+                    classes.append(name)
+            elif line.startswith('cpdef ') and line.count('('):
+                # exclude private stuff
+                name = self._get_object_name(line)
+                if not name.startswith('_'):
+                    functions.append(name)
+            elif line.startswith('cdef class '):
                 # exclude private stuff
                 name = self._get_object_name(line)
                 if not name.startswith('_'):
@@ -252,8 +266,9 @@ class ApiDocWriter(object):
                   '  :undoc-members:\n' \
                   '  :show-inheritance:\n' \
                   '  :inherited-members:\n' \
-                  '\n' \
-                  '  .. automethod:: __init__\n'
+                  '\n' 
+                  # skip class.__init__()
+                  # '  .. automethod:: __init__\n'
         if multi_fx:
             ad += '\n' + 'Functions' + '\n' + \
                   self.rst_section_levels[2] * 9 + '\n\n'

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PyZMQ documentation!
-====================
+PyZMQ Documentation
+===================
 
 Contents:
 
@@ -13,6 +13,8 @@ Contents:
    
    pyversions.rst
    unicode.rst
+   
+   api/index.rst
    
 Indices and tables
 ==================

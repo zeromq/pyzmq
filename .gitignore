@@ -5,4 +5,5 @@ build
 *.so
 *.pyd
 *.dll
+docs/api/generated
 setup.cfg
