@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = _build
+BUILDDIR      = build
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -13,6 +13,8 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
+
+default: html
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -29,8 +31,28 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -rf api/generated/*
+	-rm -rf dist
 
-html:
+api: api/generated/gen.rst
+
+api/generated/gen.rst:
+	python autogen_api.py
+	@echo "Build API docs finished."
+
+dist: all
+	mkdir -p dist
+	rm -rf dist/*
+	ln $(BUILDDIR)/latex/PyZMQ.pdf dist/
+	cp -a $(BUILDDIR)/html dist/
+	@echo "Build finished.  Final docs are in dist/"
+
+pdf: latex
+	cd $(BUILDDIR)/latex && make all-pdf
+
+all: html pdf
+
+html: api
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -65,7 +87,7 @@ qthelp:
 	@echo "To view the help file:"
 	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/PyZMQ.qhc"
 
-latex:
+latex: api
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo
 	@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
