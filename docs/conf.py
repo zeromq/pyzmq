@@ -186,7 +186,7 @@ htmlhelp_basename = 'PyZMQdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'PyZMQ.tex', u'PyZMQ Documentation',
-   u'Brian E. Granger \and Min Ragan-Kelley', 'manual'),
+   u'Brian E. Granger \\and Min Ragan-Kelley', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
