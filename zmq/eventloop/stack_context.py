@@ -29,7 +29,8 @@ wrapping each AsyncHTTPClient callback in async_callback) to the mechanisms
 that transfer control from one context to another (e.g. AsyncHTTPClient
 itself, IOLoop, thread pools, etc).
 
-Example usage:
+Example usage::
+    
     @contextlib.contextmanager
     def die_on_error():
         try:

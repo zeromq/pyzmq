@@ -56,7 +56,7 @@ class Device:
 
     For instance::
 
-    dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
+        dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
 
     Similar to zmq.device, but socket types instead of sockets themselves are
     passed, and the sockets are created in the work thread, to avoid issues
@@ -86,7 +86,7 @@ class Device:
     
     Attributes
     ----------
-    daemon: int
+    daemon : int
         sets whether the thread should be run as a daemon
         Default is true, because if it is false, the thread will not
         exit unless it is killed
@@ -108,42 +108,42 @@ class Device:
     def bind_in(self, addr):
         """Enqueue ZMQ address for binding on in_socket.
 
-        See ``zmq.Socket.bind`` for details.
+        See zmq.Socket.bind for details.
         """
         self._in_binds.append(addr)
     
     def connect_in(self, addr):
         """Enqueue ZMQ address for connecting on in_socket.
 
-        See ``zmq.Socket.connect`` for details.
+        See zmq.Socket.connect for details.
         """
         self._in_connects.append(addr)
     
     def setsockopt_in(self, opt, value):
         """Enqueue setsockopt(opt, value) for in_socket
 
-        See ``zmq.Socket.setsockopt`` for details.
+        See zmq.Socket.setsockopt for details.
         """
         self._in_sockopts.append((opt, value))
     
     def bind_out(self, iface):
         """Enqueue ZMQ address for binding on out_socket.
 
-        See ``zmq.Socket.bind`` for details.
+        See zmq.Socket.bind for details.
         """
         self._out_binds.append(iface)
     
     def connect_out(self, iface):
         """Enqueue ZMQ address for connecting on out_socket.
 
-        See ``zmq.Socket.connect`` for details.
+        See zmq.Socket.connect for details.
         """
         self._out_connects.append(iface)
     
     def setsockopt_out(self, opt, value):
         """Enqueue setsockopt(opt, value) for out_socket
 
-        See ``zmq.Socket.setsockopt`` for details.
+        See zmq.Socket.setsockopt for details.
         """
         self._out_sockopts.append((opt, value))
     
@@ -192,6 +192,9 @@ class Device:
         return self.run()
 
     def join(self,timeout=None):
+        """wait for me to finish, like Thread.join.
+        
+        Reimplemented appropriately by sublcasses."""
         tic = time.time()
         toc = tic
         while not self.done and not (timeout is not None and toc-tic > timeout):
@@ -203,10 +206,10 @@ class BackgroundDevice(Device):
     """Base class for launching Devices in background processes and threads."""
 
     launcher=None
-    launch_class=None
+    _launch_class=None
 
     def start(self):
-        self.launcher = self.launch_class(target=self.run)
+        self.launcher = self._launch_class(target=self.run)
         self.launcher.daemon = self.daemon
         return self.launcher.start()
 
@@ -219,14 +222,14 @@ class ThreadDevice(BackgroundDevice):
 
     See `Device` for details.
     """
-    launch_class=Thread
+    _launch_class=Thread
 
 class ProcessDevice(BackgroundDevice):
     """A Device that will be run in a background Process.
 
     See `Device` for details.
     """
-    launch_class=Process
+    _launch_class=Process
 
 
 __all__ = [ 'Device', 'ThreadDevice']

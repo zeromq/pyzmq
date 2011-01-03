@@ -82,13 +82,19 @@ cdef class Socket:
 
     A 0MQ socket.
 
+    These objects will generally be constructed via the socket() method of a Context object.
+    
     Parameters
     ----------
     context : Context
         The 0MQ Context this Socket belongs to.
     socket_type : int
         The socket type, which can be any of the 0MQ socket types: 
-        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH.
+        REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH, XPUB, XSUB.
+    
+    See Also
+    --------
+    .Context.socket : method for creating a socket bound to a Context.
     """
 
     def __cinit__(self, object context, int socket_type):
@@ -196,7 +202,8 @@ cdef class Socket:
 
         Returns
         -------
-        The value of the option as a string or int.
+        optval : int, str
+            The value of the option as a string or int.
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c
@@ -267,7 +274,8 @@ cdef class Socket:
 
         Returns
         -------
-        The value of the option as a string or int.
+        optval : unicode
+            The value of the option as a unicode string.
         """
         if option not in [IDENTITY]:
             raise TypeError("option %i will not return a string to be decoded"%option)
@@ -279,7 +287,7 @@ cdef class Socket:
         Bind the socket to an address.
 
         This causes the socket to listen on a network port. Sockets on the
-        other side of this connection will use :meth:`Sockiet.connect` to
+        other side of this connection will use :meth:`Socket.connect` to
         connect to this socket.
 
         Parameters
@@ -310,17 +318,22 @@ cdef class Socket:
         ----------
         addr : str
             The address string without the port to pass to :meth:`Socket.bind`.
-        min_port : int
+        min_port : int, optional
             The minimum port in the range of ports to try.
-        max_port : int
+        max_port : int, optional
             The maximum port in the range of ports to try.
-        max_tries : int
+        max_tries : int, optional
             The number of attempt to bind.
 
         Returns
         -------
         port : int
             The port the socket was bound to.
+        
+        Raises
+        ------
+        ZMQBindError
+            if `max_tries` reached before successful bind
         """
         for i in range(max_tries):
             try:
@@ -377,15 +390,25 @@ cdef class Socket:
             Should the message be sent in a copying or non-copying manner.
         track : bool
             Should the message be tracked for notification that ZMQ has
-            finished with it (ignored if copy=True).
+            finished with it? (ignored if copy=True)
 
         Returns
         -------
-        if copy or not track:
+        None : if `copy` or not track
             None if message was sent, raises an exception otherwise.
-        else:
-            a class:`MessageTracker` object, whose ``pending`` property will
-            be ``True`` until the send is completed.
+        MessageTracker : if track and not copy
+            a MessageTracker object, whose ``pending`` property will
+            be True until the send is completed.
+        
+        Raises
+        ------
+        TypeError
+            If a unicode object is passed
+        ValueError
+            If `track=True`, but an untracked Message is passed.
+        ZMQError
+            If the send does not succeed for any reason.
+        
         """
         self._check_closed()
         
@@ -465,17 +488,23 @@ cdef class Socket:
             If NOBLOCK is not set, then this method will block until a
             message arrives.
         copy : bool
-            Should the message be received in a copying or non-copying manner.
+            Should the message be received in a copying or non-copying manner?
             If False a Message object is returned, if True a string copy of
             message is returned.
         track : bool
             Should the message be tracked for notification that ZMQ has
-            finished with it (ignored if copy=True).
+            finished with it? (ignored if copy=True)
 
         Returns
         -------
-        msg : str
-            The returned message, or raises ZMQError otherwise.
+        msg : str, Message
+            The returned message.  If `copy` is False, then it will be a Message,
+            otherwise a str.
+            
+        Raises
+        ------
+        ZMQError
+            for any of the reasons zmq_recv might fail.
         """
         self._check_closed()
         
@@ -517,22 +546,23 @@ cdef class Socket:
         Parameters
         ----------
         msg_parts : iterable
-            A sequence of messages to send as a multipart message.
-        flags : int
+            A sequence of messages to send as a multipart message. Each element
+            can be any sendable object (Message, bytes, buffer-providers)
+        flags : int, optional
             Only the NOBLOCK flagis supported, SNDMORE is handled
             automatically.
-        copy : bool
+        copy : bool, optional
             Should the message(s) be sent in a copying or non-copying manner.
-        track : bool
+        track : bool, optional
             Should the message(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
+        
         Returns
         -------
-        if copy or not track:
-            None if message was sent, raises an exception otherwise.
-        else:
-            a class:`MessageTracker` object, whose ``pending`` property will
-            be ``True`` until the last send is completed.
+        None : if copy or not track
+        MessageTracker : if track and not copy
+            a MessageTracker object, whose ``pending`` property will
+            be True until the last send is completed.
         """
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
@@ -546,22 +576,24 @@ cdef class Socket:
 
         Parameters
         ----------
-        flags : int
+        flags : int, optional
             Any supported flag: NOBLOCK. If NOBLOCK is set, this method
             will raise a ZMQError with EAGAIN if a message is not ready.
             If NOBLOCK is not set, then this method will block until a
             message arrives.
-        copy : bool
-            Should the message(s) be received in a copying or non-copying manner.
-            If False a Message object is returned, if True a string copy of
-            message is returned.
-        track : bool
+        copy : bool, optional
+            Should the message(s) be received in a copying or non-copying manner?
+            If False a Message object is returned for part, if True a string copy of
+            message is returned for each message part.
+        track : bool, optional
             Should the message(s) be tracked for notification that ZMQ has
-            finished with it (ignored if copy=True).
+            finished with it? (ignored if copy=True)
+        
         Returns
         -------
         msg_parts : list
-            A list of messages in the multipart message.
+            A list of messages in the multipart message; either Messages or strs,
+            depending on `copy`.
         """
         parts = []
         while True:
@@ -576,7 +608,12 @@ cdef class Socket:
     def rcvmore(self):
         """s.rcvmore()
 
-        Are there more parts to a multipart message.
+        Are there more parts to a multipart message?
+        
+        Returns
+        -------
+        more : bool
+            whether we are in the middle of a multipart message.
         """
         more = self.getsockopt(RCVMORE)
         return bool(more)
@@ -590,10 +627,10 @@ cdef class Socket:
         ----------
         u : Python unicode object
             The unicode string to send.
-        flags : int
+        flags : int, optional
             Any valid send flag.
-        encoding : str
-            The encoding to be used, default is 'utf-8'
+        encoding : str [default: 'utf-8']
+            The encoding to be used
         """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
@@ -608,8 +645,8 @@ cdef class Socket:
         ----------
         flags : int
             Any valid recv flag.
-        encoding : str
-            The encoding to be used, default is 'utf-8'
+        encoding : str [default: 'utf-8']
+            The encoding to be used
 
         Returns
         -------

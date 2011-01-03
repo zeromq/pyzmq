@@ -181,14 +181,25 @@ def select(rlist, wlist, xlist, timeout=None):
 
     Return the result of poll as a lists of sockets ready for r/w/exception.
 
-    This has the same interface as Python's built-in :func:`select` function.
+    This has the same interface as Python's built-in :func:`select.select` function.
 
     Parameters
     ----------
-    timeout : float, int
-        The timeout in seconds. This is in seconds to be compatible with
-        :func:`select.select`. The underlying zmq_poll uses microseconds and
-        we convert to that in this function.
+    timeout : float, int, optional
+        The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
+        compatible with :func:`select.select`. The underlying zmq_poll uses microseconds
+        and we convert to that in this function.
+    rlist : list of sockets/FDs
+        sockets/FDs to be polled for read events
+    wlist : list of sockets/FDs
+        sockets/FDs to be polled for write events
+    xlist : list of sockets/FDs
+        sockets/FDs to be polled for error events
+    
+    Returns
+    -------
+    (rlist, wlist, xlist) : tuple of lists of sockets (length 3)
+        Lists correspond to sockets available for read/write/error events respectively.
     """
     if timeout is None:
         timeout = -1

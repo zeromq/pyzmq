@@ -120,7 +120,7 @@ cdef class MessageTracker(object):
     
     @property
     def done(self):
-        """Is 0MQ completely done with the messages being tracked."""
+        """Is 0MQ completely done with the message(s) being tracked?"""
         for queue in self.queues:
             if queue.empty():
                 return False
@@ -132,16 +132,22 @@ cdef class MessageTracker(object):
     def wait(self, timeout=-1):
         """mt.wait(timeout=-1)
 
-        Wait until 0MQ is completely done with the messages, then return.
+        Wait for 0MQ to be done with the message, or until `timeout`.
 
         Parameters
         ----------
-        timeout : int
+        timeout : float [default: -1, wait forever]
             Maximum time in (s) to wait before raising NotDone.
 
         Returns
         -------
-        Raises NotDone if `timeout` reached before I am done.
+        None
+            if done before `timeout`
+        
+        Raises
+        ------
+        NotDone
+            if `timeout` reached before I am done.
         """
         tic = time.time()
         if timeout is False or timeout < 0:
@@ -182,12 +188,12 @@ cdef class Message:
 
     This class is only needed if you want to do non-copying send and recvs.
     When you pass a string to this class, like ``Message(s)``, the 
-    ref-count of s is increased by two: once because Message saves s as 
+    ref-count of `s` is increased by two: once because the Message saves `s` as 
     an instance attribute and another because a ZMQ message is created that
-    points to the buffer of s. This second ref-count increase makes sure
-    that s lives until all messages that use it have been sent. Once 0MQ
+    points to the buffer of `s`. This second ref-count increase makes sure
+    that `s` lives until all messages that use it have been sent. Once 0MQ
     sends all the messages and it doesn't need the buffer of s, 0MQ will call
-    Py_DECREF(s).
+    ``Py_DECREF(s)``.
 
     Parameters
     ----------
@@ -195,6 +201,11 @@ cdef class Message:
     data : object, optional
         any object that provides the buffer interface will be used to
         construct the 0MQ message data.
+    track : bool [default: False]
+        whether a MessageTracker_ should be created to track this object.
+        Tracking a message has a cost at creation, because it creates a threadsafe
+        Queue object.
+    
     """
 
     def __cinit__(self, object data=None, track=False, **kwargs):
@@ -314,14 +325,23 @@ cdef class Message:
     def wait(self, timeout=-1):
         """m.wait(timeout=-1)
 
-        Wait for 0MQ to be done with the message, or until timeout.
+        Wait for 0MQ to be done with the message, or until `timeout`.
         
         Parameters
         ----------
-        timeout : int
+        timeout : float [default: -1, wait forever]
             Maximum time in (s) to wait before raising NotDone.
+            
         
-        Raises NotDone if ``timeout`` reached before I am done.
+        Returns
+        -------
+        None
+            if done before `timeout`
+        
+        Raises
+        ------
+        NotDone
+            if `timeout` reached before I am done.
         """
         if not self.tracker:
             raise ValueError("Not a tracked message")

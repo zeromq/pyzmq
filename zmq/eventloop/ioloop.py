@@ -54,7 +54,7 @@ class IOLoop(object):
     connections, you should use Linux and either compile our epoll module or
     use Python 2.6+ to get epoll support.
 
-    Example usage for a simple TCP server:
+    Example usage for a simple TCP server::
 
         import errno
         import functools

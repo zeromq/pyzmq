@@ -44,11 +44,19 @@ def strerror(errnum):
 
 
 class ZMQBaseError(Exception):
+    """Base exception class for 0MQ errors in Python."""
     pass
 
 
 class ZMQError(ZMQBaseError):
-    """Base exception class for 0MQ errors in Python."""
+    """Wrap an errno style error.
+
+    Parameters
+    ----------
+    error : int
+        The ZMQ errno or None.  If None, then :func:`zmq_errno` is called and
+        used.
+    """
 
     def __init__(self, error=None):
         """Wrap an errno style error.
@@ -56,7 +64,7 @@ class ZMQError(ZMQBaseError):
         Parameters
         ----------
         error : int
-            The ZMQ errno or None.  If None, then zmq_errno() is called and
+            The ZMQ errno or None.  If None, then :func:`zmq_errno` is called and
             used.
         """
         if error is None:
@@ -73,12 +81,17 @@ class ZMQError(ZMQBaseError):
 
 
 class ZMQBindError(ZMQBaseError):
-    """An error for bind_to_random_port."""
+    """An error for :meth:`.Socket.bind_to_random_port`."""
     pass
 
 
 class NotDone(ZMQBaseError):
-    """For raising in MessageTracker.wait"""
+    """Raised when timeout is reached while waiting for 0MQ to finish with a Message
+    
+    See Also
+    --------
+    .MessageTracker.wait : object for tracking when ZeroMQ is done
+    """
     pass
 
 

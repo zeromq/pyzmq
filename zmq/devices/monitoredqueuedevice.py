@@ -59,21 +59,21 @@ class MonitoredQueueBase(object):
     def bind_mon(self, addr):
         """Enqueue ZMQ address for binding on mon_socket.
 
-        See ``zmq.Socket.bind`` for details.
+        See zmq.Socket.bind for details.
         """
         self._mon_binds.append(addr)
 
     def connect_mon(self, addr):
         """Enqueue ZMQ address for connecting on mon_socket.
 
-        See ``zmq.Socket.bind`` for details.
+        See zmq.Socket.bind for details.
         """
         self._mon_connects.append(addr)
 
     def setsockopt_mon(self, opt, value):
         """Enqueue setsockopt(opt, value) for mon_socket
 
-        See ``zmq.Socket.setsockopt`` for details.
+        See zmq.Socket.setsockopt for details.
         """
         self._mon_sockopts.append((opt, value))
 

@@ -1,5 +1,11 @@
 """Priority based json library imports.
 
+Use jsonapi.loads() and jsonapi.dumps() for guaranteed symmetry.
+
+Priority: jsonlib2 > jsonlib > simplejson > json
+
+Ensures bytes instead of unicode on either side of serialization.
+
 Authors
 -------
 * MinRK

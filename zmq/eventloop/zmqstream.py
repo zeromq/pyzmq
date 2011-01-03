@@ -39,32 +39,37 @@ class ZMQStream(object):
     
     For use with zmq.eventloop.ioloop
 
-    There are 4 main methods:
-    on_recv(callback,copy=True):
+    There are 4 main methods
+    
+    Methods:
+    
+    * **on_recv(callback,copy=True):**
         register a callback to be run every time the socket has something to receive
-    on_send(callback):
+    * **on_send(callback):**
         register a callback to be run every time you call send
-    on_err(callback):
+    * **on_err(callback):**
         register a callback to be run every time there is an error
-    send(self, msg, flags=0, copy=False, callback=None):
+    * **send(self, msg, flags=0, copy=False, callback=None):**
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
         
-        There are also send_multipart(), send_json, send_pyobj
+        There are also send_multipart(), send_json(), send_pyobj()
     
-    Two other methods for deactivating the callbacks:
-    stop_on_recv():
+    Three other methods for deactivating the callbacks:
+    
+    * **stop_on_recv():**
         turn off the recv callback
-    stop_on_send():
+    * **stop_on_send():**
         turn off the send callback
-    stop_on_err():
+    * **stop_on_err():**
         turn off the error callback
     
-    All of which simply call on_<evt>(None).
+    All of which simply call `on_<evt>(None)`.
     
     The entire socket interface, excluding direct recv methods, is also
     provided, primarily through direct-linking the methods.
     e.g.
+    
     >>> stream.bind is stream.socket.bind
     True
     
@@ -243,11 +248,11 @@ class ZMQStream(object):
 
         A limit can be specified, to prevent blocking under high load.
 
-        :func:`flush` will return the first time ANY of these conditions are met:
+        flush will return the first time ANY of these conditions are met:
             * No more events matching the flag are pending.
             * the total number of events handled reaches the limit.
 
-        Note that if flag|POLLIN, recv events will be flushed even if no callback
+        Note that if `flag|POLLIN`, recv events will be flushed even if no callback
         is registered, unlike normal IOLoop operation. This allows flush to be
         used to remove *and ignore* incoming messages.
 
