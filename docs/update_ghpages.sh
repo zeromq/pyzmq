@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # pick repo for gh-pages branch
 repo=origin
 
@@ -14,6 +14,7 @@ if [ ! -d gh-pages ]; then
         git symbolic-ref HEAD refs/heads/gh-pages || exit -1
         rm .git/index || exit -1
         git clean -fdx || exit -1
+        touch index.html
         git add .
         git commit -a -m 'init gh-pages' || exit -1
         git push origin HEAD:gh-pages

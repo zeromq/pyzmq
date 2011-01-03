@@ -33,6 +33,7 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -rf api/generated/*
 	-rm -rf dist
+	-rm -rf gh-pages
 
 api: api/generated/gen.rst
 
