@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>log.handlers &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="utils.initthreads" href="zmq.utils.initthreads.html" />
+    <link rel="prev" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.utils.initthreads.html" title="utils.initthreads"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">log.handlers</a><ul>
+<li><a class="reference internal" href="#module-log-handlers">Module: <tt class="docutils literal"><span class="pre">log.handlers</span></tt></a><ul>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#pubhandler"><tt class="docutils literal"><span class="pre">PUBHandler</span></tt></a></li>
+<li><a class="reference internal" href="#topiclogger"><tt class="docutils literal"><span class="pre">TopicLogger</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.eventloop.zmqstream.html"
+                        title="previous chapter">eventloop.zmqstream</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.utils.initthreads.html"
+                        title="next chapter">utils.initthreads</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.log.handlers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="log-handlers">
+<h1>log.handlers<a class="headerlink" href="#log-handlers" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-log-handlers">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">log.handlers</span></tt><a class="headerlink" href="#module-log-handlers" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.log.handlers</span></tt>:</p>
+<img src="../../images/inheritance89566ce799.png" usemap="#inheritance89566ce799" class="inheritance"/><map id="inheritance89566ce799" name="inheritance89566ce799">
+</map>
+<span class="target" id="module-zmq.log.handlers"></span><p>pyzmq logging handlers.</p>
+<p>This mainly defines the PUBHandler object for publishing logging messages over
+a zmq.PUB socket.</p>
+<p>The PUBHandler can be used with the regular logging module, as in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="s">&#39;tcp://127.0.0.1:12345&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">root_topic</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;foobar&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After this point, all messages logged by <tt class="docutils literal"><span class="pre">logger</span></tt> will be published on the
+PUB socket.</p>
+<p>Code adapted from StarCluster:</p>
+<blockquote>
+<a class="reference external" href="http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py">http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py</a></blockquote>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Min RK</li>
+</ul>
+</div>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pubhandler">
+<h3><a class="reference internal" href="#zmq.log.handlers.PUBHandler" title="zmq.log.handlers.PUBHandler"><tt class="xref py py-class docutils literal"><span class="pre">PUBHandler</span></tt></a><a class="headerlink" href="#pubhandler" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.log.handlers.PUBHandler">
+<em class="property">class </em><tt class="descclassname">zmq.log.handlers.</tt><tt class="descname">PUBHandler</tt><big>(</big><em>interface_or_socket</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">logging.Handler</span></tt></p>
+<p>A basic logging handler that emits log messages through a PUB socket.</p>
+<p>Takes a PUB socket already bound to interfaces or an interface to bind to.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sock</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;inproc://log&#39;</span><span class="p">)</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="n">sock</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="s">&#39;inproc://loc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>These are equivalent.</p>
+<p>Log messages handled by this handler are broadcast with ZMQ topics
+<tt class="docutils literal"><span class="pre">this.root_topic</span></tt> comes first, followed by the log level
+(DEBUG,INFO,etc.), followed by any additional subtopics specified in the
+message by: log.debug(&#8220;subtopic.subsub::the real message&#8221;)</p>
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.acquire">
+<tt class="descname">acquire</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.acquire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire the I/O thread lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.addFilter">
+<tt class="descname">addFilter</tt><big>(</big><em>filter</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.addFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the specified filter to this handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tidy up any resources used by the handler.</p>
+<p>This version does removes the handler from an internal list
+of handlers which is closed when shutdown() is called. Subclasses
+should ensure that this gets called from overridden close()
+methods.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.createLock">
+<tt class="descname">createLock</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.createLock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire a thread lock for serializing access to the underlying I/O.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.emit">
+<tt class="descname">emit</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emit a log message on my socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.filter">
+<tt class="descname">filter</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if a record is loggable by consulting all the filters.</p>
+<p>The default is to allow the record to be logged; any filter can veto
+this and the record is then dropped. Returns a zero value if a record
+is to be dropped, else non-zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.flush">
+<tt class="descname">flush</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure all logging output has been flushed.</p>
+<p>This version does nothing and is intended to be implemented by
+subclasses.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.format">
+<tt class="descname">format</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format a record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.handle">
+<tt class="descname">handle</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conditionally emit the specified logging record.</p>
+<p>Emission depends on filters which may have been added to the handler.
+Wrap the actual emission of the record with acquisition/release of
+the I/O thread lock. Returns whether the filter passed the record for
+emission.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.handleError">
+<tt class="descname">handleError</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.handleError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle errors which occur during an emit() call.</p>
+<p>This method should be called from handlers when an exception is
+encountered during an emit() call. If raiseExceptions is false,
+exceptions get silently ignored. This is what is mostly wanted
+for a logging system - most users will not care about errors in
+the logging system, they are more interested in application errors.
+You could, however, replace this with a custom handler if you wish.
+The record which was being processed is passed in to this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.release">
+<tt class="descname">release</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release the I/O thread lock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.removeFilter">
+<tt class="descname">removeFilter</tt><big>(</big><em>filter</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.removeFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the specified filter from this handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.setFormatter">
+<tt class="descname">setFormatter</tt><big>(</big><em>fmt</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.setFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the formatter for this handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.setLevel">
+<tt class="descname">setLevel</tt><big>(</big><em>level</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.setLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the logging level of this handler.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="topiclogger">
+<h3><a class="reference internal" href="#zmq.log.handlers.TopicLogger" title="zmq.log.handlers.TopicLogger"><tt class="xref py py-class docutils literal"><span class="pre">TopicLogger</span></tt></a><a class="headerlink" href="#topiclogger" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.log.handlers.TopicLogger">
+<em class="property">class </em><tt class="descclassname">zmq.log.handlers.</tt><tt class="descname">TopicLogger</tt><big>(</big><em>name</em>, <em>level=0</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">logging.Logger</span></tt></p>
+<p>A simple wrapper that takes an additional argument to log methods.</p>
+<p>All the regular methods exist, but instead of one msg argument, two
+arguments: topic, msg are passed.</p>
+<p>That is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;msg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Would become:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;topic.sub&#39;</span><span class="p">,</span> <span class="s">&#39;msg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.addFilter">
+<tt class="descname">addFilter</tt><big>(</big><em>filter</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.addFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the specified filter to this handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.addHandler">
+<tt class="descname">addHandler</tt><big>(</big><em>hdlr</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.addHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the specified handler to this logger.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.callHandlers">
+<tt class="descname">callHandlers</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.callHandlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass a record to all relevant handlers.</p>
+<p>Loop through all handlers for this logger and its parents in the
+logger hierarchy. If no handler was found, output a one-off error
+message to sys.stderr. Stop searching up the hierarchy whenever a
+logger with the &#8220;propagate&#8221; attribute set to zero is found - that
+will be the last logger whose handlers are called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.critical">
+<tt class="descname">critical</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.critical" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.debug">
+<tt class="descname">debug</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.debug" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.error">
+<tt class="descname">error</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.exception">
+<tt class="descname">exception</tt><big>(</big><em>msg</em>, <em>*args</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for logging an ERROR with exception information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.fatal">
+<tt class="descname">fatal</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.fatal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.filter">
+<tt class="descname">filter</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if a record is loggable by consulting all the filters.</p>
+<p>The default is to allow the record to be logged; any filter can veto
+this and the record is then dropped. Returns a zero value if a record
+is to be dropped, else non-zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.findCaller">
+<tt class="descname">findCaller</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.findCaller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the stack frame of the caller so that we can note the source
+file name, line number and function name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.getEffectiveLevel">
+<tt class="descname">getEffectiveLevel</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.getEffectiveLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the effective level for this logger.</p>
+<p>Loop through this logger and its parents in the logger hierarchy,
+looking for a non-zero logging level. Return the first one found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.handle">
+<tt class="descname">handle</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the handlers for the specified record.</p>
+<p>This method is used for unpickled records received from a socket, as
+well as those created locally. Logger-level filtering is applied.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.info">
+<tt class="descname">info</tt><big>(</big><em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log &#8216;msg % args&#8217; with severity &#8216;INFO&#8217;.</p>
+<p>To pass exception information, use the keyword argument exc_info with
+a true value, e.g.</p>
+<p>logger.info(&#8220;Houston, we have a %s&#8221;, &#8220;interesting problem&#8221;, exc_info=1)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.isEnabledFor">
+<tt class="descname">isEnabledFor</tt><big>(</big><em>level</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.isEnabledFor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is this logger enabled for level &#8216;level&#8217;?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.log">
+<tt class="descname">log</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log &#8216;msg % args&#8217; with level and topic.</p>
+<p>To pass exception information, use the keyword argument exc_info
+with a True value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s">&quot;zmq.fun&quot;</span><span class="p">,</span> <span class="s">&quot;We have a </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> 
+        <span class="s">&quot;mysterious problem&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.makeRecord">
+<tt class="descname">makeRecord</tt><big>(</big><em>name</em>, <em>level</em>, <em>fn</em>, <em>lno</em>, <em>msg</em>, <em>args</em>, <em>exc_info</em>, <em>func=None</em>, <em>extra=None</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.makeRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>A factory method which can be overridden in subclasses to create
+specialized LogRecords.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.removeFilter">
+<tt class="descname">removeFilter</tt><big>(</big><em>filter</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.removeFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the specified filter from this handler.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.removeHandler">
+<tt class="descname">removeHandler</tt><big>(</big><em>hdlr</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.removeHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the specified handler from this logger.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.setLevel">
+<tt class="descname">setLevel</tt><big>(</big><em>level</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.setLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the logging level of this logger.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.warn">
+<tt class="descname">warn</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.warn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.warning">
+<tt class="descname">warning</tt><big>(</big><em>level</em>, <em>topic</em>, <em>msg</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.utils.initthreads.html" title="utils.initthreads"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

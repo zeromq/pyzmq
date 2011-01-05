@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.context &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="core.device" href="zmq.core.device.html" />
+    <link rel="prev" title="zmq" href="zmq.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.device.html" title="core.device"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.html" title="zmq"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.context</a><ul>
+<li><a class="reference internal" href="#module-core-context">Module: <tt class="docutils literal"><span class="pre">core.context</span></tt></a></li>
+<li><a class="reference internal" href="#context"><tt class="docutils literal"><span class="pre">Context</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.html"
+                        title="previous chapter">zmq</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.core.device.html"
+                        title="next chapter">core.device</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.core.context.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-context">
+<h1>core.context<a class="headerlink" href="#core-context" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-context">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.context</span></tt><a class="headerlink" href="#module-core-context" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.context</span></tt>:</p>
+<img src="../../images/inheritance2ee618d064.png" usemap="#inheritance2ee618d064" class="inheritance"/><map id="inheritance2ee618d064" name="inheritance2ee618d064">
+</map>
+<span class="target" id="module-zmq.core.context"></span><p>0MQ Context class.</p>
+</div>
+<div class="section" id="context">
+<h2><a class="reference internal" href="#zmq.core.context.Context" title="zmq.core.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a><a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.core.context.Context">
+<em class="property">class </em><tt class="descclassname">zmq.core.context.</tt><tt class="descname">Context</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.core.context.Context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Manage the lifecycle of a 0MQ context.</p>
+<p>This class no longer takes any flags or the number of application
+threads.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>io_threads</strong> : int</p>
+<blockquote class="last">
+<p>The number of IO threads.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="zmq.core.context.Context.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#zmq.core.context.Context.closed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.context.Context.socket">
+<tt class="descname">socket</tt><big>(</big><em>socket_type</em><big>)</big><a class="headerlink" href="#zmq.core.context.Context.socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Socket associated with this Context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket_type</strong> : int</p>
+<blockquote class="last">
+<p>The socket type, which can be any of the 0MQ socket types: 
+REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH, XSUB, XPUB.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.context.Context.term">
+<tt class="descname">term</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.context.Context.term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close or terminate the context.</p>
+<p>This can be called to close the context by hand. If this is not
+called, the context will automatically be closed when it is
+garbage collected.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.device.html" title="core.device"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.html" title="zmq"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

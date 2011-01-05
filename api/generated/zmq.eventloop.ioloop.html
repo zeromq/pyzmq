@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventloop.ioloop &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" />
+    <link rel="prev" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.monitoredqueuedevice.html" title="devices.monitoredqueuedevice"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eventloop.ioloop</a><ul>
+<li><a class="reference internal" href="#module-eventloop-ioloop">Module: <tt class="docutils literal"><span class="pre">eventloop.ioloop</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#delayedcallback"><tt class="docutils literal"><span class="pre">DelayedCallback</span></tt></a></li>
+<li><a class="reference internal" href="#ioloop"><tt class="docutils literal"><span class="pre">IOLoop</span></tt></a></li>
+<li><a class="reference internal" href="#periodiccallback"><tt class="docutils literal"><span class="pre">PeriodicCallback</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.devices.monitoredqueuedevice.html"
+                        title="previous chapter">devices.monitoredqueuedevice</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.eventloop.stack_context.html"
+                        title="next chapter">eventloop.stack_context</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.eventloop.ioloop.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="eventloop-ioloop">
+<h1>eventloop.ioloop<a class="headerlink" href="#eventloop-ioloop" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-eventloop-ioloop">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.ioloop</span></tt><a class="headerlink" href="#module-eventloop-ioloop" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.eventloop.ioloop</span></tt>:</p>
+<img src="../../images/inheritancebba250277e.png" usemap="#inheritancebba250277e" class="inheritance"/><map id="inheritancebba250277e" name="inheritancebba250277e">
+</map>
+<span class="target" id="module-zmq.eventloop.ioloop"></span><p>A level-triggered I/O loop for non-blocking sockets.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="delayedcallback">
+<h3><a class="reference internal" href="#zmq.eventloop.ioloop.DelayedCallback" title="zmq.eventloop.ioloop.DelayedCallback"><tt class="xref py py-class docutils literal"><span class="pre">DelayedCallback</span></tt></a><a class="headerlink" href="#delayedcallback" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.ioloop.DelayedCallback">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">DelayedCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zmq.eventloop.ioloop.PeriodicCallback" title="zmq.eventloop.ioloop.PeriodicCallback"><tt class="xref py py-class docutils literal"><span class="pre">zmq.eventloop.ioloop.PeriodicCallback</span></tt></a></p>
+<p>Schedules the given callback to be called once.</p>
+<p>The callback is called after the object is created by callback_time milliseconds.</p>
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.DelayedCallback.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.DelayedCallback.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ioloop">
+<h3><a class="reference internal" href="#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a><a class="headerlink" href="#ioloop" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.ioloop.IOLoop">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">IOLoop</tt><big>(</big><em>impl=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A level-triggered I/O loop.</p>
+<p>We use epoll if it is available, or else we fall back on select(). If
+you are implementing a system that needs to handle 1000s of simultaneous
+connections, you should use Linux and either compile our epoll module or
+use Python 2.6+ to get epoll support.</p>
+<p>Example usage for a simple TCP server:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">ioloop</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="k">def</span> <span class="nf">connection_ready</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">connection</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EWOULDBLOCK</span><span class="p">,</span> <span class="n">errno</span><span class="o">.</span><span class="n">EAGAIN</span><span class="p">):</span>
+                <span class="k">raise</span>
+            <span class="k">return</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">handle_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+
+<span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+
+<span class="n">io_loop</span> <span class="o">=</span> <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="n">callback</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">connection_ready</span><span class="p">,</span> <span class="n">sock</span><span class="p">)</span>
+<span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">callback</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+<span class="n">io_loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.add_callback">
+<tt class="descname">add_callback</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.add_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the given callback on the next I/O loop iteration.</p>
+<p>This is thread safe because set.add is an atomic operation. The rest
+of the API is not thread safe.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.add_handler">
+<tt class="descname">add_handler</tt><big>(</big><em>fd</em>, <em>handler</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.add_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers the given handler to receive the given events for fd.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.add_timeout">
+<tt class="descname">add_timeout</tt><big>(</big><em>deadline</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.add_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the given callback at the time deadline from the I/O loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.handle_callback_exception">
+<tt class="descname">handle_callback_exception</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.handle_callback_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is called whenever a callback run by the IOLoop
+throws an exception.</p>
+<p>By default simply logs the exception as an error.  Subclasses
+may override this method to customize reporting of exceptions.</p>
+<p>The exception itself is not passed explicitly, but is available
+in sys.exc_info.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.ioloop.IOLoop.initialized">
+<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.initialized" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.ioloop.IOLoop.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global IOLoop instance.</p>
+<p>Most single-threaded applications have a single, global IOLoop.
+Use this method instead of passing around IOLoop instances
+throughout your code.</p>
+<p>A common pattern for classes that depend on IOLoops is to use
+a default argument to enable programs with multiple IOLoops
+but not require the argument for simpler applications:</p>
+<blockquote>
+<dl class="docutils">
+<dt>class MyClass(object):</dt>
+<dd><dl class="first last docutils">
+<dt>def __init__(self, io_loop=None):</dt>
+<dd>self.io_loop = io_loop or IOLoop.instance()</dd>
+</dl>
+</dd>
+</dl>
+</blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.log_stack">
+<tt class="descname">log_stack</tt><big>(</big><em>signal</em>, <em>frame</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.log_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signal handler to log the stack trace of the current thread.</p>
+<p>For use with set_blocking_signal_threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.remove_handler">
+<tt class="descname">remove_handler</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.remove_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop listening for events on fd.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.remove_timeout">
+<tt class="descname">remove_timeout</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.remove_timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.running">
+<tt class="descname">running</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this IOLoop is currently running.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.set_blocking_log_threshold">
+<tt class="descname">set_blocking_log_threshold</tt><big>(</big><em>seconds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.set_blocking_log_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs a stack trace if the ioloop is blocked for more than s seconds.
+Equivalent to set_blocking_signal_threshold(seconds, self.log_stack)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.set_blocking_signal_threshold">
+<tt class="descname">set_blocking_signal_threshold</tt><big>(</big><em>seconds</em>, <em>action</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.set_blocking_signal_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a signal if the ioloop is blocked for more than s seconds.</p>
+<p>Pass seconds=None to disable.  Requires python 2.6 on a unixy
+platform.</p>
+<p>The action parameter is a python signal handler.  Read the
+documentation for the python &#8216;signal&#8217; module for more information.
+If action is None, the process will be killed if it is blocked for
+too long.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the I/O loop.</p>
+<p>The loop will run until one of the I/O handlers calls stop(), which
+will make the loop stop after the current event iteration completes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the loop after the current event loop iteration is complete.
+If the event loop is not currently running, the next call to start()
+will return immediately.</p>
+<p>To use asynchronous methods from otherwise-synchronous code (such as
+unit tests), you can start and stop the event loop like this:</p>
+<blockquote>
+ioloop = IOLoop()
+async_method(ioloop=ioloop, callback=ioloop.stop)
+ioloop.start()</blockquote>
+<p>ioloop.start() will return after async_method has run its callback,
+whether that callback was invoked before or after ioloop.start.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.update_handler">
+<tt class="descname">update_handler</tt><big>(</big><em>fd</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.update_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the events we listen for fd.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="periodiccallback">
+<h3><a class="reference internal" href="#zmq.eventloop.ioloop.PeriodicCallback" title="zmq.eventloop.ioloop.PeriodicCallback"><tt class="xref py py-class docutils literal"><span class="pre">PeriodicCallback</span></tt></a><a class="headerlink" href="#periodiccallback" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.ioloop.PeriodicCallback">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">PeriodicCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Schedules the given callback to be called periodically.</p>
+<p>The callback is called every callback_time milliseconds.</p>
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.PeriodicCallback.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.PeriodicCallback.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.monitoredqueuedevice.html" title="devices.monitoredqueuedevice"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

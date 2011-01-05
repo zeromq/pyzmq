@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventloop.zmqstream &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
+    <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.log.handlers.html" title="log.handlers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eventloop.zmqstream</a><ul>
+<li><a class="reference internal" href="#module-eventloop-zmqstream">Module: <tt class="docutils literal"><span class="pre">eventloop.zmqstream</span></tt></a></li>
+<li><a class="reference internal" href="#zmqstream"><tt class="docutils literal"><span class="pre">ZMQStream</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.eventloop.stack_context.html"
+                        title="previous chapter">eventloop.stack_context</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.log.handlers.html"
+                        title="next chapter">log.handlers</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.eventloop.zmqstream.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="eventloop-zmqstream">
+<h1>eventloop.zmqstream<a class="headerlink" href="#eventloop-zmqstream" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-eventloop-zmqstream">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.zmqstream</span></tt><a class="headerlink" href="#module-eventloop-zmqstream" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.eventloop.zmqstream</span></tt>:</p>
+<img src="../../images/inheritance383457393f.png" usemap="#inheritance383457393f" class="inheritance"/><map id="inheritance383457393f" name="inheritance383457393f">
+</map>
+<span class="target" id="module-zmq.eventloop.zmqstream"></span><p>A utility class to send to and recv from a non-blocking socket.</p>
+</div>
+<div class="section" id="zmqstream">
+<h2><a class="reference internal" href="#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a><a class="headerlink" href="#zmqstream" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.eventloop.zmqstream.ZMQStream">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A utility class to register callbacks when a zmq socket sends and receives</p>
+<p>For use with zmq.eventloop.ioloop</p>
+<p>There are 4 main methods</p>
+<p>Methods:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>on_recv(callback,copy=True):</strong></dt>
+<dd><p class="first last">register a callback to be run every time the socket has something to receive</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>on_send(callback):</strong></dt>
+<dd><p class="first last">register a callback to be run every time you call send</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>on_err(callback):</strong></dt>
+<dd><p class="first last">register a callback to be run every time there is an error</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>send(self, msg, flags=0, copy=False, callback=None):</strong></dt>
+<dd><p class="first">perform a send that will trigger the callback
+if callback is passed, on_send is also called</p>
+<p class="last">There are also send_multipart(), send_json(), send_pyobj()</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Three other methods for deactivating the callbacks:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>stop_on_recv():</strong></dt>
+<dd><p class="first last">turn off the recv callback</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>stop_on_send():</strong></dt>
+<dd><p class="first last">turn off the send callback</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>stop_on_err():</strong></dt>
+<dd><p class="first last">turn off the error callback</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>All of which simply call <tt class="docutils literal"><span class="pre">on_&lt;evt&gt;(None)</span></tt>.</p>
+<p>The entire socket interface, excluding direct recv methods, is also
+provided, primarily through direct-linking the methods.
+e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span><span class="o">.</span><span class="n">bind</span> <span class="ow">is</span> <span class="n">stream</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">bind</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close this stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.closed">
+<tt class="descname">closed</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.closed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.flush">
+<tt class="descname">flush</tt><big>(</big><em>flag=3</em>, <em>limit=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flush pending messages.</p>
+<p>This method safely handles all pending incoming and/or outgoing messages,
+bypassing the inner loop, passing them to the registered callbacks.</p>
+<p>A limit can be specified, to prevent blocking under high load.</p>
+<dl class="docutils">
+<dt>flush will return the first time ANY of these conditions are met:</dt>
+<dd><ul class="first last simple">
+<li>No more events matching the flag are pending.</li>
+<li>the total number of events handled reaches the limit.</li>
+</ul>
+</dd>
+</dl>
+<p>Note that if <tt class="docutils literal"><span class="pre">flag|POLLIN</span> <span class="pre">!=</span> <span class="pre">0</span></tt>, recv events will be flushed even if no callback
+is registered, unlike normal IOLoop operation. This allows flush to be
+used to remove <em>and ignore</em> incoming messages.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flag</strong> : int, default=POLLIN|POLLOUT</p>
+<blockquote>
+<p>0MQ poll flags.
+If flag|POLLIN,  recv events will be flushed.
+If flag|POLLOUT, send events will be flushed.
+Both flags can be set at once, which is the default.</p>
+</blockquote>
+<p><strong>limit</strong> : None or int, optional</p>
+<blockquote>
+<p>The maximum number of messages to send or receive.
+Both send and recv count against this limit.</p>
+</blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>int</strong> : count of events handled (both send and recv)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.on_err">
+<tt class="descname">on_err</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_err" title="Permalink to this definition">¶</a></dt>
+<dd><p>register a callback to be called on POLLERR events
+with no arguments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote class="last">
+<p>callback will be passed no arguments.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.on_recv">
+<tt class="descname">on_recv</tt><big>(</big><em>callback</em>, <em>copy=True</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a callback to be called when a message is ready to recv.
+There can be only one callback registered at a time, so each
+call to on_recv replaces previously registered callbacks.</p>
+<p>on_recv(None) disables recv event polling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote>
+<p>callback must take exactly one argument, which will be a
+list, as returned by socket.recv_multipart()
+if callback is None, recv callbacks are disabled.</p>
+</blockquote>
+<p><strong>copy</strong> : bool</p>
+<blockquote>
+<p>copy is passed directly to recv, so if copy is False,
+callback will receive Message objects. If copy is True,
+then callback will receive bytes/str objects.</p>
+</blockquote>
+<p class="last"><strong>Returns</strong> : None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.on_send">
+<tt class="descname">on_send</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a callback to be called on each send
+There will be two arguments: the message being sent (always a list), 
+and the return result of socket.send_multipart(msg).</p>
+<p>Non-copying sends return a MessageTracker object whose
+<cite>done</cite> attribute will be True when the send is complete. 
+This allows users to track when an object is safe to write to
+again.</p>
+<p>The second argument will always be None if copy=True
+on the send.</p>
+<p>on_send(None) disables recv event polling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
+<blockquote class="last">
+<p>callback must take exactly two arguments, which will be
+There will be two arguments: the message being sent (always a list), 
+and the return result of socket.send_multipart(msg) - 
+MessageTracker or None.</p>
+<p>if callback is None, send callbacks are disabled.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.receiving">
+<tt class="descname">receiving</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.receiving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if we are currently receiving from the stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send">
+<tt class="descname">send</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message, optionally also register a new callback for sends.
+See zmq.socket.send for details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send_json">
+<tt class="descname">send_json</tt><big>(</big><em>obj</em>, <em>flags=0</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send json-serialized version of an object.
+See zmq.socket.send_json for details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send_multipart">
+<tt class="descname">send_multipart</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a multipart message, optionally also register a new callback for sends.
+See zmq.socket.send_multipart for details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send_pyobj">
+<tt class="descname">send_pyobj</tt><big>(</big><em>obj</em>, <em>flags=0</em>, <em>protocol=-1</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_pyobj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a Python object as a message using pickle to serialize.</p>
+<p>See zmq.socket.send_json for details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send_unicode">
+<tt class="descname">send_unicode</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>encoding='utf-8'</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_unicode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a unicode message with an encoding.
+See zmq.socket.send_unicode for details.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.sending">
+<tt class="descname">sending</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.sending" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if we are currently sending to the stream.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.set_close_callback">
+<tt class="descname">set_close_callback</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.set_close_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the given callback when the stream is closed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.stop_on_err">
+<tt class="descname">stop_on_err</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.stop_on_err" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable callback on errors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.stop_on_recv">
+<tt class="descname">stop_on_recv</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.stop_on_recv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable callback and automatic receiving.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.stop_on_send">
+<tt class="descname">stop_on_send</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.stop_on_send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable callback on sending.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.log.handlers.html" title="log.handlers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyZMQ, Python2.5, and Python3 &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="shortcut icon" href="static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="next" title="PyZMQ and Unicode" href="unicode.html" />
+    <link rel="prev" title="PyZMQ Documentation" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="PyZMQ and Unicode"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyZMQ Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyZMQ, Python2.5, and Python3</a><ul>
+<li><a class="reference internal" href="#pyversion-compat-h">pyversion_compat.h</a></li>
+<li><a class="reference internal" href="#bytes-and-strings">Bytes and Strings</a><ul>
+<li><a class="reference internal" href="#pybytes"><tt class="docutils literal"><span class="pre">PyBytes_*</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#buffers">Buffers</a></li>
+<li><a class="reference internal" href="#str"><tt class="docutils literal"><span class="pre">__str__</span></tt></a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PyZMQ Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="unicode.html"
+                        title="next chapter">PyZMQ and Unicode</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/pyversions.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyzmq-python2-5-and-python3">
+<span id="pyversions"></span><h1>PyZMQ, Python2.5, and Python3<a class="headerlink" href="#pyzmq-python2-5-and-python3" title="Permalink to this headline">¶</a></h1>
+<p>PyZMQ is a fairly light, low-level library, so supporting as many versions
+as is reasonable is our goal.  Currently, we support at least Python 2.5-3.1.
+Making the changes to the codebase required a few tricks, which are documented here
+for future reference, either by us or by other developers looking to support several
+versions of Python.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is far simpler to support 2.6-3.x than to include 2.5. Many of the significant
+syntax changes have been backported to 2.6, so just writing new-style code would work
+in many cases. I will try to note these points as they come up.</p>
+</div>
+<div class="section" id="pyversion-compat-h">
+<h2>pyversion_compat.h<a class="headerlink" href="#pyversion-compat-h" title="Permalink to this headline">¶</a></h2>
+<p>Many functions we use, primarily involved in converting between C-buffers and Python
+objects, are not available on all supported versions of Python. In order to resolve
+missing symbols, we added a header <tt class="file docutils literal"><span class="pre">utils/pyversion_compat.h</span></tt> that defines missing
+symbols with macros. Some of these macros alias new names to old functions (e.g.
+<tt class="docutils literal"><span class="pre">PyBytes_AsString</span></tt>), so that we can call new-style functions on older versions, and some
+simply define the function as an empty exception raiser. The important thing is that the
+symbols are defined to prevent compiler warnings and linking errors. Everywhere we use
+C-API functions that may not be available in a supported version, at the top of the file
+is the code:</p>
+<div class="highlight-guess"><div class="highlight"><pre><span class="n">cdef</span> <span class="n">extern</span> <span class="n">from</span> <span class="s">&quot;pyversion_compat.h&quot;</span><span class="p">:</span>
+    <span class="n">pass</span>
+</pre></div>
+</div>
+<p>This ensures that the symbols are defined in the Cython generated C-code. Higher level
+switching logic exists in the code itself, to prevent actually calling unavailable
+functions, but the symbols must still be defined.</p>
+</div>
+<div class="section" id="bytes-and-strings">
+<h2>Bytes and Strings<a class="headerlink" href="#bytes-and-strings" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are using Python &gt;= 2.6, to prepare your PyZMQ code for Python3 you should use
+the <tt class="docutils literal"><span class="pre">b'message'</span></tt> syntax to ensure all your string literal messages will still be
+<tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> after you make the upgrade.</p>
+</div>
+<p>The most cumbersome part of PyZMQ compatibility from a user&#8217;s perspective is the fact
+that, since ØMQ uses C-strings, and would like to do so without copying, we must use the
+Py3k <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> object, which is backported to 2.6. In order to do this in a
+Python-version independent way, we added a small utility that unambiguously defines the
+string types: <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt>. This is important,
+because <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> means different things on 2.x and 3.x, and <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> is
+undefined on 2.5, and both <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt> and <tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt> are undefined on 3.x.
+All typechecking in PyZMQ is done against these types:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="31%" />
+<col width="37%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Explicit Type</th>
+<th class="head">2.x</th>
+<th class="head">3.x</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="xref py py-obj docutils literal"><span class="pre">bytes</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">bytes</span></tt></td>
+</tr>
+<tr><td><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></td>
+</tr>
+<tr><td><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></td>
+<td><tt class="xref py py-obj docutils literal"><span class="pre">(str,</span> <span class="pre">bytes)</span></tt></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>2.5 specific</p>
+<p class="last">Where we really noticed the issue of <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> vs <tt class="xref py py-obj docutils literal"><span class="pre">strings</span></tt> coming up for
+users was in updating the tests to run on every version. Since the <tt class="docutils literal"><span class="pre">b'bytes</span>
+<span class="pre">literal'</span></tt> syntax was not backported to 2.5, we must call <tt class="docutils literal"><span class="pre">&quot;message&quot;.encode()</span></tt> for
+<em>every</em> string in the test suite.</p>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="unicode.html#unicode"><em>Unicode discussion</em></a> for more information on strings/bytes.</p>
+</div>
+<div class="section" id="pybytes">
+<h3><tt class="docutils literal"><span class="pre">PyBytes_*</span></tt><a class="headerlink" href="#pybytes" title="Permalink to this headline">¶</a></h3>
+<p>The standard C-API function for turning a C-string into a Python string was a set of
+functions with the prefix <tt class="docutils literal"><span class="pre">PyString_*</span></tt>. However, with the Unicode changes made in
+Python3, this was broken into <tt class="docutils literal"><span class="pre">PyBytes_*</span></tt> for bytes objects and <tt class="docutils literal"><span class="pre">PyUnicode_*</span></tt> for
+unicode objects. We changed all our <tt class="docutils literal"><span class="pre">PyString_*</span></tt> code to <tt class="docutils literal"><span class="pre">PyBytes_*</span></tt>, which was
+backported to 2.6.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>2.5 Specific:</p>
+<p>Since Python 2.5 doesn&#8217;t support the <tt class="docutils literal"><span class="pre">PyBytes_*</span></tt> functions, we had to alias them to
+the <tt class="docutils literal"><span class="pre">PyString_*</span></tt> methods in utils/pyversion_compat.h.</p>
+<div class="last highlight-c++"><div class="highlight"><pre><span class="cp">#define PyBytes_FromStringAndSize PyString_FromStringAndSize</span>
+<span class="cp">#define PyBytes_FromString PyString_FromString</span>
+<span class="cp">#define PyBytes_AsString PyString_AsString</span>
+<span class="cp">#define PyBytes_Size PyString_Size</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="buffers">
+<h2>Buffers<a class="headerlink" href="#buffers" title="Permalink to this headline">¶</a></h2>
+<p>The layer that is most complicated for developers, but shouldn&#8217;t trouble users, is the
+Python C-Buffer APIs. These are the methods for converting between Python objects and C
+buffers. The reason it is complicated is that it keeps changing.</p>
+<p>There are two buffer interfaces for converting an object to a C-buffer, known as new-style
+and old-style. Old-style buffers were introduced long ago, but the new-style is only
+backported to 2.6. The old-style buffer interface is not available in 3.x. There is also
+an old- and new-style interface for creating Python objects that view C-memory. The
+old-style object is called a <tt class="xref py py-class docutils literal"><span class="pre">buffer</span></tt>, and the new-style object is
+<tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt>. Unlike the new-style buffer interface for objects,
+<tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt> has only been backported to <em>2.7</em>. This means that the available
+buffer-related functions are not the same in any two versions of Python 2.5, 2.6, 2.7, or
+3.1.</p>
+<p>We have a <tt class="file docutils literal"><span class="pre">utils/buffers.pxd</span></tt> file that defines our <tt class="xref py py-func docutils literal"><span class="pre">asbuffer()</span></tt> and
+<tt class="xref py py-func docutils literal"><span class="pre">frombuffer()</span></tt> functions. <tt class="file docutils literal"><span class="pre">utils/buffers.pxd</span></tt> was adapted from <a class="reference external" href="http://mpi4py.googlecode.com">mpi4py</a>&#8216;s
+<tt class="file docutils literal"><span class="pre">asbuffer.pxi</span></tt>. The <tt class="xref py py-func docutils literal"><span class="pre">frombuffer()</span></tt> functionality was added. These functions
+internally switch based on Python version to call the appropriate C-API functions.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="bufferapi">Python Buffer API</a></p>
+</div>
+</div>
+<div class="section" id="str">
+<h2><tt class="docutils literal"><span class="pre">__str__</span></tt><a class="headerlink" href="#str" title="Permalink to this headline">¶</a></h2>
+<p>As discussed, <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> is not a platform independent type. The two places where we are
+required to return native str objects are <tt class="xref py py-func docutils literal"><span class="pre">error.strerror()</span></tt>, and
+<tt class="xref py py-func docutils literal"><span class="pre">Message.__str__()</span></tt>. In both of these cases, the natural return is actually a
+<tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> object. In the methods, the native <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> type is checked, and if the
+native str is actually unicode, then we decode the bytes into unicode:</p>
+<div class="highlight-py"><div class="highlight"><pre><span class="c"># ...</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">natural_result</span><span class="p">()</span>
+<span class="k">if</span> <span class="nb">str</span> <span class="ow">is</span> <span class="nb">unicode</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">b</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This section is only relevant for supporting Python 2.5 and 3.x, not for 2.6-3.x.</p>
+</div>
+<p>The syntax for handling exceptions has <a class="reference external" href="PEP-3110">changed</a> in Python 3.  The old syntax:</p>
+<div class="highlight-py"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">handle</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is no longer valid in Python 3. Instead, the new syntax for this is:</p>
+<div class="highlight-py"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="n">handle</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This new syntax is backported to Python 2.6, but is invalid on 2.5. For 2.6-3.x compatible
+code, we could just use the new syntax. However, the only method we found to catch an
+exception for handling on both 2.5 and 3.1 is to get the exception object inside the
+exception block:</p>
+<div class="highlight-py"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span><span class="p">:</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">handle</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is certainly not as elegant as either the old or new syntax, but it&#8217;s the only way we
+have found to work everywhere.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="http://www.python.org/dev/peps/pep-3110/">PEP-3110</a></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="PyZMQ and Unicode"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyZMQ Documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

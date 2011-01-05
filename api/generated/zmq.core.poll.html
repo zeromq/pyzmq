@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.poll &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="core.socket" href="zmq.core.socket.html" />
+    <link rel="prev" title="core.message" href="zmq.core.message.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.socket.html" title="core.socket"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.message.html" title="core.message"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.poll</a><ul>
+<li><a class="reference internal" href="#module-core-poll">Module: <tt class="docutils literal"><span class="pre">core.poll</span></tt></a></li>
+<li><a class="reference internal" href="#poller"><tt class="docutils literal"><span class="pre">Poller</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.core.message.html"
+                        title="previous chapter">core.message</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.core.socket.html"
+                        title="next chapter">core.socket</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.core.poll.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-poll">
+<h1>core.poll<a class="headerlink" href="#core-poll" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-poll">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.poll</span></tt><a class="headerlink" href="#module-core-poll" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.poll</span></tt>:</p>
+<img src="../../images/inheritance98ab4683ff.png" usemap="#inheritance98ab4683ff" class="inheritance"/><map id="inheritance98ab4683ff" name="inheritance98ab4683ff">
+</map>
+<span class="target" id="module-zmq.core.poll"></span><p>0MQ polling related functions and classes.</p>
+</div>
+<div class="section" id="poller">
+<h2><a class="reference internal" href="#zmq.core.poll.Poller" title="zmq.core.poll.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a><a class="headerlink" href="#poller" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.core.poll.Poller">
+<em class="property">class </em><tt class="descclassname">zmq.core.poll.</tt><tt class="descname">Poller</tt><a class="headerlink" href="#zmq.core.poll.Poller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A stateful poll interface that mirrors Python&#8217;s built-in poll.</p>
+<dl class="method">
+<dt id="zmq.core.poll.Poller.modify">
+<tt class="descname">modify</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the flags for an already registered 0MQ socket or native fd.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.poll.Poller.poll">
+<tt class="descname">poll</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.poll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poll the registered 0MQ or native fds for I/O.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int</p>
+<blockquote class="last">
+<p>The timeout in milliseconds. If None, no <cite>timeout</cite> (infinite). This
+is in milliseconds to be compatible with <tt class="docutils literal"><span class="pre">select.poll()</span></tt>. The
+underlying zmq_poll uses microseconds and we convert to that in
+this function.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.poll.Poller.register">
+<tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a 0MQ socket or native fd for I/O monitoring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : zmq.Socket or native socket</p>
+<blockquote>
+<p>A zmq.Socket or any Python object having a <tt class="docutils literal"><span class="pre">fileno()</span></tt> 
+method that returns a valid file descriptor.</p>
+</blockquote>
+<p><strong>flags</strong> : int</p>
+<blockquote class="last">
+<p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.poll.Poller.unregister">
+<tt class="descname">unregister</tt><big>(</big><em>socket</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a 0MQ socket or native fd for I/O monitoring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : Socket</p>
+<blockquote class="last">
+<p>The socket instance to stop polling.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.core.poll.select">
+<tt class="descclassname">zmq.core.poll.</tt><tt class="descname">select</tt><big>(</big><em>rlist</em>, <em>wlist</em>, <em>xlist</em>, <em>timeout=None) -&gt; (rlist</em>, <em>wlist</em>, <em>xlist</em><big>)</big><a class="headerlink" href="#zmq.core.poll.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of poll as a lists of sockets ready for r/w/exception.</p>
+<p>This has the same interface as Python&#8217;s built-in <tt class="docutils literal"><span class="pre">select.select()</span></tt> function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int, optional</p>
+<blockquote>
+<p>The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
+compatible with <tt class="docutils literal"><span class="pre">select.select()</span></tt>. The underlying zmq_poll uses microseconds
+and we convert to that in this function.</p>
+</blockquote>
+<p><strong>rlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<p>sockets/FDs to be polled for read events</p>
+</blockquote>
+<p><strong>wlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<p>sockets/FDs to be polled for write events</p>
+</blockquote>
+<p><strong>xlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<p>sockets/FDs to be polled for error events</p>
+</blockquote>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>(rlist, wlist, xlist)</strong> : tuple of lists of sockets (length 3)</p>
+<blockquote class="last">
+<p>Lists correspond to sockets available for read/write/error events respectively.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.socket.html" title="core.socket"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.message.html" title="core.message"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

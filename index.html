@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyZMQ Documentation &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="shortcut icon" href="static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="#" />
+    <link rel="next" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="#"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyversions.html" title="PyZMQ, Python2.5, and Python3"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyZMQ Documentation</a></li>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#links">Links</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyversions.html"
+                        title="next chapter">PyZMQ, Python2.5, and Python3</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyzmq-documentation">
+<h1>PyZMQ Documentation<a class="headerlink" href="#pyzmq-documentation" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.0dev</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 04, 2011</td>
+</tr>
+</tbody>
+</table>
+<p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>, written almost entirely in <a class="reference external" href="http://cython.org/">Cython</a>. This
+documentation currently contains notes on some important aspects of developing PyZMQ and
+an overview of what the ØMQ API looks like in Python. For information on how to use
+ØMQ in general, see the excellent <a class="reference external" href="http://www.zeromq.org/intro:read-the-manual">ØMQ Manual</a>.</p>
+<p>Please don&#8217;t hesitate to report pyzmq issues to our <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">tracker</a> on GitHub.</p>
+</div>
+<div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyversions.html">PyZMQ, Python2.5, and Python3</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyversions.html#pyversion-compat-h">pyversion_compat.h</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyversions.html#bytes-and-strings">Bytes and Strings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyversions.html#buffers">Buffers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyversions.html#str"><tt class="docutils literal"><span class="pre">__str__</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyversions.html#exceptions">Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">PyZMQ and Unicode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#first-unicode-in-python-2-and-3">First, Unicode in Python 2 and 3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#what-this-means-for-pyzmq">What This Means for PyZMQ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.html">zmq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.context.html">core.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.device.html">core.device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.error.html">core.error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.message.html">core.message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.poll.html">core.poll</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.socket.html">core.socket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.stopwatch.html">core.stopwatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.version.html">core.version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.basedevice.html">devices.basedevice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.monitoredqueue.html">devices.monitoredqueue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html">devices.monitoredqueuedevice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html">eventloop.ioloop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.stack_context.html">eventloop.stack_context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html">eventloop.zmqstream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.log.handlers.html">log.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.initthreads.html">utils.initthreads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.jsonapi.html">utils.jsonapi</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+<div class="section" id="links">
+<h1>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="http://www.zeromq.org">ØMQ</a> Home</li>
+<li><a class="reference external" href="http://www.zeromq.org/bindings:python">PyZMQ Installation</a> notes on the ZeroMQ website</li>
+<li>PyZMQ on <a class="reference external" href="https://www.github.com/zeromq/pyzmq">GitHub</a></li>
+<li>Issue <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">Tracker</a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyversions.html" title="PyZMQ, Python2.5, and Python3"
+             >next</a> |</li>
+        <li><a href="#">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

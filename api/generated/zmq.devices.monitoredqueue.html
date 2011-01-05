@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>devices.monitoredqueue &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" />
+    <link rel="prev" title="devices.basedevice" href="zmq.devices.basedevice.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.monitoredqueuedevice.html" title="devices.monitoredqueuedevice"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.basedevice.html" title="devices.basedevice"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">devices.monitoredqueue</a><ul>
+<li><a class="reference internal" href="#module-zmq.devices.monitoredqueue">Module: <tt class="docutils literal"><span class="pre">devices.monitoredqueue</span></tt></a><ul>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.devices.basedevice.html"
+                        title="previous chapter">devices.basedevice</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.devices.monitoredqueuedevice.html"
+                        title="next chapter">devices.monitoredqueuedevice</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.devices.monitoredqueue.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="devices-monitoredqueue">
+<h1>devices.monitoredqueue<a class="headerlink" href="#devices-monitoredqueue" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.devices.monitoredqueue">
+<span id="module-devices-monitoredqueue"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">devices.monitoredqueue</span></tt><a class="headerlink" href="#module-zmq.devices.monitoredqueue" title="Permalink to this headline">¶</a></h2>
+<p>MonitoredQueue classes and functions.</p>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>MinRK</li>
+<li>Brian Granger</li>
+</ul>
+</div>
+<dl class="function">
+<dt id="zmq.devices.monitoredqueue.monitored_queue">
+<tt class="descclassname">zmq.devices.monitoredqueue.</tt><tt class="descname">monitored_queue</tt><big>(</big><em>in_socket</em>, <em>out_socket</em>, <em>mon_socket</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueue.monitored_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a monitored queue device.</p>
+<p>A monitored queue behaves just like a zmq QUEUE device as far as in_socket
+and out_socket are concerned, except that all messages <em>also</em> go out on
+mon_socket. mon_socket also prefixes the messages coming from each with a
+prefix, by defaout &#8216;in&#8217; and &#8216;out&#8217;, so all messages sent by mon_socket are
+multipart.</p>
+<p>The only difference between this and a QUEUE as far as in/out are
+concerned is that it works with two XREP sockets by swapping the IDENT
+prefixes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>in_socket</strong> : Socket</p>
+<blockquote>
+<p>One of the sockets to the Queue. Its messages will be prefixed with
+&#8216;in&#8217;.</p>
+</blockquote>
+<p><strong>out_socket</strong> : Socket</p>
+<blockquote>
+<p>One of the sockets to the Queue. Its messages will be prefixed with
+&#8216;out&#8217;. The only difference between in/out socket is this prefix.</p>
+</blockquote>
+<p><strong>mon_socket</strong> : Socket</p>
+<blockquote>
+<p>This socket sends out every message received by each of the others
+with an in/out prefix specifying which one it was.</p>
+</blockquote>
+<p><strong>in_prefix</strong> : str</p>
+<blockquote>
+<p>Prefix added to broadcast messages from in_socket.</p>
+</blockquote>
+<p><strong>out_prefix</strong> : str</p>
+<blockquote class="last">
+<p>Prefix added to broadcast messages from out_socket.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.monitoredqueuedevice.html" title="devices.monitoredqueuedevice"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.devices.basedevice.html" title="devices.basedevice"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

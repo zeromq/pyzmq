@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventloop.stack_context &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" />
+    <link rel="prev" title="eventloop.ioloop" href="zmq.eventloop.ioloop.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eventloop.stack_context</a><ul>
+<li><a class="reference internal" href="#module-zmq.eventloop.stack_context">Module: <tt class="docutils literal"><span class="pre">eventloop.stack_context</span></tt></a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.eventloop.ioloop.html"
+                        title="previous chapter">eventloop.ioloop</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.eventloop.zmqstream.html"
+                        title="next chapter">eventloop.zmqstream</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.eventloop.stack_context.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="eventloop-stack-context">
+<h1>eventloop.stack_context<a class="headerlink" href="#eventloop-stack-context" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.eventloop.stack_context">
+<span id="module-eventloop-stack-context"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.stack_context</span></tt><a class="headerlink" href="#module-zmq.eventloop.stack_context" title="Permalink to this headline">¶</a></h2>
+<p>StackContext allows applications to maintain threadlocal-like state
+that follows execution as it moves to other execution contexts.</p>
+<p>The motivating examples are to eliminate the need for explicit
+async_callback wrappers (as in tornado.web.RequestHandler), and to
+allow some additional context to be kept for logging.</p>
+<p>This is slightly magic, but it&#8217;s an extension of the idea that an exception
+handler is a kind of stack-local state and when that stack is suspended
+and resumed in a new context that state needs to be preserved.  StackContext
+shifts the burden of restoring that state from each call site (e.g.
+wrapping each AsyncHTTPClient callback in async_callback) to the mechanisms
+that transfer control from one context to another (e.g. AsyncHTTPClient
+itself, IOLoop, thread pools, etc).</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@contextlib.contextmanager</span>
+<span class="k">def</span> <span class="nf">die_on_error</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;exception in asynchronous operation&quot;</span><span class="p">,</span><span class="n">exc_info</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">StackContext</span><span class="p">(</span><span class="n">die_on_error</span><span class="p">):</span>
+    <span class="c"># Any exception thrown here *or in callback and its desendents*</span>
+    <span class="c"># will cause the process to exit instead of spinning endlessly</span>
+    <span class="c"># in the ioloop.</span>
+    <span class="n">http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+<span class="n">ioloop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.eventloop.stack_context.NullContext">
+<tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">NullContext</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.NullContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the StackContext.</p>
+<p>Useful when creating a shared resource on demand (e.g. an AsyncHTTPClient)
+where the stack that caused the creating is not relevant to future
+operations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.eventloop.stack_context.StackContext">
+<tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">StackContext</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.StackContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Establishes the given context as a StackContext that will be transferred.</p>
+<p>Note that the parameter is a callable that returns a context
+manager, not the context itself.  That is, where for a
+non-transferable context manager you would say</p>
+<blockquote>
+with my_context():</blockquote>
+<dl class="docutils">
+<dt>StackContext takes the function itself rather than its result:</dt>
+<dd>with StackContext(my_context):</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.eventloop.stack_context.wrap">
+<tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">wrap</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a callable object that will resore the current StackContext
+when executed.</p>
+<p>Use this whenever saving a callback to be executed later in a
+different execution context (either in a different thread or
+asynchronously in the same thread).</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

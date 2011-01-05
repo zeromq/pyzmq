@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core.error &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="core.message" href="zmq.core.message.html" />
+    <link rel="prev" title="core.device" href="zmq.core.device.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.message.html" title="core.message"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.device.html" title="core.device"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.error</a><ul>
+<li><a class="reference internal" href="#module-core-error">Module: <tt class="docutils literal"><span class="pre">core.error</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#notdone"><tt class="docutils literal"><span class="pre">NotDone</span></tt></a></li>
+<li><a class="reference internal" href="#zmqbaseerror"><tt class="docutils literal"><span class="pre">ZMQBaseError</span></tt></a></li>
+<li><a class="reference internal" href="#zmqbinderror"><tt class="docutils literal"><span class="pre">ZMQBindError</span></tt></a></li>
+<li><a class="reference internal" href="#zmqerror"><tt class="docutils literal"><span class="pre">ZMQError</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.core.device.html"
+                        title="previous chapter">core.device</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.core.message.html"
+                        title="next chapter">core.message</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../sources/api/generated/zmq.core.error.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="core-error">
+<h1>core.error<a class="headerlink" href="#core-error" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core-error">
+<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.error</span></tt><a class="headerlink" href="#module-core-error" title="Permalink to this headline">¶</a></h2>
+<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.error</span></tt>:</p>
+<img src="../../images/inheritance655e143eb1.png" usemap="#inheritance655e143eb1" class="inheritance"/><map id="inheritance655e143eb1" name="inheritance655e143eb1">
+</map>
+<span class="target" id="module-zmq.core.error"></span><p>0MQ Error classes and functions.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="notdone">
+<h3><a class="reference internal" href="#zmq.core.error.NotDone" title="zmq.core.error.NotDone"><tt class="xref py py-class docutils literal"><span class="pre">NotDone</span></tt></a><a class="headerlink" href="#notdone" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.core.error.NotDone">
+<em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">NotDone</tt><a class="headerlink" href="#zmq.core.error.NotDone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
+<p>Raised when timeout is reached while waiting for 0MQ to finish with a Message</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="zmq.core.message.html#zmq.core.message.MessageTracker.wait" title="zmq.core.message.MessageTracker.wait"><tt class="xref py py-obj docutils literal"><span class="pre">MessageTracker.wait</span></tt></a></dt>
+<dd>object for tracking when ZeroMQ is done</dd>
+</dl>
+</div>
+<dl class="attribute">
+<dt id="zmq.core.error.NotDone.args">
+<tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.NotDone.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.core.error.NotDone.message">
+<tt class="descname">message</tt><a class="headerlink" href="#zmq.core.error.NotDone.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="zmqbaseerror">
+<h3><a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">ZMQBaseError</span></tt></a><a class="headerlink" href="#zmqbaseerror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.core.error.ZMQBaseError">
+<em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQBaseError</tt><a class="headerlink" href="#zmq.core.error.ZMQBaseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Base exception class for 0MQ errors in Python.</p>
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQBaseError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.ZMQBaseError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQBaseError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#zmq.core.error.ZMQBaseError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="zmqbinderror">
+<h3><a class="reference internal" href="#zmq.core.error.ZMQBindError" title="zmq.core.error.ZMQBindError"><tt class="xref py py-class docutils literal"><span class="pre">ZMQBindError</span></tt></a><a class="headerlink" href="#zmqbinderror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.core.error.ZMQBindError">
+<em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQBindError</tt><a class="headerlink" href="#zmq.core.error.ZMQBindError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
+<p>An error for <tt class="docutils literal"><span class="pre">Socket.bind_to_random_port()</span></tt>.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="zmq.core.socket.html#zmq.core.socket.Socket.bind_to_random_port" title="zmq.core.socket.Socket.bind_to_random_port"><tt class="xref py py-obj docutils literal"><span class="pre">Socket.bind_to_random_port</span></tt></a></p>
+</div>
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQBindError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.ZMQBindError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQBindError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#zmq.core.error.ZMQBindError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="zmqerror">
+<h3><a class="reference internal" href="#zmq.core.error.ZMQError" title="zmq.core.error.ZMQError"><tt class="xref py py-class docutils literal"><span class="pre">ZMQError</span></tt></a><a class="headerlink" href="#zmqerror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.core.error.ZMQError">
+<em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQError</tt><a class="headerlink" href="#zmq.core.error.ZMQError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
+<p>Wrap an errno style error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>error</strong> : int</p>
+<blockquote class="last">
+<p>The ZMQ errno or None.  If None, then <tt class="docutils literal"><span class="pre">zmq_errno()</span></tt> is called and
+used.</p>
+</blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.ZMQError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#zmq.core.error.ZMQError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.core.error.strerror">
+<tt class="descclassname">zmq.core.error.</tt><tt class="descname">strerror</tt><big>(</big><em>errnum</em><big>)</big><a class="headerlink" href="#zmq.core.error.strerror" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the error string given the error number.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.message.html" title="core.message"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.core.device.html" title="core.device"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>

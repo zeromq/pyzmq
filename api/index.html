@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The PyZMQ API &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="../static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="shortcut icon" href="../static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="../index.html" />
+    <link rel="next" title="zmq" href="generated/zmq.html" />
+    <link rel="prev" title="PyZMQ and Unicode" href="../unicode.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/zmq.html" title="zmq"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../unicode.html" title="PyZMQ and Unicode"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="#">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../unicode.html"
+                        title="previous chapter">PyZMQ and Unicode</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/zmq.html"
+                        title="next chapter">zmq</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../sources/api/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-pyzmq-api">
+<span id="api-index"></span><h1>The PyZMQ API<a class="headerlink" href="#the-pyzmq-api" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.0dev</td>
+</tr>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 04, 2011</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.html">zmq</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.html#id1"><tt class="docutils literal"><span class="pre">zmq</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.context.html">core.context</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.context.html#module-core-context">Module: <tt class="docutils literal"><span class="pre">core.context</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.context.html#context"><tt class="docutils literal"><span class="pre">Context</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.device.html">core.device</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.device.html#module-zmq.core.device">Module: <tt class="docutils literal"><span class="pre">core.device</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.error.html">core.error</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.error.html#module-core-error">Module: <tt class="docutils literal"><span class="pre">core.error</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.error.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.error.html#notdone"><tt class="docutils literal"><span class="pre">NotDone</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.error.html#zmqbaseerror"><tt class="docutils literal"><span class="pre">ZMQBaseError</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.error.html#zmqbinderror"><tt class="docutils literal"><span class="pre">ZMQBindError</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.error.html#zmqerror"><tt class="docutils literal"><span class="pre">ZMQError</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.error.html#function">Function</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.message.html">core.message</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.message.html#module-core-message">Module: <tt class="docutils literal"><span class="pre">core.message</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.message.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.message.html#message"><tt class="docutils literal"><span class="pre">Message</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.core.message.html#messagetracker"><tt class="docutils literal"><span class="pre">MessageTracker</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.poll.html">core.poll</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.poll.html#module-core-poll">Module: <tt class="docutils literal"><span class="pre">core.poll</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.poll.html#poller"><tt class="docutils literal"><span class="pre">Poller</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.socket.html">core.socket</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.socket.html#module-core-socket">Module: <tt class="docutils literal"><span class="pre">core.socket</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.socket.html#socket"><tt class="docutils literal"><span class="pre">Socket</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.stopwatch.html">core.stopwatch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.stopwatch.html#module-core-stopwatch">Module: <tt class="docutils literal"><span class="pre">core.stopwatch</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.stopwatch.html#stopwatch"><tt class="docutils literal"><span class="pre">Stopwatch</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.core.version.html">core.version</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.version.html#module-zmq.core.version">Module: <tt class="docutils literal"><span class="pre">core.version</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.core.version.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.devices.basedevice.html">devices.basedevice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.devices.basedevice.html#module-devices-basedevice">Module: <tt class="docutils literal"><span class="pre">devices.basedevice</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.basedevice.html#authors">Authors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.devices.basedevice.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.basedevice.html#backgrounddevice"><tt class="docutils literal"><span class="pre">BackgroundDevice</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.basedevice.html#device"><tt class="docutils literal"><span class="pre">Device</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.basedevice.html#processdevice"><tt class="docutils literal"><span class="pre">ProcessDevice</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.basedevice.html#threaddevice"><tt class="docutils literal"><span class="pre">ThreadDevice</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.devices.monitoredqueue.html">devices.monitoredqueue</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.devices.monitoredqueue.html#module-zmq.devices.monitoredqueue">Module: <tt class="docutils literal"><span class="pre">devices.monitoredqueue</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueue.html#authors">Authors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html">devices.monitoredqueuedevice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#module-devices-monitoredqueuedevice">Module: <tt class="docutils literal"><span class="pre">devices.monitoredqueuedevice</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#authors">Authors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#monitoredqueue"><tt class="docutils literal"><span class="pre">MonitoredQueue</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#monitoredqueuebase"><tt class="docutils literal"><span class="pre">MonitoredQueueBase</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#processmonitoredqueue"><tt class="docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.devices.monitoredqueuedevice.html#threadmonitoredqueue"><tt class="docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html">eventloop.ioloop</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html#module-eventloop-ioloop">Module: <tt class="docutils literal"><span class="pre">eventloop.ioloop</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html#delayedcallback"><tt class="docutils literal"><span class="pre">DelayedCallback</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html#ioloop"><tt class="docutils literal"><span class="pre">IOLoop</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.eventloop.ioloop.html#periodiccallback"><tt class="docutils literal"><span class="pre">PeriodicCallback</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.eventloop.stack_context.html">eventloop.stack_context</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.stack_context.html#module-zmq.eventloop.stack_context">Module: <tt class="docutils literal"><span class="pre">eventloop.stack_context</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.stack_context.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.eventloop.zmqstream.html">eventloop.zmqstream</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.zmqstream.html#module-eventloop-zmqstream">Module: <tt class="docutils literal"><span class="pre">eventloop.zmqstream</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.eventloop.zmqstream.html#zmqstream"><tt class="docutils literal"><span class="pre">ZMQStream</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.log.handlers.html">log.handlers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.log.handlers.html#module-log-handlers">Module: <tt class="docutils literal"><span class="pre">log.handlers</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.log.handlers.html#authors">Authors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.log.handlers.html#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.log.handlers.html#pubhandler"><tt class="docutils literal"><span class="pre">PUBHandler</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.log.handlers.html#topiclogger"><tt class="docutils literal"><span class="pre">TopicLogger</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.utils.initthreads.html">utils.initthreads</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.utils.initthreads.html#module-zmq.utils.initthreads">Module: <tt class="docutils literal"><span class="pre">utils.initthreads</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generated/zmq.utils.jsonapi.html">utils.jsonapi</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.utils.jsonapi.html#module-zmq.utils.jsonapi">Module: <tt class="docutils literal"><span class="pre">utils.jsonapi</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/zmq.utils.jsonapi.html#authors">Authors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/zmq.utils.jsonapi.html#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/zmq.html" title="zmq"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../unicode.html" title="PyZMQ and Unicode"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+       <li><a href="#">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+    </div>
+  </body>
+</html>
