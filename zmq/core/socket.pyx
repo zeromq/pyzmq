@@ -287,7 +287,7 @@ cdef class Socket:
         Bind the socket to an address.
 
         This causes the socket to listen on a network port. Sockets on the
-        other side of this connection will use :meth:`Socket.connect` to
+        other side of this connection will use ``Socket.connect(addr)`` to
         connect to this socket.
 
         Parameters
@@ -317,7 +317,7 @@ cdef class Socket:
         Parameters
         ----------
         addr : str
-            The address string without the port to pass to :meth:`Socket.bind`.
+            The address string without the port to pass to ``Socket.bind()``.
         min_port : int, optional
             The minimum port in the range of ports to try.
         max_port : int, optional
@@ -397,7 +397,7 @@ cdef class Socket:
         None : if `copy` or not track
             None if message was sent, raises an exception otherwise.
         MessageTracker : if track and not copy
-            a MessageTracker object, whose ``pending`` property will
+            a MessageTracker object, whose `pending` property will
             be True until the send is completed.
         
         Raises
@@ -561,7 +561,7 @@ cdef class Socket:
         -------
         None : if copy or not track
         MessageTracker : if track and not copy
-            a MessageTracker object, whose ``pending`` property will
+            a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
         for msg in msg_parts[:-1]:

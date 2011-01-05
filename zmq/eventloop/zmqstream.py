@@ -64,7 +64,7 @@ class ZMQStream(object):
     * **stop_on_err():**
         turn off the error callback
     
-    All of which simply call `on_<evt>(None)`.
+    All of which simply call ``on_<evt>(None)``.
     
     The entire socket interface, excluding direct recv methods, is also
     provided, primarily through direct-linking the methods.
@@ -252,7 +252,7 @@ class ZMQStream(object):
             * No more events matching the flag are pending.
             * the total number of events handled reaches the limit.
 
-        Note that if `flag|POLLIN`, recv events will be flushed even if no callback
+        Note that if ``flag|POLLIN != 0``, recv events will be flushed even if no callback
         is registered, unlike normal IOLoop operation. This allows flush to be
         used to remove *and ignore* incoming messages.
 
