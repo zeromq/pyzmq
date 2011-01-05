@@ -10,6 +10,15 @@ PyZMQ Documentation
    :Release: |release|
    :Date: |today|
 
+.. Note::
+
+    These docs are for pyzmq-|release|, but pyzmq has not made any significant changes to
+    itself since 2.0.10, so they should apply just fine there as well.
+    
+    PyZMQ versioning follows zeromq, so your pyzmq version should match your zeromq. The
+    only changes at the pyzmq user's level are the addition of a few socket types and
+    socket options.
+
 PyZMQ is the Python bindings for ØMQ_, written almost entirely in Cython_. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
