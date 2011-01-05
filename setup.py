@@ -310,7 +310,7 @@ the ZeroMQ library (http://www.zeromq.org).
 
 setup(
     name = "pyzmq",
-    version = extract_version()
+    version = extract_version(),
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
                 'zmq.devices', 'zmq.utils'],
     ext_modules = extensions,
