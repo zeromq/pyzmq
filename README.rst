@@ -2,8 +2,13 @@
 PyZMQ: Python bindings for 0MQ
 ==============================
 
-This package contains Python bindings for `0QM <http://www.zeromq.org>`_.
+This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
 0MQ is a lightweight and fast messaging implementation.
+
+Documentation
+=============
+
+See PyZMQ's Sphinx `generated documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API details, and some notes on Python and Cython development.
 
 Downloading
 ===========
