@@ -51,7 +51,7 @@ def _poll(sockets, long timeout=-1):
     sockets : list of tuples of (socket, flags)
         Each element of this list is a two-tuple containing a socket
         and a flags. The socket may be a 0MQ socket or any object with
-        a :meth:`fileno` method. The flags can be zmq.POLLIN (for detecting
+        a ``fileno()`` method. The flags can be zmq.POLLIN (for detecting
         for incoming messages), zmq.POLLOUT (for detecting that send is OK)
         or zmq.POLLIN|zmq.POLLOUT for detecting both.
     timeout : int
@@ -128,7 +128,7 @@ class Poller(object):
         Parameters
         ----------
         socket : zmq.Socket or native socket
-            A zmq.Socket or any Python object having a :meth:`fileno` 
+            A zmq.Socket or any Python object having a ``fileno()`` 
             method that returns a valid file descriptor.
         flags : int
             The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
@@ -162,8 +162,8 @@ class Poller(object):
         Parameters
         ----------
         timeout : float, int
-            The timeout in milliseconds. If None, no timeout (infinite). This
-            is in milliseconds to be compatible with :func:`select.poll`. The
+            The timeout in milliseconds. If None, no `timeout` (infinite). This
+            is in milliseconds to be compatible with ``select.poll()``. The
             underlying zmq_poll uses microseconds and we convert to that in
             this function.
         """
@@ -181,13 +181,13 @@ def select(rlist, wlist, xlist, timeout=None):
 
     Return the result of poll as a lists of sockets ready for r/w/exception.
 
-    This has the same interface as Python's built-in :func:`select.select` function.
+    This has the same interface as Python's built-in ``select.select()`` function.
 
     Parameters
     ----------
     timeout : float, int, optional
         The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
-        compatible with :func:`select.select`. The underlying zmq_poll uses microseconds
+        compatible with ``select.select()``. The underlying zmq_poll uses microseconds
         and we convert to that in this function.
     rlist : list of sockets/FDs
         sockets/FDs to be polled for read events

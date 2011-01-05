@@ -6,7 +6,7 @@
 
 .. htmlonly::
 
-   :Release: |version|
-   :Date: |today|
+    :Release: |release|
+    :Date: |today|
 
 .. include:: generated/gen.rst

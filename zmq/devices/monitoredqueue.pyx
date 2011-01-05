@@ -54,7 +54,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     A monitored queue behaves just like a zmq QUEUE device as far as in_socket
     and out_socket are concerned, except that all messages *also* go out on
     mon_socket. mon_socket also prefixes the messages coming from each with a
-    prefix, by defaout 'in' and 'out', so all messages sent by mon_socket are
+    prefix, by default 'in' and 'out', so all messages sent by mon_socket are
     multipart.
     
     The only difference between this and a QUEUE as far as in/out are

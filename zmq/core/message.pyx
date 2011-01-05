@@ -351,7 +351,7 @@ cdef class Message:
     cdef object _getbuffer(self):
         """Create a Python buffer/view of the message data.
 
-        This will be called only once, the first time the ``buffer`` property
+        This will be called only once, the first time the `buffer` property
         is accessed. Subsequent calls use a cached copy.
         """
         cdef char *data_c = NULL

@@ -54,7 +54,7 @@ class ZMQError(ZMQBaseError):
     Parameters
     ----------
     error : int
-        The ZMQ errno or None.  If None, then :func:`zmq_errno` is called and
+        The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
         used.
     """
 
@@ -64,7 +64,7 @@ class ZMQError(ZMQBaseError):
         Parameters
         ----------
         error : int
-            The ZMQ errno or None.  If None, then :func:`zmq_errno` is called and
+            The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
             used.
         """
         if error is None:
@@ -81,7 +81,12 @@ class ZMQError(ZMQBaseError):
 
 
 class ZMQBindError(ZMQBaseError):
-    """An error for :meth:`.Socket.bind_to_random_port`."""
+    """An error for ``Socket.bind_to_random_port()``.
+    
+    See Also
+    --------
+    .Socket.bind_to_random_port
+    """
     pass
 
 

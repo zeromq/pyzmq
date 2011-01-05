@@ -47,7 +47,7 @@ class Device:
     
     *Warning* as with most 'threadsafe' Python objects, this is only
     threadsafe as long as you do not use private methods or attributes.
-    Private names are prefixed with '_', such as 'self._setup_socket()'.
+    Private names are prefixed with '_', such as ``self._setup_socket()``.
     
     For thread safety, you do not pass Sockets to this, but rather Socket
     types::
@@ -76,12 +76,12 @@ class Device:
     Methods
     -------
     bind_{in_out}(iface)
-        passthrough for {in|out}_socket.bind(iface), to be called in the thread
+        passthrough for ``{in|out}_socket.bind(iface)``, to be called in the thread
     connect_{in_out}(iface)
-        passthrough for {in|out}_socket.connect(iface), to be called in the
+        passthrough for ``{in|out}_socket.connect(iface)``, to be called in the
         thread
     setsockopt_{in_out}(opt,value)
-        passthrough for {in|out}_socket.setsockopt(opt, value), to be called in
+        passthrough for ``{in|out}_socket.setsockopt(opt, value)``, to be called in
         the thread
     
     Attributes
@@ -220,14 +220,14 @@ class BackgroundDevice(Device):
 class ThreadDevice(BackgroundDevice):
     """A Device that will be run in a background Thread.
 
-    See `Device` for details.
+    See Device for details.
     """
     _launch_class=Thread
 
 class ProcessDevice(BackgroundDevice):
     """A Device that will be run in a background Process.
 
-    See `Device` for details.
+    See Device for details.
     """
     _launch_class=Process
 
