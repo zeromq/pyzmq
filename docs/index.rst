@@ -17,17 +17,23 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 
 Please don't hesitate to report pyzmq issues to our tracker_ on GitHub.
 
-Contents
-========
+Notes from developing PyZMQ
+===========================
 
 .. toctree::
    :maxdepth: 2
    
    pyversions.rst
    unicode.rst
+
+PyZMQ API
+=========
+   
+.. toctree::
+   :maxdepth: 2
    
    api/index.rst
-   
+
 Indices and tables
 ==================
 
