@@ -56,7 +56,10 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyZMQ Documentation</a></li>
-<li><a class="reference internal" href="#contents">Contents</a><ul>
+<li><a class="reference internal" href="#notes-from-developing-pyzmq">Notes from developing PyZMQ</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#pyzmq-api">PyZMQ API</a><ul>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
@@ -100,18 +103,26 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.0dev</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 04, 2011</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 05, 2011</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>These docs are for pyzmq-2.1.0dev, but pyzmq has not made any significant changes to
+itself since 2.0.10, so they should apply just fine there as well.</p>
+<p class="last">PyZMQ versioning follows zeromq, so your pyzmq version should match your zeromq. The
+only changes at the pyzmq user&#8217;s level are the addition of a few socket types and
+socket options.</p>
+</div>
 <p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>, written almost entirely in <a class="reference external" href="http://cython.org/">Cython</a>. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
 ØMQ in general, see the excellent <a class="reference external" href="http://www.zeromq.org/intro:read-the-manual">ØMQ Manual</a>.</p>
 <p>Please don&#8217;t hesitate to report pyzmq issues to our <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">tracker</a> on GitHub.</p>
 </div>
-<div class="section" id="contents">
-<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="notes-from-developing-pyzmq">
+<h1>Notes from developing PyZMQ<a class="headerlink" href="#notes-from-developing-pyzmq" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="pyversions.html">PyZMQ, Python2.5, and Python3</a><ul>
@@ -127,6 +138,13 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#what-this-means-for-pyzmq">What This Means for PyZMQ</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</div>
+<div class="section" id="pyzmq-api">
+<h1>PyZMQ API<a class="headerlink" href="#pyzmq-api" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.html">zmq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.context.html">core.context</a></li>
@@ -197,7 +215,7 @@ an overview of what the ØMQ API looks like in Python. For information on how to
         &copy; Copyright 2010, Brian E. Granger.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
     </div>
   </body>
 </html>
