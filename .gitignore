@@ -6,4 +6,5 @@ build
 *.pyd
 *.dll
 docs/api/generated
+docs/gh-pages
 setup.cfg
