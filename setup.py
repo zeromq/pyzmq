@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import with_statement
 
 import os, sys
 from traceback import print_exc
@@ -287,7 +288,16 @@ package_data = {'zmq':['*.pxd'],
 if release:
     for pkg,data in package_data.iteritems():
         data.append('*.c')
-        
+
+def extract_version():
+    """extract pyzmq version from core/version.pyx, so it's not multiply defined"""
+    with open(pjoin('zmq', 'core', 'version.pyx')) as f:
+        line = f.readline()
+        while not line.startswith("__version__"):
+            line = f.readline()
+    exec(line)
+    return __version__
+
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
@@ -300,7 +310,7 @@ the ZeroMQ library (http://www.zeromq.org).
 
 setup(
     name = "pyzmq",
-    version = "2.1.0dev",
+    version = extract_version()
     packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
                 'zmq.devices', 'zmq.utils'],
     ext_modules = extensions,
