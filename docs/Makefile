@@ -6,11 +6,12 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
+SRCDIR        = source
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SRCDIR)
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
@@ -31,13 +32,13 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-	-rm -rf api/generated/*
+	-rm -rf $(SRCDIR)/api/generated/*
 	-rm -rf dist
 	-rm -rf gh-pages
 
-api: api/generated/gen.rst
+api: $(SRCDIR)/api/generated/gen.rst
 
-api/generated/gen.rst:
+$(SRCDIR)/api/generated/gen.rst:
 	python autogen_api.py
 	@echo "Build API docs finished."
 

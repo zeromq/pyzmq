@@ -1,10 +1,11 @@
 *.pyc
 *.c
 build
+dist
 *.egg-info
 *.so
 *.pyd
 *.dll
-docs/api/generated
+docs/source/api/generated
 docs/gh-pages
 setup.cfg

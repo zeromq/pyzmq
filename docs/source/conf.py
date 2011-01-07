@@ -17,7 +17,7 @@ import string
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0,os.path.abspath('sphinxext'))
+sys.path.insert(0,os.path.abspath('../sphinxext'))
 
 # patch autodoc to work with Cython Sources
 import sphinx_cython
@@ -60,7 +60,7 @@ Python logo ™ of the Python Software Foundation, used by Min RK with permissio
 #
 def extract_version():
     """extract pyzmq version from core/version.pyx, so it's not multiply defined"""
-    with open(os.path.join('..', 'zmq', 'core', 'version.pyx')) as f:
+    with open(os.path.join('..', '..', 'zmq', 'core', 'version.pyx')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()

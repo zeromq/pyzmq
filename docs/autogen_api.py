@@ -14,7 +14,7 @@ from apigen import ApiDocWriter
 if __name__ == '__main__':
     pjoin = os.path.join
     package = 'zmq'
-    outdir = pjoin('api','generated')
+    outdir = pjoin('source','api','generated')
     docwriter = ApiDocWriter(package,rst_extension='.rst')
     # You have to escape the . here because . is a special char for regexps.
     # You must do make clean if you change this!
@@ -26,6 +26,6 @@ if __name__ == '__main__':
     # Now, generate the outputs
     docwriter.write_api_docs(outdir)
     docwriter.write_index(outdir, 'gen',
-                          relative_to = pjoin('api')
+                          relative_to = pjoin('source','api')
                           )
     print '%d files written' % len(docwriter.written_modules)
