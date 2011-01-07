@@ -29,7 +29,10 @@ from czmq cimport *
 # Python module level constants
 #-----------------------------------------------------------------------------
 
+_optionals = []
+
 NOBLOCK = ZMQ_NOBLOCK
+# socket types
 PAIR = ZMQ_PAIR
 PUB = ZMQ_PUB
 SUB = ZMQ_SUB
@@ -39,10 +42,15 @@ XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
-XPUB = ZMQ_XPUB
-XSUB = ZMQ_XSUB
 UPSTREAM = ZMQ_UPSTREAM
 DOWNSTREAM = ZMQ_DOWNSTREAM
+# new in 2.1.0
+if ZMQ_XPUB != -1:
+    XPUB = ZMQ_XPUB
+    XSUB = ZMQ_XSUB
+    _optionals.extend(['XPUB','XSUB'])
+
+# socket options
 HWM = ZMQ_HWM
 SWAP = ZMQ_SWAP
 AFFINITY = ZMQ_AFFINITY
@@ -62,21 +70,29 @@ POLLERR = ZMQ_POLLERR
 STREAMER = ZMQ_STREAMER
 FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
-# new in 2.1.0:
-FD = ZMQ_FD
-EVENTS = ZMQ_EVENTS
-TYPE = ZMQ_TYPE
-LINGER = ZMQ_LINGER
-RECONNECT_IVL = ZMQ_RECONNECT_IVL
-BACKLOG = ZMQ_BACKLOG
-RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
-
 
 # collections of sockopts, based on type:
 bytes_sockopts = [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]
-int64_sockopts = [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL, RECOVERY_IVL_MSEC,
+int64_sockopts = [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
                 MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]
-int_sockopts = [FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG]
+int_sockopts = []
+
+# new sockopts in 2.1.0:
+if ZMQ_FD != -1:
+    FD = ZMQ_FD
+    EVENTS = ZMQ_EVENTS
+    TYPE = ZMQ_TYPE
+    LINGER = ZMQ_LINGER
+    RECONNECT_IVL = ZMQ_RECONNECT_IVL
+    BACKLOG = ZMQ_BACKLOG
+    int_sockopts.extend([FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG])
+    _optionals.extend('FD EVENTS TYPE LINGER RECONNECT_IVL BACKLOG'.split())
+
+if ZMQ_RECOVERY_IVL_MSEC != -1:
+    RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
+    int64_sockopts.append(RECOVERY_IVL_MSEC)
+    _optionals.append('RECOVERY_IVL_MSEC')
+
 
 #-----------------------------------------------------------------------------
 # Error handling
@@ -120,9 +136,6 @@ __all__ = [
     'XREP',
     'PULL',
     'PUSH',
-    # 2.1.0 types:
-    'XPUB',
-    'XSUB',
     'UPSTREAM',
     'DOWNSTREAM',
     'HWM',
@@ -144,14 +157,6 @@ __all__ = [
     'STREAMER',
     'FORWARDER',
     'QUEUE',
-    # 2.1.0 sockopts
-    'FD',
-    'EVENTS',
-    'TYPE',
-    'LINGER',
-    'RECONNECT_IVL',
-    'BACKLOG',
-    'RECOVERY_IVL_MSEC',
     # ERRORNO codes
     'EAGAIN',
     'EINVAL',
@@ -175,4 +180,5 @@ __all__ = [
     'int_sockopts',
     'int64_sockopts'
 ]
-
+__all__.extend(_optionals)
+del _optionals
