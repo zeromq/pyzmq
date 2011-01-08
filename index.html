@@ -59,7 +59,7 @@
 <li><a class="reference internal" href="#notes-from-developing-pyzmq">Notes from developing PyZMQ</a><ul>
 </ul>
 </li>
-<li><a class="reference internal" href="#pyzmq-api">PyZMQ API</a><ul>
+<li><a class="reference internal" href="#using-pyzmq">Using PyZMQ</a><ul>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
@@ -103,7 +103,7 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.0dev</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 05, 2011</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 07, 2011</td>
 </tr>
 </tbody>
 </table>
@@ -141,10 +141,33 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 </ul>
 </div>
 </div>
-<div class="section" id="pyzmq-api">
-<h1>PyZMQ API<a class="headerlink" href="#pyzmq-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="using-pyzmq">
+<h1>Using PyZMQ<a class="headerlink" href="#using-pyzmq" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="morethanbindings.html">More Than Just Bindings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#the-core">The Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#socket-send-pyobj"><tt class="docutils literal"><span class="pre">Socket.send_pyobj()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#messagetracker">MessageTracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#extensions">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devices.html">Devices in PyZMQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devices.html#backgrounddevices">BackgroundDevices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devices.html#monitoredqueue">MonitoredQueue</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="eventloop.html">Tornado Eventloop with PyZMQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-send"><tt class="docutils literal"><span class="pre">ZMQStream.send()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-on-recv"><tt class="docutils literal"><span class="pre">ZMQStream.on_recv()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-flush"><tt class="docutils literal"><span class="pre">ZMQStream.flush()</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Asynchronous Logging via PyZMQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="logging.html#pub-sub-and-topics">PUB/SUB and Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html#pubhander"><tt class="docutils literal"><span class="pre">PUBHander</span></tt></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.html">zmq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.context.html">core.context</a></li>

@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tornado Eventloop with PyZMQ &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="shortcut icon" href="static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="next" title="Asynchronous Logging via PyZMQ" href="logging.html" />
+    <link rel="prev" title="Devices in PyZMQ" href="devices.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="logging.html" title="Asynchronous Logging via PyZMQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tornado Eventloop with PyZMQ</a><ul>
+<li><a class="reference internal" href="#zmqstream-send"><tt class="docutils literal"><span class="pre">ZMQStream.send()</span></tt></a></li>
+<li><a class="reference internal" href="#zmqstream-on-recv"><tt class="docutils literal"><span class="pre">ZMQStream.on_recv()</span></tt></a></li>
+<li><a class="reference internal" href="#zmqstream-flush"><tt class="docutils literal"><span class="pre">ZMQStream.flush()</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="devices.html"
+                        title="previous chapter">Devices in PyZMQ</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="logging.html"
+                        title="next chapter">Asynchronous Logging via PyZMQ</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/eventloop.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tornado-eventloop-with-pyzmq">
+<span id="eventloop"></span><h1>Tornado Eventloop with PyZMQ<a class="headerlink" href="#tornado-eventloop-with-pyzmq" title="Permalink to this headline">¶</a></h1>
+<p>Facebook&#8217;s <em class="xref std std-ref">Tornado</em> includes an eventloop for handing poll events on filedescriptors
+and native sockets. We included the tornado eventloop, and hooked up a <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a>
+class for handling poll events on 0MQ sockets. A ZMQStream object works much like a Socket
+object, but instead of calling <tt class="xref py py-meth docutils literal"><span class="pre">recv()</span></tt> directly, you register a callback with
+<a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt></a>. callbacks can also be registered for send and error events
+with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_err" title="zmq.eventloop.zmqstream.ZMQStream.on_err"><tt class="xref py py-meth docutils literal"><span class="pre">on_err()</span></tt></a> respectively.</p>
+<div class="section" id="zmqstream-send">
+<h2><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">ZMQStream.send()</span></tt></a><a class="headerlink" href="#zmqstream-send" title="Permalink to this headline">¶</a></h2>
+<p>ZMQStream objects do have <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="zmq.eventloop.zmqstream.ZMQStream.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>
+methods, which behaves the same way as <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send" title="zmq.core.socket.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send()</span></tt></a>, but instead of sending right
+away, the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a> will wait until socket is able to send (for instance if <tt class="docutils literal"><span class="pre">HWM</span></tt>
+is met, or a <tt class="docutils literal"><span class="pre">REQ/REP</span></tt> pattern prohibits sending at a certain point). Messages sent via
+send will also be passed to the callback registered with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a> after
+sending.</p>
+</div>
+<div class="section" id="zmqstream-on-recv">
+<h2><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">ZMQStream.on_recv()</span></tt></a><a class="headerlink" href="#zmqstream-on-recv" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+is the primary method for using a ZMQStream. It registers a callback to fire with</blockquote>
+<p>messages as they are received, which will <em>always</em> be multipart, even if length 1. You can
+easily use this to build things like an echo socket:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+<span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://localhost:12345&#39;</span><span class="p">)</span>
+<span class="n">loop</span> <span class="o">=</span> <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">loop</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">echo</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">on_recv</span><span class="p">(</span><span class="n">echo</span><span class="p">)</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>on_recv can also take a <cite>copy</cite> flag, just like <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv" title="zmq.core.socket.Socket.recv"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.recv()</span></tt></a>. If <cite>copy=False</cite>, then
+callbacks registered with on_recv will receive tracked Message objects instead of bytes.</p>
+</div>
+<div class="section" id="zmqstream-flush">
+<h2><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.flush" title="zmq.eventloop.zmqstream.ZMQStream.flush"><tt class="xref py py-meth docutils literal"><span class="pre">ZMQStream.flush()</span></tt></a><a class="headerlink" href="#zmqstream-flush" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes with an eventloop, there can be multiple events ready on a single iteration of
+the loop. The <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.flush" title="zmq.eventloop.zmqstream.ZMQStream.flush"><tt class="xref py py-meth docutils literal"><span class="pre">flush()</span></tt></a> method allows developers to pull messages off of
+the queue to enforce some priority over the event loop ordering. flush pulls any pending
+events off of the queue. You can specify to flush only recv events, only send events, or
+any events, and you can specify a limit for how many events to flush in order to prevent
+starvation.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="logging.html" title="Asynchronous Logging via PyZMQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+    </div>
+  </body>
+</html>

@@ -35,12 +35,16 @@ Notes from developing PyZMQ
    pyversions.rst
    unicode.rst
 
-PyZMQ API
-=========
+Using PyZMQ
+===========
    
 .. toctree::
    :maxdepth: 2
    
+   morethanbindings.rst
+   devices.rst
+   eventloop.rst
+   logging.rst
    api/index.rst
 
 Indices and tables

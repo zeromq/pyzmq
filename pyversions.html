@@ -148,9 +148,9 @@ the <tt class="docutils literal"><span class="pre">b'message'</span></tt> syntax
 that, since ØMQ uses C-strings, and would like to do so without copying, we must use the
 Py3k <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> object, which is backported to 2.6. In order to do this in a
 Python-version independent way, we added a small utility that unambiguously defines the
-string types: <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt>, <tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt>. This is important,
+string types: <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt>, <a class="reference external" href="http://docs.python.org/library/functions.html#basestring" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></a>. This is important,
 because <tt class="xref py py-class docutils literal"><span class="pre">str</span></tt> means different things on 2.x and 3.x, and <tt class="xref py py-class docutils literal"><span class="pre">bytes</span></tt> is
-undefined on 2.5, and both <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt> and <tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt> are undefined on 3.x.
+undefined on 2.5, and both <tt class="xref py py-class docutils literal"><span class="pre">unicode</span></tt> and <a class="reference external" href="http://docs.python.org/library/functions.html#basestring" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></a> are undefined on 3.x.
 All typechecking in PyZMQ is done against these types:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -166,15 +166,15 @@ All typechecking in PyZMQ is done against these types:</p>
 </thead>
 <tbody valign="top">
 <tr><td><tt class="xref py py-obj docutils literal"><span class="pre">bytes</span></tt></td>
-<td><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></td>
+<td><a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></a></td>
 <td><tt class="xref py py-obj docutils literal"><span class="pre">bytes</span></tt></td>
 </tr>
-<tr><td><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></td>
-<td><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></td>
-<td><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></td>
+<tr><td><a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></a></td>
+<td><a class="reference external" href="http://docs.python.org/library/functions.html#unicode" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">unicode</span></tt></a></td>
+<td><a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">str</span></tt></a></td>
 </tr>
-<tr><td><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></td>
-<td><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></td>
+<tr><td><a class="reference external" href="http://docs.python.org/library/functions.html#basestring" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></a></td>
+<td><a class="reference external" href="http://docs.python.org/library/functions.html#basestring" title="(in Python v2.7)"><tt class="xref py py-obj docutils literal"><span class="pre">basestring</span></tt></a></td>
 <td><tt class="xref py py-obj docutils literal"><span class="pre">(str,</span> <span class="pre">bytes)</span></tt></td>
 </tr>
 </tbody>
@@ -222,8 +222,8 @@ and old-style. Old-style buffers were introduced long ago, but the new-style is 
 backported to 2.6. The old-style buffer interface is not available in 3.x. There is also
 an old- and new-style interface for creating Python objects that view C-memory. The
 old-style object is called a <tt class="xref py py-class docutils literal"><span class="pre">buffer</span></tt>, and the new-style object is
-<tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt>. Unlike the new-style buffer interface for objects,
-<tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt> has only been backported to <em>2.7</em>. This means that the available
+<a class="reference external" href="http://docs.python.org/library/stdtypes.html#memoryview" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt></a>. Unlike the new-style buffer interface for objects,
+<a class="reference external" href="http://docs.python.org/library/stdtypes.html#memoryview" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">memoryview</span></tt></a> has only been backported to <em>2.7</em>. This means that the available
 buffer-related functions are not the same in any two versions of Python 2.5, 2.6, 2.7, or
 3.1.</p>
 <p>We have a <tt class="file docutils literal"><span class="pre">utils/buffers.pxd</span></tt> file that defines our <tt class="xref py py-func docutils literal"><span class="pre">asbuffer()</span></tt> and

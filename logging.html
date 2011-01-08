@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Asynchronous Logging via PyZMQ &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="shortcut icon" href="static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="next" title="The PyZMQ API" href="api/index.html" />
+    <link rel="prev" title="Tornado Eventloop with PyZMQ" href="eventloop.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="The PyZMQ API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="eventloop.html" title="Tornado Eventloop with PyZMQ"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Asynchronous Logging via PyZMQ</a><ul>
+<li><a class="reference internal" href="#pub-sub-and-topics">PUB/SUB and Topics</a></li>
+<li><a class="reference internal" href="#pubhander"><tt class="docutils literal"><span class="pre">PUBHander</span></tt></a><ul>
+<li><a class="reference internal" href="#subtopics">Subtopics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="eventloop.html"
+                        title="previous chapter">Tornado Eventloop with PyZMQ</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/index.html"
+                        title="next chapter">The PyZMQ API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/logging.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="asynchronous-logging-via-pyzmq">
+<span id="logging"></span><h1>Asynchronous Logging via PyZMQ<a class="headerlink" href="#asynchronous-logging-via-pyzmq" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li>The 0MQ guide <a class="reference external" href="http://zguide.zeromq.org/chapter:all#toc7">coverage</a> of PUB/SUB
+messaging</li>
+<li>Python logging module <a class="reference external" href="http://docs.python.org/library/logging.html">documentation</a></li>
+</ul>
+</div>
+<p>Python provides extensible logging facilities through its <a class="reference external" href="http://docs.python.org/library/logging.html#module-logging" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">logging</span></tt></a> module. This
+module allows for easily extensible logging functionality through the use of
+<tt class="xref py py-class docutils literal"><span class="pre">Handler</span></tt> objects. The most obvious case for hooking up pyzmq to
+logging would be to broadcast log messages over a PUB socket, so we have provides a
+<a class="reference internal" href="api/generated/zmq.log.handlers.html#zmq.log.handlers.PUBHandler" title="zmq.log.handlers.PUBHandler"><tt class="xref py py-class docutils literal"><span class="pre">PUBHandler</span></tt></a> class for doing just that.</p>
+<div class="section" id="pub-sub-and-topics">
+<h2>PUB/SUB and Topics<a class="headerlink" href="#pub-sub-and-topics" title="Permalink to this headline">¶</a></h2>
+<p>The 0MQ PUB/SUB pattern consists of a PUB socket broadcasting messages, and a collection
+of SUB sockets that receive those messages. Each PUB message is a multipart-message, where
+the first part is interpreted as a topic. SUB sockets can subscribe to topics by setting
+their <tt class="docutils literal"><span class="pre">SUBSCRIBE</span></tt> sockopt, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sub</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
+<span class="n">sub</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="s">&#39;topic1&#39;</span><span class="p">)</span>
+<span class="n">sub</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="s">&#39;topic2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When subscribed, the SUB socket will only receive messages where the first part <em>starts
+with</em> one of the topics set via <tt class="docutils literal"><span class="pre">SUBSCRIBE</span></tt>. The default behavior is to exclude all
+messages, and subscribing to the empty string &#8216;&#8217; will receive all messages.</p>
+</div>
+<div class="section" id="pubhander">
+<h2><tt class="xref py py-class docutils literal"><span class="pre">PUBHander</span></tt><a class="headerlink" href="#pubhander" title="Permalink to this headline">¶</a></h2>
+<p>The PUBHandler object is created for allowing the python logging to be emitted on a PUB
+socket. The main difference between a PUBHandler and a regular logging Handler is the
+inclusion of topics. For the most basic logging, you can simply create a PUBHandler with
+an interface or a configured PUB socket, and just let it go:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pub</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+<span class="n">pub</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://*:12345&#39;</span><span class="p">)</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="n">pub</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At this point, all messages logged with the default logger will be broadcast on the pub
+socket.</p>
+<p>the PUBHandler does work with topics, and the handler has an attribute <tt class="docutils literal"><span class="pre">root_topic</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">handler</span><span class="o">.</span><span class="n">root_topic</span> <span class="o">=</span> <span class="s">&#39;myprogram&#39;</span>
+</pre></div>
+</div>
+<p>Python loggers also have loglevels. The base topic of messages emitted by the PUBHandler
+will be of the form: <tt class="docutils literal"><span class="pre">&lt;handler.root_topic&gt;.&lt;loglevel&gt;</span></tt>, e.g. &#8216;myprogram.INFO&#8217; or
+&#8216;whatever.ERROR&#8217;. This way, subscribers can easily subscribe to subsets of the logging
+messages. Log messages are always two-part, where the first part is the topic tree, and
+the second part is the actual log message.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;hello there&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">sub</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+<span class="go">[&#39;myprogram.INFO&#39;, &#39;hello there&#39;]</span>
+</pre></div>
+</div>
+<div class="section" id="subtopics">
+<h3>Subtopics<a class="headerlink" href="#subtopics" title="Permalink to this headline">¶</a></h3>
+<p>You can also add to the topic tree below the loglevel on an individual message basis.
+Assuming your logger is connected to a PUBHandler, you can add as many additional topics
+on the front of the message, which will be added always after the loglevel. A special
+delimiter defined at <tt class="docutils literal"><span class="pre">zmq.log.handlers.TOPIC_DELIM</span></tt> is scanned by the PUBHandler, so if
+you pass your own subtopics prior to that symbol, they will be stripped from the message
+and added to the topic tree:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">log_msg</span>  <span class="o">=</span> <span class="s">&quot;hello there&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subtopic</span> <span class="o">=</span> <span class="s">&quot;sub.topic&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">msg</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">TOPIC_DELIM</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">subtopic</span><span class="p">,</span> <span class="n">log_msg</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">sub</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+<span class="go">[&#39;myprogram.WARN.sub.topic&#39;, &#39;hello there&#39;]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="The PyZMQ API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="eventloop.html" title="Tornado Eventloop with PyZMQ"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+    </div>
+  </body>
+</html>

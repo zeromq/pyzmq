@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>More Than Just Bindings &mdash; PyZMQ v2.1.0dev documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.0dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="shortcut icon" href="static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="next" title="Devices in PyZMQ" href="devices.html" />
+    <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="PyZMQ and Unicode"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">More Than Just Bindings</a><ul>
+<li><a class="reference internal" href="#the-core">The Core</a></li>
+<li><a class="reference internal" href="#socket-send-pyobj"><tt class="docutils literal"><span class="pre">Socket.send_pyobj()</span></tt></a></li>
+<li><a class="reference internal" href="#messagetracker">MessageTracker</a></li>
+<li><a class="reference internal" href="#extensions">Extensions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="unicode.html"
+                        title="previous chapter">PyZMQ and Unicode</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devices.html"
+                        title="next chapter">Devices in PyZMQ</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/morethanbindings.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="more-than-just-bindings">
+<span id="bindings"></span><h1>More Than Just Bindings<a class="headerlink" href="#more-than-just-bindings" title="Permalink to this headline">¶</a></h1>
+<p>PyZMQ is ostensibly the Python bindings for <em class="xref std std-ref">0MQ</em>, but the project, following the
+Python &#8216;batteries included&#8217; philosophy, provides more than just Python methods and objects
+for calling into the 0MQ C++ library.</p>
+<div class="section" id="the-core">
+<h2>The Core<a class="headerlink" href="#the-core" title="Permalink to this headline">¶</a></h2>
+<p>PyZMQ is currently broken up into four subpackages. First, is the <tt class="xref py py-mod docutils literal"><span class="pre">core</span></tt>. This
+contains the actual bindings for ZeroMQ, and no extended functionality beyond the very
+basic. The core modules are split, such that each basic ZeroMQ object (or function, if no
+object is associated) is a separate module, e.g. <tt class="xref py py-mod docutils literal"><span class="pre">core.context</span></tt> contains the
+<a class="reference internal" href="api/generated/zmq.core.context.html#zmq.core.context.Context" title="zmq.core.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> object, <tt class="xref py py-mod docutils literal"><span class="pre">core.poll</span></tt> contains a <a class="reference internal" href="api/generated/zmq.core.poll.html#zmq.core.poll.Poller" title="zmq.core.poll.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a> object, as well as
+the <a class="reference internal" href="api/generated/zmq.core.poll.html#zmq.core.poll.select" title="zmq.core.poll.select"><tt class="xref py py-func docutils literal"><span class="pre">select()</span></tt></a> function, etc. ZMQ constants are, for convenience, all kept together
+in <tt class="xref py py-mod docutils literal"><span class="pre">core.constants</span></tt>.</p>
+<p>There are two reasons for breaking the core into submodules: <em>recompilation</em> and
+<em>derivative projects</em>. The monolithic zmq became quite tedious to have to recompile
+everything for a small change to a single object. With separate files, that&#8217;s no longer
+necessary. The second reason has to do with Cython. PyZMQ is written in Cython, a tool for
+efficiently writing C-extensions for Python. By separating out our objects into individual
+<cite>pyx</cite> files, each with their declarations in a <cite>pxd</cite> header, other projects can write
+extensions in Cython and call directly to ZeroMQ at the C-level without the penalty of
+going through our Python objects.</p>
+</div>
+<div class="section" id="socket-send-pyobj">
+<h2><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send_pyobj()</span></tt><a class="headerlink" href="#socket-send-pyobj" title="Permalink to this headline">¶</a></h2>
+<p>We have extended the core functionality in two ways. First, we added common serialization
+as first-class methods to the <tt class="xref py py-class docutils literal"><span class="pre">Socket</span></tt> class. A socket has the methods
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_json" title="zmq.core.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_pyobj" title="zmq.core.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send_pyobj()</span></tt></a>, which correspond to sending an
+object over the wire after serializing with <a class="reference external" href="http://docs.python.org/library/json.html#module-json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#module-pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a> respectively,
+and any object sent via those methods can be reconstructed with the
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_json" title="zmq.core.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.recv_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_pyobj" title="zmq.core.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.recv_pyobj()</span></tt></a> methods. Unicode strings are
+other objects that are not unambiguously sendable over the wire, so we include
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_unicode" title="zmq.core.socket.Socket.send_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send_unicode()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_unicode" title="zmq.core.socket.Socket.recv_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.recv_unicode()</span></tt></a> that simply send via the
+unambiguous utf-8 byte encoding. See <a class="reference internal" href="unicode.html#unicode"><em>our Unicode discussion</em></a> for more
+information on working with Unicode in a Python C-extension for networking.</p>
+</div>
+<div class="section" id="messagetracker">
+<h2>MessageTracker<a class="headerlink" href="#messagetracker" title="Permalink to this headline">¶</a></h2>
+<p>The second extension of basic 0MQ functionality is the <tt class="xref py py-class docutils literal"><span class="pre">MessageTracker</span></tt>. The
+MessageTracker is an object used to track when the underlying ZeroMQ is done with a
+message buffer. One of the main use cases for 0MQ in Python is the ability to perform
+non-copying sends. Thanks to Python&#8217;s buffer interface, many objects (including NumPy
+arrays) provide the buffer interface, and are thus directly sendable. However, as with any
+asynchronous non-copying messaging system like 0MQ or MPI, it can be important to know
+when the message has actually been sent, so it is safe again to edit the buffer without
+worry of corrupting the message. This is what the MessageTracker is for.</p>
+<p>The MessageTracker is a simple object, but there is a penalty to its use. Since by its
+very nature, the MessageTracker must involve threadsafe communication (specifically a
+builtin <a class="reference external" href="http://docs.python.org/library/queue.html#Queue.Queue" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">Queue</span></tt></a> object), instantiating a MessageTracker takes a modest
+amount of time (10s of µs), so in situations instantiating many small messages, this can
+actually dominate performance. As a result, tracking is optional, via the <tt class="docutils literal"><span class="pre">track</span></tt> flag,
+which is optionally passed, always defaulting to <tt class="xref docutils literal"><span class="pre">False</span></tt>, in each of the three places
+where a Message is instantiated: The <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Message" title="zmq.core.message.Message"><tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt></a> constructor, and non-copying sends
+and receives.</p>
+<p>A MessageTracker is very simple, and has just one method and one attribute. The property
+<tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="xref docutils literal"><span class="pre">True</span></tt> when the Message(s) being tracked are no
+longer in use by 0MQ, and <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.MessageTracker.wait" title="zmq.core.message.MessageTracker.wait"><tt class="xref py py-meth docutils literal"><span class="pre">MessageTracker.wait()</span></tt></a> will block, waiting for the
+Message(s) to be released.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A message cannot be tracked after it has been instantiated without tracking. If a
+Message is to even have the <em>option</em> of tracking, it must be constructed with
+<tt class="docutils literal"><span class="pre">track=True</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="extensions">
+<h2>Extensions<a class="headerlink" href="#extensions" title="Permalink to this headline">¶</a></h2>
+<p>So far, PyZMQ includes three extensions to core 0MQ that we found basic enough to be
+included in PyZMQ itself:</p>
+<ul class="simple">
+<li><a class="reference internal" href="logging.html#logging"><em>zmq.log</em></a> : Logging handlers for hooking Python logging up to the
+network</li>
+<li><a class="reference internal" href="devices.html#devices"><em>zmq.devices</em></a> : Custom devices and objects for running devices in the
+background</li>
+<li><a class="reference internal" href="eventloop.html#eventloop"><em>zmq.eventloop</em></a> : The <em class="xref std std-ref">Tornado</em> event loop, adapted for use
+with 0MQ sockets.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="unicode.html" title="PyZMQ and Unicode"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Brian E. Granger.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+    </div>
+  </body>
+</html>
