@@ -31,6 +31,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
+              'sphinx.ext.intersphinx',
               'ipython_console_highlighting',
               'inheritance_diagram',
               'sphinxtogithub',
@@ -54,6 +55,7 @@ copyright = u"""2010, Brian E. Granger.
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
+intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
