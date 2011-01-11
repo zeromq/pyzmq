@@ -63,7 +63,7 @@ else:
 release = False # flag for whether to include *.c in package_data
 
 # the minimum zeromq version this will work against:
-min_zmq = (2,1,0)
+min_zmq = (2,1,1)
 
 #-----------------------------------------------------------------------------
 # Extra commands
