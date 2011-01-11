@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyZMQ Documentation &mdash; PyZMQ v2.1.0dev documentation</title>
+    <title>PyZMQ Documentation &mdash; PyZMQ v2.1.1dev documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.0dev',
+        VERSION:     '2.1.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="shortcut icon" href="static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="#" />
+    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="#" />
     <link rel="next" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
   </head>
   <body>
@@ -101,19 +101,19 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.0dev</td>
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.1dev</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 07, 2011</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">January 11, 2011</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>These docs are for pyzmq-2.1.0dev, but pyzmq has not made any significant changes to
+<p>These docs are for pyzmq-2.1.1dev, but pyzmq has not made any significant changes to
 itself since 2.0.10, so they should apply just fine there as well.</p>
-<p class="last">PyZMQ versioning follows zeromq, so your pyzmq version should match your zeromq. The
-only changes at the pyzmq user&#8217;s level are the addition of a few socket types and
-socket options.</p>
+<p class="last">PyZMQ versioning follows zeromq, so your pyzmq version should match those of your
+zeromq. The only changes at the pyzmq user&#8217;s level are the addition of a few socket
+types and socket options.</p>
 </div>
 <p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>, written almost entirely in <a class="reference external" href="http://cython.org/">Cython</a>. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
@@ -146,9 +146,8 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="morethanbindings.html">More Than Just Bindings</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#the-core">The Core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#socket-send-pyobj"><tt class="docutils literal"><span class="pre">Socket.send_pyobj()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#messagetracker">MessageTracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#the-core-as-bindings">The Core as Bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#core-extensions">Core Extensions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#extensions">Extensions</a></li>
 </ul>
 </li>
@@ -158,14 +157,14 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="eventloop.html">Tornado Eventloop with PyZMQ</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-send"><tt class="docutils literal"><span class="pre">ZMQStream.send()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-on-recv"><tt class="docutils literal"><span class="pre">ZMQStream.on_recv()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="eventloop.html#zmqstream-flush"><tt class="docutils literal"><span class="pre">ZMQStream.flush()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#send"><tt class="docutils literal"><span class="pre">send</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#on-recv"><tt class="docutils literal"><span class="pre">on_recv</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#flush"><tt class="docutils literal"><span class="pre">flush</span></tt></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Asynchronous Logging via PyZMQ</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="logging.html#pub-sub-and-topics">PUB/SUB and Topics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="logging.html#pubhander"><tt class="docutils literal"><span class="pre">PUBHander</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html#pubhandler">PUBHandler</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>

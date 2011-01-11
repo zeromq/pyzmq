@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Devices in PyZMQ &mdash; PyZMQ v2.1.0dev documentation</title>
+    <title>Devices in PyZMQ &mdash; PyZMQ v2.1.1dev documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.0dev',
+        VERSION:     '2.1.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="shortcut icon" href="static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="index.html" />
     <link rel="next" title="Tornado Eventloop with PyZMQ" href="eventloop.html" />
     <link rel="prev" title="More Than Just Bindings" href="morethanbindings.html" /> 
   </head>
@@ -102,9 +102,9 @@
 <span id="devices"></span><h1>Devices in PyZMQ<a class="headerlink" href="#devices-in-pyzmq" title="Permalink to this headline">¶</a></h1>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last">0MQ Guide <a class="reference external" href="http://zguide.zeromq.org/chapter:all#toc32">Device coverage</a>.</p>
+<p class="last">ØMQ Guide <a class="reference external" href="http://zguide.zeromq.org/chapter:all#toc32">Device coverage</a>.</p>
 </div>
-<p>0MQ has a notion of Devices - simple programs that manage a send-recv pattern for
+<p>ØMQ has a notion of Devices - simple programs that manage a send-recv pattern for
 connecting two or more sockets. Being full programs, devices include a <tt class="docutils literal"><span class="pre">while(True)</span></tt>
 loop and thus block execution permanently once invoked. We have provided in the
 <tt class="xref py py-mod docutils literal"><span class="pre">devices</span></tt> subpackage some facilities for running these devices in the background, as
@@ -136,7 +136,7 @@ corresponding to the <cite>in_socket</cite> and <cite>out_socket</cite>:</p>
 </div>
 <div class="section" id="monitoredqueue">
 <h2>MonitoredQueue<a class="headerlink" href="#monitoredqueue" title="Permalink to this headline">¶</a></h2>
-<p>One of 0MQ&#8217;s builtin devices is the <tt class="docutils literal"><span class="pre">QUEUE</span></tt>. This is a symmetric two-socket device that
+<p>One of ØMQ&#8217;s builtin devices is the <tt class="docutils literal"><span class="pre">QUEUE</span></tt>. This is a symmetric two-socket device that
 fully supports passing messages in either direction via any pattern. We saw a logical
 extension of the <tt class="docutils literal"><span class="pre">QUEUE</span></tt> as one that behaves in the same way with respect to the in/out
 sockets, but also sends every message in either direction <em>also</em> on a third <cite>monitor</cite>
@@ -150,7 +150,7 @@ the reply). The result is that the output socket will always try to route the in
 message back to the original sender, which is presumably not the intended pattern. In
 order for the queue to support an XREP-XREP connection, it must swap the first two parts
 of the message in order to get the right message out the other side.</p>
-<p>To invoke a monitored queue is similar to invoking a regular 0MQ device:</p>
+<p>To invoke a monitored queue is similar to invoking a regular ØMQ device:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices.monitoredqueue</span> <span class="kn">import</span> <span class="n">monitored_queue</span>
 <span class="n">ins</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XREP</span><span class="p">)</span>
 <span class="n">outs</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XREQ</span><span class="p">)</span>

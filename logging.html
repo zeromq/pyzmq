@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Asynchronous Logging via PyZMQ &mdash; PyZMQ v2.1.0dev documentation</title>
+    <title>Asynchronous Logging via PyZMQ &mdash; PyZMQ v2.1.1dev documentation</title>
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.0dev',
+        VERSION:     '2.1.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="shortcut icon" href="static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.0dev documentation" href="index.html" />
+    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="index.html" />
     <link rel="next" title="The PyZMQ API" href="api/index.html" />
     <link rel="prev" title="Tornado Eventloop with PyZMQ" href="eventloop.html" /> 
   </head>
@@ -61,7 +61,7 @@
   <ul>
 <li><a class="reference internal" href="#">Asynchronous Logging via PyZMQ</a><ul>
 <li><a class="reference internal" href="#pub-sub-and-topics">PUB/SUB and Topics</a></li>
-<li><a class="reference internal" href="#pubhander"><tt class="docutils literal"><span class="pre">PUBHander</span></tt></a><ul>
+<li><a class="reference internal" href="#pubhandler">PUBHandler</a><ul>
 <li><a class="reference internal" href="#subtopics">Subtopics</a></li>
 </ul>
 </li>
@@ -106,7 +106,7 @@
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li>The 0MQ guide <a class="reference external" href="http://zguide.zeromq.org/chapter:all#toc7">coverage</a> of PUB/SUB
+<li>The ØMQ guide <a class="reference external" href="http://zguide.zeromq.org/chapter:all#toc7">coverage</a> of PUB/SUB
 messaging</li>
 <li>Python logging module <a class="reference external" href="http://docs.python.org/library/logging.html">documentation</a></li>
 </ul>
@@ -118,7 +118,7 @@ logging would be to broadcast log messages over a PUB socket, so we have provide
 <a class="reference internal" href="api/generated/zmq.log.handlers.html#zmq.log.handlers.PUBHandler" title="zmq.log.handlers.PUBHandler"><tt class="xref py py-class docutils literal"><span class="pre">PUBHandler</span></tt></a> class for doing just that.</p>
 <div class="section" id="pub-sub-and-topics">
 <h2>PUB/SUB and Topics<a class="headerlink" href="#pub-sub-and-topics" title="Permalink to this headline">¶</a></h2>
-<p>The 0MQ PUB/SUB pattern consists of a PUB socket broadcasting messages, and a collection
+<p>The ØMQ PUB/SUB pattern consists of a PUB socket broadcasting messages, and a collection
 of SUB sockets that receive those messages. Each PUB message is a multipart-message, where
 the first part is interpreted as a topic. SUB sockets can subscribe to topics by setting
 their <tt class="docutils literal"><span class="pre">SUBSCRIBE</span></tt> sockopt, e.g.:</p>
@@ -131,12 +131,12 @@ their <tt class="docutils literal"><span class="pre">SUBSCRIBE</span></tt> socko
 with</em> one of the topics set via <tt class="docutils literal"><span class="pre">SUBSCRIBE</span></tt>. The default behavior is to exclude all
 messages, and subscribing to the empty string &#8216;&#8217; will receive all messages.</p>
 </div>
-<div class="section" id="pubhander">
-<h2><tt class="xref py py-class docutils literal"><span class="pre">PUBHander</span></tt><a class="headerlink" href="#pubhander" title="Permalink to this headline">¶</a></h2>
-<p>The PUBHandler object is created for allowing the python logging to be emitted on a PUB
-socket. The main difference between a PUBHandler and a regular logging Handler is the
-inclusion of topics. For the most basic logging, you can simply create a PUBHandler with
-an interface or a configured PUB socket, and just let it go:</p>
+<div class="section" id="pubhandler">
+<h2>PUBHandler<a class="headerlink" href="#pubhandler" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="api/generated/zmq.log.handlers.html#zmq.log.handlers.PUBHandler" title="zmq.log.handlers.PUBHandler"><tt class="xref py py-class docutils literal"><span class="pre">PUBHandler</span></tt></a> object is created for allowing the python logging to be emitted
+on a PUB socket. The main difference between a PUBHandler and a regular logging Handler is
+the inclusion of topics. For the most basic logging, you can simply create a PUBHandler
+with an interface or a configured PUB socket, and just let it go:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pub</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
 <span class="n">pub</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://*:12345&#39;</span><span class="p">)</span>
 <span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="n">pub</span><span class="p">)</span>
