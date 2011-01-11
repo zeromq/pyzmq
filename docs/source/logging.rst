@@ -7,7 +7,7 @@ Asynchronous Logging via PyZMQ
 
 .. seealso::
 
-    * The 0MQ guide `coverage <http://zguide.zeromq.org/chapter:all#toc7>`_ of PUB/SUB
+    * The ØMQ guide `coverage <http://zguide.zeromq.org/chapter:all#toc7>`_ of PUB/SUB
       messaging
     * Python logging module `documentation <http://docs.python.org/library/logging.html>`_
 
@@ -20,7 +20,7 @@ logging would be to broadcast log messages over a PUB socket, so we have provide
 PUB/SUB and Topics
 ------------------
 
-The 0MQ PUB/SUB pattern consists of a PUB socket broadcasting messages, and a collection
+The ØMQ PUB/SUB pattern consists of a PUB socket broadcasting messages, and a collection
 of SUB sockets that receive those messages. Each PUB message is a multipart-message, where
 the first part is interpreted as a topic. SUB sockets can subscribe to topics by setting
 their ``SUBSCRIBE`` sockopt, e.g.::
@@ -33,13 +33,13 @@ When subscribed, the SUB socket will only receive messages where the first part 
 with* one of the topics set via ``SUBSCRIBE``. The default behavior is to exclude all
 messages, and subscribing to the empty string '' will receive all messages.
 
-:class:`PUBHander`
-------------------
+PUBHandler
+----------
 
-The PUBHandler object is created for allowing the python logging to be emitted on a PUB
-socket. The main difference between a PUBHandler and a regular logging Handler is the
-inclusion of topics. For the most basic logging, you can simply create a PUBHandler with
-an interface or a configured PUB socket, and just let it go::
+The :class:`.PUBHandler` object is created for allowing the python logging to be emitted
+on a PUB socket. The main difference between a PUBHandler and a regular logging Handler is
+the inclusion of topics. For the most basic logging, you can simply create a PUBHandler
+with an interface or a configured PUB socket, and just let it go::
 
     pub = context.socket(zmq.PUB)
     pub.bind('tcp://*:12345')

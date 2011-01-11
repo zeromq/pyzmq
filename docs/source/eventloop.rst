@@ -5,15 +5,22 @@
 Tornado Eventloop with PyZMQ
 ============================
 
-Facebook's :ref:`Tornado` includes an eventloop for handing poll events on filedescriptors
-and native sockets. We included the tornado eventloop, and hooked up a :class:`.ZMQStream`
-class for handling poll events on 0MQ sockets. A ZMQStream object works much like a Socket
-object, but instead of calling :meth:`recv` directly, you register a callback with
+Facebook's `Tornado`_ includes an eventloop for handing poll events on filedescriptors and
+native sockets. We have included a small part of Tornado (specifically its
+:mod:`.ioloop`), and adapted its :class:`IOStream` class into :class:`.ZMQStream` for
+handling poll events on ØMQ sockets. A ZMQStream object works much like a Socket object,
+but instead of calling :meth:`~.Socket.recv` directly, you register a callback with
 :meth:`~.ZMQStream.on_recv`. callbacks can also be registered for send and error events
 with :meth:`~.ZMQStream.on_send` and :meth:`~.ZMQStream.on_err` respectively.
 
-:meth:`.ZMQStream.send`
------------------------
+.. Note::
+
+    We have not explored using ØMQ in a full Tornado environment, and we do not include
+    any parts of Tornado outside of IOLoop and the couple of helper classes used in
+    IOLoop.
+
+``send``
+--------
 
 ZMQStream objects do have :meth:`~.ZMQStream.send` and :meth:`~.ZMQStream.send_multipart`
 methods, which behaves the same way as :meth:`.Socket.send`, but instead of sending right
@@ -22,12 +29,12 @@ is met, or a ``REQ/REP`` pattern prohibits sending at a certain point). Messages
 send will also be passed to the callback registered with :meth:`~.ZMQStream.on_send` after
 sending.
 
-:meth:`.ZMQStream.on_recv`
---------------------------
+``on_recv``
+-----------
 
- is the primary method for using a ZMQStream. It registers a callback to fire with
-messages as they are received, which will *always* be multipart, even if length 1. You can
-easily use this to build things like an echo socket::
+:meth:`.ZMQStream.on_recv` is the primary method for using a ZMQStream. It registers a
+callback to fire with messages as they are received, which will *always* be multipart,
+even if its length is 1. You can easily use this to build things like an echo socket::
 
     s = ctx.socket(zmq.REP)
     s.bind('tcp://localhost:12345')
@@ -41,8 +48,8 @@ easily use this to build things like an echo socket::
 on_recv can also take a `copy` flag, just like :meth:`.Socket.recv`. If `copy=False`, then
 callbacks registered with on_recv will receive tracked Message objects instead of bytes.
 
-:meth:`.ZMQStream.flush`
-------------------------
+``flush``
+---------
 
 Sometimes with an eventloop, there can be multiple events ready on a single iteration of
 the loop. The :meth:`~.ZMQStream.flush` method allows developers to pull messages off of

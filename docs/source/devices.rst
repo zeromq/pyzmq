@@ -7,9 +7,9 @@ Devices in PyZMQ
 
 .. seealso::
 
-    0MQ Guide `Device coverage <http://zguide.zeromq.org/chapter:all#toc32>`_.
+    ØMQ Guide `Device coverage <http://zguide.zeromq.org/chapter:all#toc32>`_.
 
-0MQ has a notion of Devices - simple programs that manage a send-recv pattern for
+ØMQ has a notion of Devices - simple programs that manage a send-recv pattern for
 connecting two or more sockets. Being full programs, devices include a ``while(True)``
 loop and thus block execution permanently once invoked. We have provided in the
 :mod:`devices` subpackage some facilities for running these devices in the background, as
@@ -44,7 +44,7 @@ corresponding to the `in_socket` and `out_socket`::
 MonitoredQueue
 --------------
 
-One of 0MQ's builtin devices is the ``QUEUE``. This is a symmetric two-socket device that
+One of ØMQ's builtin devices is the ``QUEUE``. This is a symmetric two-socket device that
 fully supports passing messages in either direction via any pattern. We saw a logical
 extension of the ``QUEUE`` as one that behaves in the same way with respect to the in/out
 sockets, but also sends every message in either direction *also* on a third `monitor`
@@ -60,7 +60,7 @@ message back to the original sender, which is presumably not the intended patter
 order for the queue to support an XREP-XREP connection, it must swap the first two parts
 of the message in order to get the right message out the other side.
 
-To invoke a monitored queue is similar to invoking a regular 0MQ device::
+To invoke a monitored queue is similar to invoking a regular ØMQ device::
 
     from zmq.devices.monitoredqueue import monitored_queue
     ins = ctx.socket(zmq.XREP)

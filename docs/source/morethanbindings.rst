@@ -5,24 +5,24 @@
 More Than Just Bindings
 =======================
 
-PyZMQ is ostensibly the Python bindings for :ref:`0MQ`, but the project, following the
-Python 'batteries included' philosophy, provides more than just Python methods and objects
-for calling into the 0MQ C++ library.
+PyZMQ is ostensibly the Python bindings for `ØMQ`_, but the project, following
+Python's 'batteries included' philosophy, provides more than just Python methods and
+objects for calling into the ØMQ C++ library.
 
 
-The Core
---------
+The Core as Bindings
+--------------------
 
-PyZMQ is currently broken up into four subpackages. First, is the :mod:`core`. This
+PyZMQ is currently broken up into four subpackages. First, is the Core. :mod:`zmq.core`
 contains the actual bindings for ZeroMQ, and no extended functionality beyond the very
 basic. The core modules are split, such that each basic ZeroMQ object (or function, if no
-object is associated) is a separate module, e.g. :mod:`core.context` contains the
-:class:`.Context` object, :mod:`core.poll` contains a :class:`.Poller` object, as well as
-the :func:`.select` function, etc. ZMQ constants are, for convenience, all kept together
-in :mod:`core.constants`.
+object is associated) is a separate module, e.g. :mod:`zmq.core.context` contains the
+:class:`.Context` object, :mod:`zmq.core.poll` contains a :class:`.Poller` object, as well
+as the :func:`.select` function, etc. ZMQ constants are, for convenience, all kept
+together in :mod:`zmq.core.constants`.
 
 There are two reasons for breaking the core into submodules: *recompilation* and
-*derivative projects*. The monolithic zmq became quite tedious to have to recompile
+*derivative projects*. The monolithic PyZMQ became quite tedious to have to recompile
 everything for a small change to a single object. With separate files, that's no longer
 necessary. The second reason has to do with Cython. PyZMQ is written in Cython, a tool for
 efficiently writing C-extensions for Python. By separating out our objects into individual
@@ -30,29 +30,37 @@ efficiently writing C-extensions for Python. By separating out our objects into 
 extensions in Cython and call directly to ZeroMQ at the C-level without the penalty of
 going through our Python objects.
 
-:meth:`Socket.send_pyobj`
--------------------------
 
-We have extended the core functionality in two ways. First, we added common serialization
+Core Extensions
+---------------
+
+We have extended the core functionality in two ways that appear inside the :mod:`core`
+bindings, and are not general ØMQ features.
+
+Builtin Serialization
+*********************
+
+First, we added common serialization with the builtin :py:mod:`json` and :py:mod:`pickle`
 as first-class methods to the :class:`Socket` class. A socket has the methods
-:meth:`.Socket.send_json` and :meth:`.Socket.send_pyobj`, which correspond to sending an
+:meth:`~.Socket.send_json` and :meth:`~.Socket.send_pyobj`, which correspond to sending an
 object over the wire after serializing with :mod:`json` and :mod:`pickle` respectively,
 and any object sent via those methods can be reconstructed with the
-:meth:`.Socket.recv_json` and :meth:`.Socket.recv_pyobj` methods. Unicode strings are
+:meth:`~.Socket.recv_json` and :meth:`~.Socket.recv_pyobj` methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-:meth:`.Socket.send_unicode` and :meth:`.Socket.recv_unicode` that simply send via the
+:meth:`~.Socket.send_unicode` and :meth:`~.Socket.recv_unicode` that simply send via the
 unambiguous utf-8 byte encoding. See :ref:`our Unicode discussion <unicode>` for more
-information on working with Unicode in a Python C-extension for networking.
+information on the trials and tribulations of working with Unicode in a C extension while
+supporting Python 2 and 3.
 
 MessageTracker
---------------
+**************
 
-The second extension of basic 0MQ functionality is the :class:`MessageTracker`. The
+The second extension of basic ØMQ functionality is the :class:`MessageTracker`. The
 MessageTracker is an object used to track when the underlying ZeroMQ is done with a
-message buffer. One of the main use cases for 0MQ in Python is the ability to perform
+message buffer. One of the main use cases for ØMQ in Python is the ability to perform
 non-copying sends. Thanks to Python's buffer interface, many objects (including NumPy
 arrays) provide the buffer interface, and are thus directly sendable. However, as with any
-asynchronous non-copying messaging system like 0MQ or MPI, it can be important to know
+asynchronous non-copying messaging system like ØMQ or MPI, it can be important to know
 when the message has actually been sent, so it is safe again to edit the buffer without
 worry of corrupting the message. This is what the MessageTracker is for.
 
@@ -67,7 +75,7 @@ and receives.
 
 A MessageTracker is very simple, and has just one method and one attribute. The property
 :attr:`MessageTracker.done` will be ``True`` when the Message(s) being tracked are no
-longer in use by 0MQ, and :meth:`.MessageTracker.wait` will block, waiting for the
+longer in use by ØMQ, and :meth:`.MessageTracker.wait` will block, waiting for the
 Message(s) to be released.
 
 .. Note::
@@ -80,15 +88,15 @@ Message(s) to be released.
 Extensions
 ----------
 
-So far, PyZMQ includes three extensions to core 0MQ that we found basic enough to be
+So far, PyZMQ includes three extensions to core ØMQ that we found basic enough to be
 included in PyZMQ itself:
 
 * :ref:`zmq.log <logging>` : Logging handlers for hooking Python logging up to the
   network
 * :ref:`zmq.devices <devices>` : Custom devices and objects for running devices in the 
   background
-* :ref:`zmq.eventloop <eventloop>` : The :ref:`Tornado` event loop, adapted for use 
-  with 0MQ sockets.
+* :ref:`zmq.eventloop <eventloop>` : The `Tornado`_ event loop, adapted for use 
+  with ØMQ sockets.
 
 .. _ØMQ: http://www.zeromq.org
 .. _Tornado: https://github.com/facebook/tornado
