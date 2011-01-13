@@ -44,7 +44,7 @@ PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
 UPSTREAM = ZMQ_UPSTREAM
 DOWNSTREAM = ZMQ_DOWNSTREAM
-# new in 2.1.0
+# new in 2.1.1
 if ZMQ_XPUB != -1:
     XPUB = ZMQ_XPUB
     XSUB = ZMQ_XSUB
@@ -88,6 +88,7 @@ if ZMQ_FD != -1:
     int_sockopts.extend([FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG])
     _optionals.extend('FD EVENTS TYPE LINGER RECONNECT_IVL BACKLOG'.split())
 
+# new in 2.1.1:
 if ZMQ_RECOVERY_IVL_MSEC != -1:
     RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
     int64_sockopts.append(RECOVERY_IVL_MSEC)
