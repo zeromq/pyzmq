@@ -30,14 +30,17 @@ from czmq cimport _zmq_version
 #-----------------------------------------------------------------------------
 
 __version__ = '2.1.1dev'
-
+__revision__ = ''
 
 def pyzmq_version():
     """pyzmq_version()
 
     Return the version of pyzmq as a string.
     """
-    return __version__
+    if __revision__:
+        return '@'.join([__version__,__revision__[:6]])
+    else:
+        return __version__
 
 
 def zmq_version():
@@ -50,5 +53,5 @@ def zmq_version():
     return '%i.%i.%i' % (major, minor, patch)
 
 
-__all__ = ['zmq_version', 'pyzmq_version', '__version__']
+__all__ = ['zmq_version', 'pyzmq_version', '__version__', '__revision__']
 

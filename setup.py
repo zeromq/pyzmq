@@ -37,6 +37,8 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 
+from subprocess import Popen, PIPE
+
 from zmqversion import check_zmq_version
 
 try:
@@ -115,6 +117,46 @@ class TestCommand(Command):
         else:
             return self.run_nose()
 
+class GitRevisionCommand(Command):
+    """find the current git revision and add it to zmq.core.verion.__revision__"""
+    
+    user_options = [ ]
+    
+    def initialize_options(self):
+        self.version_pyx = pjoin('zmq','core','version.pyx')
+    
+    def run(self):
+        try:
+            p = Popen('git log -1'.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        except IOError:
+            print ("No git found, skipping git revision")
+            return
+        
+        if p.wait():
+            print ("checking git branch failed")
+            print (p.stderr.read())
+            return
+        
+        line = p.stdout.readline().strip()
+        if not line.startswith('commit'):
+            print ("bad commit line: %r"%line)
+            return
+        
+        rev = line.split()[-1]
+        
+        # now that we have the git revision, we can apply it to version.pyx
+        with open(self.version_pyx) as f:
+            lines = f.readlines()
+        
+        for i,line in enumerate(lines):
+            if line.startswith('__revision__'):
+                lines[i] = "__revision__ = '%s'\n"%rev
+                break
+        with open(self.version_pyx, 'w') as f:
+            f.writelines(lines)
+    
+    def finalize_options(self):
+        pass
 
 class CleanCommand(Command):
     """Custom distutils command to clean the .so and .pyc files."""
@@ -145,7 +187,7 @@ class CheckSDist(sdist):
     def initialize_options(self):
         sdist.initialize_options(self)
         self._pyxfiles = []
-        for root, dirs, files in os.walk('.'):
+        for root, dirs, files in os.walk('zmq'):
             for f in files:
                 if f.endswith('.pyx'):
                     self._pyxfiles.append(pjoin(root, f))
@@ -196,7 +238,7 @@ if ignore_common_warnings:
 # Extensions
 #-----------------------------------------------------------------------------
 
-cmdclass = {'test':TestCommand, 'clean':CleanCommand }
+cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand}
 
 includes = [pjoin('zmq', sub) for sub in ('utils','core','devices')]
 
