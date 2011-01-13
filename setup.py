@@ -337,7 +337,7 @@ def extract_version():
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()
-    exec(line)
+    exec(line, globals())
     return __version__
 
 #-----------------------------------------------------------------------------
