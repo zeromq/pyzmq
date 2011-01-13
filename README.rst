@@ -8,7 +8,7 @@ This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current development version of pyzmq is 2.1.0, and targets zeromq master. For zeromq
+Current development version of pyzmq is 2.1.1, and targets zeromq master. For zeromq
 2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
 
 PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
@@ -105,7 +105,7 @@ How to release PyZMQ
 
 Currently, we are using the following steps to release PyZMQ:
 
-* Change the version number in ``setup.py`` and ``version.pyx``.
+* Change the version number in ``version.pyx``.
 * Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
   directories.
 * Check ``MANIFEST.in``.
