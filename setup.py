@@ -254,16 +254,18 @@ def dotc(subdir, name):
 czmq = pxd('core', 'czmq')
 allocate = pxd('utils', 'allocate')
 buffers = pxd('utils', 'buffers')
+message = pxd('core', 'message')
+context = pxd('core', 'context')
+socket = pxd('core', 'socket')
 
 submodules = dict(
     core = {'constants': [czmq],
             'error':[czmq],
             'poll':[czmq, allocate], 
-            'stopwatch':[czmq],
-            'context':[pxd('core', 'socket'), czmq],
-            'message':[czmq, buffers],
-            'socket':[pxd('core', 'context'), pxd('core', 'message'), 
-                      czmq, allocate, buffers],
+            'stopwatch':[czmq, pxd('core','stopwatch')],
+            'context':[socket, context, czmq],
+            'message':[czmq, buffers, message],
+            'socket':[context, message, socket, czmq, allocate, buffers],
             'device':[czmq],
             'version':[czmq],
     },
