@@ -60,7 +60,8 @@ cdef class Context:
     def __dealloc__(self):
         cdef int rc
         if self.handle != NULL:
-            rc = zmq_term(self.handle)
+            with nogil:
+                rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
 
@@ -75,7 +76,8 @@ cdef class Context:
         """
         cdef int rc
         if self.handle != NULL and not self.closed:
-            rc = zmq_term(self.handle)
+            with nogil:
+                rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
             self.handle = NULL
