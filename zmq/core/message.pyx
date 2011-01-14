@@ -39,10 +39,8 @@ from czmq cimport *
 
 import time
 
-try:    # 3.x
-    from queue import Queue, Empty
-except: # 2.x
-    from Queue import Queue, Empty
+
+from threading import Event, _Event
 
 from zmq.core.error import ZMQError, NotDone
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -55,13 +53,13 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 cdef void free_python_msg(void *data, void *hint) with gil:
     """A function for DECREF'ing Python based messages."""
     if hint != NULL:
-        tracker_queue = (<tuple>hint)[1]
+        tracker_event = (<tuple>hint)[1]
         Py_DECREF(<object>hint)
-        if isinstance(tracker_queue, Queue):
+        if isinstance(tracker_event, _Event):
             # don't assert before DECREF:
             # assert tracker_queue.empty(), "somebody else wrote to my Queue!"
-            tracker_queue.put(0)
-        tracker_queue = None
+            tracker_event.set()
+        tracker_event = None
 
 cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg):
     """ Copy the data from a zmq_msg_t """
@@ -86,9 +84,9 @@ cdef class MessageTracker(object):
 
     Parameters
     ----------
-    *towatch : tuple of Queue, MessageTracker, Message instances.
+    *towatch : tuple of Event, MessageTracker, Message instances.
         This list of objects to track. This class can track the low-level
-        Queues used by the Message class, other MessageTrackers or
+        Events used by the Message class, other MessageTrackers or
         actual Messsages.
     """
 
@@ -99,16 +97,16 @@ cdef class MessageTracker(object):
 
         Parameters
         ----------
-        *towatch : tuple of Queue, MessageTracker, Message instances.
+        *towatch : tuple of Event, MessageTracker, Message instances.
             This list of objects to track. This class can track the low-level
-            Queues used by the Message class, other MessageTrackers or 
+            Events used by the Message class, other MessageTrackers or 
             actual Messsages.
         """
-        self.queues = set()
+        self.events = set()
         self.peers = set()
         for obj in towatch:
-            if isinstance(obj, Queue):
-                self.queues.add(obj)
+            if isinstance(obj, _Event):
+                self.events.add(obj)
             elif isinstance(obj, MessageTracker):
                 self.peers.add(obj)
             elif isinstance(obj, Message):
@@ -116,13 +114,13 @@ cdef class MessageTracker(object):
                     raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
-                raise TypeError("Require Queues or Messages, not %s"%type(obj))
+                raise TypeError("Require Eventss or Messages, not %s"%type(obj))
     
     @property
     def done(self):
         """Is 0MQ completely done with the message(s) being tracked?"""
-        for queue in self.queues:
-            if queue.empty():
+        for evt in self.events:
+            if not evt.is_set():
                 return False
         for pm in self.peers:
             if not pm.done:
@@ -155,17 +153,15 @@ cdef class MessageTracker(object):
         else:
             remaining = timeout
         done = False
-        try:
-            for queue in self.queues:
-                if remaining < 0:
-                    raise NotDone
-                queue.get(timeout=remaining)
-                queue.put(0)
-                toc = time.time()
-                remaining -= (toc-tic)
-                tic = toc
-        except Empty:
-            raise NotDone
+        for evt in self.events:
+            if remaining < 0:
+                raise NotDone
+            evt.wait(timeout=remaining)
+            if not evt.is_set():
+                raise NotDone
+            toc = time.time()
+            remaining -= (toc-tic)
+            tic = toc
         
         for peer in self.peers:
             if remaining < 0:
@@ -204,7 +200,7 @@ cdef class Message:
     track : bool [default: False]
         whether a MessageTracker_ should be created to track this object.
         Tracking a message has a cost at creation, because it creates a threadsafe
-        Queue object.
+        Event object.
     
     """
 
@@ -220,12 +216,16 @@ cdef class Message:
         self._buffer = None       # buffer view of data
         self._bytes = None        # bytes copy of data
 
-        # Queue and MessageTracker for monitoring when zmq is done with data:
+        # Event and MessageTracker for monitoring when zmq is done with data:
         if track:
-            self.tracker_queue = Queue()
-            self.tracker = MessageTracker(self.tracker_queue)
+            evt = Event()
+            # python 2.5 compat:
+            if not hasattr(evt, 'is_set'):
+                evt.is_set = evt.isSet
+            self.tracker_event = evt
+            self.tracker = MessageTracker(evt)
         else:
-            self.tracker_queue = None
+            self.tracker_event = None
             self.tracker = None
 
         if isinstance(data, unicode):
@@ -243,7 +243,7 @@ cdef class Message:
         # We INCREF the *original* Python object (not self) and pass it
         # as the hint below. This allows other copies of this Message
         # object to take over the ref counting of data properly.
-        hint = (data, self.tracker_queue)
+        hint = (data, self.tracker_event)
         Py_INCREF(hint)
         with nogil:
             rc = zmq_msg_init_data(
@@ -294,8 +294,8 @@ cdef class Message:
         if self._bytes is not None:
             new_msg._bytes = self._bytes
 
-        # Message copies share the tracker and tracker_queue
-        new_msg.tracker_queue = self.tracker_queue
+        # Message copies share the tracker and tracker_event
+        new_msg.tracker_event = self.tracker_event
         new_msg.tracker = self.tracker
 
         return new_msg

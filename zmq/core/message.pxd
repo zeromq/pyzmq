@@ -33,7 +33,7 @@ from czmq cimport zmq_msg_t
 cdef class MessageTracker(object):
     """A class for tracking if 0MQ is done using one or more messages."""
 
-    cdef set queues  # Message Queue objects to track.
+    cdef set events  # Message Event objects to track.
     cdef set peers   # Other Message or MessageTracker objects.
     
 
@@ -45,7 +45,7 @@ cdef class Message:
     cdef object _buffer    # A Python Buffer/View of the message contents
     cdef object _bytes     # A bytes/str copy of the message.
     cdef bool _failed_init # Flag to handle failed zmq_msg_init
-    cdef public object tracker_queue  # Queue for use with zmq_free_fn.
+    cdef public object tracker_event  # Event for use with zmq_free_fn.
     cdef public object tracker        # MessageTracker object.
 
     cdef Message fast_copy(self) # Create shallow copy of Message object.
