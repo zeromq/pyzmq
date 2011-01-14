@@ -54,7 +54,7 @@ class TestContext(BaseZMQTestCase):
     def test_term_hang(self):
         rep,req = self.create_bound_pair(zmq.XREP, zmq.XREQ)
         req.setsockopt(zmq.LINGER, 0)
-        req.send('hello', copy=False)
+        req.send('hello'.encode(), copy=False)
         req.close()
         rep.close()
         self.context.term()
