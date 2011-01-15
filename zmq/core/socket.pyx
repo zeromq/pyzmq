@@ -53,11 +53,6 @@ import random
 import struct
 import codecs
 
-try:    # 3.x
-    from queue import Queue, Empty
-except: # 2.x
-    from Queue import Queue, Empty
-
 from zmq.utils import jsonapi
 
 try:
