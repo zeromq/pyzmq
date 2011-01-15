@@ -23,6 +23,10 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+# allow const char*
+cdef extern from *:
+    ctypedef char* const_char_ptr "const char*"
+
 from czmq cimport zmq_strerror, zmq_errno
 
 from zmq.utils.strtypes import bytes
@@ -32,9 +36,10 @@ def strerror(errnum):
 
     Return the error string given the error number.
     """
-    cdef object str_e
+    cdef const_char_ptr str_e
     # char * will be a bytes object:
-    str_e = zmq_strerror(errnum)
+    with nogil:
+        str_e = zmq_strerror(errnum)
     if str is bytes:
         # Python 2: str is bytes, so we already have the right type
         return str_e
@@ -67,8 +72,11 @@ class ZMQError(ZMQBaseError):
             The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
             used.
         """
+        cdef int errno
         if error is None:
-            error = zmq_errno()
+            with nogil:
+                errno = zmq_errno()
+            error = errno
         if type(error) == int:
             self.strerror = strerror(error)
             self.errno = error

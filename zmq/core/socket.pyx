@@ -99,7 +99,8 @@ cdef class Socket:
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
-        self.handle = zmq_socket(<void *>c_handle, socket_type)
+        with nogil:
+            self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
@@ -118,7 +119,8 @@ cdef class Socket:
         """
         cdef int rc
         if self.handle != NULL and not self.closed:
-            rc = zmq_close(self.handle)
+            with nogil:
+                rc = zmq_close(self.handle)
             if rc != 0:
                 raise ZMQError()
             self.handle = NULL
@@ -147,6 +149,8 @@ cdef class Socket:
         cdef int64_t optval_int64_c
         cdef int optval_int_c
         cdef int rc
+        cdef char* optval_c
+        cdef Py_ssize_t sz
 
         self._check_closed()
         if isinstance(optval, unicode):
@@ -155,26 +159,31 @@ cdef class Socket:
         if option in constants.bytes_sockopts:
             if not isinstance(optval, bytes):
                 raise TypeError('expected str, got: %r' % optval)
-            rc = zmq_setsockopt(
-                self.handle, option,
-                PyBytes_AsString(optval), PyBytes_Size(optval)
-            )
+            optval_c = PyBytes_AsString(optval)
+            sz = PyBytes_Size(optval)
+            with nogil:
+                rc = zmq_setsockopt(
+                    self.handle, option,
+                    optval_c, sz
+                )
         elif option in constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
-            rc = zmq_setsockopt(
-                self.handle, option,
-                &optval_int64_c, sizeof(int64_t)
-            )
+            with nogil:
+                rc = zmq_setsockopt(
+                    self.handle, option,
+                    &optval_int64_c, sizeof(int64_t)
+                )
         elif option in constants.int_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
-            rc = zmq_setsockopt(
-                self.handle, option,
-                &optval_int_c, sizeof(int)
-            )
+            with nogil:
+                rc = zmq_setsockopt(
+                    self.handle, option,
+                    &optval_int_c, sizeof(int)
+                )
         else:
             raise ZMQError(EINVAL)
 
@@ -210,19 +219,22 @@ cdef class Socket:
 
         if option in constants.bytes_sockopts:
             sz = 255
-            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
+            with nogil:
+                rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in  constants.int64_sockopts:
             sz = sizeof(int64_t)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
+            with nogil:
+                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = optval_int64_c
         elif option in constants.int_sockopts:
             sz = sizeof(int)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
+            with nogil:
+                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = optval_int_c
@@ -300,7 +312,8 @@ cdef class Socket:
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
-        rc = zmq_bind(self.handle, addr)
+        with nogil:
+            rc = zmq_bind(self.handle, addr)
         if rc != 0:
             raise ZMQError()
 
@@ -360,7 +373,8 @@ cdef class Socket:
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
-        rc = zmq_connect(self.handle, addr)
+        with nogil:
+            rc = zmq_connect(self.handle, addr)
         if rc != 0:
             raise ZMQError()
 
@@ -457,15 +471,16 @@ cdef class Socket:
         # Copy the msg before sending. This avoids any complications with
         # the GIL, etc.
         # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
-        rc = zmq_msg_init_size(&data, msg_c_len)
-        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+        with nogil:
+            rc = zmq_msg_init_size(&data, msg_c_len)
+            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
         if rc != 0:
             raise ZMQError()
 
         with nogil:
             rc = zmq_send(self.handle, &data, flags)
-        rc2 = zmq_msg_close(&data)
+            rc2 = zmq_msg_close(&data)
 
         if rc != 0 or rc2 != 0:
             raise ZMQError()
@@ -530,7 +545,8 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
         msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
-        zmq_msg_close(&zmq_msg)
+        with nogil:
+            zmq_msg_close(&zmq_msg)
         return msg_bytes
 
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):

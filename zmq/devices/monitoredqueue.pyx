@@ -98,18 +98,22 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     
     # build zmq_msg objects from str prefixes
     asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
-    rc = zmq_msg_init_size(&in_msg, msg_c_len)
+    with nogil:
+        rc = zmq_msg_init_size(&in_msg, msg_c_len)
     if rc != 0:
         raise ZMQError()
-    memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
+    with nogil:
+        memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
     
     asbuffer_r(out_prefix, <void **>&msg_c, &msg_c_len)
-    rc = zmq_msg_init_size(&out_msg, msg_c_len)
-    if rc != 0:
-        raise ZMQError()
-    memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
     
     with nogil:
+        rc = zmq_msg_init_size(&out_msg, msg_c_len)
+    if rc != 0:
+        raise ZMQError()
+    
+    with nogil:
+        memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
         rc = c_monitored_queue(ins, outs, mons, in_msg, out_msg, swap_ids)
     return rc
 

@@ -38,7 +38,7 @@ cdef class Stopwatch:
 
     This class should be used for benchmarking and timing 0MQ code.
     """
-    
+
     def __cinit__(self):
         self.watch = NULL
 
@@ -54,7 +54,8 @@ cdef class Stopwatch:
         Start the stopwatch.
         """
         if self.watch == NULL:
-            self.watch = zmq_stopwatch_start()
+            with nogil:
+                self.watch = zmq_stopwatch_start()
         else:
             raise ZMQError('Stopwatch is already runing.')
 
@@ -62,20 +63,28 @@ cdef class Stopwatch:
         """s.stop()
 
         Stop the stopwatch.
+        
+        Returns
+        -------
+        t : unsigned long int
+            the number of microseconds since ``start()`` was called.
         """
+        cdef unsigned long time
         if self.watch == NULL:
             raise ZMQError('Must start the Stopwatch before calling stop.')
         else:
-            time = zmq_stopwatch_stop(self.watch)
+            with nogil:
+                time = zmq_stopwatch_stop(self.watch)
             self.watch = NULL
             return time
 
     def sleep(self, int seconds):
         """s.sleep(seconds)
 
-        Sleep for a number of seconds.
+        Sleep for an integer number of seconds.
         """
-        zmq_sleep(seconds)
+        with nogil:
+            zmq_sleep(seconds)
 
 
 __all__ = ['Stopwatch']

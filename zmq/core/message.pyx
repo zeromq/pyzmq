@@ -264,7 +264,8 @@ cdef class Message:
         if self._failed_init:
             return
         # This simply decreases the 0MQ ref-count of zmq_msg.
-        rc = zmq_msg_close(&self.zmq_msg)
+        with nogil:
+            rc = zmq_msg_close(&self.zmq_msg)
         if rc != 0:
             raise ZMQError()
 
@@ -284,7 +285,8 @@ cdef class Message:
         new_msg = Message()
         # This does not copy the contents, but just increases the ref-count 
         # of the zmq_msg by one.
-        zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
+        with nogil:
+            zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
         # Copy the ref to data so the copy won't create a copy when str is
         # called.
         if self._data is not None:
@@ -302,7 +304,11 @@ cdef class Message:
 
     def __len__(self):
         """Return the length of the message in bytes."""
-        return <int>zmq_msg_size(&self.zmq_msg)
+        cdef int sz
+        with nogil:
+            sz = zmq_msg_size(&self.zmq_msg)
+        return sz
+        # return <int>zmq_msg_size(&self.zmq_msg)
 
     def __str__(self):
         """Return the str form of the message."""
@@ -360,8 +366,9 @@ cdef class Message:
         # editing of the message in-place
         if self._data is None:
             # return buffer on input object, to preserve refcounting
-            data_c = <char *>zmq_msg_data(&self.zmq_msg)
-            data_len_c = zmq_msg_size(&self.zmq_msg)
+            with nogil:
+                data_c = <char *>zmq_msg_data(&self.zmq_msg)
+                data_len_c = zmq_msg_size(&self.zmq_msg)
             return frombuffer_r(data_c, data_len_c)
         else:
             return viewfromobject_r(self._data)

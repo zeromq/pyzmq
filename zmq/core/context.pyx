@@ -52,7 +52,8 @@ cdef class Context:
         self.handle = NULL
         if not io_threads > 0:
             raise ZMQError(EINVAL)
-        self.handle = zmq_init(io_threads)
+        with nogil:
+            self.handle = zmq_init(io_threads)
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False

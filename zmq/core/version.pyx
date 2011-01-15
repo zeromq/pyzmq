@@ -49,7 +49,8 @@ def zmq_version():
     Return the version of ZeroMQ itself as a string.
     """
     cdef int major, minor, patch
-    _zmq_version(&major, &minor, &patch)
+    with nogil:
+        _zmq_version(&major, &minor, &patch)
     return '%i.%i.%i' % (major, minor, patch)
 
 
