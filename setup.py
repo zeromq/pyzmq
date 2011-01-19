@@ -290,7 +290,7 @@ class configure(Command):
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
             if zmq is None:
-                fatal("ZMQ directory must be specified on Windows")
+                fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
             shutil.copy(pjoin(zmq, 'lib', 'libzmq.dll'), localpath('zmq','libzmq.dll'))
 
     def run(self):
