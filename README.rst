@@ -12,8 +12,9 @@ Current development version of pyzmq is 2.1.1, and targets zeromq master. For ze
 2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
 
 PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
-as your zeromq, but due to the generally growing API of zeromq, your pyzmq *must not* be
-newer than your zeromq.
+as that of your zeromq, but due to the generally growing API of zeromq, your pyzmq should
+*not* be newer than your zeromq. This is a strict restriction for pyzmq <= 2.1.0, but we
+intend to support zeromq >= 2.1.0 for pyzmq 2.1.x.
 
 Documentation
 =============
