@@ -188,11 +188,7 @@ def discover_settings():
     settings.update(get_cargs())    # highest priority
     return settings.get('zmq')
 
-ZMQ = None
-for cmd in ['install', 'build', 'build_ext', 'configure']:
-    if cmd in sys.argv:
-        ZMQ = discover_settings()
-        break
+ZMQ = discover_settings()
 
 if ZMQ is not None and not os.path.exists(ZMQ):
     warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
