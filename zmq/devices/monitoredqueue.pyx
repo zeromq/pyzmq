@@ -83,7 +83,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     cdef void *mons=mon_socket.handle
     cdef zmq_msg_t in_msg
     cdef zmq_msg_t out_msg
-    cdef bool swap_ids
+    cdef bint swap_ids
     cdef char *msg_c = NULL
     cdef Py_ssize_t msg_c_len
     cdef int rc

@@ -23,7 +23,6 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from cpython cimport bool
 from czmq cimport zmq_msg_t
 
 #-----------------------------------------------------------------------------
@@ -44,7 +43,7 @@ cdef class Message:
     cdef object _data      # The actual message data as a Python object.
     cdef object _buffer    # A Python Buffer/View of the message contents
     cdef object _bytes     # A bytes/str copy of the message.
-    cdef bool _failed_init # Flag to handle failed zmq_msg_init
+    cdef bint _failed_init # Flag to handle failed zmq_msg_init
     cdef public object tracker_event  # Event for use with zmq_free_fn.
     cdef public object tracker        # MessageTracker object.
 
