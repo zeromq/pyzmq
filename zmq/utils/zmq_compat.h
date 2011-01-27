@@ -9,6 +9,7 @@
 #include "zmq.h"
 #define _missing (PyErr_SetString(PyExc_NotImplementedError, \
                 "Constant not available in current zeromq."), -1)
+// 2.1.0
 #ifndef ZMQ_FD
     #define ZMQ_FD (-1)
 #endif
@@ -27,6 +28,7 @@
 #ifndef ZMQ_BACKLOG
     #define ZMQ_BACKLOG (-1)
 #endif
+// 2.1.1
 #ifndef ZMQ_XPUB
     #define ZMQ_XPUB (-1)
 #endif
@@ -35,4 +37,7 @@
 #endif
 #ifndef ZMQ_RECOVERY_IVL_MSEC
     #define ZMQ_RECOVERY_IVL_MSEC (-1)
+#endif
+#ifndef ZMQ_RECONNECT_IVL_MAX
+    #define ZMQ_RECONNECT_IVL_MAX (-1)
 #endif
