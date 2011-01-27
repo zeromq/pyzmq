@@ -50,8 +50,7 @@ class TestStopWatch(TestCase):
         watch.sleep(1)
         us = watch.stop()
         toc = time.time()
-        self.assertTrue(us > 1e6 )
-        self.assertTrue(us < 1.1e6*(toc-tic))
+        self.assertAlmostEqual(us/1e6,(toc-tic),2)
     
     def test_double_stop(self):
         """Test error raised on multiple calls to stop."""
