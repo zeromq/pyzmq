@@ -48,6 +48,11 @@ cdef extern from "zmq.h" nogil:
 
     void _zmq_version "zmq_version"(int *major, int *minor, int *patch)
 
+    enum: ZMQ_VERSION_MAJOR
+    enum: ZMQ_VERSION_MINOR
+    enum: ZMQ_VERSION_PATCH
+    enum: ZMQ_VERSION
+
     enum: ZMQ_HAUSNUMERO
     enum: ZMQ_ENOTSUP "ENOTSUP"
     enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
@@ -126,6 +131,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_RECONNECT_IVL # 18
     enum: ZMQ_BACKLOG # 19
     enum: ZMQ_RECOVERY_IVL_MSEC # 20
+    enum: ZMQ_RECONNECT_IVL_MAX # 20
 
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_SNDMORE # 2
