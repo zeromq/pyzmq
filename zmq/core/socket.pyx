@@ -31,7 +31,6 @@ from libc.stdlib cimport free, malloc
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
-from cpython cimport bool
 
 from allocate cimport allocate
 from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
