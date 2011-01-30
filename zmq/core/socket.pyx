@@ -70,6 +70,9 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 # Code
 #-----------------------------------------------------------------------------
 
+cdef inline _check_closed(Socket s):
+    if s.closed:
+        raise ZMQError(ENOTSUP)
 
 cdef class Socket:
     """Socket(context, socket_type)
@@ -125,10 +128,6 @@ cdef class Socket:
             self.handle = NULL
             self.closed = True
 
-    def _check_closed(self):
-        if self.closed:
-            raise ZMQError(ENOTSUP)
-
     def setsockopt(self, int option, optval):
         """s.setsockopt(option, optval)
 
@@ -151,7 +150,7 @@ cdef class Socket:
         cdef char* optval_c
         cdef Py_ssize_t sz
 
-        self._check_closed()
+        _check_closed(self)
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_unicode")
 
@@ -214,7 +213,7 @@ cdef class Socket:
         cdef size_t sz
         cdef int rc
 
-        self._check_closed()
+        _check_closed(self)
 
         if option in constants.bytes_sockopts:
             sz = 255
@@ -306,7 +305,7 @@ cdef class Socket:
         """
         cdef int rc
 
-        self._check_closed()
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -367,7 +366,7 @@ cdef class Socket:
         """
         cdef int rc
 
-        self._check_closed()
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -381,7 +380,7 @@ cdef class Socket:
     # Sending and receiving messages
     #-------------------------------------------------------------------------
 
-    def send(self, object data, int flags=0, copy=True, track=False):
+    cpdef object send(self, object data, int flags=0, copy=True, track=False):
         """s.send(data, flags=0, copy=True, track=False)
 
         Send a message on this socket.
@@ -418,7 +417,7 @@ cdef class Socket:
             If the send does not succeed for any reason.
         
         """
-        self._check_closed()
+        _check_closed(self)
         
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_unicode")
@@ -438,7 +437,7 @@ cdef class Socket:
                 msg = Message(data, track=track)
             return self._send_message(msg, flags)
 
-    def _send_message(self, Message msg, int flags=0):
+    cdef object _send_message(self, Message msg, int flags=0):
         """Send a Message on this socket in a non-copy manner."""
         cdef int rc
         cdef Message msg_copy
@@ -457,7 +456,7 @@ cdef class Socket:
         return msg.tracker
             
 
-    def _send_copy(self, object msg, int flags=0):
+    cdef object _send_copy(self, object msg, int flags=0):
         """Send a message on this socket by copying its content."""
         cdef int rc, rc2
         cdef zmq_msg_t data
@@ -484,7 +483,7 @@ cdef class Socket:
         if rc != 0 or rc2 != 0:
             raise ZMQError()
     
-    def recv(self, int flags=0, copy=True, track=False):
+    cpdef object recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True, track=False)
 
         Receive a message.
@@ -515,14 +514,14 @@ cdef class Socket:
         ZMQError
             for any of the reasons zmq_recv might fail.
         """
-        self._check_closed()
+        _check_closed(self)
         
         if copy:
             return self._recv_copy(flags)
         else:
             return self._recv_message(flags, track)
     
-    def _recv_message(self, int flags=0, track=False):
+    cdef object _recv_message(self, int flags=0, track=False):
         """Receive a message in a non-copying manner and return a Message."""
         cdef int rc
         cdef Message msg
@@ -535,7 +534,7 @@ cdef class Socket:
             raise ZMQError()
         return msg
 
-    def _recv_copy(self, int flags=0):
+    cdef object _recv_copy(self, int flags=0):
         """Recieve a message and return a copy"""
         cdef zmq_msg_t zmq_msg
         with nogil:
