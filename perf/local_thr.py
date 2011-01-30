@@ -72,8 +72,8 @@ def main ():
         msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
         assert len(msg) == message_size
 
-        end = clock.stop()
-        # end = time.clock()
+    end = clock.stop()
+    # end = time.clock()
 
     elapsed = (end - start)
     # elapsed = (end - start) * 1000000 # use with time.clock
