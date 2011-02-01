@@ -31,9 +31,10 @@ from zmq.core import *
 
 def get_includes():
     """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname
+    from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
-    return [ join(base, subdir) for subdir in ('core', 'devices', 'utils')]
+    parent = abspath(join(base, pardir))
+    return [ parent ] + [ join(base, subdir) for subdir in ('utils',) ]
 
 
 __all__ = ['get_includes'] + core.__all__
