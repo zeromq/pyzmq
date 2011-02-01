@@ -70,9 +70,85 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 # Code
 #-----------------------------------------------------------------------------
 
+# inline some small socket submethods:
+# true methods frequently cannot be inlined, acc. Cython docs
+
 cdef inline _check_closed(Socket s):
     if s.closed:
         raise ZMQError(ENOTSUP)
+
+cdef inline Message _recv_message(void *handle, int flags=0, track=False):
+    """Receive a message in a non-copying manner and return a Message."""
+    cdef int rc
+    cdef Message msg
+    msg = Message(track=track)
+
+    with nogil:
+        rc = zmq_recv(handle, &msg.zmq_msg, flags)
+
+    if rc != 0:
+        raise ZMQError()
+    return msg
+
+cdef inline object _recv_copy(void *handle, int flags=0):
+    """Recieve a message and return a copy"""
+    cdef zmq_msg_t zmq_msg
+    with nogil:
+        zmq_msg_init (&zmq_msg)
+        rc = zmq_recv(handle, &zmq_msg, flags)
+    if rc != 0:
+        raise ZMQError()
+    msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
+    with nogil:
+        zmq_msg_close(&zmq_msg)
+    return msg_bytes
+
+cdef inline object _send_message(void *handle, Message msg, int flags=0):
+    """Send a Message on this socket in a non-copy manner."""
+    cdef int rc
+    cdef Message msg_copy
+
+    # Always copy so the original message isn't garbage collected.
+    # This doesn't do a real copy, just a reference.
+    msg_copy = msg.fast_copy()
+    
+    with nogil:
+        rc = zmq_send(handle, &msg_copy.zmq_msg, flags)
+
+    if rc != 0:
+        # don't pop from the Queue here, because the free_fn will
+        #  still call Queue.get() even if the send fails
+        raise ZMQError()
+    return msg.tracker
+        
+
+cdef inline object _send_copy(void *handle, object msg, int flags=0):
+    """Send a message on this socket by copying its content."""
+    cdef int rc, rc2
+    cdef zmq_msg_t data
+    cdef char *msg_c
+    cdef Py_ssize_t msg_c_len=0
+    
+    # copy to c array:
+    asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
+    
+    # Copy the msg before sending. This avoids any complications with
+    # the GIL, etc.
+    # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
+    with nogil:
+        rc = zmq_msg_init_size(&data, msg_c_len)
+        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+
+    if rc != 0:
+        raise ZMQError()
+
+    with nogil:
+        rc = zmq_send(handle, &data, flags)
+        rc2 = zmq_msg_close(&data)
+
+    if rc != 0 or rc2 != 0:
+        raise ZMQError()
+
 
 cdef class Socket:
     """Socket(context, socket_type)
@@ -427,7 +503,7 @@ cdef class Socket:
             # it is always a copy, but always the same copy
             if isinstance(data, Message):
                 data = data.buffer
-            return self._send_copy(data, flags)
+            return _send_copy(self.handle, data, flags)
         else:
             if isinstance(data, Message):
                 if track and not data.tracker:
@@ -435,54 +511,8 @@ cdef class Socket:
                 msg = data
             else:
                 msg = Message(data, track=track)
-            return self._send_message(msg, flags)
+            return _send_message(self.handle, msg, flags)
 
-    cdef object _send_message(self, Message msg, int flags=0):
-        """Send a Message on this socket in a non-copy manner."""
-        cdef int rc
-        cdef Message msg_copy
-
-        # Always copy so the original message isn't garbage collected.
-        # This doesn't do a real copy, just a reference.
-        msg_copy = msg.fast_copy()
-        
-        with nogil:
-            rc = zmq_send(self.handle, &msg_copy.zmq_msg, flags)
-
-        if rc != 0:
-            # don't pop from the Queue here, because the free_fn will
-            #  still call Queue.get() even if the send fails
-            raise ZMQError()
-        return msg.tracker
-            
-
-    cdef object _send_copy(self, object msg, int flags=0):
-        """Send a message on this socket by copying its content."""
-        cdef int rc, rc2
-        cdef zmq_msg_t data
-        cdef char *msg_c
-        cdef Py_ssize_t msg_c_len=0
-        
-        # copy to c array:
-        asbuffer_r(msg, <void **>&msg_c, &msg_c_len)
-        
-        # Copy the msg before sending. This avoids any complications with
-        # the GIL, etc.
-        # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
-        with nogil:
-            rc = zmq_msg_init_size(&data, msg_c_len)
-            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
-
-        if rc != 0:
-            raise ZMQError()
-
-        with nogil:
-            rc = zmq_send(self.handle, &data, flags)
-            rc2 = zmq_msg_close(&data)
-
-        if rc != 0 or rc2 != 0:
-            raise ZMQError()
-    
     cpdef object recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True, track=False)
 
@@ -517,36 +547,10 @@ cdef class Socket:
         _check_closed(self)
         
         if copy:
-            return self._recv_copy(flags)
+            return _recv_copy(self.handle, flags)
         else:
-            return self._recv_message(flags, track)
+            return _recv_message(self.handle, flags, track)
     
-    cdef object _recv_message(self, int flags=0, track=False):
-        """Receive a message in a non-copying manner and return a Message."""
-        cdef int rc
-        cdef Message msg
-        msg = Message(track=track)
-
-        with nogil:
-            rc = zmq_recv(self.handle, &msg.zmq_msg, flags)
-
-        if rc != 0:
-            raise ZMQError()
-        return msg
-
-    cdef object _recv_copy(self, int flags=0):
-        """Recieve a message and return a copy"""
-        cdef zmq_msg_t zmq_msg
-        with nogil:
-            zmq_msg_init (&zmq_msg)
-            rc = zmq_recv(self.handle, &zmq_msg, flags)
-        if rc != 0:
-            raise ZMQError()
-        msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
-        with nogil:
-            zmq_msg_close(&zmq_msg)
-        return msg_bytes
-
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
         """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
 
