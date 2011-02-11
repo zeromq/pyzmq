@@ -536,7 +536,7 @@ cdef class Socket:
         return msg
 
     def _recv_copy(self, int flags=0):
-        """Recieve a message and return a copy"""
+        """Receive a message and return a copy"""
         cdef zmq_msg_t zmq_msg
         with nogil:
             zmq_msg_init (&zmq_msg)

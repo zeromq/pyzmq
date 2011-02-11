@@ -87,7 +87,7 @@ cdef class MessageTracker(object):
     *towatch : tuple of Event, MessageTracker, Message instances.
         This list of objects to track. This class can track the low-level
         Events used by the Message class, other MessageTrackers or
-        actual Messsages.
+        actual Messages.
     """
 
     def __init__(self, *towatch):
@@ -100,7 +100,7 @@ cdef class MessageTracker(object):
         *towatch : tuple of Event, MessageTracker, Message instances.
             This list of objects to track. This class can track the low-level
             Events used by the Message class, other MessageTrackers or 
-            actual Messsages.
+            actual Messages.
         """
         self.events = set()
         self.peers = set()
