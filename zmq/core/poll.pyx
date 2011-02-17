@@ -23,9 +23,8 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport zmq_poll, zmq_pollitem_t
+from czmq cimport zmq_poll, zmq_pollitem_t, allocate
 from socket cimport Socket
-from allocate cimport allocate
 
 import sys
 from zmq.core.error import ZMQError
