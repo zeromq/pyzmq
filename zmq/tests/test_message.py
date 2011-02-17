@@ -31,20 +31,25 @@ from pprint import pprint
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import unicode,bytes
-
-try:
-    from nose import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        pass
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
 
+# some useful constants:
+
 x = 'x'.encode()
+
+try:
+    view = memoryview
+except NameError:
+    view = buffer
+
+rc0 = grc(x)
+v = view(x)
+view_rc = grc(x) - rc0
 
 class TestMessage(BaseZMQTestCase):
 
@@ -99,10 +104,6 @@ class TestMessage(BaseZMQTestCase):
 
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
-        try:
-            view = memoryview
-        except NameError:
-            view = type(None)
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             rc = 2
@@ -114,10 +115,8 @@ class TestMessage(BaseZMQTestCase):
             rc += 1
             self.assertEquals(grc(s), rc)
             b = m2.buffer
-            extra = int(isinstance(b,view))
-            # memoryview incs by 2
-            # buffer by 1
-            rc += 1+extra
+            
+            rc += view_rc
             self.assertEquals(grc(s), rc)
 
             self.assertEquals(s, str(m).encode())
@@ -128,7 +127,7 @@ class TestMessage(BaseZMQTestCase):
             del m2
             rc -= 1
             self.assertEquals(grc(s), rc)
-            rc -= 1+extra
+            rc -= view_rc
             del b
             self.assertEquals(grc(s), rc)
             del m
@@ -139,10 +138,6 @@ class TestMessage(BaseZMQTestCase):
 
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
-        try:
-            view = memoryview
-        except NameError:
-            view = type(None)
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             rc = 2
@@ -154,8 +149,7 @@ class TestMessage(BaseZMQTestCase):
             rc += 1
             self.assertEquals(grc(s), rc)
             b = m.buffer
-            extra = int(isinstance(b,view))
-            rc += 1+extra
+            rc += view_rc
             self.assertEquals(grc(s), rc)
             self.assertEquals(s, str(m).encode())
             self.assertEquals(s, str(m2).encode())
@@ -167,7 +161,7 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals(grc(s), rc)
             del m
             # m.buffer is kept until m is del'd
-            rc -= 1+extra
+            rc -= view_rc
             rc -= 1
             self.assertEquals(grc(s), rc)
             del m2
@@ -209,10 +203,6 @@ class TestMessage(BaseZMQTestCase):
     
     def test_buffer_in(self):
         """test using a buffer as input"""
-        try:
-            view = memoryview
-        except NameError:
-            view = buffer
         if unicode is str:
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
         else:
@@ -226,10 +216,6 @@ class TestMessage(BaseZMQTestCase):
         
     def test_buffer_out(self):
         """receiving buffered output"""
-        try:
-            view = memoryview
-        except NameError:
-            view = buffer
         if unicode is str:
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
         else:

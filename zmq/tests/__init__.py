@@ -27,6 +27,15 @@ from unittest import TestCase
 
 import zmq
 
+try:
+    from unittest import SkipTest
+except ImportError:
+    try:
+        from nose import SkipTest
+    except ImportError:
+        class SkipTest(Exception):
+            pass
+
 #-----------------------------------------------------------------------------
 # Utilities
 #-----------------------------------------------------------------------------
