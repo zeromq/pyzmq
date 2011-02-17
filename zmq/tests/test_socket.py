@@ -27,18 +27,12 @@ import sys
 import time
 
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import bytes, unicode
 try:
     from queue import Queue
 except:
     from Queue import Queue
-
-try:
-    from nose import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        pass
 
 #-----------------------------------------------------------------------------
 # Tests
