@@ -35,8 +35,8 @@ try:
     import fcntl
 except ImportError:
     if os.name == 'nt':
-        import win32_support
-        import win32_support as fcntl
+        from zmq.eventloop import win32_support
+        fcntl = win32_support
     else:
         raise
 

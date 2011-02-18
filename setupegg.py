@@ -5,4 +5,7 @@ import os, sys
 
 # now, import setuptools and call the actual setup
 import setuptools
-execfile('setup.py')
+try:
+    execfile('setup.py')
+except NameError:
+    exec( open('setup.py','rb').read() )

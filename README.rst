@@ -154,3 +154,6 @@ The following people have contributed to the project:
 * Scott Sadler (github AT mashi DOT org)
 * spez (steve AT hipmunk DOT com)
 * Thomas Kluyver (takowl AT gmail DOT com)
+* Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
+
+
