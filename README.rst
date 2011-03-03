@@ -8,18 +8,19 @@ This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current development version of pyzmq is 2.1.1, and targets zeromq master. For zeromq
+Current release of pyzmq is 2.1.1, and targets libzmq-2.1.1rc1. For zeromq
 2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
 
 PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
-as that of your zeromq, but due to the generally growing API of zeromq, your pyzmq should
+as that of your libzmq, but due to the generally growing API of zeromq, your pyzmq should
 *not* be newer than your zeromq. This is a strict restriction for pyzmq <= 2.1.0, but we
 intend to support zeromq >= 2.1.0 for pyzmq 2.1.x.
 
 Documentation
 =============
 
-See PyZMQ's Sphinx `generated documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API details, and some notes on Python and Cython development.
+See PyZMQ's Sphinx `generated documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API
+details, and some notes on Python and Cython development.
 
 Downloading
 ===========
@@ -69,7 +70,8 @@ above. You should not need to use mingw.
 Linux
 -----
 
-On Linux, you will need to do one of the following:
+If you install libzmq to a location other than the default (``/usr/local``) on Linux,
+you will need to do one of the following:
 
 * Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of 0MQ.
 * Build the extension using the ``-rpath`` flag::
@@ -106,7 +108,7 @@ How to release PyZMQ
 
 Currently, we are using the following steps to release PyZMQ:
 
-* Change the version number in ``version.pyx``.
+* Check the version number in ``version.pyx``.
 * Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
   directories.
 * Check ``MANIFEST.in``.
@@ -121,12 +123,12 @@ Currently, we are using the following steps to release PyZMQ:
 * Upload the tarball and ``.zip`` file to github.
 * Branch the release::
 
-    git co -b 2.0.8 master
-    git push origin 2.0.8
+    git checkout -b 2.1.1 master
+    git push origin 2.1.1
 
 * Tag the release::
 
-    git tag -a -m “Tagging release 2.0.8” 2.0.8
+    git tag -a -m "Tagging release 2.1.1" v2.1.1
     git push origin —tags
 
 * Make sure the ``README.rst`` has an updated list of contributors.
