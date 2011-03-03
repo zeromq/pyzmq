@@ -33,6 +33,11 @@ except ImportError:
 
 from zmq.utils.strtypes import bytes, unicode, basestring
 
+try:
+    callable
+except NameError:
+    callable = lambda obj: hasattr(obj, '__call__')
+
 
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
@@ -175,6 +180,7 @@ class ZMQStream(object):
             
             if callback is None, send callbacks are disabled.
         """
+        assert callback is None or callable(callback)
         self._send_callback = stack_context.wrap(callback)
         
     def on_err(self, callback):
@@ -187,6 +193,7 @@ class ZMQStream(object):
         callback : callable
             callback will be passed no arguments.
         """
+        assert callback is None or callable(callback)
         self._errback = stack_context.wrap(callback)
         
                 
