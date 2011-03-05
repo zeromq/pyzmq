@@ -261,8 +261,12 @@ class TestMessage(BaseZMQTestCase):
             shape = shapes[:i]
             A = numpy.random.random(shape)
             m = zmq.Message(A)
-            self.assertEquals(A.data, m.buffer)
-            B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
+            if view.__name__ == 'buffer':
+                self.assertEquals(A.data, m.buffer)
+                B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
+            else:
+                self.assertEquals(memoryview(A), m.buffer)
+                B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEquals((A==B).all(), True)
     
     def test_memoryview(self):
