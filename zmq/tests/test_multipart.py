@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
+from zmq.utils.strtypes import asbytes
 
 from zmq.tests import BaseZMQTestCase
 
@@ -34,7 +35,7 @@ class TestMultipart(BaseZMQTestCase):
     def test_xrep_xreq(self):
         xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
 
-        msg1 = 'message1'.encode()
+        msg1 = asbytes('message1')
         xreq.send(msg1)
         ident = xrep.recv()
         more = xrep.rcvmore()

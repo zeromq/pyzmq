@@ -26,7 +26,7 @@ import time
 import zmq
 from zmq import devices
 from zmq.tests import BaseZMQTestCase
-from zmq.utils.strtypes import (bytes,unicode,basestring)
+from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -70,7 +70,7 @@ class TestDevice(BaseZMQTestCase):
         dev.connect_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = 'hello'.encode()
+        msg = asbytes('hello')
         req.send(msg)
         self.assertEquals(msg, req.recv())
         del dev
@@ -81,7 +81,7 @@ class TestDevice(BaseZMQTestCase):
         dev.connect_out('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = 'hello again'.encode()
+        msg = asbytes('hello again')
         req.send(msg)
         self.assertEquals(msg, req.recv())
         del dev
@@ -95,7 +95,7 @@ class TestDevice(BaseZMQTestCase):
         dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = 'hello'.encode()
+        msg = asbytes('hello')
         req.send(msg)
         self.assertEquals(msg, req.recv())
         del dev
@@ -107,7 +107,7 @@ class TestDevice(BaseZMQTestCase):
         dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = 'hello again'.encode()
+        msg = asbytes('hello again')
         req.send(msg)
         self.assertEquals(msg, req.recv())
         del dev

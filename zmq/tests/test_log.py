@@ -21,14 +21,14 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import logging
 import time
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase
-
 from zmq.log import handlers
-import logging
+from zmq.utils.strtypes import asbytes
+from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -37,7 +37,7 @@ import logging
 class TestPubLog(BaseZMQTestCase):
     
     iface = 'inproc://zmqlog'
-    topic='zmq'.encode()
+    topic= asbytes('zmq')
     
     @property
     def logger(self):
@@ -80,8 +80,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, 'zmq.INFO'.encode())
-        self.assertEquals(msg2, (msg1+'\n').encode())
+        self.assertEquals(topic, asbytes('zmq.INFO'))
+        self.assertEquals(msg2, asbytes(msg1+'\n'))
         logger.removeHandler(handler)
         # handler.socket.close()
     
@@ -103,8 +103,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, 'zmq.INFO'.encode())
-        self.assertEquals(msg2, (msg1+'\n').encode())
+        self.assertEquals(topic, asbytes('zmq.INFO'))
+        self.assertEquals(msg2, asbytes(msg1+'\n'))
         logger.removeHandler(handler)
         # handler.socket.close()
     
@@ -113,14 +113,14 @@ class TestPubLog(BaseZMQTestCase):
         handler.socket.bind(self.iface)
         sub2 = sub.context.socket(zmq.SUB)
         sub2.connect(self.iface)
-        sub2.setsockopt(zmq.SUBSCRIBE, ''.encode())
-        handler.root_topic = 'twoonly'.encode()
+        sub2.setsockopt(zmq.SUBSCRIBE, asbytes(''))
+        handler.root_topic = asbytes('twoonly')
         msg1 = 'ignored'
         logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
         topic,msg2 = sub2.recv_multipart()
-        self.assertEquals(topic, 'twoonly.INFO'.encode())
-        self.assertEquals(msg2, (msg1+'\n').encode())
+        self.assertEquals(topic, asbytes('twoonly.INFO'))
+        self.assertEquals(msg2, asbytes(msg1+'\n'))
         
         
         

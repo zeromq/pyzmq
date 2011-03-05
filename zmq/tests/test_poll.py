@@ -25,6 +25,7 @@ import time
 from unittest import TestCase
 
 import zmq
+from zmq.utils.strtypes import asbytes
 from zmq.tests import PollZMQTestCase
 
 #-----------------------------------------------------------------------------
@@ -53,8 +54,8 @@ class TestPoll(PollZMQTestCase):
         self.assertEquals(socks[s1], zmq.POLLOUT)
         self.assertEquals(socks[s2], zmq.POLLOUT)
         # Now do a send on both, wait and test for zmq.POLLOUT|zmq.POLLIN
-        s1.send('msg1'.encode())
-        s2.send('msg2'.encode())
+        s1.send(asbytes('msg1'))
+        s2.send(asbytes('msg2'))
         wait()
         socks = dict(poller.poll())
         self.assertEquals(socks[s1], zmq.POLLOUT|zmq.POLLIN)
@@ -88,7 +89,7 @@ class TestPoll(PollZMQTestCase):
         self.assertEquals(socks[s2], zmq.POLLOUT)
 
         # Make sure that s2 goes immediately into state 0 after send.
-        s2.send('msg1'.encode())
+        s2.send(asbytes('msg1'))
         socks = dict(poller.poll())
         self.assertEquals(s2 in socks, 0)
 
@@ -103,7 +104,7 @@ class TestPoll(PollZMQTestCase):
         self.assertEquals(socks[s1], zmq.POLLOUT)
 
         # Make sure s1 goes into state 0 after send.
-        s1.send('msg2'.encode())
+        s1.send(asbytes('msg2'))
         socks = dict(poller.poll())
         self.assertEquals(s1 in socks, 0)
 
@@ -125,7 +126,7 @@ class TestPoll(PollZMQTestCase):
 
     def test_pubsub(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
-        s2.setsockopt(zmq.SUBSCRIBE, ''.encode())
+        s2.setsockopt(zmq.SUBSCRIBE, asbytes(''))
 
         # Sleep to allow sockets to connect.
         wait()
@@ -139,7 +140,7 @@ class TestPoll(PollZMQTestCase):
         self.assertEquals(socks[s1], zmq.POLLOUT)
         self.assertEquals(s2 in socks, 0)
         # Make sure that s1 stays in POLLOUT after a send.
-        s1.send('msg1'.encode())
+        s1.send(asbytes('msg1'))
         socks = dict(poller.poll())
         self.assertEquals(socks[s1], zmq.POLLOUT)
 

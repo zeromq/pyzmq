@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
+from zmq.utils.strtypes import asbytes
 
 from zmq.tests import BaseZMQTestCase
 
@@ -29,13 +30,13 @@ from zmq.tests import BaseZMQTestCase
 # Tests
 #-----------------------------------------------------------------------------
 
-x = ' '.encode()
+x = asbytes(' ')
 class TestPair(BaseZMQTestCase):
 
     def test_basic(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
-        msg1 = 'message1'.encode()
+        msg1 = asbytes('message1')
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 

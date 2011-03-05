@@ -31,7 +31,8 @@ if major >= 3:
     bytes = bytes
     unicode = str
     basestring = (bytes, unicode)
-    asbytes = lambda s: s.encode('utf8')
+    asbytes = lambda s: s if isinstance(s, bytes) else unicode(s).encode('utf8')
+
 elif major == 2:
     unicode = unicode
     bytes = str

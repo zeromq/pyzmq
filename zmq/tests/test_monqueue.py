@@ -26,6 +26,7 @@ from unittest import TestCase
 
 import zmq
 from zmq import devices
+from zmq.utils.strtypes import asbytes
 from zmq.tests import BaseZMQTestCase
 
 
@@ -37,7 +38,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
     sockets = []
     pass
     
-    def build_device(self, mon_sub="".encode(), in_prefix='in'.encode(), out_prefix='out'.encode()):
+    def build_device(self, mon_sub=asbytes(""), in_prefix=asbytes('in'), out_prefix=asbytes('out')):
         self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB,
                                             in_prefix, out_prefix)
         alice = self.context.socket(zmq.PAIR)
@@ -66,11 +67,11 @@ class TestMonitoredQueue(BaseZMQTestCase):
         
     def test_reply(self):
         alice, bob, mon = self.build_device()
-        alices = "hello bob".encode().split()
+        alices = asbytes("hello bob").split()
         alice.send_multipart(alices)
         bobs = bob.recv_multipart()
         self.assertEquals(alices, bobs)
-        bobs = "hello alice".encode().split()
+        bobs = asbytes("hello alice").split()
         bob.send_multipart(bobs)
         alices = alice.recv_multipart()
         self.assertEquals(alices, bobs)
@@ -78,11 +79,11 @@ class TestMonitoredQueue(BaseZMQTestCase):
     
     def test_queue(self):
         alice, bob, mon = self.build_device()
-        alices = "hello bob".encode().split()
+        alices = asbytes("hello bob").split()
         alice.send_multipart(alices)
-        alices2 = "hello again".encode().split()
+        alices2 = asbytes("hello again").split()
         alice.send_multipart(alices2)
-        alices3 = "hello again and again".encode().split()
+        alices3 = asbytes("hello again and again").split()
         alice.send_multipart(alices3)
         bobs = bob.recv_multipart()
         self.assertEquals(alices, bobs)
@@ -90,7 +91,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.assertEquals(alices2, bobs)
         bobs = bob.recv_multipart()
         self.assertEquals(alices3, bobs)
-        bobs = "hello alice".encode().split()
+        bobs = asbytes("hello alice").split()
         bob.send_multipart(bobs)
         alices = alice.recv_multipart()
         self.assertEquals(alices, bobs)
@@ -98,67 +99,67 @@ class TestMonitoredQueue(BaseZMQTestCase):
     
     def test_monitor(self):
         alice, bob, mon = self.build_device()
-        alices = "hello bob".encode().split()
+        alices = asbytes("hello bob").split()
         alice.send_multipart(alices)
-        alices2 = "hello again".encode().split()
+        alices2 = asbytes("hello again").split()
         alice.send_multipart(alices2)
-        alices3 = "hello again and again".encode().split()
+        alices3 = asbytes("hello again and again").split()
         alice.send_multipart(alices3)
         bobs = bob.recv_multipart()
         self.assertEquals(alices, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['in'.encode()]+bobs, mons)
+        self.assertEquals([asbytes('in')]+bobs, mons)
         bobs = bob.recv_multipart()
         self.assertEquals(alices2, bobs)
         bobs = bob.recv_multipart()
         self.assertEquals(alices3, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['in'.encode()]+alices2, mons)
-        bobs = "hello alice".encode().split()
+        self.assertEquals([asbytes('in')]+alices2, mons)
+        bobs = asbytes("hello alice").split()
         bob.send_multipart(bobs)
         alices = alice.recv_multipart()
         self.assertEquals(alices, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['in'.encode()]+alices3, mons)
+        self.assertEquals([asbytes('in')]+alices3, mons)
         mons = mon.recv_multipart()
-        self.assertEquals(['out'.encode()]+bobs, mons)
+        self.assertEquals([asbytes('out')]+bobs, mons)
         self.teardown_device()
     
     def test_prefix(self):
-        alice, bob, mon = self.build_device("".encode(), 'foo'.encode(), 'bar'.encode())
-        alices = "hello bob".encode().split()
+        alice, bob, mon = self.build_device(asbytes(""), asbytes('foo'), asbytes('bar'))
+        alices = asbytes("hello bob").split()
         alice.send_multipart(alices)
-        alices2 = "hello again".encode().split()
+        alices2 = asbytes("hello again").split()
         alice.send_multipart(alices2)
-        alices3 = "hello again and again".encode().split()
+        alices3 = asbytes("hello again and again").split()
         alice.send_multipart(alices3)
         bobs = bob.recv_multipart()
         self.assertEquals(alices, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['foo'.encode()]+bobs, mons)
+        self.assertEquals([asbytes('foo')]+bobs, mons)
         bobs = bob.recv_multipart()
         self.assertEquals(alices2, bobs)
         bobs = bob.recv_multipart()
         self.assertEquals(alices3, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['foo'.encode()]+alices2, mons)
-        bobs = "hello alice".encode().split()
+        self.assertEquals([asbytes('foo')]+alices2, mons)
+        bobs = asbytes("hello alice").split()
         bob.send_multipart(bobs)
         alices = alice.recv_multipart()
         self.assertEquals(alices, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['foo'.encode()]+alices3, mons)
+        self.assertEquals([asbytes('foo')]+alices3, mons)
         mons = mon.recv_multipart()
-        self.assertEquals(['bar'.encode()]+bobs, mons)
+        self.assertEquals([asbytes('bar')]+bobs, mons)
         self.teardown_device()
     
     def test_monitor_subscribe(self):
-        alice, bob, mon = self.build_device("out".encode())
-        alices = "hello bob".encode().split()
+        alice, bob, mon = self.build_device(asbytes("out"))
+        alices = asbytes("hello bob").split()
         alice.send_multipart(alices)
-        alices2 = "hello again".encode().split()
+        alices2 = asbytes("hello again").split()
         alice.send_multipart(alices2)
-        alices3 = "hello again and again".encode().split()
+        alices3 = asbytes("hello again and again").split()
         alice.send_multipart(alices3)
         bobs = bob.recv_multipart()
         self.assertEquals(alices, bobs)
@@ -166,11 +167,11 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.assertEquals(alices2, bobs)
         bobs = bob.recv_multipart()
         self.assertEquals(alices3, bobs)
-        bobs = "hello alice".encode().split()
+        bobs = asbytes("hello alice").split()
         bob.send_multipart(bobs)
         alices = alice.recv_multipart()
         self.assertEquals(alices, bobs)
         mons = mon.recv_multipart()
-        self.assertEquals(['out'.encode()]+bobs, mons)
+        self.assertEquals([asbytes('out')]+bobs, mons)
         self.teardown_device()
     
