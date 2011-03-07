@@ -9,6 +9,7 @@ from __future__ import with_statement
 import os
 import sys
 import re
+import traceback
 
 from warnings import warn
 try:
@@ -92,6 +93,18 @@ def check_zmq_version(min_version):
             sys.exit(1)
     except IOError:
         msg = '\n'.join(["Couldn't find zmq.h to check for version compatibility.",
+        "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
+        "This pyzmq requires zeromq >= %s"%sv])
+        warn(msg)
+    except IndexError:
+        msg = '\n'.join(["Couldn't find ZMQ_VERSION macros in zmq.h to check for version compatibility.",
+        "This probably means that you have ZeroMQ <= 2.0.9",
+        "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
+        "This pyzmq requires zeromq >= %s"%sv])
+        warn(msg)
+    except Exception:
+        traceback.print_exc()
+        msg = '\n'.join(["Unexpected Error checking for zmq version.",
         "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
         "This pyzmq requires zeromq >= %s"%sv])
         warn(msg)
