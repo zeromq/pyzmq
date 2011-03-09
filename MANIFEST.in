@@ -13,7 +13,7 @@ graft zmq
 graft perf
 
 exclude setup.cfg
-
+exclude zmq/libzmq*
 # exclude docs/_static
 # exclude docs/_templates
 

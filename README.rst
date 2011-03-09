@@ -8,7 +8,7 @@ This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.1, and targets libzmq-2.1.1rc1. For zeromq
+Current release of pyzmq is 2.1.2, and targets libzmq-2.1.2rc2. For zeromq
 2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
 
 PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
@@ -44,10 +44,16 @@ To build and install this Python package, you will first need to build and
 install the latest development version of 0MQ itself. After you have done
 this, follow these steps:
 
-First, copy the ``setup.cfg.template`` file in this directory to ``setup.cfg``
-and edit the `include_dirs` and `library_dirs` fields of the ``setup.cfg``
-file to point to the directories that contain the library and header file for
-your 0MQ installation.
+Tell pyzmq where zeromq is via the configure subcommand:
+
+    $ python setup.py configure --zmq=/path/to/zeromq2
+
+or the zmq install directory on OSX/Linux:
+
+    $ python setup.py configure --zmq=/usr/local
+
+The argument should be a directory containing a ``lib`` and a ``include`` directory, containing
+``libzmq`` and ``zmq.h`` respectively.
 
 Second, run this command::
 
@@ -60,12 +66,20 @@ on GitHub.
 Windows
 -------
 
-Generally you'll need to add the location of ``libzmq.dll`` to your ``$PATH``.
-Here's Microsoft's docs:
-http://msdn.microsoft.com/en-us/library/7d83bc18(VS.80).aspx on this topic.
+On Windows, libzmq.dll will be copied into the zmq directory, and installed along with pyzmq,
+so you shouldn't need to edit your PATH.
 
 It is best to compile both ØMQ and PyØMQ with Microsoft Visual Studio 2008 or
 above. You should not need to use mingw.
+
+Current testing indicates that running
+
+    $ python setup.py bdist_msi
+
+successfully builds an MSI installer.  Note that if you are on a development version of pyzmq,
+you will need to edit the ``__version__`` in zmq/core/version.pyx and remove the 'dev', because
+the msi builder rejects that as an invalid version for some reason.
+
 
 Linux
 -----
@@ -74,7 +88,7 @@ If you install libzmq to a location other than the default (``/usr/local``) on L
 you will need to do one of the following:
 
 * Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of 0MQ.
-* Build the extension using the ``-rpath`` flag::
+* Build the extension using the ``--rpath`` flag::
 
     $ python setup.py build_ext --rpath=/opt/zeromq-dev/lib --inplace
 
