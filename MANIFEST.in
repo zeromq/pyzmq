@@ -5,9 +5,10 @@ include setup.py
 include setupegg.py
 include zmqversion.py
 
-recursive-include docs *
-recursive-exclude docs _build
-# graft docs
+graft docs
+prune docs/build
+prune docs/gh-pages
+
 graft examples
 graft zmq
 graft perf
@@ -18,5 +19,6 @@ exclude zmq/libzmq*
 # exclude docs/_templates
 
 global-exclude *.so
+global-exclude *.pyd
 global-exclude *.pyc
 global-exclude .git*
