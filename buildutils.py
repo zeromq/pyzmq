@@ -231,7 +231,7 @@ def discover_settings():
 def copy_and_patch_libzmq(ZMQ, libzmq):
     """copy libzmq into source dir, and patch it if necessary.
     
-    This command is necessary prior to running a bdist.
+    This command is necessary prior to running a bdist on Linux or OS X.
     """
     if sys.platform.startswith('win'):
         return
@@ -254,4 +254,15 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
         link = localpath('zmq',libzmq.replace('.1',''))
         if not os.path.exists(link):
             os.symlink(libzmq, link)
+    
+    if sys.platform == 'darwin':
+        # patch install_name on darwin, instead of using rpath
+        cmd = ['install_name_tool', '-id', '@loader_path/../%s'%libzmq, local]
+        try:
+            p = Popen(cmd, stdout=PIPE,stderr=PIPE)
+        except OSError:
+            fatal("install_name_tool not found, cannot patch libzmq for bundling.")
+        out,err = p.communicate()
+        if p.returncode:
+            fatal("Could not patch bundled libzmq install_name: %s"%err, p.returncode)
         

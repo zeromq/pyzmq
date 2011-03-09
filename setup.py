@@ -128,7 +128,9 @@ else:
         # bdist should link against bundled libzmq
         COMPILER_SETTINGS['library_dirs'] = ['zmq']
         if sys.platform == 'darwin':
-            COMPILER_SETTINGS['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
+            pass
+            # unused rpath args for OSX:
+            # COMPILER_SETTINGS['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
         else:
             COMPILER_SETTINGS['runtime_library_dirs'] = ['$ORIGIN/..']
     elif sys.platform != 'darwin':
@@ -225,7 +227,9 @@ class Configure(Command):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
-                settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
+                pass
+                # unused rpath args for OSX:
+                # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
         try:
