@@ -58,7 +58,8 @@ except ImportError:
     nose = None
 
 # local script imports:
-from buildutils import discover_settings, v_str, localpath, savepickle, loadpickle, detect_zmq
+from buildutils import (discover_settings, v_str, localpath, savepickle, loadpickle, detect_zmq,
+                        warn, fatal)
 
 #-----------------------------------------------------------------------------
 # Flags
@@ -84,22 +85,6 @@ elif sys.platform == 'darwin':
 else:
     lib_ext = '.so'
 
-
-#-----------------------------------------------------------------------------
-# Logging (adapted from h5py: http://h5py.googlecode.com)
-#-----------------------------------------------------------------------------
-logger = logging.getLogger()
-logger.addHandler(logging.StreamHandler(sys.stderr))
-
-def debug(what):
-    pass
-
-def fatal(instring, code=1):
-    logger.error("Fatal: "+instring)
-    exit(code)
-
-def warn(instring):
-    logger.error("Warning: "+instring)
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
@@ -230,7 +215,7 @@ class Configure(Command):
             print ("    Custom ZMQ dir:       %s" % (ZMQ,))
             config = detect_zmq(self.tempdir, **COMPILER_SETTINGS)
         except Exception:
-            logger.error("""
+            logging.error("""
     Failed to compile ZMQ test program.  Please check to make sure:
 
     * You have a C compiler installed

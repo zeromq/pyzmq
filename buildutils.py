@@ -36,6 +36,7 @@ pjoin = os.path.join
 # Logging (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
 logger = logging.getLogger()
+logger.addHandler(logging.StreamHandler(sys.stderr))
 
 def debug(what):
     pass
@@ -185,7 +186,6 @@ def get_eargs():
 
     return settings
 
-#
 def get_cfg_args():
     """ Look for options in setup.cfg """
 
@@ -207,7 +207,6 @@ def get_cfg_args():
 
     return settings
 
-#
 def get_cargs():
     """ Look for global options in the command line """
     settings = loadpickle('buildconf.pickle')
