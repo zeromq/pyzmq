@@ -21,9 +21,13 @@
 #    You should have received a copy of the Lesser GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import shutil
 import sys
 import os
 import logging
+import pickle
+from distutils import ccompiler
+from subprocess import Popen, PIPE
 
 try:
     from configparser import ConfigParser
@@ -78,9 +82,6 @@ def detect_zmq(basedir, **compiler_attrs):
         `library_dirs`, `libs`, etc.
     """
 
-    from distutils import ccompiler
-    import subprocess
-
     cc = ccompiler.new_compiler()
     for name, val in compiler_attrs.items():
         setattr(cc, name, val)
@@ -114,8 +115,7 @@ int main(){
     objs = cc.compile([cfile])
     cc.link_executable(objs, efile, extra_preargs=preargs)
 
-    result = subprocess.Popen(efile,
-             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = Popen(efile, stdout=PIPE, stderr=PIPE)
     so, se = result.communicate()
     # for py3k:
     so = so.decode()
@@ -136,11 +136,11 @@ int main(){
     return props
 
 def localpath(*args):
-    return os.path.abspath(reduce(pjoin, (os.path.dirname(__file__),)+args))
+    plist = [os.path.dirname(__file__)]+list(args)
+    return os.path.abspath(pjoin(*plist))
 
 def loadpickle(name):
     """ Load object from pickle file, or None if it can't be opened """
-    import pickle
     name = pjoin('conf', name)
     try:
         f = open(name,'rb')
@@ -157,7 +157,6 @@ def loadpickle(name):
 
 def savepickle(name, data):
     """ Save to pickle file, exiting if it can't be written """
-    import pickle
     if not os.path.exists('conf'):
         os.mkdir('conf')
     name = pjoin('conf', name)
@@ -228,3 +227,31 @@ def discover_settings():
     settings.update(get_eargs())
     settings.update(get_cargs())    # highest priority
     return settings.get('zmq')
+
+def copy_and_patch_libzmq(ZMQ, libzmq):
+    """copy libzmq into source dir, and patch it if necessary.
+    
+    This command is necessary prior to running a bdist.
+    """
+    if sys.platform.startswith('win'):
+        return
+    # copy libzmq into zmq for bdist
+    local = localpath('zmq',libzmq)
+    if ZMQ is None and not os.path.exists(local):
+        fatal("Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
+        "or copy libzmq into zmq/ manually prior to running bdist.")
+    try:
+        lib = pjoin(ZMQ, 'lib', libzmq)
+        print ("copying %s -> %s"%(lib, local))
+        shutil.copy(lib, local)
+    except Exception:
+        if not os.path.exists(local):
+            fatal("Could not copy libzmq into zmq/, which is necessary for bdist. "
+            "Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
+            "or copy libzmq into zmq/ manually.")
+    finally:
+        # link libzmq.dylib -> libzmq.1.dylib
+        link = localpath('zmq',libzmq.replace('.1',''))
+        if not os.path.exists(link):
+            os.symlink(libzmq, link)
+        
