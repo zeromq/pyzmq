@@ -36,8 +36,9 @@ from traceback import print_exc
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
-from distutils.command.sdist import sdist
+from distutils.command.bdist import bdist
 from distutils.command.build_ext import build_ext
+from distutils.command.sdist import sdist
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -57,7 +58,7 @@ except ImportError:
     nose = None
 
 # local script imports:
-import detect
+from buildutils import discover_settings, v_str, localpath, savepickle, loadpickle, detect_zmq
 
 #-----------------------------------------------------------------------------
 # Flags
@@ -74,12 +75,21 @@ release = False # flag for whether to include *.c in package_data
 
 # the minimum zeromq version this will work against:
 min_zmq = (2,1,0)
+
+# set dylib ext:
+if sys.platform.startswith('win'):
+    lib_ext = '.dll'
+elif sys.platform == 'darwin':
+    lib_ext = '.dylib'
+else:
+    lib_ext = '.so'
+
+
 #-----------------------------------------------------------------------------
-# Configuration (adapted from h5py: http://h5py.googlecode.com)
+# Logging (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
 logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler(sys.stderr))
-# --- Convenience functions --------------------------------------------------
 
 def debug(what):
     pass
@@ -91,102 +101,10 @@ def fatal(instring, code=1):
 def warn(instring):
     logger.error("Warning: "+instring)
 
-def localpath(*args):
-    return os.path.abspath(reduce(pjoin, (os.path.dirname(__file__),)+args))
+#-----------------------------------------------------------------------------
+# Configuration (adapted from h5py: http://h5py.googlecode.com)
+#-----------------------------------------------------------------------------
 
-def loadpickle(name):
-    """ Load object from pickle file, or None if it can't be opened """
-    import pickle
-    name = pjoin('conf', name)
-    try:
-        f = open(name,'rb')
-    except IOError:
-        # raise
-        return None
-    try:
-        return pickle.load(f)
-    except Exception:
-        # raise
-        return None
-    finally:
-        f.close()
-
-def savepickle(name, data):
-    """ Save to pickle file, exiting if it can't be written """
-    import pickle
-    if not os.path.exists('conf'):
-        os.mkdir('conf')
-    name = pjoin('conf', name)
-    try:
-        f = open(name, 'wb')
-    except IOError:
-        fatal("Can't open pickle file \"%s\" for writing" % name)
-    try:
-        pickle.dump(data, f, 0)
-    finally:
-        f.close()
-
-def v_str(v_tuple):
-    """turn (2,0,1) into '2.0.1'."""
-    return ".".join(str(x) for x in v_tuple)
-
-# --- Try to discover path ---
-
-def discover_settings():
-    """ Discover custom settings for ZMQ path"""
-
-    def get_eargs():
-        """ Look for options in environment vars """
-
-        settings = {}
-
-        zmq = os.environ.get("ZMQ_DIR", '')
-        if zmq != '':
-            debug("Found environ var ZMQ_DIR=%s" % zmq)
-            settings['zmq'] = zmq
-
-        return settings
-
-    def get_cfg_args():
-        """ Look for options in setup.cfg """
-
-        settings = {}
-        zmq = ''
-        if not os.path.exists('setup.cfg'):
-            return settings
-        cfg = ConfigParser()
-        cfg.read('setup.cfg')
-        if 'build_ext' in cfg.sections() and \
-                    cfg.has_option('build_ext', 'include_dirs'):
-            includes = cfg.get('build_ext', 'include_dirs')
-            include = includes.split(os.pathsep)[0]
-            if include.endswith('include') and os.path.isdir(include):
-                zmq = include[:-8]
-        if zmq != '':
-            debug("Found ZMQ=%s in setup.cfg" % zmq)
-            settings['zmq'] = zmq
-
-        return settings
-
-    def get_cargs():
-        """ Look for global options in the command line """
-        settings = loadpickle('buildconf.pickle')
-        if settings is None:  settings = {}
-        for arg in sys.argv[:]:
-            if arg.find('--zmq=') == 0:
-                zmq = arg.split('=')[-1]
-                if zmq.lower() == 'default':
-                    settings.pop('zmq', None)
-                else:
-                    settings['zmq'] = zmq
-                sys.argv.remove(arg)
-        savepickle('buildconf.pickle', settings)
-        return settings
-
-    settings = get_cfg_args()       # lowest priority
-    settings.update(get_eargs())
-    settings.update(get_cargs())    # highest priority
-    return settings.get('zmq')
 
 ZMQ = discover_settings()
 
@@ -224,7 +142,7 @@ else:
 # Extra commands
 #-----------------------------------------------------------------------------
 
-class configure(Command):
+class Configure(Command):
     """Configure command adapted from h5py"""
 
     description = "Discover ZMQ version and features"
@@ -244,9 +162,18 @@ class configure(Command):
         os.mkdir(self.tempdir)
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
-            if ZMQ is None:
+            local_dll = pjoin(self.tempdir, 'libzmq.dll')
+            if ZMQ is None and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
-            shutil.copy(pjoin(ZMQ, 'lib', 'libzmq.dll'), pjoin(self.tempdir, 'libzmq.dll'))
+            
+            try:
+                shutil.copy(pjoin(ZMQ, 'lib', 'libzmq.dll'), local_dll)
+            except Exception:
+                if not os.path.exists(local_dll):
+                    warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
+                    "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
+                    "libzmq into zmq/ manually.")
+            
 
     def erase_tempdir(self):
         import shutil
@@ -274,7 +201,6 @@ class configure(Command):
             fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s'%(zmq or 'unspecified'))
-            fatal()
         pyzmq_version = extract_version().strip('abcdefghijklmnopqrstuvwxyz')
 
         if vs < pyzmq_version:
@@ -285,9 +211,16 @@ class configure(Command):
 
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
-            if zmq is None:
+            local_dll = localpath('zmq','libzmq.dll')
+            if zmq is None and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
-            shutil.copy(pjoin(zmq, 'lib', 'libzmq.dll'), localpath('zmq','libzmq.dll'))
+            try:
+                shutil.copy(pjoin(zmq, 'lib', 'libzmq.dll'), local_dll)
+            except Exception:
+                if not os.path.exists(local_dll):
+                    warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
+                    "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
+                    "libzmq into zmq/ manually.")
 
     def run(self):
         self.create_tempdir()
@@ -295,8 +228,7 @@ class configure(Command):
             print ("*"*42)
             print ("Configure: Autodetecting ZMQ settings...")
             print ("    Custom ZMQ dir:       %s" % (ZMQ,))
-            config = detect.detect_zmq(self.tempdir, **COMPILER_SETTINGS)
-            savepickle('configure.pickle', config)
+            config = detect_zmq(self.tempdir, **COMPILER_SETTINGS)
         except Exception:
             logger.error("""
     Failed to compile ZMQ test program.  Please check to make sure:
@@ -307,6 +239,7 @@ class configure(Command):
     * If ZMQ is not in a default location, supply the argument --zmq=<path>""")
             raise
         else:
+            savepickle('configure.pickle', config)
             print ("    ZMQ version detected: %s" % v_str(config['vers']))
         finally:
             print ("*"*42)
@@ -454,6 +387,21 @@ class CheckSDist(sdist):
                 assert os.path.isfile(cfile), msg
         sdist.run(self)
 
+class CopyingBDist(bdist):
+    """copy libzmq for bdist"""
+    def run(self):
+        libzmq = 'libzmq'+lib_ext
+        # copy libzmq into zmq for bdist
+        try:
+            shutil.copy(pjoin(ZMQ, 'lib', libzmq), localpath('zmq',libzmq))
+        except Exception:
+            if not os.path.exists(localpath('zmq',libzmq)):
+                raise IOError("Could not copy libzmq into zmq/, which is necessary for bdist."
+                "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
+                "libzmq into zmq/ manually.")
+        
+        bdist.run(self)
+
 class CheckingBuildExt(build_ext):
     """Subclass build_ext to get clearer report if Cython is neccessary."""
     
@@ -498,7 +446,7 @@ COMPILER_SETTINGS['extra_compile_args'] = extra_flags
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': configure}
+            'configure': Configure, 'bdist': CopyingBDist}
 
 COMPILER_SETTINGS['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
 
@@ -588,8 +536,8 @@ if release:
     for pkg,data in package_data.items():
         data.append('*.c')
 
-if sys.platform.startswith('win'):
-    package_data['zmq'].append('libzmq.dll')
+if sys.platform.startswith('win') or 'bdist' in [ s.lower() for s in sys.argv ]:
+    package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
     """extract pyzmq version from core/version.pyx, so it's not multiply defined"""
