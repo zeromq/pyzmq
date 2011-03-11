@@ -256,7 +256,8 @@ class TestMessage(BaseZMQTestCase):
             import numpy
         except ImportError:
             raise SkipTest
-        shapes = map(numpy.random.randint, [2]*5,[16]*5)
+        rand = numpy.random.randint
+        shapes = [ rand(2,16) for i in range(5) ]
         for i in range(1,len(shapes)+1):
             shape = shapes[:i]
             A = numpy.random.random(shape)
