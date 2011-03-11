@@ -1,0 +1,10 @@
+These examples use Python2 syntax.  Due to the change in Python from bytestring str objects
+to unicode str objects, 2to3 does not perform an adequate transform of the code.  Examples
+can be valid on both Python2.5 and Python3, but such code is less readable than it should be.
+
+As a result, the Python3 examples are kept in a separate repo:
+
+https://github.com/minrk/pyzmq-py3k-examples
+
+
+The differences are very small, but important.
