@@ -32,6 +32,7 @@ from __future__ import with_statement
 
 import copy
 import os
+import re
 import shutil
 import sys
 from traceback import print_exc
@@ -547,7 +548,12 @@ def extract_version():
         while not line.startswith("__version__"):
             line = f.readline()
     exec(line, globals())
-    return __version__
+    if 'bdist_msi' in sys.argv:
+        # msi has strict version requirements, which requires that
+        # we strip any dev suffix
+        return re.match(r'\d+(\.\d+)+', __version__).group()
+    else:
+        return __version__
 
 #-----------------------------------------------------------------------------
 # Main setup
