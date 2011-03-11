@@ -17,28 +17,30 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import sys
 import time
 import zmq
 
-def main ():
-    use_poll = '-p' in sys.argv
-    use_copy = '-c' in sys.argv
-    if use_copy:
-        sys.argv.remove('-c')
-    if use_poll:
-        sys.argv.remove('-p')
 
-    if len (sys.argv) != 4:
-        print 'usage: local_thr [-c use-copy] [-p use-poll] <bind-to> <message-size> <message-count>'
+def main (argv):
+    use_poll = '-p' in argv
+    use_copy = '-c' in argv
+    if use_copy:
+        argv.remove('-c')
+    if use_poll:
+        argv.remove('-p')
+
+    if len (argv) != 4:
+        print ('usage: local_thr [-c use-copy] [-p use-poll] <bind-to> <message-size> <message-count>')
         sys.exit(1)
 
     try:
-        bind_to = sys.argv[1]
-        message_size = int(sys.argv[2])
-        message_count = int(sys.argv[3])
-    except (ValueError, OverflowError), e:
-        print 'message-size and message-count must be integers'
+        bind_to = argv[1]
+        message_size = int(argv[2])
+        message_count = int(argv[3])
+    except (ValueError, OverflowError):
+        print ('message-size and message-count must be integers')
         sys.exit(1)
 
     ctx = zmq.Context()
@@ -46,7 +48,8 @@ def main ():
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
-    s.setsockopt(zmq.SUBSCRIBE , "");
+    # remove the b for Python2.5:
+    s.setsockopt(zmq.SUBSCRIBE , b'')
 
     if use_poll:
         p = zmq.Poller()
@@ -54,43 +57,36 @@ def main ():
 
     s.bind(bind_to)
 
+    watch = zmq.Stopwatch()
+    block = zmq.NOBLOCK if use_poll else 0
+    
     # Wait for the other side to connect.
-    time.sleep(2.0)
-
     msg = s.recv()
     assert len (msg) == message_size
-
-    clock = zmq.Stopwatch()
-    start = 0
-    clock.start()
-    # start = time.clock()
-
-    for i in range (1, message_count):
+    
+    watch.start()
+    for i in range (message_count-1):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
-        assert len(msg) == message_size
+        msg = s.recv(block, copy=use_copy)
+    elapsed = watch.stop()
 
-    end = clock.stop()
-    # end = time.clock()
-
-    elapsed = (end - start)
-    # elapsed = (end - start) * 1000000 # use with time.clock
     if elapsed == 0:
-    	elapsed = 1
-    throughput = (1000000.0 * float(message_count)) / float(elapsed)
-    megabits = float(throughput * message_size * 8) / 1000000
+        elapsed = 1
+    
+    throughput = (1e6 * float(message_count)) / float(elapsed)
+    megabits = float(throughput * message_size * 8) / 1e6
 
-    print "message size: %.0f [B]" % (message_size, )
-    print "message count: %.0f" % (message_count, )
-    print "mean throughput: %.0f [msg/s]" % (throughput, )
-    print "mean throughput: %.3f [Mb/s]" % (megabits, )
+    print ("message size: %i [B]" % (message_size, ))
+    print ("message count: %i" % (message_count, ))
+    print ("mean throughput: %.0f [msg/s]" % (throughput, ))
+    print ("mean throughput: %.3f [Mb/s]" % (megabits, ))
 
-    # Let the context finish messaging before ending.
-    # You may need to increase this time for longer or many messages.
-    time.sleep(2.0)
+    s.close()
+    ctx.term()
+    return throughput
 
 if __name__ == "__main__":
-    main ()
+    main (sys.argv)
 

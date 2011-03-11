@@ -22,72 +22,75 @@ import time
 import zmq
 
 
-def main ():
-    use_poll = '-p' in sys.argv
-    use_copy = '-c' in sys.argv
+def main (argv):
+    use_poll = '-p' in argv
+    use_copy = '-c' in argv
     if use_copy:
-        sys.argv.remove('-c')
+        argv.remove('-c')
     if use_poll:
-        sys.argv.remove('-p')
+        argv.remove('-p')
 
-    if len(sys.argv) != 4:
-        print 'usage: remote_lat [-c use-copy] [-p use-poll] <connect-to> <message-size> <roundtrip-count>'
+    if len(argv) != 4:
+        print ('usage: remote_lat [-c use-copy] [-p use-poll] <connect-to> <message-size> <roundtrip-count>')
         sys.exit(1)
 
     try:
-        connect_to = sys.argv[1]
-        message_size = int(sys.argv[2])
-        roundtrip_count = int(sys.argv[3])
-    except (ValueError, OverflowError), e:
-        print 'message-size and message-count must be integers'
+        connect_to = argv[1]
+        message_size = int(argv[2])
+        roundtrip_count = int(argv[3])
+    except (ValueError, OverflowError):
+        print ('message-size and message-count must be integers')
         sys.exit(1)
 
     ctx = zmq.Context()
     s = ctx.socket(zmq.REQ)
-    print connect_to
+    s.setsockopt(zmq.LINGER, -1)
+    print (connect_to)
     s.connect(connect_to)
-
     if use_poll:
         p = zmq.Poller()
         p.register(s)
 
-    msg = ' ' * message_size
+    # remove the b for Python2.5:
+    msg = b' ' * message_size
 
-    clock = zmq.Stopwatch()
+    watch = zmq.Stopwatch()
     start = 0
-    clock.start()
-    # start = time.clock()
+
+    block = zmq.NOBLOCK if use_poll else 0
+    
+    watch.start()
 
     for i in range (0, roundtrip_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send(msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        s.send(msg, block, copy=use_copy)
 
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        msg = s.recv(block, copy=use_copy)
+        
         assert len (msg) == message_size
 
-    end = clock.stop()
-    # end = time.clock()
+    elapsed = watch.stop()
 
-    time.sleep(1)
+    # remove the b for Python2.5:
+    t = s.send(b'done', copy=False, track=True)
+    t.wait()
 
-    elapsed = (end - start)
-    # elapsed = (end - start) * 1000000 # use with time.clock
     latency = elapsed / (roundtrip_count * 2)
 
-    print "message size: %.0f [B]" % (message_size, )
-    print "roundtrip count: %.0f" % (roundtrip_count, )
-    print "mean latency: %.3f [us]" % (latency, )
+    print ("message size: %i [B]" % (message_size, ))
+    print ("roundtrip count: %i" % (roundtrip_count, ))
+    print ("mean latency: %.3f [us]" % (latency, ))
 
-    # Let the context finish messaging before ending.
-    # You may need to increase this time for longer or many messages.
-    time.sleep(2.0)
+    s.close()
+    ctx.term()
+    return latency
 
 if __name__ == "__main__":
-    main ()
+    main (sys.argv)
 
 

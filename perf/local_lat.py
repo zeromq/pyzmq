@@ -21,24 +21,25 @@ import sys
 import time
 import zmq
 
-def main():
-    use_poll = '-p' in sys.argv
-    use_copy = '-c' in sys.argv
-    if use_copy:
-        sys.argv.remove('-c')
-    if use_poll:
-        sys.argv.remove('-p')
 
-    if len (sys.argv) != 4:
-        print 'usage: local_lat [-c use-copy] [-p use-poll] <bind-to> <message-size> <roundtrip-count>'
+def main(argv):
+    use_poll = '-p' in argv
+    use_copy = '-c' in argv
+    if use_copy:
+        argv.remove('-c')
+    if use_poll:
+        argv.remove('-p')
+
+    if len (argv) != 4:
+        print ('usage: local_lat [-c use-copy] [-p use-poll] <bind-to> <message-size> <roundtrip-count>')
         sys.exit (1)
 
     try:
-        bind_to = sys.argv[1]
-        message_size = int(sys.argv[2])
-        roundtrip_count = int(sys.argv[3])
-    except (ValueError, OverflowError), e:
-        print 'message-size and roundtrip-count must be integers'
+        bind_to = argv[1]
+        message_size = int(argv[2])
+        roundtrip_count = int(argv[3])
+    except (ValueError, OverflowError):
+        print ('message-size and roundtrip-count must be integers')
         sys.exit(1)
 
     ctx = zmq.Context()
@@ -49,22 +50,27 @@ def main():
         p.register(s)
 
     s.bind(bind_to)
-
+    
+    block = zmq.NOBLOCK if use_poll else 0
+    
     for i in range(0, roundtrip_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLIN)
-        msg = s.recv(zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        msg = s.recv(block, copy=use_copy)
         assert len(msg) == message_size
 
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send(msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
-
-    # Let the context finish messaging before ending.
-    # You may need to increase this time for longer or many messages.
-    time.sleep(2.0)
+        s.send(msg, block, copy=use_copy)
+    
+    msg = s.recv()
+    # remove the b for Python2.5:
+    assert msg == b'done'
+    
+    s.close()
+    ctx.term()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

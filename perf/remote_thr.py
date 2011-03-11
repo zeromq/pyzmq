@@ -18,27 +18,28 @@
 #
 
 import sys
-import zmq
 import time
+import zmq
 
-def main ():
-    use_poll = '-p' in sys.argv
-    use_copy = '-c' in sys.argv
+
+def main (argv):
+    use_poll = '-p' in argv
+    use_copy = '-c' in argv
     if use_copy:
-        sys.argv.remove('-c')
+        argv.remove('-c')
     if use_poll:
-        sys.argv.remove('-p')
+        argv.remove('-p')
 
-    if len (sys.argv) != 4:
-        print 'usage: remote_thr [-c use-copy] [-p use-poll] <connect-to> <message-size> <message-count>'
+    if len (argv) != 4:
+        print ('usage: remote_thr [-c use-copy] [-p use-poll] <connect-to> <message-size> <message-count>')
         sys.exit(1)
 
     try:
-        connect_to = sys.argv[1]
-        message_size = int(sys.argv[2])
-        message_count = int(sys.argv[3])
-    except (ValueError, OverflowError), e:
-        print 'message-size and message-count must be integers'
+        connect_to = argv[1]
+        message_size = int(argv[2])
+        message_count = int(argv[3])
+    except (ValueError, OverflowError):
+        print ('message-size and message-count must be integers')
         sys.exit(1)
 
     ctx = zmq.Context()
@@ -52,21 +53,19 @@ def main ():
         p.register(s)
 
     s.connect(connect_to)
-
-    # Wait for this side to connect.
-    time.sleep(2.0)
-
-    msg = ' ' * message_size
-
-    for i in range(0, message_count):
+    
+    # remove the b for Python2.5:
+    msg = zmq.Message(b' ' * message_size)
+    block = zmq.NOBLOCK if use_poll else 0
+    
+    for i in range(message_count):
         if use_poll:
             res = p.poll()
             assert(res[0][1] & zmq.POLLOUT)
-        s.send(msg, zmq.NOBLOCK if use_poll else 0, copy=use_copy)
+        s.send(msg, block, copy=use_copy)
 
-    # Let the context finish messaging before ending.
-    # You may need to increase this time for longer or many messages.
-    time.sleep(2.0)
+    s.close()
+    ctx.term()
 
 if __name__ == "__main__":
-    main ()
+    main (sys.argv)
