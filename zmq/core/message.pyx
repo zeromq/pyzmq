@@ -30,7 +30,7 @@ cdef extern from "pyversion_compat.h":
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport Py_DECREF, Py_INCREF
 
-from buffers cimport asbuffer_r, frombuffer_r, viewfromobject_r
+from buffers cimport asbuffer_r, viewfromobject_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -260,9 +260,7 @@ cdef class Message:
     # buffer interface code adapted from petsc4py by Lisandro Dalcin, a BSD project
     
     def __getbuffer__(self, Py_buffer* buffer, int flags):
-        """newstyle (memoryview) interface"""
-        # cdef char *data_c = NULL
-        # cdef Py_ssize_t data_len_c
+        # new-style (memoryview) buffer interface
         with nogil:
             buffer.buf = zmq_msg_data(&self.zmq_msg)
             buffer.len = zmq_msg_size(&self.zmq_msg)
@@ -278,14 +276,14 @@ cdef class Message:
         buffer.internal = NULL
     
     def __getsegcount__(self, Py_ssize_t *lenp):
-        """required for getreadbuffer"""
+        # required for getreadbuffer
         if lenp != NULL:
             with nogil:
                 lenp[0] = zmq_msg_size(&self.zmq_msg)
         return 1
     
     def __getreadbuffer__(self, Py_ssize_t idx, void **p):
-        """oldstyle (buffer) interface"""
+        # old-style (buffer) interface
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c
         if idx != 0:
