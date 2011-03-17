@@ -207,18 +207,17 @@ def dotc(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.c'))
 
 czmq = pxd('core', 'czmq')
-allocate = pxd('utils', 'allocate')
 buffers = pxd('utils', 'buffers')
 
 submodules = dict(
     core = {'constants': [czmq],
             'error':[czmq],
-            'poll':[czmq, allocate], 
+            'poll':[czmq], 
             'stopwatch':[czmq],
             'context':[pxd('core', 'socket'), czmq],
             'message':[czmq, buffers],
             'socket':[pxd('core', 'context'), pxd('core', 'message'), 
-                      czmq, allocate, buffers],
+                      czmq, buffers],
             'device':[czmq],
             'version':[czmq],
     },
