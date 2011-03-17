@@ -290,5 +290,24 @@ class TestMessage(BaseZMQTestCase):
         s2 = buf.tobytes()
         self.assertEquals(s2,s)
         self.assertEquals(m.bytes,s)
-        
+    
+    def test_noncopying_recv(self):
+        """check for clobbering message buffers"""
+        null = b'\0'*64
+        sa,sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        for i in range(32):
+            # try a few times
+            sb.send(null, copy=False)
+            m = sa.recv(copy=False)
+            mb = m.bytes
+            # buf = view(m)
+            buf = m.buffer
+            del m
+            for i in range(5):
+                ff='\xff'*(40 + i*10)
+                sb.send(ff, copy=False)
+                m2 = sa.recv(copy=False)
+                self.assertEquals(bytes(buf), null)
+                self.assertEquals(mb, null)
+                self.assertEquals(m2.bytes, ff)
 

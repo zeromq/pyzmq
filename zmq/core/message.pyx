@@ -256,7 +256,51 @@ cdef class Message:
         rc = zmq_msg_close(&self.zmq_msg)
         if rc != 0:
             raise ZMQError()
-
+    
+    # buffer interface code adapted from petsc4py by Lisandro Dalcin, a BSD project
+    
+    def __getbuffer__(self, Py_buffer* buffer, int flags):
+        """newstyle (memoryview) interface"""
+        # cdef char *data_c = NULL
+        # cdef Py_ssize_t data_len_c
+        with nogil:
+            buffer.buf = zmq_msg_data(&self.zmq_msg)
+            buffer.len = zmq_msg_size(&self.zmq_msg)
+        
+        buffer.obj = self
+        buffer.readonly = 1
+        buffer.format = "B"
+        buffer.ndim = 0
+        buffer.shape = NULL
+        buffer.strides = NULL
+        buffer.suboffsets = NULL
+        buffer.itemsize = 1
+        buffer.internal = NULL
+    
+    def __getsegcount__(self, Py_ssize_t *lenp):
+        """required for getreadbuffer"""
+        if lenp != NULL:
+            with nogil:
+                lenp[0] = zmq_msg_size(&self.zmq_msg)
+        return 1
+    
+    def __getreadbuffer__(self, Py_ssize_t idx, void **p):
+        """oldstyle (buffer) interface"""
+        cdef char *data_c = NULL
+        cdef Py_ssize_t data_len_c
+        if idx != 0:
+            raise SystemError("accessing non-existent buffer segment")
+        # read-only, because we don't want to allow
+        # editing of the message in-place
+        with nogil:
+            data_c = <char *>zmq_msg_data(&self.zmq_msg)
+            data_len_c = zmq_msg_size(&self.zmq_msg)
+        if p != NULL:
+            p[0] = <void*>data_c
+        return data_len_c
+    
+    # end buffer interface
+    
     def __copy__(self):
         """Create a shallow copy of the message.
 
@@ -327,22 +371,14 @@ cdef class Message:
             raise ValueError("Not a tracked message")
         return self.tracker.wait(timeout=timeout)
 
-    
-    cdef object _getbuffer(self):
+    cdef inline object _getbuffer(self):
         """Create a Python buffer/view of the message data.
 
         This will be called only once, the first time the ``buffer`` property
         is accessed. Subsequent calls use a cached copy.
         """
-        cdef char *data_c = NULL
-        cdef Py_ssize_t data_len_c
-        # read-only, because we don't want to allow
-        # editing of the message in-place
         if self._data is None:
-            # return buffer on input object, to preserve refcounting
-            data_c = <char *>zmq_msg_data(&self.zmq_msg)
-            data_len_c = zmq_msg_size(&self.zmq_msg)
-            return frombuffer_r(data_c, data_len_c)
+            return viewfromobject_r(self)
         else:
             return viewfromobject_r(self._data)
     
