@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 
 import sys
+from threading import Thread
 
 from unittest import TestCase
 
@@ -48,17 +49,27 @@ class BaseZMQTestCase(TestCase):
         self.sockets = []
     
     def tearDown(self):
+        contexts = set([self.context])
         while self.sockets:
             sock = self.sockets.pop()
+            contexts.add(sock.context) # in case additional contexts are created
             sock.close()
-        del self.context
-            
+        for ctx in contexts:
+            t = Thread(target=ctx.term)
+            t.start()
+            t.join(timeout=2)
+            if sys.version[:3] == '2.5':
+                t.is_alive = t.isAlive
+            if t.is_alive():
+                raise RuntimeError("context could not terminate, open sockets likely remain in test")
 
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
         s1 = zmq.Socket(self.context, type1)
+        s1.setsockopt(zmq.LINGER, 0)
         port = s1.bind_to_random_port(interface)
         s2 = zmq.Socket(self.context, type2)
+        s2.setsockopt(zmq.LINGER, 0)
         s2.connect('%s:%s' % (interface, port))
         self.sockets.extend([s1,s2])
         return s1, s2
