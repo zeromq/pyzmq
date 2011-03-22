@@ -114,7 +114,7 @@ cdef class MessageTracker(object):
                     raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
-                raise TypeError("Require Eventss or Messages, not %s"%type(obj))
+                raise TypeError("Require Events or Messages, not %s"%type(obj))
     
     @property
     def done(self):
