@@ -62,17 +62,18 @@ class TestPubLog(BaseZMQTestCase):
         ctx = self.context
         handler = handlers.PUBHandler(self.iface)
         self.assertFalse(handler.ctx is ctx)
-        handler.socket.close()
-        
+        self.sockets.append(handler.socket)
+        # handler.ctx.term()
         handler = handlers.PUBHandler(self.iface, self.context)
+        self.sockets.append(handler.socket)
         self.assertTrue(handler.ctx is ctx)
         
         handler.setLevel(logging.DEBUG)
         handler.root_topic = self.topic
         logger.addHandler(handler)
         
-        # handler.socket.close()
         sub = ctx.socket(zmq.SUB)
+        self.sockets.append(sub)
         sub.connect(self.iface)
         sub.setsockopt(zmq.SUBSCRIBE, self.topic)
         import time; time.sleep(0.1)
@@ -83,7 +84,6 @@ class TestPubLog(BaseZMQTestCase):
         self.assertEquals(topic, asbytes('zmq.INFO'))
         self.assertEquals(msg2, asbytes(msg1+'\n'))
         logger.removeHandler(handler)
-        # handler.socket.close()
     
     def test_init_socket(self):
         pub,sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
@@ -96,7 +96,6 @@ class TestPubLog(BaseZMQTestCase):
         self.assertTrue(handler.socket is pub)
         self.assertTrue(handler.ctx is pub.context)
         self.assertTrue(handler.ctx is self.context)
-        # handler.socket.close()
         sub.setsockopt(zmq.SUBSCRIBE, self.topic)
         import time; time.sleep(0.1)
         msg1 = 'message'
@@ -106,12 +105,12 @@ class TestPubLog(BaseZMQTestCase):
         self.assertEquals(topic, asbytes('zmq.INFO'))
         self.assertEquals(msg2, asbytes(msg1+'\n'))
         logger.removeHandler(handler)
-        # handler.socket.close()
     
     def test_root_topic(self):
         logger, handler, sub = self.connect_handler()
         handler.socket.bind(self.iface)
         sub2 = sub.context.socket(zmq.SUB)
+        self.sockets.append(sub2)
         sub2.connect(self.iface)
         sub2.setsockopt(zmq.SUBSCRIBE, asbytes(''))
         handler.root_topic = asbytes('twoonly')
