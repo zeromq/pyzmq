@@ -45,7 +45,7 @@ except ImportError:
 class BaseZMQTestCase(TestCase):
 
     def setUp(self):
-        self.context = zmq.Context()
+        self.context = zmq.Context.instance()
         self.sockets = []
     
     def tearDown(self):

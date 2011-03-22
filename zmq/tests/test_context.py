@@ -59,4 +59,16 @@ class TestContext(BaseZMQTestCase):
         req.close()
         rep.close()
         self.context.term()
+    
+    def test_instance(self):
+        ctx = zmq.Context.instance()
+        c2 = zmq.Context.instance(io_threads=2)
+        self.assertTrue(c2 is ctx)
+        c2.term()
+        c3 = zmq.Context.instance()
+        c4 = zmq.Context.instance()
+        self.assertFalse(c3 is c2)
+        self.assertFalse(c3.closed)
+        self.assertTrue(c3 is c4)
+        
 

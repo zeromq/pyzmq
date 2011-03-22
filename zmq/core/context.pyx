@@ -33,6 +33,7 @@ from constants import *
 # Code
 #-----------------------------------------------------------------------------
 
+_instance = None
 
 cdef class Context:
     """Context(io_threads=1)
@@ -65,6 +66,28 @@ cdef class Context:
                 rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
+
+    # instance method copied from tornado IOLoop.instance
+    @classmethod
+    def instance(cls, int io_threads=1):
+        """Returns a global Context instance.
+
+        Most single-threaded applications have a single, global Context.
+        Use this method instead of passing around Context instances
+        throughout your code.
+
+        A common pattern for classes that depend on Contexts is to use
+        a default argument to enable programs with multiple Contexts
+        but not require the argument for simpler applications:
+
+            class MyClass(object):
+                def __init__(self, context=None):
+                    self.context = context or Context.instance()
+        """
+        global _instance
+        if _instance is None or _instance.closed:
+            _instance = cls(io_threads)
+        return _instance
 
     def term(self):
         """ctx.term()
