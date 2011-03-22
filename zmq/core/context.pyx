@@ -58,6 +58,7 @@ cdef class Context:
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
+        self._sockets = set()
 
     def __dealloc__(self):
         cdef int rc
@@ -66,6 +67,12 @@ cdef class Context:
                 rc = zmq_term(self.handle)
             if rc != 0:
                 raise ZMQError()
+    
+    def __del__(self):
+        self.term()
+    
+    def __contains__(self, s):
+        return s in self._sockets
 
     # instance method copied from tornado IOLoop.instance
     @classmethod
@@ -100,6 +107,9 @@ cdef class Context:
         """
         cdef int rc
         if self.handle != NULL and not self.closed:
+            while self._sockets:
+                s = self._sockets.pop()
+                s.close()
             with nogil:
                 rc = zmq_term(self.handle)
             if rc != 0:

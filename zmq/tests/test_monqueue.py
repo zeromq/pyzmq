@@ -55,14 +55,10 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.device.connect_mon("tcp://127.0.0.1:%i"%mport)
         time.sleep(.2)
         self.device.start()
-        self.sockets.extend([alice, bob, mon])
         return alice, bob, mon
         
     
     def teardown_device(self):
-        for socket in self.sockets:
-            socket.close()
-            del socket
         del self.device
         
     def test_reply(self):

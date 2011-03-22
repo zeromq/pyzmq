@@ -28,5 +28,6 @@ cdef class Context:
     """Manage the lifecycle of a 0MQ context."""
 
     cdef void *handle         # The C handle for the underlying zmq object.
-    cdef public object closed # bool property for a closed context.
+    cdef readonly object closed # bool property for a closed context.
+    cdef public set _sockets # collection of sockets created by this context
 

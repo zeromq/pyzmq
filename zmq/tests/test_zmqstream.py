@@ -26,22 +26,18 @@
 import sys
 import time
 
-from unittest import TestCase
-
 import zmq
 from zmq.eventloop import ioloop, zmqstream
 
-class TestZMQStream(TestCase):
+from zmq.tests import BaseZMQTestCase
+
+class TestZMQStream(BaseZMQTestCase):
     
     def setUp(self):
-        self.context = zmq.Context()
+        self.context = zmq.Context.instance()
         self.socket = self.context.socket(zmq.REP)
         self.loop = ioloop.IOLoop.instance()
         self.stream = zmqstream.ZMQStream(self.socket)
-    
-    def tearDown(self):
-        self.socket.close()
-        self.context.term()
     
     def test_callable_check(self):
         """Ensure callable check works (py3k)."""

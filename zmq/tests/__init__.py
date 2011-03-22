@@ -46,22 +46,19 @@ class BaseZMQTestCase(TestCase):
 
     def setUp(self):
         self.context = zmq.Context.instance()
-        self.sockets = []
     
     def tearDown(self):
-        contexts = set([self.context])
-        while self.sockets:
-            sock = self.sockets.pop()
-            contexts.add(sock.context) # in case additional contexts are created
-            sock.close()
-        for ctx in contexts:
-            t = Thread(target=ctx.term)
-            t.start()
-            t.join(timeout=2)
-            if sys.version[:3] == '2.5':
-                t.is_alive = t.isAlive
-            if t.is_alive():
-                raise RuntimeError("context could not terminate, open sockets likely remain in test")
+        self.terminate_context(self.context)
+    
+    def terminate_context(self, ctx):
+        """terminate a context, but raise an error instead of hang if it fails."""
+        t = Thread(target=ctx.term)
+        t.start()
+        t.join(timeout=2)
+        if sys.version[:3] == '2.5':
+            t.is_alive = t.isAlive
+        if t.is_alive():
+            raise RuntimeError("context could not terminate, open sockets likely remain in test")
 
     def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
@@ -71,7 +68,6 @@ class BaseZMQTestCase(TestCase):
         s2 = zmq.Socket(self.context, type2)
         s2.setsockopt(zmq.LINGER, 0)
         s2.connect('%s:%s' % (interface, port))
-        self.sockets.extend([s1,s2])
         return s1, s2
 
     def ping_pong(self, s1, s2, msg):

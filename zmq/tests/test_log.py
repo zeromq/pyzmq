@@ -41,7 +41,6 @@ class TestPubLog(BaseZMQTestCase):
     
     @property
     def logger(self):
-        # print dir(self)
         logger = logging.getLogger('zmqtest')
         logger.setLevel(logging.DEBUG)
         return logger
@@ -62,10 +61,9 @@ class TestPubLog(BaseZMQTestCase):
         ctx = self.context
         handler = handlers.PUBHandler(self.iface)
         self.assertFalse(handler.ctx is ctx)
-        self.sockets.append(handler.socket)
-        # handler.ctx.term()
+        self.terminate_context(handler.ctx)
+        
         handler = handlers.PUBHandler(self.iface, self.context)
-        self.sockets.append(handler.socket)
         self.assertTrue(handler.ctx is ctx)
         
         handler.setLevel(logging.DEBUG)
@@ -73,7 +71,6 @@ class TestPubLog(BaseZMQTestCase):
         logger.addHandler(handler)
         
         sub = ctx.socket(zmq.SUB)
-        self.sockets.append(sub)
         sub.connect(self.iface)
         sub.setsockopt(zmq.SUBSCRIBE, self.topic)
         import time; time.sleep(0.1)
@@ -110,7 +107,6 @@ class TestPubLog(BaseZMQTestCase):
         logger, handler, sub = self.connect_handler()
         handler.socket.bind(self.iface)
         sub2 = sub.context.socket(zmq.SUB)
-        self.sockets.append(sub2)
         sub2.connect(self.iface)
         sub2.setsockopt(zmq.SUBSCRIBE, asbytes(''))
         handler.root_topic = asbytes('twoonly')
@@ -120,8 +116,6 @@ class TestPubLog(BaseZMQTestCase):
         topic,msg2 = sub2.recv_multipart()
         self.assertEquals(topic, asbytes('twoonly.INFO'))
         self.assertEquals(msg2, asbytes(msg1+'\n'))
-        
-        
         
         logger.removeHandler(handler)
 

@@ -34,11 +34,11 @@ cdef class Socket:
     """A 0MQ socket."""
 
     cdef void *handle           # The C handle for the underlying zmq object.
-    cdef public int socket_type # The 0MQ socket type - REQ,REP, etc.
+    cdef readonly int socket_type # The 0MQ socket type - REQ,REP, etc.
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
-    cdef public object context # The zmq Context object that owns this.
-    cdef public object closed   # bool property for a closed socket.
+    cdef readonly object context # The zmq Context object that owns this.
+    cdef readonly object closed   # bool property for a closed socket.
 
     # cpdef methods for direct-cython access:
     cpdef object send(self, object data, int flags=*, copy=*, track=*)

@@ -41,14 +41,11 @@ except:
 class TestSocket(BaseZMQTestCase):
 
     def test_create(self):
-        ctx = zmq.Context()
-        s = ctx.socket(zmq.PUB)
+        s = self.context.socket(zmq.PUB)
         # Superluminal protocol not yet implemented
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://a')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://a')
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
-        s.close()
-        del ctx
     
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
@@ -104,7 +101,6 @@ class TestSocket(BaseZMQTestCase):
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        self.sockets.extend([a,b])
         u = "çπ§"
         if str is not unicode:
             u = u.decode('utf8')
@@ -129,7 +125,6 @@ class TestSocket(BaseZMQTestCase):
         a = self.context.socket(zmq.XREQ)
         a.setsockopt(zmq.IDENTITY, asbytes("a"))
         b = self.context.socket(zmq.XREP)
-        self.sockets.extend([a,b])
         a.connect(iface)
         time.sleep(0.1)
         p1 = a.send(asbytes('something'), copy=False, track=True)
@@ -172,14 +167,15 @@ class TestSocket(BaseZMQTestCase):
         
 
     def test_close(self):
-        ctx = zmq.Context()
+        ctx = self.context
         s = ctx.socket(zmq.PUB)
+        self.assertTrue(s in ctx)
         s.close()
+        self.assertFalse(s in ctx)
         self.assertRaises(zmq.ZMQError, s.bind, asbytes(''))
         self.assertRaises(zmq.ZMQError, s.connect, asbytes(''))
         self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, asbytes(''))
         self.assertRaises(zmq.ZMQError, s.send, asbytes('asdf'))
         self.assertRaises(zmq.ZMQError, s.recv)
-        del ctx
     
 

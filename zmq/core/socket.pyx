@@ -181,6 +181,7 @@ cdef class Socket:
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
+        context._sockets.add(self)
 
     def __dealloc__(self):
         self.close()
@@ -202,6 +203,8 @@ cdef class Socket:
                 raise ZMQError()
             self.handle = NULL
             self.closed = True
+            if self in self.context._sockets:
+                self.context._sockets.remove(self)
 
     def setsockopt(self, int option, optval):
         """s.setsockopt(option, optval)
