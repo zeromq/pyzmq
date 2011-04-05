@@ -8,8 +8,8 @@ This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.2, and targets libzmq-2.1.2rc2. For zeromq
-2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
+Current release of pyzmq is 2.1.4, and targets libzmq-2.1.4. For zeromq
+2.0.10 or `maint` branch, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
 PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
 as that of your libzmq, but due to the generally growing API of zeromq, your pyzmq should
@@ -76,16 +76,14 @@ Current testing indicates that running
 
     $ python setup.py bdist_msi
 
-successfully builds an MSI installer.  Note that if you are on a development version of pyzmq,
-you will need to edit the ``__version__`` in zmq/core/version.pyx and remove the 'dev', because
-the msi builder rejects that as an invalid version for some reason.
+successfully builds an MSI installer.
 
 
 Linux
 -----
 
 If you install libzmq to a location other than the default (``/usr/local``) on Linux,
-you will need to do one of the following:
+you may need to do one of the following:
 
 * Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of 0MQ.
 * Build the extension using the ``--rpath`` flag::
@@ -137,13 +135,13 @@ Currently, we are using the following steps to release PyZMQ:
 * Upload the tarball and ``.zip`` file to github.
 * Branch the release::
 
-    git checkout -b 2.1.1 master
-    git push origin 2.1.1
+    git checkout -b 2.1.4 master
+    git push origin 2.1.4
 
 * Tag the release::
 
-    git tag -a -m "Tagging release 2.1.1" v2.1.1
-    git push origin —tags
+    git tag -a -m "Tagging release 2.1.4" v2.1.4
+    git push origin --tags
 
 * Make sure the ``README.rst`` has an updated list of contributors.
 * Announce on list.
