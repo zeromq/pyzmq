@@ -37,10 +37,34 @@ install Cython version 0.13 or later.
 Building and installation
 =========================
 
+Eggs
+----
+
+We have binary installers for various Pythons on OSX and (32b) Windows, so you should be
+able to just `easy_install pyzmq` in many situations.  These eggs *include libzmq-2.1.4*,
+so they should be the only thing you need to start using pyzmq.
+
+Eggs are on PyPI, and we have them for OSX 10.6:
+
+  * Python 2.5 (32b intel only)
+  * Python 2.6, 2.7, 3.1, 3.2 (32b and 64b intel)
+
+and win32:
+
+  * Python 2.6, 2.7, 3.1, 3.2
+
+We also have MSI installer packages in our `downloads
+<http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
+
+Our build scripts in 2.1.4 are much improved, so if you would like to provide 64b Windows
+installers, it would be much appreciated. Simply `python setup.py bdist_msi` or `python
+setupegg.py bdist_egg` should work, once you have a 64b libzmq. We simply don't have 64b Windows
+VMs on which to do this.
+
 General
 -------
 
-To build and install this Python package, you will first need to build and
+To build and install pyzmq from source, you will first need to build and
 install the latest development version of 0MQ itself. After you have done
 this, follow these steps:
 
@@ -76,7 +100,8 @@ Current testing indicates that running
 
     $ python setup.py bdist_msi
 
-successfully builds an MSI installer.
+successfully builds a working MSI installer, but we don't have enough Windows deployment
+experience to know where that may fail.
 
 
 Linux
