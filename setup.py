@@ -30,13 +30,17 @@
 #-----------------------------------------------------------------------------
 from __future__ import with_statement
 
-import os, sys, shutil
+import copy
+import os
+import re
+import shutil
+import sys
 from traceback import print_exc
 
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
-from distutils.command.bdist import bdist
+from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
 
@@ -59,7 +63,7 @@ except ImportError:
 
 # local script imports:
 from buildutils import (discover_settings, v_str, localpath, savepickle, loadpickle, detect_zmq,
-                        warn, fatal)
+                        warn, fatal, copy_and_patch_libzmq)
 
 #-----------------------------------------------------------------------------
 # Flags
@@ -72,8 +76,6 @@ if get_default_compiler() in ('unix', 'mingw32'):
 else:
     ignore_common_warnings=False
 
-release = False # flag for whether to include *.c in package_data
-
 # the minimum zeromq version this will work against:
 min_zmq = (2,1,0)
 
@@ -81,10 +83,12 @@ min_zmq = (2,1,0)
 if sys.platform.startswith('win'):
     lib_ext = '.dll'
 elif sys.platform == 'darwin':
-    lib_ext = '.dylib'
+    lib_ext = '.1.dylib'
 else:
-    lib_ext = '.so'
+    lib_ext = '.so.1'
 
+# whether any kind of bdist is happening
+doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
@@ -120,7 +124,18 @@ else:
         # allow macports default
         COMPILER_SETTINGS['include_dirs'] += ['/opt/local/include']
         COMPILER_SETTINGS['library_dirs'] += ['/opt/local/lib']
-    COMPILER_SETTINGS['runtime_library_dirs'] = [os.path.abspath(x) for x in COMPILER_SETTINGS['library_dirs']]
+    
+    if doing_bdist:
+        # bdist should link against bundled libzmq
+        COMPILER_SETTINGS['library_dirs'] = ['zmq']
+        if sys.platform == 'darwin':
+            pass
+            # unused rpath args for OSX:
+            # COMPILER_SETTINGS['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
+        else:
+            COMPILER_SETTINGS['runtime_library_dirs'] = ['$ORIGIN/..']
+    elif sys.platform != 'darwin':
+        COMPILER_SETTINGS['runtime_library_dirs'] = [os.path.abspath(x) for x in COMPILER_SETTINGS['library_dirs']]
 
 
 #-----------------------------------------------------------------------------
@@ -161,7 +176,6 @@ class Configure(Command):
             
 
     def erase_tempdir(self):
-        import shutil
         try:
             shutil.rmtree(self.tempdir)
         except Exception:
@@ -209,20 +223,30 @@ class Configure(Command):
 
     def run(self):
         self.create_tempdir()
+        settings = copy.copy(COMPILER_SETTINGS)
+        if doing_bdist and not sys.platform.startswith('win'):
+            # rpath slightly differently here, because libzmq not in .. but ../zmq:
+            settings['library_dirs'] = ['zmq']
+            if sys.platform == 'darwin':
+                pass
+                # unused rpath args for OSX:
+                # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
+            else:
+                settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
         try:
             print ("*"*42)
             print ("Configure: Autodetecting ZMQ settings...")
             print ("    Custom ZMQ dir:       %s" % (ZMQ,))
-            config = detect_zmq(self.tempdir, **COMPILER_SETTINGS)
+            config = detect_zmq(self.tempdir, **settings)
         except Exception:
-            logging.error("""
+            fatal("""
     Failed to compile ZMQ test program.  Please check to make sure:
 
     * You have a C compiler installed
     * A development version of Python is installed (including header files)
     * A development version of ZeroMQ >= 2.1.0 is installed (including header files)
     * If ZMQ is not in a default location, supply the argument --zmq=<path>""")
-            raise
+            
         else:
             savepickle('configure.pickle', config)
             print ("    ZMQ version detected: %s" % v_str(config['vers']))
@@ -297,7 +321,7 @@ class GitRevisionCommand(Command):
             print (p.stderr.read())
             return
         
-        line = p.stdout.readline().strip()
+        line = p.stdout.readline().decode().strip()
         if not line.startswith('commit'):
             print ("bad commit line: %r"%line)
             return
@@ -326,13 +350,17 @@ class CleanCommand(Command):
     def initialize_options(self):
         self._clean_me = []
         self._clean_trees = []
-        for root, dirs, files in os.walk('zmq'):
+        for root, dirs, files in list(os.walk('zmq'))+list(os.walk('build')):
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd'):
                     self._clean_me.append(pjoin(root, f))
-        for d in [ 'build' ]:
-            if os.path.isdir(d):
-                self._clean_trees.append(d)
+            for d in dirs:
+                if d == '__pycache__':
+                    self._clean_trees.append(pjoin(root, d))
+                # else:
+        # for d in [ 'build' ]:
+        #     if os.path.isdir(d):
+        #         self._clean_trees.append(d)
 
 
     def finalize_options(self):
@@ -342,12 +370,12 @@ class CleanCommand(Command):
         for clean_me in self._clean_me:
             try:
                 os.unlink(clean_me)
-            except:
+            except Exception:
                 pass
         for clean_tree in self._clean_trees:
             try:
                 shutil.rmtree(clean_tree)
-            except:
+            except Exception:
                 pass
 
 
@@ -372,20 +400,15 @@ class CheckSDist(sdist):
                 assert os.path.isfile(cfile), msg
         sdist.run(self)
 
-class CopyingBDist(bdist):
-    """copy libzmq for bdist"""
+class CopyingBuild(build):
+    """subclass of build that copies libzmq if doing bdist."""
+    
     def run(self):
-        libzmq = 'libzmq'+lib_ext
-        # copy libzmq into zmq for bdist
-        try:
-            shutil.copy(pjoin(ZMQ, 'lib', libzmq), localpath('zmq',libzmq))
-        except Exception:
-            if not os.path.exists(localpath('zmq',libzmq)):
-                raise IOError("Could not copy libzmq into zmq/, which is necessary for bdist."
-                "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
-                "libzmq into zmq/ manually.")
-        
-        bdist.run(self)
+        if doing_bdist and not sys.platform.startswith('win'):
+            # always rebuild before bdist, because linking may be wrong:
+            self.run_command('clean')
+            copy_and_patch_libzmq(ZMQ, 'libzmq'+lib_ext)
+        build.run(self)
 
 class CheckingBuildExt(build_ext):
     """Subclass build_ext to get clearer report if Cython is neccessary."""
@@ -394,8 +417,7 @@ class CheckingBuildExt(build_ext):
         for ext in extensions:
           for src in ext.sources:
             if not os.path.exists(src):
-                raise IOError('',
-                """Cython-generated file '%s' not found.
+                fatal("""Cython-generated file '%s' not found.
                 Cython is required to compile pyzmq from a development branch.
                 Please install Cython or download a release package of pyzmq.
                 """%src)
@@ -409,7 +431,6 @@ class CheckingBuildExt(build_ext):
     
     def run(self):
         # check version, to prevent confusing undefined constant errors
-        # check_zmq_version(min_zmq)
         configure = self.distribution.get_command_obj('configure')
         configure.check_zmq_version()
         build_ext.run(self)
@@ -431,7 +452,7 @@ COMPILER_SETTINGS['extra_compile_args'] = extra_flags
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'bdist': CopyingBDist}
+            'configure': Configure, 'build': CopyingBuild}
 
 COMPILER_SETTINGS['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
 
@@ -517,11 +538,7 @@ package_data = {'zmq':['*.pxd'],
                 'zmq.utils':['*.pxd', '*.h'],
 }
 
-if release:
-    for pkg,data in package_data.items():
-        data.append('*.c')
-
-if sys.platform.startswith('win') or 'bdist' in [ s.lower() for s in sys.argv ]:
+if sys.platform.startswith('win') or doing_bdist:
     package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
@@ -531,7 +548,12 @@ def extract_version():
         while not line.startswith("__version__"):
             line = f.readline()
     exec(line, globals())
-    return __version__
+    if 'bdist_msi' in sys.argv:
+        # msi has strict version requirements, which requires that
+        # we strip any dev suffix
+        return re.match(r'\d+(\.\d+)+', __version__).group()
+    else:
+        return __version__
 
 #-----------------------------------------------------------------------------
 # Main setup
