@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.message &mdash; PyZMQ v2.1.1dev documentation</title>
+    <title>core.message &mdash; PyZMQ v2.1.4 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.1dev',
+        VERSION:     '2.1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.poll" href="zmq.core.poll.html" />
     <link rel="prev" title="core.error" href="zmq.core.error.html" /> 
@@ -136,15 +136,15 @@ sends all the messages and it doesn&#8217;t need the buffer of s, 0MQ will call
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>data</strong> : object, optional</p>
 <blockquote>
-<p>any object that provides the buffer interface will be used to
+<div><p>any object that provides the buffer interface will be used to
 construct the 0MQ message data.</p>
-</blockquote>
+</div></blockquote>
 <p><strong>track</strong> : bool [default: False]</p>
 <blockquote class="last">
-<p>whether a <a class="reference internal" href="#messagetracker">MessageTracker</a> should be created to track this object.
+<div><p>whether a <a class="reference internal" href="#messagetracker">MessageTracker</a> should be created to track this object.
 Tracking a message has a cost at creation, because it creates a threadsafe
-Queue object.</p>
-</blockquote>
+Event object.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -176,8 +176,8 @@ returned.</p>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="zmq.core.message.Message.tracker_queue">
-<tt class="descname">tracker_queue</tt><a class="headerlink" href="#zmq.core.message.Message.tracker_queue" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.core.message.Message.tracker_event">
+<tt class="descname">tracker_event</tt><a class="headerlink" href="#zmq.core.message.Message.tracker_event" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -190,20 +190,20 @@ returned.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float [default: -1, wait forever]</p>
 <blockquote>
-<p>Maximum time in (s) to wait before raising NotDone.</p>
-</blockquote>
+<div><p>Maximum time in (s) to wait before raising NotDone.</p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
 <blockquote>
-<p>if done before <cite>timeout</cite></p>
-</blockquote>
+<div><p>if done before <cite>timeout</cite></p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>NotDone</strong> :</p>
 <blockquote class="last">
-<p>if <cite>timeout</cite> reached before I am done.</p>
-</blockquote>
+<div><p>if <cite>timeout</cite> reached before I am done.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -229,12 +229,12 @@ This class allows you to track all of the 0MQ usages of a message.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>*towatch</strong> : tuple of Queue, MessageTracker, Message instances.</p>
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>*towatch</strong> : tuple of Event, MessageTracker, Message instances.</p>
 <blockquote class="last">
-<p>This list of objects to track. This class can track the low-level
-Queues used by the Message class, other MessageTrackers or
-actual Messsages.</p>
-</blockquote>
+<div><p>This list of objects to track. This class can track the low-level
+Events used by the Message class, other MessageTrackers or
+actual Messages.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -261,20 +261,20 @@ actual Messsages.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float [default: -1, wait forever]</p>
 <blockquote>
-<p>Maximum time in (s) to wait before raising NotDone.</p>
-</blockquote>
+<div><p>Maximum time in (s) to wait before raising NotDone.</p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
 <blockquote>
-<p>if done before <cite>timeout</cite></p>
-</blockquote>
+<div><p>if done before <cite>timeout</cite></p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>NotDone</strong> :</p>
 <blockquote class="last">
-<p>if <cite>timeout</cite> reached before I am done.</p>
-</blockquote>
+<div><p>if <cite>timeout</cite> reached before I am done.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -319,7 +319,7 @@ actual Messsages.</p>
         &copy; Copyright 2010, Brian E. Granger.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

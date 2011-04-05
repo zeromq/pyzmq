@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>devices.basedevice &mdash; PyZMQ v2.1.1dev documentation</title>
+    <title>devices.basedevice &mdash; PyZMQ v2.1.4 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.1dev',
+        VERSION:     '2.1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="devices.monitoredqueue" href="zmq.devices.monitoredqueue.html" />
     <link rel="prev" title="core.version" href="zmq.core.version.html" /> 
@@ -226,38 +226,38 @@ connections for the sockets.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>device_type</strong> : int</p>
 <blockquote>
-<p>The 0MQ Device type</p>
-</blockquote>
+<div><p>The 0MQ Device type</p>
+</div></blockquote>
 <p><strong>{in|out}_type</strong> : int</p>
 <blockquote>
-<p>zmq socket types, to be passed later to context.socket(). e.g.
+<div><p>zmq socket types, to be passed later to context.socket(). e.g.
 zmq.PUB, zmq.SUB, zmq.REQ. If out_type is &lt; 0, then in_socket is used
 for both in_socket and out_socket.</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Attributes :</th><td class="field-body"><p class="first"><strong>daemon</strong> : int</p>
 <blockquote>
-<p>sets whether the thread should be run as a daemon
+<div><p>sets whether the thread should be run as a daemon
 Default is true, because if it is false, the thread will not
 exit unless it is killed</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Methods :</th><td class="field-body"><p class="first"><strong>bind_{in_out}(iface)</strong> :</p>
 <blockquote>
-<p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.bind(iface)</span></tt>, to be called in the thread</p>
-</blockquote>
+<div><p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.bind(iface)</span></tt>, to be called in the thread</p>
+</div></blockquote>
 <p><strong>connect_{in_out}(iface)</strong> :</p>
 <blockquote>
-<p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.connect(iface)</span></tt>, to be called in the
+<div><p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.connect(iface)</span></tt>, to be called in the
 thread</p>
-</blockquote>
+</div></blockquote>
 <p><strong>setsockopt_{in_out}(opt,value)</strong> :</p>
 <blockquote class="last">
-<p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.setsockopt(opt,</span> <span class="pre">value)</span></tt>, to be called in
+<div><p>passthrough for <tt class="docutils literal"><span class="pre">{in|out}_socket.setsockopt(opt,</span> <span class="pre">value)</span></tt>, to be called in
 the thread</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -505,7 +505,7 @@ Thread.</p>
         &copy; Copyright 2010, Brian E. Granger.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

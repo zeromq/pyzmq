@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.poll &mdash; PyZMQ v2.1.1dev documentation</title>
+    <title>core.poll &mdash; PyZMQ v2.1.4 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.1dev',
+        VERSION:     '2.1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.socket" href="zmq.core.socket.html" />
     <link rel="prev" title="core.message" href="zmq.core.message.html" /> 
@@ -132,11 +132,11 @@
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int</p>
 <blockquote class="last">
-<p>The timeout in milliseconds. If None, no <cite>timeout</cite> (infinite). This
+<div><p>The timeout in milliseconds. If None, no <cite>timeout</cite> (infinite). This
 is in milliseconds to be compatible with <tt class="docutils literal"><span class="pre">select.poll()</span></tt>. The
 underlying zmq_poll uses microseconds and we convert to that in
 this function.</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -153,13 +153,13 @@ this function.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : zmq.Socket or native socket</p>
 <blockquote>
-<p>A zmq.Socket or any Python object having a <tt class="docutils literal"><span class="pre">fileno()</span></tt> 
+<div><p>A zmq.Socket or any Python object having a <tt class="docutils literal"><span class="pre">fileno()</span></tt> 
 method that returns a valid file descriptor.</p>
-</blockquote>
+</div></blockquote>
 <p><strong>flags</strong> : int</p>
 <blockquote class="last">
-<p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.</p>
-</blockquote>
+<div><p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -176,8 +176,8 @@ method that returns a valid file descriptor.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : Socket</p>
 <blockquote class="last">
-<p>The socket instance to stop polling.</p>
-</blockquote>
+<div><p>The socket instance to stop polling.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -197,28 +197,28 @@ method that returns a valid file descriptor.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int, optional</p>
 <blockquote>
-<p>The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
+<div><p>The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
 compatible with <tt class="docutils literal"><span class="pre">select.select()</span></tt>. The underlying zmq_poll uses microseconds
 and we convert to that in this function.</p>
-</blockquote>
+</div></blockquote>
 <p><strong>rlist</strong> : list of sockets/FDs</p>
 <blockquote>
-<p>sockets/FDs to be polled for read events</p>
-</blockquote>
+<div><p>sockets/FDs to be polled for read events</p>
+</div></blockquote>
 <p><strong>wlist</strong> : list of sockets/FDs</p>
 <blockquote>
-<p>sockets/FDs to be polled for write events</p>
-</blockquote>
+<div><p>sockets/FDs to be polled for write events</p>
+</div></blockquote>
 <p><strong>xlist</strong> : list of sockets/FDs</p>
 <blockquote>
-<p>sockets/FDs to be polled for error events</p>
-</blockquote>
+<div><p>sockets/FDs to be polled for error events</p>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>(rlist, wlist, xlist)</strong> : tuple of lists of sockets (length 3)</p>
 <blockquote class="last">
-<p>Lists correspond to sockets available for read/write/error events respectively.</p>
-</blockquote>
+<div><p>Lists correspond to sockets available for read/write/error events respectively.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -260,7 +260,7 @@ and we convert to that in this function.</p>
         &copy; Copyright 2010, Brian E. Granger.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.zmqstream &mdash; PyZMQ v2.1.1dev documentation</title>
+    <title>eventloop.zmqstream &mdash; PyZMQ v2.1.4 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.1dev',
+        VERSION:     '2.1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
     <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
@@ -211,16 +211,16 @@ used to remove <em>and ignore</em> incoming messages.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flag</strong> : int, default=POLLIN|POLLOUT</p>
 <blockquote>
-<p>0MQ poll flags.
+<div><p>0MQ poll flags.
 If flag|POLLIN,  recv events will be flushed.
 If flag|POLLOUT, send events will be flushed.
 Both flags can be set at once, which is the default.</p>
-</blockquote>
+</div></blockquote>
 <p><strong>limit</strong> : None or int, optional</p>
 <blockquote>
-<p>The maximum number of messages to send or receive.
+<div><p>The maximum number of messages to send or receive.
 Both send and recv count against this limit.</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 <tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>int</strong> : count of events handled (both send and recv)</p>
@@ -241,8 +241,8 @@ with no arguments.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
 <blockquote class="last">
-<p>callback will be passed no arguments.</p>
-</blockquote>
+<div><p>callback will be passed no arguments.</p>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -262,16 +262,16 @@ call to on_recv replaces previously registered callbacks.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
 <blockquote>
-<p>callback must take exactly one argument, which will be a
+<div><p>callback must take exactly one argument, which will be a
 list, as returned by socket.recv_multipart()
 if callback is None, recv callbacks are disabled.</p>
-</blockquote>
+</div></blockquote>
 <p><strong>copy</strong> : bool</p>
 <blockquote>
-<p>copy is passed directly to recv, so if copy is False,
+<div><p>copy is passed directly to recv, so if copy is False,
 callback will receive Message objects. If copy is True,
 then callback will receive bytes/str objects.</p>
-</blockquote>
+</div></blockquote>
 <p class="last"><strong>Returns</strong> : None</p>
 </td>
 </tr>
@@ -298,12 +298,12 @@ on the send.</p>
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
 <blockquote class="last">
-<p>callback must take exactly two arguments, which will be
+<div><p>callback must take exactly two arguments, which will be
 There will be two arguments: the message being sent (always a list), 
 and the return result of socket.send_multipart(msg) - 
 MessageTracker or None.</p>
 <p>if callback is None, send callbacks are disabled.</p>
-</blockquote>
+</div></blockquote>
 </td>
 </tr>
 </tbody>
@@ -418,7 +418,7 @@ See zmq.socket.send_unicode for details.</p>
         &copy; Copyright 2010, Brian E. Granger.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.6.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
