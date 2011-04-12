@@ -285,9 +285,14 @@ class ZMQStream(object):
         # initialize counters
         count = 0
         def update_flag():
+            """Update the poll flag, to prevent registering POLLOUT events
+            if we don't have pending sends."""
             return flag & zmq.POLLIN | (self.sending() and flag & zmq.POLLOUT)
-        
-        self.poller.register(self.socket, update_flag())
+        flag = update_flag()
+        if not flag:
+            # nothing to do
+            return 0
+        self.poller.register(self.socket, flag)
         events = self.poller.poll(0)
         while events and (not limit or count < limit):
             s,event = events[0]
@@ -297,9 +302,13 @@ class ZMQStream(object):
             if event & zmq.POLLOUT and self.sending():
                 self._handle_send()
                 count += 1
-            self.poller.register(self.socket, update_flag())
             
-            events = self.poller.poll(0)
+            flag = update_flag()
+            if flag:
+                self.poller.register(self.socket, flag)
+                events = self.poller.poll(0)
+            else:
+                events = []
         if count: # only bypass loop if we actually flushed something
             # skip send/recv callbacks this iteration
             self._flushed = True
