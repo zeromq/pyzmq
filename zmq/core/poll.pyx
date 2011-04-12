@@ -28,7 +28,7 @@ from socket cimport Socket
 
 import sys
 from zmq.core.error import ZMQError
-from zmq.core.constants import POLLIN,POLLOUT, POLLERR
+from zmq.core.constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -123,6 +123,8 @@ class Poller(object):
         """p.register(socket, flags=POLLIN|POLLOUT)
 
         Register a 0MQ socket or native fd for I/O monitoring.
+        
+        register(s,0) is equivalent to unregister(s).
 
         Parameters
         ----------
@@ -131,8 +133,16 @@ class Poller(object):
             method that returns a valid file descriptor.
         flags : int
             The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
+            If `flags=0`, socket will be unregistered.
         """
-        self.sockets[socket] = flags
+        if flags:
+            self.sockets[socket] = flags
+        elif socket in self.sockets:
+            # uregister sockets registered with no events
+            self.unregister(socket)
+        else:
+            # ignore new sockets with no events
+            pass
 
     def modify(self, socket, flags=POLLIN|POLLOUT):
         """p.modify(socket, flags=POLLIN|POLLOUT)
