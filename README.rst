@@ -40,9 +40,14 @@ Building and installation
 Eggs
 ----
 
-We have binary installers for various Pythons on OSX and (32b) Windows, so you should be
-able to just `easy_install pyzmq` in many situations.  These eggs *include libzmq-2.1.4*,
-so they should be the only thing you need to start using pyzmq.
+We have binary installers for various Pythons on OSX and (32b) Windows, so you should be able to
+just `easy_install pyzmq` in many situations. These eggs *include libzmq-2.1.4*, so they should
+be the only thing you need to start using pyzmq, but we simply don't have the experience to know
+when and where these installers will not work.
+
+If a binary installer fails for you, please `tell us <https://github.com/zeromq/pyzmq/issues>`_
+about your system and the failure, so that we can try to fix it in later releases, and fall back
+on building from source.
 
 Eggs are on PyPI, and we have them for OSX 10.6:
 
@@ -56,19 +61,19 @@ and win32:
 We also have MSI installer packages in our `downloads
 <http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
 
-Our build scripts in 2.1.4 are much improved, so if you would like to provide 64b Windows
-installers, it would be much appreciated. Simply `python setup.py bdist_msi` or `python
-setupegg.py bdist_egg` should work, once you have a 64b libzmq. We simply don't have 64b Windows
-VMs on which to do this.
+Our build scripts in 2.1.4 are much improved, so if you would like to contribute 64b Windows
+installers, or have any improvements on existing releases, they would be much appreciated.
+Simply `python setup.py bdist_msi` or `python setupegg.py bdist_egg` *should* work, once you
+have a 64b libzmq and Python. We simply don't have the VMs or time in which to do this
+ourselves.
 
 General
 -------
 
-To build and install pyzmq from source, you will first need to build and
-install the latest development version of 0MQ itself. After you have done
-this, follow these steps:
+To build and install pyzmq from source, you will first need to build libzmq. 
+After you have done this, follow these steps:
 
-Tell pyzmq where zeromq is via the configure subcommand:
+Tell pyzmq where libzmq is via the configure subcommand:
 
     $ python setup.py configure --zmq=/path/to/zeromq2
 
@@ -77,7 +82,10 @@ or the zmq install directory on OSX/Linux:
     $ python setup.py configure --zmq=/usr/local
 
 The argument should be a directory containing a ``lib`` and a ``include`` directory, containing
-``libzmq`` and ``zmq.h`` respectively.
+``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
+and current libzmq into the same parent directory, this would be:
+
+    $ python setup.py configure --zmq=../zeromq-2.1.4
 
 Second, run this command::
 
@@ -93,8 +101,7 @@ Windows
 On Windows, libzmq.dll will be copied into the zmq directory, and installed along with pyzmq,
 so you shouldn't need to edit your PATH.
 
-It is best to compile both ØMQ and PyØMQ with Microsoft Visual Studio 2008 or
-above. You should not need to use mingw.
+It is best to compile both ØMQ and PyØMQ with Microsoft Visual Studio 2008. You should not need to use mingw.
 
 Current testing indicates that running
 
