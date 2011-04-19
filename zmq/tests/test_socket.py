@@ -97,6 +97,7 @@ class TestSocket(BaseZMQTestCase):
     def test_sockopt_roundtrip(self):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)
+        self.sockets.append(p)
         self.assertEquals(p.getsockopt(zmq.HWM), 0)
         p.setsockopt(zmq.HWM, 11)
         self.assertEquals(p.getsockopt(zmq.HWM), 11)
@@ -124,7 +125,6 @@ class TestSocket(BaseZMQTestCase):
         a = self.context.socket(zmq.XREQ)
         port = a.bind_to_random_port(addr)
         a.close()
-        del a 
         iface = "%s:%i"%(addr,port)
         a = self.context.socket(zmq.XREQ)
         a.setsockopt(zmq.IDENTITY, asbytes("a"))
