@@ -117,6 +117,11 @@ else:
        'include_dirs'   : [],
        'library_dirs'   : [],
     }
+    
+    # add pthread on freebsd
+    if sys.platform.startswith('freebsd'):
+        COMPILER_SETTINGS['libraries'].append('pthread')
+    
     if ZMQ is not None:
         COMPILER_SETTINGS['include_dirs'] += [pjoin(ZMQ, 'include')]
         COMPILER_SETTINGS['library_dirs'] += [pjoin(ZMQ, 'lib')]
