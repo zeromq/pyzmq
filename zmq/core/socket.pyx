@@ -390,8 +390,8 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def bind_to_random_port(self, addr, min_port=2000, max_port=20000, max_tries=100):
-        """s.bind_to_random_port(addr, min_port=2000, max_port=20000, max_tries=100)
+    def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
+        """s.bind_to_random_port(addr, min_port=49152, max_port=65536, max_tries=100)
 
         Bind this socket to a random port in a range.
 
@@ -400,11 +400,11 @@ cdef class Socket:
         addr : str
             The address string without the port to pass to ``Socket.bind()``.
         min_port : int, optional
-            The minimum port in the range of ports to try.
+            The minimum port in the range of ports to try (inclusive).
         max_port : int, optional
-            The maximum port in the range of ports to try.
+            The maximum port in the range of ports to try (exclusive).
         max_tries : int, optional
-            The number of attempt to bind.
+            The maximum number of bind attempts to make.
 
         Returns
         -------
@@ -416,7 +416,7 @@ cdef class Socket:
         ZMQBindError
             if `max_tries` reached before successful bind
         """
-        for i in range(max_tries):
+        for i in xrange(max_tries):
             try:
                 port = random.randrange(min_port, max_port)
                 self.bind('%s:%s' % (addr, port))
