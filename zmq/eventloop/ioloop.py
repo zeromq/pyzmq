@@ -26,7 +26,7 @@ import traceback
 from zmq.eventloop import stack_context
 from zmq.utils.strtypes import asbytes
 
-def install_zmq_eventloop():
+def install():
     """Install the zmq eventloop as the tornado eventloop.
     """
     import tornado.ioloop
