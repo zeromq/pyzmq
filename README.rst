@@ -201,3 +201,4 @@ The following people have contributed to the project:
 * spez (steve AT hipmunk DOT com)
 * Thomas Kluyver (takowl AT gmail DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
+* Daniel Truemper (truemped AT googlemail DOT com)
