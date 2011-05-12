@@ -25,7 +25,7 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
 
 #-----------------------------------------------------------------------------
@@ -34,6 +34,11 @@ from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
 
 
 class TestDevice(BaseZMQTestCase):
+    
+    def setUp(self):
+        if int(zmq.zmq_version()[0]) >= 3:
+            raise SkipTest("Device removed from libzmq3")
+        BaseZMQTestCase.setUp(self)
 
     def test_device_types(self):
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
@@ -43,8 +48,8 @@ class TestDevice(BaseZMQTestCase):
     
     def test_device_attributes(self):
         dev = devices.Device(zmq.FORWARDER, zmq.SUB, zmq.PUB)
-        self.assert_(dev.in_type == zmq.SUB)
-        self.assert_(dev.out_type == zmq.PUB)
+        self.assertEquals(dev.in_type, zmq.SUB)
+        self.assertEquals(dev.out_type, zmq.PUB)
         self.assertEquals(dev.device_type, zmq.FORWARDER)
         self.assertEquals(dev.daemon, True)
         del dev

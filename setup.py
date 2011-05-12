@@ -198,6 +198,8 @@ class Configure(Command):
         if config is None or config['options'] != COMPILER_SETTINGS:
             self.run()
             config = self.config
+        else:
+            self.config = config
 
         vers = config['vers']
         vs = v_str(vers)
@@ -355,13 +357,21 @@ class CleanCommand(Command):
     def initialize_options(self):
         self._clean_me = []
         self._clean_trees = []
-        for root, dirs, files in list(os.walk('zmq'))+list(os.walk('build')):
+        for root, dirs, files in list(os.walk('zmq')):
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd'):
                     self._clean_me.append(pjoin(root, f))
             for d in dirs:
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
+        
+        for d in ('build', 'conf'):
+            if os.path.exists(d):
+                self._clean_trees.append(d)
+        
+        bundled = glob(pjoin('zmq', 'libzmq*'))
+        self._clean_me.extend(bundled)
+        
                 # else:
         # for d in [ 'build' ]:
         #     if os.path.isdir(d):
@@ -475,6 +485,7 @@ buffers = pxd('utils', 'buffers')
 message = pxd('core', 'message')
 context = pxd('core', 'context')
 socket = pxd('core', 'socket')
+monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = dict(
     core = {'constants': [czmq],
@@ -488,7 +499,7 @@ submodules = dict(
             'version':[czmq],
     },
     devices = {
-            'monitoredqueue':[buffers, czmq],
+            'monitoredqueue':[buffers, czmq, monqueue],
     },
     utils = {
             'initthreads':[czmq]

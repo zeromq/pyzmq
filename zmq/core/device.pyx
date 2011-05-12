@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport zmq_device
+from czmq cimport ZMQ_VERSION_MAJOR, zmq_device
 from zmq.core.socket cimport Socket as cSocket
 
 #-----------------------------------------------------------------------------
@@ -45,10 +45,14 @@ def device(int device_type, cSocket isocket, cSocket osocket):
         The Socket instance for the outbound traffic.
     """
     cdef int result = 0
+    if ZMQ_VERSION_MAJOR >= 3:
+        raise NotImplementedError("zmq_device has been removed from libzmq-3")
     with nogil:
         result = zmq_device(device_type, isocket.handle, osocket.handle)
     return result
 
-
-__all__ = ['device']
+if ZMQ_VERSION_MAJOR >= 3:
+    __all__ = []
+else:
+    __all__ = ['device']
 

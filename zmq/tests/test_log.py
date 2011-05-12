@@ -67,16 +67,14 @@ class TestPubLog(BaseZMQTestCase):
         handler = handlers.PUBHandler(self.iface, self.context)
         self.sockets.append(handler.socket)
         self.assertTrue(handler.ctx is ctx)
-        
         handler.setLevel(logging.DEBUG)
         handler.root_topic = self.topic
         logger.addHandler(handler)
-        
         sub = ctx.socket(zmq.SUB)
         self.sockets.append(sub)
-        sub.connect(self.iface)
         sub.setsockopt(zmq.SUBSCRIBE, self.topic)
-        import time; time.sleep(0.1)
+        sub.connect(self.iface)
+        import time; time.sleep(0.25)
         msg1 = 'message'
         logger.info(msg1)
         

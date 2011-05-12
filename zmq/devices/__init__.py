@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from zmq.core.version import zmq_version
 
 from zmq.core.device import device
 from zmq.devices import basedevice, monitoredqueue, monitoredqueuedevice
@@ -30,6 +31,15 @@ from zmq.devices.basedevice import *
 from zmq.devices.monitoredqueue import *
 from zmq.devices.monitoredqueuedevice import *
 
-__all__ = ['device']
-for submod in (basedevice, monitoredqueue, monitoredqueuedevice):
-    __all__.extend(submod.__all__)
+major = int(zmq_version()[0])
+# cleanup name
+del zmq_version
+
+if major >= 3:
+    __all__ = []
+    for submod in (monitoredqueue, monitoredqueuedevice):
+        __all__.extend(submod.__all__)
+else:
+    __all__ = ['device']
+    for submod in (basedevice, monitoredqueue, monitoredqueuedevice):
+        __all__.extend(submod.__all__)
