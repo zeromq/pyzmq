@@ -34,7 +34,7 @@ from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
 
 
 class TestDevice(BaseZMQTestCase):
-
+    
     def test_device_types(self):
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
             dev = devices.Device(devtype, zmq.PAIR,zmq.PAIR)
@@ -43,8 +43,8 @@ class TestDevice(BaseZMQTestCase):
     
     def test_device_attributes(self):
         dev = devices.Device(zmq.FORWARDER, zmq.SUB, zmq.PUB)
-        self.assert_(dev.in_type == zmq.SUB)
-        self.assert_(dev.out_type == zmq.PUB)
+        self.assertEquals(dev.in_type, zmq.SUB)
+        self.assertEquals(dev.out_type, zmq.PUB)
         self.assertEquals(dev.device_type, zmq.FORWARDER)
         self.assertEquals(dev.daemon, True)
         del dev

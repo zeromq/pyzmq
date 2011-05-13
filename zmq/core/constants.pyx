@@ -31,7 +31,13 @@ from czmq cimport *
 
 _optionals = []
 
-NOBLOCK = ZMQ_NOBLOCK
+if ZMQ_VERSION < 30000:
+    NOBLOCK = ZMQ_NOBLOCK
+else:
+    # keep NOBLOCK as alias for new DONTWAIT
+    NOBLOCK = ZMQ_DONTWAIT
+    DONTWAIT = ZMQ_DONTWAIT
+    _optionals.extend(['DONTWAIT'])
 # socket types
 PAIR = ZMQ_PAIR
 PUB = ZMQ_PUB
@@ -42,8 +48,10 @@ XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
-UPSTREAM = ZMQ_UPSTREAM
-DOWNSTREAM = ZMQ_DOWNSTREAM
+if ZMQ_VERSION < 30000:
+    UPSTREAM = ZMQ_UPSTREAM
+    DOWNSTREAM = ZMQ_DOWNSTREAM
+    _optionals.extend(['UPSTREAM','DOWNSTREAM'])
 # new in 2.1.1
 if ZMQ_VERSION >= 20101:
     XPUB = ZMQ_XPUB
@@ -51,15 +59,12 @@ if ZMQ_VERSION >= 20101:
     _optionals.extend(['XPUB','XSUB'])
 
 # socket options
-HWM = ZMQ_HWM
-SWAP = ZMQ_SWAP
 AFFINITY = ZMQ_AFFINITY
 IDENTITY = ZMQ_IDENTITY
 SUBSCRIBE = ZMQ_SUBSCRIBE
 UNSUBSCRIBE = ZMQ_UNSUBSCRIBE
 RATE = ZMQ_RATE
 RECOVERY_IVL = ZMQ_RECOVERY_IVL
-MCAST_LOOP = ZMQ_MCAST_LOOP
 SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
 RCVMORE = ZMQ_RCVMORE
@@ -67,15 +72,37 @@ SNDMORE = ZMQ_SNDMORE
 POLLIN = ZMQ_POLLIN
 POLLOUT = ZMQ_POLLOUT
 POLLERR = ZMQ_POLLERR
+
 STREAMER = ZMQ_STREAMER
 FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
 
 # collections of sockopts, based on type:
 bytes_sockopts = [SUBSCRIBE, UNSUBSCRIBE, IDENTITY]
-int64_sockopts = [HWM, SWAP, AFFINITY, RATE, RECOVERY_IVL,
-                MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE]
+int64_sockopts = [AFFINITY]
 int_sockopts = []
+
+# some sockopts changed type from 2.x to 3.0
+switched = [RATE, RECOVERY_IVL, SNDBUF, RCVBUF, RCVMORE]
+if ZMQ_VERSION < 30000:
+    int64_sockopts.extend(switched)
+else:
+    int_sockopts.extend(switched)
+
+if ZMQ_VERSION < 30000:
+    HWM = ZMQ_HWM
+    SWAP = ZMQ_SWAP
+    MCAST_LOOP = ZMQ_MCAST_LOOP
+    _optionals.extend(['HWM', 'SWAP', 'MCAST_LOOP'])
+    int64_sockopts.extend([HWM, SWAP, MCAST_LOOP])
+else:
+    SNDHWM = ZMQ_SNDHWM
+    RCVHWM = ZMQ_RCVHWM
+    MAXMSGSIZE = ZMQ_MAXMSGSIZE
+    _optionals.extend(['SNDHWM', 'RCVHWM', 'MAXMSGSIZE'])
+    int_sockopts.extend([SNDHWM, RCVHWM])
+    
+
 
 # new sockopts in 2.1.0:
 if ZMQ_VERSION >= 20100:
@@ -90,10 +117,14 @@ if ZMQ_VERSION >= 20100:
 
 # new in 2.1.1:
 if ZMQ_VERSION >= 20101:
-    RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
+    if ZMQ_VERSION < 30000:
+        RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
+        int64_sockopts.append(RECOVERY_IVL_MSEC)
+        _optionals.append('RECOVERY_IVL_MSEC')
+        
     RECONNECT_IVL_MAX = ZMQ_RECONNECT_IVL_MAX
-    int64_sockopts.extend([RECOVERY_IVL_MSEC, RECONNECT_IVL_MAX])
-    _optionals.extend('RECOVERY_IVL_MSEC RECONNECT_IVL_MAX'.split())
+    int_sockopts.append(RECONNECT_IVL_MAX)
+    _optionals.append('RECONNECT_IVL_MAX')
 
 # As new constants are added in future versions, add a new block here
 # like the two above, checking agains the relevant value for ZMQ_VERSION.
@@ -142,17 +173,12 @@ __all__ = [
     'XREP',
     'PULL',
     'PUSH',
-    'UPSTREAM',
-    'DOWNSTREAM',
-    'HWM',
-    'SWAP',
     'AFFINITY',
     'IDENTITY',
     'SUBSCRIBE',
     'UNSUBSCRIBE',
     'RATE',
     'RECOVERY_IVL',
-    'MCAST_LOOP',
     'SNDBUF',
     'RCVBUF',
     'SNDMORE',

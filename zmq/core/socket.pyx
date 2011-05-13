@@ -83,9 +83,9 @@ cdef inline Message _recv_message(void *handle, int flags=0, track=False):
     msg = Message(track=track)
 
     with nogil:
-        rc = zmq_recv(handle, &msg.zmq_msg, flags)
+        rc = zmq_recvmsg(handle, &msg.zmq_msg, flags)
 
-    if rc != 0:
+    if rc < 0:
         raise ZMQError()
     return msg
 
@@ -94,8 +94,8 @@ cdef inline object _recv_copy(void *handle, int flags=0):
     cdef zmq_msg_t zmq_msg
     with nogil:
         zmq_msg_init (&zmq_msg)
-        rc = zmq_recv(handle, &zmq_msg, flags)
-    if rc != 0:
+        rc = zmq_recvmsg(handle, &zmq_msg, flags)
+    if rc < 0:
         raise ZMQError()
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     with nogil:
@@ -112,9 +112,9 @@ cdef inline object _send_message(void *handle, Message msg, int flags=0):
     msg_copy = msg.fast_copy()
 
     with nogil:
-        rc = zmq_send(handle, &msg_copy.zmq_msg, flags)
+        rc = zmq_sendmsg(handle, &msg_copy.zmq_msg, flags)
 
-    if rc != 0:
+    if rc < 0:
         # don't pop from the Queue here, because the free_fn will
         #  still call Queue.get() even if the send fails
         raise ZMQError()
@@ -142,10 +142,9 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
         raise ZMQError()
 
     with nogil:
-        rc = zmq_send(handle, &data, flags)
+        rc = zmq_sendmsg(handle, &data, flags)
         rc2 = zmq_msg_close(&data)
-
-    if rc != 0 or rc2 != 0:
+    if rc < 0 or rc2 != 0:
         raise ZMQError()
 
 
@@ -541,7 +540,7 @@ cdef class Socket:
         Raises
         ------
         ZMQError
-            for any of the reasons zmq_recv might fail.
+            for any of the reasons zmq_recvmsg might fail.
         """
         _check_closed(self)
         

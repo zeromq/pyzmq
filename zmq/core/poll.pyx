@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport zmq_poll, zmq_pollitem_t, allocate
+from czmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
 from socket cimport Socket
 
 import sys
@@ -54,13 +54,17 @@ def _poll(sockets, long timeout=-1):
         for incoming messages), zmq.POLLOUT (for detecting that send is OK)
         or zmq.POLLIN|zmq.POLLOUT for detecting both.
     timeout : int
-        The number of microseconds to poll for. Negative means no timeout.
+        The number of milliseconds to poll for. Negative means no timeout.
     """
     cdef int rc, i
     cdef zmq_pollitem_t *pollitems = NULL
     cdef int nsockets = len(sockets)
     cdef Socket current_socket
     pollitems_o = allocate(nsockets*sizeof(zmq_pollitem_t),<void**>&pollitems)
+    if ZMQ_VERSION_MAJOR < 3:
+        # timeout is us in 2.x, ms in 3.x
+        # expected input is ms (matches 3.x)
+        timeout = 1000*timeout
 
     for i in range(nsockets):
         s = sockets[i][0]
@@ -178,8 +182,8 @@ class Poller(object):
         """
         if timeout is None:
             timeout = -1
-        # Convert from ms -> us for zmq_poll.
-        timeout = int(timeout*1000.0)
+        
+        timeout = int(timeout)
         if timeout < 0:
             timeout = -1
         return _poll(list(self.sockets.items()), timeout=timeout)

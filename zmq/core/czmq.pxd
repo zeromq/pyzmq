@@ -27,6 +27,9 @@
 # Import the C header files
 #-----------------------------------------------------------------------------
 
+cdef extern from *:
+    ctypedef void* const_void_ptr "const void *"
+
 cdef extern from "allocate.h":
     object allocate(size_t n, void **pp)
 
@@ -76,12 +79,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_VSM # 32
     enum: ZMQ_MSG_MORE # 1
     enum: ZMQ_MSG_SHARED # 128
-
-    ctypedef struct zmq_msg_t:
-        void *content
-        unsigned char flags
-        unsigned char vsm_size
-        unsigned char vsm_data [ZMQ_MAX_VSM_SIZE]
+    
+    # blackbox def for zmq_msg_t
+    ctypedef void * zmq_msg_t "zmq_msg_t"
     
     ctypedef void zmq_free_fn(void *data, void *hint)
     
@@ -131,9 +131,13 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_RECONNECT_IVL # 18
     enum: ZMQ_BACKLOG # 19
     enum: ZMQ_RECOVERY_IVL_MSEC # 20
-    enum: ZMQ_RECONNECT_IVL_MAX # 20
+    enum: ZMQ_RECONNECT_IVL_MAX # 21
+    enum: ZMQ_MAXMSGSIZE # 22
+    enum: ZMQ_SNDHWM # 23
+    enum: ZMQ_RCVHWM # 24
 
     enum: ZMQ_NOBLOCK # 1
+    enum: ZMQ_DONTWAIT # 1
     enum: ZMQ_SNDMORE # 2
 
     void *zmq_socket (void *context, int type)
@@ -142,9 +146,12 @@ cdef extern from "zmq.h" nogil:
     int zmq_getsockopt (void *s, int option, void *optval, size_t *optvallen)
     int zmq_bind (void *s, char *addr)
     int zmq_connect (void *s, char *addr)
-    int zmq_send (void *s, zmq_msg_t *msg, int flags)
-    int zmq_recv (void *s, zmq_msg_t *msg, int flags)
-    
+    # send/recv
+    int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags)
+    int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags)
+    int zmq_sendbuf (void *s, const_void_ptr buf, size_t n, int flags)
+    int zmq_recvbuf (void *s, void *buf, size_t n, int flags)
+
     enum: ZMQ_POLLIN # 1
     enum: ZMQ_POLLOUT # 2
     enum: ZMQ_POLLERR # 4
@@ -162,6 +169,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_STREAMER
     enum: ZMQ_FORWARDER
     enum: ZMQ_QUEUE
+    # removed in libzmq
     int zmq_device (int device_, void *insocket_, void *outsocket_)
 
 cdef extern from "zmq_utils.h" nogil:
