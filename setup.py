@@ -365,17 +365,13 @@ class CleanCommand(Command):
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
         
-        for d in ('build', 'conf'):
+        for d in ('build',):
             if os.path.exists(d):
                 self._clean_trees.append(d)
-        
+
         bundled = glob(pjoin('zmq', 'libzmq*'))
         self._clean_me.extend(bundled)
         
-                # else:
-        # for d in [ 'build' ]:
-        #     if os.path.isdir(d):
-        #         self._clean_trees.append(d)
 
 
     def finalize_options(self):
