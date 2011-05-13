@@ -118,15 +118,12 @@ if ZMQ_VERSION >= 20100:
 # new in 2.1.1:
 if ZMQ_VERSION >= 20101:
     if ZMQ_VERSION < 30000:
-        collection = int64_sockopts
         RECOVERY_IVL_MSEC = ZMQ_RECOVERY_IVL_MSEC
-        collection.append(RECOVERY_IVL_MSEC)
+        int64_sockopts.append(RECOVERY_IVL_MSEC)
         _optionals.append('RECOVERY_IVL_MSEC')
-    else:
-        collection = int_sockopts
         
     RECONNECT_IVL_MAX = ZMQ_RECONNECT_IVL_MAX
-    collection.append(RECONNECT_IVL_MAX)
+    int_sockopts.append(RECONNECT_IVL_MAX)
     _optionals.append('RECONNECT_IVL_MAX')
 
 # As new constants are added in future versions, add a new block here
