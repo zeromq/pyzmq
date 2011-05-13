@@ -275,7 +275,7 @@ class TestCommand(Command):
     
     def run_nose(self):
         """Run the test suite with nose."""
-        return nose.core.TestProgram(argv=["", '-vvs', pjoin(self._dir, 'zmq', 'tests')])
+        return nose.core.TestProgram(argv=["", '-vv', pjoin(self._dir, 'zmq', 'tests')])
     
     def run_unittest(self):
         """Finds all the tests modules in zmq/tests/ and runs them."""
