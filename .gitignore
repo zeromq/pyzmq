@@ -2,6 +2,7 @@
 *.c
 build
 dist
+conf
 *.egg-info
 *.so
 *.pyd
