@@ -210,9 +210,12 @@ class Configure(Command):
         pyzmq_version = extract_version().strip('abcdefghijklmnopqrstuvwxyz')
 
         if vs < pyzmq_version:
-            warn("Detected ZMQ version: %s, but pyzmq is based on zmq %s."%(
+            warn("Detected ZMQ version: %s, but pyzmq targets zmq %s."%(
                     vs, pyzmq_version))
-            warn("Some features may be missing or broken.")
+            warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
+            print('*'*42)
+        elif vs > '3.0':
+            warn("Detected ZMQ version: %s. pyzmq's 3.0 support is experimental."%vs)
             print('*'*42)
 
         if sys.platform.startswith('win'):
