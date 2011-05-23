@@ -99,9 +99,26 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.getsockopt(zmq.TYPE), zmq.SUB)
         
         # check for overflow / wrong type:
+        errors = []
+        backref = {}
+        constants = zmq.core.constants
+        for name in constants.__all__:
+            value = getattr(constants, name)
+            if isinstance(value, int):
+                backref[value] = name
         for opt in zmq.core.constants.int_sockopts+zmq.core.constants.int64_sockopts:
-            n = p.getsockopt(opt)
-            self.assertTrue(n < 2**31)
+            sopt = backref[opt]
+            try:
+                n = p.getsockopt(opt)
+            except zmq.ZMQError:
+                e = sys.exc_info()[1]
+                errors.append("getsockopt(zmq.%s) raised '%s'."%(sopt, e))
+            else:
+                if n > 2**31:
+                    errors.append("getsockopt(zmq.%s) returned a ridiculous value."
+                                    " It is probably the wrong type."%sopt)
+        if errors:
+            self.fail('\n'.join(errors))
     
     def test_sockopt_roundtrip(self):
         "test set/getsockopt roundtrip."
