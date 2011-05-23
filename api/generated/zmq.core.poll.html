@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.poll &mdash; PyZMQ v2.1.4 documentation</title>
+    <title>core.poll &mdash; PyZMQ v2.1.7 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.4',
+        VERSION:     '2.1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.socket" href="zmq.core.socket.html" />
     <link rel="prev" title="core.message" href="zmq.core.message.html" /> 
@@ -147,6 +147,7 @@ this function.</p>
 <dt id="zmq.core.poll.Poller.register">
 <tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register a 0MQ socket or native fd for I/O monitoring.</p>
+<p>register(s,0) is equivalent to unregister(s).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -158,7 +159,8 @@ method that returns a valid file descriptor.</p>
 </div></blockquote>
 <p><strong>flags</strong> : int</p>
 <blockquote class="last">
-<div><p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.</p>
+<div><p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
+If <cite>flags=0</cite>, socket will be unregistered.</p>
 </div></blockquote>
 </td>
 </tr>

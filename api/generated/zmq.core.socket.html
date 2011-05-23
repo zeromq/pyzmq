@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ v2.1.4 documentation</title>
+    <title>core.socket &mdash; PyZMQ v2.1.7 documentation</title>
     <link rel="stylesheet" href="../../static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.4',
+        VERSION:     '2.1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../static/underscore.js"></script>
     <script type="text/javascript" src="../../static/doctools.js"></script>
     <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.4 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
     <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
@@ -167,7 +167,7 @@ encoded to utf-8 first.</p>
 
 <dl class="method">
 <dt id="zmq.core.socket.Socket.bind_to_random_port">
-<tt class="descname">bind_to_random_port</tt><big>(</big><em>addr</em>, <em>min_port=2000</em>, <em>max_port=20000</em>, <em>max_tries=100</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.bind_to_random_port" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">bind_to_random_port</tt><big>(</big><em>addr</em>, <em>min_port=49152</em>, <em>max_port=65536</em>, <em>max_tries=100</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.bind_to_random_port" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bind this socket to a random port in a range.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -179,15 +179,15 @@ encoded to utf-8 first.</p>
 </div></blockquote>
 <p><strong>min_port</strong> : int, optional</p>
 <blockquote>
-<div><p>The minimum port in the range of ports to try.</p>
+<div><p>The minimum port in the range of ports to try (inclusive).</p>
 </div></blockquote>
 <p><strong>max_port</strong> : int, optional</p>
 <blockquote>
-<div><p>The maximum port in the range of ports to try.</p>
+<div><p>The maximum port in the range of ports to try (exclusive).</p>
 </div></blockquote>
 <p><strong>max_tries</strong> : int, optional</p>
 <blockquote>
-<div><p>The number of attempt to bind.</p>
+<div><p>The maximum number of bind attempts to make.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -356,7 +356,7 @@ otherwise a str.</p>
 </tr>
 <tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>ZMQError</strong> :</p>
 <blockquote class="last">
-<div><p>for any of the reasons zmq_recv might fail.</p>
+<div><p>for any of the reasons zmq_recvmsg might fail.</p>
 </div></blockquote>
 </td>
 </tr>
