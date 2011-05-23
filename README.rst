@@ -11,6 +11,9 @@ Versioning
 Current release of pyzmq is 2.1.7, and targets libzmq-2.1.7. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
+A 2.1.7.1 release exists only for 64b Windows, because it fixes a ``ZMQ_FD`` related bug that only
+affected those systems.
+
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
 as that of your libzmq, but due to the generally growing API of libzmq, your pyzmq should
 *not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
@@ -48,7 +51,7 @@ Building and installation
 Eggs
 ----
 
-We have binary installers for various Pythons on OSX and (32b) Windows, so you should be able to
+We have binary installers for various Pythons on OSX and Windows, so you should be able to
 just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
 be the only thing you need to start using pyzmq, but we simply don't have the experience to know
 when and where these installers will not work.
@@ -61,18 +64,18 @@ Eggs are on PyPI, and we have them for 'current' Pythons, which are for OSX 10.6
 
   * Python 2.6, 2.7, 3.2 (32b and 64b intel)
 
-and win32:
+and Windows (x86 and x64):
 
   * Python 2.7, 3.2
 
 We also have MSI installer packages in our `downloads
 <http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
 
-Our build scripts are much improved as of 2.1.4, so if you would like to contribute 64b Windows
-installers, or have any improvements on existing releases, they would be much appreciated.
-Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should* work, once you
-have a 64b libzmq and Python. We simply don't have the VMs or time in which to do this
-ourselves.
+Our build scripts are much improved as of 2.1.4, so if you would like to contribute better
+Windows installers, or have any improvements on existing releases, they would be much
+appreciated. Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should*
+work, once you have a libzmq and Python. We simply don't have the VMs or time in which to cover
+all the bases ourselves.
 
 General
 -------
@@ -120,6 +123,13 @@ Current testing indicates that running
 successfully builds a working MSI installer, but we don't have enough Windows deployment
 experience to know where that may fail.
 
+Windows x64
+***********
+
+64b Windows builds have been successful (as of 2.1.7.1), using VC++ 2008 express, and the
+Windows 7 SDK. VS2008 had to be patched as described `here
+<http://www.cppblog.com/xcpp/archive/2009/09/09/vc2008express_64bit_win7sdk.html>`_, and
+pyzmq was built following `these instructions <http://wiki.cython.org/64BitCythonExtensionsOnWindows>`_ on the Cython wiki.
 
 Linux
 -----
