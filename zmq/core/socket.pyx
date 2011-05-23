@@ -283,6 +283,7 @@ cdef class Socket:
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c
+        cdef fd_t optval_fd_c
         cdef char identity_str_c [255]
         cdef size_t sz
         cdef int rc
@@ -310,6 +311,13 @@ cdef class Socket:
             if rc != 0:
                 raise ZMQError()
             result = optval_int_c
+        elif option == ZMQ_FD:
+            sz = sizeof(fd_t)
+            with nogil:
+                rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
+            if rc != 0:
+                raise ZMQError()
+            result = optval_fd_c
         else:
             raise ZMQError(EINVAL)
 

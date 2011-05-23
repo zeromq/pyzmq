@@ -82,6 +82,12 @@
     #define ZMQ_QUEUE 3
 #endif
 
+#ifdef HAVE_WINDOWS
+    #define ZMQ_FD_T SOCKET
+#else
+    #define ZMQ_FD_T int
+#endif
+
 // use unambiguous aliases for zmq_send/recv functions
 #if ZMQ_VERSION_MAJOR >= 3
     #define zmq_sendbuf zmq_send

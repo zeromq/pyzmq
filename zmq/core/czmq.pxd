@@ -50,7 +50,9 @@ cdef extern from "zmq_compat.h":
 cdef extern from "zmq.h" nogil:
 
     void _zmq_version "zmq_version"(int *major, int *minor, int *patch)
-
+    
+    ctypedef int fd_t "ZMQ_FD_T"
+    
     enum: ZMQ_VERSION_MAJOR
     enum: ZMQ_VERSION_MINOR
     enum: ZMQ_VERSION_PATCH
