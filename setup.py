@@ -565,8 +565,8 @@ def extract_version():
     exec(line, globals())
     if 'bdist_msi' in sys.argv:
         # msi has strict version requirements, which requires that
-        # we strip any dev suffix
-        return re.match(r'\d+(\.\d+)+', __version__).group()
+        # we strip any dev suffix, and can only have major-minor-patch (no sub-patch)
+        return re.match(r'\d+(\.\d+){0,2}', __version__).group()
     else:
         return __version__
 
