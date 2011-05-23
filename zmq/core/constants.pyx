@@ -104,16 +104,13 @@ else:
     
 
 
-# new sockopts in 2.1.0:
-if ZMQ_VERSION >= 20100:
-    FD = ZMQ_FD
-    EVENTS = ZMQ_EVENTS
-    TYPE = ZMQ_TYPE
-    LINGER = ZMQ_LINGER
-    RECONNECT_IVL = ZMQ_RECONNECT_IVL
-    BACKLOG = ZMQ_BACKLOG
-    int_sockopts.extend([FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG])
-    _optionals.extend('FD EVENTS TYPE LINGER RECONNECT_IVL BACKLOG'.split())
+FD = ZMQ_FD
+EVENTS = ZMQ_EVENTS
+TYPE = ZMQ_TYPE
+LINGER = ZMQ_LINGER
+RECONNECT_IVL = ZMQ_RECONNECT_IVL
+BACKLOG = ZMQ_BACKLOG
+int_sockopts.extend([FD, EVENTS, TYPE, LINGER, RECONNECT_IVL, BACKLOG])
 
 # new in 2.1.1:
 if ZMQ_VERSION >= 20101:
@@ -164,6 +161,12 @@ ETERM = ZMQ_ETERM
 
 __all__ = [
     'NOBLOCK',
+    'FD',
+    'EVENTS',
+    'TYPE',
+    'LINGER',
+    'RECONNECT_IVL',
+    'BACKLOG',
     'PAIR',
     'PUB',
     'SUB',
