@@ -48,8 +48,8 @@ install Cython version 0.13 or later.
 Building and installation
 =========================
 
-Eggs
-----
+Eggs and MSIs
+-------------
 
 We have binary installers for various Pythons on OSX and Windows, so you should be able to
 just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
@@ -70,6 +70,8 @@ and Windows (x86 and x64):
 
 We also have MSI installer packages in our `downloads
 <http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
+
+A Python 2.6/win64 MSI was provided by Craig Austin (craig DOT austin AT gmail DOT com)
 
 Our build scripts are much improved as of 2.1.4, so if you would like to contribute better
 Windows installers, or have any improvements on existing releases, they would be much
