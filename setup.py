@@ -40,6 +40,7 @@ from traceback import print_exc
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
+from distutils.errors import CompileError, LinkError
 from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
@@ -249,13 +250,24 @@ class Configure(Command):
             print ("    Custom ZMQ dir:       %s" % (ZMQ,))
             config = detect_zmq(self.tempdir, **settings)
         except Exception:
+            etype = sys.exc_info()[0]
+            if etype is CompileError:
+                action = 'compile'
+            elif etype is LinkError:
+                action = 'link'
+            else:
+                action = 'run'
             fatal("""
-    Failed to compile ZMQ test program.  Please check to make sure:
+    Failed to %s ZMQ test program.  Please check to make sure:
 
     * You have a C compiler installed
     * A development version of Python is installed (including header files)
-    * A development version of ZeroMQ >= 2.1.0 is installed (including header files)
-    * If ZMQ is not in a default location, supply the argument --zmq=<path>""")
+    * A development version of ZMQ >= %s is installed (including header files)
+    * If ZMQ is not in a default location, supply the argument --zmq=<path>
+    * If you did recently install ZMQ to a default location, 
+      try rebuilding the ld cache with `sudo ldconfig`
+      or specify zmq's location with `--zmq=/usr/local`
+    """%(action, v_str(min_zmq)))
             
         else:
             savepickle('configure.pickle', config)
