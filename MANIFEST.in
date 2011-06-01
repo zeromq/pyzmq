@@ -4,6 +4,7 @@ include setup.cfg.template
 include setup.py
 include setupegg.py
 include zmqversion.py
+include buildutils.py
 
 graft docs
 prune docs/build
@@ -22,3 +23,5 @@ global-exclude *.so
 global-exclude *.pyd
 global-exclude *.pyc
 global-exclude .git*
+global-exclude .DS_Store
+

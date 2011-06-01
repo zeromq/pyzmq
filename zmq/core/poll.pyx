@@ -23,12 +23,12 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport zmq_poll, zmq_pollitem_t, allocate
+from czmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
 from socket cimport Socket
 
 import sys
 from zmq.core.error import ZMQError
-from zmq.core.constants import POLLIN,POLLOUT, POLLERR
+from zmq.core.constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -54,13 +54,17 @@ def _poll(sockets, long timeout=-1):
         for incoming messages), zmq.POLLOUT (for detecting that send is OK)
         or zmq.POLLIN|zmq.POLLOUT for detecting both.
     timeout : int
-        The number of microseconds to poll for. Negative means no timeout.
+        The number of milliseconds to poll for. Negative means no timeout.
     """
     cdef int rc, i
     cdef zmq_pollitem_t *pollitems = NULL
     cdef int nsockets = len(sockets)
     cdef Socket current_socket
     pollitems_o = allocate(nsockets*sizeof(zmq_pollitem_t),<void**>&pollitems)
+    if ZMQ_VERSION_MAJOR < 3:
+        # timeout is us in 2.x, ms in 3.x
+        # expected input is ms (matches 3.x)
+        timeout = 1000*timeout
 
     for i in range(nsockets):
         s = sockets[i][0]
@@ -123,6 +127,8 @@ class Poller(object):
         """p.register(socket, flags=POLLIN|POLLOUT)
 
         Register a 0MQ socket or native fd for I/O monitoring.
+        
+        register(s,0) is equivalent to unregister(s).
 
         Parameters
         ----------
@@ -131,8 +137,16 @@ class Poller(object):
             method that returns a valid file descriptor.
         flags : int
             The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
+            If `flags=0`, socket will be unregistered.
         """
-        self.sockets[socket] = flags
+        if flags:
+            self.sockets[socket] = flags
+        elif socket in self.sockets:
+            # uregister sockets registered with no events
+            self.unregister(socket)
+        else:
+            # ignore new sockets with no events
+            pass
 
     def modify(self, socket, flags=POLLIN|POLLOUT):
         """p.modify(socket, flags=POLLIN|POLLOUT)
@@ -168,8 +182,8 @@ class Poller(object):
         """
         if timeout is None:
             timeout = -1
-        # Convert from ms -> us for zmq_poll.
-        timeout = int(timeout*1000.0)
+        
+        timeout = int(timeout)
         if timeout < 0:
             timeout = -1
         return _poll(list(self.sockets.items()), timeout=timeout)

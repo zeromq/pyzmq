@@ -1,20 +1,31 @@
 ==============================
-PyZMQ: Python bindings for 0MQ
+PyZMQ: Python bindings for ØMQ
 ==============================
 
-This package contains Python bindings for `0MQ <http://www.zeromq.org>`_.
-0MQ is a lightweight and fast messaging implementation.
+This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
+ØMQ is a lightweight and fast messaging implementation.
 
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.2, and targets libzmq-2.1.2rc2. For zeromq
-2.0.10 or `maint` branch, use pyzmq release 2.0.10 or the 2.0.x development branch.
+Current release of pyzmq is 2.1.7, and targets libzmq-2.1.7. For libzmq
+2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
-PyZMQ versioning follows 0MQ versioning. In general, your pyzmq version should be the same
-as that of your libzmq, but due to the generally growing API of zeromq, your pyzmq should
-*not* be newer than your zeromq. This is a strict restriction for pyzmq <= 2.1.0, but we
-intend to support zeromq >= 2.1.0 for pyzmq 2.1.x.
+A 2.1.7.1 release exists only for 64b Windows, because it fixes a ``ZMQ_FD`` related bug that only
+affected those systems.
+
+PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
+as that of your libzmq, but due to the generally growing API of libzmq, your pyzmq should
+*not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
+intend to support libzmq >= 2.1.0 for pyzmq 2.1.x.
+
+ØMQ 3.0
+-------
+
+As of 2.1.7, we have experimental support for the 3.0 API of libzmq,
+developed at https://github.com/zeromq/libzmq. No code to change, no flags to pass, just
+build against libzmq 3 and it should work.  The pyzmq API has not changed.
+
 
 Documentation
 =============
@@ -37,14 +48,44 @@ install Cython version 0.13 or later.
 Building and installation
 =========================
 
+Eggs and MSIs
+-------------
+
+We have binary installers for various Pythons on OSX and Windows, so you should be able to
+just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
+be the only thing you need to start using pyzmq, but we simply don't have the experience to know
+when and where these installers will not work.
+
+If a binary installer fails for you, please `tell us <https://github.com/zeromq/pyzmq/issues>`_
+about your system and the failure, so that we can try to fix it in later releases, and fall back
+on building from source.
+
+Eggs are on PyPI, and we have them for 'current' Pythons, which are for OSX 10.6:
+
+  * Python 2.6, 2.7, 3.2 (32b and 64b intel)
+
+and Windows (x86 and x64):
+
+  * Python 2.7, 3.2
+
+We also have MSI installer packages in our `downloads
+<http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
+
+A Python 2.6/win64 MSI was provided by Craig Austin (craig DOT austin AT gmail DOT com)
+
+Our build scripts are much improved as of 2.1.4, so if you would like to contribute better
+Windows installers, or have any improvements on existing releases, they would be much
+appreciated. Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should*
+work, once you have a libzmq and Python. We simply don't have the VMs or time in which to cover
+all the bases ourselves.
+
 General
 -------
 
-To build and install this Python package, you will first need to build and
-install the latest development version of 0MQ itself. After you have done
-this, follow these steps:
+To build and install pyzmq from source, you will first need to build libzmq. 
+After you have done this, follow these steps:
 
-Tell pyzmq where zeromq is via the configure subcommand:
+Tell pyzmq where libzmq is via the configure subcommand:
 
     $ python setup.py configure --zmq=/path/to/zeromq2
 
@@ -53,7 +94,10 @@ or the zmq install directory on OSX/Linux:
     $ python setup.py configure --zmq=/usr/local
 
 The argument should be a directory containing a ``lib`` and a ``include`` directory, containing
-``libzmq`` and ``zmq.h`` respectively.
+``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
+and current libzmq into the same parent directory, this would be:
+
+    $ python setup.py configure --zmq=../zeromq-2.1.7
 
 Second, run this command::
 
@@ -67,27 +111,35 @@ Windows
 -------
 
 On Windows, libzmq.dll will be copied into the zmq directory, and installed along with pyzmq,
-so you shouldn't need to edit your PATH.
+so you shouldn't need to edit your ``PATH``.
 
-It is best to compile both ØMQ and PyØMQ with Microsoft Visual Studio 2008 or
-above. You should not need to use mingw.
+It is best to compile both ØMQ and PyØMQ with Microsoft Visual Studio 2008. You
+should not need to use mingw. If you build libzmq with MSVS 2010, then there
+will be issues in error handling, because there will be a mismatch between error
+numbers.
 
 Current testing indicates that running
 
     $ python setup.py bdist_msi
 
-successfully builds an MSI installer.  Note that if you are on a development version of pyzmq,
-you will need to edit the ``__version__`` in zmq/core/version.pyx and remove the 'dev', because
-the msi builder rejects that as an invalid version for some reason.
+successfully builds a working MSI installer, but we don't have enough Windows deployment
+experience to know where that may fail.
 
+Windows x64
+***********
+
+64b Windows builds have been successful (as of 2.1.7.1), using VC++ 2008 express, and the
+Windows 7 SDK. VS2008 had to be patched as described `here
+<http://www.cppblog.com/xcpp/archive/2009/09/09/vc2008express_64bit_win7sdk.html>`_, and
+pyzmq was built following `these instructions <http://wiki.cython.org/64BitCythonExtensionsOnWindows>`_ on the Cython wiki.
 
 Linux
 -----
 
 If you install libzmq to a location other than the default (``/usr/local``) on Linux,
-you will need to do one of the following:
+you may need to do one of the following:
 
-* Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of 0MQ.
+* Set ``LD_LIBRARY_PATH`` to point to the ``lib`` directory of ØMQ.
 * Build the extension using the ``--rpath`` flag::
 
     $ python setup.py build_ext --rpath=/opt/zeromq-dev/lib --inplace
@@ -137,13 +189,13 @@ Currently, we are using the following steps to release PyZMQ:
 * Upload the tarball and ``.zip`` file to github.
 * Branch the release::
 
-    git checkout -b 2.1.1 master
-    git push origin 2.1.1
+    git checkout -b 2.1.7 master
+    git push origin 2.1.7
 
 * Tag the release::
 
-    git tag -a -m "Tagging release 2.1.1" v2.1.1
-    git push origin —tags
+    git tag -a -m "Tagging release 2.1.7" v2.1.7
+    git push origin --tags
 
 * Make sure the ``README.rst`` has an updated list of contributors.
 * Announce on list.
@@ -171,3 +223,4 @@ The following people have contributed to the project:
 * spez (steve AT hipmunk DOT com)
 * Thomas Kluyver (takowl AT gmail DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
+* Daniel Truemper (truemped AT googlemail DOT com)

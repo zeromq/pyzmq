@@ -73,19 +73,23 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(topic, s.recv_unicode())
         self.assertEquals(topic*2, s.recv_unicode(encoding='latin-1'))
     
-    def test_2_1_sockopts(self):
-        "test non-uint64 sockopts introduced in zeromq 2.1.0"
-        v = list(map(int, zmq.zmq_version().split('.', 2)[:2]))
-        if not (v[0] >= 2 and v[1] >= 1):
+    def test_int_sockopts(self):
+        "test non-uint64 sockopts"
+        v = zmq.zmq_version()
+        if not v >= '2.1':
             raise SkipTest
+        elif v < '3.0':
+            hwm = zmq.HWM
+        else:
+            hwm = zmq.SNDHWM
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         p.setsockopt(zmq.LINGER, 0)
         self.assertEquals(p.getsockopt(zmq.LINGER), 0)
         p.setsockopt(zmq.LINGER, -1)
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
-        self.assertEquals(p.getsockopt(zmq.HWM), 0)
-        p.setsockopt(zmq.HWM, 11)
-        self.assertEquals(p.getsockopt(zmq.HWM), 11)
+        self.assertEquals(p.getsockopt(hwm), 0)
+        p.setsockopt(hwm, 11)
+        self.assertEquals(p.getsockopt(hwm), 11)
         # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
         self.assertEquals(p.getsockopt(zmq.EVENTS), zmq.POLLOUT)
         self.assertRaisesErrno(zmq.EINVAL, p.setsockopt,zmq.EVENTS, 2**7-1)
@@ -93,13 +97,36 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.TYPE), zmq.PUB)
         self.assertEquals(s.getsockopt(zmq.TYPE), s.socket_type)
         self.assertEquals(s.getsockopt(zmq.TYPE), zmq.SUB)
+        
+        # check for overflow / wrong type:
+        errors = []
+        backref = {}
+        constants = zmq.core.constants
+        for name in constants.__all__:
+            value = getattr(constants, name)
+            if isinstance(value, int):
+                backref[value] = name
+        for opt in zmq.core.constants.int_sockopts+zmq.core.constants.int64_sockopts:
+            sopt = backref[opt]
+            try:
+                n = p.getsockopt(opt)
+            except zmq.ZMQError:
+                e = sys.exc_info()[1]
+                errors.append("getsockopt(zmq.%s) raised '%s'."%(sopt, e))
+            else:
+                if n > 2**31:
+                    errors.append("getsockopt(zmq.%s) returned a ridiculous value."
+                                    " It is probably the wrong type."%sopt)
+        if errors:
+            self.fail('\n'.join(errors))
     
     def test_sockopt_roundtrip(self):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)
-        self.assertEquals(p.getsockopt(zmq.HWM), 0)
-        p.setsockopt(zmq.HWM, 11)
-        self.assertEquals(p.getsockopt(zmq.HWM), 11)
+        self.sockets.append(p)
+        self.assertEquals(p.getsockopt(zmq.LINGER), -1)
+        p.setsockopt(zmq.LINGER, 11)
+        self.assertEquals(p.getsockopt(zmq.LINGER), 11)
         
     def test_send_unicode(self):
         "test sending unicode objects"
@@ -124,7 +151,6 @@ class TestSocket(BaseZMQTestCase):
         a = self.context.socket(zmq.XREQ)
         port = a.bind_to_random_port(addr)
         a.close()
-        del a 
         iface = "%s:%i"%(addr,port)
         a = self.context.socket(zmq.XREQ)
         a.setsockopt(zmq.IDENTITY, asbytes("a"))

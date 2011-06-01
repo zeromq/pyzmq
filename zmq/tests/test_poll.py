@@ -123,6 +123,16 @@ class TestPoll(PollZMQTestCase):
 
         # Wait for everything to finish.
         wait()
+    
+    def test_no_events(self):
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        poller = zmq.Poller()
+        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s2, 0)
+        self.assertTrue(s1 in poller.sockets)
+        self.assertFalse(s2 in poller.sockets)
+        poller.register(s1, 0)
+        self.assertFalse(s1 in poller.sockets)
 
     def test_pubsub(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
