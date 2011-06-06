@@ -256,6 +256,9 @@ class IOLoop(object):
                     self._running = False
                     self._stopped = True
                     break
+                elif e.errno == errno.EINTR:
+                    logging.warning("Interrupted system call", exc_info=1)
+                    continue
                 else:
                     raise
             except Exception:
