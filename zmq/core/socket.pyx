@@ -34,7 +34,7 @@ from cpython cimport Py_DECREF, Py_INCREF
 
 from buffers cimport asbuffer_r, viewfromobject_r
 
-from czmq cimport *
+from libzmq cimport *
 from message cimport Message, copy_zmq_msg_bytes
 
 cdef extern from "Python.h":

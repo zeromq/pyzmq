@@ -491,7 +491,7 @@ def pyx(subdir, name):
 def dotc(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.c'))
 
-czmq = pxd('core', 'czmq')
+libzmq = pxd('core', 'libzmq')
 buffers = pxd('utils', 'buffers')
 message = pxd('core', 'message')
 context = pxd('core', 'context')
@@ -499,21 +499,21 @@ socket = pxd('core', 'socket')
 monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = dict(
-    core = {'constants': [czmq],
-            'error':[czmq],
-            'poll':[czmq],
-            'stopwatch':[czmq, pxd('core','stopwatch')],
-            'context':[socket, context, czmq],
-            'message':[czmq, buffers, message],
-            'socket':[context, message, socket, czmq, buffers],
-            'device':[czmq],
-            'version':[czmq],
+    core = {'constants': [libzmq],
+            'error':[libzmq],
+            'poll':[libzmq],
+            'stopwatch':[libzmq, pxd('core','stopwatch')],
+            'context':[socket, context, libzmq],
+            'message':[libzmq, buffers, message],
+            'socket':[context, message, socket, libzmq, buffers],
+            'device':[libzmq],
+            'version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, czmq, monqueue],
+            'monitoredqueue':[buffers, libzmq, monqueue],
     },
     utils = {
-            'initthreads':[czmq]
+            'initthreads':[libzmq]
     }
 )
 

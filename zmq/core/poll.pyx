@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
+from libzmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
 from socket cimport Socket
 
 import sys

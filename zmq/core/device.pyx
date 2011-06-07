@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport *
+from libzmq cimport *
 from zmq.core.socket cimport Socket as cSocket
 from zmq.core.error import ZMQError
 

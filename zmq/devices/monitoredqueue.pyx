@@ -33,7 +33,7 @@ cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
 from buffers cimport asbuffer_r
-from czmq cimport *
+from libzmq cimport *
 
 from zmq.core.socket cimport Socket
 

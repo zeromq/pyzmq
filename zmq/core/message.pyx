@@ -35,7 +35,7 @@ from buffers cimport asbuffer_r, viewfromobject_r
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
-from czmq cimport *
+from libzmq cimport *
 
 import time
 

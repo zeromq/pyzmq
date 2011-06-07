@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from czmq cimport *
+from libzmq cimport *
 
 #-----------------------------------------------------------------------------
 # Python module level constants
@@ -125,7 +125,7 @@ if ZMQ_VERSION >= 20101:
 
 # As new constants are added in future versions, add a new block here
 # like the two above, checking agains the relevant value for ZMQ_VERSION.
-# The constants will need to be added to czmq.pxd and utils/zmq_compat.h
+# The constants will need to be added to libzmq.pxd and utils/zmq_compat.h
 # as well.
 
 #-----------------------------------------------------------------------------
