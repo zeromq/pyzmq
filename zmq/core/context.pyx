@@ -23,9 +23,11 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+from libc.stdlib cimport free, malloc, realloc
+from errno import ENOTSOCK
+
 from libzmq cimport *
-from socket cimport Socket
-# 
+
 from error import ZMQError
 from constants import *
 
@@ -51,6 +53,7 @@ cdef class Context:
     
     def __cinit__(self, int io_threads=1):
         self.handle = NULL
+        self._sockets = NULL
         if not io_threads > 0:
             raise ZMQError(EINVAL)
         with nogil:
@@ -58,15 +61,57 @@ cdef class Context:
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
+        self.n_sockets = 0
+        self.max_sockets = 32
+        
+        self._sockets = <void **>malloc(self.max_sockets*sizeof(void *))
+        if self._sockets == NULL:
+            raise MemoryError("Could not allocate _sockets array")
+        
 
     def __dealloc__(self):
         cdef int rc
         if self.handle != NULL:
-            with nogil:
-                rc = zmq_term(self.handle)
-            if rc != 0:
-                raise ZMQError()
+            self.term()
+        if self._sockets != NULL:
+            free(self._sockets)
+    
+    cdef inline void _add_socket(self, void* handle):
+        """Add a socket handle to be closed when Context terminates.
+        
+        This is to be called in the Socket constructor.
+        """
+        # print self.n_sockets, self.max_sockets
+        if self.n_sockets >= self.max_sockets:
+            self.max_sockets *= 2
+            self._sockets = <void **>realloc(self._sockets, self.max_sockets*sizeof(void *))
+            if self._sockets == NULL:
+                with gil:
+                    raise MemoryError("Could not reallocate _sockets array")
+        
+        self._sockets[self.n_sockets] = handle
+        self.n_sockets += 1
+        # print self.n_sockets, self.max_sockets
 
+    cdef inline void _remove_socket(self, void* handle):
+        """Remove a socket from the collected handles.
+        
+        This should be called by Socket.close, to prevent trying to
+        close a socket a second time.
+        """
+        cdef bint found = False
+        
+        for idx in range(self.n_sockets):
+            if self._sockets[idx] == handle:
+                found=True
+                break
+        
+        if found:
+            self.n_sockets -= 1
+            if self.n_sockets:
+                # move last handle to closed socket's index
+                self._sockets[idx] = self._sockets[self.n_sockets]
+    
     # instance method copied from tornado IOLoop.instance
     @classmethod
     def instance(cls, int io_threads=1):
@@ -99,7 +144,15 @@ cdef class Context:
         garbage collected.
         """
         cdef int rc
+        cdef int i=-1
         if self.handle != NULL and not self.closed:
+            for i in range(self.n_sockets):
+                # print 'closing: ', <size_t>self._sockets[i]
+                with nogil:
+                    rc = zmq_close(self._sockets[i])
+                if rc != 0 and zmq_errno() != ENOTSOCK:
+                    raise ZMQError()
+            # print i
             with nogil:
                 rc = zmq_term(self.handle)
             if rc != 0:
@@ -118,6 +171,8 @@ cdef class Context:
             The socket type, which can be any of the 0MQ socket types: 
             REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XSUB, XPUB.
         """
+        # import here to prevent circular import
+        from zmq.core.socket import Socket
         if self.closed:
             raise ZMQError(ENOTSUP)
         return Socket(self, socket_type)
