@@ -25,6 +25,8 @@
 
 from message cimport Message
 
+from context cimport Context
+
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
@@ -37,8 +39,8 @@ cdef class Socket:
     cdef public int socket_type # The 0MQ socket type - REQ,REP, etc.
     # Hold on to a reference to the context to make sure it is not garbage
     # collected until the socket it done with it.
-    cdef public object context # The zmq Context object that owns this.
-    cdef public object closed   # bool property for a closed socket.
+    cdef public Context context # The zmq Context object that owns this.
+    cdef public bint _closed   # bool property for a closed socket.
 
     # cpdef methods for direct-cython access:
     cpdef object send(self, object data, int flags=*, copy=*, track=*)
