@@ -90,7 +90,15 @@ class Device:
         sets whether the thread should be run as a daemon
         Default is true, because if it is false, the thread will not
         exit unless it is killed
+    context_factory : callable (class attribute)
+        Function for creating the Context. This will be Context.intance
+        in ThreadDevices, and Context in ProcessDevices.  The only reason
+        it is not instance() in ProcessDevices is that there may be a stale
+        Context instance already initialized, and the forked environment
+        should *never* try to use it.
     """
+    
+    context_factory = Context.instance
 
     def __init__(self, device_type, in_type, out_type):
         self.device_type = device_type
@@ -148,7 +156,8 @@ class Device:
         self._out_sockopts.append((opt, value))
     
     def _setup_sockets(self):
-        ctx = Context()
+        ctx = self.context_factory()
+        
         self._context = ctx
         
         # create the sockets
@@ -230,6 +239,7 @@ class ProcessDevice(BackgroundDevice):
     See Device for details.
     """
     _launch_class=Process
+    context_factory = Context
 
 
 __all__ = [ 'Device', 'ThreadDevice']

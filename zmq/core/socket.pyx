@@ -27,7 +27,6 @@
 cdef extern from "pyversion_compat.h":
     pass
 
-from libc.stdlib cimport free, malloc
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
@@ -36,6 +35,8 @@ from buffers cimport asbuffer_r, viewfromobject_r
 
 from libzmq cimport *
 from message cimport Message, copy_zmq_msg_bytes
+
+from context cimport Context
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -50,6 +51,8 @@ import sys
 import random
 import struct
 import codecs
+
+from errno import ENOTSOCK
 
 from zmq.utils import jsonapi
 
@@ -72,9 +75,25 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
 
-cdef inline _check_closed(Socket s):
-    if s.closed:
-        raise ZMQError(ENOTSUP)
+cdef inline _check_closed(Socket s, bint raise_notsup):
+    cdef int rc
+    cdef int errno
+    cdef int stype
+    cdef size_t sz=sizeof(int)
+    if s._closed:
+        if raise_notsup:
+            raise ZMQError(ENOTSUP)
+        else:
+            return True
+    else:
+        rc = zmq_getsockopt(s.handle, ZMQ_TYPE, <void *>&stype, &sz)
+        if rc and zmq_errno() == ENOTSOCK:
+            s._closed = True
+            if raise_notsup:
+                raise ZMQError(ENOTSUP)
+            else:
+                return True
+    # return False
 
 cdef inline Message _recv_message(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Message."""
@@ -168,7 +187,7 @@ cdef class Socket:
     .Context.socket : method for creating a socket bound to a Context.
     """
 
-    def __cinit__(self, object context, int socket_type):
+    def __cinit__(self, Context context, int socket_type):
         cdef Py_ssize_t c_handle
         c_handle = context._handle
 
@@ -179,11 +198,16 @@ cdef class Socket:
             self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
-        self.closed = False
+        self._closed = False
+        context._add_socket(self.handle)
 
     def __dealloc__(self):
         self.close()
-
+    
+    @property
+    def closed(self):
+        return _check_closed(self, False)
+    
     def close(self):
         """s.close()
 
@@ -194,13 +218,16 @@ cdef class Socket:
         garbage collected.
         """
         cdef int rc
-        if self.handle != NULL and not self.closed:
+        
+        if self.handle != NULL and not self._closed:
             with nogil:
                 rc = zmq_close(self.handle)
-            if rc != 0:
+            if rc != 0 and zmq_errno() != ENOTSOCK:
+                # ignore ENOTSOCK (closed by Context)
                 raise ZMQError()
+            self.context._remove_socket(self.handle)
             self.handle = NULL
-            self.closed = True
+            self._closed = True
 
     def setsockopt(self, int option, optval):
         """s.setsockopt(option, optval)
@@ -224,7 +251,7 @@ cdef class Socket:
         cdef char* optval_c
         cdef Py_ssize_t sz
 
-        _check_closed(self)
+        _check_closed(self, True)
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_unicode")
 
@@ -288,7 +315,7 @@ cdef class Socket:
         cdef size_t sz
         cdef int rc
 
-        _check_closed(self)
+        _check_closed(self, True)
 
         if option in constants.bytes_sockopts:
             sz = 255
@@ -387,7 +414,7 @@ cdef class Socket:
         """
         cdef int rc
 
-        _check_closed(self)
+        _check_closed(self, True)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -448,7 +475,7 @@ cdef class Socket:
         """
         cdef int rc
 
-        _check_closed(self)
+        _check_closed(self, True)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -499,7 +526,7 @@ cdef class Socket:
             If the send does not succeed for any reason.
         
         """
-        _check_closed(self)
+        _check_closed(self, True)
         
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_unicode")
@@ -550,7 +577,7 @@ cdef class Socket:
         ZMQError
             for any of the reasons zmq_recvmsg might fail.
         """
-        _check_closed(self)
+        _check_closed(self, True)
         
         if copy:
             return _recv_copy(self.handle, flags)
