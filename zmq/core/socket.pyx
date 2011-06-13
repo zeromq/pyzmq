@@ -50,6 +50,7 @@ import sys
 import random
 import struct
 import codecs
+import zlib
 
 from zmq.utils import jsonapi
 
@@ -692,7 +693,7 @@ cdef class Socket:
             support.
         """
         msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags)
+        return self.send(zlib.compress(msg), flags)
 
     def recv_pyobj(self, flags=0):
         """s.recv_pyobj(flags=0)
@@ -710,7 +711,7 @@ cdef class Socket:
             The Python object that arrives as a message.
         """
         s = self.recv(flags)
-        return pickle.loads(s)
+        return pickle.loads(zlib.decompress(s))
 
     def send_json(self, obj, flags=0):
         """s.send_json(obj, flags=0)
@@ -727,7 +728,7 @@ cdef class Socket:
         if jsonapi.jsonmod is None:
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
-            msg = jsonapi.dumps(obj)
+            msg = zlib.compress(jsonapi.dumps(obj))
             return self.send(msg, flags)
 
     def recv_json(self, flags=0):
@@ -749,7 +750,7 @@ cdef class Socket:
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = self.recv(flags)
-            return jsonapi.loads(msg)
+            return jsonapi.loads(zlib.decompress(msg))
 
 
 __all__ = ['Socket']
