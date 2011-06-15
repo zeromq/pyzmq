@@ -76,7 +76,6 @@ class ZMQError(ZMQBaseError):
         if error is None:
             with nogil:
                 errno = zmq_errno()
-                errno = zmq_errno()
             error = errno
         if type(error) == int:
             self.strerror = strerror(error)
