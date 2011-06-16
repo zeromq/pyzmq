@@ -368,6 +368,26 @@ cdef class Socket:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
     
+    def __setattr__(self, key, value):
+        """set sockopts by attr"""
+        key = key.upper()
+        try:
+            opt = getattr(constants, key)
+        except AttributeError:
+            raise AttributeError("Socket has no such option: %s"%key)
+        else:
+            self.setsockopt(opt, value)
+    
+    def __getattr__(self, key):
+        """set sockopts by attr"""
+        key = key.upper()
+        try:
+            opt = getattr(constants, key)
+        except AttributeError:
+            raise AttributeError("Socket has no such option: %s"%key)
+        else:
+            return self.getsockopt(opt)
+    
     def bind(self, addr):
         """s.bind(addr)
 
