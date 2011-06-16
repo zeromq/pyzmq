@@ -208,4 +208,33 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(zmq.ZMQError, s.recv)
         del ctx
     
+    def test_attr(self):
+        """set setting/getting sockopts as attributes"""
+        s = self.context.socket(zmq.XREQ)
+        self.sockets.append(s)
+        ident = asbytes('hi there')
+        s.identity = ident
+        self.assertEquals(ident, s.identity)
+        self.assertEquals(ident, s.getsockopt(zmq.IDENTITY))
+        self.assertEquals(s.fd, s.getsockopt(zmq.FD))
+    
+    def test_bad_attr(self):
+        s = self.context.socket(zmq.XREQ)
+        self.sockets.append(s)
+        try:
+            s.apple='foo'
+        except AttributeError:
+            pass
+        else:
+            self.fail("bad setattr should have raised AttributeError")
+        try:
+            s.apple
+        except AttributeError:
+            pass
+        else:
+            self.fail("bad getattr should have raised AttributeError")
+
+        
+
+    
 
