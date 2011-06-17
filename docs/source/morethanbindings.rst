@@ -47,10 +47,16 @@ object over the wire after serializing with :mod:`json` and :mod:`pickle` respec
 and any object sent via those methods can be reconstructed with the
 :meth:`~.Socket.recv_json` and :meth:`~.Socket.recv_pyobj` methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-:meth:`~.Socket.send_unicode` and :meth:`~.Socket.recv_unicode` that simply send via the
-unambiguous utf-8 byte encoding. See :ref:`our Unicode discussion <unicode>` for more
-information on the trials and tribulations of working with Unicode in a C extension while
-supporting Python 2 and 3.
+:meth:`~.Socket.send_unicode` and :meth:`~.Socket.recv_unicode` that simply send bytes
+after encoding the message ('utf-8' is the default). 
+
+.. seealso::
+
+    * :ref:`Further information <serialization>` on serialization in pyzmq.
+    
+    * :ref:`Our Unicode discussion <unicode>` for more information on the trials and
+      tribulations of working with Unicode in a C extension while supporting Python 2 and 3.
+
 
 MessageTracker
 **************
