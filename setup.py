@@ -501,16 +501,16 @@ monqueue = pxd('devices', 'monitoredqueue')
 submodules = dict(
     core = {'constants': [libzmq],
             'error':[libzmq],
-            'poll':[libzmq],
+            'poll':[libzmq, socket],
             'stopwatch':[libzmq, pxd('core','stopwatch')],
             'context':[socket, context, libzmq],
             'message':[libzmq, buffers, message],
             'socket':[context, message, socket, libzmq, buffers],
-            'device':[libzmq],
+            'device':[libzmq, socket],
             'version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, libzmq, monqueue],
+            'monitoredqueue':[buffers, libzmq, monqueue, socket],
     },
     utils = {
             'initthreads':[libzmq]
