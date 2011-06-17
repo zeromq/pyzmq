@@ -234,6 +234,19 @@ class TestSocket(BaseZMQTestCase):
         else:
             self.fail("bad getattr should have raised AttributeError")
 
+    def test_subclass(self):
+        """subclasses can assign attributes"""
+        class S(zmq.Socket):
+            def __init__(self, *a, **kw):
+                self.a=-1
+        s = S(self.context, zmq.REP)
+        self.sockets.append(s)
+        self.assertEquals(s.a, -1)
+        s.a=1
+        self.assertEquals(s.a, 1)
+        a=s.a
+        self.assertEquals(a, 1)
+        
         
 
     

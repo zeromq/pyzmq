@@ -168,7 +168,7 @@ cdef class Socket:
     .Context.socket : method for creating a socket bound to a Context.
     """
 
-    def __cinit__(self, object context, int socket_type):
+    def __cinit__(self, object context, int socket_type, *args, **kwrags):
         cdef Py_ssize_t c_handle
         c_handle = context._handle
 
@@ -180,9 +180,13 @@ cdef class Socket:
         if self.handle == NULL:
             raise ZMQError()
         self.closed = False
+        self._attrs = {}
 
     def __dealloc__(self):
         self.close()
+    
+    def __init__(self, context, socket_type):
+        pass
 
     def close(self):
         """s.close()
@@ -370,16 +374,23 @@ cdef class Socket:
     
     def __setattr__(self, key, value):
         """set sockopts by attr"""
-        key = key.upper()
+        key = key
         try:
-            opt = getattr(constants, key)
+            opt = getattr(constants, key.upper())
         except AttributeError:
-            raise AttributeError("Socket has no such option: %s"%key)
+            # allow subclasses to have extended attributes
+            if self.__class__.__module__ != 'zmq.core.socket':
+                self._attrs[key] = value
+            else:
+                raise AttributeError("Socket has no such option: %s"%key.upper())
         else:
             self.setsockopt(opt, value)
     
     def __getattr__(self, key):
         """set sockopts by attr"""
+        if self._attrs.has_key(key):
+            # `key` is subclass extended attribute
+            return self._attrs[key]
         key = key.upper()
         try:
             opt = getattr(constants, key)

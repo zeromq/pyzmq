@@ -39,6 +39,7 @@ cdef class Socket:
     # collected until the socket it done with it.
     cdef public object context # The zmq Context object that owns this.
     cdef public object closed   # bool property for a closed socket.
+    cdef dict _attrs   # dict needed for *non-sockopt* get/setattr in subclasses
 
     # cpdef methods for direct-cython access:
     cpdef object send(self, object data, int flags=*, copy=*, track=*)
