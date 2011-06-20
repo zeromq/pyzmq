@@ -57,7 +57,7 @@ sockets as both input and output. This is because ``ROUTER`` sockets, when they 
 message, prepend the ``IDENTITY`` of the socket that sent the message (for use in routing
 the reply). The result is that the output socket will always try to route the incoming
 message back to the original sender, which is presumably not the intended pattern. In
-order for the queue to support an ROUTER-ROUTER connection, it must swap the first two parts
+order for the queue to support a ROUTER-ROUTER connection, it must swap the first two parts
 of the message in order to get the right message out the other side.
 
 To invoke a monitored queue is similar to invoking a regular ØMQ device::

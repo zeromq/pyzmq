@@ -79,11 +79,11 @@ if __name__ == '__main__':
     context = zmq.Context()
     pub = context.socket(zmq.PUB)
     pub.bind('tcp://127.0.0.1:5555')
-    dealer = context.socket(zmq.DEALER)
-    dealer.bind('tcp://127.0.0.1:5556')
+    router = context.socket(zmq.ROUTER)
+    router.bind('tcp://127.0.0.1:5556')
     
     outstream = zmqstream.ZMQStream(pub, loop)
-    instream = zmqstream.ZMQStream(dealer, loop)
+    instream = zmqstream.ZMQStream(router, loop)
     
     hb = HeartBeater(loop, outstream, instream)
     
