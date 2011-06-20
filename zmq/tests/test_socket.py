@@ -148,13 +148,13 @@ class TestSocket(BaseZMQTestCase):
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
-        a = self.context.socket(zmq.XREQ)
+        a = self.context.socket(zmq.DEALER)
         port = a.bind_to_random_port(addr)
         a.close()
         iface = "%s:%i"%(addr,port)
-        a = self.context.socket(zmq.XREQ)
+        a = self.context.socket(zmq.DEALER)
         a.setsockopt(zmq.IDENTITY, asbytes("a"))
-        b = self.context.socket(zmq.XREP)
+        b = self.context.socket(zmq.ROUTER)
         self.sockets.extend([a,b])
         a.connect(iface)
         time.sleep(0.1)
@@ -210,7 +210,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_attr(self):
         """set setting/getting sockopts as attributes"""
-        s = self.context.socket(zmq.XREQ)
+        s = self.context.socket(zmq.DEALER)
         self.sockets.append(s)
         ident = asbytes('hi there')
         s.identity = ident
@@ -219,7 +219,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.fd, s.getsockopt(zmq.FD))
     
     def test_bad_attr(self):
-        s = self.context.socket(zmq.XREQ)
+        s = self.context.socket(zmq.DEALER)
         self.sockets.append(s)
         try:
             s.apple='foo'

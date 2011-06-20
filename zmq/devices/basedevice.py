@@ -56,7 +56,7 @@ class Device:
 
     For instance::
 
-        dev = Device(zmq.QUEUE, zmq.XREQ, zmq.XREP)
+        dev = Device(zmq.QUEUE, zmq.DEALER, zmq.ROUTER)
 
     Similar to zmq.device, but socket types instead of sockets themselves are
     passed, and the sockets are created in the work thread, to avoid issues

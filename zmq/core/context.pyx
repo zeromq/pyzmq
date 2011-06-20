@@ -116,7 +116,7 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH, XSUB, XPUB.
+            REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XSUB, XPUB.
         """
         if self.closed:
             raise ZMQError(ENOTSUP)

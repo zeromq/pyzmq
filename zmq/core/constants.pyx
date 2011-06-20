@@ -45,7 +45,9 @@ SUB = ZMQ_SUB
 REQ = ZMQ_REQ
 REP = ZMQ_REP
 XREQ = ZMQ_XREQ
+DEALER = ZMQ_XREQ
 XREP = ZMQ_XREP
+ROUTER = ZMQ_XREP
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
 if ZMQ_VERSION < 30000:
@@ -173,7 +175,9 @@ __all__ = [
     'REQ',
     'REP',
     'XREQ',
+    'DEALER',
     'XREP',
+    'ROUTER',
     'PULL',
     'PUSH',
     'AFFINITY',
