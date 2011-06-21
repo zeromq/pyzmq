@@ -217,7 +217,8 @@ def select(rlist, wlist, xlist, timeout=None):
     if timeout is None:
         timeout = -1
     # Convert from sec -> us for zmq_poll.
-    timeout = int(timeout*1000000.0)
+    # zmq_poll accepts 3.x style timeout in ms
+    timeout = int(timeout*1000.0)
     if timeout < 0:
         timeout = -1
     sockets = []
