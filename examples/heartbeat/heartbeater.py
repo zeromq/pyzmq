@@ -3,8 +3,8 @@
 
 For use with heart.py
 
-A basic heartbeater using PUB and XREP sockets. pings are sent out on the PUB, and hearts
-are tracked based on their XREQ identities.
+A basic heartbeater using PUB and ROUTER sockets. pings are sent out on the PUB, and hearts
+are tracked based on their DEALER identities.
 
 You can start many hearts with heart.py, and the heartbeater will monitor all of them, and notice when they stop responding.
 
@@ -21,7 +21,7 @@ from zmq.eventloop import ioloop, zmqstream
 class HeartBeater(object):
     """A basic HeartBeater class
     pingstream: a PUB stream
-    pongstream: an XREP stream"""
+    pongstream: an ROUTER stream"""
     
     def __init__(self, loop, pingstream, pongstream, period=1000):
         self.loop = loop
@@ -79,11 +79,11 @@ if __name__ == '__main__':
     context = zmq.Context()
     pub = context.socket(zmq.PUB)
     pub.bind('tcp://127.0.0.1:5555')
-    xrep = context.socket(zmq.XREP)
-    xrep.bind('tcp://127.0.0.1:5556')
+    router = context.socket(zmq.ROUTER)
+    router.bind('tcp://127.0.0.1:5556')
     
     outstream = zmqstream.ZMQStream(pub, loop)
-    instream = zmqstream.ZMQStream(xrep, loop)
+    instream = zmqstream.ZMQStream(router, loop)
     
     hb = HeartBeater(loop, outstream, instream)
     

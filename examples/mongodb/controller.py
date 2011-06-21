@@ -70,7 +70,7 @@ class MongoZMQ(object):
 
     def start(self):
         context = zmq.Context()
-        socket = context.socket(zmq.XREP)
+        socket = context.socket(zmq.ROUTER)
         socket.bind(self._bind_addr)
         while True:
             msg = socket.recv_multipart()
@@ -84,7 +84,7 @@ class MongoZMQ(object):
             id = msg[0]
             operation = msg[1]
             contents = json.loads(msg[2])
-            # always send back the id with XREP
+            # always send back the id with ROUTER
             reply = [id]
             if operation == 'add':
                 self.add_document(contents)

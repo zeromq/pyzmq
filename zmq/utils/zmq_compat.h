@@ -54,6 +54,13 @@
     #define ZMQ_DOWNSTREAM (-1)
 #endif
 
+#ifndef ZMQ_DEALER
+    #define ZMQ_DEALER (-1)
+#endif
+#ifndef ZMQ_ROUTER
+    #define ZMQ_ROUTER (-1)
+#endif
+
 #ifndef ZMQ_HWM
     #define ZMQ_HWM (-1)
 #endif

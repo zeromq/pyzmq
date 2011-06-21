@@ -106,7 +106,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REQ # 3
     enum: ZMQ_REP # 4
     enum: ZMQ_XREQ # 5
+    enum: ZMQ_DEALER # 5
     enum: ZMQ_XREP # 6
+    enum: ZMQ_ROUTER # 6
     enum: ZMQ_PULL # 7
     enum: ZMQ_PUSH # 8
     enum: ZMQ_XPUB # 9

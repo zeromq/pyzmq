@@ -48,6 +48,16 @@ XREQ = ZMQ_XREQ
 XREP = ZMQ_XREP
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
+
+if ZMQ_DEALER == -1:
+	DEALER = XREQ
+else:
+    DEALER = ZMQ_DEALER
+if ZMQ_ROUTER == -1:
+	ROUTER = XREP
+else:
+    ROUTER = ZMQ_ROUTER
+
 if ZMQ_VERSION < 30000:
     UPSTREAM = ZMQ_UPSTREAM
     DOWNSTREAM = ZMQ_DOWNSTREAM
@@ -173,7 +183,9 @@ __all__ = [
     'REQ',
     'REP',
     'XREQ',
+    'DEALER',
     'XREP',
+    'ROUTER',
     'PULL',
     'PUSH',
     'AFFINITY',

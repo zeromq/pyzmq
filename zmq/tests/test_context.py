@@ -53,7 +53,7 @@ class TestContext(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 0)
     
     def test_term_hang(self):
-        rep,req = self.create_bound_pair(zmq.XREP, zmq.XREQ)
+        rep,req = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
         req.setsockopt(zmq.LINGER, 0)
         req.send(asbytes('hello'), copy=False)
         req.close()
