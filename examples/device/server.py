@@ -37,10 +37,10 @@ def routine(context):
 
 context = zmq.Context(1)
 
-workers = context.socket(zmq.XREQ)
+workers = context.socket(zmq.DEALER)
 workers.bind("inproc://workers");
 
-clients = context.socket(zmq.XREP)
+clients = context.socket(zmq.DEALER)
 clients.bind('tcp://127.0.0.1:5555')
 
 for i in range(10):

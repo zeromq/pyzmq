@@ -28,7 +28,7 @@ class MongoZMQClient(object):
 
     def __init__(self, connect_addr='tcp://127.0.0.1:5000'):
         self._context = zmq.Context()
-        self._socket = self._context.socket(zmq.XREQ)
+        self._socket = self._context.socket(zmq.DEALER)
         self._socket.connect(connect_addr)
 
     def _send_recv_msg(self, msg):

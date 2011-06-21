@@ -37,7 +37,7 @@ from libzmq cimport *
 
 from zmq.core.socket cimport Socket
 
-from zmq.core import XREP, ZMQError
+from zmq.core import ROUTER, ZMQError
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue functions
@@ -58,7 +58,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     multipart.
     
     The only difference between this and a QUEUE as far as in/out are
-    concerned is that it works with two XREP sockets by swapping the IDENT
+    concerned is that it works with two ROUTER sockets by swapping the IDENT
     prefixes.
     
     Parameters
@@ -92,9 +92,9 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
         if not isinstance(prefix, bytes):
             raise TypeError("prefix must be bytes, not %s"%type(prefix))
 
-    # force swap_ids if both XREP
-    swap_ids = (in_socket.socket_type == XREP and 
-                out_socket.socket_type == XREP)
+    # force swap_ids if both ROUTER
+    swap_ids = (in_socket.socket_type == ROUTER and 
+                out_socket.socket_type == ROUTER)
     
     # build zmq_msg objects from str prefixes
     asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
