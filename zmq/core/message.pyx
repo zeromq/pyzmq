@@ -362,38 +362,6 @@ cdef class Message:
             return b.decode()
         else:
             return b
-    
-    @property
-    def done(self):
-        """Is 0MQ completely done with the message?"""
-        if not self.tracker:
-            raise ValueError("Not a tracked message")
-        return self.tracker.done
-    
-    def wait(self, timeout=-1):
-        """m.wait(timeout=-1)
-
-        Wait for 0MQ to be done with the message, or until `timeout`.
-        
-        Parameters
-        ----------
-        timeout : float [default: -1, wait forever]
-            Maximum time in (s) to wait before raising NotDone.
-            
-        
-        Returns
-        -------
-        None
-            if done before `timeout`
-        
-        Raises
-        ------
-        NotDone
-            if `timeout` reached before I am done.
-        """
-        if not self.tracker:
-            raise ValueError("Not a tracked message")
-        return self.tracker.wait(timeout=timeout)
 
     cdef inline object _getbuffer(self):
         """Create a Python buffer/view of the message data.

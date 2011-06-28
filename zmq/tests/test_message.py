@@ -172,7 +172,7 @@ class TestMessage(BaseZMQTestCase):
     
     def test_tracker(self):
         m = zmq.Message(asbytes('asdf'), track=True)
-        self.assertFalse(m.done)
+        self.assertFalse(m.tracker.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
         del m
@@ -180,16 +180,16 @@ class TestMessage(BaseZMQTestCase):
     
     def test_no_tracker(self):
         m = zmq.Message(asbytes('asdf'), track=False)
-        self.assertRaises(ValueError, getattr, m, 'done')
+        self.assertEquals(m.tracker, None)
         m2 = copy.copy(m)
-        self.assertRaises(ValueError, getattr, m2, 'done')
+        self.assertEquals(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
         m = zmq.Message(asbytes('asdf'), track=True)
         m2 = zmq.Message(asbytes('whoda'), track=True)
         mt = zmq.MessageTracker(m,m2)
-        self.assertFalse(m.done)
+        self.assertFalse(m.tracker.done)
         self.assertFalse(mt.done)
         self.assertRaises(zmq.NotDone, mt.wait, 0.1)
         del m
