@@ -415,7 +415,7 @@ cdef class Socket:
     
     def __getattr__(self, key):
         """set sockopts by attr"""
-        if self._attrs.has_key(key):
+        if key in self._attrs:
             # `key` is subclass extended attribute
             return self._attrs[key]
         key = key.upper()
