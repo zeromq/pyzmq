@@ -21,6 +21,8 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import time
+
 import zmq
 from zmq.utils.strtypes import asbytes
 from zmq.tests import BaseZMQTestCase
@@ -70,5 +72,27 @@ class TestContext(BaseZMQTestCase):
         self.assertFalse(c3 is c2)
         self.assertFalse(c3.closed)
         self.assertTrue(c3 is c4)
+    
+    def test_many_sockets(self):
+        """opening and closing many sockets shouldn't cause problems"""
+        ctx = zmq.Context()
+        for i in range(16):
+            sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
+            [ s.close() for s in sockets ]
+            # give the reaper a chance
+            time.sleep(1e-2)
+        ctx.term()
+    
+    def test_term_close(self):
+        """Context.term should close sockets"""
+        ctx = zmq.Context()
+        sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
+        
+        # close half of the sockets
+        [ s.close() for s in sockets[::2] ]
+        
+        ctx.term()
+        for s in sockets:
+            self.assertTrue(s.closed)
         
 

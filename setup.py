@@ -503,14 +503,14 @@ submodules = dict(
             'error':[libzmq],
             'poll':[libzmq, socket],
             'stopwatch':[libzmq, pxd('core','stopwatch')],
-            'context':[socket, context, libzmq],
+            'context':[context, libzmq],
             'message':[libzmq, buffers, message],
             'socket':[context, message, socket, libzmq, buffers],
-            'device':[libzmq, socket],
+            'device':[libzmq, socket, context],
             'version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, libzmq, monqueue, socket],
+            'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
     },
     utils = {
             'initthreads':[libzmq]
