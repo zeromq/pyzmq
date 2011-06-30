@@ -26,6 +26,7 @@ import sys
 import os
 import logging
 import pickle
+import platform
 from distutils import ccompiler
 from subprocess import Popen, PIPE
 
@@ -107,13 +108,18 @@ int main(){
         f.close()
 
     if sys.platform == 'darwin':
+        #use appropriate arch for comiler
+        if platform.architecture()[0]=='32bit':
+            cpreargs = ['-arch','i386']
+        else:
+            cpreargs = None
         # allow for missing UB arch, since it will still work:
-        preargs = ['-undefined', 'dynamic_lookup']
+        lpreargs = ['-undefined', 'dynamic_lookup']
     else:
-        preargs = None
+        lpreargs = None
 
-    objs = cc.compile([cfile])
-    cc.link_executable(objs, efile, extra_preargs=preargs)
+    objs = cc.compile([cfile],extra_preargs=cpreargs)
+    cc.link_executable(objs, efile, extra_preargs=lpreargs)
 
     result = Popen(efile, stdout=PIPE, stderr=PIPE)
     so, se = result.communicate()
