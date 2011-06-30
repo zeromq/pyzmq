@@ -224,3 +224,4 @@ The following people have contributed to the project:
 * Thomas Kluyver (takowl AT gmail DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
 * Daniel Truemper (truemped AT googlemail DOT com)
+* Erik Tollerud <erik DOT tollerud AT gmail DOT com>
