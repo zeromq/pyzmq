@@ -86,8 +86,7 @@ cdef class Context:
             self.max_sockets *= 2
             self._sockets = <void **>realloc(self._sockets, self.max_sockets*sizeof(void *))
             if self._sockets == NULL:
-                with gil:
-                    raise MemoryError("Could not reallocate _sockets array")
+                raise MemoryError("Could not reallocate _sockets array")
         
         self._sockets[self.n_sockets] = handle
         self.n_sockets += 1
