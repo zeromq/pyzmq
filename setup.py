@@ -513,7 +513,8 @@ submodules = dict(
             'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
     },
     utils = {
-            'initthreads':[libzmq]
+            'initthreads':[libzmq],
+            'rebuffer':[buffers],
     }
 )
 

@@ -33,6 +33,7 @@ from unittest import TestCase
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import unicode,bytes,asbytes
+from zmq.utils.rebuffer import array_from_buffer
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -307,4 +308,40 @@ class TestMessage(BaseZMQTestCase):
                 self.assertEquals(b, null)
                 self.assertEquals(mb, null)
                 self.assertEquals(m2.bytes, ff)
+
+    def test_buffer_numpy(self):
+        """test non-copying numpy array messages"""
+        try:
+            import numpy
+        except ImportError:
+            raise SkipTest("requires numpy")
+        if sys.version_info < (2,7):
+            raise SkipTest("requires new-style buffer interface (py >= 2.7)")
+        rand = numpy.random.randint
+        shapes = [ rand(2,5) for i in range(5) ]
+        a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        dtypes = [int, float, '>i4', 'B']
+        for i in range(1,len(shapes)+1):
+            shape = shapes[:i]
+            for dt in dtypes:
+                A = numpy.ndarray(shape, dtype=dt)
+                while not (A < 1e400).all():
+                    # don't let nan sneak in
+                    A = numpy.ndarray(shape, dtype=dt)
+                a.send(A, copy=False)
+                msg = b.recv(copy=False)
+                
+                B = array_from_buffer(msg, A.dtype, A.shape)
+                self.assertEquals(A.shape, B.shape)
+                self.assertTrue((A==B).all())
+            A = numpy.ndarray(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
+            A['a'] = 1024
+            A['b'] = 1e9
+            A['c'] = 'hello there'
+            a.send(A, copy=False)
+            msg = b.recv(copy=False)
+            
+            B = array_from_buffer(msg, A.dtype, A.shape)
+            self.assertEquals(A.shape, B.shape)
+            self.assertTrue((A==B).all())
 

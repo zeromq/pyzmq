@@ -33,9 +33,14 @@ cdef extern from "Python.h":
     ctypedef struct Py_buffer:
         void *buf
         Py_ssize_t len
-        Py_ssize_t itemsize
+        int readonly
         char *format
+        int ndim
         Py_ssize_t *shape
+        Py_ssize_t *strides
+        Py_ssize_t *suboffsets
+        Py_ssize_t itemsize
+        void *internal
     cdef enum:
         PyBUF_SIMPLE
         PyBUF_WRITABLE
