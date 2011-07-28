@@ -8,16 +8,13 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.7, and targets libzmq-2.1.7. For libzmq
+Current release of pyzmq is 2.1.8, and targets libzmq-2.1.8. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
-
-A 2.1.7.1 release exists only for 64b Windows, because it fixes a ``ZMQ_FD`` related bug that only
-affected those systems.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
 as that of your libzmq, but due to the generally growing API of libzmq, your pyzmq should
 *not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
-intend to support libzmq >= 2.1.0 for pyzmq 2.1.x.
+intend to support libzmq >= 2.1.4 (the first 'stable' 2.1 release) for pyzmq 2.1.x.
 
 ØMQ 3.0
 -------
@@ -52,7 +49,7 @@ Eggs and MSIs
 -------------
 
 We have binary installers for various Pythons on OSX and Windows, so you should be able to
-just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
+just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.8*, so they should
 be the only thing you need to start using pyzmq, but we simply don't have the experience to know
 when and where these installers will not work.
 
@@ -71,13 +68,15 @@ and Windows (x86 and x64):
 We also have MSI installer packages in our `downloads
 <http://github.com/zeromq/pyzmq/downloads>`_ section on GitHub.
 
-A Python 2.6/win64 MSI was provided by Craig Austin (craig DOT austin AT gmail DOT com)
+A Python 2.6/win64 MSI for 2.1.7 was provided by Craig Austin (craig DOT austin AT gmail DOT com)
 
 Our build scripts are much improved as of 2.1.4, so if you would like to contribute better
 Windows installers, or have any improvements on existing releases, they would be much
 appreciated. Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should*
 work, once you have a libzmq and Python. We simply don't have the VMs or time in which to cover
-all the bases ourselves.
+all the bases ourselves.  Sometimes libzmq.so/dll/dylib doesn't get included unless ``build``
+is specified *also*, e.g. ``python setupegg.py build bdist_egg``, but this doesn't always
+seem to be true.
 
 General
 -------
@@ -97,7 +96,7 @@ The argument should be a directory containing a ``lib`` and a ``include`` direct
 ``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
 and current libzmq into the same parent directory, this would be:
 
-    $ python setup.py configure --zmq=../zeromq-2.1.7
+    $ python setup.py configure --zmq=../zeromq-2.1.8
 
 Second, run this command::
 
@@ -186,15 +185,17 @@ Currently, we are using the following steps to release PyZMQ:
 
     python setup.py sdist --formats=zip,gztar upload
 
-* Upload the tarball and ``.zip`` file to github.
-* Branch the release::
+* Branch the release (do *not* push the branch)::
 
-    git checkout -b 2.1.7 master
-    git push origin 2.1.7
+    git checkout -b 2.1.8 master
+
+* commit the changed ``version.pyx`` to the branch::
+
+    git add zmq/core/version.pyx && git commit -m "bump version to 2.1.8"
 
 * Tag the release::
 
-    git tag -a -m "Tagging release 2.1.7" v2.1.7
+    git tag -a -m "Tagging release 2.1.8" v2.1.8
     git push origin --tags
 
 * Make sure the ``README.rst`` has an updated list of contributors.
