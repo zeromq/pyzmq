@@ -256,7 +256,7 @@ class TestMessage(BaseZMQTestCase):
         try:
             import numpy
         except ImportError:
-            raise SkipTest
+            raise SkipTest("numpy required")
         rand = numpy.random.randint
         shapes = [ rand(2,16) for i in range(5) ]
         for i in range(1,len(shapes)+1):
@@ -272,10 +272,10 @@ class TestMessage(BaseZMQTestCase):
             self.assertEquals((A==B).all(), True)
     
     def test_memoryview(self):
-        """test messages from memoryview (only valid for python >= 2.7)"""
+        """test messages from memoryview"""
         major,minor = sys.version_info[:2]
         if not (major >= 3 or (major == 2 and minor >= 7)):
-            raise SkipTest
+            raise SkipTest("memoryviews only in python >= 2.7")
 
         s = asbytes('carrotjuice')
         v = memoryview(s)

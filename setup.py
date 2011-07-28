@@ -78,7 +78,7 @@ else:
     ignore_common_warnings=False
 
 # the minimum zeromq version this will work against:
-min_zmq = (2,1,0)
+min_zmq = (2,1,4)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
@@ -215,7 +215,10 @@ class Configure(Command):
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             print('*'*42)
-        elif vs > '3.0':
+        elif vs >= '4.0':
+            fatal("Detected ZMQ version: %s. pyzmq does not yet support libzmq's development branch."%vs)
+            # print('*'*42)
+        elif vs >= '3.0':
             warn("Detected ZMQ version: %s. pyzmq's 3.0 support is experimental."%vs)
             print('*'*42)
 

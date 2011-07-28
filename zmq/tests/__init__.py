@@ -27,6 +27,7 @@ from threading import Thread
 from unittest import TestCase
 
 import zmq
+from zmq.utils import jsonapi
 
 try:
     from unittest import SkipTest
@@ -84,6 +85,8 @@ class BaseZMQTestCase(TestCase):
         return msg3
 
     def ping_pong_json(self, s1, s2, o):
+        if jsonapi.jsonmod is None:
+            raise SkipTest("No json library")
         s1.send_json(o)
         o2 = s2.recv_json()
         s2.send_json(o2)

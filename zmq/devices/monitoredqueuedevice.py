@@ -32,7 +32,7 @@ Authors
 
 import time
 
-from zmq.core import XREP, QUEUE, FORWARDER, ZMQError
+from zmq.core import QUEUE, FORWARDER, ZMQError
 from zmq.devices.basedevice import Device,ThreadDevice,ProcessDevice
 from zmq.devices.monitoredqueue import monitored_queue
 

@@ -77,7 +77,7 @@ class TestSocket(BaseZMQTestCase):
         "test non-uint64 sockopts"
         v = zmq.zmq_version()
         if not v >= '2.1':
-            raise SkipTest
+            raise SkipTest("only on libzmq >= 2.1")
         elif v < '3.0':
             hwm = zmq.HWM
         else:
@@ -148,13 +148,13 @@ class TestSocket(BaseZMQTestCase):
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
-        a = self.context.socket(zmq.DEALER)
+        a = self.context.socket(zmq.PUB)
         port = a.bind_to_random_port(addr)
         a.close()
         iface = "%s:%i"%(addr,port)
-        a = self.context.socket(zmq.DEALER)
-        a.setsockopt(zmq.IDENTITY, asbytes("a"))
-        b = self.context.socket(zmq.ROUTER)
+        a = self.context.socket(zmq.PAIR)
+        # a.setsockopt(zmq.IDENTITY, asbytes("a"))
+        b = self.context.socket(zmq.PAIR)
         self.sockets.extend([a,b])
         a.connect(iface)
         time.sleep(0.1)
@@ -169,10 +169,10 @@ class TestSocket(BaseZMQTestCase):
         b.bind(iface)
         msg = b.recv_multipart()
         self.assertEquals(p1.done, True)
-        self.assertEquals(msg, (list(map(asbytes, ['a', 'something']))))
+        self.assertEquals(msg, (list(map(asbytes, ['something']))))
         msg = b.recv_multipart()
         self.assertEquals(p2.done, True)
-        self.assertEquals(msg, list(map(asbytes, ['a', 'something', 'else'])))
+        self.assertEquals(msg, list(map(asbytes, ['something', 'else'])))
         m = zmq.Message(asbytes("again"), track=True)
         self.assertEquals(m.tracker.done, False)
         p1 = a.send(m, copy=False)
@@ -182,10 +182,10 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p2.done, False)
         msg = b.recv_multipart()
         self.assertEquals(m.tracker.done, False)
-        self.assertEquals(msg, list(map(asbytes, ['a', 'again'])))
+        self.assertEquals(msg, list(map(asbytes, ['again'])))
         msg = b.recv_multipart()
         self.assertEquals(m.tracker.done, False)
-        self.assertEquals(msg, list(map(asbytes, ['a', 'again'])))
+        self.assertEquals(msg, list(map(asbytes, ['again'])))
         self.assertEquals(p1.done, False)
         self.assertEquals(p2.done, False)
         pm = m.tracker

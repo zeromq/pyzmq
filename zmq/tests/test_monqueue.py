@@ -27,8 +27,7 @@ from unittest import TestCase
 import zmq
 from zmq import devices
 from zmq.utils.strtypes import asbytes
-from zmq.tests import BaseZMQTestCase
-
+from zmq.tests import BaseZMQTestCase, SkipTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -36,9 +35,10 @@ from zmq.tests import BaseZMQTestCase
 
 class TestMonitoredQueue(BaseZMQTestCase):
     sockets = []
-    pass
     
     def build_device(self, mon_sub=asbytes(""), in_prefix=asbytes('in'), out_prefix=asbytes('out')):
+        if zmq.zmq_version() >= '3':
+            raise SkipTest("MonitoredQueues don't work reliably on libzmq >= 3.0.0")
         self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB,
                                             in_prefix, out_prefix)
         alice = self.context.socket(zmq.PAIR)

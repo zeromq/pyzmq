@@ -24,7 +24,7 @@
 import zmq
 from zmq.utils.strtypes import asbytes
 
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -32,16 +32,18 @@ from zmq.tests import BaseZMQTestCase
 
 class TestMultipart(BaseZMQTestCase):
 
-    def test_xrep_xreq(self):
-        xrep, xreq = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
+    def test_router_dealer(self):
+        if zmq.zmq_version() == '3.0.0':
+            raise SkipTest("Known bug in libzmq 3.0.0, see https://zeromq.jira.com/browse/LIBZMQ-232")
+        router, dealer = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
 
         msg1 = asbytes('message1')
-        xreq.send(msg1)
-        ident = xrep.recv()
-        more = xrep.rcvmore()
+        dealer.send(msg1)
+        ident = router.recv()
+        more = router.rcvmore()
         self.assertEquals(more, True)
-        msg2 = xrep.recv()
+        msg2 = router.recv()
         self.assertEquals(msg1, msg2)
-        more = xrep.rcvmore()
+        more = router.rcvmore()
         self.assertEquals(more, False)
 
