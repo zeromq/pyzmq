@@ -203,8 +203,9 @@ Currently, we are using the following steps to release PyZMQ:
 Authors
 =======
 
-This project was started by and continues to be led by Brian E. Granger
-(ellisonbg AT gmail DOT com).
+This project was started and continues to be led by Brian E. Granger
+(ellisonbg AT gmail DOT com).  Min Ragan-Kelley (benjaminrk AT gmail DOT com)
+is the primary developer of pyzmq at this time.
 
 The following people have contributed to the project:
 

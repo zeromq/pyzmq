@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyZMQ'
-copyright = u"""2010, Brian E. Granger.  
+copyright = u"""2010-2011, Brian E. Granger & Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 

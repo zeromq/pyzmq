@@ -1,7 +1,7 @@
 """All the C imports for 0MQ"""
 
 #
-#    Copyright (c) 2010 Brian E. Granger
+#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
 #
 #    This file is part of pyzmq.
 #

@@ -1,7 +1,7 @@
 """0MQ Device classes for running in background threads or processes."""
 
 #
-#    Copyright (c) 2010 Brian E. Granger
+#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
 #
 #    This file is part of pyzmq.
 #
