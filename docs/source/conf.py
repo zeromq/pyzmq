@@ -33,8 +33,6 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
               'ipython_console_highlighting',
-              'inheritance_diagram',
-              'sphinxtogithub',
               'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.

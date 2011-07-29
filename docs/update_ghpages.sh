@@ -22,8 +22,10 @@ if [ ! -d gh-pages ]; then
     cd ..
 fi
 echo "updating local gh-pages with html build"
-rsync -va build/html/ gh-pages/ --delete --exclude .git || exit -1
+rsync -va build/html/ gh-pages/ --delete --exclude .git --exclude .nojekyll || exit -1
 cd gh-pages
+touch .nojekyll
+git add .nojekyll
 git add .
 git commit -a || exit -1
 echo "pushing to remote gh-pages"
