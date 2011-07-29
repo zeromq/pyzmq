@@ -31,6 +31,27 @@ extensions in Cython and call directly to ZeroMQ at the C-level without the pena
 going through our Python objects.
 
 
+Socket Options as Attributes
+****************************
+
+.. versionadded:: 2.1.8
+
+In 0MQ, socket options are set/retrieved with the :meth:`set/getsockopt` methods. With the
+class-based approach in pyzmq, it would be logical to perform these operations with
+simple attribute access, and this has been added in pyzmq 2.1.8. Simply assign to or
+request a Socket attribute with the (case-insensitive) name of a sockopt, and it should
+behave just as you would expect:
+
+.. sourcecode:: python
+
+    s = ctx.socket(zmq.DEALER)
+    s.identity = b'dealer'
+    s.hwm = 10
+    s.events
+    # 0
+    s.fd
+    # 16
+
 Core Extensions
 ---------------
 

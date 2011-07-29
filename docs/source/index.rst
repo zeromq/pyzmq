@@ -32,27 +32,31 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 
 Please don't hesitate to report pyzmq issues to our tracker_ on GitHub.
 
+:ref:`Summary of Changes in PyZMQ <changelog>`
+
+
 Notes from developing PyZMQ
 ===========================
 
 .. toctree::
-   :maxdepth: 2
-   
-   pyversions.rst
-   unicode.rst
+    :maxdepth: 2
+    
+    pyversions.rst
+    unicode.rst
 
 Using PyZMQ
 ===========
-   
+
 .. toctree::
-   :maxdepth: 2
-   
-   morethanbindings.rst
-   serialization.rst
-   devices.rst
-   eventloop.rst
-   logging.rst
-   api/index.rst
+    :maxdepth: 2
+    
+    morethanbindings.rst
+    serialization.rst
+    devices.rst
+    eventloop.rst
+    logging.rst
+    
+    api/index.rst
 
 Indices and tables
 ==================
