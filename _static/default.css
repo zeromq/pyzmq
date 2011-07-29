@@ -546,3 +546,8 @@ text-align: right;
   background-color: ;
   font-style: italic;
 }
+
+.versionadded {
+  font-style: italic;
+  background: #ffe;
+}

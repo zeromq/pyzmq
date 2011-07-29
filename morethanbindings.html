@@ -7,30 +7,30 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Than Just Bindings &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
-    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <title>More Than Just Bindings &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="static/jquery.js"></script>
-    <script type="text/javascript" src="static/underscore.js"></script>
-    <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="shortcut icon" href="static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="index.html" />
-    <link rel="next" title="Devices in PyZMQ" href="devices.html" />
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" />
+    <link rel="next" title="Serializing messages with PyZMQ" href="serialization.html" />
     <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
   </head>
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="index.html"><img src="_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -43,7 +43,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="devices.html" title="Devices in PyZMQ"
+          <a href="serialization.html" title="Serializing messages with PyZMQ"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="unicode.html" title="PyZMQ and Unicode"
@@ -60,7 +60,10 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">More Than Just Bindings</a><ul>
-<li><a class="reference internal" href="#the-core-as-bindings">The Core as Bindings</a></li>
+<li><a class="reference internal" href="#the-core-as-bindings">The Core as Bindings</a><ul>
+<li><a class="reference internal" href="#socket-options-as-attributes">Socket Options as Attributes</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#core-extensions">Core Extensions</a><ul>
 <li><a class="reference internal" href="#builtin-serialization">Builtin Serialization</a></li>
 <li><a class="reference internal" href="#messagetracker">MessageTracker</a></li>
@@ -75,11 +78,11 @@
   <p class="topless"><a href="unicode.html"
                         title="previous chapter">PyZMQ and Unicode</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="devices.html"
-                        title="next chapter">Devices in PyZMQ</a></p>
+  <p class="topless"><a href="serialization.html"
+                        title="next chapter">Serializing messages with PyZMQ</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="sources/morethanbindings.txt"
+    <li><a href="_sources/morethanbindings.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -125,6 +128,25 @@ efficiently writing C-extensions for Python. By separating out our objects into 
 <cite>pyx</cite> files, each with their declarations in a <cite>pxd</cite> header, other projects can write
 extensions in Cython and call directly to ZeroMQ at the C-level without the penalty of
 going through our Python objects.</p>
+<div class="section" id="socket-options-as-attributes">
+<h3>Socket Options as Attributes<a class="headerlink" href="#socket-options-as-attributes" title="Permalink to this headline">¶</a></h3>
+<p class="versionadded">
+<span class="versionmodified">New in version 2.1.8.</span></p>
+<p>In 0MQ, socket options are set/retrieved with the <tt class="xref py py-meth docutils literal"><span class="pre">set/getsockopt()</span></tt> methods. With the
+class-based approach in pyzmq, it would be logical to perform these operations with
+simple attribute access, and this has been added in pyzmq 2.1.8. Simply assign to or
+request a Socket attribute with the (case-insensitive) name of a sockopt, and it should
+behave just as you would expect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">DEALER</span><span class="p">)</span>
+<span class="n">s</span><span class="o">.</span><span class="n">identity</span> <span class="o">=</span> <span class="n">b</span><span class="s">&#39;dealer&#39;</span>
+<span class="n">s</span><span class="o">.</span><span class="n">hwm</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">s</span><span class="o">.</span><span class="n">events</span>
+<span class="c"># 0</span>
+<span class="n">s</span><span class="o">.</span><span class="n">fd</span>
+<span class="c"># 16</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="core-extensions">
 <h2>Core Extensions<a class="headerlink" href="#core-extensions" title="Permalink to this headline">¶</a></h2>
@@ -139,10 +161,16 @@ object over the wire after serializing with <a class="reference external" href="
 and any object sent via those methods can be reconstructed with the
 <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_json" title="zmq.core.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_pyobj" title="zmq.core.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_unicode" title="zmq.core.socket.Socket.send_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">send_unicode()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_unicode" title="zmq.core.socket.Socket.recv_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">recv_unicode()</span></tt></a> that simply send via the
-unambiguous utf-8 byte encoding. See <a class="reference internal" href="unicode.html#unicode"><em>our Unicode discussion</em></a> for more
-information on the trials and tribulations of working with Unicode in a C extension while
-supporting Python 2 and 3.</p>
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_unicode" title="zmq.core.socket.Socket.send_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">send_unicode()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_unicode" title="zmq.core.socket.Socket.recv_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">recv_unicode()</span></tt></a> that simply send bytes
+after encoding the message (&#8216;utf-8&#8217; is the default).</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="serialization.html#serialization"><em>Further information</em></a> on serialization in pyzmq.</li>
+<li><a class="reference internal" href="unicode.html#unicode"><em>Our Unicode discussion</em></a> for more information on the trials and
+tribulations of working with Unicode in a C extension while supporting Python 2 and 3.</li>
+</ul>
+</div>
 </div>
 <div class="section" id="messagetracker">
 <h3>MessageTracker<a class="headerlink" href="#messagetracker" title="Permalink to this headline">¶</a></h3>
@@ -205,7 +233,7 @@ with ØMQ sockets.</li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="devices.html" title="Devices in PyZMQ"
+          <a href="serialization.html" title="Serializing messages with PyZMQ"
              >next</a> |</li>
         <li class="right" >
           <a href="unicode.html" title="PyZMQ and Unicode"
@@ -217,7 +245,7 @@ with ØMQ sockets.</li>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

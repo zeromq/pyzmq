@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Serializing messages with PyZMQ &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" />
+    <link rel="next" title="Devices in PyZMQ" href="devices.html" />
+    <link rel="prev" title="More Than Just Bindings" href="morethanbindings.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="morethanbindings.html" title="More Than Just Bindings"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Serializing messages with PyZMQ</a><ul>
+<li><a class="reference internal" href="#builtin-serialization">Builtin serialization</a></li>
+<li><a class="reference internal" href="#using-your-own-serialization-with-pyzmq">Using your own serialization with PyZMQ</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="morethanbindings.html"
+                        title="previous chapter">More Than Just Bindings</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devices.html"
+                        title="next chapter">Devices in PyZMQ</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/serialization.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="serializing-messages-with-pyzmq">
+<span id="serialization"></span><h1>Serializing messages with PyZMQ<a class="headerlink" href="#serializing-messages-with-pyzmq" title="Permalink to this headline">¶</a></h1>
+<p>When sending messages over a network, you often need to marshall your data into bytes.</p>
+<div class="section" id="builtin-serialization">
+<h2>Builtin serialization<a class="headerlink" href="#builtin-serialization" title="Permalink to this headline">¶</a></h2>
+<p>PyZMQ is primarily bindings for libzmq, but we do provide three builtin serialization
+methods for convenience, to help Python developers learn libzmq. Python has two primary
+packages for serializing objects: <a class="reference external" href="http://docs.python.org/library/json.html#module-json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#module-pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>, so we provide
+simple convenience methods for sending and receiving objects serialized with these
+modules. A socket has the methods <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_json" title="zmq.core.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_pyobj" title="zmq.core.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an object over the wire after
+serializing with json and pickle respectively, and any object sent via those
+methods can be reconstructed with the <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_json" title="zmq.core.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_pyobj" title="zmq.core.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods.</p>
+<p>These methods designed for convenience, not for performance, so developers who do want
+to emphasize performance should use their own serialized send/recv methods.</p>
+</div>
+<div class="section" id="using-your-own-serialization-with-pyzmq">
+<h2>Using your own serialization with PyZMQ<a class="headerlink" href="#using-your-own-serialization-with-pyzmq" title="Permalink to this headline">¶</a></h2>
+<p>In general, you will want to provide your own serialization that is optimized for your
+application or library availability.  This may include using your own preferred
+serialization (<a class="reference internal" href="#msgpack">[msgpack]</a>, <a class="reference internal" href="#protobuf">[protobuf]</a>), or adding compression via <a class="reference internal" href="#zlib">[zlib]</a> in the standard
+library, or the super fast <a class="reference internal" href="#blosc">[blosc]</a> library.</p>
+<p>There are two simple models for implementing your own serialization: write a function
+that takes the socket as an argument, or subclass Socket for use in your own apps.</p>
+<p>For instance, pickles can often be reduced substantially in size by compressing the data.
+The following will send <em>compressed</em> pickles over the wire:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">zlib</span><span class="o">,</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+
+<span class="k">def</span> <span class="nf">send_zipped_pickle</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;pickle an object, and zip the pickle before sending it&quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">protocol</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">recv_zipped_pickle</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;inverse of send_zipped_pickle&quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">uncompress</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A common data structure in Python is the numpy array.  PyZMQ supports sending
+numpy arrays without copying any data, since they provide the Python buffer interface.
+However just the buffer is not enough information to reconstruct the array on the
+receiving side.  Here is an example of a send/recv that allow non-copying
+sends/recvs of numpy arrays including the dtype/shape data necessary for reconstructing
+the array.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="k">def</span> <span class="nf">send_array</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;send a numpy array with metadata&quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">socket</span><span class="o">.</span><span class="n">send_json</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="n">flags</span><span class="o">|</span><span class="n">zmq</span><span class="o">.</span><span class="n">SNDMORE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">recv_array</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;recv a numpy array&quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv_json</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">)</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">buffer</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">md</span><span class="p">[</span><span class="s">&#39;dtype&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s">&#39;shape&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<table class="docutils citation" frame="void" id="msgpack" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[msgpack]</a></td><td>Message Pack serialization library <a class="reference external" href="http://msgpack.org">http://msgpack.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="protobuf" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[protobuf]</a></td><td>Google Protocol Buffers <a class="reference external" href="http://code.google.com/p/protobuf">http://code.google.com/p/protobuf</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="zlib" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[zlib]</a></td><td>Python stdlib module for zip compression: <a class="reference external" href="http://docs.python.org/library/zlib.html#module-zlib" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">zlib</span></tt></a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="blosc" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[blosc]</a></td><td>Blosc: A blocking, shuffling and loss-less (and crazy-fast) compression library <a class="reference external" href="http://blosc.pytables.org/trac">http://blosc.pytables.org/trac</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devices.html" title="Devices in PyZMQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="morethanbindings.html" title="More Than Just Bindings"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

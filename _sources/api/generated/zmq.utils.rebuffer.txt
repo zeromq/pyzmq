@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.rebuffer
+==============
+
+Module: :mod:`utils.rebuffer`
+-----------------------------
+.. automodule:: zmq.utils.rebuffer
+
+.. currentmodule:: zmq.utils.rebuffer
+
+Functions
+---------
+
+
+.. autofunction:: zmq.utils.rebuffer.array_from_buffer
+
+
+.. autofunction:: zmq.utils.rebuffer.print_view_info
+
+
+.. autofunction:: zmq.utils.rebuffer.rebuffer
+

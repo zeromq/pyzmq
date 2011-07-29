@@ -1,0 +1,33 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.message
+============
+
+Module: :mod:`core.message`
+---------------------------
+.. automodule:: zmq.core.message
+
+.. currentmodule:: zmq.core.message
+
+Classes
+-------
+
+:class:`Message`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Message
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`MessageTracker`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MessageTracker
+  :members:
+  :undoc-members:
+  :inherited-members:
+

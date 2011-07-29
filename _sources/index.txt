@@ -12,40 +12,51 @@ PyZMQ Documentation
 
 .. Note::
 
-    These docs are for pyzmq-|release|, but pyzmq has not made any significant changes to
+    These docs are for pyzmq-|release|, but pyzmq has not made significant changes to
     itself since 2.0.10, so they should apply just fine there as well.
     
-    PyZMQ versioning follows zeromq, so your pyzmq version should match those of your
+    PyZMQ versioning follows zeromq, so your pyzmq version should match that of your
     zeromq. The only changes at the pyzmq user's level are the addition of a few socket
     types and socket options.
+
 
 PyZMQ is the Python bindings for ØMQ_, written almost entirely in Cython_. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
 ØMQ in general, see the excellent `ØMQ Manual`_.
 
+.. Note::
+
+    As of PyZMQ 2.1.7, PyZMQ has experimental support for the libzmq-3.0 development version,
+    and has dropped support for the zeromq-2.0 series.
+
 Please don't hesitate to report pyzmq issues to our tracker_ on GitHub.
+
+:ref:`Summary of Changes in PyZMQ <changelog>`
+
 
 Notes from developing PyZMQ
 ===========================
 
 .. toctree::
-   :maxdepth: 2
-   
-   pyversions.rst
-   unicode.rst
+    :maxdepth: 2
+    
+    pyversions.rst
+    unicode.rst
 
 Using PyZMQ
 ===========
-   
+
 .. toctree::
-   :maxdepth: 2
-   
-   morethanbindings.rst
-   devices.rst
-   eventloop.rst
-   logging.rst
-   api/index.rst
+    :maxdepth: 2
+    
+    morethanbindings.rst
+    serialization.rst
+    devices.rst
+    eventloop.rst
+    logging.rst
+    
+    api/index.rst
 
 Indices and tables
 ==================

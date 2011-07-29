@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.message &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>core.message &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.poll" href="zmq.core.poll.html" />
     <link rel="prev" title="core.error" href="zmq.core.error.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,7 +62,7 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">core.message</a><ul>
-<li><a class="reference internal" href="#module-core-message">Module: <tt class="docutils literal"><span class="pre">core.message</span></tt></a></li>
+<li><a class="reference internal" href="#module-zmq.core.message">Module: <tt class="docutils literal"><span class="pre">core.message</span></tt></a></li>
 <li><a class="reference internal" href="#classes">Classes</a><ul>
 <li><a class="reference internal" href="#message"><tt class="docutils literal"><span class="pre">Message</span></tt></a></li>
 <li><a class="reference internal" href="#messagetracker"><tt class="docutils literal"><span class="pre">MessageTracker</span></tt></a></li>
@@ -80,7 +80,7 @@
                         title="next chapter">core.poll</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.core.message.txt"
+    <li><a href="../../_sources/api/generated/zmq.core.message.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -106,12 +106,9 @@
             
   <div class="section" id="core-message">
 <h1>core.message<a class="headerlink" href="#core-message" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-core-message">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.message</span></tt><a class="headerlink" href="#module-core-message" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.message</span></tt>:</p>
-<img src="../../images/inheritanceeda5309655.png" usemap="#inheritanceeda5309655" class="inheritance"/><map id="inheritanceeda5309655" name="inheritanceeda5309655">
-</map>
-<span class="target" id="module-zmq.core.message"></span><p>0MQ Message related classes.</p>
+<div class="section" id="module-zmq.core.message">
+<span id="module-core-message"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.message</span></tt><a class="headerlink" href="#module-zmq.core.message" title="Permalink to this headline">¶</a></h2>
+<p>0MQ Message related classes.</p>
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
@@ -120,8 +117,7 @@
 <dl class="class">
 <dt id="zmq.core.message.Message">
 <em class="property">class </em><tt class="descclassname">zmq.core.message.</tt><tt class="descname">Message</tt><big>(</big><em>data=None</em>, <em>track=False</em><big>)</big><a class="headerlink" href="#zmq.core.message.Message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A Message class for non-copy send/recvs.</p>
+<dd><p>A Message class for non-copy send/recvs.</p>
 <p>This class is only needed if you want to do non-copying send and recvs.
 When you pass a string to this class, like <tt class="docutils literal"><span class="pre">Message(s)</span></tt>, the 
 ref-count of <cite>s</cite> is increased by two: once because the Message saves <cite>s</cite> as 
@@ -165,12 +161,6 @@ returned.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="zmq.core.message.Message.done">
-<tt class="descname">done</tt><a class="headerlink" href="#zmq.core.message.Message.done" title="Permalink to this definition">¶</a></dt>
-<dd><p>Is 0MQ completely done with the message?</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="zmq.core.message.Message.tracker">
 <tt class="descname">tracker</tt><a class="headerlink" href="#zmq.core.message.Message.tracker" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -180,36 +170,6 @@ returned.</p>
 <tt class="descname">tracker_event</tt><a class="headerlink" href="#zmq.core.message.Message.tracker_event" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="zmq.core.message.Message.wait">
-<tt class="descname">wait</tt><big>(</big><em>timeout=-1</em><big>)</big><a class="headerlink" href="#zmq.core.message.Message.wait" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wait for 0MQ to be done with the message, or until <cite>timeout</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float [default: -1, wait forever]</p>
-<blockquote>
-<div><p>Maximum time in (s) to wait before raising NotDone.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
-<blockquote>
-<div><p>if done before <cite>timeout</cite></p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>NotDone</strong> :</p>
-<blockquote class="last">
-<div><p>if <cite>timeout</cite> reached before I am done.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -218,8 +178,7 @@ returned.</p>
 <dl class="class">
 <dt id="zmq.core.message.MessageTracker">
 <em class="property">class </em><tt class="descclassname">zmq.core.message.</tt><tt class="descname">MessageTracker</tt><big>(</big><em>*towatch</em><big>)</big><a class="headerlink" href="#zmq.core.message.MessageTracker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A class for tracking if 0MQ is done using one or more messages.</p>
+<dd><p>A class for tracking if 0MQ is done using one or more messages.</p>
 <p>When you send a 0MQ mesage, it is not sent immeidately. The 0MQ IO thread
 send the message at some later time. Often you want to know when 0MQ has
 actually sent the message though. This is complicated by the fact that
@@ -316,7 +275,7 @@ actual Messages.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

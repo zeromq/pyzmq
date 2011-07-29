@@ -1,0 +1,60 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.error
+==========
+
+Module: :mod:`core.error`
+-------------------------
+.. automodule:: zmq.core.error
+
+.. currentmodule:: zmq.core.error
+
+Classes
+-------
+
+:class:`NotDone`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NotDone
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ZMQBaseError`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQBaseError
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ZMQBindError`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQBindError
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ZMQError`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQError
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+Function
+--------
+
+
+.. autofunction:: zmq.core.error.strerror
+

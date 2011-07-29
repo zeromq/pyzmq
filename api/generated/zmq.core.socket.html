@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>core.socket &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
     <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,7 +62,7 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">core.socket</a><ul>
-<li><a class="reference internal" href="#module-core-socket">Module: <tt class="docutils literal"><span class="pre">core.socket</span></tt></a></li>
+<li><a class="reference internal" href="#module-zmq.core.socket">Module: <tt class="docutils literal"><span class="pre">core.socket</span></tt></a></li>
 <li><a class="reference internal" href="#socket"><tt class="docutils literal"><span class="pre">Socket</span></tt></a></li>
 </ul>
 </li>
@@ -76,7 +76,7 @@
                         title="next chapter">core.stopwatch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.core.socket.txt"
+    <li><a href="../../_sources/api/generated/zmq.core.socket.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -102,20 +102,16 @@
             
   <div class="section" id="core-socket">
 <h1>core.socket<a class="headerlink" href="#core-socket" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-core-socket">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.socket</span></tt><a class="headerlink" href="#module-core-socket" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.socket</span></tt>:</p>
-<img src="../../images/inheritancee2f418f596.png" usemap="#inheritancee2f418f596" class="inheritance"/><map id="inheritancee2f418f596" name="inheritancee2f418f596">
-</map>
-<span class="target" id="module-zmq.core.socket"></span><p>0MQ Socket class.</p>
+<div class="section" id="module-zmq.core.socket">
+<span id="module-core-socket"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.socket</span></tt><a class="headerlink" href="#module-zmq.core.socket" title="Permalink to this headline">¶</a></h2>
+<p>0MQ Socket class.</p>
 </div>
 <div class="section" id="socket">
 <h2><a class="reference internal" href="#zmq.core.socket.Socket" title="zmq.core.socket.Socket"><tt class="xref py py-class docutils literal"><span class="pre">Socket</span></tt></a><a class="headerlink" href="#socket" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="zmq.core.socket.Socket">
 <em class="property">class </em><tt class="descclassname">zmq.core.socket.</tt><tt class="descname">Socket</tt><big>(</big><em>context</em>, <em>socket_type</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A 0MQ socket.</p>
+<dd><p>A 0MQ socket.</p>
 <p>These objects will generally be constructed via the socket() method of a Context object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -128,7 +124,7 @@
 <p><strong>socket_type</strong> : int</p>
 <blockquote class="last">
 <div><p>The socket type, which can be any of the 0MQ socket types: 
-REQ, REP, PUB, SUB, PAIR, XREQ, XREP, PULL, PUSH, XPUB, XSUB.</p>
+REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XPUB, XSUB.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -746,7 +742,7 @@ UNSUBSCRIBE, IDENTITY</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

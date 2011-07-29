@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.ioloop &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>eventloop.ioloop &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" />
     <link rel="prev" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,13 +62,14 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">eventloop.ioloop</a><ul>
-<li><a class="reference internal" href="#module-eventloop-ioloop">Module: <tt class="docutils literal"><span class="pre">eventloop.ioloop</span></tt></a></li>
+<li><a class="reference internal" href="#module-zmq.eventloop.ioloop">Module: <tt class="docutils literal"><span class="pre">eventloop.ioloop</span></tt></a></li>
 <li><a class="reference internal" href="#classes">Classes</a><ul>
 <li><a class="reference internal" href="#delayedcallback"><tt class="docutils literal"><span class="pre">DelayedCallback</span></tt></a></li>
 <li><a class="reference internal" href="#ioloop"><tt class="docutils literal"><span class="pre">IOLoop</span></tt></a></li>
 <li><a class="reference internal" href="#periodiccallback"><tt class="docutils literal"><span class="pre">PeriodicCallback</span></tt></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#function">Function</a></li>
 </ul>
 </li>
 </ul>
@@ -81,7 +82,7 @@
                         title="next chapter">eventloop.stack_context</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.eventloop.ioloop.txt"
+    <li><a href="../../_sources/api/generated/zmq.eventloop.ioloop.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -107,12 +108,9 @@
             
   <div class="section" id="eventloop-ioloop">
 <h1>eventloop.ioloop<a class="headerlink" href="#eventloop-ioloop" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-eventloop-ioloop">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.ioloop</span></tt><a class="headerlink" href="#module-eventloop-ioloop" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.eventloop.ioloop</span></tt>:</p>
-<img src="../../images/inheritancebba250277e.png" usemap="#inheritancebba250277e" class="inheritance"/><map id="inheritancebba250277e" name="inheritancebba250277e">
-</map>
-<span class="target" id="module-zmq.eventloop.ioloop"></span><p>A level-triggered I/O loop for non-blocking sockets.</p>
+<div class="section" id="module-zmq.eventloop.ioloop">
+<span id="module-eventloop-ioloop"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.ioloop</span></tt><a class="headerlink" href="#module-zmq.eventloop.ioloop" title="Permalink to this headline">¶</a></h2>
+<p>A level-triggered I/O loop for non-blocking sockets.</p>
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
@@ -121,8 +119,7 @@
 <dl class="class">
 <dt id="zmq.eventloop.ioloop.DelayedCallback">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">DelayedCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#zmq.eventloop.ioloop.PeriodicCallback" title="zmq.eventloop.ioloop.PeriodicCallback"><tt class="xref py py-class docutils literal"><span class="pre">zmq.eventloop.ioloop.PeriodicCallback</span></tt></a></p>
-<p>Schedules the given callback to be called once.</p>
+<dd><p>Schedules the given callback to be called once.</p>
 <p>The callback is called after the object is created by callback_time milliseconds.</p>
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.DelayedCallback.start">
@@ -142,8 +139,7 @@
 <dl class="class">
 <dt id="zmq.eventloop.ioloop.IOLoop">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">IOLoop</tt><big>(</big><em>impl=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A level-triggered I/O loop.</p>
+<dd><p>A level-triggered I/O loop.</p>
 <p>We use epoll if it is available, or else we fall back on select(). If
 you are implementing a system that needs to handle 1000s of simultaneous
 connections, you should use Linux and either compile our epoll module or
@@ -316,8 +312,7 @@ whether that callback was invoked before or after ioloop.start.</p>
 <dl class="class">
 <dt id="zmq.eventloop.ioloop.PeriodicCallback">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">PeriodicCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>Schedules the given callback to be called periodically.</p>
+<dd><p>Schedules the given callback to be called periodically.</p>
 <p>The callback is called every callback_time milliseconds.</p>
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.PeriodicCallback.start">
@@ -332,6 +327,15 @@ whether that callback was invoked before or after ioloop.start.</p>
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.eventloop.ioloop.install">
+<tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install the zmq eventloop as the tornado eventloop.</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -364,7 +368,7 @@ whether that callback was invoked before or after ioloop.start.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

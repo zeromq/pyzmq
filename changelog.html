@@ -1,0 +1,168 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Changes in PyZMQ &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Changes in PyZMQ</a><ul>
+<li><a class="reference internal" href="#id1">2.1.8</a></li>
+<li><a class="reference internal" href="#id2">2.1.7.1</a></li>
+<li><a class="reference internal" href="#id3">2.1.7</a></li>
+<li><a class="reference internal" href="#id4">2.1.4</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/changelog.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="changes-in-pyzmq">
+<span id="changelog"></span><h1>Changes in PyZMQ<a class="headerlink" href="#changes-in-pyzmq" title="Permalink to this headline">¶</a></h1>
+<p>This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
+<a class="reference external" href="https://github.com/zeromq/pyzmq/commits">git log</a></p>
+<div class="section" id="id1">
+<h2>2.1.8<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Added attribute-access for set/getsockopt.  Setting/Getting attributes of <tt class="xref py py-class docutils literal"><span class="pre">Sockets</span></tt>
+with the names of socket options is mapped to calls of set/getsockopt.</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s</span><span class="o">.</span><span class="n">hwm</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">s</span><span class="o">.</span><span class="n">identity</span> <span class="o">=</span> <span class="n">b</span><span class="s">&#39;whoda&#39;</span>
+<span class="n">s</span><span class="o">.</span><span class="n">linger</span>
+<span class="c"># -1</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Terminating a <tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt> closes the sockets it created, matching the behavior in
+<a class="reference external" href="http://czmq.zeromq.org/">czmq</a>.</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevices</span></tt> use <tt class="xref py py-meth docutils literal"><span class="pre">Context.instance()</span></tt> to create sockets, so they can use
+inproc connections to sockets in other threads.</li>
+<li>fixed units error on <tt class="xref py py-func docutils literal"><span class="pre">zmq.select()</span></tt>, where the poll timeout was 1000 times longer
+than expected.</li>
+<li>Add missing <tt class="docutils literal"><span class="pre">DEALER/ROUTER</span></tt> socket type names (currently aliases, to be replacements for <tt class="docutils literal"><span class="pre">XREP/XREQ</span></tt>).</li>
+<li>base libzmq dependency raised to 2.1.4 (first stable release) from 2.1.0.</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>2.1.7.1<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>bdist for 64b Windows only.  This fixed a type mismatch on the <tt class="docutils literal"><span class="pre">ZMQ_FD</span></tt> sockopt.</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>2.1.7<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Added experimental support for libzmq-3.0 API</li>
+<li>Add <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">zmq.eventloop.ioloop.install()</span></tt></a> for using pyzmq&#8217;s IOLoop in a tornado
+application.</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2>2.1.4<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>First version with binary distribution support</li>
+<li>Added <tt class="xref py py-meth docutils literal"><span class="pre">instance()</span></tt> method for using a single Context throughout an application
+without passing references around.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

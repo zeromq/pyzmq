@@ -7,30 +7,30 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Devices in PyZMQ &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
-    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <title>Devices in PyZMQ &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="static/jquery.js"></script>
-    <script type="text/javascript" src="static/underscore.js"></script>
-    <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="shortcut icon" href="static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="index.html" />
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" />
     <link rel="next" title="Tornado Eventloop with PyZMQ" href="eventloop.html" />
-    <link rel="prev" title="More Than Just Bindings" href="morethanbindings.html" /> 
+    <link rel="prev" title="Serializing messages with PyZMQ" href="serialization.html" /> 
   </head>
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="index.html"><img src="static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="index.html"><img src="_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -46,7 +46,7 @@
           <a href="eventloop.html" title="Tornado Eventloop with PyZMQ"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="morethanbindings.html" title="More Than Just Bindings"
+          <a href="serialization.html" title="Serializing messages with PyZMQ"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">home</a>|&nbsp;</li>
         <li><a href="search.html">search</a>|&nbsp;</li>
@@ -67,14 +67,14 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="morethanbindings.html"
-                        title="previous chapter">More Than Just Bindings</a></p>
+  <p class="topless"><a href="serialization.html"
+                        title="previous chapter">Serializing messages with PyZMQ</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="eventloop.html"
                         title="next chapter">Tornado Eventloop with PyZMQ</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="sources/devices.txt"
+    <li><a href="_sources/devices.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -143,17 +143,17 @@ sockets, but also sends every message in either direction <em>also</em> on a thi
 socket. For performance reasons, this <a class="reference internal" href="api/generated/zmq.devices.monitoredqueue.html#zmq.devices.monitoredqueue.monitored_queue" title="zmq.devices.monitoredqueue.monitored_queue"><tt class="xref py py-func docutils literal"><span class="pre">monitored_queue()</span></tt></a> function is written in
 Cython, so the loop does not involve Python, and should have the same performance as the
 basic <tt class="docutils literal"><span class="pre">QUEUE</span></tt> device.</p>
-<p>One shortcoming of the <tt class="docutils literal"><span class="pre">QUEUE</span></tt> device is that it does not support having <tt class="docutils literal"><span class="pre">XREP</span></tt>
-sockets as both input and output. This is because <tt class="docutils literal"><span class="pre">XREP</span></tt> sockets, when they receive a
+<p>One shortcoming of the <tt class="docutils literal"><span class="pre">QUEUE</span></tt> device is that it does not support having <tt class="docutils literal"><span class="pre">ROUTER</span></tt>
+sockets as both input and output. This is because <tt class="docutils literal"><span class="pre">ROUTER</span></tt> sockets, when they receive a
 message, prepend the <tt class="docutils literal"><span class="pre">IDENTITY</span></tt> of the socket that sent the message (for use in routing
 the reply). The result is that the output socket will always try to route the incoming
 message back to the original sender, which is presumably not the intended pattern. In
-order for the queue to support an XREP-XREP connection, it must swap the first two parts
+order for the queue to support a ROUTER-ROUTER connection, it must swap the first two parts
 of the message in order to get the right message out the other side.</p>
 <p>To invoke a monitored queue is similar to invoking a regular ØMQ device:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices.monitoredqueue</span> <span class="kn">import</span> <span class="n">monitored_queue</span>
-<span class="n">ins</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XREP</span><span class="p">)</span>
-<span class="n">outs</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XREQ</span><span class="p">)</span>
+<span class="n">ins</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">ROUTER</span><span class="p">)</span>
+<span class="n">outs</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">DEALER</span><span class="p">)</span>
 <span class="n">mons</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
 <span class="n">configure_sockets</span><span class="p">(</span><span class="n">ins</span><span class="p">,</span><span class="n">outs</span><span class="p">,</span><span class="n">mons</span><span class="p">)</span>
 <span class="n">monitored_queue</span><span class="p">(</span><span class="n">ins</span><span class="p">,</span> <span class="n">outs</span><span class="p">,</span> <span class="n">mons</span><span class="p">,</span> <span class="n">in_prefix</span><span class="o">=</span><span class="s">&#39;in&#39;</span><span class="p">,</span> <span class="n">out_prefix</span><span class="o">=</span><span class="s">&#39;out&#39;</span><span class="p">)</span>
@@ -189,7 +189,7 @@ BackgroundDevice objects, but add <cite>x_mon</cite> methods for configuring the
           <a href="eventloop.html" title="Tornado Eventloop with PyZMQ"
              >next</a> |</li>
         <li class="right" >
-          <a href="morethanbindings.html" title="More Than Just Bindings"
+          <a href="serialization.html" title="Serializing messages with PyZMQ"
              >previous</a> |</li>
         <li><a href="index.html">home</a>|&nbsp;</li>
         <li><a href="search.html">search</a>|&nbsp;</li>
@@ -198,7 +198,7 @@ BackgroundDevice objects, but add <cite>x_mon</cite> methods for configuring the
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.error &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>core.error &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.message" href="zmq.core.message.html" />
     <link rel="prev" title="core.device" href="zmq.core.device.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,7 +62,7 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">core.error</a><ul>
-<li><a class="reference internal" href="#module-core-error">Module: <tt class="docutils literal"><span class="pre">core.error</span></tt></a></li>
+<li><a class="reference internal" href="#module-zmq.core.error">Module: <tt class="docutils literal"><span class="pre">core.error</span></tt></a></li>
 <li><a class="reference internal" href="#classes">Classes</a><ul>
 <li><a class="reference internal" href="#notdone"><tt class="docutils literal"><span class="pre">NotDone</span></tt></a></li>
 <li><a class="reference internal" href="#zmqbaseerror"><tt class="docutils literal"><span class="pre">ZMQBaseError</span></tt></a></li>
@@ -83,7 +83,7 @@
                         title="next chapter">core.message</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.core.error.txt"
+    <li><a href="../../_sources/api/generated/zmq.core.error.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -109,12 +109,9 @@
             
   <div class="section" id="core-error">
 <h1>core.error<a class="headerlink" href="#core-error" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-core-error">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.error</span></tt><a class="headerlink" href="#module-core-error" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.core.error</span></tt>:</p>
-<img src="../../images/inheritance655e143eb1.png" usemap="#inheritance655e143eb1" class="inheritance"/><map id="inheritance655e143eb1" name="inheritance655e143eb1">
-</map>
-<span class="target" id="module-zmq.core.error"></span><p>0MQ Error classes and functions.</p>
+<div class="section" id="module-zmq.core.error">
+<span id="module-core-error"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.error</span></tt><a class="headerlink" href="#module-zmq.core.error" title="Permalink to this headline">¶</a></h2>
+<p>0MQ Error classes and functions.</p>
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
@@ -123,8 +120,7 @@
 <dl class="class">
 <dt id="zmq.core.error.NotDone">
 <em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">NotDone</tt><a class="headerlink" href="#zmq.core.error.NotDone" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
-<p>Raised when timeout is reached while waiting for 0MQ to finish with a Message</p>
+<dd><p>Raised when timeout is reached while waiting for 0MQ to finish with a Message</p>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
@@ -150,8 +146,7 @@
 <dl class="class">
 <dt id="zmq.core.error.ZMQBaseError">
 <em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQBaseError</tt><a class="headerlink" href="#zmq.core.error.ZMQBaseError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
-<p>Base exception class for 0MQ errors in Python.</p>
+<dd><p>Base exception class for 0MQ errors in Python.</p>
 <dl class="attribute">
 <dt id="zmq.core.error.ZMQBaseError.args">
 <tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.ZMQBaseError.args" title="Permalink to this definition">¶</a></dt>
@@ -170,8 +165,7 @@
 <dl class="class">
 <dt id="zmq.core.error.ZMQBindError">
 <em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQBindError</tt><a class="headerlink" href="#zmq.core.error.ZMQBindError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
-<p>An error for <tt class="docutils literal"><span class="pre">Socket.bind_to_random_port()</span></tt>.</p>
+<dd><p>An error for <tt class="docutils literal"><span class="pre">Socket.bind_to_random_port()</span></tt>.</p>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="zmq.core.socket.html#zmq.core.socket.Socket.bind_to_random_port" title="zmq.core.socket.Socket.bind_to_random_port"><tt class="xref py py-obj docutils literal"><span class="pre">Socket.bind_to_random_port</span></tt></a></p>
@@ -194,8 +188,7 @@
 <dl class="class">
 <dt id="zmq.core.error.ZMQError">
 <em class="property">class </em><tt class="descclassname">zmq.core.error.</tt><tt class="descname">ZMQError</tt><a class="headerlink" href="#zmq.core.error.ZMQError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#zmq.core.error.ZMQBaseError" title="zmq.core.error.ZMQBaseError"><tt class="xref py py-class docutils literal"><span class="pre">zmq.core.error.ZMQBaseError</span></tt></a></p>
-<p>Wrap an errno style error.</p>
+<dd><p>Wrap an errno style error.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -263,7 +256,7 @@ used.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.zmqstream &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>eventloop.zmqstream &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
     <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,7 +62,7 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">eventloop.zmqstream</a><ul>
-<li><a class="reference internal" href="#module-eventloop-zmqstream">Module: <tt class="docutils literal"><span class="pre">eventloop.zmqstream</span></tt></a></li>
+<li><a class="reference internal" href="#module-zmq.eventloop.zmqstream">Module: <tt class="docutils literal"><span class="pre">eventloop.zmqstream</span></tt></a></li>
 <li><a class="reference internal" href="#zmqstream"><tt class="docutils literal"><span class="pre">ZMQStream</span></tt></a></li>
 </ul>
 </li>
@@ -76,7 +76,7 @@
                         title="next chapter">log.handlers</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.eventloop.zmqstream.txt"
+    <li><a href="../../_sources/api/generated/zmq.eventloop.zmqstream.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -102,20 +102,16 @@
             
   <div class="section" id="eventloop-zmqstream">
 <h1>eventloop.zmqstream<a class="headerlink" href="#eventloop-zmqstream" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-eventloop-zmqstream">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.zmqstream</span></tt><a class="headerlink" href="#module-eventloop-zmqstream" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.eventloop.zmqstream</span></tt>:</p>
-<img src="../../images/inheritance383457393f.png" usemap="#inheritance383457393f" class="inheritance"/><map id="inheritance383457393f" name="inheritance383457393f">
-</map>
-<span class="target" id="module-zmq.eventloop.zmqstream"></span><p>A utility class to send to and recv from a non-blocking socket.</p>
+<div class="section" id="module-zmq.eventloop.zmqstream">
+<span id="module-eventloop-zmqstream"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.zmqstream</span></tt><a class="headerlink" href="#module-zmq.eventloop.zmqstream" title="Permalink to this headline">¶</a></h2>
+<p>A utility class to send to and recv from a non-blocking socket.</p>
 </div>
 <div class="section" id="zmqstream">
 <h2><a class="reference internal" href="#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a><a class="headerlink" href="#zmqstream" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="zmq.eventloop.zmqstream.ZMQStream">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
-<p>A utility class to register callbacks when a zmq socket sends and receives</p>
+<dd><p>A utility class to register callbacks when a zmq socket sends and receives</p>
 <p>For use with zmq.eventloop.ioloop</p>
 <p>There are 4 main methods</p>
 <p>Methods:</p>
@@ -415,7 +411,7 @@ See zmq.socket.send_unicode for details.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

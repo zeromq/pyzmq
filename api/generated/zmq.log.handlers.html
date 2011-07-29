@@ -7,23 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>log.handlers &mdash; PyZMQ v2.1.7 documentation</title>
-    <link rel="stylesheet" href="../../static/default.css" type="text/css" />
-    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    <title>log.handlers &mdash; PyZMQ v2.1.8 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.7',
+        VERSION:     '2.1.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="../../static/jquery.js"></script>
-    <script type="text/javascript" src="../../static/underscore.js"></script>
-    <script type="text/javascript" src="../../static/doctools.js"></script>
-    <link rel="shortcut icon" href="../../static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.7 documentation" href="../../index.html" />
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="utils.initthreads" href="zmq.utils.initthreads.html" />
     <link rel="prev" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" /> 
@@ -31,7 +31,7 @@
   <body>
 
 <div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
-<a href="../../index.html"><img src="../../static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
 </div>
 
     <div class="related">
@@ -62,7 +62,7 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">log.handlers</a><ul>
-<li><a class="reference internal" href="#module-log-handlers">Module: <tt class="docutils literal"><span class="pre">log.handlers</span></tt></a><ul>
+<li><a class="reference internal" href="#module-zmq.log.handlers">Module: <tt class="docutils literal"><span class="pre">log.handlers</span></tt></a><ul>
 <li><a class="reference internal" href="#authors">Authors</a></li>
 </ul>
 </li>
@@ -83,7 +83,7 @@
                         title="next chapter">utils.initthreads</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../sources/api/generated/zmq.log.handlers.txt"
+    <li><a href="../../_sources/api/generated/zmq.log.handlers.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -109,12 +109,9 @@
             
   <div class="section" id="log-handlers">
 <h1>log.handlers<a class="headerlink" href="#log-handlers" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-log-handlers">
-<h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">log.handlers</span></tt><a class="headerlink" href="#module-log-handlers" title="Permalink to this headline">¶</a></h2>
-<p>Inheritance diagram for <tt class="docutils literal"><span class="pre">zmq.log.handlers</span></tt>:</p>
-<img src="../../images/inheritance89566ce799.png" usemap="#inheritance89566ce799" class="inheritance"/><map id="inheritance89566ce799" name="inheritance89566ce799">
-</map>
-<span class="target" id="module-zmq.log.handlers"></span><p>pyzmq logging handlers.</p>
+<div class="section" id="module-zmq.log.handlers">
+<span id="module-log-handlers"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">log.handlers</span></tt><a class="headerlink" href="#module-zmq.log.handlers" title="Permalink to this headline">¶</a></h2>
+<p>pyzmq logging handlers.</p>
 <p>This mainly defines the PUBHandler object for publishing logging messages over
 a zmq.PUB socket.</p>
 <p>The PUBHandler can be used with the regular logging module, as in:</p>
@@ -144,8 +141,7 @@ PUB socket.</p>
 <dl class="class">
 <dt id="zmq.log.handlers.PUBHandler">
 <em class="property">class </em><tt class="descclassname">zmq.log.handlers.</tt><tt class="descname">PUBHandler</tt><big>(</big><em>interface_or_socket</em>, <em>context=None</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">logging.Handler</span></tt></p>
-<p>A basic logging handler that emits log messages through a PUB socket.</p>
+<dd><p>A basic logging handler that emits log messages through a PUB socket.</p>
 <p>Takes a PUB socket already bound to interfaces or an interface to bind to.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">sock</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
@@ -178,8 +174,8 @@ message by: log.debug(&#8220;subtopic.subsub::the real message&#8221;)</p>
 <dt id="zmq.log.handlers.PUBHandler.close">
 <tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tidy up any resources used by the handler.</p>
-<p>This version does removes the handler from an internal list
-of handlers which is closed when shutdown() is called. Subclasses
+<p>This version removes the handler from an internal map of handlers,
+_handlers, which is used for handler lookup by name. Subclasses
 should ensure that this gets called from overridden close()
 methods.</p>
 </dd></dl>
@@ -220,6 +216,11 @@ subclasses.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.get_name">
+<tt class="descname">get_name</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.get_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="zmq.log.handlers.PUBHandler.handle">
 <tt class="descname">handle</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conditionally emit the specified logging record.</p>
@@ -241,6 +242,11 @@ the logging system, they are more interested in application errors.
 You could, however, replace this with a custom handler if you wish.
 The record which was being processed is passed in to this method.</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.log.handlers.PUBHandler.name">
+<tt class="descname">name</tt><a class="headerlink" href="#zmq.log.handlers.PUBHandler.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="zmq.log.handlers.PUBHandler.release">
@@ -266,6 +272,11 @@ The record which was being processed is passed in to this method.</p>
 <dd><p>Set the logging level of this handler.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="zmq.log.handlers.PUBHandler.set_name">
+<tt class="descname">set_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.set_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -274,8 +285,7 @@ The record which was being processed is passed in to this method.</p>
 <dl class="class">
 <dt id="zmq.log.handlers.TopicLogger">
 <em class="property">class </em><tt class="descclassname">zmq.log.handlers.</tt><tt class="descname">TopicLogger</tt><big>(</big><em>name</em>, <em>level=0</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/logging.html#logging.Logger" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">logging.Logger</span></tt></a></p>
-<p>A simple wrapper that takes an additional argument to log methods.</p>
+<dd><p>A simple wrapper that takes an additional argument to log methods.</p>
 <p>All the regular methods exist, but instead of one msg argument, two
 arguments: topic, msg are passed.</p>
 <p>That is:</p>
@@ -349,6 +359,18 @@ is to be dropped, else non-zero.</p>
 <tt class="descname">findCaller</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.findCaller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the stack frame of the caller so that we can note the source
 file name, line number and function name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.log.handlers.TopicLogger.getChild">
+<tt class="descname">getChild</tt><big>(</big><em>suffix</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.getChild" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a logger which is a descendant to this one.</p>
+<p>This is a convenience method, such that</p>
+<p>logging.getLogger(&#8216;abc&#8217;).getChild(&#8216;def.ghi&#8217;)</p>
+<p>is the same as</p>
+<p>logging.getLogger(&#8216;abc.def.ghi&#8217;)</p>
+<p>It&#8217;s useful, for example, when the parent logger is named using
+__name__ rather than a literal string.</p>
 </dd></dl>
 
 <dl class="method">
@@ -464,7 +486,7 @@ specialized LogRecords.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Brian E. Granger.  
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.

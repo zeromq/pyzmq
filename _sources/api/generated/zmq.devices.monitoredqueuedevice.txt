@@ -1,0 +1,53 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+devices.monitoredqueuedevice
+============================
+
+Module: :mod:`devices.monitoredqueuedevice`
+-------------------------------------------
+.. automodule:: zmq.devices.monitoredqueuedevice
+
+.. currentmodule:: zmq.devices.monitoredqueuedevice
+
+Classes
+-------
+
+:class:`MonitoredQueue`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MonitoredQueue
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`MonitoredQueueBase`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MonitoredQueueBase
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ProcessMonitoredQueue`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ProcessMonitoredQueue
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ThreadMonitoredQueue`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ThreadMonitoredQueue
+  :members:
+  :undoc-members:
+  :inherited-members:
+
