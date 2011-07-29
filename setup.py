@@ -215,11 +215,8 @@ class Configure(Command):
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             print('*'*42)
-        elif vs >= '4.0':
-            fatal("Detected ZMQ version: %s. pyzmq does not yet support libzmq's development branch."%vs)
-            # print('*'*42)
         elif vs >= '3.0':
-            warn("Detected ZMQ version: %s. pyzmq's 3.0 support is experimental."%vs)
+            warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
             print('*'*42)
 
         if sys.platform.startswith('win'):

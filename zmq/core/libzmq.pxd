@@ -71,6 +71,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
+    enum: ZMQ_ECANTROUTE "ECANTROUTE"
     
     enum: errno
     char *zmq_strerror (int errnum)
@@ -106,9 +107,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REQ # 3
     enum: ZMQ_REP # 4
     enum: ZMQ_XREQ # 5
-    enum: ZMQ_DEALER # 5
+    enum: ZMQ_DEALER # 5 or 12
     enum: ZMQ_XREP # 6
-    enum: ZMQ_ROUTER # 6
+    enum: ZMQ_ROUTER # 6 or 11 or 13
     enum: ZMQ_PULL # 7
     enum: ZMQ_PUSH # 8
     enum: ZMQ_XPUB # 9
@@ -139,10 +140,17 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MAXMSGSIZE # 22
     enum: ZMQ_SNDHWM # 23
     enum: ZMQ_RCVHWM # 24
+    enum: ZMQ_MULTICAST_HOPS # 25
+    enum: ZMQ_RCVTIMEO # 27
+    enum: ZMQ_SNDTIMEO # 28
+    enum: ZMQ_RCVLABEL # 29
+    enum: ZMQ_RCVCMD # 30
 
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_DONTWAIT # 1
     enum: ZMQ_SNDMORE # 2
+    enum: ZMQ_SNDLABEL # 4
+    enum: ZMQ_SNDCMD # 8
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)

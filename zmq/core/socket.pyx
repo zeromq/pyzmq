@@ -395,7 +395,8 @@ cdef class Socket:
         optval : unicode
             The value of the option as a unicode string.
         """
-        if option not in [IDENTITY]:
+        
+        if option not in [ZMQ_IDENTITY]:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
     

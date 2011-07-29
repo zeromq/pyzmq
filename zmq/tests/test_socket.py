@@ -59,12 +59,16 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.send_unicode, s.send_unicode)
         self.assertEquals(p.recv_unicode, p.recv_unicode)
         self.assertRaises(TypeError, s.setsockopt, zmq.SUBSCRIBE, topic)
-        self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
+        if zmq.zmq_version() < '4.0.0':
+            self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
+            s.setsockopt_unicode(zmq.IDENTITY, topic, 'utf16')
         self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
         s.setsockopt_unicode(zmq.SUBSCRIBE, topic)
-        s.setsockopt_unicode(zmq.IDENTITY, topic, 'utf16')
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.SUBSCRIBE)
+        if zmq.zmq_version() >= '4.0.0':
+            # skip the rest on 4.0, because IDENTITY was removed
+            return
         st = s.getsockopt(zmq.IDENTITY)
         self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
         time.sleep(0.1) # wait for connection/subscription
@@ -212,10 +216,10 @@ class TestSocket(BaseZMQTestCase):
         """set setting/getting sockopts as attributes"""
         s = self.context.socket(zmq.DEALER)
         self.sockets.append(s)
-        ident = asbytes('hi there')
-        s.identity = ident
-        self.assertEquals(ident, s.identity)
-        self.assertEquals(ident, s.getsockopt(zmq.IDENTITY))
+        linger = 10
+        s.linger = linger
+        self.assertEquals(linger, s.linger)
+        self.assertEquals(linger, s.getsockopt(zmq.LINGER))
         self.assertEquals(s.fd, s.getsockopt(zmq.FD))
     
     def test_bad_attr(self):

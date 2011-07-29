@@ -27,9 +27,24 @@
 #ifndef ZMQ_RCVHWM
     #define ZMQ_RCVHWM (-1)
 #endif
+#ifndef ZMQ_MULTICAST_HOPS
+    #define ZMQ_MULTICAST_HOPS (-1)
+#endif
+#ifndef ZMQ_RCVTIMEO
+    #define ZMQ_RCVTIMEO (-1)
+#endif
+#ifndef ZMQ_SNDTIMEO
+    #define ZMQ_SNDTIMEO (-1)
+#endif
 
 #ifndef ZMQ_DONTWAIT
     #define ZMQ_DONTWAIT (-1)
+#endif
+#ifndef ZMQ_RCVLABEL
+    #define ZMQ_RCVLABEL (-1)
+#endif
+#ifndef ZMQ_SNDLABEL
+    #define ZMQ_SNDLABEL (-1)
 #endif
 
 
@@ -52,13 +67,6 @@
 #endif
 #ifndef ZMQ_DOWNSTREAM
     #define ZMQ_DOWNSTREAM (-1)
-#endif
-
-#ifndef ZMQ_DEALER
-    #define ZMQ_DEALER (-1)
-#endif
-#ifndef ZMQ_ROUTER
-    #define ZMQ_ROUTER (-1)
 #endif
 
 #ifndef ZMQ_HWM
@@ -87,6 +95,34 @@
 #endif
 #ifndef ZMQ_QUEUE
     #define ZMQ_QUEUE 3
+#endif
+
+
+// new in 4.0.0
+#ifndef ECANTROUTE
+    #define ECANTROUTE (-1)
+#endif
+
+#ifndef ZMQ_RCVCMD
+    #define ZMQ_RCVCMD (-1)
+#endif
+#ifndef ZMQ_SNDCMD
+    #define ZMQ_SNDCMD (-1)
+#endif
+
+// removed in 4.0.0
+#ifndef ZMQ_XREQ
+    #define ZMQ_XREQ (-1)
+#endif
+#ifndef ZMQ_XREP
+    #define ZMQ_XREP (-1)
+#endif
+#ifndef ZMQ_DEALER
+    #define ZMQ_DEALER (-1)
+#endif
+
+#ifndef ZMQ_IDENTITY
+    #define ZMQ_IDENTITY (-1)
 #endif
 
 #ifdef HAVE_WINDOWS
