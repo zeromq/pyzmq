@@ -143,6 +143,21 @@ you may need to do one of the following:
 
     $ python setup.py build_ext --rpath=/opt/zeromq-dev/lib --inplace
 
+Mac OSX
+-------
+
+The easiest way to install libzmq on OSX is with the wonderful `homebrew <http://mxcl.github.com/homebrew/>`_
+package manager, via::
+
+    $ brew install zeromq
+
+And to build a 32+64b intel fat binary, add ``--universal``::
+
+    $ brew install zeromq --universal
+
+This will install libzmq in /usr/local, making pyzmq installable with pip, which doesn't
+support our binary eggs.
+
 Development
 -----------
 
