@@ -169,11 +169,28 @@ class TestPoll(PollZMQTestCase):
 
         # Wait for everything to finish.
         wait()
+    def test_timeout(self):
+        """make sure Poller.poll timeout has the right units (milliseconds)."""
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        poller = zmq.Poller()
+        poller.register(s1, zmq.POLLIN)
+        tic = time.time()
+        evt = poller.poll(.002)
+        toc = time.time()
+        self.assertTrue(toc-tic < 0.1)
+        tic = time.time()
+        evt = poller.poll(2)
+        toc = time.time()
+        self.assertTrue(toc-tic < 0.1)
+        self.assertTrue(toc-tic > .001)
+        tic = time.time()
+        evt = poller.poll(200)
+        toc = time.time()
+        self.assertTrue(toc-tic < 1)
+        self.assertTrue(toc-tic > 0.1)
 
 class TestSelect(PollZMQTestCase):
 
-    # This test is failing due to this issue:
-    # http://github.com/sustrik/zeromq2/issues#issue/26
     def test_pair(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
@@ -185,4 +202,19 @@ class TestSelect(PollZMQTestCase):
         self.assert_(s2 in wlist)
         self.assert_(s1 not in rlist)
         self.assert_(s2 not in rlist)
+
+    def test_timeout(self):
+        """make sure select timeout has the right units (seconds)."""
+        s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        tic = time.time()
+        r,w,x = zmq.select([s1,s2],[],[],.002)
+        toc = time.time()
+        self.assertTrue(toc-tic < 1)
+        self.assertTrue(toc-tic > 0.001)
+        tic = time.time()
+        r,w,x = zmq.select([s1,s2],[],[],.25)
+        toc = time.time()
+        self.assertTrue(toc-tic < 0.5)
+        self.assertTrue(toc-tic > 0.2)
+
 
