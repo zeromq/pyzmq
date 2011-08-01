@@ -8,7 +8,7 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.8, and targets libzmq-2.1.8. For libzmq
+Current release of pyzmq is 2.1.7, and targets libzmq-2.1.7. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
@@ -49,7 +49,7 @@ Eggs and MSIs
 -------------
 
 We have binary installers for various Pythons on OSX and Windows, so you should be able to
-just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.8*, so they should
+just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
 be the only thing you need to start using pyzmq, but we simply don't have the experience to know
 when and where these installers will not work.
 
