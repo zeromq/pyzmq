@@ -145,7 +145,7 @@ class ZMQStream(object):
         
         Returns : None
         """
-        
+        self._check_closed()
         assert callback is None or callable(callback)
         self._recv_callback = stack_context.wrap(callback)
         self._recv_copy = copy
@@ -180,6 +180,7 @@ class ZMQStream(object):
             
             if callback is None, send callbacks are disabled.
         """
+        self._check_closed()
         assert callback is None or callable(callback)
         self._send_callback = stack_context.wrap(callback)
         
@@ -193,6 +194,7 @@ class ZMQStream(object):
         callback : callable
             callback will be passed no arguments.
         """
+        self._check_closed()
         assert callback is None or callable(callback)
         self._errback = stack_context.wrap(callback)
         
@@ -207,7 +209,6 @@ class ZMQStream(object):
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
         """
-        # self._check_closed()
         self._send_queue.put((msg, flags, copy))
         callback = callback or self._send_callback
         if callback is not None:
@@ -278,6 +279,7 @@ class ZMQStream(object):
         -------
         int : count of events handled (both send and recv)
         """
+        self._check_closed()
         # unset self._flushed, so callbacks will execute, in case flush has
         # already been called this iteration
         already_flushed = self._flushed
