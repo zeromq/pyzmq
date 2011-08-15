@@ -27,6 +27,8 @@
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
+from cpython cimport PyErr_CheckSignals
+
 from libzmq cimport zmq_strerror, zmq_errno
 
 from zmq.utils.strtypes import bytes
@@ -83,9 +85,17 @@ class ZMQError(ZMQBaseError):
         else:
             self.strerror = str(error)
             self.errno = None
+        # flush signals, because there could be a SIGINT
+        # waiting to pounce, resulting in uncaught exceptions.
+        # Doing this here means getting SIGINT during a blocking
+        # libzmq call will raise a *catchable* KeyboardInterrupt
+        PyErr_CheckSignals()
 
     def __str__(self):
         return self.strerror
+    
+    def __repr__(self):
+        return "ZMQError('%s')"%self.strerror
 
 
 class ZMQBindError(ZMQBaseError):
