@@ -10,6 +10,7 @@ Python's 'batteries included' philosophy, provides more than just Python methods
 objects for calling into the ØMQ C++ library.
 
 
+
 The Core as Bindings
 --------------------
 
@@ -29,6 +30,20 @@ efficiently writing C-extensions for Python. By separating out our objects into 
 `pyx` files, each with their declarations in a `pxd` header, other projects can write
 extensions in Cython and call directly to ZeroMQ at the C-level without the penalty of
 going through our Python objects.
+
+Thread Safety
+-------------
+
+In ØMQ, Contexts are threadsafe objects, but Sockets are **not**. It is safe to use a
+single Context (e.g. via :meth:`zmq.Context.instance`) in your entire multithreaded
+application, but you should create sockets on a per-thread basis. If you share sockets
+across threads, you are likely to encounter uncatchable c-level crashes of your
+application unless you use judicious application of :py:class:`threading.Lock`, but this
+approach is not recommended.
+
+.. seealso::
+
+    ZeroMQ API `note on threadsafety <http://api.zeromq.org/2-1:zmq>`_
 
 
 Socket Options as Attributes

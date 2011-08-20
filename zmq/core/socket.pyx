@@ -174,6 +174,8 @@ cdef class Socket:
 
     These objects will generally be constructed via the socket() method of a Context object.
     
+    Note: ØMQ Sockets are *not* threadsafe. **DO NOT** share them across threads.
+    
     Parameters
     ----------
     context : Context
