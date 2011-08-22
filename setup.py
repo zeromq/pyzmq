@@ -583,6 +583,17 @@ def extract_version():
     else:
         return __version__
 
+def find_packages():
+    """adapted from IPython's setupbase.find_packages()"""
+    packages = []
+    for dir,subdirs,files in os.walk('zmq'):
+        package = dir.replace(os.path.sep, '.')
+        if '__init__.py' not in files:
+            # not a package
+            continue
+        packages.append(package)
+    return packages
+
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
@@ -596,8 +607,7 @@ the ZeroMQ library (http://www.zeromq.org).
 setup(
     name = "pyzmq",
     version = extract_version(),
-    packages = ['zmq', 'zmq.tests', 'zmq.eventloop', 'zmq.log', 'zmq.core',
-                'zmq.devices', 'zmq.utils'],
+    packages = find_packages(),
     ext_modules = extensions,
     package_data = package_data,
     author = "Brian E. Granger, Min Ragan-Kelley",
