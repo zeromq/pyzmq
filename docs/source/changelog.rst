@@ -13,6 +13,7 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 2.1.9 (dev)
 ===========
 
+* added zmq.ssh tools for tunneling socket connections, copied from IPython
 * Expanded sockopt support to cover changes in libzmq-4.0 dev.
 * Fixed an issue that prevented :exc:`KeyboardInterrupts` from being catchable.
 * Added attribute-access for set/getsockopt.  Setting/Getting attributes of :class:`Sockets`

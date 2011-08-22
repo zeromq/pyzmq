@@ -55,6 +55,7 @@ Using PyZMQ
     devices.rst
     eventloop.rst
     logging.rst
+    ssh.rst
     
     api/index.rst
 

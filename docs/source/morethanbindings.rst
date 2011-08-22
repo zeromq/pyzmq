@@ -139,6 +139,7 @@ included in PyZMQ itself:
   background
 * :ref:`zmq.eventloop <eventloop>` : The `Tornado`_ event loop, adapted for use 
   with ØMQ sockets.
+* :ref:`zmq.ssh <ssh>` : Simple tools for tunneling zeromq connections via ssh.
 
 .. _ØMQ: http://www.zeromq.org
 .. _Tornado: https://github.com/facebook/tornado
