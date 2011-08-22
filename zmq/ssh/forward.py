@@ -25,8 +25,7 @@ forwarding (the openssh -L option) from a local port through a tunneled
 connection to a destination reachable from the SSH server machine.
 """
 
-from __future__ import print_function
-
+import sys
 import logging
 import select
 import SocketServer
@@ -45,7 +44,8 @@ class Handler (SocketServer.BaseRequestHandler):
             chan = self.ssh_transport.open_channel('direct-tcpip',
                                                    (self.chain_host, self.chain_port),
                                                    self.request.getpeername())
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             logger.debug('Incoming request to %s:%d failed: %s' % (self.chain_host,
                                                               self.chain_port,
                                                               repr(e)))

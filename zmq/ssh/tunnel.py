@@ -17,18 +17,12 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
-from __future__ import print_function
-
-import os,sys, atexit
+import os,sys,atexit
 import socket
-from multiprocessing import Process
 from getpass import getpass, getuser
-import warnings
 
 try:
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', DeprecationWarning)
-        import paramiko
+    import paramiko
 except ImportError:
     paramiko = None
 else:
@@ -283,6 +277,10 @@ def paramiko_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pa
             closing.  This prevents orphaned tunnels from running forever.
     
     """
+    try:
+        from multiprocessing import Process
+    except ImportError:
+        raise ImportError("multiprocessing module required for backgrounding Paramiko tunnnels")
     if paramiko is None:
         raise ImportError("Paramiko not available")
     
@@ -320,7 +318,8 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
 #            client.connect(server, port, username=username, password=password)
 #        else:
 #            raise
-    except Exception as e:
+    except Exception:
+        e = sys.exc_info()[1]
         print ('*** Failed to connect to %s:%d: %r' % (server, port, e))
         sys.exit(1)
 
@@ -331,7 +330,8 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
     except KeyboardInterrupt:
         print ('SIGINT: Port forwarding stopped cleanly')
         sys.exit(0)
-    except Exception as e:
+    except Exception:
+        e = sys.exc_info()[1]
         print ("Port forwarding stopped uncleanly: %s"%e)
         sys.exit(255)
 
