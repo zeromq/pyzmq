@@ -42,9 +42,6 @@ cdef class Context:
 
     Manage the lifecycle of a 0MQ context.
 
-    This class no longer takes any flags or the number of application
-    threads.
-
     Parameters
     ----------
     io_threads : int
@@ -136,7 +133,7 @@ cdef class Context:
     def term(self):
         """ctx.term()
 
-        Close or terminate the context.
+        Close or terminate the context and all its sockets.
 
         This can be called to close the context by hand. If this is not
         called, the context will automatically be closed when it is

@@ -240,15 +240,15 @@ cdef class Socket:
 
         Set socket options.
 
-        See the 0MQ documentation for details on specific options.
+        See the 0MQ API documentation for details on specific options.
 
         Parameters
         ----------
-        option : str
-            The name of the option to set. Can be any of: SUBSCRIBE, 
-            UNSUBSCRIBE, IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.
-        optval : int or str
+        option : int
+            The option to set.  Available values will depend on your
+            version of libzmq.  Examples include:
+                zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
+        optval : int or bytes
             The value of the option to set.
         """
         cdef int64_t optval_int64_c
@@ -263,7 +263,7 @@ cdef class Socket:
 
         if option in constants.bytes_sockopts:
             if not isinstance(optval, bytes):
-                raise TypeError('expected str, got: %r' % optval)
+                raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
             with nogil:
@@ -300,19 +300,19 @@ cdef class Socket:
 
         Get the value of a socket option.
 
-        See the 0MQ documentation for details on specific options.
+        See the 0MQ API documentation for details on specific options.
 
         Parameters
         ----------
-        option : str
-            The name of the option to set. Can be any of: 
-            IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+        option : int
+            The option to set.  Available values will depend on your
+            version of libzmq.  Examples include:
+                zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
 
         Returns
         -------
-        optval : int, str
-            The value of the option as a string or int.
+        optval : int or bytes
+            The value of the option as a bytestring or int.
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c
