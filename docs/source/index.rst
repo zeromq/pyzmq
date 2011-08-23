@@ -12,9 +12,6 @@ PyZMQ Documentation
 
 .. Note::
 
-    These docs are for pyzmq-|release|, but pyzmq has not made significant changes to
-    itself since 2.0.10, so they should apply just fine there as well.
-    
     PyZMQ versioning follows zeromq, so your pyzmq version should match that of your
     zeromq. The only changes at the pyzmq user's level are the addition of a few socket
     types and socket options.
