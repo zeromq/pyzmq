@@ -49,11 +49,11 @@ approach is not recommended.
 Socket Options as Attributes
 ****************************
 
-.. versionadded:: 2.1.8
+.. versionadded:: 2.1.9
 
 In 0MQ, socket options are set/retrieved with the :meth:`set/getsockopt` methods. With the
 class-based approach in pyzmq, it would be logical to perform these operations with
-simple attribute access, and this has been added in pyzmq 2.1.8. Simply assign to or
+simple attribute access, and this has been added in pyzmq 2.1.9. Simply assign to or
 request a Socket attribute with the (case-insensitive) name of a sockopt, and it should
 behave just as you would expect:
 

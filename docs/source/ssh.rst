@@ -5,6 +5,8 @@
 Tunneling PyZMQ Connections with SSH
 ====================================
 
+.. versionadded:: 2.1.9
+
 You may want to connect ØMQ sockets across machines, or untrusted networks. One common way
 to do this is to tunnel the connection via SSH. IPython_ introduced some tools for
 tunneling ØMQ connections over ssh in simple cases. These functions have been brought into
