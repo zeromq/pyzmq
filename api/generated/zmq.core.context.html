@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.context &mdash; PyZMQ v2.1.8 documentation</title>
+    <title>core.context &mdash; PyZMQ v2.1.9 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.8',
+        VERSION:     '2.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.device" href="zmq.core.device.html" />
     <link rel="prev" title="zmq" href="zmq.html" /> 
@@ -112,8 +112,6 @@
 <dt id="zmq.core.context.Context">
 <em class="property">class </em><tt class="descclassname">zmq.core.context.</tt><tt class="descname">Context</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.core.context.Context" title="Permalink to this definition">¶</a></dt>
 <dd><p>Manage the lifecycle of a 0MQ context.</p>
-<p>This class no longer takes any flags or the number of application
-threads.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -175,7 +173,7 @@ REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XSUB, XPUB.</p
 <dl class="method">
 <dt id="zmq.core.context.Context.term">
 <tt class="descname">term</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.context.Context.term" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close or terminate the context.</p>
+<dd><p>Close or terminate the context and all its sockets.</p>
 <p>This can be called to close the context by hand. If this is not
 called, the context will automatically be closed when it is
 garbage collected.</p>

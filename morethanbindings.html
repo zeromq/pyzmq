@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Than Just Bindings &mdash; PyZMQ v2.1.8 documentation</title>
+    <title>More Than Just Bindings &mdash; PyZMQ v2.1.9 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.8',
+        VERSION:     '2.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="index.html" />
     <link rel="next" title="Serializing messages with PyZMQ" href="serialization.html" />
     <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
   </head>
@@ -60,7 +60,8 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">More Than Just Bindings</a><ul>
-<li><a class="reference internal" href="#the-core-as-bindings">The Core as Bindings</a><ul>
+<li><a class="reference internal" href="#the-core-as-bindings">The Core as Bindings</a></li>
+<li><a class="reference internal" href="#thread-safety">Thread Safety</a><ul>
 <li><a class="reference internal" href="#socket-options-as-attributes">Socket Options as Attributes</a></li>
 </ul>
 </li>
@@ -128,13 +129,26 @@ efficiently writing C-extensions for Python. By separating out our objects into 
 <cite>pyx</cite> files, each with their declarations in a <cite>pxd</cite> header, other projects can write
 extensions in Cython and call directly to ZeroMQ at the C-level without the penalty of
 going through our Python objects.</p>
+</div>
+<div class="section" id="thread-safety">
+<h2>Thread Safety<a class="headerlink" href="#thread-safety" title="Permalink to this headline">¶</a></h2>
+<p>In ØMQ, Contexts are threadsafe objects, but Sockets are <strong>not</strong>. It is safe to use a
+single Context (e.g. via <tt class="xref py py-meth docutils literal"><span class="pre">zmq.Context.instance()</span></tt>) in your entire multithreaded
+application, but you should create sockets on a per-thread basis. If you share sockets
+across threads, you are likely to encounter uncatchable c-level crashes of your
+application unless you use judicious application of <tt class="xref py py-class docutils literal"><span class="pre">threading.Lock</span></tt>, but this
+approach is not recommended.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">ZeroMQ API <a class="reference external" href="http://api.zeromq.org/2-1:zmq">note on threadsafety</a></p>
+</div>
 <div class="section" id="socket-options-as-attributes">
 <h3>Socket Options as Attributes<a class="headerlink" href="#socket-options-as-attributes" title="Permalink to this headline">¶</a></h3>
 <p class="versionadded">
-<span class="versionmodified">New in version 2.1.8.</span></p>
+<span class="versionmodified">New in version 2.1.9.</span></p>
 <p>In 0MQ, socket options are set/retrieved with the <tt class="xref py py-meth docutils literal"><span class="pre">set/getsockopt()</span></tt> methods. With the
 class-based approach in pyzmq, it would be logical to perform these operations with
-simple attribute access, and this has been added in pyzmq 2.1.8. Simply assign to or
+simple attribute access, and this has been added in pyzmq 2.1.9. Simply assign to or
 request a Socket attribute with the (case-insensitive) name of a sockopt, and it should
 behave just as you would expect:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">DEALER</span><span class="p">)</span>
@@ -213,6 +227,7 @@ network</li>
 background</li>
 <li><a class="reference internal" href="eventloop.html#eventloop"><em>zmq.eventloop</em></a> : The <a class="reference external" href="https://github.com/facebook/tornado">Tornado</a> event loop, adapted for use
 with ØMQ sockets.</li>
+<li><a class="reference internal" href="ssh.html#ssh"><em>zmq.ssh</em></a> : Simple tools for tunneling zeromq connections via ssh.</li>
 </ul>
 </div>
 </div>

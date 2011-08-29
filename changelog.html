@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ v2.1.8 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ v2.1.9 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.8',
+        VERSION:     '2.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.8 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -52,7 +52,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes in PyZMQ</a><ul>
-<li><a class="reference internal" href="#id1">2.1.8</a></li>
+<li><a class="reference internal" href="#id1">2.1.9</a></li>
 <li><a class="reference internal" href="#id2">2.1.7.1</a></li>
 <li><a class="reference internal" href="#id3">2.1.7</a></li>
 <li><a class="reference internal" href="#id4">2.1.4</a></li>
@@ -91,8 +91,11 @@
 <p>This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 <a class="reference external" href="https://github.com/zeromq/pyzmq/commits">git log</a></p>
 <div class="section" id="id1">
-<h2>2.1.8<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>2.1.9<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
+<li>added zmq.ssh tools for tunneling socket connections, copied from IPython</li>
+<li>Expanded sockopt support to cover changes in libzmq-4.0 dev.</li>
+<li>Fixed an issue that prevented <tt class="xref py py-exc docutils literal"><span class="pre">KeyboardInterrupts</span></tt> from being catchable.</li>
 <li>Added attribute-access for set/getsockopt.  Setting/Getting attributes of <tt class="xref py py-class docutils literal"><span class="pre">Sockets</span></tt>
 with the names of socket options is mapped to calls of set/getsockopt.</li>
 </ul>
@@ -116,7 +119,8 @@ than expected.</li>
 <div class="section" id="id2">
 <h2>2.1.7.1<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>bdist for 64b Windows only.  This fixed a type mismatch on the <tt class="docutils literal"><span class="pre">ZMQ_FD</span></tt> sockopt.</li>
+<li>bdist for 64b Windows only.  This fixed a type mismatch on the <tt class="docutils literal"><span class="pre">ZMQ_FD</span></tt> sockopt
+that only affected that platform.</li>
 </ul>
 </div>
 <div class="section" id="id3">

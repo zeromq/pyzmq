@@ -10,9 +10,12 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
 
-2.1.8
+2.1.9
 =====
 
+* added zmq.ssh tools for tunneling socket connections, copied from IPython
+* Expanded sockopt support to cover changes in libzmq-4.0 dev.
+* Fixed an issue that prevented :exc:`KeyboardInterrupts` from being catchable.
 * Added attribute-access for set/getsockopt.  Setting/Getting attributes of :class:`Sockets`
   with the names of socket options is mapped to calls of set/getsockopt.
 
@@ -36,7 +39,8 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 2.1.7.1
 =======
 
-* bdist for 64b Windows only.  This fixed a type mismatch on the ``ZMQ_FD`` sockopt.
+* bdist for 64b Windows only.  This fixed a type mismatch on the ``ZMQ_FD`` sockopt
+  that only affected that platform.
 
 
 2.1.7

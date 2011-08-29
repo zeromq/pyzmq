@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tunneling PyZMQ Connections with SSH &mdash; PyZMQ v2.1.9 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.1.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="index.html" />
+    <link rel="next" title="The PyZMQ API" href="api/index.html" />
+    <link rel="prev" title="Asynchronous Logging via PyZMQ" href="logging.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="The PyZMQ API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="logging.html" title="Asynchronous Logging via PyZMQ"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="logging.html"
+                        title="previous chapter">Asynchronous Logging via PyZMQ</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/index.html"
+                        title="next chapter">The PyZMQ API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ssh.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tunneling-pyzmq-connections-with-ssh">
+<span id="ssh"></span><h1>Tunneling PyZMQ Connections with SSH<a class="headerlink" href="#tunneling-pyzmq-connections-with-ssh" title="Permalink to this headline">¶</a></h1>
+<p class="versionadded">
+<span class="versionmodified">New in version 2.1.9.</span></p>
+<p>You may want to connect ØMQ sockets across machines, or untrusted networks. One common way
+to do this is to tunnel the connection via SSH. <a class="reference external" href="http://ipython.org">IPython</a> introduced some tools for
+tunneling ØMQ connections over ssh in simple cases. These functions have been brought into
+pyzmq as <tt class="xref py py-mod docutils literal"><span class="pre">zmq.ssh</span></tt> under IPython&#8217;s BSD license.</p>
+<p>PyZMQ will use the shell ssh command via <a class="reference external" href="http://www.noah.org/wiki/pexpect">pexpect</a> by default, but it also supports
+using <a class="reference external" href="http://www.lag.net/paramiko/">paramiko</a> for tunnels, so it should also work on Windows.</p>
+<p>An SSH tunnel has five basic components:</p>
+<ul class="simple">
+<li>server : the SSH server through which the tunnel will be created</li>
+<li>remote ip : the IP of the remote machine <em>as seen from the server</em>
+(remote ip may be, but is not not generally the same machine as server).</li>
+<li>remote port : the port on the remote machine that you want to connect to.</li>
+<li>local ip : the interface on your local machine you want to use (default: 127.0.0.1)</li>
+<li>local port : the local port you want to forward to the remote port (default: high random)</li>
+</ul>
+<p>So once you have established the tunnel, connections to <tt class="docutils literal"><span class="pre">localip:localport</span></tt> will actually
+be connections to <tt class="docutils literal"><span class="pre">remoteip:remoteport</span></tt>.</p>
+<p>In most cases, you have a zeromq url for a remote machine, but you need to tunnel the
+connection through an ssh server.  This is</p>
+<p>So if you would use this command from the same LAN as the remote machine:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;tcp://10.0.1.2:5555&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to make the same connection from another machine that is outside the network, but you have
+ssh access to a machine <tt class="docutils literal"><span class="pre">server</span></tt> on the same LAN, you would simply do:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq</span> <span class="kn">import</span> <span class="n">ssh</span>
+<span class="n">ssh</span><span class="o">.</span><span class="n">tunnel_connection</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="s">&quot;tcp://10.0.1.2:5555&quot;</span><span class="p">,</span> <span class="s">&quot;server&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that <tt class="docutils literal"><span class="pre">&quot;server&quot;</span></tt> can actually be a fully specified <tt class="docutils literal"><span class="pre">&quot;user&#64;server:port&quot;</span></tt> ssh url.
+Since this really just launches a shell command, all your ssh configuration of usernames,
+aliases, keys, etc. will be respected. If necessary, <tt class="xref py py-func docutils literal"><span class="pre">tunnel_connection()</span></tt> does take
+arguments for specific passwords, private keys (the ssh <tt class="docutils literal"><span class="pre">-i</span></tt> option), and non-default
+choice of whether to use paramiko.</p>
+<p>If you are on the same network as the machine, but it is only listening on localhost, you
+can still connect by making the machine itself the server, and using loopback as the
+remote ip:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq</span> <span class="kn">import</span> <span class="n">ssh</span>
+<span class="n">ssh</span><span class="o">.</span><span class="n">tunnel_connection</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="s">&quot;tcp://127.0.0.1:5555&quot;</span><span class="p">,</span> <span class="s">&quot;10.0.1.2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">tunnel_connection()</span></tt> function is a simple utility that forwards a random
+localhost port to the real destination, and connects a socket to the new local url,
+rather than the remote one that wouldn&#8217;t actually work.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">A short discussion of ssh tunnels: <a class="reference external" href="http://www.revsys.com/writings/quicktips/ssh-tunnel.html">http://www.revsys.com/writings/quicktips/ssh-tunnel.html</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/index.html" title="The PyZMQ API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="logging.html" title="Asynchronous Logging via PyZMQ"
+             >previous</a> |</li>
+        <li><a href="index.html">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+       <li><a href="api/index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

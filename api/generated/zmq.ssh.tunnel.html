@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ssh.tunnel &mdash; PyZMQ v2.1.9 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="utils.initthreads" href="zmq.utils.initthreads.html" />
+    <link rel="prev" title="ssh.forward" href="zmq.ssh.forward.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.utils.initthreads.html" title="utils.initthreads"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.forward.html" title="ssh.forward"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ssh.tunnel</a><ul>
+<li><a class="reference internal" href="#module-zmq.ssh.tunnel">Module: <tt class="docutils literal"><span class="pre">ssh.tunnel</span></tt></a><ul>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.ssh.forward.html"
+                        title="previous chapter">ssh.forward</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.utils.initthreads.html"
+                        title="next chapter">utils.initthreads</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.ssh.tunnel.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ssh-tunnel">
+<h1>ssh.tunnel<a class="headerlink" href="#ssh-tunnel" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.ssh.tunnel">
+<span id="module-ssh-tunnel"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">ssh.tunnel</span></tt><a class="headerlink" href="#module-zmq.ssh.tunnel" title="Permalink to this headline">¶</a></h2>
+<p>Basic ssh tunnel utilities, and convenience functions for tunneling
+zeromq connections.</p>
+<div class="section" id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Min RK</li>
+</ul>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.ssh.tunnel.open_tunnel">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">open_tunnel</tt><big>(</big><em>addr</em>, <em>server</em>, <em>keyfile=None</em>, <em>password=None</em>, <em>paramiko=None</em>, <em>timeout=60</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.open_tunnel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a tunneled connection from a 0MQ url.</p>
+<p>For use inside tunnel_connection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><strong>(url, tunnel): The 0MQ url that has been forwarded, and the tunnel object</strong> :</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.ssh.tunnel.openssh_tunnel">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">openssh_tunnel</tt><big>(</big><em>lport</em>, <em>rport</em>, <em>server</em>, <em>remoteip='127.0.0.1'</em>, <em>keyfile=None</em>, <em>password=None</em>, <em>timeout=60</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.openssh_tunnel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an ssh tunnel using command-line ssh that connects port lport
+on this machine to localhost:rport on server.  The tunnel
+will automatically close when not in use, remaining open
+for a minimum of timeout seconds for an initial connection.</p>
+<p>This creates a tunnel redirecting <cite>localhost:lport</cite> to <cite>remoteip:rport</cite>,
+as seen from <cite>server</cite>.</p>
+<p>keyfile and password may be specified, but ssh config is checked for defaults.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>lport</strong> : int</p>
+<blockquote class="last">
+<div><blockquote>
+<div><p>local port for connecting to the tunnel from this machine.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>rport <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">port on the remote machine to connect to.</p>
+</dd>
+<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The ssh server to connect to. The full ssh server string will be parsed.
+<a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:port</p>
+</dd>
+<dt>remoteip <span class="classifier-delimiter">:</span> <span class="classifier">str [Default: 127.0.0.1]</span></dt>
+<dd><p class="first last">The remote ip, specifying the destination of the tunnel.
+Default is localhost, which means that the tunnel would redirect
+localhost:lport on this machine to localhost:rport on the <em>server</em>.</p>
+</dd>
+<dt>keyfile <span class="classifier-delimiter">:</span> <span class="classifier">str; path to public key file</span></dt>
+<dd><p class="first last">This specifies a key to be used in ssh login, default None.
+Regular default ssh keys will be used without specifying this argument.</p>
+</dd>
+<dt>password <span class="classifier-delimiter">:</span> <span class="classifier">str; </span></dt>
+<dd><p class="first last">Your ssh password to the ssh server. Note that if this is left None,
+you will be prompted for it if passwordless key based login is unavailable.</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">int [default: 60]</span></dt>
+<dd><p class="first last">The time (in seconds) after which no activity will result in the tunnel
+closing.  This prevents orphaned tunnels from running forever.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.ssh.tunnel.paramiko_tunnel">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">paramiko_tunnel</tt><big>(</big><em>lport</em>, <em>rport</em>, <em>server</em>, <em>remoteip='127.0.0.1'</em>, <em>keyfile=None</em>, <em>password=None</em>, <em>timeout=60</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.paramiko_tunnel" title="Permalink to this definition">¶</a></dt>
+<dd><p>launch a tunner with paramiko in a subprocess. This should only be used
+when shell ssh is unavailable (e.g. Windows).</p>
+<p>This creates a tunnel redirecting <cite>localhost:lport</cite> to <cite>remoteip:rport</cite>,
+as seen from <cite>server</cite>.</p>
+<p>If you are familiar with ssh tunnels, this creates the tunnel:</p>
+<p>ssh server -L localhost:lport:remoteip:rport</p>
+<p>keyfile and password may be specified, but ssh config is checked for defaults.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>lport</strong> : int</p>
+<blockquote class="last">
+<div><blockquote>
+<div><p>local port for connecting to the tunnel from this machine.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>rport <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">port on the remote machine to connect to.</p>
+</dd>
+<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd><p class="first last">The ssh server to connect to. The full ssh server string will be parsed.
+<a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:port</p>
+</dd>
+<dt>remoteip <span class="classifier-delimiter">:</span> <span class="classifier">str [Default: 127.0.0.1]</span></dt>
+<dd><p class="first last">The remote ip, specifying the destination of the tunnel.
+Default is localhost, which means that the tunnel would redirect
+localhost:lport on this machine to localhost:rport on the <em>server</em>.</p>
+</dd>
+<dt>keyfile <span class="classifier-delimiter">:</span> <span class="classifier">str; path to public key file</span></dt>
+<dd><p class="first last">This specifies a key to be used in ssh login, default None.
+Regular default ssh keys will be used without specifying this argument.</p>
+</dd>
+<dt>password <span class="classifier-delimiter">:</span> <span class="classifier">str; </span></dt>
+<dd><p class="first last">Your ssh password to the ssh server. Note that if this is left None,
+you will be prompted for it if passwordless key based login is unavailable.</p>
+</dd>
+<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">int [default: 60]</span></dt>
+<dd><p class="first last">The time (in seconds) after which no activity will result in the tunnel
+closing.  This prevents orphaned tunnels from running forever.</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.ssh.tunnel.select_random_ports">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">select_random_ports</tt><big>(</big><em>n</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.select_random_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects and return n random ports that are available.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.ssh.tunnel.try_passwordless_ssh">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">try_passwordless_ssh</tt><big>(</big><em>server</em>, <em>keyfile</em>, <em>paramiko=None</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.try_passwordless_ssh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to make an ssh connection without a password.
+This is mainly used for requiring password input only once
+when many tunnels may be connected to the same server.</p>
+<p>If paramiko is None, the default for the platform is chosen.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.ssh.tunnel.tunnel_connection">
+<tt class="descclassname">zmq.ssh.tunnel.</tt><tt class="descname">tunnel_connection</tt><big>(</big><em>socket</em>, <em>addr</em>, <em>server</em>, <em>keyfile=None</em>, <em>password=None</em>, <em>paramiko=None</em>, <em>timeout=60</em><big>)</big><a class="headerlink" href="#zmq.ssh.tunnel.tunnel_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect a socket to an address via an ssh tunnel.</p>
+<p>This is a wrapper for socket.connect(addr), when addr is not accessible
+from the local machine.  It simply creates an ssh tunnel using the remaining args,
+and calls socket.connect(&#8216;<a class="reference external" href="tcp://localhost:lport">tcp://localhost:lport</a>&#8216;) where lport is the randomly
+selected local port of the tunnel.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.utils.initthreads.html" title="utils.initthreads"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.forward.html" title="ssh.forward"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

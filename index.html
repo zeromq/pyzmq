@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyZMQ Documentation &mdash; PyZMQ v2.1.8 documentation</title>
+    <title>PyZMQ Documentation &mdash; PyZMQ v2.1.9 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.8',
+        VERSION:     '2.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.8 documentation" href="#" />
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="#" />
     <link rel="next" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
   </head>
   <body>
@@ -101,16 +101,14 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.8</td>
+<tr class="field"><th class="field-name">Release:</th><td class="field-body">2.1.9</td>
 </tr>
-<tr class="field"><th class="field-name">Date:</th><td class="field-body">July 29, 2011</td>
+<tr class="field"><th class="field-name">Date:</th><td class="field-body">August 29, 2011</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>These docs are for pyzmq-2.1.8, but pyzmq has not made significant changes to
-itself since 2.0.10, so they should apply just fine there as well.</p>
 <p class="last">PyZMQ versioning follows zeromq, so your pyzmq version should match that of your
 zeromq. The only changes at the pyzmq user&#8217;s level are the addition of a few socket
 types and socket options.</p>
@@ -153,6 +151,7 @@ and has dropped support for the zeromq-2.0 series.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="morethanbindings.html">More Than Just Bindings</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#the-core-as-bindings">The Core as Bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#thread-safety">Thread Safety</a></li>
 <li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#core-extensions">Core Extensions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="morethanbindings.html#extensions">Extensions</a></li>
 </ul>
@@ -178,6 +177,7 @@ and has dropped support for the zeromq-2.0 series.</p>
 <li class="toctree-l2"><a class="reference internal" href="logging.html#pubhandler">PUBHandler</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="ssh.html">Tunneling PyZMQ Connections with SSH</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.html">zmq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.context.html">core.context</a></li>
@@ -195,6 +195,8 @@ and has dropped support for the zeromq-2.0 series.</p>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.stack_context.html">eventloop.stack_context</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html">eventloop.zmqstream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.log.handlers.html">log.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.ssh.forward.html">ssh.forward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.ssh.tunnel.html">ssh.tunnel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.initthreads.html">utils.initthreads</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.jsonapi.html">utils.jsonapi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.rebuffer.html">utils.rebuffer</a></li>

@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ssh.forward &mdash; PyZMQ v2.1.9 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="ssh.tunnel" href="zmq.ssh.tunnel.html" />
+    <link rel="prev" title="log.handlers" href="zmq.log.handlers.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.tunnel.html" title="ssh.tunnel"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.log.handlers.html" title="log.handlers"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ssh.forward</a><ul>
+<li><a class="reference internal" href="#module-zmq.ssh.forward">Module: <tt class="docutils literal"><span class="pre">ssh.forward</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#forwardserver"><tt class="docutils literal"><span class="pre">ForwardServer</span></tt></a></li>
+<li><a class="reference internal" href="#handler"><tt class="docutils literal"><span class="pre">Handler</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.log.handlers.html"
+                        title="previous chapter">log.handlers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.ssh.tunnel.html"
+                        title="next chapter">ssh.tunnel</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.ssh.forward.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ssh-forward">
+<h1>ssh.forward<a class="headerlink" href="#ssh-forward" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.ssh.forward">
+<span id="module-ssh-forward"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">ssh.forward</span></tt><a class="headerlink" href="#module-zmq.ssh.forward" title="Permalink to this headline">¶</a></h2>
+<p>Sample script showing how to do local port forwarding over paramiko.</p>
+<p>This script connects to the requested SSH server and sets up local port
+forwarding (the openssh -L option) from a local port through a tunneled
+connection to a destination reachable from the SSH server machine.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="forwardserver">
+<h3><a class="reference internal" href="#zmq.ssh.forward.ForwardServer" title="zmq.ssh.forward.ForwardServer"><tt class="xref py py-class docutils literal"><span class="pre">ForwardServer</span></tt></a><a class="headerlink" href="#forwardserver" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.ssh.forward.ForwardServer">
+<em class="property">class </em><tt class="descclassname">zmq.ssh.forward.</tt><tt class="descname">ForwardServer</tt><big>(</big><em>server_address</em>, <em>RequestHandlerClass</em>, <em>bind_and_activate=True</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.close_request">
+<tt class="descname">close_request</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.close_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to clean up an individual request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.fileno">
+<tt class="descname">fileno</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.fileno" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return socket file number.</p>
+<p>Interface required by select().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.finish_request">
+<tt class="descname">finish_request</tt><big>(</big><em>request</em>, <em>client_address</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.finish_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finish one request by instantiating RequestHandlerClass.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.get_request">
+<tt class="descname">get_request</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.get_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the request and client address from the socket.</p>
+<p>May be overridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.handle_error">
+<tt class="descname">handle_error</tt><big>(</big><em>request</em>, <em>client_address</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.handle_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle an error gracefully.  May be overridden.</p>
+<p>The default is to print a traceback and continue.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.handle_request">
+<tt class="descname">handle_request</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.handle_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle one request, possibly blocking.</p>
+<p>Respects self.timeout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.handle_timeout">
+<tt class="descname">handle_timeout</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.handle_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called if no new request arrives within self.timeout.</p>
+<p>Overridden by ForkingMixIn.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.process_request">
+<tt class="descname">process_request</tt><big>(</big><em>request</em>, <em>client_address</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.process_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a new thread to process the request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.process_request_thread">
+<tt class="descname">process_request_thread</tt><big>(</big><em>request</em>, <em>client_address</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.process_request_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as in BaseServer but as a thread.</p>
+<p>In addition, exception handling is done here.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.serve_forever">
+<tt class="descname">serve_forever</tt><big>(</big><em>poll_interval=0.5</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.serve_forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle one request at a time until shutdown.</p>
+<p>Polls for shutdown every poll_interval seconds. Ignores
+self.timeout. If you need to do periodic tasks, do them in
+another thread.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.server_activate">
+<tt class="descname">server_activate</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.server_activate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by constructor to activate the server.</p>
+<p>May be overridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.server_bind">
+<tt class="descname">server_bind</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.server_bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by constructor to bind the socket.</p>
+<p>May be overridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.server_close">
+<tt class="descname">server_close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.server_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to clean-up the server.</p>
+<p>May be overridden.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.shutdown">
+<tt class="descname">shutdown</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the serve_forever loop.</p>
+<p>Blocks until the loop has finished. This must be called while
+serve_forever() is running in another thread, or it will
+deadlock.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.shutdown_request">
+<tt class="descname">shutdown_request</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.shutdown_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to shutdown and close an individual request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.ForwardServer.verify_request">
+<tt class="descname">verify_request</tt><big>(</big><em>request</em>, <em>client_address</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.ForwardServer.verify_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the request.  May be overridden.</p>
+<p>Return True if we should proceed with this request.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="handler">
+<h3><a class="reference internal" href="#zmq.ssh.forward.Handler" title="zmq.ssh.forward.Handler"><tt class="xref py py-class docutils literal"><span class="pre">Handler</span></tt></a><a class="headerlink" href="#handler" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.ssh.forward.Handler">
+<em class="property">class </em><tt class="descclassname">zmq.ssh.forward.</tt><tt class="descname">Handler</tt><big>(</big><em>request</em>, <em>client_address</em>, <em>server</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.Handler" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="zmq.ssh.forward.Handler.finish">
+<tt class="descname">finish</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.Handler.finish" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.Handler.handle">
+<tt class="descname">handle</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.Handler.handle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.ssh.forward.Handler.setup">
+<tt class="descname">setup</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.ssh.forward.Handler.setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.ssh.forward.forward_tunnel">
+<tt class="descclassname">zmq.ssh.forward.</tt><tt class="descname">forward_tunnel</tt><big>(</big><em>local_port</em>, <em>remote_host</em>, <em>remote_port</em>, <em>transport</em><big>)</big><a class="headerlink" href="#zmq.ssh.forward.forward_tunnel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.tunnel.html" title="ssh.tunnel"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.log.handlers.html" title="log.handlers"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

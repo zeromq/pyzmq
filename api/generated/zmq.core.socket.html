@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ v2.1.8 documentation</title>
+    <title>core.socket &mdash; PyZMQ v2.1.9 documentation</title>
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.8',
+        VERSION:     '2.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.8 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
     <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
@@ -113,6 +113,7 @@
 <em class="property">class </em><tt class="descclassname">zmq.core.socket.</tt><tt class="descname">Socket</tt><big>(</big><em>context</em>, <em>socket_type</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket" title="Permalink to this definition">¶</a></dt>
 <dd><p>A 0MQ socket.</p>
 <p>These objects will generally be constructed via the socket() method of a Context object.</p>
+<p>Note: 0MQ Sockets are <em>not</em> threadsafe. <strong>DO NOT</strong> share them across threads.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -247,22 +248,24 @@ encoded to utf-8 first.</p>
 <dt id="zmq.core.socket.Socket.getsockopt">
 <tt class="descname">getsockopt</tt><big>(</big><em>option</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.getsockopt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value of a socket option.</p>
-<p>See the 0MQ documentation for details on specific options.</p>
+<p>See the 0MQ API documentation for details on specific options.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : str</p>
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
-<div><p>The name of the option to set. Can be any of: 
-IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.</p>
+<div><p>The option to set.  Available values will depend on your
+version of libzmq.  Examples include:</p>
+<blockquote>
+<div><p>zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD</p>
+</div></blockquote>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int, str</p>
+<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int or bytes</p>
 <blockquote class="last">
-<div><p>The value of the option as a string or int.</p>
+<div><p>The value of the option as a bytestring or int.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -653,18 +656,20 @@ support.</p>
 <dt id="zmq.core.socket.Socket.setsockopt">
 <tt class="descname">setsockopt</tt><big>(</big><em>option</em>, <em>optval</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.setsockopt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set socket options.</p>
-<p>See the 0MQ documentation for details on specific options.</p>
+<p>See the 0MQ API documentation for details on specific options.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : str</p>
+<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
-<div><p>The name of the option to set. Can be any of: SUBSCRIBE, 
-UNSUBSCRIBE, IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF.</p>
+<div><p>The option to set.  Available values will depend on your
+version of libzmq.  Examples include:</p>
+<blockquote>
+<div><p>zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD</p>
 </div></blockquote>
-<p><strong>optval</strong> : int or str</p>
+</div></blockquote>
+<p><strong>optval</strong> : int or bytes</p>
 <blockquote class="last">
 <div><p>The value of the option to set.</p>
 </div></blockquote>
