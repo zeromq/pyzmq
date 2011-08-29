@@ -8,7 +8,7 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.7, and targets libzmq-2.1.7. For libzmq
+Current release of pyzmq is 2.1.9, and targets libzmq-2.1.9. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
@@ -16,12 +16,14 @@ as that of your libzmq, but due to the generally growing API of libzmq, your pyz
 *not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
 intend to support libzmq >= 2.1.4 (the first 'stable' 2.1 release) for pyzmq 2.1.x.
 
-ØMQ 3.0
--------
+ØMQ 3.0 and 4.0
+---------------
 
 As of 2.1.7, we have experimental support for the 3.0 API of libzmq,
 developed at https://github.com/zeromq/libzmq. No code to change, no flags to pass, just
-build against libzmq 3 and it should work.  The pyzmq API has not changed.
+build pyzmq against libzmq 3 and it should work.  The pyzmq API has not changed.
+
+2.1.9 adds support for the changes in ØMQ-4.0 dev, at time of release.
 
 
 Documentation
@@ -49,7 +51,7 @@ Eggs and MSIs
 -------------
 
 We have binary installers for various Pythons on OSX and Windows, so you should be able to
-just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.7*, so they should
+just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.9*, so they should
 be the only thing you need to start using pyzmq, but we simply don't have the experience to know
 when and where these installers will not work.
 
@@ -96,7 +98,7 @@ The argument should be a directory containing a ``lib`` and a ``include`` direct
 ``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
 and current libzmq into the same parent directory, this would be:
 
-    $ python setup.py configure --zmq=../zeromq-2.1.8
+    $ python setup.py configure --zmq=../zeromq-2.1.9
 
 Second, run this command::
 
@@ -202,15 +204,15 @@ Currently, we are using the following steps to release PyZMQ:
 
 * Branch the release (do *not* push the branch)::
 
-    git checkout -b 2.1.8 master
+    git checkout -b 2.1.9 master
 
 * commit the changed ``version.pyx`` to the branch::
 
-    git add zmq/core/version.pyx && git commit -m "bump version to 2.1.8"
+    git add zmq/core/version.pyx && git commit -m "bump version to 2.1.9"
 
 * Tag the release::
 
-    git tag -a -m "Tagging release 2.1.8" v2.1.8
+    git tag -a -m "Tagging release 2.1.9" v2.1.9
     git push origin --tags
 
 * Make sure the ``README.rst`` has an updated list of contributors.
@@ -225,20 +227,37 @@ is the primary developer of pyzmq at this time.
 
 The following people have contributed to the project:
 
-* Carlos Rocha (carlos DOT rocha AT gmail DOT com)
-* Andrew Gwozdziewycz (git AT apgwoz DOT com)
-* Fernando Perez (fernando DOT perez AT berkeley DOT edu)
-* Nicholas Piel (nicholas AT nichol DOT as)
 * Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
-* Justin Riley (justin DOT t DOT riley AT gmail DOT com)
-* Ivo Danihelka (ivo AT denihelka DOT net)
-* Thomas Supra (tomspur AT fedoraproject DOT org)
 * Douglas Creager (dcreager AT dcreager DOT net)
-* Erick Tryzelaar (erick DOT tryzelaar AT gmail DOT com)
-* Min Ragan-Kelley (benjaminrk AT gmail DOT com)
-* Scott Sadler (github AT mashi DOT org)
-* spez (steve AT hipmunk DOT com)
-* Thomas Kluyver (takowl AT gmail DOT com)
+
+* Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
+* Brandon Craig Rhodes (brandon AT rhodesmill DOT org)
+* Brandyn A. White (bwhite AT dappervision DOT com)
+* Brian Granger (ellisonbg AT gmail DOT com)
+* Carlos A. Rocha (carlos DOT rocha AT gmail DOT com)
+* Daniel Lundin (dln AT spotify DOT com)
 * Daniel Truemper (truemped AT googlemail DOT com)
-* Erik Tollerud <erik DOT tollerud AT gmail DOT com>
+* Erick Tryzelaar (erick DOT tryzelaar AT gmail DOT com)
+* Erik Tollerud (erik DOT tollerud AT gmail DOT com)
+* Fernando Perez (Fernando DOT Perez AT berkeley DOT edu)
+* Ivo Danihelka (ivo AT danihelka DOT net)
+* Justin Riley (justin DOT t DOT riley AT gmail DOT com)
+* Min Ragan-Kelley (benjaminrk AT gmail DOT com)
+* Nicholas Piël (nicholas AT nichol DOT as)
+* Ondrej Certik (ondrej AT certik DOT cz)
+* Paul Colomiets (paul AT colomiets DOT name)
+* Scott Sadler (github AT mashi DOT org)
+* Stefan van der Walt (stefan AT sun DOT ac DOT za)
+* Thomas Kluyver (takowl AT gmail DOT com)
+* Thomas Spura (tomspur AT fedoraproject DOT org)
+* Zbigniew Jędrzejewski-Szmek (zbyszek AT in DOT waw DOT pl)
+* hugo  shi (hugoshi AT bleb2 DOT (none))
+* spez (steve AT hipmunk DOT com)
+
+as reported by::
+
+    git log --all --format='* %aN (%aE)' | sort -u | sed 's/@/ AT /1' | sed -e 's/\./ DOT /g'
+
+with some adjustments.
+
