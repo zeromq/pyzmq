@@ -55,14 +55,28 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
         flagsz = sizeof (flag_3)
         flag_ptr = &flag_3
         SNDLABEL = ZMQ_SNDLABEL
+        if ZMQ_VERSION_MAJOR == 3:
+            # in 3.x, ROUTER prefix is 2.x-style with SNDMORE, rather than
+            # new-style with SNDLABEL
+            rc = zmq_getsockopt (outsocket_, ZMQ_TYPE, flag_ptr, &flagsz)
+            # This will never actually happen until LIBZMQ-249 is resolved:
+            if flag_3 == ZMQ_ROUTER:
+                SNDLABEL = ZMQ_SNDMORE
     
     if rc < 0:
         return rc
     if swap_ids:# both router, must send second identity first
         # recv two ids into msg, id_msg
         rc = zmq_recvmsg (insocket_, &msg, 0)
+        if ZMQ_VERSION_MAJOR == 3:
+            # temporary workaround for LIBZMQ-249
+            rc = zmq_getsockopt (outsocket_, ZMQ_RCVLABEL, flag_ptr, &flagsz)
+            if flag_3:
+                SNDLABEL = ZMQ_SNDLABEL
+            else:
+                SNDLABEL = ZMQ_SNDMORE
         rc = zmq_recvmsg (insocket_, &id_msg, 0)
-    
+
         # send second id (id_msg) first
         #!!!! always send a copy before the original !!!!
         rc = zmq_msg_copy(&side_msg, &id_msg)

@@ -180,3 +180,35 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.assertEquals([asbytes('out')]+bobs, mons)
         self.teardown_device()
     
+    def test_router_router(self):
+        """test router-router MQ devices"""
+        if zmq.zmq_version() >= '4.0.0':
+            raise SkipTest("Only for libzmq < 4")
+        dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, 'in', 'out')
+        dev.setsockopt_in(zmq.LINGER, 0)
+        dev.setsockopt_out(zmq.LINGER, 0)
+        dev.setsockopt_mon(zmq.LINGER, 0)
+        
+        binder = self.context.socket(zmq.DEALER)
+        porta = binder.bind_to_random_port('tcp://127.0.0.1')
+        portb = binder.bind_to_random_port('tcp://127.0.0.1')
+        binder.close()
+        time.sleep(0.1)
+        a = self.context.socket(zmq.DEALER)
+        a.identity = asbytes('a')
+        b = self.context.socket(zmq.DEALER)
+        b.identity = asbytes('b')
+        
+        a.connect('tcp://127.0.0.1:%i'%porta)
+        dev.bind_in('tcp://127.0.0.1:%i'%porta)
+        b.connect('tcp://127.0.0.1:%i'%portb)
+        dev.bind_out('tcp://127.0.0.1:%i'%portb)
+        dev.start()
+        time.sleep(0.2)
+        msg = [ asbytes(m) for m in ('hello', 'there')]
+        a.send_multipart(['b']+msg)
+        bmsg = self.recv_multipart(b)
+        self.assertEquals(bmsg, ['a']+msg)
+        b.send_multipart(bmsg)
+        amsg = self.recv_multipart(a)
+        self.assertEquals(amsg, ['b']+msg)
