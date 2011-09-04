@@ -55,6 +55,42 @@ def device(int device_type, cSocket isocket, cSocket osocket):
         raise ZMQError()
     return rc
 
+# inner loop inlined, to prevent duplication
+cdef inline int _relay(void * insocket, void *outsocket, zmq_msg_t msg) nogil:
+    cdef int more=0
+    cdef int label=0
+    cdef int flags=0
+    cdef size_t flagsz
+    flagsz = sizeof (more)
+
+    while (True):
+
+        rc = zmq_recvmsg(insocket, &msg, 0)
+        if (rc < 0):
+            return -1
+
+        rc = zmq_getsockopt(insocket, ZMQ_RCVMORE, &more, &flagsz)
+        if (rc < 0):
+            return -1
+        rc = zmq_getsockopt(insocket, ZMQ_RCVLABEL, &label, &flagsz)
+        if (rc < 0):
+            return -1
+        
+        flags = 0
+        if more:
+            flags = flags | ZMQ_SNDMORE
+        if label:
+            flags = flags | ZMQ_SNDLABEL
+        
+        rc = zmq_sendmsg(outsocket, &msg, flags)
+
+        if (rc < 0):
+            return -1
+
+        if not (flags):
+            break
+    return 0
+
 # c_device copied (and cythonized) from zmq_device in zeromq release-2.1.6
 # used under LGPL
 cdef inline int c_device (void * insocket, void *outsocket) nogil:
@@ -66,10 +102,6 @@ cdef inline int c_device (void * insocket, void *outsocket) nogil:
 
     if (rc != 0):
         return -1
-
-    cdef int more
-    cdef size_t moresz
-    moresz = sizeof (more)
 
     cdef zmq_pollitem_t items [2]
     items [0].socket = insocket
@@ -96,49 +128,11 @@ cdef inline int c_device (void * insocket, void *outsocket) nogil:
 
         #  Process a request.
         if (items [0].revents & ZMQ_POLLIN):
-            while (True):
-
-                rc = zmq_recvmsg(insocket, &msg, 0)
-                if (rc < 0):
-                    return -1
-
-                rc = zmq_getsockopt(insocket, ZMQ_RCVMORE, &more, &moresz)
-                if (rc < 0):
-                    return -1
-
-                if more:
-                    rc = zmq_sendmsg(outsocket, &msg,ZMQ_SNDMORE)
-                else:
-                    rc = zmq_sendmsg(outsocket, &msg,0)
-
-                if (rc < 0):
-                    return -1
-
-                if (not more):
-                    break
+            rc = _relay(insocket, outsocket, msg)
 
         #  Process a reply.
         if (items [1].revents & ZMQ_POLLIN):
-            while (True):
-
-                rc = zmq_recvmsg(outsocket, &msg, 0)
-                if (rc < 0):
-                    return -1
-
-                rc = zmq_getsockopt(outsocket, ZMQ_RCVMORE, &more, &moresz)
-                if (rc < 0):
-                    return -1
-
-                if more:
-                    rc = zmq_sendmsg(insocket, &msg,ZMQ_SNDMORE)
-                else:
-                    rc = zmq_sendmsg(insocket, &msg,0)
-
-                if (rc < 0):
-                    return -1
-
-                if (not more):
-                    break
+            rc = _relay(outsocket, insocket, msg)
     return 0
 
 

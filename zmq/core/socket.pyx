@@ -618,8 +618,8 @@ cdef class Socket:
         else:
             return _recv_message(self.handle, flags, track)
     
-    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
-        """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
+    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False, prefix=None):
+        """s.send_multipart(msg_parts, flags=0, copy=True, track=False, prefix=None)
 
         Send a sequence of messages as a multipart message.
 
@@ -636,6 +636,9 @@ cdef class Socket:
         track : bool, optional
             Should the message(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
+        prefix : iterable
+            A sequence of messages to send as a 0MQ label prefix (0MQ >= 3.0 only).
+            Each element can be any sendable object (Message, bytes, buffer-providers)
         
         Returns
         -------
@@ -644,6 +647,15 @@ cdef class Socket:
             a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
+        cdef int SNDLABEL = ZMQ_SNDLABEL
+        if prefix:
+            if isinstance(prefix, bytes):
+                prefix = [prefix]
+            if SNDLABEL == -1:
+                # ignore SNDLABEL on early libzmq, as SNDMORE is fine
+                SNDLABEL = SNDMORE
+            for msg in prefix:
+                self.send(msg, SNDLABEL|flags)
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
@@ -668,35 +680,46 @@ cdef class Socket:
         track : bool, optional
             Should the message(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
-        
         Returns
         -------
         msg_parts : list
             A list of messages in the multipart message; either Messages or strs,
             depending on `copy`.
+        
+        0MQ-3.0:
+        
+        prefix, msg_parts : two lists
+            `prefix` will be the prefix list of message labels at the front of the
+            message.  If prefix would be empty, only a single msg_parts list
+            will be returned.
         """
         parts = []
-        while True:
+        prefix = []
+        if ZMQ_VERSION_MAJOR >= 3:
+            while True:
+                # receive the label prefix, if any
+                part = self.recv(flags, copy=copy, track=track)
+                if self.getsockopt(ZMQ_RCVLABEL):
+                    prefix.append(part)
+                else:
+                    parts.append(part)
+                    break
+        else:
+            # recv the first part
             part = self.recv(flags, copy=copy, track=track)
             parts.append(part)
-            if self.rcvmore():
-                continue
-            else:
-                break
-        return parts
-
-    def rcvmore(self):
-        """s.rcvmore()
-
-        Are there more parts to a multipart message?
+            
+        # have first part already, only loop while more to receive
+        # LABELS after initial prefix are treated as SNDMORE, and their
+        # LABEL-ness is stripped, but at least complete message is in tact
+        while self.getsockopt(ZMQ_RCVMORE) or \
+                (ZMQ_RCVLABEL != -1 and self.getsockopt(ZMQ_RCVLABEL)):
+            part = self.recv(flags, copy=copy, track=track)
+            parts.append(part)
         
-        Returns
-        -------
-        more : bool
-            whether we are in the middle of a multipart message.
-        """
-        more = self.getsockopt(RCVMORE)
-        return bool(more)
+        if prefix:
+            return prefix,parts
+        return parts
 
     def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
         """s.send_unicode(u, flags=0, copy=False, encoding='utf-8')

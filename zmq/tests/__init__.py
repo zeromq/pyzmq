@@ -66,7 +66,7 @@ class BaseZMQTestCase(TestCase):
             if t.is_alive():
                 raise RuntimeError("context could not terminate, open sockets likely remain in test")
 
-    def create_bound_pair(self, type1, type2, interface='tcp://127.0.0.1'):
+    def create_bound_pair(self, type1=zmq.PAIR, type2=zmq.PAIR, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
         s1 = zmq.Socket(self.context, type1)
         s1.setsockopt(zmq.LINGER, 0)
@@ -109,8 +109,19 @@ class BaseZMQTestCase(TestCase):
 got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
         else:
             self.fail("Function did not raise any error")
-        
+    
+    def recv(self, socket, *args, **kwargs):
+        """call recv in a way that raises if there is nothing to receive"""
+        r,w,x = zmq.select([socket], [], [], timeout=1)
+        assert len(r) > 0, "Should have received a message"
+        return socket.recv(*args, **kwargs)
 
+    def recv_multipart(self, socket, *args, **kwargs):
+        """call recv_multipart in a way that raises if there is nothing to receive"""
+        r,w,x = zmq.select([socket], [], [], timeout=1)
+        assert len(r) > 0, "Should have received a message"
+        return socket.recv_multipart(*args, **kwargs)
+    
 
 class PollZMQTestCase(BaseZMQTestCase):
     pass
