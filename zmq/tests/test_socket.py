@@ -250,6 +250,43 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.a, 1)
         a=s.a
         self.assertEquals(a, 1)
+    
+    def test_prefix(self):
+        if zmq.zmq_version() < '3.0.0':
+            raise SkipTest("Only applies to libzmq >= 3.0")
+        xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
+        msg = [ asbytes(p) for p in 'hi there'.split() ]
+        xreq.send_multipart(msg)
+        recvd = xrep.recv_multipart()
+        self.assertTrue(isinstance(recvd, tuple))
+        self.assertEquals(len(recvd), 2)
+        prefix, real = recvd
+        self.assertTrue(isinstance(prefix, list))
+        self.assertEquals(len(prefix), 1)
+        self.assertEquals(real, msg)
+        xrep.send_multipart(real, prefix=prefix)
+        echo = xreq.recv_multipart()
+        self.assertTrue(isinstance(echo, list))
+        self.assertEquals(echo, real)
+        extra = [asbytes('pre')]
+        xrep.send_multipart(msg, prefix=prefix+extra)
+        recvd = xreq.recv_multipart()
+        self.assertTrue(isinstance(recvd, tuple))
+        self.assertEquals(len(recvd), 2)
+        prefix, real = recvd
+        self.assertTrue(isinstance(prefix, list))
+        self.assertEquals(len(prefix), 1)
+        self.assertEquals(prefix, extra)
+        self.assertEquals(real, msg)
+    
+    def test_recv_multipart(self):
+        a,b = self.create_bound_pair()
+        msg = asbytes('hi')
+        for i in range(3):
+            a.send(msg)
+        time.sleep(0.1)
+        for i in range(3):
+            self.assertEquals(b.recv_multipart(), [msg])
         
         
 

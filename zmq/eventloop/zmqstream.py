@@ -199,17 +199,18 @@ class ZMQStream(object):
         self._errback = stack_context.wrap(callback)
         
                 
-    def send(self, msg, flags=0, copy=False, callback=None):
+    def send(self, msg, flags=0, copy=False, track=False, callback=None):
         """Send a message, optionally also register a new callback for sends.
         See zmq.socket.send for details.
         """
-        return self.send_multipart([msg], flags=flags, copy=copy, callback=callback)
+        return self.send_multipart([msg], flags=flags, copy=copy, track=track, callback=callback)
 
-    def send_multipart(self, msg, flags=0, copy=False, callback=None):
+    def send_multipart(self, msg, flags=0, copy=False, track=False, prefix=None, callback=None):
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
         """
-        self._send_queue.put((msg, flags, copy))
+        kwargs = dict(flags=flags, copy=copy, track=track, prefix=prefix)
+        self._send_queue.put((msg, kwargs))
         callback = callback or self._send_callback
         if callback is not None:
             self.on_send(callback)
@@ -433,9 +434,9 @@ class ZMQStream(object):
             logging.error("Shouldn't have handled a send event")
             return
         
-        msg = self._send_queue.get()
+        msg, kwargs = self._send_queue.get()
         try:
-            status = self.socket.send_multipart(*msg)
+            status = self.socket.send_multipart(msg, **kwargs)
         except zmq.ZMQError:
             e = sys.exc_info()[1]
             status = e
