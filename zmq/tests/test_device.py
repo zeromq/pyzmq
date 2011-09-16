@@ -25,7 +25,7 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
 
 #-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = asbytes('hello')
         req.send(msg)
-        self.assertEquals(msg, req.recv())
+        self.assertEquals(msg, self.recv(req))
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -78,7 +78,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = asbytes('hello again')
         req.send(msg)
-        self.assertEquals(msg, req.recv())
+        self.assertEquals(msg, self.recv(req))
         del dev
         req.close()
         
@@ -96,7 +96,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = asbytes('hello')
         req.send(msg)
-        self.assertEquals(msg, req.recv())
+        self.assertEquals(msg, self.recv(req))
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -112,6 +112,34 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = asbytes('hello again')
         req.send(msg)
-        self.assertEquals(msg, req.recv())
+        self.assertEquals(msg, self.recv(req))
+        del dev
+        req.close()
+
+    def test_labels(self):
+        """test device support for SNDLABEL"""
+        if zmq.zmq_version() < '3.0.0':
+            raise SkipTest("Only for libzmq 3")
+        dev = devices.ThreadDevice(zmq.QUEUE, zmq.XREP, -1)
+        # select random port:
+        binder = self.context.socket(zmq.XREQ)
+        port = binder.bind_to_random_port('tcp://127.0.0.1')
+        binder.close()
+        time.sleep(0.1)
+        req = self.context.socket(zmq.REQ)
+        req.connect('tcp://127.0.0.1:%i'%port)
+        dev.bind_in('tcp://127.0.0.1:%i'%port)
+        dev.start()
+        time.sleep(.25)
+        msg = asbytes('hello')
+        req.send(msg, zmq.SNDLABEL)
+        req.send(msg, zmq.SNDMORE)
+        req.send(msg)
+        
+        self.assertEquals(msg, self.recv(req))
+        self.assertTrue(req.rcvlabel)
+        self.assertEquals(msg, self.recv(req))
+        self.assertTrue(req.rcvmore)
+        self.assertEquals(msg, self.recv(req))
         del dev
         req.close()

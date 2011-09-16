@@ -9,9 +9,22 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+dev
+===
 
-2.1.9 (dev)
-===========
+* Add support for libzmq-3.0 LABEL prefixes:
+
+  * send a message with label-prefix with:
+
+    .. sourcecode:: python
+
+      send_multipart([b'msg', b'parts'], prefix=[b'label', b'prefix'])
+
+  * :meth:`recv_multipart` returns a tuple of ``(prefix,msg)`` if a label prefix is detected
+  * ZMQStreams and devices also respect the LABEL prefix
+
+2.1.9
+=====
 
 * added zmq.ssh tools for tunneling socket connections, copied from IPython
 * Expanded sockopt support to cover changes in libzmq-4.0 dev.

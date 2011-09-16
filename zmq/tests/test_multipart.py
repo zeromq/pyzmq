@@ -33,18 +33,18 @@ from zmq.tests import BaseZMQTestCase, SkipTest
 class TestMultipart(BaseZMQTestCase):
 
     def test_router_dealer(self):
-        if zmq.zmq_version() >= '3.0.0':
-            raise SkipTest("Known bug in libzmq 3.0.0, see https://zeromq.jira.com/browse/LIBZMQ-232")
+        if zmq.zmq_version() >= '4.0.0':
+            raise SkipTest("ROUTER/DEALER change in 4.0")
         router, dealer = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
 
         msg1 = asbytes('message1')
         dealer.send(msg1)
-        ident = router.recv()
-        more = router.rcvmore()
+        ident = self.recv(router)
+        more = router.rcvmore
         self.assertEquals(more, True)
-        msg2 = router.recv()
+        msg2 = self.recv(router)
         self.assertEquals(msg1, msg2)
-        more = router.rcvmore()
+        more = router.rcvmore
         self.assertEquals(more, False)
     
     def test_basic_multipart(self):
