@@ -66,12 +66,20 @@ cdef class Context:
             raise MemoryError("Could not allocate _sockets array")
         
 
+    def __del__(self):
+        """deleting a Context should terminate it, and close its sockets."""
+        self.term()
+    
     def __dealloc__(self):
+        """don't touch members in dealloc, just cleanup allocations"""
         cdef int rc
-        if self.handle != NULL:
-            self.term()
         if self._sockets != NULL:
             free(self._sockets)
+        if self.handle != NULL:
+            with nogil:
+                rc = zmq_term(self.handle)
+            if rc != 0:
+                raise ZMQError()
     
     cdef inline void _add_socket(self, void* handle):
         """Add a socket handle to be closed when Context terminates.
