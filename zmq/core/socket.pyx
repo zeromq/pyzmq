@@ -204,8 +204,20 @@ cdef class Socket:
         self._attrs = {}
         context._add_socket(self.handle)
 
-    def __dealloc__(self):
+    def __del__(self):
+        """close *and* remove from context's list"""
         self.close()
+    
+    def __dealloc__(self):
+        """don't touch the Context during dealloc, since it might have been cleaned up already.
+        
+        This method will likely do nothing unless init has failed."""
+        if self.handle != NULL:
+            with nogil:
+                rc = zmq_close(self.handle)
+            if rc != 0 and zmq_errno() != ENOTSOCK:
+                # ignore ENOTSOCK (closed by Context)
+                raise ZMQError()
     
     def __init__(self, context, socket_type):
         pass
