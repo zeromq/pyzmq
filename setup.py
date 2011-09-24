@@ -501,7 +501,7 @@ monqueue = pxd('devices', 'monitoredqueue')
 submodules = dict(
     core = {'constants': [libzmq],
             'error':[libzmq],
-            'poll':[libzmq, socket],
+            'poll':[libzmq, socket, context],
             'stopwatch':[libzmq, pxd('core','stopwatch')],
             'context':[context, libzmq],
             'message':[libzmq, buffers, message],
