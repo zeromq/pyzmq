@@ -85,25 +85,25 @@ class TestContext(BaseZMQTestCase):
             time.sleep(1e-2)
         ctx.term()
     
-    def test_close(self):
-        """Context.close should close sockets"""
+    def test_shutdown(self):
+        """Context.shutdown should close sockets"""
         ctx = zmq.Context()
         sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
         
         # close half of the sockets
         [ s.close() for s in sockets[::2] ]
         
-        ctx.close()
+        ctx.shutdown()
         # reaper is not instantaneous
         time.sleep(1e-2)
         for s in sockets:
             self.assertTrue(s.closed)
         
-    def test_close_linger(self):
-        """Context.term should set linger on closing sockets"""
+    def test_shutdown_linger(self):
+        """Context.shutdown should set linger on closing sockets"""
         req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
         req.send(asbytes('hi'))
-        self.context.close(linger=0)
+        self.context.shutdown(linger=0)
         # reaper is not instantaneous
         time.sleep(1e-2)
         for s in (req,rep):

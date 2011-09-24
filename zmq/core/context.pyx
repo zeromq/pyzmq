@@ -68,8 +68,7 @@ cdef class Context:
         
 
     def __del__(self):
-        """deleting a Context should terminate it, and close its sockets."""
-        self.close()
+        """deleting a Context should terminate it, without trying non-threadsafe shutdown"""
         self.term()
     
     def __dealloc__(self):
@@ -142,7 +141,7 @@ cdef class Context:
         Close or terminate the context.
         
         This can be called to close the context by hand. If this is not
-        called, the context and all its sockets will automatically be closed
+        called, the context will automatically be closed
         when it is garbage collected.
         """
         cdef int rc
@@ -156,10 +155,11 @@ cdef class Context:
             self.handle = NULL
             self.closed = True
 
-    def close(self, linger=None):
-        """ctx.close(linger=None)
+    def shutdown(self, linger=None):
+        """ctx.shutdown(linger=None)
         
-        Closes all sockets associated with this context. If linger is specified,
+        Closes all sockets associated with this context, and then terminate
+        the context. If linger is specified,
         the LINGER sockopt of the sockets will be set prior to closing.
         
         This can be called by hand to cleanup the environment, or it will
@@ -168,7 +168,7 @@ cdef class Context:
         
         WARNING:
         
-        Socket cleanup involves calling zmq_close(), which is *NOT* threadsafe.
+        shutdown involves calling zmq_close(), which is *NOT* threadsafe.
         If there are active sockets in other threads, this must not be called.
         """
         
@@ -188,6 +188,7 @@ cdef class Context:
                     raise ZMQError()
                 self.n_sockets -= 1
                 self._sockets[0] = self._sockets[self.n_sockets]
+            self.term()
     
     def socket(self, int socket_type):
         """ctx.socket(socket_type)
