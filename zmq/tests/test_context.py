@@ -21,7 +21,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import sys
 import time
+from threading import Thread
 
 import zmq
 from zmq.utils.strtypes import asbytes
@@ -83,16 +85,42 @@ class TestContext(BaseZMQTestCase):
             time.sleep(1e-2)
         ctx.term()
     
-    def test_term_close(self):
-        """Context.term should close sockets"""
+    def test_close(self):
+        """Context.close should close sockets"""
         ctx = zmq.Context()
         sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
         
         # close half of the sockets
         [ s.close() for s in sockets[::2] ]
         
-        ctx.term()
+        ctx.close()
+        # reaper is not instantaneous
+        time.sleep(1e-2)
         for s in sockets:
             self.assertTrue(s.closed)
         
+    def test_close_linger(self):
+        """Context.term should set linger on closing sockets"""
+        req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        req.send(asbytes('hi'))
+        self.context.close(linger=0)
+        # reaper is not instantaneous
+        time.sleep(1e-2)
+        for s in (req,rep):
+            self.assertTrue(s.closed)
+        
+    def test_term_noclose(self):
+        """Context.term won't close sockets"""
+        ctx = zmq.Context()
+        s = ctx.socket(zmq.REQ)
+        self.assertFalse(s.closed)
+        t = Thread(target=ctx.term)
+        t.start()
+        t.join(timeout=0.1)
+        if sys.version[:3] == '2.5':
+            t.is_alive = t.isAlive
+        self.assertTrue(t.is_alive(), "Context should be waiting")
+        s.close()
+        t.join(timeout=0.1)
+        self.assertFalse(t.is_alive(), "Context should have closed")
 

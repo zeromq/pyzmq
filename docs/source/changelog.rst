@@ -23,6 +23,11 @@ dev
   * :meth:`recv_multipart` returns a tuple of ``(prefix,msg)`` if a label prefix is detected
   * ZMQStreams and devices also respect the LABEL prefix
 
+* Split socket-closing shutdown step into :meth:`ctx.close`, so that :meth:`ctx.term`
+  remains threadsafe and 1:1 with libzmq.
+* :meth:`Socket.close` takes optional linger option, for setting linger prior
+  to closing.
+
 2.1.9
 =====
 
