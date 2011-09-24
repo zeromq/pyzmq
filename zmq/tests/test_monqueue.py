@@ -184,7 +184,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         """test router-router MQ devices"""
         if zmq.zmq_version() >= '4.0.0':
             raise SkipTest("Only for libzmq < 4")
-        dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, 'in', 'out')
+        dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, asbytes('in'), asbytes('out'))
         dev.setsockopt_in(zmq.LINGER, 0)
         dev.setsockopt_out(zmq.LINGER, 0)
         dev.setsockopt_mon(zmq.LINGER, 0)
@@ -206,9 +206,9 @@ class TestMonitoredQueue(BaseZMQTestCase):
         dev.start()
         time.sleep(0.2)
         msg = [ asbytes(m) for m in ('hello', 'there')]
-        a.send_multipart(['b']+msg)
+        a.send_multipart([asbytes('b')]+msg)
         bmsg = self.recv_multipart(b)
-        self.assertEquals(bmsg, ['a']+msg)
+        self.assertEquals(bmsg, [asbytes('a')]+msg)
         b.send_multipart(bmsg)
         amsg = self.recv_multipart(a)
-        self.assertEquals(amsg, ['b']+msg)
+        self.assertEquals(amsg, [asbytes('b')]+msg)
