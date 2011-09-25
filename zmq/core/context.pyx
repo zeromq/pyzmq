@@ -68,7 +68,7 @@ cdef class Context:
         
 
     def __del__(self):
-        """deleting a Context should terminate it, without trying non-threadsafe shutdown"""
+        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
         self.term()
     
     def __dealloc__(self):
@@ -155,10 +155,10 @@ cdef class Context:
             self.handle = NULL
             self.closed = True
 
-    def shutdown(self, linger=None):
-        """ctx.shutdown(linger=None)
+    def destroy(self, linger=None):
+        """ctx.destroy(linger=None)
         
-        Closes all sockets associated with this context, and then terminate
+        Close all sockets associated with this context, and then terminate
         the context. If linger is specified,
         the LINGER sockopt of the sockets will be set prior to closing.
         
@@ -168,7 +168,7 @@ cdef class Context:
         
         WARNING:
         
-        shutdown involves calling zmq_close(), which is *NOT* threadsafe.
+        destroy involves calling zmq_close(), which is *NOT* threadsafe.
         If there are active sockets in other threads, this must not be called.
         """
         
