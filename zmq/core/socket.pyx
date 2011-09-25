@@ -93,7 +93,9 @@ cdef inline _check_closed(Socket s, bint raise_notsup):
                 raise ZMQError(ENOTSUP)
             else:
                 return True
-    # return False
+        elif rc:
+            raise ZMQError()
+    return False
 
 cdef inline Message _recv_message(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Message."""
@@ -226,19 +228,31 @@ cdef class Socket:
     def closed(self):
         return _check_closed(self, False)
     
-    def close(self):
-        """s.close()
+    def close(self, linger=None):
+        """s.close(linger=None)
 
         Close the socket.
+        
+        If linger is specified, LINGER sockopt will be set prior to closing.
 
         This can be called to close the socket by hand. If this is not
         called, the socket will automatically be closed when it is
         garbage collected.
         """
-        cdef int rc
+        cdef int rc=0
+        cdef int linger_c
+        cdef bint setlinger=False
+        
+        if linger is not None:
+            linger_c = linger
+            setlinger=True
+        
+        _check_closed(self, False)
         
         if self.handle != NULL and not self._closed:
             with nogil:
+                if setlinger:
+                    zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
                 rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
