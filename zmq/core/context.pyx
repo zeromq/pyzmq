@@ -24,6 +24,7 @@
 #-----------------------------------------------------------------------------
 
 from libc.stdlib cimport free, malloc, realloc
+
 from errno import ENOTSOCK
 
 from libzmq cimport *
@@ -67,7 +68,7 @@ cdef class Context:
         
 
     def __del__(self):
-        """deleting a Context should terminate it, and close its sockets."""
+        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
         self.term()
     
     def __dealloc__(self):
@@ -75,11 +76,7 @@ cdef class Context:
         cdef int rc
         if self._sockets != NULL:
             free(self._sockets)
-        if self.handle != NULL:
-            with nogil:
-                rc = zmq_term(self.handle)
-            if rc != 0:
-                raise ZMQError()
+        self.term()
     
     cdef inline void _add_socket(self, void* handle):
         """Add a socket handle to be closed when Context terminates.
@@ -141,22 +138,15 @@ cdef class Context:
     def term(self):
         """ctx.term()
 
-        Close or terminate the context and all its sockets.
-
-        This can be called to close the context by hand. If this is not
-        called, the context will automatically be closed when it is
-        garbage collected.
+        Close or terminate the context.
+        
+        This can be called to close the context by hand. If this is not called,
+        the context will automatically be closed when it is garbage collected.
         """
         cdef int rc
         cdef int i=-1
+
         if self.handle != NULL and not self.closed:
-            for i in range(self.n_sockets):
-                # print 'closing: ', <size_t>self._sockets[i]
-                with nogil:
-                    rc = zmq_close(self._sockets[i])
-                if rc != 0 and zmq_errno() != ENOTSOCK:
-                    raise ZMQError()
-            # print i
             with nogil:
                 rc = zmq_term(self.handle)
             if rc != 0:
@@ -164,6 +154,37 @@ cdef class Context:
             self.handle = NULL
             self.closed = True
 
+    def destroy(self, linger=None):
+        """ctx.destroy(linger=None)
+        
+        Close all sockets associated with this context, and then terminate
+        the context. If linger is specified,
+        the LINGER sockopt of the sockets will be set prior to closing.
+        
+        WARNING:
+        
+        destroy involves calling zmq_close(), which is *NOT* threadsafe.
+        If there are active sockets in other threads, this must not be called.
+        """
+        
+        cdef int linger_c
+        cdef bint setlinger=False
+        
+        if linger is not None:
+            linger_c = linger
+            setlinger=True
+        if self.handle != NULL and not self.closed and self.n_sockets:
+            while self.n_sockets:
+                with nogil:
+                    if setlinger:
+                        zmq_setsockopt(self._sockets[0], ZMQ_LINGER, &linger_c, sizeof(int))
+                    rc = zmq_close(self._sockets[0])
+                if rc != 0 and zmq_errno() != ENOTSOCK:
+                    raise ZMQError()
+                self.n_sockets -= 1
+                self._sockets[0] = self._sockets[self.n_sockets]
+            self.term()
+    
     def socket(self, int socket_type):
         """ctx.socket(socket_type)
 

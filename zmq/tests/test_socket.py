@@ -287,8 +287,16 @@ class TestSocket(BaseZMQTestCase):
         time.sleep(0.1)
         for i in range(3):
             self.assertEquals(b.recv_multipart(), [msg])
-        
-        
-
     
+    def test_close_after_destroy(self):
+        """s.close() after ctx.destroy() should be fine"""
+        ctx = zmq.Context()
+        s = ctx.socket(zmq.REP)
+        ctx.destroy()
+        # reaper is not instantaneous
+        time.sleep(1e-2)
+        s.close()
+        self.assertTrue(s.closed)
+    
+
 
