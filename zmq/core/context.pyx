@@ -25,8 +25,6 @@
 
 from libc.stdlib cimport free, malloc, realloc
 
-from errno import ENOTSOCK
-
 from libzmq cimport *
 
 from error import ZMQError

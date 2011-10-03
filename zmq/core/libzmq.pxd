@@ -67,11 +67,12 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EADDRNOTAVAIL "EADDRNOTAVAIL"
     enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
     enum: ZMQ_EINPROGRESS "EINPROGRESS"
-    enum: ZMQ_EMTHREAD "EMTHREAD"
+    enum: ZMQ_ENOTSOCK "ENOTSOCK"
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
     enum: ZMQ_ECANTROUTE "ECANTROUTE"
+    enum: ZMQ_EMTHREAD "EMTHREAD"
     
     enum: errno
     char *zmq_strerror (int errnum)

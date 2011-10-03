@@ -52,8 +52,6 @@ import random
 import struct
 import codecs
 
-from errno import ENOTSOCK
-
 from zmq.utils import jsonapi
 
 try:
