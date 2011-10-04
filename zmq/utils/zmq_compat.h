@@ -125,8 +125,13 @@
     #define ZMQ_IDENTITY (-1)
 #endif
 
-#ifdef HAVE_WINDOWS
+// define fd type (from libzmq's fd.hpp)
+#ifdef _WIN32
+  #ifdef _MSC_VER && _MSC_VER <= 1400
+    #define ZMQ_FD_T UINT_PTR
+  #else
     #define ZMQ_FD_T SOCKET
+  #endif
 #else
     #define ZMQ_FD_T int
 #endif
