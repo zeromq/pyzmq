@@ -66,8 +66,7 @@ class TestImports(TestCase):
         from zmq.eventloop import stack_context
         from zmq.eventloop import ioloop
         from zmq.eventloop import zmqstream
-        if sys.platform == 'win32':
-            from zmq.eventloop import win32_support
+        from zmq.eventloop.platform import auto
     
     def test_utils(self):
         """test util imports"""

@@ -39,4 +39,8 @@ elif major == 2:
     basestring = basestring
     asbytes = str
 
-__all__ = ['asbytes', 'bytes', 'unicode', 'basestring']
+# give short 'b' alias for asbytes, so that we can use fake b('stuff')
+# to simulate b'stuff'
+b = asbytes
+
+__all__ = ['asbytes', 'bytes', 'unicode', 'basestring', 'b']

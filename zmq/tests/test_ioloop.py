@@ -73,14 +73,12 @@ class TestIOLoop(BaseZMQTestCase):
         if t.isAlive():
             t.abort()
         else:
-            self.assert_(False, "IOLoop failed to exit")
+            self.fail("IOLoop failed to exit")
     
     def test_timeout_compare(self):
         """test timeout comparisons"""
         t = ioloop._Timeout(1,2)
         t2 = ioloop._Timeout(1,3)
-        self.assertEquals(t < t2, id(2) < id(3))
-        t2 = ioloop._Timeout(1,2)
-        self.assertFalse(t < t2)
+        self.assertEquals(t < t2, id(t) < id(t2))
         t2 = ioloop._Timeout(2,1)
         self.assertTrue(t < t2)
