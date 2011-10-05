@@ -3,16 +3,10 @@
 
 import ctypes
 import ctypes.wintypes
-import sys
-import os
 import socket
 import errno
 
-
-# See: http://msdn.microsoft.com/en-us/library/ms738573(VS.85).aspx
-ioctlsocket = ctypes.windll.ws2_32.ioctlsocket
-ioctlsocket.argtypes = (ctypes.wintypes.HANDLE, ctypes.wintypes.LONG, ctypes.wintypes.ULONG)
-ioctlsocket.restype = ctypes.c_int
+from zmq.utils.strtypes import asbytes as b
 
 # See: http://msdn.microsoft.com/en-us/library/ms724935(VS.85).aspx
 SetHandleInformation = ctypes.windll.kernel32.SetHandleInformation
@@ -22,43 +16,13 @@ SetHandleInformation.restype = ctypes.wintypes.BOOL
 HANDLE_FLAG_INHERIT = 0x00000001
 
 
-F_GETFD = 1
-F_SETFD = 2
-F_GETFL = 3
-F_SETFL = 4
-
-FD_CLOEXEC = 1
-
-os.O_NONBLOCK = 2048
-
-FIONBIO = 126
+def set_close_exec(fd):
+    success = SetHandleInformation(fd, HANDLE_FLAG_INHERIT, 0)
+    if not success:
+        raise ctypes.GetLastError()
 
 
-def fcntl(fd, op, arg=0):
-    if op == F_GETFD or op == F_GETFL:
-        return 0
-    elif op == F_SETFD:
-        # Check that the flag is CLOEXEC and translate
-        if arg == FD_CLOEXEC:
-            success = SetHandleInformation(fd, HANDLE_FLAG_INHERIT, arg)
-            if not success:
-                raise ctypes.GetLastError()
-        else:
-            raise ValueError("Unsupported arg")
-    #elif op == F_SETFL:
-        ## Check that the flag is NONBLOCK and translate
-        #if arg == os.O_NONBLOCK:
-            ##pass
-            #result = ioctlsocket(fd, FIONBIO, 1)
-            #if result != 0:
-                #raise ctypes.GetLastError()
-        #else:
-            #raise ValueError("Unsupported arg")
-    else:
-        raise ValueError("Unsupported op")
-
-
-class Pipe(object):
+class Waker(object):
     """Create an OS independent asynchronous pipe"""
     def __init__(self):
         # Based on Zope async.py: http://svn.zope.org/zc.ngi/trunk/src/zc/ngi/async.py
@@ -88,8 +52,7 @@ class Pipe(object):
             try:
                 self.writer.connect(connect_address)
                 break    # success
-            except socket.error:
-                detail = sys.exc_info()[1]
+            except socket.error, detail:
                 if detail[0] != errno.WSAEADDRINUSE:
                     # "Address already in use" is the only error
                     # I've seen on two WinXP Pro SP2 boxes, under
@@ -111,16 +74,23 @@ class Pipe(object):
         a.close()
         self.reader_fd = self.reader.fileno()
 
-    def read(self):
-        """Emulate a file descriptors read method"""
-        try:
-            return self.reader.recv(1)
-        except socket.error:
-            ex = sys.exc_info()[1]
-            if ex.args[0] == errno.EWOULDBLOCK:
-                raise IOError
-            raise
+    def fileno(self):
+        return self.reader.fileno()
 
-    def write(self, data):
-        """Emulate a file descriptors write method"""
-        return self.writer.send(data)
+    def wake(self):
+        try:
+            self.writer.send(b("x"))
+        except IOError:
+            pass
+
+    def consume(self):
+        try:
+            while True:
+                result = self.reader.recv(1024)
+                if not result: break
+        except IOError:
+            pass
+
+    def close(self):
+        self.reader.close()
+        self.writer.close()
