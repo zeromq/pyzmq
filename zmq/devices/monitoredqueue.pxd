@@ -48,11 +48,11 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
     cdef void * flag_ptr
     
     if ZMQ_VERSION_MAJOR < 3:
-        flagsz = sizeof (flag_2)
+        flagsz = sizeof (int64_t)
         flag_ptr = &flag_2
         SNDLABEL = ZMQ_SNDMORE
     else:
-        flagsz = sizeof (flag_3)
+        flagsz = sizeof (int)
         flag_ptr = &flag_3
         SNDLABEL = ZMQ_SNDLABEL
         if ZMQ_VERSION_MAJOR == 3:
