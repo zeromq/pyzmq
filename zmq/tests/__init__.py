@@ -112,13 +112,13 @@ got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
     
     def recv(self, socket, *args, **kwargs):
         """call recv in a way that raises if there is nothing to receive"""
-        r,w,x = zmq.select([socket], [], [], timeout=1)
+        r,w,x = zmq.select([socket], [], [], timeout=5)
         assert len(r) > 0, "Should have received a message"
         return socket.recv(*args, **kwargs)
 
     def recv_multipart(self, socket, *args, **kwargs):
         """call recv_multipart in a way that raises if there is nothing to receive"""
-        r,w,x = zmq.select([socket], [], [], timeout=1)
+        r,w,x = zmq.select([socket], [], [], timeout=5)
         assert len(r) > 0, "Should have received a message"
         return socket.recv_multipart(*args, **kwargs)
     
