@@ -33,7 +33,7 @@ from libzmq cimport zmq_strerror, zmq_errno
 
 from zmq.utils.strtypes import bytes
 
-def strerror(errnum):
+def strerror(int errnum):
     """strerror(errnum)
 
     Return the error string given the error number.

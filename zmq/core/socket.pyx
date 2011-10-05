@@ -469,14 +469,16 @@ cdef class Socket:
             encoded to utf-8 first.
         """
         cdef int rc
+        cdef char* c_addr
 
         _check_closed(self, True)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
+        c_addr = addr
         with nogil:
-            rc = zmq_bind(self.handle, addr)
+            rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
@@ -530,14 +532,17 @@ cdef class Socket:
             encoded to utf-8 first.
         """
         cdef int rc
+        cdef char* c_addr
 
         _check_closed(self, True)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
+        c_addr = addr
+        
         with nogil:
-            rc = zmq_connect(self.handle, addr)
+            rc = zmq_connect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
