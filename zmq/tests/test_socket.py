@@ -84,14 +84,16 @@ class TestSocket(BaseZMQTestCase):
             raise SkipTest("only on libzmq >= 2.1")
         elif v < '3.0':
             hwm = zmq.HWM
+            default_hwm = 0
         else:
             hwm = zmq.SNDHWM
+            default_hwm = 1000
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         p.setsockopt(zmq.LINGER, 0)
         self.assertEquals(p.getsockopt(zmq.LINGER), 0)
         p.setsockopt(zmq.LINGER, -1)
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
-        self.assertEquals(p.getsockopt(hwm), 0)
+        self.assertEquals(p.getsockopt(hwm), default_hwm)
         p.setsockopt(hwm, 11)
         self.assertEquals(p.getsockopt(hwm), 11)
         # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
