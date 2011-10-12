@@ -27,6 +27,9 @@ dev
   remains threadsafe and 1:1 with libzmq.
 * :meth:`Socket.close` takes optional linger option, for setting linger prior
   to closing.
+* add :func:`zmq_version_info` and :func:`pyzmq_version_info` for getting libzmq
+  and pyzmq versions as tuples of numbers.  This helps with the fact that
+  version string comparison breaks down once versions get into double-digits.
 
 2.1.9
 =====
