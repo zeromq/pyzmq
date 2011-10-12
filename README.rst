@@ -8,7 +8,7 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.9, and targets libzmq-2.1.9. For libzmq
+Current release of pyzmq is 2.1.10, and targets libzmq-2.1.10. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
@@ -20,10 +20,12 @@ intend to support libzmq >= 2.1.4 (the first 'stable' 2.1 release) for pyzmq 2.1
 ---------------
 
 As of 2.1.7, we have experimental support for the 3.0 API of libzmq,
-developed at https://github.com/zeromq/libzmq. No code to change, no flags to pass, just
-build pyzmq against libzmq 3 and it should work.  The pyzmq API has not changed.
+developed at https://github.com/zeromq/zeromq3-0. No code to change, no flags to pass, just
+build pyzmq against libzmq 3 and it should work.  The pyzmq API has not changed, though
+some syntax has been added to support new features, such as the LABEL routing prefix in 3.0.
 
-2.1.9 adds support for the changes in ØMQ-4.0 dev, at time of release.
+2.1.9 adds support for the changes in the experimental 4.0 development branch at
+https://github.com/zeromq/libzmq.
 
 
 Documentation
@@ -51,7 +53,7 @@ Eggs and MSIs
 -------------
 
 We have binary installers for various Pythons on OSX and Windows, so you should be able to
-just ``easy_install pyzmq`` in many situations. These eggs *include libzmq-2.1.9*, so they should
+just ``easy_install pyzmq`` in many situations. These eggs *include matching libzmq*, so they should
 be the only thing you need to start using pyzmq, but we simply don't have the experience to know
 when and where these installers will not work.
 
@@ -59,9 +61,14 @@ If a binary installer fails for you, please `tell us <https://github.com/zeromq/
 about your system and the failure, so that we can try to fix it in later releases, and fall back
 on building from source.
 
-Eggs are on PyPI, and we have them for 'current' Pythons, which are for OSX 10.6:
+Eggs are on `PyPI <http://pypi.python.org/pypi/pyzmq>`_, and we have them for 'current' Pythons,
+which are for OSX 10.7:
 
-  * Python 2.6, 2.7, 3.2 (32b and 64b intel)
+  * Python 2.7, 3.2 (32b+64b intel)
+  
+and OSX 10.6:
+
+  * Python 2.6 (32b+64b intel)
 
 and Windows (x86 and x64):
 
@@ -76,9 +83,12 @@ Our build scripts are much improved as of 2.1.4, so if you would like to contrib
 Windows installers, or have any improvements on existing releases, they would be much
 appreciated. Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should*
 work, once you have a libzmq and Python. We simply don't have the VMs or time in which to cover
-all the bases ourselves.  Sometimes libzmq.so/dll/dylib doesn't get included unless ``build``
-is specified *also*, e.g. ``python setupegg.py build bdist_egg``, but this doesn't always
-seem to be true.
+all the bases ourselves.
+
+.. note::
+    Sometimes libzmq.so/dll/dylib doesn't get included unless ``build`` is
+    specified *also*, e.g. ``python setupegg.py build bdist_egg``, but this
+    doesn't always seem to be true.
 
 General
 -------
@@ -94,11 +104,11 @@ or the zmq install directory on OSX/Linux:
 
     $ python setup.py configure --zmq=/usr/local
 
-The argument should be a directory containing a ``lib`` and a ``include`` directory, containing
+The argument should be a directory containing ``lib`` and ``include`` directories, with
 ``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
 and current libzmq into the same parent directory, this would be:
 
-    $ python setup.py configure --zmq=../zeromq-2.1.9
+    $ python setup.py configure --zmq=../zeromq-2.1.10
 
 Second, run this command::
 
@@ -229,6 +239,7 @@ The following people have contributed to the project:
 
 * Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
 * Douglas Creager (dcreager AT dcreager DOT net)
+* Craig Austin (craig DOT austin AT gmail DOT com)
 
 * Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)

@@ -9,8 +9,8 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-dev
-===
+2.1.10
+======
 
 * Add support for libzmq-3.0 LABEL prefixes:
 
@@ -27,9 +27,11 @@ dev
   remains threadsafe and 1:1 with libzmq.
 * :meth:`Socket.close` takes optional linger option, for setting linger prior
   to closing.
-* add :func:`zmq_version_info` and :func:`pyzmq_version_info` for getting libzmq
-  and pyzmq versions as tuples of numbers.  This helps with the fact that
-  version string comparison breaks down once versions get into double-digits.
+* add :func:`~zmq.core.version.zmq_version_info` and
+  :func:`~zmq.core.version.pyzmq_version_info` for getting libzmq and pyzmq versions as
+  tuples of numbers. This helps with the fact that version string comparison breaks down
+  once versions get into double-digits.
+* ioloop changes merged from upstream `Tornado <http://www.tornadoweb.org>`_ 2.1
 
 2.1.9
 =====
