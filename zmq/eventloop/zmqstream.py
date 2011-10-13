@@ -302,9 +302,15 @@ class ZMQStream(object):
             if event & zmq.POLLIN: # receiving
                 self._handle_recv()
                 count += 1
+                if self.socket is None:
+                    # break if socket was closed during callback
+                    break
             if event & zmq.POLLOUT and self.sending():
                 self._handle_send()
                 count += 1
+                if self.socket is None:
+                    # break if socket was closed during callback
+                    break
             
             flag = update_flag()
             if flag:
@@ -321,6 +327,9 @@ class ZMQStream(object):
                 dc.start()
         elif already_flushed:
             self._flushed = True
+
+        # update ioloop poll state, which may have changed
+        self._rebuild_io_state()
         return count
     
     def set_close_callback(self, callback):
@@ -390,14 +399,7 @@ class ZMQStream(object):
                     return
 
             # rebuild the poll state
-            state = zmq.POLLERR
-            if self.receiving():
-                state |= zmq.POLLIN
-            if self.sending():
-                state |= zmq.POLLOUT
-            if state != self._state:
-                self._state = state
-                self.io_loop.update_handler(self.socket, self._state)
+            self._rebuild_io_state()
         except:
             logging.error("Uncaught exception, closing connection.",
                           exc_info=True)
@@ -458,6 +460,19 @@ class ZMQStream(object):
         if not self.socket:
             raise IOError("Stream is closed")
 
+    def _rebuild_io_state(self):
+        """rebuild io state based on self.sending() and receiving()"""
+        if self.socket is None:
+            return
+        state = zmq.POLLERR
+        if self.receiving():
+            state |= zmq.POLLIN
+        if self.sending():
+            state |= zmq.POLLOUT
+        if state != self._state:
+            self._state = state
+            self.io_loop.update_handler(self.socket, state)
+    
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
