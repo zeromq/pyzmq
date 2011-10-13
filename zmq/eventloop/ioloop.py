@@ -502,10 +502,7 @@ class PeriodicCallback(object):
     def _schedule_next(self):
         if self._running:
             current_time = time.time()
-            # don't let zero-timeout cause infinite loop:
-            if self.callback_time <= 0:
-                self._next_timeout = current_time
-            while self._next_timeout < current_time:
+            while self._next_timeout <= current_time:
                 self._next_timeout += self.callback_time / 1000.0
             self.io_loop.add_timeout(self._next_timeout, self._run)
 
@@ -522,9 +519,14 @@ class DelayedCallback(PeriodicCallback):
     def start(self):
         """Starts the timer."""
         self._running = True
+        self._firstrun = True
         self._next_timeout = time.time() + self.callback_time / 1000.0
-        self._schedule_next()
+        self.io_loop.add_timeout(self._next_timeout, self._run)
     
     def _run(self):
-        PeriodicCallback._run(self)
-        self.stop()
+        if not self._running: return
+        self._running = False
+        try:
+            self.callback()
+        except Exception:
+            logging.error("Error in delayed callback", exc_info=True)
