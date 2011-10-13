@@ -4,6 +4,7 @@
 import ctypes
 import ctypes.wintypes
 import socket
+import sys
 import errno
 
 from zmq.utils.strtypes import asbytes as b
@@ -52,7 +53,8 @@ class Waker(object):
             try:
                 self.writer.connect(connect_address)
                 break    # success
-            except socket.error, detail:
+            except socket.error:
+                detail = sys.exc_info()[1]
                 if detail[0] != errno.WSAEADDRINUSE:
                     # "Address already in use" is the only error
                     # I've seen on two WinXP Pro SP2 boxes, under
