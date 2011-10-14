@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Than Just Bindings &mdash; PyZMQ v2.1.9 documentation</title>
+    <title>More Than Just Bindings &mdash; PyZMQ 2.1.10 documentation</title>
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.9',
+        VERSION:     '2.1.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.9 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 2.1.10 documentation" href="index.html" />
     <link rel="next" title="Serializing messages with PyZMQ" href="serialization.html" />
     <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
   </head>
@@ -89,7 +92,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -201,11 +204,11 @@ very nature, the MessageTracker must involve threadsafe communication (specifica
 builtin <a class="reference external" href="http://docs.python.org/library/queue.html#Queue.Queue" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">Queue</span></tt></a> object), instantiating a MessageTracker takes a modest
 amount of time (10s of µs), so in situations instantiating many small messages, this can
 actually dominate performance. As a result, tracking is optional, via the <tt class="docutils literal"><span class="pre">track</span></tt> flag,
-which is optionally passed, always defaulting to <tt class="xref docutils literal"><span class="pre">False</span></tt>, in each of the three places
+which is optionally passed, always defaulting to <tt class="docutils literal"><span class="pre">False</span></tt>, in each of the three places
 where a Message is instantiated: The <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Message" title="zmq.core.message.Message"><tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt></a> constructor, and non-copying sends
 and receives.</p>
 <p>A MessageTracker is very simple, and has just one method and one attribute. The property
-<tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="xref docutils literal"><span class="pre">True</span></tt> when the Message(s) being tracked are no
+<tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="docutils literal"><span class="pre">True</span></tt> when the Message(s) being tracked are no
 longer in use by ØMQ, and <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.MessageTracker.wait" title="zmq.core.message.MessageTracker.wait"><tt class="xref py py-meth docutils literal"><span class="pre">MessageTracker.wait()</span></tt></a> will block, waiting for the
 Message(s) to be released.</p>
 <div class="admonition note">
@@ -263,7 +266,7 @@ with ØMQ sockets.</li>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

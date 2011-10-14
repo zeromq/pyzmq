@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.stack_context &mdash; PyZMQ v2.1.9 documentation</title>
+    <title>eventloop.stack_context &mdash; PyZMQ 2.1.10 documentation</title>
+    
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.9',
+        VERSION:     '2.1.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" />
     <link rel="prev" title="eventloop.ioloop" href="zmq.eventloop.ioloop.html" /> 
@@ -63,7 +66,13 @@
   <ul>
 <li><a class="reference internal" href="#">eventloop.stack_context</a><ul>
 <li><a class="reference internal" href="#module-zmq.eventloop.stack_context">Module: <tt class="docutils literal"><span class="pre">eventloop.stack_context</span></tt></a></li>
-<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#exceptionstackcontext"><tt class="docutils literal"><span class="pre">ExceptionStackContext</span></tt></a></li>
+<li><a class="reference internal" href="#nullcontext"><tt class="docutils literal"><span class="pre">NullContext</span></tt></a></li>
+<li><a class="reference internal" href="#stackcontext"><tt class="docutils literal"><span class="pre">StackContext</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a></li>
 </ul>
 </li>
 </ul>
@@ -82,7 +91,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -121,7 +130,7 @@ itself, IOLoop, thread pools, etc).</p>
 <span class="k">def</span> <span class="nf">die_on_error</span><span class="p">():</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span>
-    <span class="k">except</span><span class="p">:</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;exception in asynchronous operation&quot;</span><span class="p">,</span><span class="n">exc_info</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
@@ -134,36 +143,61 @@ itself, IOLoop, thread pools, etc).</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="exceptionstackcontext">
+<h3><a class="reference internal" href="#zmq.eventloop.stack_context.ExceptionStackContext" title="zmq.eventloop.stack_context.ExceptionStackContext"><tt class="xref py py-class docutils literal"><span class="pre">ExceptionStackContext</span></tt></a><a class="headerlink" href="#exceptionstackcontext" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.stack_context.ExceptionStackContext">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">ExceptionStackContext</tt><big>(</big><em>exception_handler</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.ExceptionStackContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialization of StackContext for exception handling.</p>
+<p>The supplied exception_handler function will be called in the
+event of an uncaught exception in this context.  The semantics are
+similar to a try/finally clause, and intended use cases are to log
+an error, close a socket, or similar cleanup actions.  The
+exc_info triple (type, value, traceback) will be passed to the
+exception_handler function.</p>
+<p>If the exception handler returns true, the exception will be
+consumed and will not be propagated to other exception handlers.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nullcontext">
+<h3><a class="reference internal" href="#zmq.eventloop.stack_context.NullContext" title="zmq.eventloop.stack_context.NullContext"><tt class="xref py py-class docutils literal"><span class="pre">NullContext</span></tt></a><a class="headerlink" href="#nullcontext" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
 <dt id="zmq.eventloop.stack_context.NullContext">
-<tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">NullContext</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.NullContext" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">NullContext</tt><a class="headerlink" href="#zmq.eventloop.stack_context.NullContext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets the StackContext.</p>
 <p>Useful when creating a shared resource on demand (e.g. an AsyncHTTPClient)
 where the stack that caused the creating is not relevant to future
 operations.</p>
 </dd></dl>
 
-<dl class="function">
+</div>
+<div class="section" id="stackcontext">
+<h3><a class="reference internal" href="#zmq.eventloop.stack_context.StackContext" title="zmq.eventloop.stack_context.StackContext"><tt class="xref py py-class docutils literal"><span class="pre">StackContext</span></tt></a><a class="headerlink" href="#stackcontext" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
 <dt id="zmq.eventloop.stack_context.StackContext">
-<tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">StackContext</tt><big>(</big><em>*args</em>, <em>**kwds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.StackContext" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">StackContext</tt><big>(</big><em>context_factory</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.StackContext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Establishes the given context as a StackContext that will be transferred.</p>
 <p>Note that the parameter is a callable that returns a context
 manager, not the context itself.  That is, where for a
-non-transferable context manager you would say</p>
-<blockquote>
-<div>with my_context():</div></blockquote>
-<dl class="docutils">
-<dt>StackContext takes the function itself rather than its result:</dt>
-<dd>with StackContext(my_context):</dd>
-</dl>
+non-transferable context manager you would say:</p>
+<div class="highlight-python"><pre>with my_context():</pre>
+</div>
+<p>StackContext takes the function itself rather than its result:</p>
+<div class="highlight-python"><pre>with StackContext(my_context):</pre>
+</div>
 </dd></dl>
 
+</div>
+</div>
+<div class="section" id="function">
+<h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="zmq.eventloop.stack_context.wrap">
 <tt class="descclassname">zmq.eventloop.stack_context.</tt><tt class="descname">wrap</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#zmq.eventloop.stack_context.wrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a callable object that will resore the current StackContext
+<dd><p>Returns a callable object that will restore the current StackContext
 when executed.</p>
 <p>Use this whenever saving a callback to be executed later in a
 different execution context (either in a different thread or
@@ -205,7 +239,7 @@ asynchronously in the same thread).</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>log.handlers &mdash; PyZMQ v2.1.9 documentation</title>
+    <title>log.handlers &mdash; PyZMQ 2.1.10 documentation</title>
+    
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.9',
+        VERSION:     '2.1.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="ssh.forward" href="zmq.ssh.forward.html" />
     <link rel="prev" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" /> 
@@ -89,7 +92,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -215,6 +218,11 @@ subclasses.</p>
 <dd><p>Format a record.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="zmq.log.handlers.PUBHandler.formatters">
+<tt class="descname">formatters</tt><em class="property"> = {40: &lt;logging.Formatter object at 0x1061fda50&gt;, 10: &lt;logging.Formatter object at 0x1061fd2d0&gt;, 20: &lt;logging.Formatter object at 0x1061fdc90&gt;, 50: &lt;logging.Formatter object at 0x1061fdb50&gt;, 30: &lt;logging.Formatter object at 0x1061fda90&gt;}</em><a class="headerlink" href="#zmq.log.handlers.PUBHandler.formatters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="zmq.log.handlers.PUBHandler.get_name">
 <tt class="descname">get_name</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.get_name" title="Permalink to this definition">¶</a></dt>
@@ -260,6 +268,11 @@ The record which was being processed is passed in to this method.</p>
 <dd><p>Remove the specified filter from this handler.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="zmq.log.handlers.PUBHandler.root_topic">
+<tt class="descname">root_topic</tt><em class="property"> = ''</em><a class="headerlink" href="#zmq.log.handlers.PUBHandler.root_topic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="zmq.log.handlers.PUBHandler.setFormatter">
 <tt class="descname">setFormatter</tt><big>(</big><em>fmt</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.setFormatter" title="Permalink to this definition">¶</a></dt>
@@ -275,6 +288,11 @@ The record which was being processed is passed in to this method.</p>
 <dl class="method">
 <dt id="zmq.log.handlers.PUBHandler.set_name">
 <tt class="descname">set_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.PUBHandler.set_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.log.handlers.PUBHandler.socket">
+<tt class="descname">socket</tt><em class="property"> = None</em><a class="headerlink" href="#zmq.log.handlers.PUBHandler.socket" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -423,6 +441,11 @@ with a True value:</p>
 specialized LogRecords.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="zmq.log.handlers.TopicLogger.manager">
+<tt class="descname">manager</tt><em class="property"> = &lt;logging.Manager object at 0x1042130d0&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.manager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="zmq.log.handlers.TopicLogger.removeFilter">
 <tt class="descname">removeFilter</tt><big>(</big><em>filter</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.removeFilter" title="Permalink to this definition">¶</a></dt>
@@ -434,6 +457,11 @@ specialized LogRecords.</p>
 <tt class="descname">removeHandler</tt><big>(</big><em>hdlr</em><big>)</big><a class="headerlink" href="#zmq.log.handlers.TopicLogger.removeHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove the specified handler from this logger.</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.log.handlers.TopicLogger.root">
+<tt class="descname">root</tt><em class="property"> = &lt;logging.RootLogger object at 0x104207fd0&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="zmq.log.handlers.TopicLogger.setLevel">
@@ -489,7 +517,7 @@ specialized LogRecords.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

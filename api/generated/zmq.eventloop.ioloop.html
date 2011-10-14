@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.ioloop &mdash; PyZMQ v2.1.9 documentation</title>
+    <title>eventloop.ioloop &mdash; PyZMQ 2.1.10 documentation</title>
+    
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.9',
+        VERSION:     '2.1.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" />
     <link rel="prev" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" /> 
@@ -88,7 +91,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -110,7 +113,14 @@
 <h1>eventloop.ioloop<a class="headerlink" href="#eventloop-ioloop" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-zmq.eventloop.ioloop">
 <span id="module-eventloop-ioloop"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.ioloop</span></tt><a class="headerlink" href="#module-zmq.eventloop.ioloop" title="Permalink to this headline">¶</a></h2>
-<p>A level-triggered I/O loop for non-blocking sockets.</p>
+<p>An I/O event loop for non-blocking sockets.</p>
+<p>Typical applications will use a single <cite>IOLoop</cite> object, in the
+<cite>IOLoop.instance</cite> singleton.  The <cite>IOLoop.start</cite> method should usually
+be called at the end of the <tt class="docutils literal"><span class="pre">main()</span></tt> function.  Atypical applications may
+use more than one <cite>IOLoop</cite>, such as one <cite>IOLoop</cite> per thread, or per <cite>unittest</cite>
+case.</p>
+<p>In addition to I/O events, the <cite>IOLoop</cite> can also schedule time-based events.
+<cite>IOLoop.add_timeout</cite> is a non-blocking alternative to <cite>time.sleep</cite>.</p>
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
@@ -120,16 +130,20 @@
 <dt id="zmq.eventloop.ioloop.DelayedCallback">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">DelayedCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedules the given callback to be called once.</p>
-<p>The callback is called after the object is created by callback_time milliseconds.</p>
+<p>The callback is called once, after callback_time milliseconds.</p>
+<p><cite>start</cite> must be called after the DelayedCallback is created.</p>
+<p>The timeout is calculated from when <cite>start</cite> is called.</p>
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.DelayedCallback.start">
 <tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback.start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Starts the timer.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.DelayedCallback.stop">
 <tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.DelayedCallback.stop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Stops the timer.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -140,10 +154,7 @@
 <dt id="zmq.eventloop.ioloop.IOLoop">
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">IOLoop</tt><big>(</big><em>impl=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop" title="Permalink to this definition">¶</a></dt>
 <dd><p>A level-triggered I/O loop.</p>
-<p>We use epoll if it is available, or else we fall back on select(). If
-you are implementing a system that needs to handle 1000s of simultaneous
-connections, you should use Linux and either compile our epoll module or
-use Python 2.6+ to get epoll support.</p>
+<p>We use the zmq Poller for polling events.</p>
 <p>Example usage for a simple TCP server:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">functools</span>
@@ -173,12 +184,35 @@ use Python 2.6+ to get epoll support.</p>
 <span class="n">io_loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </pre></div>
 </div>
+<dl class="attribute">
+<dt id="zmq.eventloop.ioloop.IOLoop.ERROR">
+<tt class="descname">ERROR</tt><em class="property"> = 4</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.ioloop.IOLoop.NONE">
+<tt class="descname">NONE</tt><em class="property"> = 0</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.NONE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.ioloop.IOLoop.READ">
+<tt class="descname">READ</tt><em class="property"> = 1</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.READ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.ioloop.IOLoop.WRITE">
+<tt class="descname">WRITE</tt><em class="property"> = 2</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.WRITE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.IOLoop.add_callback">
 <tt class="descname">add_callback</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.add_callback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the given callback on the next I/O loop iteration.</p>
-<p>This is thread safe because set.add is an atomic operation. The rest
-of the API is not thread safe.</p>
+<p>It is safe to call this method from any thread at any time.
+Note that this is the <em>only</em> method in IOLoop that makes this
+guarantee; all other interaction with the IOLoop must be done
+from that IOLoop&#8217;s thread.  add_callback() may be used to transfer
+control from other threads to the IOLoop&#8217;s thread.</p>
 </dd></dl>
 
 <dl class="method">
@@ -191,6 +225,18 @@ of the API is not thread safe.</p>
 <dt id="zmq.eventloop.ioloop.IOLoop.add_timeout">
 <tt class="descname">add_timeout</tt><big>(</big><em>deadline</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.add_timeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the given callback at the time deadline from the I/O loop.</p>
+<p>Returns a handle that may be passed to remove_timeout to cancel.</p>
+<p><tt class="docutils literal"><span class="pre">deadline</span></tt> may be a number denoting a unix timestamp (as returned
+by <tt class="docutils literal"><span class="pre">time.time()</span></tt> or a <tt class="docutils literal"><span class="pre">datetime.timedelta</span></tt> object for a deadline
+relative to the current time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.close">
+<tt class="descname">close</tt><big>(</big><em>all_fds=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the IOLoop, freeing any resources used.</p>
+<p>If <tt class="docutils literal"><span class="pre">all_fds</span></tt> is true, all file descriptors registered on the
+IOLoop will be closed (not just the ones created by the IOLoop itself.</p>
 </dd></dl>
 
 <dl class="method">
@@ -204,14 +250,24 @@ may override this method to customize reporting of exceptions.</p>
 in sys.exc_info.</p>
 </dd></dl>
 
-<dl class="classmethod">
+<dl class="staticmethod">
 <dt id="zmq.eventloop.ioloop.IOLoop.initialized">
-<em class="property">classmethod </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.initialized" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">static </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if the singleton instance has been created.</p>
+</dd></dl>
 
-<dl class="classmethod">
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.IOLoop.install">
+<tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Installs this IOloop object as the singleton instance.</p>
+<p>This is normally not necessary as <cite>instance()</cite> will create
+an IOLoop on demand, but you may want to call <cite>install</cite> to use
+a custom subclass of IOLoop.</p>
+</dd></dl>
+
+<dl class="staticmethod">
 <dt id="zmq.eventloop.ioloop.IOLoop.instance">
-<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.instance" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.instance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global IOLoop instance.</p>
 <p>Most single-threaded applications have a single, global IOLoop.
 Use this method instead of passing around IOLoop instances
@@ -219,16 +275,11 @@ throughout your code.</p>
 <p>A common pattern for classes that depend on IOLoops is to use
 a default argument to enable programs with multiple IOLoops
 but not require the argument for simpler applications:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>class MyClass(object):</dt>
-<dd><dl class="first last docutils">
-<dt>def __init__(self, io_loop=None):</dt>
-<dd>self.io_loop = io_loop or IOLoop.instance()</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span> <span class="o">=</span> <span class="n">io_loop</span> <span class="ow">or</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -247,7 +298,9 @@ but not require the argument for simpler applications:</p>
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.IOLoop.remove_timeout">
 <tt class="descname">remove_timeout</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.remove_timeout" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Cancels a pending timeout.</p>
+<p>The argument is a handle as returned by add_timeout.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.IOLoop.running">
@@ -290,10 +343,11 @@ If the event loop is not currently running, the next call to start()
 will return immediately.</p>
 <p>To use asynchronous methods from otherwise-synchronous code (such as
 unit tests), you can start and stop the event loop like this:</p>
-<blockquote>
-<div>ioloop = IOLoop()
-async_method(ioloop=ioloop, callback=ioloop.stop)
-ioloop.start()</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ioloop</span> <span class="o">=</span> <span class="n">IOLoop</span><span class="p">()</span>
+<span class="n">async_method</span><span class="p">(</span><span class="n">ioloop</span><span class="o">=</span><span class="n">ioloop</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">ioloop</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+<span class="n">ioloop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>ioloop.start() will return after async_method has run its callback,
 whether that callback was invoked before or after ioloop.start.</p>
 </dd></dl>
@@ -314,15 +368,18 @@ whether that callback was invoked before or after ioloop.start.</p>
 <em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">PeriodicCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Schedules the given callback to be called periodically.</p>
 <p>The callback is called every callback_time milliseconds.</p>
+<p><cite>start</cite> must be called after the PeriodicCallback is created.</p>
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.PeriodicCallback.start">
 <tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback.start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Starts the timer.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="zmq.eventloop.ioloop.PeriodicCallback.stop">
 <tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.PeriodicCallback.stop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Stops the timer.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -371,7 +428,7 @@ whether that callback was invoked before or after ioloop.start.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

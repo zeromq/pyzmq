@@ -3,17 +3,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ v2.1.9 documentation</title>
+    <title>core.socket &mdash; PyZMQ 2.1.10 documentation</title>
+    
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.9',
+        VERSION:     '2.1.10',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ v2.1.9 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
     <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
@@ -82,7 +85,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" size="18" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -118,7 +121,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>context</strong> : Context</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>context</strong> : Context</p>
 <blockquote>
 <div><p>The 0MQ Context this Socket belongs to.</p>
 </div></blockquote>
@@ -149,7 +152,7 @@ connect to this socket.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
 <blockquote class="last">
 <div><p>The address string. This has the form &#8216;protocol://interface:port&#8217;,
 for example &#8216;tcp://127.0.0.1:5555&#8217;. Protocols supported are
@@ -170,7 +173,7 @@ encoded to utf-8 first.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
 <blockquote>
 <div><p>The address string without the port to pass to <tt class="docutils literal"><span class="pre">Socket.bind()</span></tt>.</p>
 </div></blockquote>
@@ -188,13 +191,13 @@ encoded to utf-8 first.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>port</strong> : int</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>port</strong> : int</p>
 <blockquote>
 <div><p>The port the socket was bound to.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>ZMQBindError</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>ZMQBindError</strong> :</p>
 <blockquote class="last">
 <div><p>if <cite>max_tries</cite> reached before successful bind</p>
 </div></blockquote>
@@ -206,8 +209,9 @@ encoded to utf-8 first.</p>
 
 <dl class="method">
 <dt id="zmq.core.socket.Socket.close">
-<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.close" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">close</tt><big>(</big><em>linger=None</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the socket.</p>
+<p>If linger is specified, LINGER sockopt will be set prior to closing.</p>
 <p>This can be called to close the socket by hand. If this is not
 called, the socket will automatically be closed when it is
 garbage collected.</p>
@@ -226,7 +230,7 @@ garbage collected.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
 <blockquote class="last">
 <div><p>The address string. This has the form &#8216;protocol://interface:port&#8217;,
 for example &#8216;tcp://127.0.0.1:5555&#8217;. Protocols supported are
@@ -253,7 +257,7 @@ encoded to utf-8 first.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
 <div><p>The option to set.  Available values will depend on your
 version of libzmq.  Examples include:</p>
@@ -263,7 +267,7 @@ version of libzmq.  Examples include:</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int or bytes</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int or bytes</p>
 <blockquote class="last">
 <div><p>The value of the option as a bytestring or int.</p>
 </div></blockquote>
@@ -282,7 +286,7 @@ version of libzmq.  Examples include:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : unicode string</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : unicode string</p>
 <blockquote>
 <div><p>The name of the option to set. Can be any of: 
 IDENTITY, HWM, SWAP, AFFINITY, RATE, 
@@ -290,27 +294,9 @@ RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode</p>
 <blockquote class="last">
 <div><p>The value of the option as a unicode string.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.core.socket.Socket.rcvmore">
-<tt class="descname">rcvmore</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.rcvmore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Are there more parts to a multipart message?</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>more</strong> : bool</p>
-<blockquote class="last">
-<div><p>whether we are in the middle of a multipart message.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -326,7 +312,7 @@ RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
 <blockquote>
 <div><p>Any supported flag: NOBLOCK. If NOBLOCK is set, this method
 will raise a ZMQError with EAGAIN if a message is not ready.
@@ -346,14 +332,14 @@ finished with it? (ignored if copy=True)</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>msg</strong> : str, Message</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>msg</strong> : str, Message</p>
 <blockquote>
 <div><p>The returned message.  If <cite>copy</cite> is False, then it will be a Message,
 otherwise a str.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>ZMQError</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>ZMQError</strong> :</p>
 <blockquote class="last">
 <div><p>for any of the reasons zmq_recvmsg might fail.</p>
 </div></blockquote>
@@ -371,13 +357,13 @@ otherwise a str.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
 <blockquote>
 <div><p>Any valid recv flag.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
 <blockquote class="last">
 <div><p>The Python object that arrives as a message.</p>
 </div></blockquote>
@@ -395,7 +381,7 @@ otherwise a str.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int, optional</p>
 <blockquote>
 <div><p>Any supported flag: NOBLOCK. If NOBLOCK is set, this method
 will raise a ZMQError with EAGAIN if a message is not ready.
@@ -413,12 +399,19 @@ message is returned for each message part.</p>
 <div><p>Should the message(s) be tracked for notification that ZMQ has
 finished with it? (ignored if copy=True)</p>
 </div></blockquote>
-</td>
-</tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>msg_parts</strong> : list</p>
-<blockquote class="last">
+<p><strong>Returns</strong> :</p>
+<p><strong>&#8212;&#8212;-</strong> :</p>
+<p><strong>msg_parts</strong> : list</p>
+<blockquote>
 <div><p>A list of messages in the multipart message; either Messages or strs,
 depending on <cite>copy</cite>.</p>
+</div></blockquote>
+<p><strong>0MQ-3.0:</strong> :</p>
+<p><strong>prefix, msg_parts</strong> : two lists</p>
+<blockquote class="last">
+<div><p><cite>prefix</cite> will be the prefix list of message labels at the front of the
+message.  If prefix would be empty, only a single msg_parts list
+will be returned.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -434,13 +427,13 @@ depending on <cite>copy</cite>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
 <blockquote>
 <div><p>Any valid recv flag.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
 <blockquote class="last">
 <div><p>The Python object that arrives as a message.</p>
 </div></blockquote>
@@ -458,7 +451,7 @@ depending on <cite>copy</cite>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
 <blockquote>
 <div><p>Any valid recv flag.</p>
 </div></blockquote>
@@ -468,7 +461,7 @@ depending on <cite>copy</cite>.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>s</strong> : unicode string</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>s</strong> : unicode string</p>
 <blockquote class="last">
 <div><p>The Python unicode string that arrives as message bytes.</p>
 </div></blockquote>
@@ -487,7 +480,7 @@ depending on <cite>copy</cite>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>data</strong> : object, str, Message</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>data</strong> : object, str, Message</p>
 <blockquote>
 <div><p>The content of the message.</p>
 </div></blockquote>
@@ -506,7 +499,7 @@ finished with it? (ignored if copy=True)</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> : if <cite>copy</cite> or not track</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> : if <cite>copy</cite> or not track</p>
 <blockquote>
 <div><p>None if message was sent, raises an exception otherwise.</p>
 </div></blockquote>
@@ -517,7 +510,7 @@ be True until the send is completed.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>TypeError</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>TypeError</strong> :</p>
 <blockquote>
 <div><p>If a unicode object is passed</p>
 </div></blockquote>
@@ -543,7 +536,7 @@ be True until the send is completed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
 <blockquote>
 <div><p>The Python object to send.</p>
 </div></blockquote>
@@ -559,13 +552,13 @@ be True until the send is completed.</p>
 
 <dl class="method">
 <dt id="zmq.core.socket.Socket.send_multipart">
-<tt class="descname">send_multipart</tt><big>(</big><em>msg_parts</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_multipart" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">send_multipart</tt><big>(</big><em>msg_parts</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em>, <em>prefix=None</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_multipart" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a sequence of messages as a multipart message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>msg_parts</strong> : iterable</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>msg_parts</strong> : iterable</p>
 <blockquote>
 <div><p>A sequence of messages to send as a multipart message. Each element
 can be any sendable object (Message, bytes, buffer-providers)</p>
@@ -584,9 +577,14 @@ automatically.</p>
 <div><p>Should the message(s) be tracked for notification that ZMQ has
 finished with it (ignored if copy=True).</p>
 </div></blockquote>
+<p><strong>prefix</strong> : iterable</p>
+<blockquote>
+<div><p>A sequence of messages to send as a 0MQ label prefix (0MQ &gt;= 3.0 only).
+Each element can be any sendable object (Message, bytes, buffer-providers)</p>
+</div></blockquote>
 </td>
 </tr>
-<tr class="field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> : if copy or not track</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> : if copy or not track</p>
 <p><strong>MessageTracker</strong> : if track and not copy</p>
 <blockquote class="last">
 <div><p>a MessageTracker object, whose <cite>pending</cite> property will
@@ -606,7 +604,7 @@ be True until the last send is completed.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>obj</strong> : Python object</p>
 <blockquote>
 <div><p>The Python object to send.</p>
 </div></blockquote>
@@ -634,7 +632,7 @@ support.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>u</strong> : Python unicode object</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>u</strong> : Python unicode object</p>
 <blockquote>
 <div><p>The unicode string to send.</p>
 </div></blockquote>
@@ -661,7 +659,7 @@ support.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
 <div><p>The option to set.  Available values will depend on your
 version of libzmq.  Examples include:</p>
@@ -689,7 +687,7 @@ for setsockopt to protect from encoding ambiguity.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
 <div><p>The name of the option to set. Can be any of: SUBSCRIBE, 
 UNSUBSCRIBE, IDENTITY</p>
@@ -750,7 +748,7 @@ UNSUBSCRIBE, IDENTITY</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

@@ -16,5 +16,11 @@ Functions
 .. autofunction:: zmq.core.version.pyzmq_version
 
 
+.. autofunction:: zmq.core.version.pyzmq_version_info
+
+
 .. autofunction:: zmq.core.version.zmq_version
+
+
+.. autofunction:: zmq.core.version.zmq_version_info
 
