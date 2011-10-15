@@ -1,15 +1,20 @@
 import zmq
 from zmq.eventloop import ioloop, zmqstream
+
+"""
+ioloop.install() must be called prior to instantiating *any* tornado objects,
+and ideally before importing anything from tornado, just to be safe.
+
+install() replaces tornado.ioloop.IOLoop with zmq's IOLoop class.  If this
+is not done properly, multiple IOLoop instances may be created, which will
+have the effect of some subset of handlers never being called, because
+only one loop will be running.
+"""
+
+ioloop.install()
+
 import tornado
 import tornado.web
-
-"""
-kind of hacky way to replace tornado ioloop with zmqs..
-this doesn't ALWAYS work depending on what
-parts of tornado you are using
-"""
-
-tornado.ioloop = ioloop
 
 
 """
@@ -24,7 +29,7 @@ def printer(msg):
 ctx = zmq.Context()
 s = ctx.socket(zmq.REQ)
 s.connect('tcp://127.0.0.1:5555')
-stream = zmqstream.ZMQStream(s, tornado.ioloop.IOLoop.instance())
+stream = zmqstream.ZMQStream(s)
 stream.on_recv(printer)
 
 class TestHandler(tornado.web.RequestHandler):
@@ -36,7 +41,7 @@ application = tornado.web.Application([(r"/", TestHandler)])
 
 if __name__ == "__main__":
     application.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    ioloop.IOLoop.instance().start()
 
 
 
