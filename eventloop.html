@@ -63,9 +63,10 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tornado Eventloop with PyZMQ</a><ul>
-<li><a class="reference internal" href="#send"><tt class="docutils literal"><span class="pre">send</span></tt></a></li>
-<li><a class="reference internal" href="#on-recv"><tt class="docutils literal"><span class="pre">on_recv</span></tt></a></li>
-<li><a class="reference internal" href="#flush"><tt class="docutils literal"><span class="pre">flush</span></tt></a></li>
+<li><a class="reference internal" href="#install"><tt class="docutils literal"><span class="pre">install()</span></tt></a></li>
+<li><a class="reference internal" href="#send"><tt class="docutils literal"><span class="pre">send()</span></tt></a></li>
+<li><a class="reference internal" href="#on-recv"><tt class="docutils literal"><span class="pre">on_recv()</span></tt></a></li>
+<li><a class="reference internal" href="#flush"><tt class="docutils literal"><span class="pre">flush()</span></tt></a></li>
 </ul>
 </li>
 </ul>
@@ -111,14 +112,32 @@ handling poll events on ØMQ sockets. A ZMQStream object works much like a Socke
 but instead of calling <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv" title="zmq.core.socket.Socket.recv"><tt class="xref py py-meth docutils literal"><span class="pre">recv()</span></tt></a> directly, you register a callback with
 <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt></a>. callbacks can also be registered for send and error events
 with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_err" title="zmq.eventloop.zmqstream.ZMQStream.on_err"><tt class="xref py py-meth docutils literal"><span class="pre">on_err()</span></tt></a> respectively.</p>
+<div class="section" id="install">
+<h2><tt class="xref py py-func docutils literal"><span class="pre">install()</span></tt><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>With PyZMQ&#8217;s ioloop, you can use zmq sockets in any tornado application.  You must first
+install PyZMQ&#8217;s <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a>, with the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">ioloop.install()</span></tt></a> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.eventloop</span> <span class="kn">import</span> <span class="n">ioloop</span>
+<span class="n">ioloop</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This replaces <tt class="xref py py-class docutils literal"><span class="pre">tornado.ioloop.IOLoop</span></tt> with our IOLoop class.
+The reason this must happen is that tornado objects avoid having to pass the active
+IOLoop instance around, by having a staticmethod <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop.instance" title="zmq.eventloop.ioloop.IOLoop.instance"><tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt></a>,
+which always returns the active instance.  If PyZMQ&#8217;s IOLoop is installed after
+the first call to <tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt> (called in almost every tornado object constructor),
+then there will likely be two IOLoops created, only one of which will ever run.
+The symptom of failing to install the zmq eventloop at all, or too late,
+will be utter silence - a subset of your handlers (the ones attached to the IOLoop
+that didn&#8217;t get started) will simply never be called.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">We have not explored using ØMQ in a full Tornado environment, and we do not include
-any parts of Tornado outside of IOLoop and the couple of helper classes used in
-IOLoop.</p>
+<p class="last">It <em>should</em> be possible to use the IOLoop with tornado without <tt class="xref py py-func docutils literal"><span class="pre">ioloop.install()</span></tt>,
+but it would require passing the <cite>io_loop</cite> argument to every constructor, which is
+exactly what the <tt class="xref py py-meth docutils literal"><span class="pre">instance()</span></tt> method is for, and even then might not work.</p>
+</div>
 </div>
 <div class="section" id="send">
-<h2><tt class="docutils literal"><span class="pre">send</span></tt><a class="headerlink" href="#send" title="Permalink to this headline">¶</a></h2>
+<h2><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt><a class="headerlink" href="#send" title="Permalink to this headline">¶</a></h2>
 <p>ZMQStream objects do have <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="zmq.eventloop.zmqstream.ZMQStream.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>
 methods, which behaves the same way as <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send" title="zmq.core.socket.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send()</span></tt></a>, but instead of sending right
 away, the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a> will wait until socket is able to send (for instance if <tt class="docutils literal"><span class="pre">HWM</span></tt>
@@ -127,7 +146,7 @@ send will also be passed to the callback registered with <a class="reference int
 sending.</p>
 </div>
 <div class="section" id="on-recv">
-<h2><tt class="docutils literal"><span class="pre">on_recv</span></tt><a class="headerlink" href="#on-recv" title="Permalink to this headline">¶</a></h2>
+<h2><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt><a class="headerlink" href="#on-recv" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">ZMQStream.on_recv()</span></tt></a> is the primary method for using a ZMQStream. It registers a
 callback to fire with messages as they are received, which will <em>always</em> be multipart,
 even if its length is 1. You can easily use this to build things like an echo socket:</p>
@@ -145,7 +164,7 @@ even if its length is 1. You can easily use this to build things like an echo so
 callbacks registered with on_recv will receive tracked Message objects instead of bytes.</p>
 </div>
 <div class="section" id="flush">
-<h2><tt class="docutils literal"><span class="pre">flush</span></tt><a class="headerlink" href="#flush" title="Permalink to this headline">¶</a></h2>
+<h2><tt class="xref py py-meth docutils literal"><span class="pre">flush()</span></tt><a class="headerlink" href="#flush" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes with an eventloop, there can be multiple events ready on a single iteration of
 the loop. The <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.flush" title="zmq.eventloop.zmqstream.ZMQStream.flush"><tt class="xref py py-meth docutils literal"><span class="pre">flush()</span></tt></a> method allows developers to pull messages off of
 the queue to enforce some priority over the event loop ordering. flush pulls any pending
