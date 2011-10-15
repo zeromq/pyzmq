@@ -18,10 +18,9 @@ if __name__ == '__main__':
     docwriter = ApiDocWriter(package,rst_extension='.rst')
     # You have to escape the . here because . is a special char for regexps.
     # You must do make clean if you change this!
-    docwriter.package_skip_patterns += [ r'\.tests$' ]
+    docwriter.package_skip_patterns += [ r'\.tests$', r'\.platform$' ]
 
-    docwriter.module_skip_patterns += [ r'\.tests',
-                                        r'win32_support']
+    docwriter.module_skip_patterns += [ r'\.tests' ]
     
     # Now, generate the outputs
     docwriter.write_api_docs(outdir)
