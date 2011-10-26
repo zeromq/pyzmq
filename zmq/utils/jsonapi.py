@@ -84,5 +84,5 @@ def loads(s,**kwargs):
 if jsonmod is not None and jsonmod.__name__== 'jsonlib':
     dumps = jsonlib_dumps
 
-__all__ = ['jsonmod', 'dumps', 'dumps']
+__all__ = ['jsonmod', 'dumps', 'loads']
 
