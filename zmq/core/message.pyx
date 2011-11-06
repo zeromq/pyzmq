@@ -42,7 +42,8 @@ import time
 try:
     # below 3.3
     from threading import _Event as Event
-except ImportError:
+except (ImportError, AttributeError):
+    # python throws ImportError, cython throws AttributeError
     from threading import Event
 
 from zmq.core.error import ZMQError, NotDone
