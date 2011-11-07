@@ -55,7 +55,7 @@ def device(int device_type, cSocket isocket, cSocket osocket):
         raise ZMQError()
     return rc
 
-# inner loop inlined, to prevent duplication
+# inner loop inlined, to prevent code duplication for up/downstream
 cdef inline int _relay(void * insocket, void *outsocket, zmq_msg_t msg) nogil:
     cdef int more=0
     cdef int label=0
@@ -69,18 +69,19 @@ cdef inline int _relay(void * insocket, void *outsocket, zmq_msg_t msg) nogil:
         if (rc < 0):
             return -1
 
+        flags = 0
         rc = zmq_getsockopt(insocket, ZMQ_RCVMORE, &more, &flagsz)
         if (rc < 0):
             return -1
-        rc = zmq_getsockopt(insocket, ZMQ_RCVLABEL, &label, &flagsz)
-        if (rc < 0):
-            return -1
-        
-        flags = 0
         if more:
             flags = flags | ZMQ_SNDMORE
-        if label:
-            flags = flags | ZMQ_SNDLABEL
+        
+        # LABELs have been removed:
+        # rc = zmq_getsockopt(insocket, ZMQ_RCVLABEL, &label, &flagsz)
+        # if (rc < 0):
+        #     return -1
+        # if label:
+        #     flags = flags | ZMQ_SNDLABEL
         
         rc = zmq_sendmsg(outsocket, &msg, flags)
 

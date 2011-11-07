@@ -116,9 +116,9 @@ else:
     MULTICAST_HOPS = ZMQ_MULTICAST_HOPS
     
     _optionals.extend(['MAXMSGSIZE', 'SNDHWM', 'RCVHWM', 'MULTICAST_HOPS',
-                        'RCVTIMEO', 'SNDTIMEO', 'RCVLABEL', 'SNDLABEL'])
+                        'RCVTIMEO', 'SNDTIMEO'])
     int64_sockopts.append(MAXMSGSIZE)
-    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS, RCVTIMEO, SNDTIMEO, RCVLABEL])
+    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS, RCVTIMEO, SNDTIMEO])
 
 if ZMQ_VERSION < 40000:
     # removed in 4.0.0
