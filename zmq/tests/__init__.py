@@ -41,7 +41,7 @@ except ImportError:
 #-----------------------------------------------------------------------------
 # Utilities
 #-----------------------------------------------------------------------------
-if zmq.zmq_version() >= '3.0.0':
+if zmq.zmq_version_info() >= (3,0,0):
     # keep NOBLOCK for tests
     zmq.NOBLOCK = zmq.DONTWAIT
 

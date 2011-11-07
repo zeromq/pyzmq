@@ -33,8 +33,6 @@ from zmq.tests import BaseZMQTestCase, SkipTest
 class TestMultipart(BaseZMQTestCase):
 
     def test_router_dealer(self):
-        if zmq.zmq_version() >= '4.0.0':
-            raise SkipTest("ROUTER/DEALER change in 4.0")
         router, dealer = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
 
         msg1 = asbytes('message1')

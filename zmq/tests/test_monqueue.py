@@ -182,8 +182,6 @@ class TestMonitoredQueue(BaseZMQTestCase):
     
     def test_router_router(self):
         """test router-router MQ devices"""
-        if zmq.zmq_version() >= '4.0.0':
-            raise SkipTest("Only for libzmq < 4")
         dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, asbytes('in'), asbytes('out'))
         dev.setsockopt_in(zmq.LINGER, 0)
         dev.setsockopt_out(zmq.LINGER, 0)

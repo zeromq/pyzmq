@@ -38,7 +38,6 @@ from libzmq cimport *
 cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_, 
                 zmq_msg_t msg, zmq_msg_t side_msg, zmq_msg_t id_msg,
                 bint swap_ids) nogil:
-    cdef int SNDLABEL
     cdef int rc
     cdef int64_t flag_2
     cdef int flag_3
@@ -50,41 +49,25 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
     if ZMQ_VERSION_MAJOR < 3:
         flagsz = sizeof (int64_t)
         flag_ptr = &flag_2
-        SNDLABEL = ZMQ_SNDMORE
     else:
         flagsz = sizeof (int)
         flag_ptr = &flag_3
-        SNDLABEL = ZMQ_SNDLABEL
-        if ZMQ_VERSION_MAJOR == 3:
-            # in 3.x, ROUTER prefix is 2.x-style with SNDMORE, rather than
-            # new-style with SNDLABEL
-            rc = zmq_getsockopt (outsocket_, ZMQ_TYPE, flag_ptr, &flagsz)
-            # This will never actually happen until LIBZMQ-249 is resolved:
-            if flag_3 == ZMQ_ROUTER:
-                SNDLABEL = ZMQ_SNDMORE
     
     if rc < 0:
         return rc
     if swap_ids:# both router, must send second identity first
         # recv two ids into msg, id_msg
         rc = zmq_recvmsg (insocket_, &msg, 0)
-        if ZMQ_VERSION_MAJOR == 3:
-            # temporary workaround for LIBZMQ-249
-            rc = zmq_getsockopt (outsocket_, ZMQ_RCVLABEL, flag_ptr, &flagsz)
-            if flag_3:
-                SNDLABEL = ZMQ_SNDLABEL
-            else:
-                SNDLABEL = ZMQ_SNDMORE
         rc = zmq_recvmsg (insocket_, &id_msg, 0)
 
         # send second id (id_msg) first
         #!!!! always send a copy before the original !!!!
         rc = zmq_msg_copy(&side_msg, &id_msg)
-        rc = zmq_sendmsg (outsocket_, &side_msg, SNDLABEL)
+        rc = zmq_sendmsg (outsocket_, &side_msg, ZMQ_SNDMORE)
         rc = zmq_sendmsg (sidesocket_, &id_msg, ZMQ_SNDMORE)
         # send first id (msg) second
         rc = zmq_msg_copy(&side_msg, &msg)
-        rc = zmq_sendmsg (outsocket_, &side_msg, SNDLABEL)
+        rc = zmq_sendmsg (outsocket_, &side_msg, ZMQ_SNDMORE)
         rc = zmq_sendmsg (sidesocket_, &msg, ZMQ_SNDMORE)
         if rc < 0:
             return rc
@@ -99,9 +82,10 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
         else:
             if flag_3:
                 flags |= ZMQ_SNDMORE
-            rc = zmq_getsockopt (insocket_, ZMQ_RCVLABEL, flag_ptr, &flagsz)
-            if flag_3:
-                flags |= ZMQ_SNDLABEL
+            # LABEL has been removed:
+            # rc = zmq_getsockopt (insocket_, ZMQ_RCVLABEL, flag_ptr, &flagsz)
+            # if flag_3:
+            #     flags |= ZMQ_SNDLABEL
         # assert (rc == 0)
 
         rc = zmq_msg_copy(&side_msg, &msg)

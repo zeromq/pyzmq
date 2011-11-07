@@ -59,16 +59,13 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.send_unicode, s.send_unicode)
         self.assertEquals(p.recv_unicode, p.recv_unicode)
         self.assertRaises(TypeError, s.setsockopt, zmq.SUBSCRIBE, topic)
-        if zmq.zmq_version() < '4.0.0':
-            self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
-            s.setsockopt_unicode(zmq.IDENTITY, topic, 'utf16')
+        self.assertRaises(TypeError, s.setsockopt, zmq.IDENTITY, topic)
+        s.setsockopt_unicode(zmq.IDENTITY, topic, 'utf16')
         self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
         s.setsockopt_unicode(zmq.SUBSCRIBE, topic)
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.SUBSCRIBE)
-        if zmq.zmq_version() >= '4.0.0':
-            # skip the rest on 4.0, because IDENTITY was removed
-            return
+        
         st = s.getsockopt(zmq.IDENTITY)
         self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
         time.sleep(0.1) # wait for connection/subscription
@@ -79,10 +76,10 @@ class TestSocket(BaseZMQTestCase):
     
     def test_int_sockopts(self):
         "test non-uint64 sockopts"
-        v = zmq.zmq_version()
-        if not v >= '2.1':
+        v = zmq.zmq_version_info()
+        if not v >= (2,1):
             raise SkipTest("only on libzmq >= 2.1")
-        elif v < '3.0':
+        elif v < (3,0):
             hwm = zmq.HWM
             default_hwm = 0
         else:
@@ -252,34 +249,6 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.a, 1)
         a=s.a
         self.assertEquals(a, 1)
-    
-    def test_prefix(self):
-        if zmq.zmq_version() < '3.0.0':
-            raise SkipTest("Only applies to libzmq >= 3.0")
-        xrep, xreq = self.create_bound_pair(zmq.XREP, zmq.XREQ)
-        msg = [ asbytes(p) for p in 'hi there'.split() ]
-        xreq.send_multipart(msg)
-        recvd = xrep.recv_multipart()
-        self.assertTrue(isinstance(recvd, tuple))
-        self.assertEquals(len(recvd), 2)
-        prefix, real = recvd
-        self.assertTrue(isinstance(prefix, list))
-        self.assertEquals(len(prefix), 1)
-        self.assertEquals(real, msg)
-        xrep.send_multipart(real, prefix=prefix)
-        echo = xreq.recv_multipart()
-        self.assertTrue(isinstance(echo, list))
-        self.assertEquals(echo, real)
-        extra = [asbytes('pre')]
-        xrep.send_multipart(msg, prefix=prefix+extra)
-        recvd = xreq.recv_multipart()
-        self.assertTrue(isinstance(recvd, tuple))
-        self.assertEquals(len(recvd), 2)
-        prefix, real = recvd
-        self.assertTrue(isinstance(prefix, list))
-        self.assertEquals(len(prefix), 1)
-        self.assertEquals(prefix, extra)
-        self.assertEquals(real, msg)
     
     def test_recv_multipart(self):
         a,b = self.create_bound_pair()
