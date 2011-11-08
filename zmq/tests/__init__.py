@@ -57,14 +57,17 @@ class BaseZMQTestCase(TestCase):
         while self.sockets:
             sock = self.sockets.pop()
             contexts.add(sock.context) # in case additional contexts are created
-            sock.close()
+            sock.close(0)
         for ctx in contexts:
             t = Thread(target=ctx.term)
+            t.daemon = True
             t.start()
             t.join(timeout=2)
             if sys.version[:3] == '2.5':
                 t.is_alive = t.isAlive
             if t.is_alive():
+                # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
+                zmq.core.context._instance = None
                 raise RuntimeError("context could not terminate, open sockets likely remain in test")
 
     def create_bound_pair(self, type1=zmq.PAIR, type2=zmq.PAIR, interface='tcp://127.0.0.1'):
