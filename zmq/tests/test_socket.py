@@ -269,5 +269,21 @@ class TestSocket(BaseZMQTestCase):
         s.close()
         self.assertTrue(s.closed)
     
+    def test_poll(self):
+        a,b = self.create_bound_pair()
+        tic = time.time()
+        evt = a.poll(50)
+        self.assertEquals(evt, 0)
+        evt = a.poll(50, zmq.POLLOUT)
+        self.assertEquals(evt, zmq.POLLOUT)
+        msg = asbytes('hi')
+        a.send(msg)
+        evt = b.poll(50)
+        self.assertEquals(evt, zmq.POLLIN)
+        msg2 = self.recv(b)
+        evt = b.poll(50)
+        self.assertEquals(evt, 0)
+        self.assertEquals(msg2, msg)
+        
 
 

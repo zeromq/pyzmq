@@ -61,6 +61,7 @@ except:
     cPickle = None
     import pickle
 
+import zmq
 from zmq.core import constants
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
@@ -832,6 +833,39 @@ cdef class Socket:
         else:
             msg = self.recv(flags)
             return jsonapi.loads(msg)
+    
+    def poll(self, timeout=None, flags=None):
+        """s.poll(timeout=None, flags=POLLIN|POLLERR)
+        
+        Poll the socket for events.  The default is to poll forever for incoming
+        events.  Timeout is in milliseconds, if specified.
+        
+        Parameters
+        ----------
+        timeout : int [default: None]
+            The timeout (in milliseconds) to wait for an event. If unspecified
+            (or secified None), will wait forever for an event.
+        flags : bitfield (int) [default: any event]
+            The event flags to poll for (any combination of POLLIN|POLLOUT|POLLERR).
+            The default is to check for incoming events (POLLIN|POLLERR).
+        
+        Returns
+        -------
+        events : bitfield (int)
+            The events that are ready and waiting.  Will be 0 if no events were ready
+            by the time timeout was reached.
+        """
+        
+        _check_closed(self, True)
+        
+        if flags is None:
+            flags = POLLIN|POLLERR
+        p = zmq.Poller()
+        p.register(self, flags)
+        evts = dict(p.poll(timeout))
+        # return 0 if no events, otherwise return event bitfield
+        return evts.get(self, 0)
+        
 
 
 __all__ = ['Socket']
