@@ -203,6 +203,15 @@ class TestMonitoredQueue(BaseZMQTestCase):
         dev.bind_out('tcp://127.0.0.1:%i'%portb)
         dev.start()
         time.sleep(0.2)
+        if zmq.zmq_version_info() >= (3,1,0):
+            # flush erroneous poll state, due to LIBZMQ-280
+            ping_msg = [ asbytes('ping'), asbytes('pong') ]
+            for s in (a,b):
+                s.send_multipart(ping_msg)
+                try:
+                    s.recv(zmq.NOBLOCK)
+                except zmq.ZMQError:
+                    pass
         msg = [ asbytes(m) for m in ('hello', 'there')]
         a.send_multipart([asbytes('b')]+msg)
         bmsg = self.recv_multipart(b)

@@ -22,6 +22,7 @@
 #-----------------------------------------------------------------------------
 
 import sys
+import time
 from threading import Thread
 
 from unittest import TestCase
@@ -110,17 +111,28 @@ got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
         else:
             self.fail("Function did not raise any error")
     
-    def recv(self, socket, *args, **kwargs):
+    def _select_recv(self, multipart, socket, **kwargs):
+        """call recv[_multipart] in a way that raises if there is nothing to receive"""
+        if zmq.zmq_version_info() >= (3,1,0):
+            # zmq 3.1 has a bug, where poll can return false positives,
+            # so we wait a little bit just in case
+            # See LIBZMQ-280 on JIRA
+            time.sleep(0.1)
+        
+        r,w,x = zmq.select([socket], [], [], timeout=5)
+        assert len(r) > 0, "Should have received a message"
+        kwargs['flags'] = zmq.DONTWAIT | kwargs.get('flags', 0)
+        
+        recv = socket.recv_multipart if multipart else socket.recv
+        return recv(**kwargs)
+        
+    def recv(self, socket, **kwargs):
         """call recv in a way that raises if there is nothing to receive"""
-        r,w,x = zmq.select([socket], [], [], timeout=5)
-        assert len(r) > 0, "Should have received a message"
-        return socket.recv(*args, **kwargs)
+        return self._select_recv(False, socket, **kwargs)
 
-    def recv_multipart(self, socket, *args, **kwargs):
+    def recv_multipart(self, socket, **kwargs):
         """call recv_multipart in a way that raises if there is nothing to receive"""
-        r,w,x = zmq.select([socket], [], [], timeout=5)
-        assert len(r) > 0, "Should have received a message"
-        return socket.recv_multipart(*args, **kwargs)
+        return self._select_recv(True, socket, **kwargs)
     
 
 class PollZMQTestCase(BaseZMQTestCase):
