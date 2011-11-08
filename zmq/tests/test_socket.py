@@ -123,6 +123,19 @@ class TestSocket(BaseZMQTestCase):
         if errors:
             self.fail('\n'.join(errors))
     
+    def test_bad_sockopts(self):
+        """Test that appropriate errors are raised on bad socket options"""
+        s = self.context.socket(zmq.PUB)
+        self.sockets.append(s)
+        s.setsockopt(zmq.LINGER, 0)
+        # unrecognized int sockopts pass through to libzmq, and should raise EINVAL
+        self.assertRaisesErrno(zmq.EINVAL, s.setsockopt, 9999, 5)
+        self.assertRaisesErrno(zmq.EINVAL, s.getsockopt, 9999)
+        # but only int sockopts are allowed through this way, otherwise raise a TypeError
+        self.assertRaises(TypeError, s.setsockopt, 9999, asbytes("5"))
+        # some sockopts are valid in general, but not on every socket:
+        self.assertRaisesErrno(zmq.EINVAL, s.setsockopt, zmq.SUBSCRIBE, asbytes('hi'))
+    
     def test_sockopt_roundtrip(self):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)

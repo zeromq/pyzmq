@@ -303,7 +303,12 @@ cdef class Socket:
                     self.handle, option,
                     &optval_int64_c, sizeof(int64_t)
                 )
-        elif option in constants.int_sockopts:
+        else:
+            # default is to assume int, which is what most new sockopts will be
+            # this lets pyzmq work with newer libzmq which may add constants
+            # pyzmq has not yet added, rather than artificially raising. Invalid
+            # sockopts will still raise just the same, but it will be libzmq doing
+            # the raising.
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
@@ -312,8 +317,6 @@ cdef class Socket:
                     self.handle, option,
                     &optval_int_c, sizeof(int)
                 )
-        else:
-            raise ZMQError(EINVAL)
 
         if rc != 0:
             raise ZMQError()
@@ -360,13 +363,6 @@ cdef class Socket:
             if rc != 0:
                 raise ZMQError()
             result = optval_int64_c
-        elif option in constants.int_sockopts:
-            sz = sizeof(int)
-            with nogil:
-                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
-            if rc != 0:
-                raise ZMQError()
-            result = optval_int_c
         elif option == ZMQ_FD:
             sz = sizeof(fd_t)
             with nogil:
@@ -375,7 +371,17 @@ cdef class Socket:
                 raise ZMQError()
             result = optval_fd_c
         else:
-            raise ZMQError(EINVAL)
+            # default is to assume int, which is what most new sockopts will be
+            # this lets pyzmq work with newer libzmq which may add constants
+            # pyzmq has not yet added, rather than artificially raising. Invalid
+            # sockopts will still raise just the same, but it will be libzmq doing
+            # the raising.
+            sz = sizeof(int)
+            with nogil:
+                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
+            if rc != 0:
+                raise ZMQError()
+            result = optval_int_c
 
         return result
     
