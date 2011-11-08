@@ -32,12 +32,13 @@ from libzmq cimport *
 _optionals = []
 
 if ZMQ_VERSION < 30000:
+    # backport DONTWAIT as alias to NOBLOCK
     NOBLOCK = ZMQ_NOBLOCK
+    DONTWAIT = ZMQ_NOBLOCK
 else:
     # keep NOBLOCK as alias for new DONTWAIT
     NOBLOCK = ZMQ_DONTWAIT
     DONTWAIT = ZMQ_DONTWAIT
-    _optionals.extend(['DONTWAIT'])
 # socket types
 PAIR = ZMQ_PAIR
 PUB = ZMQ_PUB
@@ -184,6 +185,7 @@ if ZMQ_VERSION >= 400000:
 
 __all__ = [
     'NOBLOCK',
+    'DONTWAIT',
     'FD',
     'EVENTS',
     'TYPE',
