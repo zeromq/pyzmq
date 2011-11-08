@@ -64,7 +64,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(TypeError, s.setsockopt, zmq.AFFINITY, topic)
         s.setsockopt_unicode(zmq.SUBSCRIBE, topic)
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
-        self.assertRaises(TypeError, s.getsockopt_unicode, zmq.SUBSCRIBE)
+        self.assertRaisesErrno(zmq.EINVAL, s.getsockopt_unicode, zmq.SUBSCRIBE)
         
         st = s.getsockopt(zmq.IDENTITY)
         self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))

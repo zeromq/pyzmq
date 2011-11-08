@@ -328,9 +328,9 @@ cdef class Socket:
         Parameters
         ----------
         option : int
-            The option to set.  Available values will depend on your
+            The option to get.  Available values will depend on your
             version of libzmq.  Examples include:
-                zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
+                zmq.IDENTITY, HWM, LINGER, FD, EVENTS
 
         Returns
         -------
@@ -410,10 +410,9 @@ cdef class Socket:
 
         Parameters
         ----------
-        option : unicode string
-            The name of the option to set. Can be any of: 
-            IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-            RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.
+        option : int
+            The option to retrieve. Currently, IDENTITY is the only
+            gettable option that can return a string.
 
         Returns
         -------
@@ -421,7 +420,7 @@ cdef class Socket:
             The value of the option as a unicode string.
         """
         
-        if option not in [ZMQ_IDENTITY]:
+        if option not in constants.bytes_sockopts:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
     

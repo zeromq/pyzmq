@@ -9,10 +9,30 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+dev
+===
+
+* remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
+  prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.
+  
+  * The prefix argument to ``~.Socket.send_multipart()`` remains, but it will now behave in
+    exactly the same way as it did on 2.1.x, simply prepending message parts.
+  
+  * ``~.Socket.recv_multipart()`` will now always return a list, because prefixes are once
+    again indistinguishable from regular message parts.
+
+* add :meth:`.Socket.poll` method, for simple polling of events on a single socket.
+
+
 2.1.10
 ======
 
 * Add support for libzmq-3.0 LABEL prefixes:
+
+  .. warning::
+
+    This feature has been removed from libzmq, and thus removed from future pyzmq
+    as well.
 
   * send a message with label-prefix with:
 
