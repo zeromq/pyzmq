@@ -118,8 +118,7 @@ class TestDevice(BaseZMQTestCase):
 
     def test_labels(self):
         """test device support for SNDLABEL"""
-        if zmq.zmq_version() < '3.0.0':
-            raise SkipTest("Only for libzmq 3")
+        raise SkipTest("LABELs have been removed")
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.XREP, -1)
         # select random port:
         binder = self.context.socket(zmq.XREQ)

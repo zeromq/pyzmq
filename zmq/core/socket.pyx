@@ -664,8 +664,9 @@ cdef class Socket:
             Should the message(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
         prefix : iterable
-            A sequence of messages to send as a 0MQ label prefix (0MQ >= 3.0 only).
-            Each element can be any sendable object (Message, bytes, buffer-providers)
+            A sequence of messages to send as a 0MQ routing prefix. With the removal
+            of LABELs from libzmq3, `prefix` has no effect beyond being prepended
+            to msg_parts.
         
         Returns
         -------
@@ -674,15 +675,11 @@ cdef class Socket:
             a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
-        cdef int SNDLABEL = ZMQ_SNDLABEL
         if prefix:
             if isinstance(prefix, bytes):
                 prefix = [prefix]
-            if SNDLABEL == -1:
-                # ignore SNDLABEL on early libzmq, as SNDMORE is fine
-                SNDLABEL = SNDMORE
             for msg in prefix:
-                self.send(msg, SNDLABEL|flags)
+                self.send(msg, SNDMORE|flags)
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
@@ -710,42 +707,16 @@ cdef class Socket:
         Returns
         -------
         msg_parts : list
-            A list of messages in the multipart message; either Messages or strs,
+            A list of messages in the multipart message; either Messages or bytes,
             depending on `copy`.
         
-        0MQ-3.0:
-        
-        prefix, msg_parts : two lists
-            `prefix` will be the prefix list of message labels at the front of the
-            message.  If prefix would be empty, only a single msg_parts list
-            will be returned.
         """
-        parts = []
-        prefix = []
-        if ZMQ_VERSION_MAJOR >= 3:
-            while True:
-                # receive the label prefix, if any
-                part = self.recv(flags, copy=copy, track=track)
-                if self.getsockopt(ZMQ_RCVLABEL):
-                    prefix.append(part)
-                else:
-                    parts.append(part)
-                    break
-        else:
-            # recv the first part
-            part = self.recv(flags, copy=copy, track=track)
-            parts.append(part)
-            
+        parts = [self.recv(flags, copy=copy, track=track)]
         # have first part already, only loop while more to receive
-        # LABELS after initial prefix are treated as SNDMORE, and their
-        # LABEL-ness is stripped, but at least complete message is in tact
-        while self.getsockopt(ZMQ_RCVMORE) or \
-                (ZMQ_RCVLABEL != -1 and self.getsockopt(ZMQ_RCVLABEL)):
+        while self.getsockopt(ZMQ_RCVMORE):
             part = self.recv(flags, copy=copy, track=track)
             parts.append(part)
         
-        if prefix:
-            return prefix,parts
         return parts
 
     def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
