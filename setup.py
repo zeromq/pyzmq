@@ -84,9 +84,9 @@ min_zmq = (2,1,4)
 if sys.platform.startswith('win'):
     lib_ext = '.dll'
 elif sys.platform == 'darwin':
-    lib_ext = '.1.dylib'
+    lib_ext = '.dylib'
 else:
-    lib_ext = '.so.1'
+    lib_ext = '.so'
 
 # whether any kind of bdist is happening
 doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])

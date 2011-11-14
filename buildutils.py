@@ -248,7 +248,8 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
         fatal("Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
         "or copy libzmq into zmq/ manually prior to running bdist.")
     try:
-        lib = pjoin(ZMQ, 'lib', libzmq)
+        # resolve real file through symlinks
+        lib = os.path.realpath(pjoin(ZMQ, 'lib', libzmq))
         print ("copying %s -> %s"%(lib, local))
         shutil.copy(lib, local)
     except Exception:
@@ -256,11 +257,6 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
             fatal("Could not copy libzmq into zmq/, which is necessary for bdist. "
             "Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
             "or copy libzmq into zmq/ manually.")
-    finally:
-        # link libzmq.dylib -> libzmq.1.dylib
-        link = localpath('zmq',libzmq.replace('.1',''))
-        if not os.path.exists(link):
-            os.symlink(libzmq, link)
     
     if sys.platform == 'darwin':
         # patch install_name on darwin, instead of using rpath
