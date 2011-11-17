@@ -250,13 +250,15 @@ class Configure(Command):
             print ("    Custom ZMQ dir:       %s" % (ZMQ,))
             config = detect_zmq(self.tempdir, **settings)
         except Exception:
-            etype = sys.exc_info()[0]
+            etype, evalue, tb = sys.exc_info()
+            # print the error as distutils would if we let it raise:
+            print ("error: %s" % evalue)
             if etype is CompileError:
                 action = 'compile'
             elif etype is LinkError:
                 action = 'link'
             else:
-                action = 'run'
+                action = 'build or run'
             fatal("""
     Failed to %s ZMQ test program.  Please check to make sure:
 
