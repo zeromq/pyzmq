@@ -5,10 +5,10 @@ from zmq.eventloop import ioloop, zmqstream
 ioloop.install() must be called prior to instantiating *any* tornado objects,
 and ideally before importing anything from tornado, just to be safe.
 
-install() replaces tornado.ioloop.IOLoop with zmq's IOLoop class.  If this
-is not done properly, multiple IOLoop instances may be created, which will
-have the effect of some subset of handlers never being called, because
-only one loop will be running.
+install() sets the singleton instance of tornado.ioloop.IOLoop with zmq's
+IOLoop. If this is not done properly, multiple IOLoop instances may be
+created, which will have the effect of some subset of handlers never being
+called, because only one loop will be running.
 """
 
 ioloop.install()
