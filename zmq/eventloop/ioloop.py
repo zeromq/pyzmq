@@ -48,12 +48,6 @@ else:
 from zmq.eventloop import stack_context
 from zmq.utils.strtypes import b
 
-def install():
-    """Install the zmq eventloop as the tornado eventloop.
-    """
-    import tornado.ioloop
-    tornado.ioloop.IOLoop = IOLoop
-
 try:
     import signal
 except ImportError:
@@ -106,14 +100,24 @@ class IOLoop(object):
         io_loop.start()
 
     """
-    # Use the zmq events masks
+    # Constants from the epoll module
+    _EPOLLIN = 0x001
+    _EPOLLPRI = 0x002
+    _EPOLLOUT = 0x004
+    _EPOLLERR = 0x008
+    _EPOLLHUP = 0x010
+    _EPOLLRDHUP = 0x2000
+    _EPOLLONESHOT = (1 << 30)
+    _EPOLLET = (1 << 31)
+
+    # Our events map exactly to the epoll events
     NONE = 0
-    READ = POLLIN
-    WRITE = POLLOUT
-    ERROR = POLLERR
+    READ = _EPOLLIN
+    WRITE = _EPOLLOUT
+    ERROR = _EPOLLERR | _EPOLLHUP
 
     def __init__(self, impl=None):
-        self._impl = impl or Poller()
+        self._impl = impl or _poll()
         if hasattr(self._impl, 'fileno'):
             set_close_exec(self._impl.fileno())
         self._handlers = {}
@@ -178,9 +182,12 @@ class IOLoop(object):
         if all_fds:
             for fd in self._handlers.keys()[:]:
                 try:
-                    os.close(fd)
+                    if hasattr(fd, 'close'):
+                        fd.close()
+                    else:
+                        os.close(fd)
                 except Exception:
-                    logging.debug("error closing fd %d", fd, exc_info=True)
+                    logging.debug("error closing fd %s", fd, exc_info=True)
         self._waker.close()
         self._impl.close()
 
@@ -270,8 +277,8 @@ class IOLoop(object):
                         timeout = heapq.heappop(self._timeouts)
                         self._run_callback(timeout.callback)
                     else:
-                        milliseconds = self._timeouts[0].deadline - now
-                        poll_timeout = min(milliseconds, poll_timeout)
+                        seconds = self._timeouts[0].deadline - now
+                        poll_timeout = min(seconds, poll_timeout)
                         break
 
             if self._callbacks:
@@ -288,21 +295,7 @@ class IOLoop(object):
                 signal.setitimer(signal.ITIMER_REAL, 0, 0)
 
             try:
-                # poll_timeout is in seconds, but zmq_poll takes milliseconds,
-                # so scale by 1000:
-                event_pairs = self._impl.poll(1000*poll_timeout)
-            except ZMQError:
-                e = sys.exc_info()[1]
-                if e.errno == ETERM:
-                    # This happens when the zmq Context is closed; we should just exit.
-                    self._running = False
-                    self._stopped = True
-                    break
-                elif e.errno == errno.EINTR:
-                    logging.warning("Interrupted system call", exc_info=1)
-                    continue
-                else:
-                    raise
+                event_pairs = self._impl.poll(poll_timeout)
             except Exception:
                 e = sys.exc_info()[1]
                 # Depending on python version and IOLoop implementation,
@@ -313,8 +306,12 @@ class IOLoop(object):
                 if (getattr(e, 'errno', None) == errno.EINTR or
                     (isinstance(getattr(e, 'args', None), tuple) and
                      len(e.args) == 2 and e.args[0] == errno.EINTR)):
-                    logging.warning("Interrupted system call", exc_info=1)
                     continue
+                elif getattr(e, 'errno', None) == ETERM:
+                    # This happens when the zmq Context is closed; we should just exit.
+                    self._running = False
+                    self._stopped = True
+                    break
                 else:
                     raise
 
@@ -480,6 +477,7 @@ class PeriodicCallback(object):
         self.callback_time = callback_time
         self.io_loop = io_loop or IOLoop.instance()
         self._running = False
+        self._timeout = None
 
     def start(self):
         """Starts the timer."""
@@ -490,6 +488,9 @@ class PeriodicCallback(object):
     def stop(self):
         """Stops the timer."""
         self._running = False
+        if self._timeout is not None:
+            self.io_loop.remove_timeout(self._timeout)
+            self._timeout = None
 
     def _run(self):
         if not self._running: return
@@ -504,7 +505,7 @@ class PeriodicCallback(object):
             current_time = time.time()
             while self._next_timeout <= current_time:
                 self._next_timeout += self.callback_time / 1000.0
-            self.io_loop.add_timeout(self._next_timeout, self._run)
+            self._timeout = self.io_loop.add_timeout(self._next_timeout, self._run)
 
 class DelayedCallback(PeriodicCallback):
     """Schedules the given callback to be called once.
@@ -530,3 +531,61 @@ class DelayedCallback(PeriodicCallback):
             self.callback()
         except Exception:
             logging.error("Error in delayed callback", exc_info=True)
+
+
+class ZMQPoller(object):
+    """A poller that can be used in the tornado IOLoop.
+    
+    This simply wraps a regular zmq.Poller, scaling the timeout
+    by 1000, so that it is in seconds rather than milliseconds.
+    """
+    
+    def __init__(self):
+        self._poller = Poller()
+    
+    def _map_events(self, events):
+        """translate IOLoop.READ/WRITE/ERR event masks into POLLIN/OUT/ERR"""
+        mapped = 0
+        if events & IOLoop.READ:
+            mapped |= POLLIN
+        if events & IOLoop.WRITE:
+            mapped |= POLLOUT
+        if events & IOLoop.ERROR:
+            mapped |= POLLERR
+        return mapped
+    
+    def register(self, fd, events):
+        return self._poller.register(fd, self._map_events(events))
+    
+    def modify(self, fd, events):
+        return self._poller.modify(fd, self._map_events(events))
+    
+    def unregister(self, fd):
+        return self._poller.unregister(fd)
+    
+    def poll(self, timeout):
+        """poll in seconds, rather than milliseconds"""
+        return self._poller.poll(1000*timeout)
+    
+    def close(self):
+        pass
+
+_poll = ZMQPoller
+
+def install():
+    """set the tornado IOLoop instance with the pyzmq IOLoop.
+    
+    After calling this function, tornado's IOLoop.instance() and pyzmq's
+    IOLoop.instance() will return the same object.
+    
+    An assertion error will be raised if tornado's IOLoop has been initialized
+    prior to calling this function.
+    """
+    from tornado import ioloop
+    # check if tornado's IOLoop is already initialized to something other
+    # than the pyzmq IOLoop instance:
+    assert (not ioloop.IOLoop.initialized()) or \
+        ioloop.IOLoop.instance() is IOLoop.instance(), "tornado IOLoop already initialized"
+    # register as instance with tornado.ioloop
+    ioloop.IOLoop._instance = IOLoop.instance()
+

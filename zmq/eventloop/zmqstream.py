@@ -97,7 +97,7 @@ class ZMQStream(object):
         self._recv_copy = False
         self._flushed = False
         
-        self._state = zmq.POLLERR
+        self._state = self.io_loop.ERROR
         with stack_context.NullContext():
             self.io_loop.add_handler(
                 self.socket, self._handle_events, self._state)
@@ -150,9 +150,9 @@ class ZMQStream(object):
         self._recv_callback = stack_context.wrap(callback)
         self._recv_copy = copy
         if callback is None:
-            self._drop_io_state(zmq.POLLIN)
+            self._drop_io_state(self.io_loop.READ)
         else:
-            self._add_io_state(zmq.POLLIN)
+            self._add_io_state(self.io_loop.READ)
     
     def on_send(self, callback):
         """Register a callback to be called on each send
@@ -217,7 +217,7 @@ class ZMQStream(object):
         else:
             # noop callback
             self.on_send(lambda *args: None)
-        self._add_io_state(zmq.POLLOUT)
+        self._add_io_state(self.io_loop.WRITE)
     
     def send_unicode(self, u, flags=0, encoding='utf-8', callback=None):
         """Send a unicode message with an encoding.
@@ -323,8 +323,7 @@ class ZMQStream(object):
             self._flushed = True
             # reregister them at the end of the loop
             if not already_flushed: # don't need to do it again
-                dc = ioloop.DelayedCallback(self._finish_flush, 0, self.io_loop)
-                dc.start()
+                self.io_loop.add_callback(self._finish_flush)
         elif already_flushed:
             self._flushed = True
 
@@ -340,8 +339,7 @@ class ZMQStream(object):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            dc = ioloop.DelayedCallback(self.socket.close, 100, self.io_loop)
-            dc.start()
+            self.io_loop.add_timeout(100, self.socket.close)
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
@@ -464,11 +462,11 @@ class ZMQStream(object):
         """rebuild io state based on self.sending() and receiving()"""
         if self.socket is None:
             return
-        state = zmq.POLLERR
+        state = self.io_loop.ERROR
         if self.receiving():
-            state |= zmq.POLLIN
+            state |= self.io_loop.READ
         if self.sending():
-            state |= zmq.POLLOUT
+            state |= self.io_loop.WRITE
         if state != self._state:
             self._state = state
             self.io_loop.update_handler(self.socket, state)
