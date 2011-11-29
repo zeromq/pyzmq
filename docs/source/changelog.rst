@@ -15,14 +15,30 @@ dev
 * remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
   prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.
   
-  * The prefix argument to ``~.Socket.send_multipart()`` remains, but it will now behave in
+  * The prefix argument to :meth:`~.Socket.send_multipart` remains, but it will now behave in
     exactly the same way as it did on 2.1.x, simply prepending message parts.
   
-  * ``~.Socket.recv_multipart()`` will now always return a list, because prefixes are once
+  * :meth:`~.Socket.recv_multipart` will now always return a list, because prefixes are once
     again indistinguishable from regular message parts.
 
 * add :meth:`.Socket.poll` method, for simple polling of events on a single socket.
 
+* no longer require monkeypatching tornado IOLoop.  The :class:`.ioloop.ZMQPoller` class
+  is a poller implementation that matches tornado's expectations, and pyzmq sockets can
+  be used with any tornado application just by specifying the use of this poller.  The
+  pyzmq IOLoop implementation now only trivially differs from tornado's.
+
+  It is still recommended to use :func:`.ioloop.install`, which sets *both* the zmq and
+  tornado global IOLoop instances to the same object, but it is no longer necessary.
+
+  .. warning::
+
+    The most important part of this change is that the ``IOLoop.READ/WRITE/ERROR``
+    constants now match tornado's, rather than being mapped directly to the zmq
+    ``POLLIN/OUT/ERR``. So applications that used the low-level :meth:`IOLoop.add_handler`
+    code with ``POLLIN/OUT/ERR`` directly (used to work, but was incorrect), rather than
+    using the IOLoop class constants will no longer work. Fixing these to use the IOLoop
+    constants should be insensitive to the actual value of the constants.
 
 2.1.10
 ======

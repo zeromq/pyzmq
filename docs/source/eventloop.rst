@@ -25,21 +25,35 @@ install PyZMQ's :class:`.IOLoop`, with the :func:`.ioloop.install` function:
     from zmq.eventloop import ioloop
     ioloop.install()
 
-This replaces :class:`tornado.ioloop.IOLoop` with our IOLoop class.
-The reason this must happen is that tornado objects avoid having to pass the active
-IOLoop instance around, by having a staticmethod :meth:`.IOLoop.instance`,
-which always returns the active instance.  If PyZMQ's IOLoop is installed after
-the first call to :meth:`IOLoop.instance()` (called in almost every tornado object constructor),
-then there will likely be two IOLoops created, only one of which will ever run.
-The symptom of failing to install the zmq eventloop at all, or too late,
-will be utter silence - a subset of your handlers (the ones attached to the IOLoop
-that didn't get started) will simply never be called.
+This sets the global instance of :class:`tornado.ioloop.IOLoop` with the global instance of
+our IOLoop class. The reason this must happen is that tornado objects avoid having to pass
+the active IOLoop instance around by having a staticmethod :meth:`.IOLoop.instance`, which
+always returns the active instance. If PyZMQ's IOLoop is installed after the first call to
+:meth:`.IOLoop.instance()` (called in almost every tornado object constructor), then it will
+raise an :exc:`AssertionError`, because the global IOLoop instance has already been
+created, and proceeding would result in not all objects being associated with the right
+IOLoop.
 
-.. note::
+It is possible to use PyZMQ sockets with tornado *without* calling :func:`.ioloop.install`,
+but it is less convenient. First, you must instruct the tornado IOLoop to use the zmq poller:
 
-    It *should* be possible to use the IOLoop with tornado without :func:`ioloop.install`,
-    but it would require passing the `io_loop` argument to every constructor, which is
-    exactly what the :meth:`instance` method is for, and even then might not work.
+.. sourcecode:: python
+
+    from tornado.ioloop import IOLoop
+    from zmq.eventloop.ioloop import ZMQPoller
+    
+    loop = IOLoop(ZMQPoller())
+
+Then, when you instantiate tornado and ZMQStream objects, you must pass the `io_loop`
+argument to ensure that they use this loop, instead of the global instance.  You can
+install this IOLoop as the global tornado instance, with:
+
+.. sourcecode:: python
+
+    loop.install()
+
+but it will **NOT** be the global *pyzmq* IOLoop instance, so it must still be passed to
+your ZMQStream constructors.
 
 
 :meth:`send`
@@ -71,7 +85,8 @@ even if its length is 1. You can easily use this to build things like an echo so
     loop.start()
 
 on_recv can also take a `copy` flag, just like :meth:`.Socket.recv`. If `copy=False`, then
-callbacks registered with on_recv will receive tracked Message objects instead of bytes.
+callbacks registered with on_recv will receive tracked :class:`.Message` objects instead of
+bytes.
 
 :meth:`flush`
 -------------
