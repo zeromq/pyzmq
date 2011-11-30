@@ -13,7 +13,12 @@ tunneling ØMQ connections over ssh in simple cases. These functions have been b
 pyzmq as :mod:`zmq.ssh` under IPython's BSD license.
 
 PyZMQ will use the shell ssh command via pexpect_ by default, but it also supports
-using paramiko_ for tunnels, so it should also work on Windows.
+using paramiko_ for tunnels, so it should work on Windows.
+
+.. note::
+
+    pexpect has no Python3 support at this time, so Python 3 users should get Thomas
+    Kluyver's `pexpect-u`_ fork.
 
 An SSH tunnel has five basic components:
 
@@ -70,5 +75,6 @@ rather than the remote one that wouldn't actually work.
 
 .. _IPython: http://ipython.org
 .. _pexpect: http://www.noah.org/wiki/pexpect
+.. _pexpect-u: http://pypi.python.org/pypi/pexpect-u
 .. _paramiko: http://www.lag.net/paramiko/
 
