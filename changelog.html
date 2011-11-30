@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ 2.1.10 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.10',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.10 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -55,6 +55,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes in PyZMQ</a><ul>
+<li><a class="reference internal" href="#dev">dev</a></li>
 <li><a class="reference internal" href="#id1">2.1.10</a></li>
 <li><a class="reference internal" href="#id2">2.1.9</a></li>
 <li><a class="reference internal" href="#id3">2.1.7.1</a></li>
@@ -94,10 +95,47 @@
 <span id="changelog"></span><h1>Changes in PyZMQ<a class="headerlink" href="#changes-in-pyzmq" title="Permalink to this headline">¶</a></h1>
 <p>This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 <a class="reference external" href="https://github.com/zeromq/pyzmq/commits">git log</a></p>
+<div class="section" id="dev">
+<h2>dev<a class="headerlink" href="#dev" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
+prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.</p>
+<ul class="simple">
+<li>The prefix argument to <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_multipart" title="zmq.core.socket.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a> remains, but it will now behave in
+exactly the same way as it did on 2.1.x, simply prepending message parts.</li>
+<li><a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_multipart" title="zmq.core.socket.Socket.recv_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">recv_multipart()</span></tt></a> will now always return a list, because prefixes are once
+again indistinguishable from regular message parts.</li>
+</ul>
+</li>
+<li><p class="first">add <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.poll" title="zmq.core.socket.Socket.poll"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.poll()</span></tt></a> method, for simple polling of events on a single socket.</p>
+</li>
+<li><p class="first">no longer require monkeypatching tornado IOLoop.  The <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.ZMQPoller" title="zmq.eventloop.ioloop.ZMQPoller"><tt class="xref py py-class docutils literal"><span class="pre">ioloop.ZMQPoller</span></tt></a> class
+is a poller implementation that matches tornado&#8217;s expectations, and pyzmq sockets can
+be used with any tornado application just by specifying the use of this poller.  The
+pyzmq IOLoop implementation now only trivially differs from tornado&#8217;s.</p>
+<p>It is still recommended to use <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">ioloop.install()</span></tt></a>, which sets <em>both</em> the zmq and
+tornado global IOLoop instances to the same object, but it is no longer necessary.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The most important part of this change is that the <tt class="docutils literal"><span class="pre">IOLoop.READ/WRITE/ERROR</span></tt>
+constants now match tornado&#8217;s, rather than being mapped directly to the zmq
+<tt class="docutils literal"><span class="pre">POLLIN/OUT/ERR</span></tt>. So applications that used the low-level <tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.add_handler()</span></tt>
+code with <tt class="docutils literal"><span class="pre">POLLIN/OUT/ERR</span></tt> directly (used to work, but was incorrect), rather than
+using the IOLoop class constants will no longer work. Fixing these to use the IOLoop
+constants should be insensitive to the actual value of the constants.</p>
+</div>
+</li>
+</ul>
+</div>
 <div class="section" id="id1">
 <h2>2.1.10<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">Add support for libzmq-3.0 LABEL prefixes:</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This feature has been removed from libzmq, and thus removed from future pyzmq
+as well.</p>
+</div>
 <ul>
 <li><p class="first">send a message with label-prefix with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">send_multipart</span><span class="p">([</span><span class="n">b</span><span class="s">&#39;msg&#39;</span><span class="p">,</span> <span class="n">b</span><span class="s">&#39;parts&#39;</span><span class="p">],</span> <span class="n">prefix</span><span class="o">=</span><span class="p">[</span><span class="n">b</span><span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="n">b</span><span class="s">&#39;prefix&#39;</span><span class="p">])</span>

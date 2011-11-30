@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.ioloop &mdash; PyZMQ 2.1.10 documentation</title>
+    <title>eventloop.ioloop &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.10',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" />
     <link rel="prev" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" /> 
@@ -70,6 +70,7 @@
 <li><a class="reference internal" href="#delayedcallback"><tt class="docutils literal"><span class="pre">DelayedCallback</span></tt></a></li>
 <li><a class="reference internal" href="#ioloop"><tt class="docutils literal"><span class="pre">IOLoop</span></tt></a></li>
 <li><a class="reference internal" href="#periodiccallback"><tt class="docutils literal"><span class="pre">PeriodicCallback</span></tt></a></li>
+<li><a class="reference internal" href="#zmqpoller"><tt class="docutils literal"><span class="pre">ZMQPoller</span></tt></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#function">Function</a></li>
@@ -186,7 +187,7 @@ case.</p>
 </div>
 <dl class="attribute">
 <dt id="zmq.eventloop.ioloop.IOLoop.ERROR">
-<tt class="descname">ERROR</tt><em class="property"> = 4</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.ERROR" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">ERROR</tt><em class="property"> = 24</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.ERROR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -201,7 +202,7 @@ case.</p>
 
 <dl class="attribute">
 <dt id="zmq.eventloop.ioloop.IOLoop.WRITE">
-<tt class="descname">WRITE</tt><em class="property"> = 2</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.WRITE" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">WRITE</tt><em class="property"> = 4</em><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.WRITE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -384,13 +385,54 @@ whether that callback was invoked before or after ioloop.start.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="zmqpoller">
+<h3><a class="reference internal" href="#zmq.eventloop.ioloop.ZMQPoller" title="zmq.eventloop.ioloop.ZMQPoller"><tt class="xref py py-class docutils literal"><span class="pre">ZMQPoller</span></tt></a><a class="headerlink" href="#zmqpoller" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.ioloop.ZMQPoller">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">ZMQPoller</tt><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller" title="Permalink to this definition">¶</a></dt>
+<dd><p>A poller that can be used in the tornado IOLoop.</p>
+<p>This simply wraps a regular zmq.Poller, scaling the timeout
+by 1000, so that it is in seconds rather than milliseconds.</p>
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.ZMQPoller.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.ZMQPoller.modify">
+<tt class="descname">modify</tt><big>(</big><em>fd</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller.modify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.ZMQPoller.poll">
+<tt class="descname">poll</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller.poll" title="Permalink to this definition">¶</a></dt>
+<dd><p>poll in seconds, rather than milliseconds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.ZMQPoller.register">
+<tt class="descname">register</tt><big>(</big><em>fd</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller.register" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.ioloop.ZMQPoller.unregister">
+<tt class="descname">unregister</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.ZMQPoller.unregister" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="function">
 <h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="zmq.eventloop.ioloop.install">
 <tt class="descclassname">zmq.eventloop.ioloop.</tt><tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Install the zmq eventloop as the tornado eventloop.</p>
+<dd><p>set the tornado IOLoop instance with the pyzmq IOLoop.</p>
+<p>After calling this function, tornado&#8217;s IOLoop.instance() and pyzmq&#8217;s
+IOLoop.instance() will return the same object.</p>
+<p>An assertion error will be raised if tornado&#8217;s IOLoop has been initialized
+prior to calling this function.</p>
 </dd></dl>
 
 </div>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ 2.1.10 documentation</title>
+    <title>core.socket &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.10',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.10 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
     <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
@@ -259,10 +259,10 @@ encoded to utf-8 first.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
-<div><p>The option to set.  Available values will depend on your
+<div><p>The option to get.  Available values will depend on your
 version of libzmq.  Examples include:</p>
 <blockquote>
-<div><p>zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD</p>
+<div><p>zmq.IDENTITY, HWM, LINGER, FD, EVENTS</p>
 </div></blockquote>
 </div></blockquote>
 </td>
@@ -286,17 +286,48 @@ version of libzmq.  Examples include:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : unicode string</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
 <blockquote>
-<div><p>The name of the option to set. Can be any of: 
-IDENTITY, HWM, SWAP, AFFINITY, RATE, 
-RECOVERY_IVL, MCAST_LOOP, SNDBUF, RCVBUF, RCVMORE.</p>
+<div><p>The option to retrieve. Currently, IDENTITY is the only
+gettable option that can return a string.</p>
 </div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode</p>
 <blockquote class="last">
 <div><p>The value of the option as a unicode string.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.socket.Socket.poll">
+<tt class="descname">poll</tt><big>(</big><em>timeout=None</em>, <em>flags=POLLIN|POLLERR</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.poll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poll the socket for events.  The default is to poll forever for incoming
+events.  Timeout is in milliseconds, if specified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : int [default: None]</p>
+<blockquote>
+<div><p>The timeout (in milliseconds) to wait for an event. If unspecified
+(or secified None), will wait forever for an event.</p>
+</div></blockquote>
+<p><strong>flags</strong> : bitfield (int) [default: any event]</p>
+<blockquote>
+<div><p>The event flags to poll for (any combination of POLLIN|POLLOUT|POLLERR).
+The default is to check for incoming events (POLLIN|POLLERR).</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>events</strong> : bitfield (int)</p>
+<blockquote class="last">
+<div><p>The events that are ready and waiting.  Will be 0 if no events were ready
+by the time timeout was reached.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -402,16 +433,9 @@ finished with it? (ignored if copy=True)</p>
 <p><strong>Returns</strong> :</p>
 <p><strong>&#8212;&#8212;-</strong> :</p>
 <p><strong>msg_parts</strong> : list</p>
-<blockquote>
-<div><p>A list of messages in the multipart message; either Messages or strs,
-depending on <cite>copy</cite>.</p>
-</div></blockquote>
-<p><strong>0MQ-3.0:</strong> :</p>
-<p><strong>prefix, msg_parts</strong> : two lists</p>
 <blockquote class="last">
-<div><p><cite>prefix</cite> will be the prefix list of message labels at the front of the
-message.  If prefix would be empty, only a single msg_parts list
-will be returned.</p>
+<div><p>A list of messages in the multipart message; either Messages or bytes,
+depending on <cite>copy</cite>.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -579,8 +603,9 @@ finished with it (ignored if copy=True).</p>
 </div></blockquote>
 <p><strong>prefix</strong> : iterable</p>
 <blockquote>
-<div><p>A sequence of messages to send as a 0MQ label prefix (0MQ &gt;= 3.0 only).
-Each element can be any sendable object (Message, bytes, buffer-providers)</p>
+<div><p>A sequence of messages to send as a 0MQ routing prefix. With the removal
+of LABELs from libzmq3, <cite>prefix</cite> has no effect beyond being prepended
+to msg_parts.</p>
 </div></blockquote>
 </td>
 </tr>
