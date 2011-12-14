@@ -15,10 +15,10 @@ dev
 * remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
   prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.
   
-  * The prefix argument to :meth:`~.Socket.send_multipart` remains, but it will now behave in
-    exactly the same way as it did on 2.1.x, simply prepending message parts.
+  * The prefix argument to :meth:`~.Socket.send_multipart` remains, but it continue to behave in
+    exactly the same way as it always has on 2.1.x, simply prepending message parts.
   
-  * :meth:`~.Socket.recv_multipart` will now always return a list, because prefixes are once
+  * :meth:`~.Socket.recv_multipart` will always return a list, because prefixes are once
     again indistinguishable from regular message parts.
 
 * add :meth:`.Socket.poll` method, for simple polling of events on a single socket.
