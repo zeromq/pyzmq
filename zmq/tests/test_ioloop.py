@@ -28,6 +28,7 @@ import threading
 import zmq
 from zmq.tests import BaseZMQTestCase
 from zmq.eventloop import ioloop
+from zmq.utils.strtypes import asbytes as b
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -82,3 +83,26 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEquals(t < t2, id(t) < id(t2))
         t2 = ioloop._Timeout(2,1)
         self.assertTrue(t < t2)
+
+    def test_poller_events(self):
+        """Tornado poller implementation maps events correctly"""
+        req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        poller = ioloop.ZMQPoller()
+        poller.register(req, ioloop.IOLoop.READ)
+        poller.register(rep, ioloop.IOLoop.READ)
+        events = dict(poller.poll(0))
+        self.assertEquals(events.get(rep), None)
+        self.assertEquals(events.get(req), None)
+        
+        poller.register(req, ioloop.IOLoop.WRITE)
+        poller.register(rep, ioloop.IOLoop.WRITE)
+        events = dict(poller.poll(1))
+        self.assertEquals(events.get(req), ioloop.IOLoop.WRITE)
+        self.assertEquals(events.get(rep), None)
+        
+        poller.register(rep, ioloop.IOLoop.READ)
+        req.send(b('hi'))
+        events = dict(poller.poll(1))
+        self.assertEquals(events.get(rep), ioloop.IOLoop.READ)
+        self.assertEquals(events.get(req), None)
+

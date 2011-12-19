@@ -543,16 +543,29 @@ class ZMQPoller(object):
     def __init__(self):
         self._poller = Poller()
     
-    def _map_events(self, events):
-        """translate IOLoop.READ/WRITE/ERR event masks into POLLIN/OUT/ERR"""
-        mapped = 0
+    @staticmethod
+    def _map_events(events):
+        """translate IOLoop.READ/WRITE/ERROR event masks into zmq.POLLIN/OUT/ERR"""
+        z_events = 0
         if events & IOLoop.READ:
-            mapped |= POLLIN
+            z_events |= POLLIN
         if events & IOLoop.WRITE:
-            mapped |= POLLOUT
+            z_events |= POLLOUT
         if events & IOLoop.ERROR:
-            mapped |= POLLERR
-        return mapped
+            z_events |= POLLERR
+        return z_events
+    
+    @staticmethod
+    def _remap_events(z_events):
+        """translate zmq.POLLIN/OUT/ERR event masks into IOLoop.READ/WRITE/ERROR"""
+        events = 0
+        if z_events & POLLIN:
+            events |= IOLoop.READ
+        if z_events & POLLOUT:
+            events |= IOLoop.WRITE
+        if z_events & POLLERR:
+            events |= IOLoop.ERROR
+        return events
     
     def register(self, fd, events):
         return self._poller.register(fd, self._map_events(events))
@@ -564,8 +577,12 @@ class ZMQPoller(object):
         return self._poller.unregister(fd)
     
     def poll(self, timeout):
-        """poll in seconds, rather than milliseconds"""
-        return self._poller.poll(1000*timeout)
+        """poll in seconds rather than milliseconds.
+        
+        Event masks will be IOLoop.READ/WRITE/ERROR
+        """
+        z_events = self._poller.poll(1000*timeout)
+        return [ (fd,self._remap_events(evt)) for (fd,evt) in z_events ]
     
     def close(self):
         pass

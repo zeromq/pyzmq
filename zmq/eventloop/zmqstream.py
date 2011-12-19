@@ -23,7 +23,7 @@ import logging
 import zmq
 from zmq.core.socket import jsonapi, pickle
 
-from zmq.eventloop import ioloop
+from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop import stack_context
 
 try:
@@ -86,7 +86,7 @@ class ZMQStream(object):
     
     def __init__(self, socket, io_loop=None):
         self.socket = socket
-        self.io_loop = io_loop or ioloop.IOLoop.instance()
+        self.io_loop = io_loop or IOLoop.instance()
         self.poller = zmq.Poller()
         
         self._send_queue = Queue()
@@ -384,14 +384,14 @@ class ZMQStream(object):
             return
         try:
             # dispatch events:
-            if events & zmq.POLLERR:
+            if events & IOLoop.ERROR:
                 self._handle_error()
                 return
-            if events & zmq.POLLIN:
+            if events & IOLoop.READ:
                 self._handle_recv()
                 if not self.socket:
                     return
-            if events & zmq.POLLOUT:
+            if events & IOLoop.WRITE:
                 self._handle_send()
                 if not self.socket:
                     return
