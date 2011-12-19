@@ -8,7 +8,7 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.10, and targets libzmq-2.1.10. For libzmq
+Current release of pyzmq is 2.1.11, and targets libzmq-2.1.11. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
@@ -16,17 +16,14 @@ as that of your libzmq, but due to the generally growing API of libzmq, your pyz
 *not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
 intend to support libzmq >= 2.1.4 (the first 'stable' 2.1 release) for pyzmq 2.1.x.
 
-ØMQ 3.0 and 4.0
----------------
+For a summary of changes to pyzmq, see our `changelog <http://zeromq.github.com/pyzmq/changelog.html>`_.
 
-As of 2.1.7, we have experimental support for the 3.0 API of libzmq,
-developed at https://github.com/zeromq/zeromq3-0. No code to change, no flags to pass, just
-build pyzmq against libzmq 3 and it should work.  The pyzmq API has not changed, though
-some syntax has been added to support new features, such as the LABEL routing prefix in 3.0.
+ØMQ 3.x
+-------
 
-2.1.9 adds support for the changes in the experimental 4.0 development branch at
-https://github.com/zeromq/libzmq.
-
+As of 2.1.7, we have experimental support for the 3.x API of libzmq,
+developed at https://github.com/zeromq/libzmq. No code to change, no flags to pass, just
+build pyzmq against libzmq3 and it should work.
 
 Documentation
 =============
@@ -82,7 +79,7 @@ A Python 2.6/win64 MSI for 2.1.7 was provided by Craig Austin (craig DOT austin 
 Our build scripts are much improved as of 2.1.4, so if you would like to contribute better
 Windows installers, or have any improvements on existing releases, they would be much
 appreciated. Simply ``python setup.py bdist_msi`` or ``python setupegg.py bdist_egg`` *should*
-work, once you have a libzmq and Python. We simply don't have the VMs or time in which to cover
+work, once you have libzmq and Python. We simply don't have the VMs or time in which to cover
 all the bases ourselves.
 
 .. note::
@@ -98,7 +95,7 @@ After you have done this, follow these steps:
 
 Tell pyzmq where libzmq is via the configure subcommand:
 
-    $ python setup.py configure --zmq=/path/to/zeromq2
+    $ python setup.py configure --zmq=/path/to/zeromq
 
 or the zmq install directory on OSX/Linux:
 
@@ -108,7 +105,7 @@ The argument should be a directory containing ``lib`` and ``include`` directorie
 ``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
 and current libzmq into the same parent directory, this would be:
 
-    $ python setup.py configure --zmq=../zeromq-2.1.10
+    $ python setup.py configure --zmq=../zeromq-2.1.11
 
 Second, run this command::
 
