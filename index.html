@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyZMQ Documentation &mdash; PyZMQ 2.1dev documentation</title>
+    <title>PyZMQ Documentation &mdash; PyZMQ 2.1.11 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1dev',
+        VERSION:     '2.1.11',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1dev documentation" href="#" />
+    <link rel="top" title="PyZMQ 2.1.11 documentation" href="#" />
     <link rel="next" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
   </head>
   <body>
@@ -59,6 +59,7 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyZMQ Documentation</a></li>
+<li><a class="reference internal" href="#pyzmq-versioning">PyZMQ Versioning</a></li>
 <li><a class="reference internal" href="#notes-from-developing-pyzmq">Notes from developing PyZMQ</a><ul>
 </ul>
 </li>
@@ -104,30 +105,32 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Release:</th><td class="field-body">2.1dev</td>
+<tr class="field-odd field"><th class="field-name">Release:</th><td class="field-body">2.1.11</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">November 30, 2011</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">December 19, 2011</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">PyZMQ versioning follows zeromq, so your pyzmq version should match that of your
-zeromq. Building the same pyzmq against various versions of zeromq should only result
-in the addition/removal of a few socket types and socket options, depending on
-the active zeromq&#8217;s support.</p>
-</div>
 <p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>, written almost entirely in <a class="reference external" href="http://cython.org/">Cython</a>. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
-ØMQ in general, see the excellent <a class="reference external" href="http://www.zeromq.org/intro:read-the-manual">ØMQ Manual</a>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">As of PyZMQ 2.1.7, PyZMQ has experimental support for the libzmq-3.0 development version,
-and has dropped support for the zeromq-2.0 series.</p>
-</div>
-<p>Please don&#8217;t hesitate to report pyzmq issues to our <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">tracker</a> on GitHub.</p>
+ØMQ in general, see the excellent <a class="reference external" href="http://zguide.zeromq.org">ØMQ Guide</a>, which has examples translated into many
+languages, including Python.</p>
+<p>Please don&#8217;t hesitate to report pyzmq issues to our <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">tracker</a> on GitHub, or send
+questions to the ØMQ <a class="reference external" href="http://www.zeromq.org/docs:mailing-lists">mailing list</a> or <a class="reference external" href="http://www.zeromq.org/chatroom">IRC Channel</a>.</p>
 <p><a class="reference internal" href="changelog.html#changelog"><em>Summary of Changes in PyZMQ</em></a></p>
+</div>
+<div class="section" id="pyzmq-versioning">
+<h1>PyZMQ Versioning<a class="headerlink" href="#pyzmq-versioning" title="Permalink to this headline">¶</a></h1>
+<p>PyZMQ versioning follows libzmq, so your pyzmq version should match that of your
+libzmq. Building the same pyzmq against various versions of libzmq is supported,
+and should only result in the addition/removal of a few socket types and socket
+options, depending on the active libzmq&#8217;s support.</p>
+<p>Binary distributions (eggs or MSIs on <a class="reference external" href="http://pypi.python.org/pypi/pyzmq">PyPI</a>
+or <a class="reference external" href="https://www.github.com/zeromq/pyzmq/downloads">GitHub</a>) of PyZMQ ship with
+matching libzmq release built with default configuration.</p>
+<p>PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.1.0 )
+versions of libzmq.</p>
 </div>
 <div class="section" id="notes-from-developing-pyzmq">
 <h1>Notes from developing PyZMQ<a class="headerlink" href="#notes-from-developing-pyzmq" title="Permalink to this headline">¶</a></h1>
@@ -222,6 +225,7 @@ and has dropped support for the zeromq-2.0 series.</p>
 <h1>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><a class="reference external" href="http://www.zeromq.org">ØMQ</a> Home</li>
+<li>The <a class="reference external" href="http://zguide.zeromq.org">ØMQ Guide</a></li>
 <li><a class="reference external" href="http://www.zeromq.org/bindings:python">PyZMQ Installation</a> notes on the ZeroMQ website</li>
 <li>PyZMQ on <a class="reference external" href="https://www.github.com/zeromq/pyzmq">GitHub</a></li>
 <li>Issue <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">Tracker</a></li>

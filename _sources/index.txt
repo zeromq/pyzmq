@@ -10,28 +10,33 @@ PyZMQ Documentation
    :Release: |release|
    :Date: |today|
 
-.. Note::
-
-    PyZMQ versioning follows zeromq, so your pyzmq version should match that of your
-    zeromq. Building the same pyzmq against various versions of zeromq should only result
-    in the addition/removal of a few socket types and socket options, depending on
-    the active zeromq's support.
-
 
 PyZMQ is the Python bindings for ØMQ_, written almost entirely in Cython_. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
-ØMQ in general, see the excellent `ØMQ Manual`_.
+ØMQ in general, see the excellent `ØMQ Guide`_, which has examples translated into many
+languages, including Python.
 
-.. Note::
-
-    As of PyZMQ 2.1.7, PyZMQ has experimental support for the libzmq-3.0 development version,
-    and has dropped support for the zeromq-2.0 series.
-    
-
-Please don't hesitate to report pyzmq issues to our tracker_ on GitHub.
+Please don't hesitate to report pyzmq issues to our tracker_ on GitHub, or send
+questions to the ØMQ `mailing list`_ or `IRC Channel`_.
 
 :ref:`Summary of Changes in PyZMQ <changelog>`
+
+
+PyZMQ Versioning
+================
+
+PyZMQ versioning follows libzmq, so your pyzmq version should match that of your
+libzmq. Building the same pyzmq against various versions of libzmq is supported,
+and should only result in the addition/removal of a few socket types and socket
+options, depending on the active libzmq's support.
+
+Binary distributions (eggs or MSIs on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
+or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
+matching libzmq release built with default configuration.
+
+PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.1.0 )
+versions of libzmq.
 
 
 Notes from developing PyZMQ
@@ -69,11 +74,15 @@ Links
 =====
 
 * ØMQ_ Home
+* The `ØMQ Guide`_
 * `PyZMQ Installation`_ notes on the ZeroMQ website
 * PyZMQ on GitHub_
 * Issue Tracker_
 
 .. _ØMQ: http://www.zeromq.org
+.. _ØMQ Guide: http://zguide.zeromq.org
+.. _mailing list: http://www.zeromq.org/docs:mailing-lists
+.. _IRC Channel: http://www.zeromq.org/chatroom
 .. _Cython: http://cython.org/
 .. _GitHub: https://www.github.com/zeromq/pyzmq
 .. _ØMQ Manual: http://www.zeromq.org/intro:read-the-manual
