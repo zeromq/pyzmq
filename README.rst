@@ -28,20 +28,22 @@ build pyzmq against libzmq3 and it should work.
 Documentation
 =============
 
-See PyZMQ's Sphinx `generated documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API
-details, and some notes on Python and Cython development.
+See PyZMQ's Sphinx-generated `documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API
+details, and some notes on Python and Cython development.  If you want to learn about
+using ØMQ in general, the excellect `ØMQ Guide <http://zguide.zeromq.org>`_ is the place
+to start, which has a Python version of every example.
 
 Downloading
 ===========
 
 Unless you specifically want to develop PyZMQ, we recommend downloading the
-PyZMQ source code from our github download page here:
+PyZMQ source code or MSI installer from our `GitHub download page <https://github.com/zeromq/pyzmq/downloads>`_,
+or an egg from `PyPI <http://pypi.python.org/pypi/pyzmq>`_.
 
-https://github.com/zeromq/pyzmq/downloads
+You can also get the latest source code from our GitHub repository, but
+building from the repository will require that you install Cython version 0.13
+or later.
 
-While you can also get the latest source code by forking our github
-repository, building from the repository will require that you download and
-install Cython version 0.13 or later.
 
 Building and installation
 =========================

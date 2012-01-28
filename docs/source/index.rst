@@ -14,11 +14,11 @@ PyZMQ Documentation
 PyZMQ is the Python bindings for ØMQ_, written almost entirely in Cython_. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
-ØMQ in general, see the excellent `ØMQ Guide`_, which has examples translated into many
-languages, including Python.
+ØMQ in general, see the many examples in the excellent `ØMQ Guide`_, all of which
+have a version in Python.
 
-Please don't hesitate to report pyzmq issues to our tracker_ on GitHub, or send
-questions to the ØMQ `mailing list`_ or `IRC Channel`_.
+Please don't hesitate to report pyzmq-specific issues to our tracker_ on GitHub.
+General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC Channel`_.
 
 :ref:`Summary of Changes in PyZMQ <changelog>`
 
