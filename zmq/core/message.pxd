@@ -46,6 +46,7 @@ cdef class Frame:
     cdef bint _failed_init # Flag to handle failed zmq_msg_init
     cdef public object tracker_event  # Event for use with zmq_free_fn.
     cdef public object tracker        # MessageTracker object.
+    cdef public int flags             # flags associated with the frame (RCVMORE, etc)
 
     cdef Frame fast_copy(self) # Create shallow copy of Message object.
     cdef object _getbuffer(self) # Construct self._buffer.

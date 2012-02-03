@@ -649,7 +649,10 @@ cdef class Socket:
         if copy:
             return _recv_copy(self.handle, flags)
         else:
-            return _recv_message(self.handle, flags, track)
+            frame = _recv_message(self.handle, flags, track)
+            if self.getsockopt(zmq.RCVMORE):
+                frame.flags |= zmq.SNDMORE
+            return frame
     
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False, prefix=None):
         """s.send_multipart(msg_parts, flags=0, copy=True, track=False, prefix=None)
