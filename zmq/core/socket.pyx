@@ -34,7 +34,7 @@ from cpython cimport Py_DECREF, Py_INCREF
 from buffers cimport asbuffer_r, viewfromobject_r
 
 from libzmq cimport *
-from message cimport Message, copy_zmq_msg_bytes
+from message cimport Frame, copy_zmq_msg_bytes
 
 from context cimport Context
 
@@ -96,11 +96,11 @@ cdef inline _check_closed(Socket s, bint raise_notsup):
             raise ZMQError()
     return False
 
-cdef inline Message _recv_message(void *handle, int flags=0, track=False):
-    """Receive a message in a non-copying manner and return a Message."""
+cdef inline Frame _recv_message(void *handle, int flags=0, track=False):
+    """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
-    cdef Message msg
-    msg = Message(track=track)
+    cdef Frame msg
+    msg = Frame(track=track)
 
     with nogil:
         rc = zmq_recvmsg(handle, &msg.zmq_msg, flags)
@@ -122,10 +122,10 @@ cdef inline object _recv_copy(void *handle, int flags=0):
         zmq_msg_close(&zmq_msg)
     return msg_bytes
 
-cdef inline object _send_message(void *handle, Message msg, int flags=0):
-    """Send a Message on this socket in a non-copy manner."""
+cdef inline object _send_message(void *handle, Frame msg, int flags=0):
+    """Send a Frame on this socket in a non-copy manner."""
     cdef int rc
-    cdef Message msg_copy
+    cdef Frame msg_copy
 
     # Always copy so the original message isn't garbage collected.
     # This doesn't do a real copy, just a reference.
@@ -470,8 +470,8 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:5555'. Protocols supported are
-            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            for example 'tcp://127.0.0.1:5555'. Protocols supported include
+            tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
         cdef int rc
@@ -565,7 +565,7 @@ cdef class Socket:
 
         Parameters
         ----------
-        data : object, str, Message
+        data : object, str, Frame
             The content of the message.
         flags : int
             Any supported flag: NOBLOCK, SNDMORE.
@@ -588,7 +588,7 @@ cdef class Socket:
         TypeError
             If a unicode object is passed
         ValueError
-            If `track=True`, but an untracked Message is passed.
+            If `track=True`, but an untracked Frame is passed.
         ZMQError
             If the send does not succeed for any reason.
         
@@ -601,16 +601,16 @@ cdef class Socket:
         if copy:
             # msg.bytes never returns the input data object
             # it is always a copy, but always the same copy
-            if isinstance(data, Message):
+            if isinstance(data, Frame):
                 data = data.buffer
             return _send_copy(self.handle, data, flags)
         else:
-            if isinstance(data, Message):
+            if isinstance(data, Frame):
                 if track and not data.tracker:
                     raise ValueError('Not a tracked message')
                 msg = data
             else:
-                msg = Message(data, track=track)
+                msg = Frame(data, track=track)
             return _send_message(self.handle, msg, flags)
 
     cpdef object recv(self, int flags=0, copy=True, track=False):
@@ -627,7 +627,7 @@ cdef class Socket:
             message arrives.
         copy : bool
             Should the message be received in a copying or non-copying manner?
-            If False a Message object is returned, if True a string copy of
+            If False a Frame object is returned, if True a string copy of
             message is returned.
         track : bool
             Should the message be tracked for notification that ZMQ has
@@ -635,8 +635,8 @@ cdef class Socket:
 
         Returns
         -------
-        msg : str, Message
-            The returned message.  If `copy` is False, then it will be a Message,
+        msg : bytes, Frame
+            The returned message.  If `copy` is False, then it will be a Frame,
             otherwise a str.
             
         Raises
@@ -660,7 +660,7 @@ cdef class Socket:
         ----------
         msg_parts : iterable
             A sequence of messages to send as a multipart message. Each element
-            can be any sendable object (Message, bytes, buffer-providers)
+            can be any sendable object (Frame, bytes, buffer-providers)
         flags : int, optional
             Only the NOBLOCK flagis supported, SNDMORE is handled
             automatically.
@@ -705,7 +705,7 @@ cdef class Socket:
             message arrives.
         copy : bool, optional
             Should the message(s) be received in a copying or non-copying manner?
-            If False a Message object is returned for part, if True a string copy of
+            If False a Frame object is returned for part, if True a string copy of
             message is returned for each message part.
         track : bool, optional
             Should the message(s) be tracked for notification that ZMQ has
@@ -713,7 +713,7 @@ cdef class Socket:
         Returns
         -------
         msg_parts : list
-            A list of messages in the multipart message; either Messages or bytes,
+            A list of frames in the multipart message; either Frames or bytes,
             depending on `copy`.
         
         """

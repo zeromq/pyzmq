@@ -188,7 +188,7 @@ class TestSocket(BaseZMQTestCase):
         msg = b.recv_multipart()
         self.assertEquals(p2.done, True)
         self.assertEquals(msg, list(map(asbytes, ['something', 'else'])))
-        m = zmq.Message(asbytes("again"), track=True)
+        m = zmq.Frame(asbytes("again"), track=True)
         self.assertEquals(m.tracker.done, False)
         p1 = a.send(m, copy=False)
         p2 = a.send(m, copy=False)
@@ -208,7 +208,7 @@ class TestSocket(BaseZMQTestCase):
         time.sleep(0.1)
         self.assertEquals(p1.done, True)
         self.assertEquals(p2.done, True)
-        m = zmq.Message(asbytes('something'), track=False)
+        m = zmq.Frame(asbytes('something'), track=False)
         self.assertRaises(ValueError, a.send, m, copy=False, track=True)
         
 

@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from message cimport Message
+from message cimport Frame
 
 from context cimport Context
 

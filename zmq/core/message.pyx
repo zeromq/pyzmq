@@ -113,12 +113,12 @@ cdef class MessageTracker(object):
                 self.events.add(obj)
             elif isinstance(obj, MessageTracker):
                 self.peers.add(obj)
-            elif isinstance(obj, Message):
+            elif isinstance(obj, Frame):
                 if not obj.tracker:
                     raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
-                raise TypeError("Require Events or Messages, not %s"%type(obj))
+                raise TypeError("Require Events or Message Frames, not %s"%type(obj))
     
     @property
     def done(self):
@@ -181,14 +181,14 @@ cdef class MessageTracker(object):
             time.sleep(.001)
 
 
-cdef class Message:
-    """Message(data=None, track=False)
+cdef class Frame:
+    """Frame(data=None, track=False)
 
-    A Message class for non-copy send/recvs.
+    A zmq message Frame class for non-copy send/recvs.
 
     This class is only needed if you want to do non-copying send and recvs.
-    When you pass a string to this class, like ``Message(s)``, the 
-    ref-count of `s` is increased by two: once because the Message saves `s` as 
+    When you pass a string to this class, like ``Frame(s)``, the 
+    ref-count of `s` is increased by two: once because the Frame saves `s` as 
     an instance attribute and another because a ZMQ message is created that
     points to the buffer of `s`. This second ref-count increase makes sure
     that `s` lives until all messages that use it have been sent. Once 0MQ
@@ -245,7 +245,7 @@ cdef class Message:
         else:
             asbuffer_r(data, <void **>&data_c, &data_len_c)
         # We INCREF the *original* Python object (not self) and pass it
-        # as the hint below. This allows other copies of this Message
+        # as the hint below. This allows other copies of this Frame
         # object to take over the ref counting of data properly.
         hint = (data, self.tracker_event)
         Py_INCREF(hint)
@@ -318,17 +318,17 @@ cdef class Message:
     def __copy__(self):
         """Create a shallow copy of the message.
 
-        This does not copy the contents of the Message, just the pointer.
+        This does not copy the contents of the Frame, just the pointer.
         This will increment the 0MQ ref count of the message, but not
         the ref count of the Python object. That is only done once when
         the Python is first turned into a 0MQ message.
         """
         return self.fast_copy()
 
-    cdef Message fast_copy(self):
-        """Fast, cdef'd version of shallow copy of the message."""
-        cdef Message new_msg
-        new_msg = Message()
+    cdef Frame fast_copy(self):
+        """Fast, cdef'd version of shallow copy of the Frame."""
+        cdef Frame new_msg
+        new_msg = Frame()
         # This does not copy the contents, but just increases the ref-count 
         # of the zmq_msg by one.
         with nogil:
@@ -342,7 +342,7 @@ cdef class Message:
         if self._bytes is not None:
             new_msg._bytes = self._bytes
 
-        # Message copies share the tracker and tracker_event
+        # Frame copies share the tracker and tracker_event
         new_msg.tracker_event = self.tracker_event
         new_msg.tracker = self.tracker
 
@@ -397,5 +397,7 @@ cdef class Message:
             self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
 
+# legacy Message name
+Message = Frame
 
-__all__ = ['MessageTracker', 'Message']
+__all__ = ['MessageTracker', 'Frame', 'Message']
