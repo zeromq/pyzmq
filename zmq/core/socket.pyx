@@ -110,7 +110,7 @@ cdef inline Message _recv_message(void *handle, int flags=0, track=False):
     return msg
 
 cdef inline object _recv_copy(void *handle, int flags=0):
-    """Recieve a message and return a copy"""
+    """Receive a message and return a copy"""
     cdef zmq_msg_t zmq_msg
     with nogil:
         zmq_msg_init (&zmq_msg)

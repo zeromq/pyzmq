@@ -80,10 +80,10 @@ cdef class MessageTracker(object):
 
     A class for tracking if 0MQ is done using one or more messages.
 
-    When you send a 0MQ mesage, it is not sent immeidately. The 0MQ IO thread
-    send the message at some later time. Often you want to know when 0MQ has
+    When you send a 0MQ mesage, it is not sent immediately. The 0MQ IO thread
+    sends the message at some later time. Often you want to know when 0MQ has
     actually sent the message though. This is complicated by the fact that
-    a single 0MQ message can be sent multiple times using differen sockets.
+    a single 0MQ message can be sent multiple times using different sockets.
     This class allows you to track all of the 0MQ usages of a message.
 
     Parameters
@@ -134,7 +134,7 @@ cdef class MessageTracker(object):
     def wait(self, timeout=-1):
         """mt.wait(timeout=-1)
 
-        Wait for 0MQ to be done with the message, or until `timeout`.
+        Wait for 0MQ to be done with the message or until `timeout`.
 
         Parameters
         ----------
