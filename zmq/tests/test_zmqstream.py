@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
 #    Copyright (c) 2011 Brian Granger & Min Ragan-Kelley
