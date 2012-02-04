@@ -131,8 +131,8 @@ class ZMQStream(object):
             if callback is None, recv callbacks are disabled.
         copy : bool
             copy is passed directly to recv, so if copy is False,
-            callback will receive Message objects. If copy is True,
-            then callback will receive bytes/str objects.
+            callback will receive a list of message Frame objects. If copy is True,
+            then callback will receive a list of bytestrings.
         
         Returns : None
         """
