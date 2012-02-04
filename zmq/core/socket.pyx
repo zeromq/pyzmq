@@ -842,8 +842,8 @@ cdef class Socket:
             msg = self.recv(flags)
             return jsonapi.loads(msg)
     
-    def poll(self, timeout=None, flags=None):
-        """s.poll(timeout=None, flags=POLLIN|POLLERR)
+    def poll(self, timeout=None, flags=POLLIN):
+        """s.poll(timeout=None, flags=POLLIN)
         
         Poll the socket for events.  The default is to poll forever for incoming
         events.  Timeout is in milliseconds, if specified.
@@ -853,9 +853,9 @@ cdef class Socket:
         timeout : int [default: None]
             The timeout (in milliseconds) to wait for an event. If unspecified
             (or secified None), will wait forever for an event.
-        flags : bitfield (int) [default: any event]
-            The event flags to poll for (any combination of POLLIN|POLLOUT|POLLERR).
-            The default is to check for incoming events (POLLIN|POLLERR).
+        flags : bitfield (int) [default: POLLIN]
+            The event flags to poll for (any combination of POLLIN|POLLOUT).
+            The default is to check for incoming events (POLLIN).
         
         Returns
         -------
@@ -866,8 +866,6 @@ cdef class Socket:
         
         _check_closed(self, True)
         
-        if flags is None:
-            flags = POLLIN|POLLERR
         p = zmq.Poller()
         p.register(self, flags)
         evts = dict(p.poll(timeout))

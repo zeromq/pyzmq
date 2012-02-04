@@ -47,9 +47,7 @@ class TestZMQStream(TestCase):
         
         self.stream.on_send(lambda *args: None)
         self.stream.on_recv(lambda *args: None)
-        self.stream.on_err(lambda *args: None)
         self.assertRaises(AssertionError, self.stream.on_recv, 1)
         self.assertRaises(AssertionError, self.stream.on_send, 1)
-        self.assertRaises(AssertionError, self.stream.on_err, 1)
         self.assertRaises(AssertionError, self.stream.on_recv, zmq)
         

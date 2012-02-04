@@ -52,8 +52,6 @@ class ZMQStream(object):
         register a callback to be run every time the socket has something to receive
     * **on_send(callback):**
         register a callback to be run every time you call send
-    * **on_err(callback):**
-        register a callback to be run every time there is an error
     * **send(self, msg, flags=0, copy=False, callback=None):**
         perform a send that will trigger the callback
         if callback is passed, on_send is also called
@@ -66,8 +64,6 @@ class ZMQStream(object):
         turn off the recv callback
     * **stop_on_send():**
         turn off the send callback
-    * **stop_on_err():**
-        turn off the error callback
     
     All of which simply call ``on_<evt>(None)``.
     
@@ -93,7 +89,6 @@ class ZMQStream(object):
         self._recv_callback = None
         self._send_callback = None
         self._close_callback = None
-        self._errback = None
         self._recv_copy = False
         self._flushed = False
         
@@ -119,10 +114,6 @@ class ZMQStream(object):
     def stop_on_send(self):
         """Disable callback on sending."""
         return self.on_send(None)
-    
-    def stop_on_err(self):
-        """Disable callback on errors."""
-        return self.on_err(None)
     
     def on_recv(self, callback, copy=True):
         """Register a callback to be called when a message is ready to recv.
@@ -184,21 +175,6 @@ class ZMQStream(object):
         assert callback is None or callable(callback)
         self._send_callback = stack_context.wrap(callback)
         
-    def on_err(self, callback):
-        """register a callback to be called on POLLERR events
-        with no arguments.
-        
-        Parameters
-        ----------
-        
-        callback : callable
-            callback will be passed no arguments.
-        """
-        self._check_closed()
-        assert callback is None or callable(callback)
-        self._errback = stack_context.wrap(callback)
-        
-                
     def send(self, msg, flags=0, copy=False, track=False, callback=None):
         """Send a message, optionally also register a new callback for sends.
         See zmq.socket.send for details.
@@ -385,7 +361,7 @@ class ZMQStream(object):
         try:
             # dispatch events:
             if events & IOLoop.ERROR:
-                self._handle_error()
+                logging.error("got POLLERR event on ZMQStream, which doesn't make sense")
                 return
             if events & IOLoop.READ:
                 self._handle_recv()
@@ -446,14 +422,6 @@ class ZMQStream(object):
         
         # self.update_state()
     
-    def _handle_error(self):
-        """Handle a POLLERR event."""
-        logging.error("handling error..")
-        if self._errback is not None:
-            self._errback()
-        else:
-            raise zmq.ZMQError()
-
     def _check_closed(self):
         if not self.socket:
             raise IOError("Stream is closed")

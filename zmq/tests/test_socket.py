@@ -142,7 +142,25 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEquals(p.getsockopt(zmq.LINGER), 11)
-        
+    
+    def test_poll(self):
+        """test Socket.poll()"""
+        req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        # default flag is POLLIN, nobody has anything to recv:
+        self.assertEquals(req.poll(0), 0)
+        self.assertEquals(rep.poll(0), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT), zmq.POLLOUT)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT|zmq.POLLIN), zmq.POLLOUT)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        req.send('hi')
+        self.assertEquals(req.poll(0), 0)
+        self.assertEquals(rep.poll(1), zmq.POLLIN)
+        self.assertEquals(req.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT|zmq.POLLIN), 0)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), zmq.POLLIN)
+    
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
