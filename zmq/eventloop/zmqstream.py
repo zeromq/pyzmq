@@ -115,6 +115,14 @@ class ZMQStream(object):
         """Disable callback on sending."""
         return self.on_send2(None)
     
+    def stop_on_err(self):
+        """DEPRECATED, does nothing"""
+        logging.warn("on_err does nothing, and will be removed")
+    
+    def on_err(self, callback):
+        """DEPRECATED, does nothing"""
+        logging.warn("on_err does nothing, and will be removed")
+    
     def on_recv(self, callback, copy=True):
         """Register a callback for when a message is ready to recv
         
