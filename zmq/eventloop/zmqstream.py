@@ -109,16 +109,33 @@ class ZMQStream(object):
     
     def stop_on_recv(self):
         """Disable callback and automatic receiving."""
-        return self.on_recv(None)
+        return self.on_recv2(None)
     
     def stop_on_send(self):
         """Disable callback on sending."""
-        return self.on_send(None)
+        return self.on_send2(None)
     
     def on_recv(self, callback, copy=True):
+        """Register a callback for when a message is ready to recv
+        
+        DEPRECATED, use on_recv2
+        
+        The callback will be passed a single argument: the returned
+        result of socket.recv_multipart(copy=copy), a list of
+        bytestrings or zmq Frames, depending on `copy`.
+        
+        """
+        
+        if callback is None:
+            self.stop_on_recv()
+            return
+        
+        self.on_recv2(lambda stream, msg: callback(msg), copy=copy)
+    
+    def on_recv2(self, callback, copy=True):
         """Register a callback to be called when a message is ready to recv.
         There can be only one callback registered at a time, so each
-        call to on_recv replaces previously registered callbacks.
+        call to on_recv2 replaces previously registered callbacks.
         
         on_recv(None) disables recv event polling.
         
@@ -126,9 +143,10 @@ class ZMQStream(object):
         ----------
         
         callback : callable
-            callback must take exactly one argument, which will be a
-            list, as returned by socket.recv_multipart()
-            if callback is None, recv callbacks are disabled.
+            callback must take exactly two arguments. The first will be the
+            stream receiving the message, and the second will be a list, as
+            returned by socket.recv_multipart() if callback is None, recv
+            callbacks are disabled.
         copy : bool
             copy is passed directly to recv, so if copy is False,
             callback will receive a list of message Frame objects. If copy is True,
@@ -146,6 +164,17 @@ class ZMQStream(object):
             self._add_io_state(self.io_loop.READ)
     
     def on_send(self, callback):
+        """Register a callback to be called on each send
+        
+        DEPRECATED: use on_send2
+        """
+        if callback is None:
+            self.stop_on_send()
+        else:
+            self.on_send2(lambda stream, msg, status: callback(msg, status))
+        
+    
+    def on_send2(self, callback):
         """Register a callback to be called on each send
         There will be two arguments: the message being sent (always a list), 
         and the return result of socket.send_multipart(msg).
@@ -189,10 +218,10 @@ class ZMQStream(object):
         self._send_queue.put((msg, kwargs))
         callback = callback or self._send_callback
         if callback is not None:
-            self.on_send(callback)
+            self.on_send2(callback)
         else:
             # noop callback
-            self.on_send(lambda *args: None)
+            self.on_send2(lambda *args: None)
         self._add_io_state(self.io_loop.WRITE)
     
     def send_unicode(self, u, flags=0, encoding='utf-8', callback=None):
@@ -397,7 +426,7 @@ class ZMQStream(object):
             if self._recv_callback:
                 callback = self._recv_callback
                 # self._recv_callback = None
-                self._run_callback(callback, msg)
+                self._run_callback(callback, self, msg)
                 
         # self.update_state()
         
@@ -418,7 +447,7 @@ class ZMQStream(object):
             status = e
         if self._send_callback:
             callback = self._send_callback
-            self._run_callback(callback, msg, status)
+            self._run_callback(callback, self, msg, status)
         
         # self.update_state()
     
