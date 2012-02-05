@@ -48,13 +48,13 @@ class ZMQStream(object):
     
     Methods:
     
-    * **on_recv(callback,copy=True):**
+    * **on_recv2(callback, copy=True):**
         register a callback to be run every time the socket has something to receive
-    * **on_send(callback):**
+    * **on_send2(callback):**
         register a callback to be run every time you call send
     * **send(self, msg, flags=0, copy=False, callback=None):**
         perform a send that will trigger the callback
-        if callback is passed, on_send is also called
+        if callback is passed, on_send is also called.
         
         There are also send_multipart(), send_json(), send_pyobj()
     
@@ -65,7 +65,7 @@ class ZMQStream(object):
     * **stop_on_send():**
         turn off the send callback
     
-    All of which simply call ``on_<evt>(None)``.
+    Which simply call ``on_<evt>(None)``.
     
     The entire socket interface, excluding direct recv methods, is also
     provided, primarily through direct-linking the methods.
@@ -124,14 +124,29 @@ class ZMQStream(object):
         logging.warn("on_err does nothing, and will be removed")
     
     def on_recv(self, callback, copy=True):
-        """Register a callback for when a message is ready to recv
+        """Register a callback for when a message is ready to recv.
         
-        DEPRECATED, use on_recv2
+        There can be only one callback registered at a time, so each
+        call to `on_recv2` or `on_recv` replaces previously registered callbacks.
         
-        The callback will be passed a single argument: the returned
-        result of socket.recv_multipart(copy=copy), a list of
-        bytestrings or zmq Frames, depending on `copy`.
+        on_recv(None) disables recv event polling.
         
+        Use on_recv2(callback) instead, to register a callback that will receive
+        both this ZMQStream and the message, instead of just the message.
+        
+        Parameters
+        ----------
+        
+        callback : callable
+            callback must take exactly one argument, which will be a
+            list, as returned by socket.recv_multipart()
+            if callback is None, recv callbacks are disabled.
+        copy : bool
+            copy is passed directly to recv, so if copy is False,
+            callback will receive Message objects. If copy is True,
+            then callback will receive bytes/str objects.
+        
+        Returns : None
         """
         
         if callback is None:
@@ -141,11 +156,19 @@ class ZMQStream(object):
         self.on_recv2(lambda stream, msg: callback(msg), copy=copy)
     
     def on_recv2(self, callback, copy=True):
-        """Register a callback to be called when a message is ready to recv.
-        There can be only one callback registered at a time, so each
-        call to on_recv2 replaces previously registered callbacks.
+        """Register a callback for when a message is ready to recv.
         
-        on_recv(None) disables recv event polling.
+        There will be two arguments::
+        
+            callback(stream, msg)
+            
+        * `stream` will be this ZMQStream object
+        * `msg` will be the multipart message (always a list) just received
+        
+        There can be only one callback registered at a time, so each
+        call to `on_recv2` or `on_recv` replaces previously registered callbacks.
+        
+        `on_recv2(None)` disables recv event polling.
         
         Parameters
         ----------
@@ -153,8 +176,9 @@ class ZMQStream(object):
         callback : callable
             callback must take exactly two arguments. The first will be the
             stream receiving the message, and the second will be a list, as
-            returned by socket.recv_multipart() if callback is None, recv
-            callbacks are disabled.
+            returned by socket.recv_multipart().
+            If callback is None, recv callbacks are disabled, and messages
+            will be queued up in memory.
         copy : bool
             copy is passed directly to recv, so if copy is False,
             callback will receive a list of message Frame objects. If copy is True,
@@ -174,26 +198,24 @@ class ZMQStream(object):
     def on_send(self, callback):
         """Register a callback to be called on each send
         
-        DEPRECATED: use on_send2
-        """
-        if callback is None:
-            self.stop_on_send()
-        else:
-            self.on_send2(lambda stream, msg, status: callback(msg, status))
+        There will be two arguments::
         
-    
-    def on_send2(self, callback):
-        """Register a callback to be called on each send
-        There will be two arguments: the message being sent (always a list), 
-        and the return result of socket.send_multipart(msg).
+            callback(msg, status)
+        
+        * `msg` will be the list of sendable objects that was just sent
+        * `status` will be the return result of socket.send_multipart(msg) -
+          MessageTracker or None.
         
         Non-copying sends return a MessageTracker object whose
-        `done` attribute will be True when the send is complete. 
+        `done` attribute will be True when the send is complete.
         This allows users to track when an object is safe to write to
         again.
         
         The second argument will always be None if copy=True
         on the send.
+        
+        Use on_send2(callback) to register a callback that will be passed
+        this ZMQStream as the first argument, in addition to the other two.
         
         on_send(None) disables recv event polling.
         
@@ -202,9 +224,47 @@ class ZMQStream(object):
         
         callback : callable
             callback must take exactly two arguments, which will be
-            There will be two arguments: the message being sent (always a list), 
-            and the return result of socket.send_multipart(msg) - 
+            the message being sent (always a list),
+            and the return result of socket.send_multipart(msg) -
             MessageTracker or None.
+            
+            if callback is None, send callbacks are disabled.
+        """
+        
+        if callback is None:
+            self.stop_on_send()
+        else:
+            self.on_send2(lambda stream, msg, status: callback(msg, status))
+        
+    
+    def on_send2(self, callback):
+        """Register a callback to be called on each send
+        
+        There will be three arguments::
+        
+            callback(stream, msg, status)
+            
+        * `stream` will be this ZMQStream object
+        * `msg` will be the list of sendable objects that was just sent
+        * `status` will be the return result of socket.send_multipart(msg) -
+          MessageTracker or None.
+        
+        Non-copying sends return a MessageTracker object whose
+        `done` attribute will be True when the send is complete.
+        This allows users to track when a buffer is safe to write to
+        again.
+        
+        The third argument will always be None if copy=True
+        on the send.
+        
+        on_send2(None) disables recv event polling.
+        
+        Parameters
+        ----------
+        
+        callback : callable
+            callback must take exactly three arguments:
+                (stream, msg, status)
             
             if callback is None, send callbacks are disabled.
         """
