@@ -269,8 +269,10 @@ cdef class Socket:
         ----------
         option : int
             The option to set.  Available values will depend on your
-            version of libzmq.  Examples include:
+            version of libzmq.  Examples include::
+            
                 zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
+        
         optval : int or bytes
             The value of the option to set.
         """
@@ -332,7 +334,8 @@ cdef class Socket:
         ----------
         option : int
             The option to get.  Available values will depend on your
-            version of libzmq.  Examples include:
+            version of libzmq.  Examples include::
+            
                 zmq.IDENTITY, HWM, LINGER, FD, EVENTS
 
         Returns
