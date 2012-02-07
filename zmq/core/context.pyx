@@ -195,7 +195,7 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XSUB, XPUB.
+            REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.
         """
         # import here to prevent circular import
         from zmq.core.socket import Socket
@@ -203,10 +203,13 @@ cdef class Context:
             raise ZMQError(ENOTSUP)
         s = Socket(self, socket_type)
         for opt, value in self.sockopts.iteritems():
-            if opt == SUBSCRIBE and socket_type != SUB:
-                continue
-            else:
+            try:
                 s.setsockopt(opt, value)
+            except ZMQError:
+                # ignore ZMQErrors, which are likely for socket options
+                # that do not apply to a particular socket type, e.g.
+                # SUBSCRIBE for non-SUB sockets.
+                pass
         return s
     
     def __setattr__(self, key, value):
