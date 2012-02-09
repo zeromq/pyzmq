@@ -96,7 +96,7 @@ cdef inline _check_closed(Socket s, bint raise_notsup):
             raise ZMQError()
     return False
 
-cdef inline Frame _recv_message(void *handle, int flags=0, track=False):
+cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
     cdef Frame msg
@@ -122,7 +122,7 @@ cdef inline object _recv_copy(void *handle, int flags=0):
         zmq_msg_close(&zmq_msg)
     return msg_bytes
 
-cdef inline object _send_message(void *handle, Frame msg, int flags=0):
+cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     """Send a Frame on this socket in a non-copy manner."""
     cdef int rc
     cdef Frame msg_copy
@@ -614,7 +614,7 @@ cdef class Socket:
                 msg = data
             else:
                 msg = Frame(data, track=track)
-            return _send_message(self.handle, msg, flags)
+            return _send_frame(self.handle, msg, flags)
 
     cpdef object recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True, track=False)
@@ -639,8 +639,8 @@ cdef class Socket:
         Returns
         -------
         msg : bytes, Frame
-            The returned message.  If `copy` is False, then it will be a Frame,
-            otherwise a str.
+            The received message frame.  If `copy` is False, then it will be a Frame,
+            otherwise it will be bytes.
             
         Raises
         ------
@@ -652,7 +652,7 @@ cdef class Socket:
         if copy:
             return _recv_copy(self.handle, flags)
         else:
-            frame = _recv_message(self.handle, flags, track)
+            frame = _recv_frame(self.handle, flags, track)
             if self.getsockopt(zmq.RCVMORE):
                 frame.flags |= zmq.SNDMORE
             return frame
@@ -660,23 +660,22 @@ cdef class Socket:
     def send_multipart(self, msg_parts, int flags=0, copy=True, track=False, prefix=None):
         """s.send_multipart(msg_parts, flags=0, copy=True, track=False, prefix=None)
 
-        Send a sequence of messages as a multipart message.
+        Send a sequence of buffers as a multipart message.
 
         Parameters
         ----------
         msg_parts : iterable
-            A sequence of messages to send as a multipart message. Each element
+            A sequence of objects to send as a multipart message. Each element
             can be any sendable object (Frame, bytes, buffer-providers)
         flags : int, optional
-            Only the NOBLOCK flagis supported, SNDMORE is handled
-            automatically.
+            SNDMORE is handled automatically for frames before the last.
         copy : bool, optional
-            Should the message(s) be sent in a copying or non-copying manner.
+            Should the frame(s) be sent in a copying or non-copying manner.
         track : bool, optional
-            Should the message(s) be tracked for notification that ZMQ has
+            Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
         prefix : iterable
-            A sequence of messages to send as a 0MQ routing prefix. With the removal
+            A sequence of frames to send as a 0MQ routing prefix. With the removal
             of LABELs from libzmq3, `prefix` has no effect beyond being prepended
             to msg_parts.
         
@@ -700,7 +699,7 @@ cdef class Socket:
     def recv_multipart(self, int flags=0, copy=True, track=False):
         """s.recv_multipart(flags=0, copy=True, track=False)
 
-        Receive a multipart message as a list of messages.
+        Receive a multipart message as a list of bytes or Frame objects.
 
         Parameters
         ----------
@@ -710,11 +709,11 @@ cdef class Socket:
             If NOBLOCK is not set, then this method will block until a
             message arrives.
         copy : bool, optional
-            Should the message(s) be received in a copying or non-copying manner?
-            If False a Frame object is returned for part, if True a string copy of
-            message is returned for each message part.
+            Should the message frame(s) be received in a copying or non-copying manner?
+            If False a Frame object is returned for each part, if True a copy of
+            the bytes is made for each frame.
         track : bool, optional
-            Should the message(s) be tracked for notification that ZMQ has
+            Should the message frame(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
         Returns
         -------
