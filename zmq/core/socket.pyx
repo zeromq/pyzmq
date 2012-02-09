@@ -284,7 +284,7 @@ cdef class Socket:
 
         _check_closed(self, True)
         if isinstance(optval, unicode):
-            raise TypeError("unicode not allowed, use setsockopt_unicode")
+            raise TypeError("unicode not allowed, use setsockopt_string")
 
         if option in constants.bytes_sockopts:
             if not isinstance(optval, bytes):
@@ -388,8 +388,8 @@ cdef class Socket:
 
         return result
     
-    def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
-        """s.setsockopt_unicode(option, optval, encoding='utf-8')
+    def setsockopt_string(self, int option, optval, encoding='utf-8'):
+        """s.setsockopt_string(option, optval, encoding='utf-8')
 
         Set socket options with a unicode object it is simply a wrapper
         for setsockopt to protect from encoding ambiguity.
@@ -401,7 +401,7 @@ cdef class Socket:
         option : int
             The name of the option to set. Can be any of: SUBSCRIBE, 
             UNSUBSCRIBE, IDENTITY
-        optval : unicode
+        optval : unicode string (unicode on py2, str on py3)
             The value of the option to set.
         encoding : str
             The encoding to be used, default is utf8
@@ -410,8 +410,8 @@ cdef class Socket:
             raise TypeError("unicode strings only")
         return self.setsockopt(option, optval.encode(encoding))
     
-    def getsockopt_unicode(self, int option, encoding='utf-8'):
-        """s.getsockopt_unicode(option, encoding='utf-8')
+    def getsockopt_string(self, int option, encoding='utf-8'):
+        """s.getsockopt_string(option, encoding='utf-8')
 
         Get the value of a socket option.
 
@@ -425,13 +425,16 @@ cdef class Socket:
 
         Returns
         -------
-        optval : unicode
+        optval : unicode string (unicode on py2, str on py3)
             The value of the option as a unicode string.
         """
         
         if option not in constants.bytes_sockopts:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
+    
+    setsockopt_unicode = setsockopt_string
+    getsockopt_unicode = getsockopt_string
     
     def __setattr__(self, key, value):
         """set sockopts by attr"""
@@ -730,14 +733,17 @@ cdef class Socket:
         
         return parts
 
-    def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
-        """s.send_unicode(u, flags=0, copy=False, encoding='utf-8')
+    def send_string(self, u, int flags=0, copy=False, encoding='utf-8'):
+        """s.send_string(u, flags=0, copy=False, encoding='utf-8')
 
-        Send a Python unicode object as a message with an encoding.
+        Send a Python unicode string as a message with an encoding.
+        
+        0MQ communicates with raw bytes, so you must encode/decode
+        text (unicode on py2, str on py3) around 0MQ.
 
         Parameters
         ----------
-        u : Python unicode object
+        u : Python unicode string (unicode on py2, str on py3)
             The unicode string to send.
         flags : int, optional
             Any valid send flag.
@@ -748,10 +754,10 @@ cdef class Socket:
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy)
     
-    def recv_unicode(self, int flags=0, encoding='utf-8'):
-        """s.recv_unicode(flags=0, encoding='utf-8')
+    def recv_string(self, int flags=0, encoding='utf-8'):
+        """s.recv_string(flags=0, encoding='utf-8')
 
-        Receive a unicode string, as sent by send_unicode.
+        Receive a unicode string, as sent by send_string.
         
         Parameters
         ----------
@@ -762,11 +768,14 @@ cdef class Socket:
 
         Returns
         -------
-        s : unicode string
-            The Python unicode string that arrives as message bytes.
+        s : unicode string (unicode on py2, str on py3)
+            The Python unicode string that arrives as encoded bytes.
         """
         msg = self.recv(flags=flags, copy=False)
         return codecs.decode(msg.bytes, encoding)
+    
+    send_unicode = send_string
+    recv_unicode = recv_string
     
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """s.send_pyobj(obj, flags=0, protocol=-1)
