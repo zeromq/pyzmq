@@ -344,14 +344,15 @@ class TestFrame(BaseZMQTestCase):
             self.assertEquals(A.shape, B.shape)
             self.assertTrue((A==B).all())
     
-    def test_frame_flags(self):
+    def test_frame_more(self):
+        """test Frame.more attribute"""
         frame = zmq.Frame("hello")
-        self.assertEquals(frame.flags, 0)
+        self.assertFalse(frame.more)
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         a.send_multipart(['hi', 'there'])
         frame = self.recv(b, copy=False)
-        self.assertEquals(frame.flags, zmq.SNDMORE)
+        self.assertTrue(frame.more)
         frame = self.recv(b, copy=False)
-        self.assertEquals(frame.flags, 0)
+        self.assertFalse(frame.more)
         
 

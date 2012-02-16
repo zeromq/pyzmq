@@ -214,8 +214,8 @@ cdef class Frame:
         cdef Py_ssize_t data_len_c=0
         cdef object hint
 
-        # init flags to 0
-        self.flags = 0
+        # init more as False
+        self.more = False
 
         # Save the data object in case the user wants the the data as a str.
         self._data = data
