@@ -22,6 +22,7 @@
 
 from zmq.rpc.simplerpc import RPCService, rpc_method
 from zmq.eventloop import ioloop
+from zmq.utils import jsonapi
 
 class Echo(RPCService):
 
@@ -55,7 +56,10 @@ class Math(RPCService):
 
 if __name__ == '__main__':
     # Multiple RPCService instances can be run in a single process
-    echo = Echo()
+
+    # Custom serializer/deserializer functions can be passed in. The server
+    # side ones must match.
+    echo = Echo(serializer=jsonapi.dumps,deserializer=jsonapi.loads)
     echo.bind('tcp://127.0.0.1:5555')
     # We create two Math services to simulate load balancing. A client can
     # connect to both of these services and requests will be load balanced.

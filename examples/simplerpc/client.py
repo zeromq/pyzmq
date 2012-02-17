@@ -21,9 +21,12 @@
 #-----------------------------------------------------------------------------
 
 from zmq.rpc.simplerpc import RPCServiceProxy
+from zmq.utils import jsonapi
 
 if __name__ == '__main__':
-    echo = RPCServiceProxy()
+    # Custom serializer/deserializer functions can be passed in. The server
+    # side ones must match.
+    echo = RPCServiceProxy(serializer=jsonapi.dumps,deserializer=jsonapi.loads)
     echo.connect('tcp://127.0.0.1:5555')
     print "Echoing: ", echo.echo("Hi there")
 

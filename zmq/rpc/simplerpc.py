@@ -74,11 +74,10 @@ from zmq.eventloop.ioloop import IOLoop
 #-----------------------------------------------------------------------------
 
 
-class RPCService(object):
-    """An RPC service that takes requests over a ROUTER socket."""
+class RPCBase(object):
 
-    def __init__(self, loop=None, context=None):
-        """Create an RPCService.
+    def __init__(self, loop=None, context=None, serializer=None, deserializer=None):
+        """Base class for RPC service and proxy.
 
         Parameters
         ==========
@@ -88,67 +87,28 @@ class RPCService(object):
         context : Context
             An existing Context instance, if not passed, the Context.instance()
             will be used.
+        serializer : callable
+            A callable that will be used to serialize Python objects. The
+            default is pickle.dumps, but something like zmq.utils.jsonapi.dumps
+            could also be used.
+        deserializer : callable
+            A callable that will be used to deserialize Python objects. The
+            default is pickle.loads, but something like zmq.utils.jsonapi.loads
+            could also be used.
         """
         self.loop = loop if loop is not None else IOLoop.instance()
         self.context = context if context is not None else zmq.Context.instance()
         self.socket = None
         self.stream = None
+        self._serializer = serializer if serializer is not None else pickle.dumps
+        self._deserializer = deserializer if deserializer is not None else pickle.loads
         self.reset()
 
-    def _create_socket(self):
-        self.socket = self.context.socket(zmq.ROUTER)
-        self.stream = ZMQStream(self.socket, self.loop)
-        self.stream.on_recv(self._handle_request)
+    def _serialize(self, o):
+        return self._serializer(o)
 
-    def _handle_request(self, msg_list):
-        """Handle an incoming request.
-
-        The request is received as a multipart message:
-
-        [ident, msg_id, method, pickle.dumps(args), pickle.dumps(kwargs)]
-
-        The reply depends on if the call was successful or not:
-
-        [ident, msg_id, 'SUCCESS', pickle.dumps(result)]
-        [ident, msg_id, 'FAILURE', ename, evalue, traceback]
-
-        Here the (ename, evalue, traceback) are utf-8 encoded unicode.
-        """
-        self.ident = msg_list[0]
-        self.msg_id = msg_list[1]
-        method = msg_list[2]
-        args = pickle.loads(msg_list[3])
-        kwargs = pickle.loads(msg_list[4])
-
-        # Find and call the actual handler for message.
-        handler = getattr(self, method, None)
-        if handler is not None and getattr(handler, 'is_rpc_method', False):
-            try:
-                result = handler(*args, **kwargs)
-            except:
-                self._send_error()
-            else:
-                try:
-                    presult = pickle.dumps(result)
-                except:
-                    self._send_error()
-                else:
-                    self.stream.send(self.ident, zmq.SNDMORE)
-                    self.stream.send(self.msg_id, zmq.SNDMORE)
-                    self.stream.send(b'SUCCESS', zmq.SNDMORE)
-                    self.stream.send(presult)
-        else:
-            logging.error('Unknown RPC method: %s' % method)
-
-    def _send_error(self):
-        """Send an error reply."""
-        etype, evalue, tb = sys.exc_info()
-        self.stream.send(self.ident, zmq.SNDMORE)
-        self.stream.send(self.msg_id, zmq.SNDMORE)
-        self.stream.send(b'FAILURE', zmq.SNDMORE)
-        self.stream.send_unicode(unicode(etype.__name__), zmq.SNDMORE)
-        self.stream.send_unicode(unicode(evalue), zmq.SNDMORE)
-        self.stream.send_unicode(unicode(traceback.format_exc(tb)))
+    def _deserialize(self, o):
+        return self._deserializer(o)
 
     #-------------------------------------------------------------------------
     # Public API
@@ -172,6 +132,65 @@ class RPCService(object):
         self.socket.connect(url)
 
 
+class RPCService(RPCBase):
+    """An RPC service that takes requests over a ROUTER socket."""
+
+    def _create_socket(self):
+        self.socket = self.context.socket(zmq.ROUTER)
+        self.stream = ZMQStream(self.socket, self.loop)
+        self.stream.on_recv(self._handle_request)
+
+    def _handle_request(self, msg_list):
+        """Handle an incoming request.
+
+        The request is received as a multipart message:
+
+        [ident, msg_id, method, pickle.dumps(args), pickle.dumps(kwargs)]
+
+        The reply depends on if the call was successful or not:
+
+        [ident, msg_id, 'SUCCESS', pickle.dumps(result)]
+        [ident, msg_id, 'FAILURE', ename, evalue, traceback]
+
+        Here the (ename, evalue, traceback) are utf-8 encoded unicode.
+        """
+        self.ident = msg_list[0]
+        self.msg_id = msg_list[1]
+        method = msg_list[2]
+        args = self._deserialize(msg_list[3])
+        kwargs = self._deserialize(msg_list[4])
+
+        # Find and call the actual handler for message.
+        handler = getattr(self, method, None)
+        if handler is not None and getattr(handler, 'is_rpc_method', False):
+            try:
+                result = handler(*args, **kwargs)
+            except:
+                self._send_error()
+            else:
+                try:
+                    presult = self._serialize(result)
+                except:
+                    self._send_error()
+                else:
+                    self.stream.send(self.ident, zmq.SNDMORE)
+                    self.stream.send(self.msg_id, zmq.SNDMORE)
+                    self.stream.send(b'SUCCESS', zmq.SNDMORE)
+                    self.stream.send(presult)
+        else:
+            logging.error('Unknown RPC method: %s' % method)
+
+    def _send_error(self):
+        """Send an error reply."""
+        etype, evalue, tb = sys.exc_info()
+        self.stream.send(self.ident, zmq.SNDMORE)
+        self.stream.send(self.msg_id, zmq.SNDMORE)
+        self.stream.send(b'FAILURE', zmq.SNDMORE)
+        self.stream.send_unicode(unicode(etype.__name__), zmq.SNDMORE)
+        self.stream.send_unicode(unicode(evalue), zmq.SNDMORE)
+        self.stream.send_unicode(unicode(traceback.format_exc(tb)))
+
+
 def rpc_method(f):
     """A decorator for use in declaring a method as an rpc method.
 
@@ -190,26 +209,8 @@ def rpc_method(f):
 #-----------------------------------------------------------------------------
 
 
-class RPCServiceProxyBase(object):
+class RPCServiceProxyBase(RPCBase):
     """A service proxy to for talking to an RPCService."""
-
-    def __init__(self, loop=None, context=None):
-        """Create an RPCServiceProxy.
-
-        Parameters
-        ==========
-        loop : IOLoop
-            An existing IOLoop instance, if not passed, then IOLoop.instance()
-            will be used.
-        context : Context
-            An existing Context instance, if not passed, the Context.instance()
-            will be used.
-        """
-        self.loop = loop if loop is not None else IOLoop.instance()
-        self.context = context if context is not None else zmq.Context.instance()
-        self.socket = None
-        self.stream = None
-        self.reset()
 
     def _create_socket(self):
         self.socket = self.context.socket(zmq.DEALER)
@@ -219,33 +220,15 @@ class RPCServiceProxyBase(object):
     def _init_stream(self):
         pass
 
-    #-------------------------------------------------------------------------
-    # Public API
-    #-------------------------------------------------------------------------
-
-    def reset(self):
-        """Reset the socket/stream."""
-        if isinstance(self.socket, zmq.Socket):
-            self.socket.close()
-        self._create_socket()
-        self.urls = []
-
-    def bind(self, url):
-        """Bind the service proxy to url of the form proto://ip:port."""
-        self.urls.append(url)
-        self.socket.bind(url)
-
-    def connect(self, url):
-        """Connect the service to a url of the form proto://ip:port."""
-        self.urls.append(url)
-        self.socket.connect(url)
-
 
 class AsyncRPCServiceProxy(RPCServiceProxyBase):
     """An asynchronous service proxy."""
 
-    def __init__(self, loop=None, context=None):
-        super(AsyncRPCServiceProxy, self).__init__(loop=loop, context=context)
+    def __init__(self, loop=None, context=None, serializer=None, deserializer=None):
+        super(AsyncRPCServiceProxy, self).__init__(
+            loop=loop, context=context,
+            serializer=serializer, deserializer=deserializer
+        )
         self._callbacks = {}
 
     def _init_stream(self):
@@ -256,7 +239,7 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         msg_id = msg_list[0]
         status = msg_list[1]
         if status == b'SUCCESS':
-            result = pickle.loads(msg_list[2])
+            result = self._deserialize(msg_list[2])
         elif status == b'FAILURE':
             ename = msg_list[2].decode('utf-8')
             evalue = msg_list[3].decode('utf-8')
@@ -296,8 +279,8 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         if not self._ready:
             raise RuntimeError('bind or connect must be called first')
         method = bytes(method)
-        pargs = pickle.dumps(args)
-        pkwargs = pickle.dumps(kwargs)
+        pargs = self._serialize(args)
+        pkwargs = self._serialize(kwargs)
         msg_id = bytes(uuid.uuid4())
         self.stream.send(msg_id, zmq.SNDMORE)
         self.stream.send(method, zmq.SNDMORE)
@@ -330,8 +313,8 @@ class RPCServiceProxy(RPCServiceProxyBase):
         if not self._ready:
             raise RuntimeError('bind or connect must be called first')
         method = bytes(method)
-        pargs = pickle.dumps(args)
-        pkwargs = pickle.dumps(kwargs)
+        pargs = self._serialize(args)
+        pkwargs = self._serialize(kwargs)
         msg_id = bytes(uuid.uuid4())
         self.socket.send(msg_id, zmq.SNDMORE)
         self.socket.send(method, zmq.SNDMORE)
@@ -341,7 +324,7 @@ class RPCServiceProxy(RPCServiceProxyBase):
         msg_id = msg_list[0]
         status = msg_list[1]
         if status == b'SUCCESS':
-            result = pickle.loads(msg_list[2])
+            result = self._deserialize(msg_list[2])
             return result
         elif status == b'FAILURE':
             ename = msg_list[2].decode('utf-8')
