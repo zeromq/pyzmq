@@ -9,7 +9,7 @@ Example
 
 To create a simple service::
 
-    from zqm.rpc.simplerpc import RPCService, rpc_method
+    from zmq.rpc.simplerpc import RPCService, rpc_method
 
     class Echo(RPCService):
 
@@ -78,37 +78,29 @@ class RPCService(object):
     """An RPC service that takes requests over a ROUTER socket."""
 
     def __init__(self, loop=None, context=None):
+        """Create an RPCService.
+
+        Parameters
+        ==========
+        loop : IOLoop
+            An existing IOLoop instance, if not passed, then IOLoop.instance()
+            will be used.
+        context : Context
+            An existing Context instance, if not passed, the Context.instance()
+            will be used.
+        """
         self.loop = loop if loop is not None else IOLoop.instance()
         self.context = context if context is not None else zmq.Context.instance()
-        self._ready = False
+        self.socket = None
+        self.stream = None
+        self.reset()
 
-    def _split_url(self):
-        proto, ip, port = self.url.split(':')
-        self.proto = proto
-        self.ip = ip.lstrip('/')
-        self.port = int(port)
-
-    def bind(self, url):
-        """Bind the service to proto://ip:port."""
-        self.url = url
-        self._split_url()
+    def _create_socket(self):
         self.socket = self.context.socket(zmq.ROUTER)
-        self.socket.bind(self.url)
         self.stream = ZMQStream(self.socket, self.loop)
-        self.stream.on_recv(self.handle_request)
-        self._ready = True
+        self.stream.on_recv(self._handle_request)
 
-    def connect(self, url):
-        """Connect the service to proto://ip:port."""
-        self.url = url
-        self._split_url()
-        self.socket = self.context.socket(zmq.ROUTER)
-        self.socket.connect(self.url)
-        self.stream = ZMQStream(self.socket, self.loop)
-        self.stream.on_recv(self.handle_request)
-        self._ready = True
-
-    def handle_request(self, msg_list):
+    def _handle_request(self, msg_list):
         """Handle an incoming request.
 
         The request is received as a multipart message:
@@ -134,12 +126,12 @@ class RPCService(object):
             try:
                 result = handler(*args, **kwargs)
             except:
-                self.send_error()
+                self._send_error()
             else:
                 try:
                     presult = pickle.dumps(result)
                 except:
-                    self.send_error()
+                    self._send_error()
                 else:
                     self.stream.send(self.ident, zmq.SNDMORE)
                     self.stream.send(self.msg_id, zmq.SNDMORE)
@@ -148,7 +140,7 @@ class RPCService(object):
         else:
             logging.error('Unknown RPC method: %s' % method)
 
-    def send_error(self):
+    def _send_error(self):
         """Send an error reply."""
         etype, evalue, tb = sys.exc_info()
         self.stream.send(self.ident, zmq.SNDMORE)
@@ -158,14 +150,28 @@ class RPCService(object):
         self.stream.send_unicode(unicode(evalue), zmq.SNDMORE)
         self.stream.send_unicode(unicode(traceback.format_exc(tb)))
 
-    def start(self):
-        """Start the service."""
-        if self._ready:
-            self.loop.start()
-        else:
-            raise RuntimeError('bind or connect must be called before start')
+    #-------------------------------------------------------------------------
+    # Public API
+    #-------------------------------------------------------------------------
 
-    
+    def reset(self):
+        """Reset the socket/stream."""
+        if isinstance(self.socket, zmq.Socket):
+            self.socket.close()
+        self._create_socket()
+        self.urls = []
+
+    def bind(self, url):
+        """Bind the service to a url of the form proto://ip:port."""
+        self.urls.append(url)
+        self.socket.bind(url)
+
+    def connect(self, url):
+        """Connect the service to a url of the form proto://ip:port."""
+        self.urls.append(url)
+        self.socket.connect(url)
+
+
 def rpc_method(f):
     """A decorator for use in declaring a method as an rpc method.
 
@@ -188,38 +194,51 @@ class RPCServiceProxyBase(object):
     """A service proxy to for talking to an RPCService."""
 
     def __init__(self, loop=None, context=None):
+        """Create an RPCServiceProxy.
+
+        Parameters
+        ==========
+        loop : IOLoop
+            An existing IOLoop instance, if not passed, then IOLoop.instance()
+            will be used.
+        context : Context
+            An existing Context instance, if not passed, the Context.instance()
+            will be used.
+        """
         self.loop = loop if loop is not None else IOLoop.instance()
         self.context = context if context is not None else zmq.Context.instance()
-        self._ready = False
+        self.socket = None
+        self.stream = None
+        self.reset()
 
-    def _split_url(self):
-        proto, ip, port = self.url.split(':')
-        self.proto = proto
-        self.ip = ip.lstrip('/')
-        self.port = int(port)
+    def _create_socket(self):
+        self.socket = self.context.socket(zmq.DEALER)
+        self.socket.setsockopt(zmq.IDENTITY, bytes(uuid.uuid4()))
+        self._init_stream()
+
+    def _init_stream(self):
+        pass
+
+    #-------------------------------------------------------------------------
+    # Public API
+    #-------------------------------------------------------------------------
+
+    def reset(self):
+        """Reset the socket/stream."""
+        if isinstance(self.socket, zmq.Socket):
+            self.socket.close()
+        self._create_socket()
+        self.urls = []
 
     def bind(self, url):
-        """Bind the service proxy to proto://ip:port."""
-        self.url = url
-        self._split_url()
-        self.socket = self.context.socket(zmq.DEALER)
-        self.socket.bind(self.url)
-        self.socket.setsockopt(zmq.IDENTITY, bytes(uuid.uuid4()))
-        self.init_stream()
-        self._ready = True
+        """Bind the service proxy to url of the form proto://ip:port."""
+        self.urls.append(url)
+        self.socket.bind(url)
 
     def connect(self, url):
-        """Connect the service to proto://ip:port."""
-        self.url = url
-        self._split_url()
-        self.socket = self.context.socket(zmq.DEALER)
-        self.socket.connect(self.url)
-        self.socket.setsockopt(zmq.IDENTITY, bytes(uuid.uuid4()))
-        self.init_stream()
-        self._ready = True
-
-    def init_stream(self):
-        pass
+        """Connect the service to a url of the form proto://ip:port."""
+        self.urls.append(url)
+        self.socket.connect(url)
 
 
 class AsyncRPCServiceProxy(RPCServiceProxyBase):
@@ -229,9 +248,34 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         super(AsyncRPCServiceProxy, self).__init__(loop=loop, context=context)
         self._callbacks = {}
 
-    def init_stream(self):
+    def _init_stream(self):
         self.stream = ZMQStream(self.socket, self.loop)
-        self.stream.on_recv(self.handle_reply)
+        self.stream.on_recv(self._handle_reply)
+
+    def _handle_reply(self, msg_list):
+        msg_id = msg_list[0]
+        status = msg_list[1]
+        if status == b'SUCCESS':
+            result = pickle.loads(msg_list[2])
+        elif status == b'FAILURE':
+            ename = msg_list[2].decode('utf-8')
+            evalue = msg_list[3].decode('utf-8')
+            tb = msg_list[4].decode('utf-8')
+            result = RemoteRPCError(ename, evalue, tb)
+
+        cb = self._callbacks.get(msg_id)
+        if cb is not None:
+            try:
+                cb(result)
+            except:
+                self.log.error('Unexpected callback error', exc_info=True)
+
+    #-------------------------------------------------------------------------
+    # Public API
+    #-------------------------------------------------------------------------
+
+    def __getattr__(self, name):
+        return AsyncRemoteMethod(self, name)
 
     def call(self, method, callback, *args, **kwargs):
         """Call the remote method with *args and **kwargs.
@@ -260,27 +304,6 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         self.stream.send(pargs, zmq.SNDMORE)
         self.stream.send(pkwargs)
         self._callbacks[msg_id] = callback
-
-    def handle_reply(self, msg_list):
-        msg_id = msg_list[0]
-        status = msg_list[1]
-        if status == b'SUCCESS':
-            result = pickle.loads(msg_list[2])
-        elif status == b'FAILURE':
-            ename = msg_list[2].decode('utf-8')
-            evalue = msg_list[3].decode('utf-8')
-            tb = msg_list[4].decode('utf-8')
-            result = RemoteRPCError(ename, evalue, tb)
-
-        cb = self._callbacks.get(msg_id)
-        if cb is not None:
-            try:
-                cb(result)
-            except:
-                self.log.error('Unexpected callback error', exc_info=True)
-
-    def __getattr__(self, name):
-        return AsyncRemoteMethod(self, name)
 
 
 class RPCServiceProxy(RPCServiceProxyBase):
