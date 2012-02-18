@@ -228,13 +228,13 @@ class ZMQStream(object):
             self.on_send(lambda msg, status: callback(stream, msg, status))
         
         
-    def send(self, msg, flags=0, copy=False, track=False, callback=None):
+    def send(self, msg, flags=0, copy=True, track=False, callback=None):
         """Send a message, optionally also register a new callback for sends.
         See zmq.socket.send for details.
         """
         return self.send_multipart([msg], flags=flags, copy=copy, track=track, callback=callback)
 
-    def send_multipart(self, msg, flags=0, copy=False, track=False, prefix=None, callback=None):
+    def send_multipart(self, msg, flags=0, copy=True, track=False, prefix=None, callback=None):
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
         """
