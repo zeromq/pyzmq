@@ -121,8 +121,8 @@ class ZMQRequestHandlerProxy(web.RequestHandler):
 
     SUPPORTED_METHODS = ("GET", "HEAD", "POST", "DELETE", "PUT", "OPTIONS")
 
-    def initialize(self, service_proxy):
-        self.service_proxy = service_proxy
+    def initialize(self, proxy):
+        self.proxy = proxy
 
     def _execute(self, transforms, *args, **kwargs):
         """Executes this request with the given output transforms."""
@@ -141,7 +141,7 @@ class ZMQRequestHandlerProxy(web.RequestHandler):
             self.prepare()
             if not self._finished:
                 # Don't decode args or kwargs as that will be done in the backen.
-                self.service_proxy.send_request(self.request, args, kwargs,
+                self.proxy.send_request(self.request, args, kwargs,
                     self._handle_reply)
         except Exception, e:
             self._handle_request_exception(e)
@@ -173,6 +173,9 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
                  body=None, remote_ip=None, protocol=None, host=None,
                  files=None, connection=None, arguments=None,
                  ident=None, msg_id=None, stream=None):
+        # The connection attribute MUST be missing as tornado tried to access
+        # connection.stream if connection exists. None of this is needed as
+        # ZeroMQ is connectionless.
         self.method = method
         self.uri = uri
         self.version = version
@@ -182,7 +185,6 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         self.protocol = protocol
         self.host = host
         self.files = files or {}
-        self.connection = connection
         self._start_time = time.time()
         self._finish_time = None
         # Attributes we have added to ZMQHTTPRequest.
@@ -379,7 +381,8 @@ class ZMQRequestHandler(web.RequestHandler):
         self.request.finish()
         self._log()
         self._finished = True
-        self.on_finish()
+        if hasattr(self,'on_finish'):
+            self.on_finish()
 
 
 class ZMQErrorHandler(web.ErrorHandler, ZMQRequestHandler):
@@ -399,6 +402,7 @@ class ZMQFallbackHandler(web.FallbackHandler, ZMQRequestHandler):
 
 # Monkey patch the default handlers to use our versions. For any process that
 # imports webzmq, our versions will be used.
+Application = ZMQWebApplication
 RequestHandler = ZMQRequestHandler
 ErrorHandler= web.ErrorHandler = ZMQErrorHandler
 RedirectHandler = web.RedirectHandler = ZMQRedirectHandler
