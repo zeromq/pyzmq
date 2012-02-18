@@ -26,7 +26,7 @@ import time
 from threading import Thread
 
 import zmq
-from zmq.utils.strtypes import asbytes
+from zmq.utils.strtypes import asbytes, b
 from zmq.tests import BaseZMQTestCase
 
 
@@ -95,7 +95,7 @@ class TestContext(BaseZMQTestCase):
         self.assertEquals(s.getsockopt(zmq.LINGER), 5)
         s.close()
         # check that subscribe doesn't get set on sockets that don't subscribe:
-        ctx.subscribe = ''
+        ctx.subscribe = b('')
         s = ctx.socket(zmq.REQ)
         s.close()
         

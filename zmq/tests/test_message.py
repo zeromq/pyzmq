@@ -31,7 +31,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
-from zmq.utils.strtypes import unicode,bytes,asbytes
+from zmq.utils.strtypes import unicode, bytes, asbytes, b
 from zmq.utils.rebuffer import array_from_buffer
 
 #-----------------------------------------------------------------------------
@@ -346,13 +346,13 @@ class TestFrame(BaseZMQTestCase):
     
     def test_frame_more(self):
         """test Frame.more attribute"""
-        frame = zmq.Frame("hello")
+        frame = zmq.Frame(b("hello"))
         self.assertFalse(frame.more)
-        a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        a.send_multipart(['hi', 'there'])
-        frame = self.recv(b, copy=False)
+        sa,sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        sa.send_multipart([b('hi'), b('there')])
+        frame = self.recv(sb, copy=False)
         self.assertTrue(frame.more)
-        frame = self.recv(b, copy=False)
+        frame = self.recv(sb, copy=False)
         self.assertFalse(frame.more)
         
 
