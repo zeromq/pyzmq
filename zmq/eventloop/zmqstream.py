@@ -234,11 +234,11 @@ class ZMQStream(object):
         """
         return self.send_multipart([msg], flags=flags, copy=copy, track=track, callback=callback)
 
-    def send_multipart(self, msg, flags=0, copy=True, track=False, prefix=None, callback=None):
+    def send_multipart(self, msg, flags=0, copy=True, track=False, callback=None):
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
         """
-        kwargs = dict(flags=flags, copy=copy, track=track, prefix=prefix)
+        kwargs = dict(flags=flags, copy=copy, track=track)
         self._send_queue.put((msg, kwargs))
         callback = callback or self._send_callback
         if callback is not None:

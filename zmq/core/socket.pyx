@@ -659,8 +659,8 @@ cdef class Socket:
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
     
-    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False, prefix=None):
-        """s.send_multipart(msg_parts, flags=0, copy=True, track=False, prefix=None)
+    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
+        """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
 
         Send a sequence of buffers as a multipart message.
 
@@ -676,10 +676,6 @@ cdef class Socket:
         track : bool, optional
             Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
-        prefix : iterable
-            A sequence of frames to send as a 0MQ routing prefix. With the removal
-            of LABELs from libzmq3, `prefix` has no effect beyond being prepended
-            to msg_parts.
         
         Returns
         -------
@@ -688,11 +684,6 @@ cdef class Socket:
             a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
-        if prefix:
-            if isinstance(prefix, bytes):
-                prefix = [prefix]
-            for msg in prefix:
-                self.send(msg, SNDMORE|flags)
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
