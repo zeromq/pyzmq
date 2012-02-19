@@ -26,7 +26,7 @@ import time
 from threading import Thread
 
 import zmq
-from zmq.utils.strtypes import asbytes
+from zmq.utils.strtypes import asbytes, b
 from zmq.tests import BaseZMQTestCase
 
 
@@ -84,6 +84,23 @@ class TestContext(BaseZMQTestCase):
             # give the reaper a chance
             time.sleep(1e-2)
         ctx.term()
+    
+    def test_sockopts(self):
+        """setting socket options with ctx attributes"""
+        ctx = zmq.Context()
+        ctx.linger = 5
+        self.assertEquals(ctx.linger, 5)
+        s = ctx.socket(zmq.REQ)
+        self.assertEquals(s.linger, 5)
+        self.assertEquals(s.getsockopt(zmq.LINGER), 5)
+        s.close()
+        # check that subscribe doesn't get set on sockets that don't subscribe:
+        ctx.subscribe = b('')
+        s = ctx.socket(zmq.REQ)
+        s.close()
+        
+        ctx.term()
+
     
     def test_destroy(self):
         """Context.destroy should close sockets"""

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
 #    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
@@ -143,7 +142,25 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEquals(p.getsockopt(zmq.LINGER), 11)
-        
+    
+    def test_poll(self):
+        """test Socket.poll()"""
+        req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        # default flag is POLLIN, nobody has anything to recv:
+        self.assertEquals(req.poll(0), 0)
+        self.assertEquals(rep.poll(0), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT), zmq.POLLOUT)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT|zmq.POLLIN), zmq.POLLOUT)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        req.send('hi')
+        self.assertEquals(req.poll(0), 0)
+        self.assertEquals(rep.poll(1), zmq.POLLIN)
+        self.assertEquals(req.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
+        self.assertEquals(req.poll(0, zmq.POLLOUT|zmq.POLLIN), 0)
+        self.assertEquals(rep.poll(0, zmq.POLLOUT), zmq.POLLIN)
+    
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
@@ -189,7 +206,7 @@ class TestSocket(BaseZMQTestCase):
         msg = b.recv_multipart()
         self.assertEquals(p2.done, True)
         self.assertEquals(msg, list(map(asbytes, ['something', 'else'])))
-        m = zmq.Message(asbytes("again"), track=True)
+        m = zmq.Frame(asbytes("again"), track=True)
         self.assertEquals(m.tracker.done, False)
         p1 = a.send(m, copy=False)
         p2 = a.send(m, copy=False)
@@ -209,7 +226,7 @@ class TestSocket(BaseZMQTestCase):
         time.sleep(0.1)
         self.assertEquals(p1.done, True)
         self.assertEquals(p2.done, True)
-        m = zmq.Message(asbytes('something'), track=False)
+        m = zmq.Frame(asbytes('something'), track=False)
         self.assertRaises(ValueError, a.send, m, copy=False, track=True)
         
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """pyzmq logging handlers.
 
 This mainly defines the PUBHandler object for publishing logging messages over

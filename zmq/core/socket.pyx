@@ -34,7 +34,7 @@ from cpython cimport Py_DECREF, Py_INCREF
 from buffers cimport asbuffer_r, viewfromobject_r
 
 from libzmq cimport *
-from message cimport Message, copy_zmq_msg_bytes
+from message cimport Frame, copy_zmq_msg_bytes
 
 from context cimport Context
 
@@ -96,11 +96,11 @@ cdef inline _check_closed(Socket s, bint raise_notsup):
             raise ZMQError()
     return False
 
-cdef inline Message _recv_message(void *handle, int flags=0, track=False):
-    """Receive a message in a non-copying manner and return a Message."""
+cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
+    """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
-    cdef Message msg
-    msg = Message(track=track)
+    cdef Frame msg
+    msg = Frame(track=track)
 
     with nogil:
         rc = zmq_recvmsg(handle, &msg.zmq_msg, flags)
@@ -122,10 +122,10 @@ cdef inline object _recv_copy(void *handle, int flags=0):
         zmq_msg_close(&zmq_msg)
     return msg_bytes
 
-cdef inline object _send_message(void *handle, Message msg, int flags=0):
-    """Send a Message on this socket in a non-copy manner."""
+cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
+    """Send a Frame on this socket in a non-copy manner."""
     cdef int rc
-    cdef Message msg_copy
+    cdef Frame msg_copy
 
     # Always copy so the original message isn't garbage collected.
     # This doesn't do a real copy, just a reference.
@@ -269,8 +269,10 @@ cdef class Socket:
         ----------
         option : int
             The option to set.  Available values will depend on your
-            version of libzmq.  Examples include:
+            version of libzmq.  Examples include::
+            
                 zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
+        
         optval : int or bytes
             The value of the option to set.
         """
@@ -282,7 +284,7 @@ cdef class Socket:
 
         _check_closed(self, True)
         if isinstance(optval, unicode):
-            raise TypeError("unicode not allowed, use setsockopt_unicode")
+            raise TypeError("unicode not allowed, use setsockopt_string")
 
         if option in constants.bytes_sockopts:
             if not isinstance(optval, bytes):
@@ -332,7 +334,8 @@ cdef class Socket:
         ----------
         option : int
             The option to get.  Available values will depend on your
-            version of libzmq.  Examples include:
+            version of libzmq.  Examples include::
+            
                 zmq.IDENTITY, HWM, LINGER, FD, EVENTS
 
         Returns
@@ -385,8 +388,8 @@ cdef class Socket:
 
         return result
     
-    def setsockopt_unicode(self, int option, optval, encoding='utf-8'):
-        """s.setsockopt_unicode(option, optval, encoding='utf-8')
+    def setsockopt_string(self, int option, optval, encoding='utf-8'):
+        """s.setsockopt_string(option, optval, encoding='utf-8')
 
         Set socket options with a unicode object it is simply a wrapper
         for setsockopt to protect from encoding ambiguity.
@@ -398,7 +401,7 @@ cdef class Socket:
         option : int
             The name of the option to set. Can be any of: SUBSCRIBE, 
             UNSUBSCRIBE, IDENTITY
-        optval : unicode
+        optval : unicode string (unicode on py2, str on py3)
             The value of the option to set.
         encoding : str
             The encoding to be used, default is utf8
@@ -407,8 +410,8 @@ cdef class Socket:
             raise TypeError("unicode strings only")
         return self.setsockopt(option, optval.encode(encoding))
     
-    def getsockopt_unicode(self, int option, encoding='utf-8'):
-        """s.getsockopt_unicode(option, encoding='utf-8')
+    def getsockopt_string(self, int option, encoding='utf-8'):
+        """s.getsockopt_string(option, encoding='utf-8')
 
         Get the value of a socket option.
 
@@ -422,13 +425,16 @@ cdef class Socket:
 
         Returns
         -------
-        optval : unicode
+        optval : unicode string (unicode on py2, str on py3)
             The value of the option as a unicode string.
         """
         
         if option not in constants.bytes_sockopts:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
+    
+    setsockopt_unicode = setsockopt_string
+    getsockopt_unicode = getsockopt_string
     
     def __setattr__(self, key, value):
         """set sockopts by attr"""
@@ -470,8 +476,8 @@ cdef class Socket:
         ----------
         addr : str
             The address string. This has the form 'protocol://interface:port',
-            for example 'tcp://127.0.0.1:5555'. Protocols supported are
-            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            for example 'tcp://127.0.0.1:5555'. Protocols supported include
+            tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
         cdef int rc
@@ -565,7 +571,7 @@ cdef class Socket:
 
         Parameters
         ----------
-        data : object, str, Message
+        data : object, str, Frame
             The content of the message.
         flags : int
             Any supported flag: NOBLOCK, SNDMORE.
@@ -588,7 +594,7 @@ cdef class Socket:
         TypeError
             If a unicode object is passed
         ValueError
-            If `track=True`, but an untracked Message is passed.
+            If `track=True`, but an untracked Frame is passed.
         ZMQError
             If the send does not succeed for any reason.
         
@@ -601,17 +607,17 @@ cdef class Socket:
         if copy:
             # msg.bytes never returns the input data object
             # it is always a copy, but always the same copy
-            if isinstance(data, Message):
+            if isinstance(data, Frame):
                 data = data.buffer
             return _send_copy(self.handle, data, flags)
         else:
-            if isinstance(data, Message):
+            if isinstance(data, Frame):
                 if track and not data.tracker:
                     raise ValueError('Not a tracked message')
                 msg = data
             else:
-                msg = Message(data, track=track)
-            return _send_message(self.handle, msg, flags)
+                msg = Frame(data, track=track)
+            return _send_frame(self.handle, msg, flags)
 
     cpdef object recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True, track=False)
@@ -627,7 +633,7 @@ cdef class Socket:
             message arrives.
         copy : bool
             Should the message be received in a copying or non-copying manner?
-            If False a Message object is returned, if True a string copy of
+            If False a Frame object is returned, if True a string copy of
             message is returned.
         track : bool
             Should the message be tracked for notification that ZMQ has
@@ -635,9 +641,9 @@ cdef class Socket:
 
         Returns
         -------
-        msg : str, Message
-            The returned message.  If `copy` is False, then it will be a Message,
-            otherwise a str.
+        msg : bytes, Frame
+            The received message frame.  If `copy` is False, then it will be a Frame,
+            otherwise it will be bytes.
             
         Raises
         ------
@@ -649,30 +655,27 @@ cdef class Socket:
         if copy:
             return _recv_copy(self.handle, flags)
         else:
-            return _recv_message(self.handle, flags, track)
+            frame = _recv_frame(self.handle, flags, track)
+            frame.more = self.getsockopt(zmq.RCVMORE)
+            return frame
     
-    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False, prefix=None):
-        """s.send_multipart(msg_parts, flags=0, copy=True, track=False, prefix=None)
+    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
+        """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
 
-        Send a sequence of messages as a multipart message.
+        Send a sequence of buffers as a multipart message.
 
         Parameters
         ----------
         msg_parts : iterable
-            A sequence of messages to send as a multipart message. Each element
-            can be any sendable object (Message, bytes, buffer-providers)
+            A sequence of objects to send as a multipart message. Each element
+            can be any sendable object (Frame, bytes, buffer-providers)
         flags : int, optional
-            Only the NOBLOCK flagis supported, SNDMORE is handled
-            automatically.
+            SNDMORE is handled automatically for frames before the last.
         copy : bool, optional
-            Should the message(s) be sent in a copying or non-copying manner.
+            Should the frame(s) be sent in a copying or non-copying manner.
         track : bool, optional
-            Should the message(s) be tracked for notification that ZMQ has
+            Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
-        prefix : iterable
-            A sequence of messages to send as a 0MQ routing prefix. With the removal
-            of LABELs from libzmq3, `prefix` has no effect beyond being prepended
-            to msg_parts.
         
         Returns
         -------
@@ -681,11 +684,6 @@ cdef class Socket:
             a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
-        if prefix:
-            if isinstance(prefix, bytes):
-                prefix = [prefix]
-            for msg in prefix:
-                self.send(msg, SNDMORE|flags)
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
@@ -694,7 +692,7 @@ cdef class Socket:
     def recv_multipart(self, int flags=0, copy=True, track=False):
         """s.recv_multipart(flags=0, copy=True, track=False)
 
-        Receive a multipart message as a list of messages.
+        Receive a multipart message as a list of bytes or Frame objects.
 
         Parameters
         ----------
@@ -704,16 +702,16 @@ cdef class Socket:
             If NOBLOCK is not set, then this method will block until a
             message arrives.
         copy : bool, optional
-            Should the message(s) be received in a copying or non-copying manner?
-            If False a Message object is returned for part, if True a string copy of
-            message is returned for each message part.
+            Should the message frame(s) be received in a copying or non-copying manner?
+            If False a Frame object is returned for each part, if True a copy of
+            the bytes is made for each frame.
         track : bool, optional
-            Should the message(s) be tracked for notification that ZMQ has
+            Should the message frame(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
         Returns
         -------
         msg_parts : list
-            A list of messages in the multipart message; either Messages or bytes,
+            A list of frames in the multipart message; either Frames or bytes,
             depending on `copy`.
         
         """
@@ -725,14 +723,17 @@ cdef class Socket:
         
         return parts
 
-    def send_unicode(self, u, int flags=0, copy=False, encoding='utf-8'):
-        """s.send_unicode(u, flags=0, copy=False, encoding='utf-8')
+    def send_string(self, u, int flags=0, copy=False, encoding='utf-8'):
+        """s.send_string(u, flags=0, copy=False, encoding='utf-8')
 
-        Send a Python unicode object as a message with an encoding.
+        Send a Python unicode string as a message with an encoding.
+        
+        0MQ communicates with raw bytes, so you must encode/decode
+        text (unicode on py2, str on py3) around 0MQ.
 
         Parameters
         ----------
-        u : Python unicode object
+        u : Python unicode string (unicode on py2, str on py3)
             The unicode string to send.
         flags : int, optional
             Any valid send flag.
@@ -743,10 +744,10 @@ cdef class Socket:
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy)
     
-    def recv_unicode(self, int flags=0, encoding='utf-8'):
-        """s.recv_unicode(flags=0, encoding='utf-8')
+    def recv_string(self, int flags=0, encoding='utf-8'):
+        """s.recv_string(flags=0, encoding='utf-8')
 
-        Receive a unicode string, as sent by send_unicode.
+        Receive a unicode string, as sent by send_string.
         
         Parameters
         ----------
@@ -757,11 +758,14 @@ cdef class Socket:
 
         Returns
         -------
-        s : unicode string
-            The Python unicode string that arrives as message bytes.
+        s : unicode string (unicode on py2, str on py3)
+            The Python unicode string that arrives as encoded bytes.
         """
         msg = self.recv(flags=flags, copy=False)
         return codecs.decode(msg.bytes, encoding)
+    
+    send_unicode = send_string
+    recv_unicode = recv_string
     
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """s.send_pyobj(obj, flags=0, protocol=-1)
@@ -839,8 +843,8 @@ cdef class Socket:
             msg = self.recv(flags)
             return jsonapi.loads(msg)
     
-    def poll(self, timeout=None, flags=None):
-        """s.poll(timeout=None, flags=POLLIN|POLLERR)
+    def poll(self, timeout=None, flags=POLLIN):
+        """s.poll(timeout=None, flags=POLLIN)
         
         Poll the socket for events.  The default is to poll forever for incoming
         events.  Timeout is in milliseconds, if specified.
@@ -850,9 +854,9 @@ cdef class Socket:
         timeout : int [default: None]
             The timeout (in milliseconds) to wait for an event. If unspecified
             (or secified None), will wait forever for an event.
-        flags : bitfield (int) [default: any event]
-            The event flags to poll for (any combination of POLLIN|POLLOUT|POLLERR).
-            The default is to check for incoming events (POLLIN|POLLERR).
+        flags : bitfield (int) [default: POLLIN]
+            The event flags to poll for (any combination of POLLIN|POLLOUT).
+            The default is to check for incoming events (POLLIN).
         
         Returns
         -------
@@ -863,8 +867,6 @@ cdef class Socket:
         
         _check_closed(self, True)
         
-        if flags is None:
-            flags = POLLIN|POLLERR
         p = zmq.Poller()
         p.register(self, flags)
         evts = dict(p.poll(timeout))

@@ -47,7 +47,7 @@ approach is not recommended.
 
 
 Socket Options as Attributes
-****************************
+----------------------------
 
 .. versionadded:: 2.1.9
 
@@ -67,6 +67,26 @@ behave just as you would expect:
     s.fd
     # 16
 
+
+Default Options on the Context
+******************************
+
+.. versionadded:: 2.1.12
+
+Just like setting socket options as attributes on Sockets, you can do the same on Contexts.
+This affects the default options of any *new* sockets created after the assignment.
+
+.. sourcecode:: python
+
+    ctx = zmq.Context()
+    ctx.linger = 0
+    rep = ctx.socket(zmq.REP)
+    req = ctx.socket(zmq.REQ)
+
+Socket options that do not apply to a socket (e.g. SUBSCRIBE on non-SUB sockets) will
+simply be ignored.
+
+
 Core Extensions
 ---------------
 
@@ -83,7 +103,7 @@ object over the wire after serializing with :mod:`json` and :mod:`pickle` respec
 and any object sent via those methods can be reconstructed with the
 :meth:`~.Socket.recv_json` and :meth:`~.Socket.recv_pyobj` methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-:meth:`~.Socket.send_unicode` and :meth:`~.Socket.recv_unicode` that simply send bytes
+:meth:`~.Socket.send_string` and :meth:`~.Socket.recv_string` that simply send bytes
 after encoding the message ('utf-8' is the default). 
 
 .. seealso::
@@ -112,25 +132,25 @@ builtin :py:class:`~Queue.Queue` object), instantiating a MessageTracker takes a
 amount of time (10s of µs), so in situations instantiating many small messages, this can
 actually dominate performance. As a result, tracking is optional, via the ``track`` flag,
 which is optionally passed, always defaulting to ``False``, in each of the three places
-where a Message is instantiated: The :class:`.Message` constructor, and non-copying sends
-and receives.
+where a Frame object (the pyzmq object for wrapping a segment of a message) is 
+instantiated: The :class:`.Frame` constructor, and non-copying sends and receives.
 
 A MessageTracker is very simple, and has just one method and one attribute. The property
-:attr:`MessageTracker.done` will be ``True`` when the Message(s) being tracked are no
+:attr:`MessageTracker.done` will be ``True`` when the Frame(s) being tracked are no
 longer in use by ØMQ, and :meth:`.MessageTracker.wait` will block, waiting for the
-Message(s) to be released.
+Frame(s) to be released.
 
 .. Note::
 
-    A message cannot be tracked after it has been instantiated without tracking. If a
-    Message is to even have the *option* of tracking, it must be constructed with
+    A Frame cannot be tracked after it has been instantiated without tracking. If a
+    Frame is to even have the *option* of tracking, it must be constructed with
     ``track=True``.
 
 
 Extensions
 ----------
 
-So far, PyZMQ includes three extensions to core ØMQ that we found basic enough to be
+So far, PyZMQ includes four extensions to core ØMQ that we found basic enough to be
 included in PyZMQ itself:
 
 * :ref:`zmq.log <logging>` : Logging handlers for hooking Python logging up to the
