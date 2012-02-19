@@ -28,6 +28,7 @@ from libc.stdlib cimport free, malloc, realloc
 from libzmq cimport *
 
 from error import ZMQError
+from zmq.core import constants
 from constants import *
 
 #-----------------------------------------------------------------------------
@@ -64,6 +65,8 @@ cdef class Context:
         if self._sockets == NULL:
             raise MemoryError("Could not allocate _sockets array")
         
+        self.sockopts = {}
+        self._attrs = {}
 
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
@@ -192,14 +195,69 @@ cdef class Context:
         ----------
         socket_type : int
             The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, XREQ, DEALER, XREP, ROUTER, PULL, PUSH, XSUB, XPUB.
+            REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.
         """
         # import here to prevent circular import
         from zmq.core.socket import Socket
         if self.closed:
             raise ZMQError(ENOTSUP)
-        return Socket(self, socket_type)
-
+        s = Socket(self, socket_type)
+        for opt, value in self.sockopts.iteritems():
+            try:
+                s.setsockopt(opt, value)
+            except ZMQError:
+                # ignore ZMQErrors, which are likely for socket options
+                # that do not apply to a particular socket type, e.g.
+                # SUBSCRIBE for non-SUB sockets.
+                pass
+        return s
+    
+    def __setattr__(self, key, value):
+        """set default sockopts as attributes"""
+        try:
+            opt = getattr(constants, key.upper())
+        except AttributeError:
+            # allow subclasses to have extended attributes
+            if self.__class__.__module__ != 'zmq.core.context':
+                self._attrs[key] = value
+            else:
+                raise AttributeError("No such socket option: %s" % key.upper())
+        else:
+            self.sockopts[opt] = value
+    
+    def __getattr__(self, key):
+        """get default sockopts as attributes"""
+        if key in self._attrs:
+            # `key` is subclass extended attribute
+            return self._attrs[key]
+        key = key.upper()
+        try:
+            opt = getattr(constants, key)
+        except AttributeError:
+            raise AttributeError("no such socket option: %s" % key)
+        else:
+            if opt not in self.sockopts:
+                raise AttributeError(key)
+            else:
+                return self.sockopts[opt]
+    
+    def __delattr__(self, key):
+        """delete default sockopts as attributes"""
+        if key in self._attrs:
+            # `key` is subclass extended attribute
+            del self._attrs[key]
+            return
+        key = key.upper()
+        try:
+            opt = getattr(constants, key)
+        except AttributeError:
+            raise AttributeError("no such socket option: %s" % key)
+        else:
+            if opt not in self.sockopts:
+                raise AttributeError(key)
+            else:
+                del self.sockopts[opt]
+    
     @property
     def _handle(self):
         return <Py_ssize_t> self.handle

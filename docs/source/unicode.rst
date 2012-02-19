@@ -6,7 +6,7 @@ PyZMQ and Unicode
 =================
 
 PyZMQ is built with an eye towards an easy transition to Python 3, and part of
-that is dealing with unicode objects. This is an overview of some of what we
+that is dealing with unicode strings. This is an overview of some of what we
 found, and what it means for PyZMQ.
 
 First, Unicode in Python 2 and 3
@@ -93,7 +93,7 @@ bytes, then we are potentially using up enormous amounts of excess memory
 unnecessarily, due to copying and larger memory footprint of unicode strings.
 
 Still, we recognize the fact that users will quite frequently have unicode
-strings that they want to send, so we have added ``socket.<method>_unicode()``
+strings that they want to send, so we have added ``socket.<method>_string()``
 wrappers. These methods simply wrap their bytes counterpart by encoding
 to/decoding from bytes around them, and they all take an `encoding` keyword
 argument that defaults to utf-8. Since encoding and decoding are necessary to
@@ -104,7 +104,16 @@ actions with these wrappers.
 strictly setters and there is not corresponding getter method. As a result, we
 feel that we can safely coerce unicode objects to bytes (always to utf-8) in
 these methods.
-                                                                                                                                                                                     
+
+.. note::
+
+    For cross-language symmetry (including Python 3), the ``_unicode`` methods 
+    are now ``_string``. Many languages have a notion of native strings, and 
+    the use of ``_unicode`` was wedded too closely to the name of such objects 
+    in Python 2.  For the time being, anywhere you see ``_string``, ``_unicode``
+    also works, and is the only option in pyzmq ≤ 2.1.11.
+
+
 The Methods
 -----------
 
@@ -138,14 +147,14 @@ Overview of the relevant methods:
             
             `unicode(message)` decodes `message.buffer` with utf-8
     
-.. py:function::    socket.send_unicode(self, unicode s, flags=0, encoding='utf-8')
+.. py:function::    socket.send_string(self, unicode s, flags=0, encoding='utf-8')
 
         takes a ``unicode`` string `s`, and sends the ``bytes`` 
         after encoding without an extra copy, via:
         
         `socket.send(s.encode(encoding), flags, copy=False)`
     
-.. py:function::    socket.recv_unicode(self, flags=0, encoding='utf-8')
+.. py:function::    socket.recv_string(self, flags=0, encoding='utf-8')
 
         always returns ``unicode`` string
         
@@ -163,14 +172,14 @@ Overview of the relevant methods:
 
         returns ``bytes`` (or ``int``), never ``unicode``
     
-.. py:function::    socket.setsockopt_unicode(self, opt, unicode optval, encoding='utf-8')
+.. py:function::    socket.setsockopt_string(self, opt, unicode optval, encoding='utf-8')
 
         accepts ``unicode`` string for `optval`
         
         encodes `optval` with `encoding` before passing the ``bytes`` to 
         `setsockopt`
     
-.. py:function::    socket.getsockopt_unicode(self, opt, encoding='utf-8')
+.. py:function::    socket.getsockopt_string(self, opt, encoding='utf-8')
 
         always returns ``unicode`` string, after decoding with `encoding`
         

@@ -36,8 +36,8 @@ cdef class MessageTracker(object):
     cdef set peers   # Other Message or MessageTracker objects.
     
 
-cdef class Message:
-    """A Message class for non-copy send/recvs."""
+cdef class Frame:
+    """A Message Frame class for non-copy send/recvs."""
 
     cdef zmq_msg_t zmq_msg
     cdef object _data      # The actual message data as a Python object.
@@ -46,8 +46,9 @@ cdef class Message:
     cdef bint _failed_init # Flag to handle failed zmq_msg_init
     cdef public object tracker_event  # Event for use with zmq_free_fn.
     cdef public object tracker        # MessageTracker object.
+    cdef public bint more             # whether RCVMORE was set
 
-    cdef Message fast_copy(self) # Create shallow copy of Message object.
+    cdef Frame fast_copy(self) # Create shallow copy of Message object.
     cdef object _getbuffer(self) # Construct self._buffer.
 
 cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg)

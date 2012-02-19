@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf8 -*-
 #
 #    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
@@ -32,7 +31,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
-from zmq.utils.strtypes import unicode,bytes,asbytes
+from zmq.utils.strtypes import unicode, bytes, asbytes, b
 from zmq.utils.rebuffer import array_from_buffer
 
 #-----------------------------------------------------------------------------
@@ -52,31 +51,31 @@ rc0 = grc(x)
 v = view(x)
 view_rc = grc(x) - rc0
 
-class TestMessage(BaseZMQTestCase):
+class TestFrame(BaseZMQTestCase):
 
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             self.assertEquals(grc(s), 2)
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             self.assertEquals(grc(s), 4)
             del m
             self.assertEquals(grc(s), 2)
             del s
 
     def test_str(self):
-        """Test the str representations of the Messages."""
+        """Test the str representations of the Frames."""
         for i in range(16):
             s = (2**i)*x
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             self.assertEquals(s, asbytes(m))
 
     def test_bytes(self):
-        """Test the Message.bytes property."""
+        """Test the Frame.bytes property."""
         for i in range(1,16):
             s = (2**i)*x
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             b = m.bytes
             self.assertEquals(s, m.bytes)
             # check that it copies
@@ -85,22 +84,22 @@ class TestMessage(BaseZMQTestCase):
             self.assert_(b is m.bytes)
 
     def test_unicode(self):
-        """Test the unicode representations of the Messages."""
+        """Test the unicode representations of the Frames."""
         s = unicode('asdf')
-        self.assertRaises(TypeError, zmq.Message, s)
+        self.assertRaises(TypeError, zmq.Frame, s)
         u = '§'
         if str is not unicode:
             u = u.decode('utf8')
         for i in range(16):
             s = (2**i)*u
-            m = zmq.Message(s.encode('utf8'))
+            m = zmq.Frame(s.encode('utf8'))
             self.assertEquals(s, unicode(m.bytes,'utf8'))
 
     def test_len(self):
-        """Test the len of the Messages."""
+        """Test the len of the Frames."""
         for i in range(16):
             s = (2**i)*x
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             self.assertEquals(len(s), len(m))
 
     def test_lifecycle1(self):
@@ -109,7 +108,7 @@ class TestMessage(BaseZMQTestCase):
             s = (2**i)*x
             rc = 2
             self.assertEquals(grc(s), rc)
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             rc += 2
             self.assertEquals(grc(s), rc)
             m2 = copy.copy(m)
@@ -143,7 +142,7 @@ class TestMessage(BaseZMQTestCase):
             s = (2**i)*x
             rc = 2
             self.assertEquals(grc(s), rc)
-            m = zmq.Message(s)
+            m = zmq.Frame(s)
             rc += 2
             self.assertEquals(grc(s), rc)
             m2 = copy.copy(m)
@@ -172,7 +171,7 @@ class TestMessage(BaseZMQTestCase):
             del s
     
     def test_tracker(self):
-        m = zmq.Message(asbytes('asdf'), track=True)
+        m = zmq.Frame(asbytes('asdf'), track=True)
         self.assertFalse(m.tracker.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
@@ -180,15 +179,15 @@ class TestMessage(BaseZMQTestCase):
         self.assertTrue(pm.done)
     
     def test_no_tracker(self):
-        m = zmq.Message(asbytes('asdf'), track=False)
+        m = zmq.Frame(asbytes('asdf'), track=False)
         self.assertEquals(m.tracker, None)
         m2 = copy.copy(m)
         self.assertEquals(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
-        m = zmq.Message(asbytes('asdf'), track=True)
-        m2 = zmq.Message(asbytes('whoda'), track=True)
+        m = zmq.Frame(asbytes('asdf'), track=True)
+        m2 = zmq.Frame(asbytes('whoda'), track=True)
         mt = zmq.MessageTracker(m,m2)
         self.assertFalse(m.tracker.done)
         self.assertFalse(mt.done)
@@ -208,12 +207,12 @@ class TestMessage(BaseZMQTestCase):
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
         else:
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
-        m = zmq.Message(view(ins))
+        m = zmq.Frame(view(ins))
     
     def test_bad_buffer_in(self):
         """test using a bad object"""
-        self.assertRaises(TypeError, zmq.Message, 5)
-        self.assertRaises(TypeError, zmq.Message, object())
+        self.assertRaises(TypeError, zmq.Frame, 5)
+        self.assertRaises(TypeError, zmq.Frame, object())
         
     def test_buffer_out(self):
         """receiving buffered output"""
@@ -221,7 +220,7 @@ class TestMessage(BaseZMQTestCase):
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
         else:
             ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
-        m = zmq.Message(ins)
+        m = zmq.Frame(ins)
         outb = m.buffer
         self.assertTrue(isinstance(outb, view))
         self.assert_(outb is m.buffer)
@@ -231,7 +230,7 @@ class TestMessage(BaseZMQTestCase):
         """ensure that a message remains intact after multiple sends"""
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         s = asbytes("message")
-        m = zmq.Message(s)
+        m = zmq.Frame(s)
         self.assertEquals(s, m.bytes)
         
         a.send(m, copy=False)
@@ -262,7 +261,7 @@ class TestMessage(BaseZMQTestCase):
         for i in range(1,len(shapes)+1):
             shape = shapes[:i]
             A = numpy.random.random(shape)
-            m = zmq.Message(A)
+            m = zmq.Frame(A)
             if view.__name__ == 'buffer':
                 self.assertEquals(A.data, m.buffer)
                 B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
@@ -279,7 +278,7 @@ class TestMessage(BaseZMQTestCase):
 
         s = asbytes('carrotjuice')
         v = memoryview(s)
-        m = zmq.Message(s)
+        m = zmq.Frame(s)
         buf = m.buffer
         s2 = buf.tobytes()
         self.assertEquals(s2,s)
@@ -344,4 +343,16 @@ class TestMessage(BaseZMQTestCase):
             B = array_from_buffer(msg, A.dtype, A.shape)
             self.assertEquals(A.shape, B.shape)
             self.assertTrue((A==B).all())
+    
+    def test_frame_more(self):
+        """test Frame.more attribute"""
+        frame = zmq.Frame(b("hello"))
+        self.assertFalse(frame.more)
+        sa,sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        sa.send_multipart([b('hi'), b('there')])
+        frame = self.recv(sb, copy=False)
+        self.assertTrue(frame.more)
+        frame = self.recv(sb, copy=False)
+        self.assertFalse(frame.more)
+        
 

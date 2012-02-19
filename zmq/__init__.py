@@ -43,7 +43,7 @@ def get_includes():
     from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
-    return [ parent ] + [ join(base, subdir) for subdir in ('utils',) ]
+    return [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
 
 
 __all__ = ['get_includes'] + core.__all__
