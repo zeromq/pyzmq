@@ -62,7 +62,7 @@ except:
     import pickle
 
 import zmq
-from zmq.core import constants
+from zmq.core import constants, pysocket
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -388,54 +388,6 @@ cdef class Socket:
 
         return result
     
-    def setsockopt_string(self, int option, optval, encoding='utf-8'):
-        """s.setsockopt_string(option, optval, encoding='utf-8')
-
-        Set socket options with a unicode object it is simply a wrapper
-        for setsockopt to protect from encoding ambiguity.
-
-        See the 0MQ documentation for details on specific options.
-
-        Parameters
-        ----------
-        option : int
-            The name of the option to set. Can be any of: SUBSCRIBE, 
-            UNSUBSCRIBE, IDENTITY
-        optval : unicode string (unicode on py2, str on py3)
-            The value of the option to set.
-        encoding : str
-            The encoding to be used, default is utf8
-        """
-        if not isinstance(optval, unicode):
-            raise TypeError("unicode strings only")
-        return self.setsockopt(option, optval.encode(encoding))
-    
-    def getsockopt_string(self, int option, encoding='utf-8'):
-        """s.getsockopt_string(option, encoding='utf-8')
-
-        Get the value of a socket option.
-
-        See the 0MQ documentation for details on specific options.
-
-        Parameters
-        ----------
-        option : int
-            The option to retrieve. Currently, IDENTITY is the only
-            gettable option that can return a string.
-
-        Returns
-        -------
-        optval : unicode string (unicode on py2, str on py3)
-            The value of the option as a unicode string.
-        """
-        
-        if option not in constants.bytes_sockopts:
-            raise TypeError("option %i will not return a string to be decoded"%option)
-        return self.getsockopt(option).decode(encoding)
-    
-    setsockopt_unicode = setsockopt_string
-    getsockopt_unicode = getsockopt_string
-    
     def __setattr__(self, key, value):
         """set sockopts by attr"""
         key = key
@@ -451,7 +403,7 @@ cdef class Socket:
             self.setsockopt(opt, value)
     
     def __getattr__(self, key):
-        """set sockopts by attr"""
+        """get sockopts by attr"""
         if key in self._attrs:
             # `key` is subclass extended attribute
             return self._attrs[key]
@@ -493,42 +445,6 @@ cdef class Socket:
             rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
-
-    def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
-        """s.bind_to_random_port(addr, min_port=49152, max_port=65536, max_tries=100)
-
-        Bind this socket to a random port in a range.
-
-        Parameters
-        ----------
-        addr : str
-            The address string without the port to pass to ``Socket.bind()``.
-        min_port : int, optional
-            The minimum port in the range of ports to try (inclusive).
-        max_port : int, optional
-            The maximum port in the range of ports to try (exclusive).
-        max_tries : int, optional
-            The maximum number of bind attempts to make.
-
-        Returns
-        -------
-        port : int
-            The port the socket was bound to.
-        
-        Raises
-        ------
-        ZMQBindError
-            if `max_tries` reached before successful bind
-        """
-        for i in xrange(max_tries):
-            try:
-                port = random.randrange(min_port, max_port)
-                self.bind('%s:%s' % (addr, port))
-            except ZMQError:
-                pass
-            else:
-                return port
-        raise ZMQBindError("Could not bind socket to random port.")
 
     def connect(self, addr):
         """s.connect(addr)
@@ -659,190 +575,6 @@ cdef class Socket:
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
     
-    def send_multipart(self, msg_parts, int flags=0, copy=True, track=False):
-        """s.send_multipart(msg_parts, flags=0, copy=True, track=False)
-
-        Send a sequence of buffers as a multipart message.
-
-        Parameters
-        ----------
-        msg_parts : iterable
-            A sequence of objects to send as a multipart message. Each element
-            can be any sendable object (Frame, bytes, buffer-providers)
-        flags : int, optional
-            SNDMORE is handled automatically for frames before the last.
-        copy : bool, optional
-            Should the frame(s) be sent in a copying or non-copying manner.
-        track : bool, optional
-            Should the frame(s) be tracked for notification that ZMQ has
-            finished with it (ignored if copy=True).
-        
-        Returns
-        -------
-        None : if copy or not track
-        MessageTracker : if track and not copy
-            a MessageTracker object, whose `pending` property will
-            be True until the last send is completed.
-        """
-        for msg in msg_parts[:-1]:
-            self.send(msg, SNDMORE|flags, copy=copy, track=track)
-        # Send the last part without the extra SNDMORE flag.
-        return self.send(msg_parts[-1], flags, copy=copy, track=track)
-
-    def recv_multipart(self, int flags=0, copy=True, track=False):
-        """s.recv_multipart(flags=0, copy=True, track=False)
-
-        Receive a multipart message as a list of bytes or Frame objects.
-
-        Parameters
-        ----------
-        flags : int, optional
-            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
-            will raise a ZMQError with EAGAIN if a message is not ready.
-            If NOBLOCK is not set, then this method will block until a
-            message arrives.
-        copy : bool, optional
-            Should the message frame(s) be received in a copying or non-copying manner?
-            If False a Frame object is returned for each part, if True a copy of
-            the bytes is made for each frame.
-        track : bool, optional
-            Should the message frame(s) be tracked for notification that ZMQ has
-            finished with it? (ignored if copy=True)
-        Returns
-        -------
-        msg_parts : list
-            A list of frames in the multipart message; either Frames or bytes,
-            depending on `copy`.
-        
-        """
-        parts = [self.recv(flags, copy=copy, track=track)]
-        # have first part already, only loop while more to receive
-        while self.getsockopt(ZMQ_RCVMORE):
-            part = self.recv(flags, copy=copy, track=track)
-            parts.append(part)
-        
-        return parts
-
-    def send_string(self, u, int flags=0, copy=False, encoding='utf-8'):
-        """s.send_string(u, flags=0, copy=False, encoding='utf-8')
-
-        Send a Python unicode string as a message with an encoding.
-        
-        0MQ communicates with raw bytes, so you must encode/decode
-        text (unicode on py2, str on py3) around 0MQ.
-
-        Parameters
-        ----------
-        u : Python unicode string (unicode on py2, str on py3)
-            The unicode string to send.
-        flags : int, optional
-            Any valid send flag.
-        encoding : str [default: 'utf-8']
-            The encoding to be used
-        """
-        if not isinstance(u, basestring):
-            raise TypeError("unicode/str objects only")
-        return self.send(u.encode(encoding), flags=flags, copy=copy)
-    
-    def recv_string(self, int flags=0, encoding='utf-8'):
-        """s.recv_string(flags=0, encoding='utf-8')
-
-        Receive a unicode string, as sent by send_string.
-        
-        Parameters
-        ----------
-        flags : int
-            Any valid recv flag.
-        encoding : str [default: 'utf-8']
-            The encoding to be used
-
-        Returns
-        -------
-        s : unicode string (unicode on py2, str on py3)
-            The Python unicode string that arrives as encoded bytes.
-        """
-        msg = self.recv(flags=flags, copy=False)
-        return codecs.decode(msg.bytes, encoding)
-    
-    send_unicode = send_string
-    recv_unicode = recv_string
-    
-    def send_pyobj(self, obj, flags=0, protocol=-1):
-        """s.send_pyobj(obj, flags=0, protocol=-1)
-
-        Send a Python object as a message using pickle to serialize.
-
-        Parameters
-        ----------
-        obj : Python object
-            The Python object to send.
-        flags : int
-            Any valid send flag.
-        protocol : int
-            The pickle protocol number to use. Default of -1 will select
-            the highest supported number. Use 0 for multiple platform
-            support.
-        """
-        msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags)
-
-    def recv_pyobj(self, flags=0):
-        """s.recv_pyobj(flags=0)
-
-        Receive a Python object as a message using pickle to serialize.
-
-        Parameters
-        ----------
-        flags : int
-            Any valid recv flag.
-
-        Returns
-        -------
-        obj : Python object
-            The Python object that arrives as a message.
-        """
-        s = self.recv(flags)
-        return pickle.loads(s)
-
-    def send_json(self, obj, flags=0):
-        """s.send_json(obj, flags=0)
-
-        Send a Python object as a message using json to serialize.
-
-        Parameters
-        ----------
-        obj : Python object
-            The Python object to send.
-        flags : int
-            Any valid send flag.
-        """
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = jsonapi.dumps(obj)
-            return self.send(msg, flags)
-
-    def recv_json(self, flags=0):
-        """s.recv_json(flags=0)
-
-        Receive a Python object as a message using json to serialize.
-
-        Parameters
-        ----------
-        flags : int
-            Any valid recv flag.
-
-        Returns
-        -------
-        obj : Python object
-            The Python object that arrives as a message.
-        """
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = self.recv(flags)
-            return jsonapi.loads(msg)
-    
     def poll(self, timeout=None, flags=POLLIN):
         """s.poll(timeout=None, flags=POLLIN)
         
@@ -872,7 +604,23 @@ cdef class Socket:
         evts = dict(p.poll(timeout))
         # return 0 if no events, otherwise return event bitfield
         return evts.get(self, 0)
-        
 
+    # pure Python methods - import from pysocket so we can change them without
+    # having to rebuild socket.pyx
+    setsockopt_string = pysocket.setsockopt_string
+    getsockopt_string = pysocket.getsockopt_string
+    setsockopt_unicode = setsockopt_string
+    getsockopt_unicode = getsockopt_string
+    bind_to_random_port = pysocket.bind_to_random_port
+    send_multipart = pysocket.send_multipart
+    recv_multipart = pysocket.recv_multipart
+    send_string = pysocket.send_string
+    recv_string = pysocket.recv_string
+    send_unicode = send_string
+    recv_unicode = recv_string
+    send_pyobj = pysocket.send_pyobj
+    recv_pyobj = pysocket.recv_pyobj
+    send_json = pysocket.send_json
+    recv_json = pysocket.recv_json
 
 __all__ = ['Socket']
