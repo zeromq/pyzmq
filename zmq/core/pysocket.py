@@ -331,3 +331,34 @@ def recv_json(self, flags=0):
     else:
         msg = self.recv(flags)
         return jsonapi.loads(msg)
+
+def poll(self, timeout=None, flags=POLLIN):
+    """s.poll(timeout=None, flags=POLLIN)
+
+    Poll the socket for events.  The default is to poll forever for incoming
+    events.  Timeout is in milliseconds, if specified.
+
+    Parameters
+    ----------
+    timeout : int [default: None]
+        The timeout (in milliseconds) to wait for an event. If unspecified
+        (or secified None), will wait forever for an event.
+    flags : bitfield (int) [default: POLLIN]
+        The event flags to poll for (any combination of POLLIN|POLLOUT).
+        The default is to check for incoming events (POLLIN).
+
+    Returns
+    -------
+    events : bitfield (int)
+        The events that are ready and waiting.  Will be 0 if no events were ready
+        by the time timeout was reached.
+    """
+
+    if self.closed:
+        raise ZMQError(ENOTSUP)
+
+    p = zmq.Poller()
+    p.register(self, flags)
+    evts = dict(p.poll(timeout))
+    # return 0 if no events, otherwise return event bitfield
+    return evts.get(self, 0)

@@ -575,35 +575,6 @@ cdef class Socket:
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
     
-    def poll(self, timeout=None, flags=POLLIN):
-        """s.poll(timeout=None, flags=POLLIN)
-        
-        Poll the socket for events.  The default is to poll forever for incoming
-        events.  Timeout is in milliseconds, if specified.
-        
-        Parameters
-        ----------
-        timeout : int [default: None]
-            The timeout (in milliseconds) to wait for an event. If unspecified
-            (or secified None), will wait forever for an event.
-        flags : bitfield (int) [default: POLLIN]
-            The event flags to poll for (any combination of POLLIN|POLLOUT).
-            The default is to check for incoming events (POLLIN).
-        
-        Returns
-        -------
-        events : bitfield (int)
-            The events that are ready and waiting.  Will be 0 if no events were ready
-            by the time timeout was reached.
-        """
-        
-        _check_closed(self, True)
-        
-        p = zmq.Poller()
-        p.register(self, flags)
-        evts = dict(p.poll(timeout))
-        # return 0 if no events, otherwise return event bitfield
-        return evts.get(self, 0)
 
     # pure Python methods - import from pysocket so we can change them without
     # having to rebuild socket.pyx
@@ -622,5 +593,6 @@ cdef class Socket:
     recv_pyobj = pysocket.recv_pyobj
     send_json = pysocket.send_json
     recv_json = pysocket.recv_json
+    poll = pysocket.poll
 
 __all__ = ['Socket']
