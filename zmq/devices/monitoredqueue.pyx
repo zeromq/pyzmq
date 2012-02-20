@@ -35,7 +35,7 @@ cdef extern from "Python.h":
 from buffers cimport asbuffer_r
 from libzmq cimport *
 
-from zmq.core.socket cimport Socket
+from zmq.core.basesocket cimport BaseSocket
 
 from zmq.core import ROUTER, XREP, ZMQError
 
@@ -44,7 +44,7 @@ from zmq.core import ROUTER, XREP, ZMQError
 #-----------------------------------------------------------------------------
 
 
-def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
+def monitored_queue(BaseSocket in_socket, BaseSocket out_socket, BaseSocket mon_socket,
                     object in_prefix='in', object out_prefix='out'):
     """monitored_queue(in_socket, out_socket, mon_socket,
                        in_prefix='in', out_prefix='out')

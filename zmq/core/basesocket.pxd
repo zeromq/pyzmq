@@ -1,4 +1,4 @@
-"""0MQ Socket class declaration."""
+"""0MQ BaseSocket class declaration."""
 
 #
 #    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
@@ -30,7 +30,7 @@ from context cimport Context
 #-----------------------------------------------------------------------------
 
 
-cdef class Socket:
+cdef class BaseSocket:
     """A 0MQ socket."""
 
     cdef void *handle           # The C handle for the underlying zmq object.

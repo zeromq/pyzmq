@@ -24,7 +24,7 @@
 #-----------------------------------------------------------------------------
 
 from libzmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
-from socket cimport Socket
+from basesocket cimport BaseSocket
 
 import sys
 from zmq.core.error import ZMQError
@@ -59,7 +59,7 @@ def _poll(sockets, long timeout=-1):
     cdef int rc, i
     cdef zmq_pollitem_t *pollitems = NULL
     cdef int nsockets = len(sockets)
-    cdef Socket current_socket
+    cdef BaseSocket current_socket
     pollitems_o = allocate(nsockets*sizeof(zmq_pollitem_t),<void**>&pollitems)
     if ZMQ_VERSION_MAJOR < 3:
         # timeout is us in 2.x, ms in 3.x
@@ -69,7 +69,7 @@ def _poll(sockets, long timeout=-1):
     for i in range(nsockets):
         s = sockets[i][0]
         events = sockets[i][1]
-        if isinstance(s, Socket):
+        if isinstance(s, BaseSocket):
             current_socket = s
             pollitems[i].socket = current_socket.handle
             pollitems[i].events = events
