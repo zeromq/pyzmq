@@ -24,18 +24,17 @@
 #-----------------------------------------------------------------------------
 
 from zmq.core import (constants, error, message, context,
-                      basesocket, socket, poll, stopwatch, version, device )
+                      socket, poll, stopwatch, version, device )
 
 __all__ = []
 for submod in (constants, error, message, context,
-               basesocket, socket, poll, stopwatch, version, device):
+               socket, poll, stopwatch, version, device):
     __all__.extend(submod.__all__)
 
 from zmq.core.constants import *
 from zmq.core.error import *
 from zmq.core.message import *
 from zmq.core.context import *
-from zmq.core.basesocket import *
 from zmq.core.socket import *
 from zmq.core.poll import *
 from zmq.core.stopwatch import *

@@ -497,22 +497,22 @@ libzmq = pxd('core', 'libzmq')
 buffers = pxd('utils', 'buffers')
 message = pxd('core', 'message')
 context = pxd('core', 'context')
-basesocket = pxd('core', 'basesocket')
+socket = pxd('core', 'socket')
 monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = dict(
     core = {'constants': [libzmq],
             'error':[libzmq],
-            'poll':[libzmq, basesocket, context],
+            'poll':[libzmq, socket, context],
             'stopwatch':[libzmq, pxd('core','stopwatch')],
             'context':[context, libzmq],
             'message':[libzmq, buffers, message],
-            'basesocket':[context, message, basesocket, libzmq, buffers],
-            'device':[libzmq, basesocket, context],
+            'socket':[context, message, socket, libzmq, buffers],
+            'device':[libzmq, socket, context],
             'version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, libzmq, monqueue, basesocket, context],
+            'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
     },
     utils = {
             'initthreads':[libzmq],

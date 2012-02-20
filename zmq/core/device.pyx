@@ -24,7 +24,7 @@
 #-----------------------------------------------------------------------------
 
 from libzmq cimport *
-from zmq.core.basesocket cimport BaseSocket as cSocket
+from zmq.core.socket cimport Socket as cSocket
 from zmq.core.error import ZMQError
 
 #-----------------------------------------------------------------------------
