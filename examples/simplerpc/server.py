@@ -20,9 +20,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
-from zmq.rpc.simplerpc import RPCService, rpc_method
+import time
+
+from zmq.rpc.simplerpc import RPCService, rpc_method, JSONSerializer
 from zmq.eventloop import ioloop
 from zmq.utils import jsonapi
+
+
 
 class Echo(RPCService):
 
@@ -30,6 +34,14 @@ class Echo(RPCService):
     def echo(self, s):
         print "%r echo %r" % (self.urls, s)
         return s
+
+    @rpc_method
+    def sleep(self, t):
+        time.sleep(t)
+
+    @rpc_method
+    def error(self):
+        raise ValueError('raising ValueError for fun!')
 
 class Math(RPCService):
 
@@ -59,7 +71,7 @@ if __name__ == '__main__':
 
     # Custom serializer/deserializer functions can be passed in. The server
     # side ones must match.
-    echo = Echo(serializer=jsonapi.dumps,deserializer=jsonapi.loads)
+    echo = Echo(serializer=JSONSerializer())
     echo.bind('tcp://127.0.0.1:5555')
     # We create two Math services to simulate load balancing. A client can
     # connect to both of these services and requests will be load balanced.

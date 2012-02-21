@@ -20,15 +20,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
 
-from zmq.rpc.simplerpc import RPCServiceProxy
-from zmq.utils import jsonapi
+from zmq.rpc.simplerpc import RPCServiceProxy, RemoteRPCError, JSONSerializer
+
 
 if __name__ == '__main__':
     # Custom serializer/deserializer functions can be passed in. The server
     # side ones must match.
-    echo = RPCServiceProxy(serializer=jsonapi.dumps,deserializer=jsonapi.loads)
+    echo = RPCServiceProxy(serializer=JSONSerializer())
     echo.connect('tcp://127.0.0.1:5555')
     print "Echoing: ", echo.echo("Hi there")
+    try:
+        echo.error()
+    except RemoteRPCError, e:
+        print "Got a remote exception:"
+        print e.ename, e.evalue, e.traceback
 
     math = RPCServiceProxy()
     # By connecting to two instances, requests are load balanced.

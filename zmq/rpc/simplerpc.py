@@ -67,6 +67,7 @@ import uuid
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.eventloop.ioloop import IOLoop, DelayedCallback
+from zmq.utils import jsonapi
 
 
 #-----------------------------------------------------------------------------
@@ -77,24 +78,38 @@ from zmq.eventloop.ioloop import IOLoop, DelayedCallback
 class Serializer(object):
     """A class for serializing/deserializing objects."""
 
-    _loads = pickle.loads
-    _dumps = pickle.dumps
+    def loads(self, s):
+        return pickle.loads(s)
+
+    def dumps(self, o):
+        return pickle.dumps(o)
 
     def serialize_args_kwargs(self, args, kwargs):
         """Serialize args/kwargs into a msg list."""
-        return self._dumps(args), self._dumps(kwargs)
+        return self.dumps(args), self.dumps(kwargs)
 
     def deserialize_args_kwargs(self, msg_list):
         """Deserialize a msg list into args, kwargs."""
-        return self._loads(msg_list[0]), self._loads(msg_list[1])
+        return self.loads(msg_list[0]), self.loads(msg_list[1])
 
     def serialize_result(self, result):
         """Serialize a result into a msg list."""
-        return [self._dumps(result)]
+        return [self.dumps(result)]
 
-    def pickle_deserializer_result(msg_list):
+    def deserialize_result(self, msg_list):
         """Deserialize a msg list into a result."""
-        return self._loads(msg_list[0])
+        return self.loads(msg_list[0])
+
+PickleSerializer = Serializer
+
+class JSONSerializer(Serializer):
+    """A class for serializing using JSON."""
+
+    def loads(self, s):
+        return jsonapi.loads(s)
+
+    def dumps(self, o):
+        return jsonapi.dumps(o)
 
 
 #-----------------------------------------------------------------------------
@@ -123,7 +138,7 @@ class RPCBase(object):
         self.context = context if context is not None else zmq.Context.instance()
         self.socket = None
         self.stream = None
-        self._serializer = serializer if serializer is not None else Serializer()
+        self._serializer = serializer if serializer is not None else PickleSerializer()
         self.reset()
 
     #-------------------------------------------------------------------------
@@ -135,13 +150,16 @@ class RPCBase(object):
         if isinstance(self.socket, zmq.Socket):
             self.socket.close()
         self._create_socket()
+        self.urls = []
 
     def bind(self, url):
         """Bind the service to a url of the form proto://ip:port."""
+        self.urls.append(url)
         self.socket.bind(url)
 
     def connect(self, url):
         """Connect the service to a url of the form proto://ip:port."""
+        self.urls.append(url)
         self.socket.connect(url)
 
 
@@ -326,13 +344,13 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         def _abort_request():
             cb_eb_dc = self._callbacks.pop(msg_id, None)
             if cb_eb_dc is not None:
-                eb = cb_eb[1]
+                eb = cb_eb_dc[1]
                 if eb is not None:
                     try:
                         raise RPCTimeoutError()
                     except:
                         etype, evalue, tb = sys.exc_info()
-                        eb(etype.__name__, evalue, tb)
+                        eb(etype.__name__, evalue, traceback.format_exc(tb))
         if timeout > 0:
             dc = DelayedCallback(_abort_request, timeout, self.loop)
             dc.start()
