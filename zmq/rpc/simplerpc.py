@@ -66,7 +66,35 @@ import uuid
 
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
-from zmq.eventloop.ioloop import IOLoop
+from zmq.eventloop.ioloop import IOLoop, DelayedCallback
+
+
+#-----------------------------------------------------------------------------
+# Serializer
+#-----------------------------------------------------------------------------
+
+
+class Serializer(object):
+    """A class for serializing/deserializing objects."""
+
+    _loads = pickle.loads
+    _dumps = pickle.dumps
+
+    def serialize_args_kwargs(self, args, kwargs):
+        """Serialize args/kwargs into a msg list."""
+        return self._dumps(args), self._dumps(kwargs)
+
+    def deserialize_args_kwargs(self, msg_list):
+        """Deserialize a msg list into args, kwargs."""
+        return self._loads(msg_list[0]), self._loads(msg_list[1])
+
+    def serialize_result(self, result):
+        """Serialize a result into a msg list."""
+        return [self._dumps(result)]
+
+    def pickle_deserializer_result(msg_list):
+        """Deserialize a msg list into a result."""
+        return self._loads(msg_list[0])
 
 
 #-----------------------------------------------------------------------------
@@ -76,7 +104,7 @@ from zmq.eventloop.ioloop import IOLoop
 
 class RPCBase(object):
 
-    def __init__(self, loop=None, context=None, serializer=None, deserializer=None):
+    def __init__(self, loop=None, context=None, serializer=None):
         """Base class for RPC service and proxy.
 
         Parameters
@@ -87,28 +115,16 @@ class RPCBase(object):
         context : Context
             An existing Context instance, if not passed, the Context.instance()
             will be used.
-        serializer : callable
-            A callable that will be used to serialize Python objects. The
-            default is pickle.dumps, but something like zmq.utils.jsonapi.dumps
-            could also be used.
-        deserializer : callable
-            A callable that will be used to deserialize Python objects. The
-            default is pickle.loads, but something like zmq.utils.jsonapi.loads
-            could also be used.
+        serializer : Serializer
+            An instance of a Serializer subclass that will be used to serialize
+            and deserialize args, kwargs and the result.
         """
         self.loop = loop if loop is not None else IOLoop.instance()
         self.context = context if context is not None else zmq.Context.instance()
         self.socket = None
         self.stream = None
-        self._serializer = serializer if serializer is not None else pickle.dumps
-        self._deserializer = deserializer if deserializer is not None else pickle.loads
+        self._serializer = serializer if serializer is not None else Serializer()
         self.reset()
-
-    def _serialize(self, o):
-        return self._serializer(o)
-
-    def _deserialize(self, o):
-        return self._deserializer(o)
 
     #-------------------------------------------------------------------------
     # Public API
@@ -119,16 +135,13 @@ class RPCBase(object):
         if isinstance(self.socket, zmq.Socket):
             self.socket.close()
         self._create_socket()
-        self.urls = []
 
     def bind(self, url):
         """Bind the service to a url of the form proto://ip:port."""
-        self.urls.append(url)
         self.socket.bind(url)
 
     def connect(self, url):
         """Connect the service to a url of the form proto://ip:port."""
-        self.urls.append(url)
         self.socket.connect(url)
 
 
@@ -145,11 +158,11 @@ class RPCService(RPCBase):
 
         The request is received as a multipart message:
 
-        [ident, msg_id, method, pickle.dumps(args), pickle.dumps(kwargs)]
+        [ident, msg_id, method, <sequence of serialized args/kwargs>]
 
         The reply depends on if the call was successful or not:
 
-        [ident, msg_id, 'SUCCESS', pickle.dumps(result)]
+        [ident, msg_id, 'SUCCESS', <sequece of serialized result>]
         [ident, msg_id, 'FAILURE', ename, evalue, traceback]
 
         Here the (ename, evalue, traceback) are utf-8 encoded unicode.
@@ -157,8 +170,7 @@ class RPCService(RPCBase):
         self.ident = msg_list[0]
         self.msg_id = msg_list[1]
         method = msg_list[2]
-        args = self._deserialize(msg_list[3])
-        kwargs = self._deserialize(msg_list[4])
+        args, kwargs = self._serializer.deserialize_args_kwargs(msg_list[3:])
 
         # Find and call the actual handler for message.
         handler = getattr(self, method, None)
@@ -169,14 +181,13 @@ class RPCService(RPCBase):
                 self._send_error()
             else:
                 try:
-                    presult = self._serialize(result)
+                    presult = self._serializer.serialize_result(result)
                 except:
                     self._send_error()
                 else:
-                    self.stream.send(self.ident, zmq.SNDMORE)
-                    self.stream.send(self.msg_id, zmq.SNDMORE)
-                    self.stream.send(b'SUCCESS', zmq.SNDMORE)
-                    self.stream.send(presult)
+                    msg_list = [self.ident, self.msg_id, b'SUCCESS']
+                    msg_list.extend(presult)
+                    self.stream.send_multipart(msg_list)
         else:
             logging.error('Unknown RPC method: %s' % method)
 
@@ -220,14 +231,21 @@ class RPCServiceProxyBase(RPCBase):
     def _init_stream(self):
         pass
 
+    def _build_msg(self, method, args, kwargs):
+        msg_id = bytes(uuid.uuid4())
+        method = bytes(method)
+        msg_list = [msg_id, method]
+        msg_list.extend(self._serializer.serialize_args_kwargs(args, kwargs))
+        return msg_id, msg_list
+
 
 class AsyncRPCServiceProxy(RPCServiceProxyBase):
     """An asynchronous service proxy."""
 
-    def __init__(self, loop=None, context=None, serializer=None, deserializer=None):
+    def __init__(self, loop=None, context=None, serializer=None):
         super(AsyncRPCServiceProxy, self).__init__(
             loop=loop, context=context,
-            serializer=serializer, deserializer=deserializer
+            serializer=serializer
         )
         self._callbacks = {}
 
@@ -238,20 +256,26 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
     def _handle_reply(self, msg_list):
         msg_id = msg_list[0]
         status = msg_list[1]
-        if status == b'SUCCESS':
-            result = self._deserialize(msg_list[2])
-        elif status == b'FAILURE':
-            ename = msg_list[2].decode('utf-8')
-            evalue = msg_list[3].decode('utf-8')
-            tb = msg_list[4].decode('utf-8')
-            result = RemoteRPCError(ename, evalue, tb)
-
-        cb = self._callbacks.get(msg_id)
-        if cb is not None:
-            try:
-                cb(result)
-            except:
-                self.log.error('Unexpected callback error', exc_info=True)
+        cb_eb_dc = self._callbacks.pop(msg_id, None) # (cb, eb) tuple
+        if cb_eb_dc is not None:
+            cb, eb, dc = cb_eb_dc
+            # Stop the timeout if there was one.
+            if dc is not None:
+                dc.stop()
+            if status == b'SUCCESS' and cb is not None:
+                result = self._serializer.deserialize_result(msg_list[2:])
+                try:
+                    cb(result)
+                except:
+                    logging.error('Unexpected callback error', exc_info=True)
+            elif status == b'FAILURE' and eb is not None:
+                ename = msg_list[2].decode('utf-8')
+                evalue = msg_list[3].decode('utf-8')
+                tb = msg_list[4].decode('utf-8')
+                try:
+                    eb(ename, evalue, tb)
+                except:
+                    logging.error('Unexpected callback error', exc_info=True)
 
     #-------------------------------------------------------------------------
     # Public API
@@ -260,7 +284,7 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
     def __getattr__(self, name):
         return AsyncRemoteMethod(self, name)
 
-    def call(self, method, callback, *args, **kwargs):
+    def call(self, method, callback, errback, timeout, *args, **kwargs):
         """Call the remote method with *args and **kwargs.
 
         Parameters
@@ -268,25 +292,54 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         method : str
             The name of the remote method to call.
         callback : callable
-            The callable call. The result of the RPC call is passed as 
-            the single argument to the callback: `callback(result)`. If
-            the call failed, result will be an instance of `RemoteRPCError`.
+            The callable to call upon success or None. The result of the RPC
+            call is passed as the single argument to the callback:
+            `callback(result)`.
+        errback : callable
+            The callable to call upon a remote exception or None, The
+            signature of this method is `errback(ename, evalue, tb)` where
+            the arguments are passed as strings.
+        timeout : int
+            The number of milliseconds to wait before aborting the request.
+            When a request is aborted, the errback will be called with an
+            RPCTimeoutError. Set to 0 or a negative number to use an infinite
+            timeout.
         args : tuple
             The tuple of arguments to pass as `*args` to the RPC method.
         kwargs : dict
             The dict of arguments to pass as `**kwargs` to the RPC method.
         """
-        if not self._ready:
-            raise RuntimeError('bind or connect must be called first')
-        method = bytes(method)
-        pargs = self._serialize(args)
-        pkwargs = self._serialize(kwargs)
-        msg_id = bytes(uuid.uuid4())
-        self.stream.send(msg_id, zmq.SNDMORE)
-        self.stream.send(method, zmq.SNDMORE)
-        self.stream.send(pargs, zmq.SNDMORE)
-        self.stream.send(pkwargs)
-        self._callbacks[msg_id] = callback
+        if not isinstance(timeout, int):
+            raise TypeError("int expected, got %r" % timeout)
+        if not (callback is None or callable(callback)):
+            raise TypeError("callable or None expected, got %r" % callback)
+        if not (errback is None or callable(errback)):
+            raise TypeError("callable or None expected, got %r" % errback)
+
+        msg_id, msg_list = self._build_msg(method, args, kwargs)
+        self.stream.send_multipart(msg_list)
+
+        # The following logic assumes that the reply won't come back too
+        # quickly, otherwise the callbacks won't be in place in time. It should
+        # be fine as this code should run very fast. This approach improves
+        # latency we send the request ASAP.
+        def _abort_request():
+            cb_eb_dc = self._callbacks.pop(msg_id, None)
+            if cb_eb_dc is not None:
+                eb = cb_eb[1]
+                if eb is not None:
+                    try:
+                        raise RPCTimeoutError()
+                    except:
+                        etype, evalue, tb = sys.exc_info()
+                        eb(etype.__name__, evalue, tb)
+        if timeout > 0:
+            dc = DelayedCallback(_abort_request, timeout, self.loop)
+            dc.start()
+        else:
+            dc = None
+
+        self._callbacks[msg_id] = (callback, errback, dc)
 
 
 class RPCServiceProxy(RPCServiceProxyBase):
@@ -312,19 +365,14 @@ class RPCServiceProxy(RPCServiceProxyBase):
         """
         if not self._ready:
             raise RuntimeError('bind or connect must be called first')
-        method = bytes(method)
-        pargs = self._serialize(args)
-        pkwargs = self._serialize(kwargs)
-        msg_id = bytes(uuid.uuid4())
-        self.socket.send(msg_id, zmq.SNDMORE)
-        self.socket.send(method, zmq.SNDMORE)
-        self.socket.send(pargs, zmq.SNDMORE)
-        self.socket.send(pkwargs)
+
+        msg_id, msg_list = self._build_msg(method, args, kwargs)
+        self.socket.send_multipart(msg_list)
         msg_list = self.socket.recv_multipart()
         msg_id = msg_list[0]
         status = msg_list[1]
         if status == b'SUCCESS':
-            result = self._deserialize(msg_list[2])
+            result = self._serializer.deserialize_result(msg_list[2:])
             return result
         elif status == b'FAILURE':
             ename = msg_list[2].decode('utf-8')
@@ -378,3 +426,5 @@ class RemoteRPCError(Exception):
         else:
             return sig
 
+class RPCTimeoutError(Exception):
+    pass
