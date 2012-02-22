@@ -9,22 +9,18 @@ Example
 
 To create a simple service::
 
-    from zmq.rpc.simplerpc import RPCService, rpc_method
-
     class Echo(RPCService):
 
         @rpc_method
         def echo(self, s):
             return s
 
-    if __name__ == '__main__':
-        echo = Echo()
-        echo.bind('tcp://127.0.0.1:5555')
-        echo.start()
+    echo = Echo()
+    echo.bind('tcp://127.0.0.1:5555')
+    IOLoop.instance().start()
 
 To talk to this service::
 
-    from basicnbserver.rpc import BlockingRPCServiceProxy
     p = RPCServiceProxy()
     p.connect('tcp://127.0.0.1:5555')
     p.echo('Hi there')
