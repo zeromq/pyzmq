@@ -4,14 +4,14 @@ from zmq.eventloop import ioloop
 ioloop.install()
 from tornado import web
 
-from zmq.web.zmqweb import ZMQWebApplication, ZMQRequestHandler
+from zmq.web import ZMQApplication
 
-class FooHandler(ZMQRequestHandler):
+class FooHandler(web.RequestHandler):
 
     def get(self):
         self.finish('bar')
 
-application = ZMQWebApplication(
+application = ZMQApplication(
     [(r"/foo", FooHandler)]
 )
 

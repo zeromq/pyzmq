@@ -4,9 +4,9 @@ from zmq.eventloop import ioloop
 ioloop.install()
 from tornado import web
 
-from zmq.web.zmqweb import ZMQWebApplicationProxy, ZMQRequestHandlerProxy
+from zmq.web import ZMQApplicationProxy, ZMQRequestHandlerProxy
 
-proxy = ZMQWebApplicationProxy()
+proxy = ZMQApplicationProxy()
 proxy.bind('tcp://127.0.0.1:5555')
 
 application = web.Application(

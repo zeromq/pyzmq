@@ -36,7 +36,6 @@ Authors:
 # Imports
 #-----------------------------------------------------------------------------
 
-import Cookie
 import logging
 import time
 import uuid
@@ -46,7 +45,6 @@ from tornado import httpserver
 from tornado import httputil
 from tornado import web
 from tornado.escape import native_str
-from tornado.util import b
 
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
@@ -57,7 +55,7 @@ from zmq.utils import jsonapi
 # Service client
 #-----------------------------------------------------------------------------
 
-class ZMQWebApplicationProxy(object):
+class ZMQApplicationProxy(object):
     """A client to a ZeroMQ based backend service."""
 
     def __init__(self, loop=None, context=None):
@@ -65,7 +63,6 @@ class ZMQWebApplicationProxy(object):
         self.context = context if context is not None else zmq.Context.instance()
         self._callbacks = {}
         self.socket = self.context.socket(zmq.DEALER)
-        self.socket.setsockopt(zmq.IDENTITY, bytes(uuid.uuid4()))
         self.stream = ZMQStream(self.socket, self.loop)
         self.stream.on_recv(self._handle_reply)
         self.urls = []
@@ -80,7 +77,7 @@ class ZMQWebApplicationProxy(object):
         self.urls.append(url)
         self.socket.bind(url)
 
-    def send_request(self, request, args, kwargs, callback=None):
+    def send_request(self, request, args, kwargs, write_callback, finish_callback):
         """Send a request to the service."""
         req = {}
         req['method'] = request.method
@@ -97,23 +94,32 @@ class ZMQWebApplicationProxy(object):
         req['kwargs'] = kwargs
 
         msg_id = bytes(uuid.uuid4())
-        self.stream.send(msg_id, zmq.SNDMORE)
-        self.stream.send(jsonapi.dumps(req), zmq.SNDMORE)
-        self.stream.send(body)
-        self._callbacks[msg_id] = callback
+        msg_list = [msg_id, jsonapi.dumps(req), body]
+        self.stream.send_multipart(msg_list)
+        self._callbacks[msg_id] = (write_callback, finish_callback)
         return msg_id
 
     def _handle_reply(self, msg_list):
+        len_msg_list = len(msg_list)
+        if len_msg_list < 2:
+            logging.error('Unexpected reply from proxy in ZMQApplicationProxy._handle_reply')
+            return
         msg_id = msg_list[0]
-        header_data = jsonapi.loads(msg_list[1])
-        body = msg_list[2]
+        reply = msg_list[1]
         cb = self._callbacks.get(msg_id)
         if cb is not None:
-            try:
-                cb(header_data, body)
-            except:
-                logging.error('Unexpected callback error', exc_info=True)
-                return
+            write, finish = cb
+            if reply == b'DATA' and len_msg_list == 3:
+                try:
+                    write(msg_list[2])
+                except:
+                    logging.error('Unexpected write error', exc_info=True)
+            elif reply == b'FINISH':
+                self._callbacks.pop(msg_id)
+                try:
+                    finish()
+                except:
+                    logging.error('Unexpected finish error', exc_info=True)
 
 
 class ZMQRequestHandlerProxy(web.RequestHandler):
@@ -122,14 +128,18 @@ class ZMQRequestHandlerProxy(web.RequestHandler):
     SUPPORTED_METHODS = ("GET", "HEAD", "POST", "DELETE", "PUT", "OPTIONS")
 
     def initialize(self, proxy):
+        """Initialize with a proxy that is an instance of ZMQApplicationProxy."""
+        # zmqweb Note: This method is empty in the base class.
         self.proxy = proxy
 
     def _execute(self, transforms, *args, **kwargs):
         """Executes this request with the given output transforms."""
-        # Transforms should be applied in the backend service so we null any
-        # transforms passed in here. This may be a little too silent, but
-        # there may be other handlers that do need the transforms.
+        # ZMQWEB NOTE: Transforms should be applied in the backend service so
+        # we null any transforms passed in here. This may be a little too
+        # silent, but there may be other handlers that do need the transforms.
         self._transforms = []
+        # ZMQWEB NOTE: This following try/except block is taken from the base
+        # class, but is modified to send the request to the proxy.
         try:
             if self.request.method not in self.SUPPORTED_METHODS:
                 raise web.HTTPError(405)
@@ -140,25 +150,14 @@ class ZMQRequestHandlerProxy(web.RequestHandler):
                 self.check_xsrf_cookie()
             self.prepare()
             if not self._finished:
-                # Don't decode args or kwargs as that will be done in the backen.
-                self.proxy.send_request(self.request, args, kwargs,
-                    self._handle_reply)
+                # ZMQWEB NOTE: Here is where we send the request to the proxy.
+                # We don't decode args or kwargs as that will be done in the
+                # backen.
+                self.proxy.send_request(
+                    self.request, args, kwargs, self.write, self.finish
+                )
         except Exception, e:
             self._handle_request_exception(e)
-
-    def _handle_reply(self, header_data, body):
-        # We simple save the headers and status code in the attributes
-        # web.RequestHandler uses.
-        self._headers = header_data['headers']
-        self._status_code = header_data['status_code']
-        self._list_headers = header_data['list_headers']
-        # new_cookies is  a list of cookie strings each of which we must
-        # wrap in a BaseCookie. We don't use SimpleCookie, because the other side has
-        # already run the values through the encoding logic of SimpleCookie. 
-        cookie_list = header_data['new_cookies']
-        self._new_cookies = [Cookie.BaseCookie(cookie) for cookie in cookie_list]
-        self.write(body)
-        self.finish()
 
 
 #-----------------------------------------------------------------------------
@@ -173,21 +172,27 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
                  body=None, remote_ip=None, protocol=None, host=None,
                  files=None, connection=None, arguments=None,
                  ident=None, msg_id=None, stream=None):
-        # The connection attribute MUST be missing as tornado tried to access
-        # connection.stream if connection exists. None of this is needed as
-        # ZeroMQ is connectionless.
+        # ZMQWEB NOTE: This method is copied from the base class to make a
+        # number of changes. We have added the arguments, ident, msg_id and
+        # stream kwargs.
         self.method = method
         self.uri = uri
         self.version = version
         self.headers = headers or httputil.HTTPHeaders()
         self.body = body or ""
+        # ZMQWEB NOTE: We simply copy the remote_ip, protocol and host as they
+        # have been parsed by the other side.
         self.remote_ip = remote_ip
         self.protocol = protocol
         self.host = host
         self.files = files or {}
+        # ZMQWEB NOTE: The connection attribute MUST not be saved in the
+        # instance. This is because its precense triggers logic in the base
+        # class that doesn't apply because ZeroMQ sockets are connectionless.
         self._start_time = time.time()
         self._finish_time = None
-        # Attributes we have added to ZMQHTTPRequest.
+
+        # ZMQWEB NOTE: Attributes we have added to ZMQHTTPRequest.
         self.ident = ident
         self.msg_id = msg_id
         self.stream = stream
@@ -195,40 +200,50 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         scheme, netloc, path, query, fragment = urlparse.urlsplit(native_str(uri))
         self.path = path
         self.query = query
-        # We let the original request and httpserver parse the arguments and simply
+        # ZMQWEB NOTE: We let the other side parse the arguments and simply
         # pass them into this class.
         self.arguments = arguments
 
-    def write(self, header_data, body=None):
-        """Writes the given chunk to the response stream."""
-        self.stream.send(self.ident, zmq.SNDMORE)
-        self.stream.send(self.msg_id, zmq.SNDMORE)
-        if body is None:
-            self.stream.send(header_data)
-        else:
-            self.stream.send(header_data, zmq.SNDMORE)
-            self.stream.send(body)
+    def write(self, chunk, callback=None):
+        # ZMQWEB NOTE: This method is overriden from the base class.
+        msg_list = [self.ident, self.msg_id, b'DATA', chunk]
+        self.stream.send_multipart(msg_list)
+        # ZMQWEB NOTE: We don't want to permanently register an on_send callback
+        # with the stream, so we just call the callback immediately.
+        if callback is not None:
+            try:
+                callback()
+            except:
+                pass
 
     def finish(self):
         """Finishes this HTTP request on the open connection."""
+        # ZMQWEB NOTE: This method is overriden from the base class to remove
+        # a call to self.connection.finish() and send the FINISH message.
         self._finish_time = time.time()
+        msg_list = [self.ident, self.msg_id, b'FINISH']
+        self.stream.send_multipart(msg_list)
 
     def get_ssl_certificate(self):
-        """Returns the client's SSL certificate, if any."""
+        # ZMQWEB NOTE: This method is overriden from the base class.
         raise NotImplementedError('get_ssl_certificate is not implemented subclass')
 
 
-class ZMQWebApplication(web.Application):
+class ZMQApplication(web.Application):
     """A ZeroMQ based application that serves a single handler."""
 
     def __init__(self, handlers=None, default_host="", transforms=None,
                  wsgi=False, **settings):
+        # ZMQWEB NOTE: This method is overriden from the base class.
+        # ZMQWEB NOTE: We have added new context and loop settings.
         self.context = settings.pop('context', zmq.Context.instance())
         self.loop = settings.pop('loop', IOLoop.instance())
-        super(ZMQWebApplication,self).__init__(
+        super(ZMQApplication,self).__init__(
             handlers=handlers, default_host=default_host,
             transforms=transforms, wsgi=wsgi, settings=settings
         )
+        # ZMQWEB NOTE: Here we create the zmq socket and stream and setup a
+        # list of urls that are bound/connected to.
         self.socket = self.context.socket(zmq.ROUTER)
         self.stream = ZMQStream(self.socket, self.loop)
         self.stream.on_recv(self._handle_request)
@@ -236,73 +251,81 @@ class ZMQWebApplication(web.Application):
 
     def connect(self, url):
         """Connect the service to the proto://ip:port given in the url."""
+        # ZMQWEB NOTE: This is a new method in this subclass.
         self.urls.append(url)
         self.socket.connect(url)
 
     def bind(self, url):
         """Bind the service to the proto://ip:port given in the url."""
+        # ZMQWEB NOTE: This is a new method in this subclass.
         self.urls.append(url)
         self.socket.bind(url)
 
     def _handle_request(self, msg_list):
-        request, args, kwargs = self._parse_request(msg_list)
-        self.__call__(request, args, kwargs)
+        # ZMQWEB NOTE: This is a new method in this subclass. This method
+        # is used as the on_recv callback for self.stream.
+        try:
+            request, args, kwargs = self._parse_request(msg_list)
+        except IndexError:
+            logging.error('Unexpected request message format in ZMQApplication._handle_request.')
+        else:
+            self.__call__(request, args, kwargs)
 
     def _parse_request(self, msg_list):
-        # Read message parts and build the request
+        # ZMQWEB NOTE: This is a new method in this subclass.
+        len_msg_list = len(msg_list)
+        if len_msg_list < 3:
+            raise IndexError('msg_list must have length 3 or more')
         ident = msg_list[0]
         msg_id = msg_list[1]
         req = jsonapi.loads(msg_list[2])
+        body = "" if len_msg_list == 3 else msg_list[3] 
 
-        method = req['method']
-        uri = req['uri']
-        version = req['version']
-        headers = req['headers']
-        body = msg_list[3]
-        remote_ip = req['remote_ip']
-        protocol = req['protocol']
-        host = req['host']
-        files = req['files']
-        arguments = req['arguments']
-        request = ZMQHTTPRequest(method=method, uri=uri, version=version,
-            headers=headers, body=body, remote_ip=remote_ip, protocol=protocol,
-            host=host, files=files, arguments=arguments,
-            ident=ident, msg_id=msg_id, stream=self.stream)
-
+        request = ZMQHTTPRequest(method=req['method'], uri=req['uri'],
+            version=req['version'], headers=req['headers'],
+            body=body, remote_ip=req['remote_ip'], protocol=req['protocol'],
+            host=req['host'], files=req['files'], arguments=req['arguments'],
+            ident=ident, msg_id=msg_id, stream=self.stream
+        )
         args = req['args']
         kwargs = req['kwargs']
         return request, args, kwargs
 
     def __call__(self, request, args, kwargs):
         """Called by HTTPServer to execute the request."""
+        # ZMQWEB NOTE: This method overrides the logic in the base class.
         # This is just like web.Application.__call__ but it lacks the
-        # parsing logic for args/kwargs. This is already done so we pass
-        # them in.
+        # parsing logic for args/kwargs, which are already parsed on the
+        # other side and are passed as arguments.
         transforms = [t(request) for t in self.transforms]
         handler = None
+        args = args
+        kwargs = kwargs
         handlers = self._get_host_handlers(request)
+        # ZMQWEB NOTE: ZMQRedirectHandler is used here.
+        redirect_handler_class = self.settings.get("redirect_handler_class",
+                                            web.RedirectHandler)
         if not handlers:
-            handler = RedirectHandler(
+            handler = redirect_handler_class(
                 self, request, url="http://" + self.default_host + "/")
         else:
             for spec in handlers:
                 match = spec.regex.match(request.path)
                 if match:
                     handler = spec.handler_class(self, request, **spec.kwargs)
-                    # web.Application.__call__ has logic here to parse args
-                    # and kwargs. These are already parsed for us and passed
+                    # ZMQWEB NOTE: web.Application.__call__ has logic here to
+                    # parse args and kwargs. This These are already parsed for us and passed
                     # into __call__ so we just use them.
                     break
             if not handler:
-                handler = ErrorHandler(self, request, status_code=404)
+                handler = web.ErrorHandler(self, request, status_code=404)
 
-        # In debug mode, re-compile templates and reload static files on every
-        # request so you don't need to restart to see changes
+        # ZMQWEB NOTE: ZMQRequestHandler and ZMQStaticFileHandler are used here.
         if self.settings.get("debug"):
-            with RequestHandler._template_loader_lock:
-                for loader in RequestHandler._template_loaders.values():
+            with web.RequestHandler._template_loader_lock:
+                for loader in web.RequestHandler._template_loaders.values():
                     loader.reset()
-            StaticFileHandler.reset()
+            web.StaticFileHandler.reset()
 
         handler._execute(transforms, *args, **kwargs)
         return handler
@@ -312,99 +335,5 @@ class ZMQWebApplication(web.Application):
     #---------------------------------------------------------------------------
 
     def listen(self, port, address="", **kwargs):
+        # ZMQWEB NOTE: This method is overriden from the base class.
         raise NotImplementedError('listen is not implmemented')
-
-
-class ZMQRequestHandler(web.RequestHandler):
-    """A ZeroMQ based handler subclass."""
-
-    def flush(self, include_footers=False, callback=None):
-        raise NotImplementedError('flush is not supported in this handler')
-
-    def finish(self, chunk=None):
-        """Finishes this response, ending the HTTP request."""
-        if self._finished:
-            raise RuntimeError("finish() called twice.  May be caused "
-                               "by using async operations without the "
-                               "@asynchronous decorator.")
-
-        if chunk is not None:
-            self.write(chunk)
-
-        # Automatically support ETags and add the Content-Length header if
-        # we have not flushed any content yet.
-        if not self._headers_written:
-            if (self._status_code == 200 and
-                self.request.method in ("GET", "HEAD") and
-                "Etag" not in self._headers):
-                etag = self.compute_etag()
-                if etag is not None:
-                    inm = self.request.headers.get("If-None-Match")
-                    if inm and inm.find(etag) != -1:
-                        self._write_buffer = []
-                        self.set_status(304)
-                    else:
-                        self.set_header("Etag", etag)
-            if "Content-Length" not in self._headers:
-                content_length = sum(len(part) for part in self._write_buffer)
-                self.set_header("Content-Length", content_length)
-
-        # Logic from flush
-        chunk = b("").join(self._write_buffer)
-        self._write_buffer = []
-        self._headers_written = True
-        for transform in self._transforms:
-            self._headers, chunk = transform.transform_first_chunk(
-                self._headers, chunk, True)
-
-        # self._new_cookies is a list of Cookie.SimpleCookie objects, which are
-        # subclasses of dict. We use .output() to get their cookie strings
-        # which are used to reconstruct the cookies on the other side. 
-        if hasattr(self, '_new_cookies'):
-            new_cookies = [cookie.output() for cookie in self._new_cookies]
-        else:
-            new_cookies = []
-        header_data = {
-            'headers': self._headers,
-            'list_headers': self._list_headers,
-            'status_code': self._status_code,
-            'new_cookies': new_cookies
-        }
-        header_data = jsonapi.dumps(header_data)
-
-        # Ignore the chunk and only write the headers for HEAD requests
-        if self.request.method == "HEAD":
-            self.request.write(header_data)
-        else:
-            self.request.write(header_data, chunk)
-
-        self.request.finish()
-        self._log()
-        self._finished = True
-        if hasattr(self,'on_finish'):
-            self.on_finish()
-
-
-class ZMQErrorHandler(web.ErrorHandler, ZMQRequestHandler):
-    pass
-
-
-class ZMQRedirectHandler(web.RedirectHandler, ZMQRequestHandler):
-    pass
-
-
-class ZMQStaticFileHandler(web.StaticFileHandler, ZMQRequestHandler):
-    pass
-
-
-class ZMQFallbackHandler(web.FallbackHandler, ZMQRequestHandler):
-    pass
-
-# Monkey patch the default handlers to use our versions. For any process that
-# imports webzmq, our versions will be used.
-Application = ZMQWebApplication
-RequestHandler = ZMQRequestHandler
-ErrorHandler= web.ErrorHandler = ZMQErrorHandler
-RedirectHandler = web.RedirectHandler = ZMQRedirectHandler
-StaticFileHandler = web.StaticFileHandler = ZMQStaticFileHandler
-FallbackHandler = web.FallbackHandler = ZMQFallbackHandler
