@@ -143,11 +143,8 @@ class ZMQRequestHandlerProxy(web.RequestHandler):
         try:
             if self.request.method not in self.SUPPORTED_METHODS:
                 raise web.HTTPError(405)
-            # If XSRF cookies are turned on, reject form submissions without
-            # the proper cookie
-            if self.request.method not in ("GET", "HEAD", "OPTIONS") and \
-               self.application.settings.get("xsrf_cookies"):
-                self.check_xsrf_cookie()
+            # ZMQWEB NOTE: We have removed the XSRF cookie handling from here
+            # as it will be handled in the backend.
             self.prepare()
             if not self._finished:
                 # ZMQWEB NOTE: Here is where we send the request to the proxy.
