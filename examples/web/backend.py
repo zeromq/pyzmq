@@ -1,8 +1,22 @@
-"""The master web server."""
+"""A backend request handler process.
+
+This file uses zmq.web to implement the backend logic for load balanced
+Tornado request handlers.
+
+To run this example:
+
+* Start one instance of frontend.py.
+* Start one or more instances of backend.py.
+* Hit the URLs http://127.0.0.1/foo and http://127.0.0.1/foo/sleep?t=1. The
+  t parameter of this last URL can be changed to something greater than 2 to
+  observe the timeout behavior.
+ 
+"""
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
 import time
+
 from zmq.eventloop import ioloop
 ioloop.install()
 from tornado import web
@@ -23,6 +37,9 @@ class SleepHandler(web.RequestHandler):
 
 application = ZMQApplication(
     [
+        #  A single ZMQApplication can run multiple request handlers, but the
+        # frontend must use a URL regular expression that matches all of the
+        # patterns in the backend.
         (r"/foo", FooHandler),
         (r"/foo/sleep", SleepHandler)
     ],

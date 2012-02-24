@@ -1,4 +1,4 @@
-"""An architecture that allows Tornado handlers to be run in processes.
+"""Classes allows Tornado handlers to be run in separate processes.
 
 This module uses ZeroMQ/PyZMQ sockets (DEALER/ROUTER) to enable individual
 Tornado handlers to be run in a separate backend process. Through the
