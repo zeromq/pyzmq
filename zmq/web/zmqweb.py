@@ -357,7 +357,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
         # with the stream, so we just call the callback immediately.
         if callback is not None:
             try:
-                stack_context(callback)()
+                stack_context.wrap(callback)()
             except:
                 logging.error('Unexpected exception in write callback', exc_info=True)
 

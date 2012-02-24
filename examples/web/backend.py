@@ -26,6 +26,7 @@ from zmq.web import ZMQApplication
 class FooHandler(web.RequestHandler):
 
     def get(self):
+        self.set_header('Handler', 'FooHandler')
         self.finish('bar')
 
 class SleepHandler(web.RequestHandler):
