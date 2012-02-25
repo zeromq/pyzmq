@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -55,6 +55,12 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes in PyZMQ</a><ul>
+<li><a class="reference internal" href="#dev">2.1dev</a><ul>
+<li><a class="reference internal" href="#name-changes">Name Changes</a></li>
+<li><a class="reference internal" href="#other-changes-and-removals">Other Changes and Removals</a></li>
+<li><a class="reference internal" href="#new-stuff">New Stuff</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id1">2.1.11</a></li>
 <li><a class="reference internal" href="#id2">2.1.10</a></li>
 <li><a class="reference internal" href="#id3">2.1.9</a></li>
@@ -95,6 +101,49 @@
 <span id="changelog"></span><h1>Changes in PyZMQ<a class="headerlink" href="#changes-in-pyzmq" title="Permalink to this headline">¶</a></h1>
 <p>This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 <a class="reference external" href="https://github.com/zeromq/pyzmq/commits">git log</a></p>
+<div class="section" id="dev">
+<h2>2.1dev<a class="headerlink" href="#dev" title="Permalink to this headline">¶</a></h2>
+<p>Some effort has gone into refining the pyzmq API in this release to make it a model for
+other language bindings.  This is principally made in a few renames of objects and methods,
+all of which leave the old name for backwards compatibility.</p>
+<div class="section" id="name-changes">
+<h3>Name Changes<a class="headerlink" href="#name-changes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>The <tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt> class has been renamed to <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Frame" title="zmq.core.message.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a>, to better match other
+zmq bindings. The old Message name remains for backwards-compatibility.  Wherever pyzmq
+docs say &#8220;Message&#8221;, they should refer to a complete zmq atom of communication (one or
+more Frames, connected by ZMQ_SNDMORE). Please report any remaining instances of
+Message== MessagePart with an Issue (or better yet a Pull Request).</li>
+<li>All <tt class="docutils literal"><span class="pre">foo_unicode</span></tt> methods are now called <tt class="docutils literal"><span class="pre">foo_string</span></tt> (<tt class="docutils literal"><span class="pre">_unicode</span></tt> remains for
+backwards compatibility).  This is not only for cross-language consistency, but it makes
+more sense in Python 3, where native strings are unicode, and the <tt class="docutils literal"><span class="pre">_unicode</span></tt> suffix
+was wedded too much to Python 2.</li>
+</ul>
+</div>
+<div class="section" id="other-changes-and-removals">
+<h3>Other Changes and Removals<a class="headerlink" href="#other-changes-and-removals" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">prefix</span></tt> removed as an unused keyword argument from <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_multipart" title="zmq.core.socket.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>.</li>
+<li>ZMQStream <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a> default has been changed to <cite>copy=True</cite>, so it matches
+Socket <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send" title="zmq.core.socket.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a>.</li>
+<li>ZMQStream <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_err" title="zmq.eventloop.zmqstream.ZMQStream.on_err"><tt class="xref py py-meth docutils literal"><span class="pre">on_err()</span></tt></a> is deprecated, because it never did anything.</li>
+</ul>
+</div>
+<div class="section" id="new-stuff">
+<h3>New Stuff<a class="headerlink" href="#new-stuff" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="api/generated/zmq.core.context.html#zmq.core.context.Context" title="zmq.core.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> objects can now set default options when they create a socket. These
+are set and accessed as attributes to the context.  Socket options that do not apply to a
+socket (e.g. SUBSCRIBE on non-SUB sockets) will simply be ignored.</li>
+<li><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv_stream" title="zmq.eventloop.zmqstream.ZMQStream.on_recv_stream"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv_stream()</span></tt></a> has been added, which adds the stream itself as a
+second argument to the callback, making it easier to use a single callback on multiple
+streams.</li>
+<li>A <tt class="xref py py-attr docutils literal"><span class="pre">more</span></tt> boolean attribute has been added to the <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Frame" title="zmq.core.message.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> (née
+Message) class, so that frames can be identified as terminal without extra queires of
+<tt class="xref py py-attr docutils literal"><span class="pre">rcvmore</span></tt>.</li>
+</ul>
+</div>
+</div>
 <div class="section" id="id1">
 <h2>2.1.11<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ul>
@@ -239,7 +288,7 @@ without passing references around.</li>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

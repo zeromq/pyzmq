@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.socket &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>core.socket &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,10 +26,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.stopwatch" href="zmq.core.stopwatch.html" />
-    <link rel="prev" title="core.poll" href="zmq.core.poll.html" /> 
+    <link rel="prev" title="core.socket" href="" /> 
   </head>
   <body>
 
@@ -50,7 +50,7 @@
           <a href="zmq.core.stopwatch.html" title="core.stopwatch"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.poll.html" title="core.poll"
+          <a href="#" title="core.socket"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -72,8 +72,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="zmq.core.poll.html"
-                        title="previous chapter">core.poll</a></p>
+  <p class="topless"><a href=""
+                        title="previous chapter">core.socket</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="zmq.core.stopwatch.html"
                         title="next chapter">core.stopwatch</a></p>
@@ -155,8 +155,8 @@ connect to this socket.</p>
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>addr</strong> : str</p>
 <blockquote class="last">
 <div><p>The address string. This has the form &#8216;protocol://interface:port&#8217;,
-for example &#8216;tcp://127.0.0.1:5555&#8217;. Protocols supported are
-tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+for example &#8216;tcp://127.0.0.1:5555&#8217;. Protocols supported include
+tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
 encoded to utf-8 first.</p>
 </div></blockquote>
 </td>
@@ -261,15 +261,41 @@ encoded to utf-8 first.</p>
 <blockquote>
 <div><p>The option to get.  Available values will depend on your
 version of libzmq.  Examples include:</p>
-<blockquote>
-<div><p>zmq.IDENTITY, HWM, LINGER, FD, EVENTS</p>
-</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zmq</span><span class="o">.</span><span class="n">IDENTITY</span><span class="p">,</span> <span class="n">HWM</span><span class="p">,</span> <span class="n">LINGER</span><span class="p">,</span> <span class="n">FD</span><span class="p">,</span> <span class="n">EVENTS</span>
+</pre></div>
+</div>
 </div></blockquote>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int or bytes</p>
 <blockquote class="last">
 <div><p>The value of the option as a bytestring or int.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.socket.Socket.getsockopt_string">
+<tt class="descname">getsockopt_string</tt><big>(</big><em>option</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.getsockopt_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of a socket option.</p>
+<p>See the 0MQ documentation for details on specific options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<blockquote>
+<div><p>The option to retrieve. Currently, IDENTITY is the only
+gettable option that can return a string.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode string (unicode on py2, str on py3)</p>
+<blockquote class="last">
+<div><p>The value of the option as a unicode string.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -293,7 +319,7 @@ gettable option that can return a string.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : unicode string (unicode on py2, str on py3)</p>
 <blockquote class="last">
 <div><p>The value of the option as a unicode string.</p>
 </div></blockquote>
@@ -305,7 +331,7 @@ gettable option that can return a string.</p>
 
 <dl class="method">
 <dt id="zmq.core.socket.Socket.poll">
-<tt class="descname">poll</tt><big>(</big><em>timeout=None</em>, <em>flags=POLLIN|POLLERR</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.poll" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">poll</tt><big>(</big><em>timeout=None</em>, <em>flags=POLLIN</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.poll" title="Permalink to this definition">¶</a></dt>
 <dd><p>Poll the socket for events.  The default is to poll forever for incoming
 events.  Timeout is in milliseconds, if specified.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -317,10 +343,10 @@ events.  Timeout is in milliseconds, if specified.</p>
 <div><p>The timeout (in milliseconds) to wait for an event. If unspecified
 (or secified None), will wait forever for an event.</p>
 </div></blockquote>
-<p><strong>flags</strong> : bitfield (int) [default: any event]</p>
+<p><strong>flags</strong> : bitfield (int) [default: POLLIN]</p>
 <blockquote>
-<div><p>The event flags to poll for (any combination of POLLIN|POLLOUT|POLLERR).
-The default is to check for incoming events (POLLIN|POLLERR).</p>
+<div><p>The event flags to poll for (any combination of POLLIN|POLLOUT).
+The default is to check for incoming events (POLLIN).</p>
 </div></blockquote>
 </td>
 </tr>
@@ -353,7 +379,7 @@ message arrives.</p>
 <p><strong>copy</strong> : bool</p>
 <blockquote>
 <div><p>Should the message be received in a copying or non-copying manner?
-If False a Message object is returned, if True a string copy of
+If False a Frame object is returned, if True a string copy of
 message is returned.</p>
 </div></blockquote>
 <p><strong>track</strong> : bool</p>
@@ -363,10 +389,10 @@ finished with it? (ignored if copy=True)</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>msg</strong> : str, Message</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>msg</strong> : bytes, Frame</p>
 <blockquote>
-<div><p>The returned message.  If <cite>copy</cite> is False, then it will be a Message,
-otherwise a str.</p>
+<div><p>The received message frame.  If <cite>copy</cite> is False, then it will be a Frame,
+otherwise it will be bytes.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -407,7 +433,7 @@ otherwise a str.</p>
 <dl class="method">
 <dt id="zmq.core.socket.Socket.recv_multipart">
 <tt class="descname">recv_multipart</tt><big>(</big><em>flags=0</em>, <em>copy=True</em>, <em>track=False</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.recv_multipart" title="Permalink to this definition">¶</a></dt>
-<dd><p>Receive a multipart message as a list of messages.</p>
+<dd><p>Receive a multipart message as a list of bytes or Frame objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -421,20 +447,20 @@ message arrives.</p>
 </div></blockquote>
 <p><strong>copy</strong> : bool, optional</p>
 <blockquote>
-<div><p>Should the message(s) be received in a copying or non-copying manner?
-If False a Message object is returned for part, if True a string copy of
-message is returned for each message part.</p>
+<div><p>Should the message frame(s) be received in a copying or non-copying manner?
+If False a Frame object is returned for each part, if True a copy of
+the bytes is made for each frame.</p>
 </div></blockquote>
 <p><strong>track</strong> : bool, optional</p>
 <blockquote>
-<div><p>Should the message(s) be tracked for notification that ZMQ has
+<div><p>Should the message frame(s) be tracked for notification that ZMQ has
 finished with it? (ignored if copy=True)</p>
 </div></blockquote>
 <p><strong>Returns</strong> :</p>
 <p><strong>&#8212;&#8212;-</strong> :</p>
 <p><strong>msg_parts</strong> : list</p>
 <blockquote class="last">
-<div><p>A list of messages in the multipart message; either Messages or bytes,
+<div><p>A list of frames in the multipart message; either Frames or bytes,
 depending on <cite>copy</cite>.</p>
 </div></blockquote>
 </td>
@@ -468,9 +494,9 @@ depending on <cite>copy</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="zmq.core.socket.Socket.recv_unicode">
-<tt class="descname">recv_unicode</tt><big>(</big><em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.recv_unicode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Receive a unicode string, as sent by send_unicode.</p>
+<dt id="zmq.core.socket.Socket.recv_string">
+<tt class="descname">recv_string</tt><big>(</big><em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.recv_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a unicode string, as sent by send_string.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -485,9 +511,37 @@ depending on <cite>copy</cite>.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>s</strong> : unicode string</p>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>s</strong> : unicode string (unicode on py2, str on py3)</p>
 <blockquote class="last">
-<div><p>The Python unicode string that arrives as message bytes.</p>
+<div><p>The Python unicode string that arrives as encoded bytes.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.socket.Socket.recv_unicode">
+<tt class="descname">recv_unicode</tt><big>(</big><em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.recv_unicode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive a unicode string, as sent by send_string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>flags</strong> : int</p>
+<blockquote>
+<div><p>Any valid recv flag.</p>
+</div></blockquote>
+<p><strong>encoding</strong> : str [default: &#8216;utf-8&#8217;]</p>
+<blockquote>
+<div><p>The encoding to be used</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>s</strong> : unicode string (unicode on py2, str on py3)</p>
+<blockquote class="last">
+<div><p>The Python unicode string that arrives as encoded bytes.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -504,7 +558,7 @@ depending on <cite>copy</cite>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>data</strong> : object, str, Message</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>data</strong> : object, str, Frame</p>
 <blockquote>
 <div><p>The content of the message.</p>
 </div></blockquote>
@@ -540,7 +594,7 @@ be True until the send is completed.</p>
 </div></blockquote>
 <p><strong>ValueError</strong> :</p>
 <blockquote>
-<div><p>If <cite>track=True</cite>, but an untracked Message is passed.</p>
+<div><p>If <cite>track=True</cite>, but an untracked Frame is passed.</p>
 </div></blockquote>
 <p><strong>ZMQError</strong> :</p>
 <blockquote class="last">
@@ -576,36 +630,29 @@ be True until the send is completed.</p>
 
 <dl class="method">
 <dt id="zmq.core.socket.Socket.send_multipart">
-<tt class="descname">send_multipart</tt><big>(</big><em>msg_parts</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em>, <em>prefix=None</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_multipart" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send a sequence of messages as a multipart message.</p>
+<tt class="descname">send_multipart</tt><big>(</big><em>msg_parts</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_multipart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a sequence of buffers as a multipart message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>msg_parts</strong> : iterable</p>
 <blockquote>
-<div><p>A sequence of messages to send as a multipart message. Each element
-can be any sendable object (Message, bytes, buffer-providers)</p>
+<div><p>A sequence of objects to send as a multipart message. Each element
+can be any sendable object (Frame, bytes, buffer-providers)</p>
 </div></blockquote>
 <p><strong>flags</strong> : int, optional</p>
 <blockquote>
-<div><p>Only the NOBLOCK flagis supported, SNDMORE is handled
-automatically.</p>
+<div><p>SNDMORE is handled automatically for frames before the last.</p>
 </div></blockquote>
 <p><strong>copy</strong> : bool, optional</p>
 <blockquote>
-<div><p>Should the message(s) be sent in a copying or non-copying manner.</p>
+<div><p>Should the frame(s) be sent in a copying or non-copying manner.</p>
 </div></blockquote>
 <p><strong>track</strong> : bool, optional</p>
 <blockquote>
-<div><p>Should the message(s) be tracked for notification that ZMQ has
+<div><p>Should the frame(s) be tracked for notification that ZMQ has
 finished with it (ignored if copy=True).</p>
-</div></blockquote>
-<p><strong>prefix</strong> : iterable</p>
-<blockquote>
-<div><p>A sequence of messages to send as a 0MQ routing prefix. With the removal
-of LABELs from libzmq3, <cite>prefix</cite> has no effect beyond being prepended
-to msg_parts.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -650,14 +697,44 @@ support.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="zmq.core.socket.Socket.send_unicode">
-<tt class="descname">send_unicode</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>copy=False</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_unicode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send a Python unicode object as a message with an encoding.</p>
+<dt id="zmq.core.socket.Socket.send_string">
+<tt class="descname">send_string</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>copy=False</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a Python unicode string as a message with an encoding.</p>
+<p>0MQ communicates with raw bytes, so you must encode/decode
+text (unicode on py2, str on py3) around 0MQ.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>u</strong> : Python unicode object</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>u</strong> : Python unicode string (unicode on py2, str on py3)</p>
+<blockquote>
+<div><p>The unicode string to send.</p>
+</div></blockquote>
+<p><strong>flags</strong> : int, optional</p>
+<blockquote>
+<div><p>Any valid send flag.</p>
+</div></blockquote>
+<p><strong>encoding</strong> : str [default: &#8216;utf-8&#8217;]</p>
+<blockquote class="last">
+<div><p>The encoding to be used</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.socket.Socket.send_unicode">
+<tt class="descname">send_unicode</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>copy=False</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.send_unicode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a Python unicode string as a message with an encoding.</p>
+<p>0MQ communicates with raw bytes, so you must encode/decode
+text (unicode on py2, str on py3) around 0MQ.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>u</strong> : Python unicode string (unicode on py2, str on py3)</p>
 <blockquote>
 <div><p>The unicode string to send.</p>
 </div></blockquote>
@@ -688,13 +765,42 @@ support.</p>
 <blockquote>
 <div><p>The option to set.  Available values will depend on your
 version of libzmq.  Examples include:</p>
-<blockquote>
-<div><p>zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD</p>
-</div></blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="n">UNSUBSCRIBE</span><span class="p">,</span> <span class="n">IDENTITY</span><span class="p">,</span> <span class="n">HWM</span><span class="p">,</span> <span class="n">LINGER</span><span class="p">,</span> <span class="n">FD</span>
+</pre></div>
+</div>
 </div></blockquote>
 <p><strong>optval</strong> : int or bytes</p>
 <blockquote class="last">
 <div><p>The value of the option to set.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.core.socket.Socket.setsockopt_string">
+<tt class="descname">setsockopt_string</tt><big>(</big><em>option</em>, <em>optval</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#zmq.core.socket.Socket.setsockopt_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set socket options with a unicode object it is simply a wrapper
+for setsockopt to protect from encoding ambiguity.</p>
+<p>See the 0MQ documentation for details on specific options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<blockquote>
+<div><p>The name of the option to set. Can be any of: SUBSCRIBE, 
+UNSUBSCRIBE, IDENTITY</p>
+</div></blockquote>
+<p><strong>optval</strong> : unicode string (unicode on py2, str on py3)</p>
+<blockquote>
+<div><p>The value of the option to set.</p>
+</div></blockquote>
+<p><strong>encoding</strong> : str</p>
+<blockquote class="last">
+<div><p>The encoding to be used, default is utf8</p>
 </div></blockquote>
 </td>
 </tr>
@@ -717,7 +823,7 @@ for setsockopt to protect from encoding ambiguity.</p>
 <div><p>The name of the option to set. Can be any of: SUBSCRIBE, 
 UNSUBSCRIBE, IDENTITY</p>
 </div></blockquote>
-<p><strong>optval</strong> : unicode</p>
+<p><strong>optval</strong> : unicode string (unicode on py2, str on py3)</p>
 <blockquote>
 <div><p>The value of the option to set.</p>
 </div></blockquote>
@@ -760,7 +866,7 @@ UNSUBSCRIBE, IDENTITY</p>
           <a href="zmq.core.stopwatch.html" title="core.stopwatch"
              >next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.poll.html" title="core.poll"
+          <a href="#" title="core.socket"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -773,7 +879,7 @@ UNSUBSCRIBE, IDENTITY</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

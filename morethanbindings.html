@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Than Just Bindings &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>More Than Just Bindings &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" />
     <link rel="next" title="Serializing messages with PyZMQ" href="serialization.html" />
     <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
   </head>
@@ -64,8 +64,9 @@
   <ul>
 <li><a class="reference internal" href="#">More Than Just Bindings</a><ul>
 <li><a class="reference internal" href="#the-core-as-bindings">The Core as Bindings</a></li>
-<li><a class="reference internal" href="#thread-safety">Thread Safety</a><ul>
-<li><a class="reference internal" href="#socket-options-as-attributes">Socket Options as Attributes</a></li>
+<li><a class="reference internal" href="#thread-safety">Thread Safety</a></li>
+<li><a class="reference internal" href="#socket-options-as-attributes">Socket Options as Attributes</a><ul>
+<li><a class="reference internal" href="#default-options-on-the-context">Default Options on the Context</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#core-extensions">Core Extensions</a><ul>
@@ -145,8 +146,9 @@ approach is not recommended.</p>
 <p class="first admonition-title">See also</p>
 <p class="last">ZeroMQ API <a class="reference external" href="http://api.zeromq.org/2-1:zmq">note on threadsafety</a></p>
 </div>
+</div>
 <div class="section" id="socket-options-as-attributes">
-<h3>Socket Options as Attributes<a class="headerlink" href="#socket-options-as-attributes" title="Permalink to this headline">¶</a></h3>
+<h2>Socket Options as Attributes<a class="headerlink" href="#socket-options-as-attributes" title="Permalink to this headline">¶</a></h2>
 <p class="versionadded">
 <span class="versionmodified">New in version 2.1.9.</span></p>
 <p>In 0MQ, socket options are set/retrieved with the <tt class="xref py py-meth docutils literal"><span class="pre">set/getsockopt()</span></tt> methods. With the
@@ -163,6 +165,20 @@ behave just as you would expect:</p>
 <span class="c"># 16</span>
 </pre></div>
 </div>
+<div class="section" id="default-options-on-the-context">
+<h3>Default Options on the Context<a class="headerlink" href="#default-options-on-the-context" title="Permalink to this headline">¶</a></h3>
+<p class="versionadded">
+<span class="versionmodified">New in version 2.1.12.</span></p>
+<p>Just like setting socket options as attributes on Sockets, you can do the same on Contexts.
+This affects the default options of any <em>new</em> sockets created after the assignment.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ctx</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">linger</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+<span class="n">req</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Socket options that do not apply to a socket (e.g. SUBSCRIBE on non-SUB sockets) will
+simply be ignored.</p>
 </div>
 </div>
 <div class="section" id="core-extensions">
@@ -171,14 +187,14 @@ behave just as you would expect:</p>
 bindings, and are not general ØMQ features.</p>
 <div class="section" id="builtin-serialization">
 <h3>Builtin Serialization<a class="headerlink" href="#builtin-serialization" title="Permalink to this headline">¶</a></h3>
-<p>First, we added common serialization with the builtin <a class="reference external" href="http://docs.python.org/library/json.html#module-json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#module-pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>
+<p>First, we added common serialization with the builtin <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>
 as first-class methods to the <tt class="xref py py-class docutils literal"><span class="pre">Socket</span></tt> class. A socket has the methods
 <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_json" title="zmq.core.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_pyobj" title="zmq.core.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an
-object over the wire after serializing with <a class="reference external" href="http://docs.python.org/library/json.html#module-json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#module-pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a> respectively,
+object over the wire after serializing with <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a> respectively,
 and any object sent via those methods can be reconstructed with the
 <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_json" title="zmq.core.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_pyobj" title="zmq.core.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_unicode" title="zmq.core.socket.Socket.send_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">send_unicode()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_unicode" title="zmq.core.socket.Socket.recv_unicode"><tt class="xref py py-meth docutils literal"><span class="pre">recv_unicode()</span></tt></a> that simply send bytes
+<a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_string" title="zmq.core.socket.Socket.send_string"><tt class="xref py py-meth docutils literal"><span class="pre">send_string()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_string" title="zmq.core.socket.Socket.recv_string"><tt class="xref py py-meth docutils literal"><span class="pre">recv_string()</span></tt></a> that simply send bytes
 after encoding the message (&#8216;utf-8&#8217; is the default).</p>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -205,23 +221,23 @@ builtin <a class="reference external" href="http://docs.python.org/library/queue
 amount of time (10s of µs), so in situations instantiating many small messages, this can
 actually dominate performance. As a result, tracking is optional, via the <tt class="docutils literal"><span class="pre">track</span></tt> flag,
 which is optionally passed, always defaulting to <tt class="docutils literal"><span class="pre">False</span></tt>, in each of the three places
-where a Message is instantiated: The <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Message" title="zmq.core.message.Message"><tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt></a> constructor, and non-copying sends
-and receives.</p>
+where a Frame object (the pyzmq object for wrapping a segment of a message) is
+instantiated: The <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Frame" title="zmq.core.message.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> constructor, and non-copying sends and receives.</p>
 <p>A MessageTracker is very simple, and has just one method and one attribute. The property
-<tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="docutils literal"><span class="pre">True</span></tt> when the Message(s) being tracked are no
+<tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="docutils literal"><span class="pre">True</span></tt> when the Frame(s) being tracked are no
 longer in use by ØMQ, and <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.MessageTracker.wait" title="zmq.core.message.MessageTracker.wait"><tt class="xref py py-meth docutils literal"><span class="pre">MessageTracker.wait()</span></tt></a> will block, waiting for the
-Message(s) to be released.</p>
+Frame(s) to be released.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">A message cannot be tracked after it has been instantiated without tracking. If a
-Message is to even have the <em>option</em> of tracking, it must be constructed with
+<p class="last">A Frame cannot be tracked after it has been instantiated without tracking. If a
+Frame is to even have the <em>option</em> of tracking, it must be constructed with
 <tt class="docutils literal"><span class="pre">track=True</span></tt>.</p>
 </div>
 </div>
 </div>
 <div class="section" id="extensions">
 <h2>Extensions<a class="headerlink" href="#extensions" title="Permalink to this headline">¶</a></h2>
-<p>So far, PyZMQ includes three extensions to core ØMQ that we found basic enough to be
+<p>So far, PyZMQ includes four extensions to core ØMQ that we found basic enough to be
 included in PyZMQ itself:</p>
 <ul class="simple">
 <li><a class="reference internal" href="logging.html#logging"><em>zmq.log</em></a> : Logging handlers for hooking Python logging up to the
@@ -266,7 +282,7 @@ with ØMQ sockets.</li>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

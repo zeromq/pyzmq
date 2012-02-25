@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Serializing messages with PyZMQ &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>Serializing messages with PyZMQ &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" />
     <link rel="next" title="Devices in PyZMQ" href="devices.html" />
     <link rel="prev" title="More Than Just Bindings" href="morethanbindings.html" /> 
   </head>
@@ -108,7 +108,7 @@
 <h2>Builtin serialization<a class="headerlink" href="#builtin-serialization" title="Permalink to this headline">¶</a></h2>
 <p>PyZMQ is primarily bindings for libzmq, but we do provide three builtin serialization
 methods for convenience, to help Python developers learn libzmq. Python has two primary
-packages for serializing objects: <a class="reference external" href="http://docs.python.org/library/json.html#module-json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#module-pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>, so we provide
+packages for serializing objects: <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>, so we provide
 simple convenience methods for sending and receiving objects serialized with these
 modules. A socket has the methods <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_json" title="zmq.core.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and
 <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_pyobj" title="zmq.core.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an object over the wire after
@@ -184,7 +184,7 @@ the array.</p>
 <table class="docutils citation" frame="void" id="zlib" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[zlib]</a></td><td>Python stdlib module for zip compression: <a class="reference external" href="http://docs.python.org/library/zlib.html#module-zlib" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">zlib</span></tt></a></td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id3">[zlib]</a></td><td>Python stdlib module for zip compression: <a class="reference external" href="http://docs.python.org/library/zlib.html#zlib" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">zlib</span></tt></a></td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="blosc" rules="none">
@@ -227,7 +227,7 @@ the array.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

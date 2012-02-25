@@ -12,11 +12,11 @@ Module: :mod:`core.message`
 Classes
 -------
 
-:class:`Message`
-~~~~~~~~~~~~~~~~
+:class:`Frame`
+~~~~~~~~~~~~~~
 
 
-.. autoclass:: Message
+.. autoclass:: Frame
   :members:
   :undoc-members:
   :inherited-members:

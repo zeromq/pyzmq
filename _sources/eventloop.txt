@@ -10,8 +10,8 @@ native sockets. We have included a small part of Tornado (specifically its
 :mod:`.ioloop`), and adapted its :class:`IOStream` class into :class:`.ZMQStream` for
 handling poll events on ØMQ sockets. A ZMQStream object works much like a Socket object,
 but instead of calling :meth:`~.Socket.recv` directly, you register a callback with
-:meth:`~.ZMQStream.on_recv`. callbacks can also be registered for send and error events
-with :meth:`~.ZMQStream.on_send` and :meth:`~.ZMQStream.on_err` respectively.
+:meth:`~.ZMQStream.on_recv`. callbacks can also be registered for send events
+with :meth:`~.ZMQStream.on_send`.
 
 
 :func:`install()`
@@ -77,16 +77,41 @@ even if its length is 1. You can easily use this to build things like an echo so
 
     s = ctx.socket(zmq.REP)
     s.bind('tcp://localhost:12345')
-    loop = ioloop.IOLoop.instance()
-    stream = ZMQStream(s, loop)
+    stream = ZMQStream(s)
     def echo(msg):
         stream.send_multipart(msg)
     stream.on_recv(echo)
-    loop.start()
+    ioloop.IOLoop.instance().start()
 
 on_recv can also take a `copy` flag, just like :meth:`.Socket.recv`. If `copy=False`, then
-callbacks registered with on_recv will receive tracked :class:`.Message` objects instead of
+callbacks registered with on_recv will receive tracked :class:`.Frame` objects instead of
 bytes.
+
+:meth:`on_recv_stream`
+----------------------
+
+:meth:`.ZMQStream.on_recv_stream` is just like on_recv above, but the callback will be 
+passed both the message and the stream, rather than just the message.  This is meant to make
+it easier to use a single callback with multiple streams.
+
+.. sourcecode:: python
+
+    s1 = ctx.socket(zmq.REP)
+    s1.bind('tcp://localhost:12345')
+    stream1 = ZMQStream(s1)
+    
+    s2 = ctx.socket(zmq.REP)
+    s2.bind('tcp://localhost:54321')
+    stream2 = ZMQStream(s2)
+    
+    def echo(msg, stream):
+        stream.send_multipart(msg)
+    
+    stream1.on_recv_stream(echo)
+    stream2.on_recv_stream(echo)
+    
+    ioloop.IOLoop.instance().start()
+
 
 :meth:`flush`
 -------------

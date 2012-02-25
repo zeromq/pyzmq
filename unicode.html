@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyZMQ and Unicode &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>PyZMQ and Unicode &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" />
     <link rel="next" title="More Than Just Bindings" href="morethanbindings.html" />
     <link rel="prev" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
   </head>
@@ -110,7 +110,7 @@
   <div class="section" id="pyzmq-and-unicode">
 <span id="unicode"></span><h1>PyZMQ and Unicode<a class="headerlink" href="#pyzmq-and-unicode" title="Permalink to this headline">¶</a></h1>
 <p>PyZMQ is built with an eye towards an easy transition to Python 3, and part of
-that is dealing with unicode objects. This is an overview of some of what we
+that is dealing with unicode strings. This is an overview of some of what we
 found, and what it means for PyZMQ.</p>
 <div class="section" id="first-unicode-in-python-2-and-3">
 <h2>First, Unicode in Python 2 and 3<a class="headerlink" href="#first-unicode-in-python-2-and-3" title="Permalink to this headline">¶</a></h2>
@@ -188,7 +188,7 @@ shouldn&#8217;t try to always decode on the retrieval side, because if users jus
 bytes, then we are potentially using up enormous amounts of excess memory
 unnecessarily, due to copying and larger memory footprint of unicode strings.</p>
 <p>Still, we recognize the fact that users will quite frequently have unicode
-strings that they want to send, so we have added <tt class="docutils literal"><span class="pre">socket.&lt;method&gt;_unicode()</span></tt>
+strings that they want to send, so we have added <tt class="docutils literal"><span class="pre">socket.&lt;method&gt;_string()</span></tt>
 wrappers. These methods simply wrap their bytes counterpart by encoding
 to/decoding from bytes around them, and they all take an <cite>encoding</cite> keyword
 argument that defaults to utf-8. Since encoding and decoding are necessary to
@@ -198,6 +198,14 @@ actions with these wrappers.</p>
 strictly setters and there is not corresponding getter method. As a result, we
 feel that we can safely coerce unicode objects to bytes (always to utf-8) in
 these methods.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For cross-language symmetry (including Python 3), the <tt class="docutils literal"><span class="pre">_unicode</span></tt> methods
+are now <tt class="docutils literal"><span class="pre">_string</span></tt>. Many languages have a notion of native strings, and
+the use of <tt class="docutils literal"><span class="pre">_unicode</span></tt> was wedded too closely to the name of such objects
+in Python 2.  For the time being, anywhere you see <tt class="docutils literal"><span class="pre">_string</span></tt>, <tt class="docutils literal"><span class="pre">_unicode</span></tt>
+also works, and is the only option in pyzmq ≤ 2.1.11.</p>
+</div>
 <div class="section" id="the-methods">
 <h3>The Methods<a class="headerlink" href="#the-methods" title="Permalink to this headline">¶</a></h3>
 <p>Overview of the relevant methods:</p>
@@ -235,16 +243,16 @@ encoded to utf-8 <tt class="docutils literal"><span class="pre">bytes</span></tt
 </dd></dl>
 
 <dl class="function">
-<dt id="socket.send_unicode">
-<tt class="descclassname">socket.</tt><tt class="descname">send_unicode</tt><big>(</big><em>self</em>, <em>unicode s</em>, <em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.send_unicode" title="Permalink to this definition">¶</a></dt>
+<dt id="socket.send_string">
+<tt class="descclassname">socket.</tt><tt class="descname">send_string</tt><big>(</big><em>self</em>, <em>unicode s</em>, <em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.send_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>takes a <tt class="docutils literal"><span class="pre">unicode</span></tt> string <cite>s</cite>, and sends the <tt class="docutils literal"><span class="pre">bytes</span></tt>
 after encoding without an extra copy, via:</p>
 <p><cite>socket.send(s.encode(encoding), flags, copy=False)</cite></p>
 </dd></dl>
 
 <dl class="function">
-<dt id="socket.recv_unicode">
-<tt class="descclassname">socket.</tt><tt class="descname">recv_unicode</tt><big>(</big><em>self</em>, <em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.recv_unicode" title="Permalink to this definition">¶</a></dt>
+<dt id="socket.recv_string">
+<tt class="descclassname">socket.</tt><tt class="descname">recv_string</tt><big>(</big><em>self</em>, <em>flags=0</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.recv_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>always returns <tt class="docutils literal"><span class="pre">unicode</span></tt> string</p>
 <p>there will be a <tt class="docutils literal"><span class="pre">UnicodeError</span></tt> if it cannot decode the buffer</p>
 <p>performs non-copying <cite>recv</cite>, and decodes the buffer with <cite>encoding</cite></p>
@@ -264,16 +272,16 @@ after encoding without an extra copy, via:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="socket.setsockopt_unicode">
-<tt class="descclassname">socket.</tt><tt class="descname">setsockopt_unicode</tt><big>(</big><em>self</em>, <em>opt</em>, <em>unicode optval</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.setsockopt_unicode" title="Permalink to this definition">¶</a></dt>
+<dt id="socket.setsockopt_string">
+<tt class="descclassname">socket.</tt><tt class="descname">setsockopt_string</tt><big>(</big><em>self</em>, <em>opt</em>, <em>unicode optval</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.setsockopt_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>accepts <tt class="docutils literal"><span class="pre">unicode</span></tt> string for <cite>optval</cite></p>
 <p>encodes <cite>optval</cite> with <cite>encoding</cite> before passing the <tt class="docutils literal"><span class="pre">bytes</span></tt> to
 <cite>setsockopt</cite></p>
 </dd></dl>
 
 <dl class="function">
-<dt id="socket.getsockopt_unicode">
-<tt class="descclassname">socket.</tt><tt class="descname">getsockopt_unicode</tt><big>(</big><em>self</em>, <em>opt</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.getsockopt_unicode" title="Permalink to this definition">¶</a></dt>
+<dt id="socket.getsockopt_string">
+<tt class="descclassname">socket.</tt><tt class="descname">getsockopt_string</tt><big>(</big><em>self</em>, <em>opt</em>, <em>encoding='utf-8'</em><big>)</big><a class="headerlink" href="#socket.getsockopt_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>always returns <tt class="docutils literal"><span class="pre">unicode</span></tt> string, after decoding with <cite>encoding</cite></p>
 <p>note that <cite>zmq.IDENTITY</cite> is the only <cite>sockopt</cite> with a string value
 that can be queried with <cite>getsockopt</cite></p>
@@ -314,7 +322,7 @@ that can be queried with <cite>getsockopt</cite></p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

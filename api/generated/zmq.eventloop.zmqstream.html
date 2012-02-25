@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.zmqstream &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>eventloop.zmqstream &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
     <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
@@ -120,7 +120,7 @@
 <p>Methods:</p>
 <ul>
 <li><dl class="first docutils">
-<dt><strong>on_recv(callback,copy=True):</strong></dt>
+<dt><strong>on_recv(callback, copy=True):</strong></dt>
 <dd><p class="first last">register a callback to be run every time the socket has something to receive</p>
 </dd>
 </dl>
@@ -132,15 +132,9 @@
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt><strong>on_err(callback):</strong></dt>
-<dd><p class="first last">register a callback to be run every time there is an error</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
 <dt><strong>send(self, msg, flags=0, copy=False, callback=None):</strong></dt>
 <dd><p class="first">perform a send that will trigger the callback
-if callback is passed, on_send is also called</p>
+if callback is passed, on_send is also called.</p>
 <p class="last">There are also send_multipart(), send_json(), send_pyobj()</p>
 </dd>
 </dl>
@@ -160,14 +154,8 @@ if callback is passed, on_send is also called</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><strong>stop_on_err():</strong></dt>
-<dd><p class="first last">turn off the error callback</p>
-</dd>
-</dl>
-</li>
 </ul>
-<p>All of which simply call <tt class="docutils literal"><span class="pre">on_&lt;evt&gt;(None)</span></tt>.</p>
+<p>which simply call <tt class="docutils literal"><span class="pre">on_&lt;evt&gt;(None)</span></tt>.</p>
 <p>The entire socket interface, excluding direct recv methods, is also
 provided, primarily through direct-linking the methods.
 e.g.</p>
@@ -237,29 +225,18 @@ Both send and recv count against this limit.</p>
 <dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.on_err">
 <tt class="descname">on_err</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_err" title="Permalink to this definition">¶</a></dt>
-<dd><p>register a callback to be called on POLLERR events
-with no arguments.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
-<blockquote class="last">
-<div><p>callback will be passed no arguments.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dd><p>DEPRECATED, does nothing</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.on_recv">
 <tt class="descname">on_recv</tt><big>(</big><em>callback</em>, <em>copy=True</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register a callback to be called when a message is ready to recv.
-There can be only one callback registered at a time, so each
-call to on_recv replaces previously registered callbacks.</p>
+<dd><p>Register a callback for when a message is ready to recv.</p>
+<p>There can be only one callback registered at a time, so each
+call to <cite>on_recv</cite> replaces previously registered callbacks.</p>
 <p>on_recv(None) disables recv event polling.</p>
+<p>Use on_recv_stream(callback) instead, to register a callback that will receive
+both this ZMQStream and the message, instead of just the message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -284,17 +261,37 @@ then callback will receive bytes/str objects.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.on_recv_stream">
+<tt class="descname">on_recv_stream</tt><big>(</big><em>callback</em>, <em>copy=True</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_recv_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as on_recv, but callback will get this stream as first argument</p>
+<p>callback must take exactly two arguments, as it will be called as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">callback</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Useful when a single callback should be used with multiple streams.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.on_send">
 <tt class="descname">on_send</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_send" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register a callback to be called on each send
-There will be two arguments: the message being sent (always a list), 
-and the return result of socket.send_multipart(msg).</p>
+<dd><p>Register a callback to be called on each send</p>
+<p>There will be two arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">callback</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><cite>msg</cite> will be the list of sendable objects that was just sent</li>
+<li><cite>status</cite> will be the return result of socket.send_multipart(msg) -
+MessageTracker or None.</li>
+</ul>
 <p>Non-copying sends return a MessageTracker object whose
-<cite>done</cite> attribute will be True when the send is complete. 
+<cite>done</cite> attribute will be True when the send is complete.
 This allows users to track when an object is safe to write to
 again.</p>
 <p>The second argument will always be None if copy=True
 on the send.</p>
+<p>Use on_send_stream(callback) to register a callback that will be passed
+this ZMQStream as the first argument, in addition to the other two.</p>
 <p>on_send(None) disables recv event polling.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -303,8 +300,8 @@ on the send.</p>
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>callback</strong> : callable</p>
 <blockquote class="last">
 <div><p>callback must take exactly two arguments, which will be
-There will be two arguments: the message being sent (always a list), 
-and the return result of socket.send_multipart(msg) - 
+the message being sent (always a list),
+and the return result of socket.send_multipart(msg) -
 MessageTracker or None.</p>
 <p>if callback is None, send callbacks are disabled.</p>
 </div></blockquote>
@@ -312,6 +309,17 @@ MessageTracker or None.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.on_send_stream">
+<tt class="descname">on_send_stream</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.on_send_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as on_send, but callback will get this stream as first argument</p>
+<p>Callback will be passed three arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">callback</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Useful when a single callback should be used with multiple streams.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -327,7 +335,7 @@ MessageTracker or None.</p>
 
 <dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.send">
-<tt class="descname">send</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=False</em>, <em>track=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">send</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a message, optionally also register a new callback for sends.
 See zmq.socket.send for details.</p>
 </dd></dl>
@@ -341,7 +349,7 @@ See zmq.socket.send_json for details.</p>
 
 <dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.send_multipart">
-<tt class="descname">send_multipart</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=False</em>, <em>track=False</em>, <em>prefix=None</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">send_multipart</tt><big>(</big><em>msg</em>, <em>flags=0</em>, <em>copy=True</em>, <em>track=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a multipart message, optionally also register a new callback for sends.
 See zmq.socket.send_multipart for details.</p>
 </dd></dl>
@@ -380,7 +388,7 @@ See zmq.socket.send_unicode for details.</p>
 <dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.stop_on_err">
 <tt class="descname">stop_on_err</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.stop_on_err" title="Permalink to this definition">¶</a></dt>
-<dd><p>Disable callback on errors.</p>
+<dd><p>DEPRECATED, does nothing</p>
 </dd></dl>
 
 <dl class="method">
@@ -432,7 +440,7 @@ See zmq.socket.send_unicode for details.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

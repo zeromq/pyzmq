@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tornado Eventloop with PyZMQ &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>Tornado Eventloop with PyZMQ &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" />
     <link rel="next" title="Asynchronous Logging via PyZMQ" href="logging.html" />
     <link rel="prev" title="Devices in PyZMQ" href="devices.html" /> 
   </head>
@@ -66,6 +66,7 @@
 <li><a class="reference internal" href="#install"><tt class="docutils literal"><span class="pre">install()</span></tt></a></li>
 <li><a class="reference internal" href="#send"><tt class="docutils literal"><span class="pre">send()</span></tt></a></li>
 <li><a class="reference internal" href="#on-recv"><tt class="docutils literal"><span class="pre">on_recv()</span></tt></a></li>
+<li><a class="reference internal" href="#on-recv-stream"><tt class="docutils literal"><span class="pre">on_recv_stream()</span></tt></a></li>
 <li><a class="reference internal" href="#flush"><tt class="docutils literal"><span class="pre">flush()</span></tt></a></li>
 </ul>
 </li>
@@ -110,8 +111,8 @@ native sockets. We have included a small part of Tornado (specifically its
 <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#module-zmq.eventloop.ioloop" title="zmq.eventloop.ioloop"><tt class="xref py py-mod docutils literal"><span class="pre">ioloop</span></tt></a>), and adapted its <tt class="xref py py-class docutils literal"><span class="pre">IOStream</span></tt> class into <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a> for
 handling poll events on ØMQ sockets. A ZMQStream object works much like a Socket object,
 but instead of calling <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv" title="zmq.core.socket.Socket.recv"><tt class="xref py py-meth docutils literal"><span class="pre">recv()</span></tt></a> directly, you register a callback with
-<a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt></a>. callbacks can also be registered for send and error events
-with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_err" title="zmq.eventloop.zmqstream.ZMQStream.on_err"><tt class="xref py py-meth docutils literal"><span class="pre">on_err()</span></tt></a> respectively.</p>
+<a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt></a>. callbacks can also be registered for send events
+with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a>.</p>
 <div class="section" id="install">
 <h2><tt class="xref py py-func docutils literal"><span class="pre">install()</span></tt><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
 <p>With PyZMQ&#8217;s ioloop, you can use zmq sockets in any tornado application.  You must first
@@ -161,17 +162,39 @@ callback to fire with messages as they are received, which will <em>always</em> 
 even if its length is 1. You can easily use this to build things like an echo socket:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
 <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://localhost:12345&#39;</span><span class="p">)</span>
-<span class="n">loop</span> <span class="o">=</span> <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
-<span class="n">stream</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">loop</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">echo</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
     <span class="n">stream</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="n">stream</span><span class="o">.</span><span class="n">on_recv</span><span class="p">(</span><span class="n">echo</span><span class="p">)</span>
-<span class="n">loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>on_recv can also take a <cite>copy</cite> flag, just like <a class="reference internal" href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv" title="zmq.core.socket.Socket.recv"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.recv()</span></tt></a>. If <cite>copy=False</cite>, then
-callbacks registered with on_recv will receive tracked <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Message" title="zmq.core.message.Message"><tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt></a> objects instead of
+callbacks registered with on_recv will receive tracked <a class="reference internal" href="api/generated/zmq.core.message.html#zmq.core.message.Frame" title="zmq.core.message.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> objects instead of
 bytes.</p>
+</div>
+<div class="section" id="on-recv-stream">
+<h2><tt class="xref py py-meth docutils literal"><span class="pre">on_recv_stream()</span></tt><a class="headerlink" href="#on-recv-stream" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv_stream" title="zmq.eventloop.zmqstream.ZMQStream.on_recv_stream"><tt class="xref py py-meth docutils literal"><span class="pre">ZMQStream.on_recv_stream()</span></tt></a> is just like on_recv above, but the callback will be
+passed both the message and the stream, rather than just the message.  This is meant to make
+it easier to use a single callback with multiple streams.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">s1</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+<span class="n">s1</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://localhost:12345&#39;</span><span class="p">)</span>
+<span class="n">stream1</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+
+<span class="n">s2</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+<span class="n">s2</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;tcp://localhost:54321&#39;</span><span class="p">)</span>
+<span class="n">stream2</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">echo</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<span class="n">stream1</span><span class="o">.</span><span class="n">on_recv_stream</span><span class="p">(</span><span class="n">echo</span><span class="p">)</span>
+<span class="n">stream2</span><span class="o">.</span><span class="n">on_recv_stream</span><span class="p">(</span><span class="n">echo</span><span class="p">)</span>
+
+<span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="flush">
 <h2><tt class="xref py py-meth docutils literal"><span class="pre">flush()</span></tt><a class="headerlink" href="#flush" title="Permalink to this headline">¶</a></h2>
@@ -215,7 +238,7 @@ starvation.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

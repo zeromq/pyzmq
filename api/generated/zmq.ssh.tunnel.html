@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ssh.tunnel &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>ssh.tunnel &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="utils.initthreads" href="zmq.utils.initthreads.html" />
     <link rel="prev" title="ssh.forward" href="zmq.ssh.forward.html" /> 
@@ -130,7 +130,11 @@ zeromq connections.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><strong>(url, tunnel): The 0MQ url that has been forwarded, and the tunnel object</strong> :</td>
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>(url, tunnel)</strong> : (str, object)</p>
+<blockquote class="last">
+<div><p>The 0MQ url that has been forwarded, and the tunnel object</p>
+</div></blockquote>
+</td>
 </tr>
 </tbody>
 </table>
@@ -151,36 +155,38 @@ as seen from <cite>server</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>lport</strong> : int</p>
-<blockquote class="last">
-<div><blockquote>
+<blockquote>
 <div><p>local port for connecting to the tunnel from this machine.</p>
 </div></blockquote>
-<dl class="docutils">
-<dt>rport <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">port on the remote machine to connect to.</p>
-</dd>
-<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">The ssh server to connect to. The full ssh server string will be parsed.
+<p><strong>rport</strong> : int</p>
+<blockquote>
+<div><p>port on the remote machine to connect to.</p>
+</div></blockquote>
+<p><strong>server</strong> : str</p>
+<blockquote>
+<div><p>The ssh server to connect to. The full ssh server string will be parsed.
 <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:port</p>
-</dd>
-<dt>remoteip <span class="classifier-delimiter">:</span> <span class="classifier">str [Default: 127.0.0.1]</span></dt>
-<dd><p class="first last">The remote ip, specifying the destination of the tunnel.
+</div></blockquote>
+<p><strong>remoteip</strong> : str [Default: 127.0.0.1]</p>
+<blockquote>
+<div><p>The remote ip, specifying the destination of the tunnel.
 Default is localhost, which means that the tunnel would redirect
 localhost:lport on this machine to localhost:rport on the <em>server</em>.</p>
-</dd>
-<dt>keyfile <span class="classifier-delimiter">:</span> <span class="classifier">str; path to public key file</span></dt>
-<dd><p class="first last">This specifies a key to be used in ssh login, default None.
+</div></blockquote>
+<p><strong>keyfile</strong> : str; path to public key file</p>
+<blockquote>
+<div><p>This specifies a key to be used in ssh login, default None.
 Regular default ssh keys will be used without specifying this argument.</p>
-</dd>
-<dt>password <span class="classifier-delimiter">:</span> <span class="classifier">str; </span></dt>
-<dd><p class="first last">Your ssh password to the ssh server. Note that if this is left None,
+</div></blockquote>
+<p><strong>password</strong> : str;</p>
+<blockquote>
+<div><p>Your ssh password to the ssh server. Note that if this is left None,
 you will be prompted for it if passwordless key based login is unavailable.</p>
-</dd>
-<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">int [default: 60]</span></dt>
-<dd><p class="first last">The time (in seconds) after which no activity will result in the tunnel
+</div></blockquote>
+<p><strong>timeout</strong> : int [default: 60]</p>
+<blockquote class="last">
+<div><p>The time (in seconds) after which no activity will result in the tunnel
 closing.  This prevents orphaned tunnels from running forever.</p>
-</dd>
-</dl>
 </div></blockquote>
 </td>
 </tr>
@@ -203,36 +209,38 @@ as seen from <cite>server</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>lport</strong> : int</p>
-<blockquote class="last">
-<div><blockquote>
+<blockquote>
 <div><p>local port for connecting to the tunnel from this machine.</p>
 </div></blockquote>
-<dl class="docutils">
-<dt>rport <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd><p class="first last">port on the remote machine to connect to.</p>
-</dd>
-<dt>server <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd><p class="first last">The ssh server to connect to. The full ssh server string will be parsed.
+<p><strong>rport</strong> : int</p>
+<blockquote>
+<div><p>port on the remote machine to connect to.</p>
+</div></blockquote>
+<p><strong>server</strong> : str</p>
+<blockquote>
+<div><p>The ssh server to connect to. The full ssh server string will be parsed.
 <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:port</p>
-</dd>
-<dt>remoteip <span class="classifier-delimiter">:</span> <span class="classifier">str [Default: 127.0.0.1]</span></dt>
-<dd><p class="first last">The remote ip, specifying the destination of the tunnel.
+</div></blockquote>
+<p><strong>remoteip</strong> : str [Default: 127.0.0.1]</p>
+<blockquote>
+<div><p>The remote ip, specifying the destination of the tunnel.
 Default is localhost, which means that the tunnel would redirect
 localhost:lport on this machine to localhost:rport on the <em>server</em>.</p>
-</dd>
-<dt>keyfile <span class="classifier-delimiter">:</span> <span class="classifier">str; path to public key file</span></dt>
-<dd><p class="first last">This specifies a key to be used in ssh login, default None.
+</div></blockquote>
+<p><strong>keyfile</strong> : str; path to public key file</p>
+<blockquote>
+<div><p>This specifies a key to be used in ssh login, default None.
 Regular default ssh keys will be used without specifying this argument.</p>
-</dd>
-<dt>password <span class="classifier-delimiter">:</span> <span class="classifier">str; </span></dt>
-<dd><p class="first last">Your ssh password to the ssh server. Note that if this is left None,
+</div></blockquote>
+<p><strong>password</strong> : str;</p>
+<blockquote>
+<div><p>Your ssh password to the ssh server. Note that if this is left None,
 you will be prompted for it if passwordless key based login is unavailable.</p>
-</dd>
-<dt>timeout <span class="classifier-delimiter">:</span> <span class="classifier">int [default: 60]</span></dt>
-<dd><p class="first last">The time (in seconds) after which no activity will result in the tunnel
+</div></blockquote>
+<p><strong>timeout</strong> : int [default: 60]</p>
+<blockquote class="last">
+<div><p>The time (in seconds) after which no activity will result in the tunnel
 closing.  This prevents orphaned tunnels from running forever.</p>
-</dd>
-</dl>
 </div></blockquote>
 </td>
 </tr>
@@ -300,7 +308,7 @@ selected local port of the tunnel.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

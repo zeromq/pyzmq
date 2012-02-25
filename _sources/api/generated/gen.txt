@@ -9,6 +9,7 @@
    generated/zmq.core.message
    generated/zmq.core.poll
    generated/zmq.core.socket
+   generated/zmq.core.socket
    generated/zmq.core.stopwatch
    generated/zmq.core.version
    generated/zmq.devices.basedevice

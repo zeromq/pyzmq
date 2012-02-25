@@ -9,6 +9,51 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+2.1dev
+======
+
+Some effort has gone into refining the pyzmq API in this release to make it a model for 
+other language bindings.  This is principally made in a few renames of objects and methods,
+all of which leave the old name for backwards compatibility.
+
+Name Changes
+------------
+
+* The :class:`~.Message` class has been renamed to :class:`~.Frame`, to better match other
+  zmq bindings. The old Message name remains for backwards-compatibility.  Wherever pyzmq
+  docs say "Message", they should refer to a complete zmq atom of communication (one or
+  more Frames, connected by ZMQ_SNDMORE). Please report any remaining instances of
+  Message== MessagePart with an Issue (or better yet a Pull Request).
+
+* All ``foo_unicode`` methods are now called ``foo_string`` (``_unicode`` remains for
+  backwards compatibility).  This is not only for cross-language consistency, but it makes
+  more sense in Python 3, where native strings are unicode, and the ``_unicode`` suffix
+  was wedded too much to Python 2.
+
+Other Changes and Removals
+--------------------------
+
+* ``prefix`` removed as an unused keyword argument from :meth:`~.Socket.send_multipart`.
+* ZMQStream :meth:`~.ZMQStream.send` default has been changed to `copy=True`, so it matches
+  Socket :meth:`~.Socket.send`.
+* ZMQStream :meth:`~.ZMQStream.on_err` is deprecated, because it never did anything.
+
+New Stuff
+---------
+
+* :class:`~.Context` objects can now set default options when they create a socket. These
+  are set and accessed as attributes to the context.  Socket options that do not apply to a
+  socket (e.g. SUBSCRIBE on non-SUB sockets) will simply be ignored.
+
+* :meth:`~.ZMQStream.on_recv_stream` has been added, which adds the stream itself as a
+  second argument to the callback, making it easier to use a single callback on multiple
+  streams.
+
+* A :attr:`~Frame.more` boolean attribute has been added to the :class:`~.Frame` (née
+  Message) class, so that frames can be identified as terminal without extra queires of
+  :attr:`~.Socket.rcvmore`.
+
+
 2.1.11
 ======
 

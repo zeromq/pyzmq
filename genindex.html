@@ -10,7 +10,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; PyZMQ 2.1.11 documentation</title>
+    <title>Index &mdash; PyZMQ 2.1dev documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -18,7 +18,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2.1.11',
+        VERSION:     '2.1dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1.11 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 2.1dev documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -270,11 +270,11 @@
   </dt>
 
       
-  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Message.buffer">buffer (zmq.core.message.Message attribute)</a>
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame.buffer">buffer (zmq.core.message.Frame attribute)</a>
   </dt>
 
       
-  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Message.bytes">bytes (zmq.core.message.Message attribute)</a>
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame.bytes">bytes (zmq.core.message.Frame attribute)</a>
   </dt>
 
   </dl></td>
@@ -591,6 +591,10 @@
   <dt><a href="api/generated/zmq.ssh.forward.html#zmq.ssh.forward.ForwardServer">ForwardServer (class in zmq.ssh.forward)</a>
   </dt>
 
+      
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame">Frame (class in zmq.core.message)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -621,6 +625,10 @@
 
       
   <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.getsockopt">getsockopt() (zmq.core.socket.Socket method)</a>
+  </dt>
+
+      
+  <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.getsockopt_string">getsockopt_string() (zmq.core.socket.Socket method)</a>
   </dt>
 
       
@@ -824,10 +832,6 @@
   </dt>
 
       
-  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Message">Message (class in zmq.core.message)</a>
-  </dt>
-
-      
   <dt><a href="api/generated/zmq.core.error.html#zmq.core.error.NotDone.message">message (zmq.core.error.NotDone attribute)</a>
   </dt>
 
@@ -849,8 +853,6 @@
   <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.MessageTracker">MessageTracker (class in zmq.core.message)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.core.poll.html#zmq.core.poll.Poller.modify">modify() (zmq.core.poll.Poller method)</a>
   </dt>
@@ -861,6 +863,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.devices.monitoredqueue.html#zmq.devices.monitoredqueue.monitored_queue">monitored_queue() (in module zmq.devices.monitoredqueue)</a>
   </dt>
@@ -871,6 +875,10 @@
 
       
   <dt><a href="api/generated/zmq.devices.monitoredqueuedevice.html#zmq.devices.monitoredqueuedevice.MonitoredQueueBase">MonitoredQueueBase (class in zmq.devices.monitoredqueuedevice)</a>
+  </dt>
+
+      
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame.more">more (zmq.core.message.Frame attribute)</a>
   </dt>
 
   </dl></td>
@@ -915,10 +923,18 @@
   <dt><a href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv">on_recv() (zmq.eventloop.zmqstream.ZMQStream method)</a>
   </dt>
 
+      
+  <dt><a href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv_stream">on_recv_stream() (zmq.eventloop.zmqstream.ZMQStream method)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send">on_send() (zmq.eventloop.zmqstream.ZMQStream method)</a>
+  </dt>
+
+      
+  <dt><a href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send_stream">on_send_stream() (zmq.eventloop.zmqstream.ZMQStream method)</a>
   </dt>
 
       
@@ -1034,6 +1050,10 @@
   </dt>
 
       
+  <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_string">recv_string() (zmq.core.socket.Socket method)</a>
+  </dt>
+
+      
   <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.recv_unicode">recv_unicode() (zmq.core.socket.Socket method)</a>
   </dt>
 
@@ -1047,12 +1067,12 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.log.handlers.html#zmq.log.handlers.PUBHandler.release">release() (zmq.log.handlers.PUBHandler method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop.remove_handler">remove_handler() (zmq.eventloop.ioloop.IOLoop method)</a>
   </dt>
@@ -1179,6 +1199,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_string">send_string() (zmq.core.socket.Socket method)</a>
+  </dt>
+
       
   <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.send_unicode">send_unicode() (zmq.core.socket.Socket method)</a>
   </dt>
@@ -1322,6 +1346,10 @@
 
       </dl></dd>
       
+  <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.setsockopt_string">setsockopt_string() (zmq.core.socket.Socket method)</a>
+  </dt>
+
+      
   <dt><a href="api/generated/zmq.core.socket.html#zmq.core.socket.Socket.setsockopt_unicode">setsockopt_unicode() (zmq.core.socket.Socket method)</a>
   </dt>
 
@@ -1329,12 +1357,12 @@
   <dt><a href="api/generated/zmq.ssh.forward.html#zmq.ssh.forward.Handler.setup">setup() (zmq.ssh.forward.Handler method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.ssh.forward.html#zmq.ssh.forward.ForwardServer.shutdown">shutdown() (zmq.ssh.forward.ForwardServer method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/generated/zmq.ssh.forward.html#zmq.ssh.forward.ForwardServer.shutdown_request">shutdown_request() (zmq.ssh.forward.ForwardServer method)</a>
   </dt>
@@ -1374,7 +1402,7 @@
   </dt>
 
       
-  <dt><a href="unicode.html#socket.getsockopt_unicode">socket.getsockopt_unicode() (built-in function)</a>
+  <dt><a href="unicode.html#socket.getsockopt_string">socket.getsockopt_string() (built-in function)</a>
   </dt>
 
       
@@ -1382,7 +1410,7 @@
   </dt>
 
       
-  <dt><a href="unicode.html#socket.recv_unicode">socket.recv_unicode() (built-in function)</a>
+  <dt><a href="unicode.html#socket.recv_string">socket.recv_string() (built-in function)</a>
   </dt>
 
       
@@ -1390,7 +1418,7 @@
   </dt>
 
       
-  <dt><a href="unicode.html#socket.send_unicode">socket.send_unicode() (built-in function)</a>
+  <dt><a href="unicode.html#socket.send_string">socket.send_string() (built-in function)</a>
   </dt>
 
       
@@ -1398,7 +1426,7 @@
   </dt>
 
       
-  <dt><a href="unicode.html#socket.setsockopt_unicode">socket.setsockopt_unicode() (built-in function)</a>
+  <dt><a href="unicode.html#socket.setsockopt_string">socket.setsockopt_string() (built-in function)</a>
   </dt>
 
       
@@ -1411,6 +1439,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="api/generated/zmq.core.context.html#zmq.core.context.Context.sockopts">sockopts (zmq.core.context.Context attribute)</a>
+  </dt>
+
       
   <dt><a href="api/generated/zmq.eventloop.stack_context.html#zmq.eventloop.stack_context.StackContext">StackContext (class in zmq.eventloop.stack_context)</a>
   </dt>
@@ -1528,11 +1560,11 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Message.tracker">tracker (zmq.core.message.Message attribute)</a>
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame.tracker">tracker (zmq.core.message.Frame attribute)</a>
   </dt>
 
       
-  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Message.tracker_event">tracker_event (zmq.core.message.Message attribute)</a>
+  <dt><a href="api/generated/zmq.core.message.html#zmq.core.message.Frame.tracker_event">tracker_event (zmq.core.message.Frame attribute)</a>
   </dt>
 
       
@@ -1752,7 +1784,7 @@
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>
