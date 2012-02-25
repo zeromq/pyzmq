@@ -386,7 +386,6 @@ class RPCServiceProxy(RPCServiceProxyBase):
         msg_id, msg_list = self._build_msg(method, args, kwargs)
         self.socket.send_multipart(msg_list)
         msg_list = self.socket.recv_multipart()
-        from pdb import set_trace; set_trace()
         msg_id = msg_list[0]
         status = msg_list[1]
         if status == b'SUCCESS':
