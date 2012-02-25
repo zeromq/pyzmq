@@ -105,7 +105,9 @@ class ZMQApplicationProxy(object):
         req['kwargs'] = kwargs
 
         msg_id = bytes(uuid.uuid4())
-        msg_list = [msg_id, jsonapi.dumps(req), body]
+        msg_list = [b'|', msg_id, jsonapi.dumps(req)]
+        if body:
+            msg_list.append(body)
         logging.debug('Sending request: %r' % msg_list)
         self.stream.send_multipart(msg_list)
 
@@ -277,7 +279,7 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
     def __init__(self, method, uri, version="HTTP/1.0", headers=None,
                  body=None, remote_ip=None, protocol=None, host=None,
                  files=None, connection=None, arguments=None,
-                 ident=None, msg_id=None, stream=None):
+                 idents=None, msg_id=None, stream=None):
         # ZMQWEB NOTE: This method is copied from the base class to make a
         # number of changes. We have added the arguments, ident, msg_id and
         # stream kwargs.
@@ -299,10 +301,10 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         self._finish_time = None
 
         # ZMQWEB NOTE: Attributes we have added to ZMQHTTPRequest.
-        self.ident = ident
+        self.idents = idents
         self.msg_id = msg_id
         self.stream = stream
-        self._zmq_msg_list = [self.ident, self.msg_id]
+        self._chunks = []
         self._write_callback = None
 
         scheme, netloc, path, query, fragment = urlparse.urlsplit(native_str(uri))
@@ -312,26 +314,36 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         # pass them into this class.
         self.arguments = arguments
 
+    def _create_msg_list(self):
+        """Create a new msg_list with idents and msg_id."""
+        # Always create a copy as we use this multiple times.
+        msg_list = []
+        msg_list.extend(self.idents)
+        msg_list.append(self.msg_id)
+        return msg_list
+
     def write(self, chunk, callback=None):
         # ZMQWEB NOTE: This method is overriden from the base class.
         logging.debug('Buffering chunk: %r' % chunk)
         if callback is not None:
             self._write_callback = stack_context.wrap(callback)
-        self._zmq_msg_list.append(chunk)
+        self._chunks.append(chunk)
 
     def finish(self):
         # ZMQWEB NOTE: This method is overriden from the base class to remove
         # a call to self.connection.finish() and send the reply message.
-        logging.debug('Sending reply: %r' % self._zmq_msg_list)
+        msg_list = self._create_msg_list()
+        msg_list.extend(self._chunks)
+        self._chunks = []
+        logging.debug('Sending reply: %r' % msg_list)
         self._finish_time = time.time()
-        self.stream.send_multipart(self._zmq_msg_list)
+        self.stream.send_multipart(msg_list)
         if self._write_callback is not None:
             try:
                 self._write_callback()
             except:
                 logging.error('Unexpected exception in write callback', exc_info=True)
             self._write_callback = None
-        self._zmq_msg_list = []
 
     def get_ssl_certificate(self):
         # ZMQWEB NOTE: This method is overriden from the base class.
@@ -350,7 +362,8 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
 
     def write(self, chunk, callback=None):
         # ZMQWEB NOTE: This method is overriden from the base class.
-        msg_list = [self.ident, self.msg_id, b'DATA', chunk]
+        msg_list = self._create_msg_list()
+        msg_list.extend([b'DATA', chunk])
         logging.debug('Sending write: %r' % msg_list)
         self.stream.send_multipart(msg_list)
         # ZMQWEB NOTE: We don't want to permanently register an on_send callback
@@ -361,12 +374,12 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
             except:
                 logging.error('Unexpected exception in write callback', exc_info=True)
 
-
     def finish(self):
         # ZMQWEB NOTE: This method is overriden from the base class to remove
         # a call to self.connection.finish() and send the FINISH message.
         self._finish_time = time.time()
-        msg_list = [self.ident, self.msg_id, b'FINISH']
+        msg_list = self._create_msg_list()
+        msg_list.append(b'FINISH')
         logging.debug('Sending finish: %r' % msg_list)
         self.stream.send_multipart(msg_list)
 
@@ -432,12 +445,14 @@ class ZMQApplication(web.Application):
     def _parse_request(self, msg_list):
         # ZMQWEB NOTE: This is a new method in this subclass.
         len_msg_list = len(msg_list)
-        if len_msg_list < 3:
+        if len_msg_list < 4:
             raise IndexError('msg_list must have length 3 or more')
-        ident = msg_list[0]
-        msg_id = msg_list[1]
-        req = jsonapi.loads(msg_list[2])
-        body = "" if len_msg_list == 3 else msg_list[3] 
+        # Use | to as a delimeter between identities and the rest.
+        i = msg_list.index(b'|')
+        idents = msg_list[0:i]
+        msg_id = msg_list[i+1]
+        req = jsonapi.loads(msg_list[i+2])
+        body = msg_list[i+3] if len_msg_list==i+4 else ""
 
         http_request_class = self.settings.get('http_request_class',
             ZMQHTTPRequest)
@@ -445,7 +460,7 @@ class ZMQApplication(web.Application):
             version=req['version'], headers=req['headers'],
             body=body, remote_ip=req['remote_ip'], protocol=req['protocol'],
             host=req['host'], files=req['files'], arguments=req['arguments'],
-            ident=ident, msg_id=msg_id, stream=self.stream
+            idents=idents, msg_id=msg_id, stream=self.stream
         )
         args = req['args']
         kwargs = req['kwargs']
