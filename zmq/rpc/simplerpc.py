@@ -181,10 +181,12 @@ class RPCService(RPCBase):
 
         Here the (ename, evalue, traceback) are utf-8 encoded unicode.
         """
-        self.ident = msg_list[0]
-        self.msg_id = msg_list[1]
-        method = msg_list[2]
-        args, kwargs = self._serializer.deserialize_args_kwargs(msg_list[3:])
+        i = msg_list.index(b'|')
+        self.idents = msg_list[0:i]
+        self.msg_id = msg_list[i+1]
+        method = msg_list[i+2]
+        data = msg_list[i+3:]
+        args, kwargs = self._serializer.deserialize_args_kwargs(data)
 
         # Find and call the actual handler for message.
         handler = getattr(self, method, None)
@@ -199,16 +201,21 @@ class RPCService(RPCBase):
                 except:
                     self._send_error()
                 else:
-                    msg_list = [self.ident, self.msg_id, b'SUCCESS']
-                    msg_list.extend(presult)
-                    self.stream.send_multipart(msg_list)
+                    reply = []
+                    reply.extend(self.idents)
+                    reply.extend([self.msg_id, b'SUCCESS'])
+                    reply.extend(presult)
+                    self.stream.send_multipart(reply)
         else:
             logging.error('Unknown RPC method: %s' % method)
+        self.idents = None
+        self.msg_id = None
 
     def _send_error(self):
         """Send an error reply."""
         etype, evalue, tb = sys.exc_info()
-        self.stream.send(self.ident, zmq.SNDMORE)
+        for ident in self.idents:
+            self.stream.send(ident, zmq.SNDMORE)
         self.stream.send(self.msg_id, zmq.SNDMORE)
         self.stream.send(b'FAILURE', zmq.SNDMORE)
         self.stream.send_unicode(unicode(etype.__name__), zmq.SNDMORE)
@@ -248,7 +255,7 @@ class RPCServiceProxyBase(RPCBase):
     def _build_msg(self, method, args, kwargs):
         msg_id = bytes(uuid.uuid4())
         method = bytes(method)
-        msg_list = [msg_id, method]
+        msg_list = [b'|', msg_id, method]
         msg_list.extend(self._serializer.serialize_args_kwargs(args, kwargs))
         return msg_id, msg_list
 
