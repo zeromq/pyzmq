@@ -193,7 +193,7 @@ class RPCService(RPCBase):
         if handler is not None and getattr(handler, 'is_rpc_method', False):
             try:
                 result = handler(*args, **kwargs)
-            except:
+            except Exception:
                 self._send_error()
             else:
                 try:
@@ -221,6 +221,9 @@ class RPCService(RPCBase):
         self.stream.send_unicode(unicode(etype.__name__), zmq.SNDMORE)
         self.stream.send_unicode(unicode(evalue), zmq.SNDMORE)
         self.stream.send_unicode(unicode(traceback.format_exc(tb)))
+
+    def serve_forever(self):
+        self.loop.start()
 
 
 def rpc_method(f):
@@ -398,7 +401,7 @@ class RPCServiceProxy(RPCServiceProxyBase):
         elif status == b'FAILURE':
             ename = msg_list[2].decode('utf-8')
             evalue = msg_list[3].decode('utf-8')
-            tb = msg_list[3].decode('utf-8')
+            tb = msg_list[4].decode('utf-8')
             raise RemoteRPCError(ename, evalue, tb)
 
     def __getattr__(self, name):
@@ -427,25 +430,26 @@ class RemoteMethod(RemoteMethodBase):
 
 class RemoteRPCError(Exception):
     """Error raised elsewhere"""
-    ename=None
-    evalue=None
-    traceback=None
-    
+    ename = None
+    evalue = None
+    traceback = None
+
     def __init__(self, ename, evalue, traceback):
-        self.ename=ename
-        self.evalue=evalue
-        self.traceback=traceback
-        self.args=(ename, evalue)
-    
+        self.ename = ename
+        self.evalue = evalue
+        self.traceback = traceback
+        self.args = (ename, evalue)
+
     def __repr__(self):
         return "<RemoteError:%s(%s)>" % (self.ename, self.evalue)
 
     def __str__(self):
-        sig = "%s(%s)"%(self.ename, self.evalue)
+        sig = "%s(%s)" % (self.ename, self.evalue)
         if self.traceback:
-            return sig + '\n' + self.traceback
+            return self.traceback
         else:
             return sig
+
 
 class RPCTimeoutError(Exception):
     pass
