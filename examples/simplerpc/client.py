@@ -33,7 +33,9 @@ if __name__ == '__main__':
         echo.error()
     except RemoteRPCError, e:
         print "Got a remote exception:"
-        print e.ename, e.evalue, e.traceback
+        print e.ename
+        print e.evalue
+        print e.traceback
 
     math = RPCServiceProxy()
     # By connecting to two instances, requests are load balanced.
