@@ -128,11 +128,11 @@ class ZMQApplicationProxy(object):
     def _handle_reply(self, msg_list):
         logging.debug('Handling reply: %r' % msg_list)
         len_msg_list = len(msg_list)
-        if len_msg_list < 2:
-            logging.error('Unexpected reply from proxy in ZMQApplicationProxy._handle_reply')
+        if len_msg_list < 3 or not msg_list[0] == b'|':
+            logging.error('Unexpected reply in ZMQApplicationProxy._handle_reply')
             return
-        msg_id = msg_list[0]
-        replies = msg_list[1:]
+        msg_id = msg_list[1]
+        replies = msg_list[2:]
         cb = self._callbacks.pop(msg_id, None)
         if cb is not None:
             handler, dc = cb
@@ -167,21 +167,21 @@ class ZMQStreamingApplicationProxy(ZMQApplicationProxy):
     def _handle_reply(self, msg_list):
         logging.debug('Handling reply: %r' % msg_list)
         len_msg_list = len(msg_list)
-        if len_msg_list < 2:
-            logging.error('Unexpected reply from proxy in ZMQStreamingApplicationProxy._handle_reply')
+        if len_msg_list < 3 or not msg_list[0] == b'|':
+            logging.error('Unexpected reply in ZMQStreamingApplicationProxy._handle_reply')
             return
-        msg_id = msg_list[0]
-        reply = msg_list[1]
+        msg_id = msg_list[1]
+        reply = msg_list[2]
         cb = self._callbacks.get(msg_id)
         if cb is not None:
             handler, dc = cb
-            if reply == b'DATA' and len_msg_list == 3:
+            if reply == b'DATA' and len_msg_list == 4:
                 if dc is not None:
                     # Stop the timeout DelayedCallback and set it to None.
                     dc.stop()
                     self._callbacks[msg_id] = (handler, None)
                 try:
-                    handler.write(msg_list[2])
+                    handler.write(msg_list[3])
                     # The backend has already processed the headers and they are
                     # included in the above write calls, so we manually tell the
                     # handler that the headers are already written.
@@ -314,12 +314,12 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         # pass them into this class.
         self.arguments = arguments
 
-    def _create_msg_list(self):
+    def _build_reply(self):
         """Create a new msg_list with idents and msg_id."""
         # Always create a copy as we use this multiple times.
         msg_list = []
         msg_list.extend(self.idents)
-        msg_list.append(self.msg_id)
+        msg_list.extend([b'|',self.msg_id])
         return msg_list
 
     def write(self, chunk, callback=None):
@@ -332,7 +332,7 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
     def finish(self):
         # ZMQWEB NOTE: This method is overriden from the base class to remove
         # a call to self.connection.finish() and send the reply message.
-        msg_list = self._create_msg_list()
+        msg_list = self._build_reply()
         msg_list.extend(self._chunks)
         self._chunks = []
         logging.debug('Sending reply: %r' % msg_list)
@@ -362,7 +362,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
 
     def write(self, chunk, callback=None):
         # ZMQWEB NOTE: This method is overriden from the base class.
-        msg_list = self._create_msg_list()
+        msg_list = self._build_reply()
         msg_list.extend([b'DATA', chunk])
         logging.debug('Sending write: %r' % msg_list)
         self.stream.send_multipart(msg_list)
@@ -378,7 +378,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
         # ZMQWEB NOTE: This method is overriden from the base class to remove
         # a call to self.connection.finish() and send the FINISH message.
         self._finish_time = time.time()
-        msg_list = self._create_msg_list()
+        msg_list = self._build_reply()
         msg_list.append(b'FINISH')
         logging.debug('Sending finish: %r' % msg_list)
         self.stream.send_multipart(msg_list)
