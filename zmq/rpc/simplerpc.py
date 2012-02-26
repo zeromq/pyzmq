@@ -297,6 +297,7 @@ class AsyncRPCServiceProxy(RPCServiceProxyBase):
         # msg_list[0] == b'|'
         if not msg_list[0] == b'|':
             logging.error('Unexpected reply message format in AsyncRPCServiceProxy._handle_reply')
+            return
         msg_id = msg_list[1]
         status = msg_list[2]
         cb_eb_dc = self._callbacks.pop(msg_id, None) # (cb, eb) tuple
@@ -411,7 +412,7 @@ class RPCServiceProxy(RPCServiceProxyBase):
         self.socket.send_multipart(msg_list)
         msg_list = self.socket.recv_multipart()
         if not msg_list[0] == b'|':
-            logging.error('Unexpected reply message format in AsyncRPCServiceProxy._handle_reply')
+            raise RPCError('Unexpected reply message format in AsyncRPCServiceProxy._handle_reply')
         msg_id = msg_list[1]
         status = msg_list[2]
         if status == b'SUCCESS':
@@ -444,8 +445,11 @@ class RemoteMethod(RemoteMethodBase):
     def __call__(self, *args, **kwargs):
         return self.proxy.call(self.method, *args, **kwargs)
 
+class RPCError(Exception):
+    pass
 
-class RemoteRPCError(Exception):
+
+class RemoteRPCError(RPCError):
     """Error raised elsewhere"""
     ename = None
     evalue = None
@@ -467,5 +471,5 @@ class RemoteRPCError(Exception):
         else:
             return sig
 
-class RPCTimeoutError(Exception):
+class RPCTimeoutError(RPCError):
     pass
