@@ -101,47 +101,73 @@ ZMQ = discover_settings()
 if ZMQ is not None and not os.path.exists(ZMQ):
     warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
 
+# bundle_libzmq flag for whether libzmq will be included in pyzmq:
+if sys.platform.startswith('win'):
+    bundle_libzmq = True
+elif ZMQ is not None:
+    bundle_libzmq = doing_bdist
+else:
+    bundle_libzmq = False
+
 # --- compiler settings -------------------------------------------------
 
-if sys.platform.startswith('win'):
-    COMPILER_SETTINGS = {
-        'libraries'     : ['libzmq'],
-        'include_dirs'  : [],
-        'library_dirs'  : [],
-    }
-    if ZMQ is not None:
-        COMPILER_SETTINGS['include_dirs'] += [pjoin(ZMQ, 'include')]
-        COMPILER_SETTINGS['library_dirs'] += [pjoin(ZMQ, 'lib')]
-else:
-    COMPILER_SETTINGS = {
-       'libraries'      : ['zmq'],
-       'include_dirs'   : [],
-       'library_dirs'   : [],
-    }
+def settings_from_prefix(zmq=None):
+    """load appropriate library/include settings from ZMQ prefix"""
+    if sys.platform.startswith('win'):
+        settings = {
+            'libraries'     : ['libzmq'],
+            'include_dirs'  : [],
+            'library_dirs'  : [],
+        }
+        if zmq is not None:
+            settings['include_dirs'] += [pjoin(zmq, 'include')]
+            settings['library_dirs'] += [pjoin(zmq, 'lib')]
+    else:
+        settings = {
+           'libraries'      : ['zmq'],
+           'include_dirs'   : [],
+           'library_dirs'   : [],
+        }
     
-    # add pthread on freebsd
-    if sys.platform.startswith('freebsd'):
-        COMPILER_SETTINGS['libraries'].append('pthread')
+        # add pthread on freebsd
+        if sys.platform.startswith('freebsd'):
+            settings['libraries'].append('pthread')
     
-    if ZMQ is not None:
-        COMPILER_SETTINGS['include_dirs'] += [pjoin(ZMQ, 'include')]
-        COMPILER_SETTINGS['library_dirs'] += [pjoin(ZMQ, 'lib')]
-    elif sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
-        # allow macports default
-        COMPILER_SETTINGS['include_dirs'] += ['/opt/local/include']
-        COMPILER_SETTINGS['library_dirs'] += ['/opt/local/lib']
+        if zmq is not None:
+            settings['include_dirs'] += [pjoin(zmq, 'include')]
+            settings['library_dirs'] += [pjoin(zmq, 'lib')]
+        elif sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
+            # allow macports default
+            settings['include_dirs'] += ['/opt/local/include']
+            settings['library_dirs'] += ['/opt/local/lib']
     
-    if doing_bdist:
-        # bdist should link against bundled libzmq
-        COMPILER_SETTINGS['library_dirs'] = ['zmq']
-        if sys.platform == 'darwin':
-            pass
-            # unused rpath args for OSX:
-            # COMPILER_SETTINGS['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
-        else:
-            COMPILER_SETTINGS['runtime_library_dirs'] = ['$ORIGIN/..']
-    elif sys.platform != 'darwin':
-        COMPILER_SETTINGS['runtime_library_dirs'] = [os.path.abspath(x) for x in COMPILER_SETTINGS['library_dirs']]
+        if bundle_libzmq:
+            # bdist should link against bundled libzmq
+            settings['library_dirs'] = ['zmq']
+            if sys.platform == 'darwin':
+                pass
+                # unused rpath args for OSX:
+                # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
+            else:
+                settings['runtime_library_dirs'] = ['$ORIGIN/..']
+        elif sys.platform != 'darwin':
+            settings['runtime_library_dirs'] = [os.path.abspath(x) for x in settings['library_dirs']]
+
+    # suppress common warnings
+
+    extra_flags = []
+    if ignore_common_warnings:
+        for warning in ('unused-function', 'strict-aliasing'):
+            extra_flags.append('-Wno-'+warning)
+
+    settings['extra_compile_args'] = extra_flags
+    
+    # include internal directories
+    settings['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+
+    return settings
+
+COMPILER_SETTINGS = settings_from_prefix(ZMQ)
 
 
 #-----------------------------------------------------------------------------
@@ -157,7 +183,9 @@ class Configure(Command):
     user_options = []
     boolean_options = []
     def initialize_options(self):
-        pass
+        self.zmq = ZMQ
+        self.settings = copy.copy(COMPILER_SETTINGS)
+    
     def finalize_options(self):
         pass
 
@@ -191,12 +219,12 @@ class Configure(Command):
         return loadpickle('configure.pickle')
 
     def check_zmq_version(self):
-        zmq = ZMQ
+        zmq = self.zmq
         if zmq is not None and not os.path.isdir(zmq):
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
         config = self.getcached()
-        if config is None or config['options'] != COMPILER_SETTINGS:
+        if config is None or config['options'] != self.settings:
             self.run()
             config = self.config
         else:
@@ -234,8 +262,8 @@ class Configure(Command):
 
     def run(self):
         self.create_tempdir()
-        settings = copy.copy(COMPILER_SETTINGS)
-        if doing_bdist and not sys.platform.startswith('win'):
+        settings = self.settings
+        if bundle_libzmq and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
@@ -247,9 +275,24 @@ class Configure(Command):
         try:
             print ("*"*42)
             print ("Configure: Autodetecting ZMQ settings...")
-            print ("    Custom ZMQ dir:       %s" % (ZMQ,))
+            print ("    Custom ZMQ dir:       %s" % (self.zmq,))
             config = detect_zmq(self.tempdir, **settings)
         except Exception:
+            # if zmq unspecified on *ix, try again with explicit /usr/local
+            if self.zmq is None and not sys.platform.startswith('win'):
+                self.erase_tempdir()
+                print ("Failed with default libzmq, trying again with /usr/local")
+                self.zmq = '/usr/local'
+                self.settings = settings_from_prefix(self.zmq)
+                
+                self.run()
+                # if we get here the second run succeeded, so we need to update compiler
+                # settings for the extensions with /usr/local prefix
+                for ext in self.distribution.ext_modules:
+                    for key,value in self.settings.iteritems():
+                        setattr(ext, key, value)
+                return
+            
             etype, evalue, tb = sys.exc_info()
             # print the error as distutils would if we let it raise:
             print ("error: %s" % evalue)
@@ -259,6 +302,7 @@ class Configure(Command):
                 action = 'link'
             else:
                 action = 'build or run'
+            
             fatal("""
     Failed to %s ZMQ test program.  Please check to make sure:
 
@@ -432,7 +476,7 @@ class CopyingBuild(build):
     """subclass of build that copies libzmq if doing bdist."""
     
     def run(self):
-        if doing_bdist and not sys.platform.startswith('win'):
+        if bundle_libzmq and not sys.platform.startswith('win'):
             # always rebuild before bdist, because linking may be wrong:
             self.run_command('clean')
             copy_and_patch_libzmq(ZMQ, 'libzmq'+lib_ext)
@@ -465,24 +509,11 @@ class CheckingBuildExt(build_ext):
     
 
 #-----------------------------------------------------------------------------
-# Suppress Common warnings
-#-----------------------------------------------------------------------------
-
-extra_flags = []
-if ignore_common_warnings:
-    for warning in ('unused-function', 'strict-aliasing'):
-        extra_flags.append('-Wno-'+warning)
-
-COMPILER_SETTINGS['extra_compile_args'] = extra_flags
-
-#-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
             'configure': Configure, 'build': CopyingBuild}
-
-COMPILER_SETTINGS['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
 
 def pxd(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
@@ -568,7 +599,7 @@ package_data = {'zmq':['*.pxd'],
                 'zmq.utils':['*.pxd', '*.h'],
 }
 
-if sys.platform.startswith('win') or doing_bdist:
+if bundle_libzmq:
     package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
