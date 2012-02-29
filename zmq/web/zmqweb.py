@@ -143,11 +143,11 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
 
     def get_ssl_certificate(self):
         # ZMQWEB NOTE: This method is overriden from the base class.
-        raise NotImplementedError('get_ssl_certificate is not implemented subclass')
+        raise NotImplementedError('get_ssl_certificate is not implemented in this subclass')
 
 
 class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
-    """A single HTTP request that receives requests and replies to a zmq proxy.
+    """A single HTTP request that receives requests from and replies to a zmq proxy.
 
     This version MUST be used with the `ZMQStreamingApplicationProxy` class
     and sends the reply parts as separate zmq messages. To use this version,
@@ -181,7 +181,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
 
 
 class ZMQApplication(web.Application):
-    """A ZeroMQ based application that server requests for a proxy.
+    """A ZeroMQ based application that serves requests for a proxy.
 
     This class is run in a backend process and handles requests for a
     `ZMQApplicationProxy` or `ZMQStreamingApplicationProxy` class running
@@ -243,7 +243,7 @@ class ZMQApplication(web.Application):
         len_msg_list = len(msg_list)
         if len_msg_list < 4:
             raise IndexError('msg_list must have length 3 or more')
-        # Use | to as a delimeter between identities and the rest.
+        # Use | as a delimeter between identities and the content.
         i = msg_list.index(b'|')
         idents = msg_list[0:i]
         msg_id = msg_list[i+1]
@@ -285,7 +285,7 @@ class ZMQApplication(web.Application):
                 if match:
                     handler = spec.handler_class(self, request, **spec.kwargs)
                     # ZMQWEB NOTE: web.Application.__call__ has logic here to
-                    # parse args and kwargs. This These are already parsed for us and passed
+                    # parse args and kwargs. These are already parsed for us and passed
                     # into __call__ so we just use them.
                     break
             if not handler:
