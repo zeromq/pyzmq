@@ -233,8 +233,8 @@ class ZMQApplication(web.Application):
         logging.debug('Handling request: %r', msg_list)
         try:
             request, args, kwargs = self._parse_request(msg_list)
-        except IndexError:
-            logging.error('Unexpected request message format in ZMQApplication._handle_request.')
+        except Exception:
+            logging.error('Unexpected request message format in ZMQApplication._handle_request.', exc_info=True)
         else:
             self.__call__(request, args, kwargs)
 
