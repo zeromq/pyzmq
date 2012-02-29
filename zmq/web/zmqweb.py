@@ -120,7 +120,7 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
 
     def write(self, chunk, callback=None):
         # ZMQWEB NOTE: This method is overriden from the base class.
-        logging.debug('Buffering chunk: %r' % chunk)
+        logging.debug('Buffering chunk: %r', chunk)
         if callback is not None:
             self._write_callback = stack_context.wrap(callback)
         self._chunks.append(chunk)
@@ -131,7 +131,7 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         msg_list = self._build_reply()
         msg_list.extend(self._chunks)
         self._chunks = []
-        logging.debug('Sending reply: %r' % msg_list)
+        logging.debug('Sending reply: %r', msg_list)
         self._finish_time = time.time()
         self.stream.send_multipart(msg_list)
         if self._write_callback is not None:
@@ -160,7 +160,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
         # ZMQWEB NOTE: This method is overriden from the base class.
         msg_list = self._build_reply()
         msg_list.extend([b'DATA', chunk])
-        logging.debug('Sending write: %r' % msg_list)
+        logging.debug('Sending write: %r', msg_list)
         self.stream.send_multipart(msg_list)
         # ZMQWEB NOTE: We don't want to permanently register an on_send callback
         # with the stream, so we just call the callback immediately.
@@ -176,7 +176,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
         self._finish_time = time.time()
         msg_list = self._build_reply()
         msg_list.append(b'FINISH')
-        logging.debug('Sending finish: %r' % msg_list)
+        logging.debug('Sending finish: %r', msg_list)
         self.stream.send_multipart(msg_list)
 
 
@@ -230,7 +230,7 @@ class ZMQApplication(web.Application):
     def _handle_request(self, msg_list):
         # ZMQWEB NOTE: This is a new method in this subclass. This method
         # is used as the on_recv callback for self.stream.
-        logging.debug('Handling request: %r' % msg_list)
+        logging.debug('Handling request: %r', msg_list)
         try:
             request, args, kwargs = self._parse_request(msg_list)
         except IndexError:

@@ -106,7 +106,7 @@ class ZMQApplicationProxy(object):
         msg_list = [b'|', msg_id, jsonapi.dumps(req)]
         if body:
             msg_list.append(body)
-        logging.debug('Sending request: %r' % msg_list)
+        logging.debug('Sending request: %r', msg_list)
         self.stream.send_multipart(msg_list)
 
         if timeout > 0:
@@ -124,7 +124,7 @@ class ZMQApplicationProxy(object):
         return msg_id
 
     def _handle_reply(self, msg_list):
-        logging.debug('Handling reply: %r' % msg_list)
+        logging.debug('Handling reply: %r', msg_list)
         len_msg_list = len(msg_list)
         if len_msg_list < 3 or not msg_list[0] == b'|':
             logging.error('Unexpected reply in ZMQApplicationProxy._handle_reply')
@@ -163,7 +163,7 @@ class ZMQStreamingApplicationProxy(ZMQApplicationProxy):
     """
 
     def _handle_reply(self, msg_list):
-        logging.debug('Handling reply: %r' % msg_list)
+        logging.debug('Handling reply: %r', msg_list)
         len_msg_list = len(msg_list)
         if len_msg_list < 3 or not msg_list[0] == b'|':
             logging.error('Unexpected reply in ZMQStreamingApplicationProxy._handle_reply')
