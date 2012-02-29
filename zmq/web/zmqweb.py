@@ -39,7 +39,13 @@ Authors:
 import logging
 import time
 import uuid
-import urlparse
+
+try:
+    # Python 3
+    import urllib.parse as urlparse
+except ImportError:
+    # Python 2
+    import urlparse
 
 from tornado import httpserver
 from tornado import httputil
