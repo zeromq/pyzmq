@@ -259,7 +259,6 @@ class ZMQApplication(web.Application):
         args = args
         kwargs = kwargs
         handlers = self._get_host_handlers(request)
-        # ZMQWEB NOTE: ZMQRedirectHandler is used here.
         redirect_handler_class = self.settings.get("redirect_handler_class",
                                             web.RedirectHandler)
         if not handlers:
