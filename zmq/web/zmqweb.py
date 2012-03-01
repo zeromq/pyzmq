@@ -277,7 +277,8 @@ class ZMQApplication(web.Application):
             if not handler:
                 handler = web.ErrorHandler(self, request, status_code=404)
 
-        # ZMQWEB NOTE: ZMQRequestHandler and ZMQStaticFileHandler are used here.
+        # ZMQWEB NOTE: This code is copied from the base class, but with
+        # the web module name used to specify the names.
         if self.settings.get("debug"):
             with web.RequestHandler._template_loader_lock:
                 for loader in web.RequestHandler._template_loaders.values():
