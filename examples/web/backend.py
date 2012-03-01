@@ -13,6 +13,13 @@ To run this example:
  
 """
 
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2012. Brian Granger, Min Ragan-Kelley  
+#
+#  Distributed under the terms of the BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
 import logging
 logging.basicConfig(level=logging.DEBUG)
 import time
