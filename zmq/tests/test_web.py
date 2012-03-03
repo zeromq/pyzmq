@@ -26,11 +26,6 @@ import sys
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
 
-try:
-    import tornado
-except ImportError:
-    raise SkipTest("zmq.web requires tornado")
-
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -38,6 +33,14 @@ except ImportError:
 
 
 class TestZMQWeb(BaseZMQTestCase):
+    
+    def setUp(self):
+        try:
+            import tornado
+        except ImportError:
+            raise SkipTest("zmq.web requires tornado")
+        
+        BaseZMQTestCase.setUp(self)
     
     def test_imports(self):
         """zmq.web is importable"""
