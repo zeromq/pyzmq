@@ -5,23 +5,12 @@ subscriber and publisher being started at exactly the same moment. We should
 use a REQ/REP side channel to synchronize the two processes at the beginning.
 """
 
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2010 Brian Granger
 #
-#    Copyright (c) 2010 Brian E. Granger
-#
-#    This file is part of pyzmq.
-#
-#    pyzmq is free software; you can redistribute it and/or modify it under
-#    the terms of the Lesser GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    pyzmq is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    Lesser GNU General Public License for more details.
-#
-#    You should have received a copy of the Lesser GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
 
 
 import sys

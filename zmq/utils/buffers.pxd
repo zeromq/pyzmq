@@ -1,19 +1,28 @@
 """Python version-independent methods for C/Python buffers.
 
-This module was copied and dapted from mpi4py:
-
-Jul 23, 2010 18:00 PST (r539)
-http://code.google.com/p/mpi4py/source/browse/trunk/src/MPI/asbuffer.pxi
-Copyright (c) 2009, Lisandro Dalcin.
-All rights reserved.
-BSD License: http://www.opensource.org/licenses/bsd-license.php
-
-Code not from mpi4py:
+This file was copied and adapted from mpi4py.
 
 Authors
 -------
 * MinRK
 """
+
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2010 Lisandro Dalcin
+#  All rights reserved.
+#  Used under BSD License: http://www.opensource.org/licenses/bsd-license.php
+#
+#  Retrieval:
+#  Jul 23, 2010 18:00 PST (r539)
+#  http://code.google.com/p/mpi4py/source/browse/trunk/src/MPI/asbuffer.pxi
+#
+#  Modifications from original:
+#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
 
 #-----------------------------------------------------------------------------
 # Python includes.

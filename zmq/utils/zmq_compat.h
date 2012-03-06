@@ -1,3 +1,10 @@
+//-----------------------------------------------------------------------------
+//  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+//
+//  Distributed under the terms of the New BSD License.  The full license is in
+//  the file COPYING.BSD, distributed as part of this software.
+//-----------------------------------------------------------------------------
+
 #if defined(_MSC_VER)
 #define pyzmq_int64_t __int64
 #else
