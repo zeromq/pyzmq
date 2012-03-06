@@ -296,8 +296,7 @@ class IOLoop(object):
 
             try:
                 event_pairs = self._impl.poll(poll_timeout)
-            except Exception:
-                e = sys.exc_info()[1]
+            except Exception as e:
                 # Depending on python version and IOLoop implementation,
                 # different exception types may be thrown and there are
                 # two ways EINTR might be signaled:
@@ -328,8 +327,7 @@ class IOLoop(object):
                 fd, events = self._events.popitem()
                 try:
                     self._handlers[fd](fd, events)
-                except (OSError, IOError):
-                    e = sys.exc_info()[1]
+                except (OSError, IOError) as e:
                     if e.args[0] == errno.EPIPE:
                         # Happens when the client closes the connection
                         pass

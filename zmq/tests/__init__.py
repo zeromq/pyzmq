@@ -114,8 +114,7 @@ class BaseZMQTestCase(TestCase):
     def assertRaisesErrno(self, errno, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-        except zmq.ZMQError:
-            e = sys.exc_info()[1]
+        except zmq.ZMQError as e:
             self.assertEqual(e.errno, errno, "wrong error raised, expected '%s' \
 got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
         else:

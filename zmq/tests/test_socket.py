@@ -102,8 +102,7 @@ class TestSocket(BaseZMQTestCase):
             sopt = backref[opt]
             try:
                 n = p.getsockopt(opt)
-            except zmq.ZMQError:
-                e = sys.exc_info()[1]
+            except zmq.ZMQError as e:
                 errors.append("getsockopt(zmq.%s) raised '%s'."%(sopt, e))
             else:
                 if n > 2**31:

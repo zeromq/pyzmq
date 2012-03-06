@@ -53,8 +53,7 @@ class Waker(object):
             try:
                 self.writer.connect(connect_address)
                 break    # success
-            except socket.error:
-                detail = sys.exc_info()[1]
+            except socket.error as detail:
                 if detail[0] != errno.WSAEADDRINUSE:
                     # "Address already in use" is the only error
                     # I've seen on two WinXP Pro SP2 boxes, under

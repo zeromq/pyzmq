@@ -320,8 +320,7 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
 #            client.connect(server, port, username=username, password=password)
 #        else:
 #            raise
-    except Exception:
-        e = sys.exc_info()[1]
+    except Exception as e:
         print('*** Failed to connect to %s:%d: %r' % (server, port, e))
         sys.exit(1)
 
@@ -332,8 +331,7 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
     except KeyboardInterrupt:
         print('SIGINT: Port forwarding stopped cleanly')
         sys.exit(0)
-    except Exception as:
-        e = sys.exc_info()[1]
+    except Exception as e:
         print("Port forwarding stopped uncleanly: %s"%e)
         sys.exit(255)
 
