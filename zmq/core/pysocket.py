@@ -137,7 +137,7 @@ def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=10
     ZMQBindError
         if `max_tries` reached before successful bind
     """
-    for i in xrange(max_tries):
+    for i in range(max_tries):
         try:
             port = random.randrange(min_port, max_port)
             self.bind('%s:%s' % (addr, port))
