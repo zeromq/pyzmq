@@ -16,6 +16,7 @@ Authors
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 
 import os,sys,atexit
 import socket
@@ -211,9 +212,9 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
             continue
         except pexpect.EOF:
             if tunnel.exitstatus:
-                print (tunnel.exitstatus)
-                print (tunnel.before)
-                print (tunnel.after)
+                print(tunnel.exitstatus)
+                print(tunnel.before)
+                print(tunnel.after)
                 raise RuntimeError("tunnel '%s' failed to start"%(cmd))
             else:
                 return tunnel.pid
@@ -321,19 +322,19 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
 #            raise
     except Exception:
         e = sys.exc_info()[1]
-        print ('*** Failed to connect to %s:%d: %r' % (server, port, e))
+        print('*** Failed to connect to %s:%d: %r' % (server, port, e))
         sys.exit(1)
 
-    # print ('Now forwarding port %d to %s:%d ...' % (lport, server, rport))
+    # print('Now forwarding port %d to %s:%d ...' % (lport, server, rport))
 
     try:
         forward_tunnel(lport, remoteip, rport, client.get_transport())
     except KeyboardInterrupt:
-        print ('SIGINT: Port forwarding stopped cleanly')
+        print('SIGINT: Port forwarding stopped cleanly')
         sys.exit(0)
-    except Exception:
+    except Exception as:
         e = sys.exc_info()[1]
-        print ("Port forwarding stopped uncleanly: %s"%e)
+        print("Port forwarding stopped uncleanly: %s"%e)
         sys.exit(255)
 
 if sys.platform == 'win32':
