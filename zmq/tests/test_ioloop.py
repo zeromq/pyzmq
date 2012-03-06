@@ -18,7 +18,7 @@ import threading
 import zmq
 from zmq.tests import BaseZMQTestCase
 from zmq.eventloop import ioloop
-from zmq.utils.strtypes import asbytes as b
+
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -91,7 +91,7 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEquals(events.get(rep), None)
         
         poller.register(rep, ioloop.IOLoop.READ)
-        req.send(b('hi'))
+        req.send(b'hi')
         events = dict(poller.poll(1))
         self.assertEquals(events.get(rep), ioloop.IOLoop.READ)
         self.assertEquals(events.get(req), None)

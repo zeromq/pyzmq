@@ -12,7 +12,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
-from zmq.utils.strtypes import asbytes
+
 
 from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
 
@@ -25,7 +25,7 @@ class TestMultipart(BaseZMQTestCase):
     def test_router_dealer(self):
         router, dealer = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
 
-        msg1 = asbytes('message1')
+        msg1 = b'message1'
         dealer.send(msg1)
         ident = self.recv(router)
         more = router.rcvmore
@@ -37,7 +37,7 @@ class TestMultipart(BaseZMQTestCase):
     
     def test_basic_multipart(self):
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        msg = [ asbytes(s) for s in ['hi', 'there', 'b'] ]
+        msg = [ b'hi', b'there', b'b']
         a.send_multipart(msg)
         recvd = b.recv_multipart()
         self.assertEquals(msg, recvd)
