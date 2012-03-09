@@ -9,7 +9,8 @@ Authors
 #
 #    Copyright (c) 2010 Min Ragan-Kelley, Brian Granger
 #
-#    This file is part of pyzmq.
+#    This file is part of pyzmq, but is derived and adapted from zmq_queue.cpp
+#    originally from libzmq-2.1.6, used under LGPLv3
 #
 #    pyzmq is free software; you can redistribute it and/or modify it under
 #    the terms of the Lesser GNU General Public License as published by

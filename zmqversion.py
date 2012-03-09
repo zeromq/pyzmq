@@ -1,8 +1,16 @@
-#!/usr/bin/env python
 """A simply script to scrape zmq.h for the zeromq version.
 This is similar to the version.sh script in a zeromq source dir, but
 it searches for an installed header, rather than in the current dir.
 """
+
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2011 Brian Granger, Min Ragan-Kelley
+#
+#  This file is part of pyzmq
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
 
 from __future__ import with_statement
 

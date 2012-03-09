@@ -1,29 +1,19 @@
 #!/usr/bin/env python
 
+
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2012 Brian Granger, Min Ragan-Kelley
 #
-#    Copyright (c) 2010 Brian E. Granger
+#  This file is part of pyzmq
 #
-#    This file is part of pyzmq.
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
 #
-#    pyzmq is free software; you can redistribute it and/or modify it under
-#    the terms of the Lesser GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
+#  The `configure` subcommand is copied and adaped from h5py
+#  h5py source used under the New BSD license
 #
-#    pyzmq is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    Lesser GNU General Public License for more details.
-#
-#    You should have received a copy of the Lesser GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#    The `configure` subcommand is copied and adaped from h5py
-#    h5py source used under the New BSD license
-#
-#    h5py: <http://code.google.com/p/h5py/>
-#    BSD license: <http://www.opensource.org/licenses/bsd-license.php>
-#
+#  h5py: <http://code.google.com/p/h5py/>
+#-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
 # Imports
@@ -649,7 +639,7 @@ setup(
     download_url = 'http://github.com/zeromq/pyzmq/downloads',
     description = "Python bindings for 0MQ.",
     long_description = long_desc, 
-    license = "LGPL",
+    license = "LGPL+BSD",
     cmdclass = cmdclass,
     classifiers = [
         'Development Status :: 5 - Production/Stable',
@@ -658,6 +648,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
+        'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
