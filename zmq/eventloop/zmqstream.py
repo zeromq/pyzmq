@@ -261,7 +261,7 @@ class ZMQStream(object):
         See zmq.socket.send_json for details.
         """
         if jsonapi is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
+            raise ImportError('ujson, jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = jsonapi.dumps(obj)
             return self.send(msg, flags=flags, callback=callback)
