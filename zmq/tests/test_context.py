@@ -13,7 +13,7 @@
 
 import sys
 import time
-from threading import Thread
+from threading import Thread, Event
 
 import zmq
 from zmq.utils.strtypes import asbytes, b
@@ -168,23 +168,24 @@ class TestContext(BaseZMQTestCase):
     def test_term_thread(self):
         """ctx.term should not crash active threads (#139)"""
         ctx = zmq.Context()
+        evt = Event()
+        evt.clear()
         def block():
             s = ctx.socket(zmq.REP)
             s.bind_to_random_port('tcp://127.0.0.1')
+            evt.set()
             try:
                 s.recv()
-            except zmq.ZMQError:
-                e = sys.exc_info()[1]
-                if e.errno == zmq.ETERM:
-                    # context terminated, this is supposed to happen
-                    pass
-                else:
-                    raise
-            s.close()
+            except zmq.ZMQError as e:
+                self.assertEquals(e.errno, zmq.ETERM)
+                return
+            finally:
+                s.close()
+            self.fail("recv should have been interrupted with ETERM")
         t = Thread(target=block)
         t.start()
-        if sys.version[:3] == '2.5':
-            t.is_alive = t.isAlive
+        self.assertTrue(evt.wait(1), "sync event never fired")
+        time.sleep(0.01)
         ctx.term()
         t.join(timeout=1)
         self.assertFalse(t.is_alive(), "term should have interrupted s.recv()")
