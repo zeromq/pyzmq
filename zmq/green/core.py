@@ -50,7 +50,7 @@ class _Socket(_original_Socket):
     def __init__(self, context, socket_type):
         self.__setup_events()
 
-    def close(self):
+    def close(self, linger=None):
         # close the _state_event event, keeps the number of active file descriptors down
         if not self._closed and getattr(self, '_state_event', None):
             try:
@@ -58,7 +58,7 @@ class _Socket(_original_Socket):
             except AttributeError, e:
                 # gevent<1.0 compat
                 self._state_event.cancel()
-        super(_Socket, self).close()
+        super(_Socket, self).close(linger)
 
     def __setup_events(self):
         self.__readable = AsyncResult()
