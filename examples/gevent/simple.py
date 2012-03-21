@@ -1,7 +1,8 @@
 from gevent import spawn, spawn_later
-from zmq.green import zmq
+import zmq.green as zmq
 
 # server
+print zmq.Context
 ctx = zmq.Context()
 sock = ctx.socket(zmq.PUSH)
 sock.bind('ipc:///tmp/zmqtest')

@@ -2,7 +2,7 @@
 Complex example which is a combination of the rr* examples from the zguide.
 """
 from gevent import spawn
-from zmq.green import zmq
+import zmq.green as zmq
 
 # server
 context = zmq.Context()

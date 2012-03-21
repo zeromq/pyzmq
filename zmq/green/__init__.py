@@ -8,7 +8,7 @@ Instead of importing zmq directly, do so in the following manner:
 
 ..
 
-    from zmq.green import zmq
+    import zmq.green as zmq
 
 
 Any calls that would have blocked the current thread will now only block the
@@ -19,9 +19,10 @@ before any blocking operation and the ØMQ file descriptor is polled internally
 to trigger needed events.
 """
 
-from zmq.green import core as zmq
-zmq.Context = zmq._Context
-zmq.Socket = zmq._Socket
+from zmq import *
+from zmq.green.core import _Context, _Socket
+Context = _Context
+Socket = _Socket
 
 def monkey_patch(test_suite=False):
     """
@@ -31,8 +32,8 @@ def monkey_patch(test_suite=False):
     compatibility as well.
     """
     ozmq = __import__('zmq')
-    ozmq.Socket = zmq.Socket
-    ozmq.Context = zmq.Context
+    ozmq.Socket = Socket
+    ozmq.Context = Context
 
     if test_suite:
         from zmq.green.tests import monkey_patch_test_suite
