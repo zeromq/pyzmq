@@ -239,6 +239,9 @@ The following people have contributed to the project:
 * Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
 * Douglas Creager (dcreager AT dcreager DOT net)
 * Craig Austin (craig DOT austin AT gmail DOT com)
+* Travis Cline (travis DOT cline AT gmail DOT com)
+* Ryan Kelly (ryan AT rfk DOT id DOT au)
+* Zachary Voase (z AT zacharyvoase DOT com)
 
 * Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
