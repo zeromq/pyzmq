@@ -184,7 +184,9 @@ class TestContext(BaseZMQTestCase):
             self.fail("recv should have been interrupted with ETERM")
         t = Thread(target=block)
         t.start()
-        self.assertTrue(evt.wait(1), "sync event never fired")
+        
+        evt.wait(1)
+        self.assertTrue(evt.is_set(), "sync event never fired")
         time.sleep(0.01)
         ctx.term()
         t.join(timeout=1)
