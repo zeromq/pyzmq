@@ -16,17 +16,8 @@ class _Context(_original_Context):
 
     Ensures that the greened Socket below is used in calls to `socket`.
     """
+    _socket_class = _Socket
 
-    def socket(self, socket_type):
-        """Overridden method to ensure that the green version of socket is used
-
-        Behaves the same as :meth:`zmq.core.context.Context.socket`, but ensures
-        that a :class:`Socket` with all of its send and recv methods set to be
-        non-blocking is returned
-        """
-        if self.closed:
-            raise ZMQError(ENOTSUP)
-        return _Socket(self, socket_type)
 
 class _Socket(_original_Socket):
     """Green version of :class:`zmq.core.socket.Socket`

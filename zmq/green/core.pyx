@@ -18,17 +18,10 @@ cdef class _Context(_original_Context):
 
     Ensures that the greened Socket below is used in calls to `socket`.
     """
-
-    def socket(self, int socket_type):
-        """Overridden method to ensure that the green version of socket is used
-
-        Behaves the same as :meth:`zmq.core.context.Context.socket`, but ensures
-        that a :class:`Socket` with all of its send and recv methods set to be
-        non-blocking is returned
-        """
-        if self.closed:
-            raise ZMQError(ENOTSUP)
-        return _Socket(self, socket_type)
+    @property
+    def _socket_class(self):
+        """overridden to ensure green Sockets are created by this Context"""
+        return _Socket
 
 cdef class _Socket(_original_Socket):
     """Green version of :class:`zmq.core.socket.Socket`
