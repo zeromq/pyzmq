@@ -24,17 +24,3 @@ from zmq.green.core import _Context, _Socket
 Context = _Context
 Socket = _Socket
 
-def monkey_patch(test_suite=False):
-    """
-    Monkey patches `zmq.Context` and `zmq.Socket`
-    
-    If test_suite is True, the pyzmq test suite will be patched for
-    compatibility as well.
-    """
-    ozmq = __import__('zmq')
-    ozmq.Socket = Socket
-    ozmq.Context = Context
-
-    if test_suite:
-        from zmq.green.tests import monkey_patch_test_suite
-        monkey_patch_test_suite()
