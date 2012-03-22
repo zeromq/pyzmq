@@ -70,8 +70,6 @@ class BaseZMQTestCase(TestCase):
             t.daemon = True
             t.start()
             t.join(timeout=2)
-            if sys.version[:3] == '2.5':
-                t.is_alive = t.isAlive
             if t.is_alive():
                 # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
                 zmq.core.context._instance = None

@@ -125,8 +125,6 @@ class TestContext(BaseZMQTestCase):
         t = Thread(target=ctx.term)
         t.start()
         t.join(timeout=0.1)
-        if sys.version[:3] == '2.5':
-            t.is_alive = t.isAlive
         self.assertTrue(t.is_alive(), "Context should be waiting")
         s.close()
         t.join(timeout=0.1)
@@ -141,8 +139,6 @@ class TestContext(BaseZMQTestCase):
         t = Thread(target=gc)
         t.start()
         t.join(timeout=1)
-        if sys.version[:3] == '2.5':
-            t.is_alive = t.isAlive
         self.assertFalse(t.is_alive(), "Garbage collection should have cleaned up context")
     
     def test_cyclic_destroy(self):

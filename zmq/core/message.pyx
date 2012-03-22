@@ -226,9 +226,6 @@ cdef class Frame:
         # Event and MessageTracker for monitoring when zmq is done with data:
         if track:
             evt = Event()
-            # python 2.5 compat:
-            if not hasattr(evt, 'is_set'):
-                evt.is_set = evt.isSet
             self.tracker_event = evt
             self.tracker = MessageTracker(evt)
         else:
