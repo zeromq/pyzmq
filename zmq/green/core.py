@@ -1,5 +1,16 @@
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2011-2012 Travis Cline
+#
+#  This file is part of pyzmq
+#  It is adapted from upstream project zeromq_gevent under the New BSD License
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
 """This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
 """
+
 import zmq
 from zmq import *
 
