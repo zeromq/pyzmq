@@ -15,7 +15,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.utils.strtypes import asbytes
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -70,3 +70,6 @@ class TestReqRep(BaseZMQTestCase):
             msg2 = self.ping_pong(s1, s2, msg1)
             self.assertEquals(msg1, msg2)
 
+if have_gevent:
+    class TestReqRepGreen(GreenTest, TestReqRep):
+        pass
