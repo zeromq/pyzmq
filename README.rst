@@ -236,12 +236,6 @@ is the primary developer of pyzmq at this time.
 
 The following people have contributed to the project:
 
-* Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
-* Douglas Creager (dcreager AT dcreager DOT net)
-* Craig Austin (craig DOT austin AT gmail DOT com)
-* Travis Cline (travis DOT cline AT gmail DOT com)
-* Ryan Kelly (ryan AT rfk DOT id DOT au)
-* Zachary Voase (z AT zacharyvoase DOT com)
 
 * Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
@@ -273,4 +267,20 @@ as reported by::
     git log --all --format='* %aN (%aE)' | sort -u | sed 's/@/ AT /1' | sed -e 's/\./ DOT /g'
 
 with some adjustments.
+
+Not in git log
+--------------
+
+* Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
+* Douglas Creager (dcreager AT dcreager DOT net)
+* Craig Austin (craig DOT austin AT gmail DOT com)
+
+
+gevent_zeromq, now zmq.green
+----------------------------
+
+* Travis Cline (travis DOT cline AT gmail DOT com)
+* Ryan Kelly (ryan AT rfk DOT id DOT au)
+* Zachary Voase (z AT zacharyvoase DOT com)
+
 
