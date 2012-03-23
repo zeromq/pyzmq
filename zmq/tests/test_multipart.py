@@ -14,7 +14,7 @@
 import zmq
 from zmq.utils.strtypes import asbytes
 
-from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -42,3 +42,6 @@ class TestMultipart(BaseZMQTestCase):
         recvd = b.recv_multipart()
         self.assertEquals(msg, recvd)
 
+if have_gevent:
+    class TestMultipartGreen(GreenTest, TestMultipart):
+        pass

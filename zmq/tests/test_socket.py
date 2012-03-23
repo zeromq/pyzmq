@@ -16,7 +16,7 @@ import sys
 import time
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
 from zmq.utils.strtypes import bytes, unicode, asbytes
 try:
     from queue import Queue
@@ -30,7 +30,7 @@ except:
 class TestSocket(BaseZMQTestCase):
 
     def test_create(self):
-        ctx = zmq.Context()
+        ctx = self.Context()
         s = ctx.socket(zmq.PUB)
         # Superluminal protocol not yet implemented
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://a')
@@ -221,7 +221,7 @@ class TestSocket(BaseZMQTestCase):
         
 
     def test_close(self):
-        ctx = zmq.Context()
+        ctx = self.Context()
         s = ctx.socket(zmq.PUB)
         s.close()
         self.assertRaises(zmq.ZMQError, s.bind, asbytes(''))
@@ -281,7 +281,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_close_after_destroy(self):
         """s.close() after ctx.destroy() should be fine"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         s = ctx.socket(zmq.REP)
         ctx.destroy()
         # reaper is not instantaneous
@@ -304,6 +304,10 @@ class TestSocket(BaseZMQTestCase):
         evt = b.poll(50)
         self.assertEquals(evt, 0)
         self.assertEquals(msg2, msg)
-        
+
+
+if have_gevent:
+    class TestSocketGreen(GreenTest, TestSocket):
+        test_bad_attr = GreenTest.skip_green
 
 

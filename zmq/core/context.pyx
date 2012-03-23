@@ -186,6 +186,12 @@ cdef class Context:
                 self._sockets[0] = self._sockets[self.n_sockets]
             self.term()
     
+    @property
+    def _socket_class(self):
+        # import here to prevent circular import
+        from zmq.core.socket import Socket
+        return Socket
+    
     def socket(self, int socket_type):
         """ctx.socket(socket_type)
 
@@ -197,11 +203,9 @@ cdef class Context:
             The socket type, which can be any of the 0MQ socket types: 
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.
         """
-        # import here to prevent circular import
-        from zmq.core.socket import Socket
         if self.closed:
             raise ZMQError(ENOTSUP)
-        s = Socket(self, socket_type)
+        s = self._socket_class(self, socket_type)
         for opt, value in self.sockopts.iteritems():
             try:
                 s.setsockopt(opt, value)

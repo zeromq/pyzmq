@@ -16,7 +16,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.utils.strtypes import asbytes
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -48,3 +48,6 @@ class TestPubSub(BaseZMQTestCase):
         msg2 = s2.recv()
         self.assertEquals(msg1, msg2)
 
+if have_gevent:
+    class TestPubSubGreen(GreenTest, TestPubSub):
+        pass

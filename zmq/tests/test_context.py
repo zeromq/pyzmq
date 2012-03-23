@@ -17,7 +17,7 @@ from threading import Thread, Event
 
 import zmq
 from zmq.utils.strtypes import asbytes, b
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest, skip_green
 
 
 #-----------------------------------------------------------------------------
@@ -28,23 +28,23 @@ from zmq.tests import BaseZMQTestCase
 class TestContext(BaseZMQTestCase):
 
     def test_init(self):
-        c1 = zmq.Context()
-        self.assert_(isinstance(c1, zmq.Context))
+        c1 = self.Context()
+        self.assert_(isinstance(c1, self.Context))
         del c1
-        c2 = zmq.Context()
-        self.assert_(isinstance(c2, zmq.Context))
+        c2 = self.Context()
+        self.assert_(isinstance(c2, self.Context))
         del c2
-        c3 = zmq.Context()
-        self.assert_(isinstance(c3, zmq.Context))
+        c3 = self.Context()
+        self.assert_(isinstance(c3, self.Context))
         del c3
 
     def test_term(self):
-        c = zmq.Context()
+        c = self.Context()
         c.term()
         self.assert_(c.closed)
 
     def test_fail_init(self):
-        self.assertRaisesErrno(zmq.EINVAL, zmq.Context, 0)
+        self.assertRaisesErrno(zmq.EINVAL, self.Context, 0)
     
     def test_term_hang(self):
         rep,req = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
@@ -55,19 +55,19 @@ class TestContext(BaseZMQTestCase):
         self.context.term()
     
     def test_instance(self):
-        ctx = zmq.Context.instance()
-        c2 = zmq.Context.instance(io_threads=2)
+        ctx = self.Context.instance()
+        c2 = self.Context.instance(io_threads=2)
         self.assertTrue(c2 is ctx)
         c2.term()
-        c3 = zmq.Context.instance()
-        c4 = zmq.Context.instance()
+        c3 = self.Context.instance()
+        c4 = self.Context.instance()
         self.assertFalse(c3 is c2)
         self.assertFalse(c3.closed)
         self.assertTrue(c3 is c4)
     
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         for i in range(16):
             sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
             [ s.close() for s in sockets ]
@@ -77,7 +77,7 @@ class TestContext(BaseZMQTestCase):
     
     def test_sockopts(self):
         """setting socket options with ctx attributes"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         ctx.linger = 5
         self.assertEquals(ctx.linger, 5)
         s = ctx.socket(zmq.REQ)
@@ -94,7 +94,7 @@ class TestContext(BaseZMQTestCase):
     
     def test_destroy(self):
         """Context.destroy should close sockets"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         sockets = [ ctx.socket(zmq.REP) for i in range(65) ]
         
         # close half of the sockets
@@ -119,7 +119,7 @@ class TestContext(BaseZMQTestCase):
         
     def test_term_noclose(self):
         """Context.term won't close sockets"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         s = ctx.socket(zmq.REQ)
         self.assertFalse(s.closed)
         t = Thread(target=ctx.term)
@@ -136,7 +136,7 @@ class TestContext(BaseZMQTestCase):
         """test close&term by garbage collection alone"""
         # test credit @dln (GH #137):
         def gc():
-            ctx = zmq.Context()
+            ctx = self.Context()
             s = ctx.socket(zmq.PUSH)
         t = Thread(target=gc)
         t.start()
@@ -157,7 +157,7 @@ class TestContext(BaseZMQTestCase):
                 self.child = CyclicReference(self)
         
         def crash_zmq():
-            ctx = zmq.Context()
+            ctx = self.Context()
             sock = ctx.socket(zmq.PULL)
             c = CyclicReference()
             c.crash(sock)
@@ -167,9 +167,10 @@ class TestContext(BaseZMQTestCase):
     
     def test_term_thread(self):
         """ctx.term should not crash active threads (#139)"""
-        ctx = zmq.Context()
+        ctx = self.Context()
         evt = Event()
         evt.clear()
+
         def block():
             s = ctx.socket(zmq.REP)
             s.bind_to_random_port('tcp://127.0.0.1')
@@ -192,3 +193,10 @@ class TestContext(BaseZMQTestCase):
         t.join(timeout=1)
         self.assertFalse(t.is_alive(), "term should have interrupted s.recv()")
 
+
+if have_gevent:
+    class TestContextGreen(GreenTest, TestContext):
+        """gevent subclass of context tests"""
+        # skip tests that use real threads:
+        test_gc = GreenTest.skip_green
+        test_term_thread = GreenTest.skip_green

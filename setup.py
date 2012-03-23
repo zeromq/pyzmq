@@ -538,6 +538,9 @@ submodules = dict(
     utils = {
             'initthreads':[libzmq],
             'rebuffer':[buffers],
+    },
+    green = {
+        'core' : [libzmq, context, socket],
     }
 )
 
