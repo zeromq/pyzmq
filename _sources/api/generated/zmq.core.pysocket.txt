@@ -1,0 +1,53 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.pysocket
+=============
+
+Module: :mod:`core.pysocket`
+----------------------------
+.. automodule:: zmq.core.pysocket
+
+.. currentmodule:: zmq.core.pysocket
+
+Functions
+---------
+
+
+.. autofunction:: zmq.core.pysocket.bind_to_random_port
+
+
+.. autofunction:: zmq.core.pysocket.getsockopt_string
+
+
+.. autofunction:: zmq.core.pysocket.poll
+
+
+.. autofunction:: zmq.core.pysocket.recv_json
+
+
+.. autofunction:: zmq.core.pysocket.recv_multipart
+
+
+.. autofunction:: zmq.core.pysocket.recv_pyobj
+
+
+.. autofunction:: zmq.core.pysocket.recv_string
+
+
+.. autofunction:: zmq.core.pysocket.send_json
+
+
+.. autofunction:: zmq.core.pysocket.send_multipart
+
+
+.. autofunction:: zmq.core.pysocket.send_pyobj
+
+
+.. autofunction:: zmq.core.pysocket.send_string
+
+
+.. autofunction:: zmq.core.pysocket.setsockopt_string
+
+
+.. autofunction:: zmq.core.pysocket.setsockopt_string
+

@@ -121,11 +121,11 @@ processes. We have provided classes for launching devices in a background thread
 <a class="reference internal" href="api/generated/zmq.devices.basedevice.html#zmq.devices.basedevice.ThreadDevice" title="zmq.devices.basedevice.ThreadDevice"><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevice</span></tt></a> and via multiprocessing with <a class="reference internal" href="api/generated/zmq.devices.basedevice.html#zmq.devices.basedevice.ProcessDevice" title="zmq.devices.basedevice.ProcessDevice"><tt class="xref py py-class docutils literal"><span class="pre">ProcessDevice</span></tt></a>. For
 threadsafety and running across processes, these methods do not take Socket objects as
 arguments, but rather socket types, and then the socket creation and configuration happens
-via the BackgroundDevice&#8217;s <tt class="xref py py-meth docutils literal"><span class="pre">x_in()</span></tt> proxy methods. For each configuration method
+via the BackgroundDevice&#8217;s <tt class="xref py py-meth docutils literal"><span class="pre">foo_in()</span></tt> proxy methods. For each configuration method
 (bind/connect/setsockopt), there are proxy methods for calling those methods on the Socket
 objects created in the background thread or process, prefixed with &#8216;in_&#8217; or &#8216;out_&#8217;,
 corresponding to the <cite>in_socket</cite> and <cite>out_socket</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices.basedevice</span> <span class="kn">import</span> <span class="n">ProcessDevice</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices</span> <span class="kn">import</span> <span class="n">ProcessDevice</span>
 
 <span class="n">pd</span> <span class="o">=</span> <span class="n">ProcessDevice</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">QUEUE</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">bind_in</span><span class="p">(</span><span class="s">&#39;tcp://*:12345&#39;</span><span class="p">)</span>
@@ -154,7 +154,7 @@ message back to the original sender, which is presumably not the intended patter
 order for the queue to support a ROUTER-ROUTER connection, it must swap the first two parts
 of the message in order to get the right message out the other side.</p>
 <p>To invoke a monitored queue is similar to invoking a regular ØMQ device:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices.monitoredqueue</span> <span class="kn">import</span> <span class="n">monitored_queue</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.devices</span> <span class="kn">import</span> <span class="n">monitored_queue</span>
 <span class="n">ins</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">ROUTER</span><span class="p">)</span>
 <span class="n">outs</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">DEALER</span><span class="p">)</span>
 <span class="n">mons</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
@@ -167,9 +167,9 @@ is most logical for the monitor socket, since it will never receive messages, an
 in/out prefix is well suited to the PUB/SUB topic subscription model. All messages sent on
 <cite>mons</cite> will be multipart, the first part being the prefix corresponding to the socket that
 received the message.</p>
-<p><a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html#module-zmq.devices.monitoredqueuedevice" title="zmq.devices.monitoredqueuedevice"><tt class="xref py py-mod docutils literal"><span class="pre">devices.monitoredqueuedevice</span></tt></a> contains subclasses of BackgroundDevices for
-launching a monitored queue in the background, which function just like the base
-BackgroundDevice objects, but add <cite>x_mon</cite> methods for configuring the monitor socket.</p>
+<p>Or for launching an MQ in the background, there are <a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a> and
+<a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a>, which function just like the base
+BackgroundDevice objects, but add <tt class="xref py py-meth docutils literal"><span class="pre">foo_mon()</span></tt> methods for configuring the monitor socket.</p>
 </div>
 </div>
 

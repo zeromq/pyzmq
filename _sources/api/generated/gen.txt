@@ -8,7 +8,7 @@
    generated/zmq.core.error
    generated/zmq.core.message
    generated/zmq.core.poll
-   generated/zmq.core.socket
+   generated/zmq.core.pysocket
    generated/zmq.core.socket
    generated/zmq.core.stopwatch
    generated/zmq.core.version
@@ -24,3 +24,5 @@
    generated/zmq.utils.initthreads
    generated/zmq.utils.jsonapi
    generated/zmq.utils.rebuffer
+   generated/zmq.web.proxy
+   generated/zmq.web.zmqweb

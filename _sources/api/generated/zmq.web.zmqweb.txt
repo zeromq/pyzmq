@@ -1,0 +1,43 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+web.zmqweb
+==========
+
+Module: :mod:`web.zmqweb`
+-------------------------
+.. automodule:: zmq.web.zmqweb
+
+.. currentmodule:: zmq.web.zmqweb
+
+Classes
+-------
+
+:class:`ZMQApplication`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQApplication
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ZMQHTTPRequest`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQHTTPRequest
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ZMQStreamingHTTPRequest`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZMQStreamingHTTPRequest
+  :members:
+  :undoc-members:
+  :inherited-members:
+
