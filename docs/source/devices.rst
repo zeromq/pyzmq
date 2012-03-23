@@ -26,12 +26,12 @@ processes. We have provided classes for launching devices in a background thread
 :class:`.ThreadDevice` and via multiprocessing with :class:`.ProcessDevice`. For
 threadsafety and running across processes, these methods do not take Socket objects as
 arguments, but rather socket types, and then the socket creation and configuration happens
-via the BackgroundDevice's :meth:`x_in` proxy methods. For each configuration method
+via the BackgroundDevice's :meth:`foo_in` proxy methods. For each configuration method
 (bind/connect/setsockopt), there are proxy methods for calling those methods on the Socket
 objects created in the background thread or process, prefixed with 'in\_' or 'out\_',
 corresponding to the `in_socket` and `out_socket`::
 
-    from zmq.devices.basedevice import ProcessDevice
+    from zmq.devices import ProcessDevice
     
     pd = ProcessDevice(zmq.QUEUE, zmq.REP, zmq.REQ)
     pd.bind_in('tcp://*:12345')
@@ -62,7 +62,7 @@ of the message in order to get the right message out the other side.
 
 To invoke a monitored queue is similar to invoking a regular ØMQ device::
 
-    from zmq.devices.monitoredqueue import monitored_queue
+    from zmq.devices import monitored_queue
     ins = ctx.socket(zmq.ROUTER)
     outs = ctx.socket(zmq.DEALER)
     mons = ctx.socket(zmq.PUB)
@@ -75,8 +75,8 @@ in/out prefix is well suited to the PUB/SUB topic subscription model. All messag
 `mons` will be multipart, the first part being the prefix corresponding to the socket that
 received the message.
 
-:mod:`.devices.monitoredqueuedevice` contains subclasses of BackgroundDevices for
-launching a monitored queue in the background, which function just like the base
-BackgroundDevice objects, but add `x_mon` methods for configuring the monitor socket.
+Or for launching an MQ in the background, there are :class:`.ThreadMonitoredQueue` and
+:class:`.ProcessMonitoredQueue`, which function just like the base
+BackgroundDevice objects, but add :meth:`foo_mon` methods for configuring the monitor socket.
 
 
