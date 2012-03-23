@@ -2,9 +2,26 @@
 
 Use jsonapi.loads() and jsonapi.dumps() for guaranteed symmetry.
 
-Priority: jsonlib2 > jsonlib > simplejson > json
+Priority: simplejson > jsonlib2 > json
 
-Ensures bytes instead of unicode on either side of serialization.
+Always serializes to bytes instead of unicode for zeromq compatibility.
+
+jsonapi.loads/dumps provide kwarg-compatibility with stdlib json.
+
+To override pyzmq's choice of json library, you can simply override the loads/dumps
+methods, e.g.::
+
+    import ujson
+    from zmq.utils import jsonapi
+    jsonapi.jsonmod = ujson
+    # ujson doesn't support the `separators` kwarg we use, so force its own dumps:
+    jsonapi.dumps = ujson.dumps
+
+To select the super-fast ujson module.  Note that using a different module such
+as ujson that does not support the same kwargs as stdlib json may break
+compatibility with other tools that depend on this, if used in the same process.
+A safer route is to just serialize your own messages yourself with your favorite
+library.
 
 Authors
 -------
@@ -26,23 +43,17 @@ Authors
 #-----------------------------------------------------------------------------
 
 from zmq.utils.strtypes import bytes, unicode
-# priority: jsonlib2 > jsonlib > simplejson > json
 
 jsonmod = None
 
-try:
-    import jsonlib2 as jsonmod
-except ImportError:
+priority = ['simplejson', 'jsonlib2', 'json']
+for mod in priority:
     try:
-        import jsonlib as jsonmod
+        jsonmod = __import__(mod)
     except ImportError:
-        try:
-            import simplejson as jsonmod
-        except ImportError:
-            try:
-                import json as jsonmod
-            except ImportError:
-                pass
+        pass
+    else:
+        break
 
 def _squash_unicode(s):
     if isinstance(s, unicode):
@@ -50,29 +61,24 @@ def _squash_unicode(s):
     else:
         return s
 
-def jsonlib_dumps(o,**kwargs):
-    """This one is separate because jsonlib doesn't allow specifying separators.
-    See jsonlib.dumps for details on kwargs.
-    """
-    return _squash_unicode(jsonmod.dumps(o,**kwargs))
-
 def dumps(o, **kwargs):
-    """Serialize object to JSON str.
+    """Serialize object to JSON bytes.
     See %s.dumps for details on kwargs.
-    """%jsonmod
+    """ % jsonmod
     
-    return _squash_unicode(jsonmod.dumps(o, separators=(',',':'),**kwargs))
+    if 'separators' not in kwargs:
+        kwargs['separators'] = (',', ':')
+    
+    return _squash_unicode(jsonmod.dumps(o, **kwargs))
 
-def loads(s,**kwargs):
+def loads(s, **kwargs):
     """Load object from JSON str.
     See %s.loads for details on kwargs.
-    """%jsonmod
+    """ % jsonmod
+    
     if str is unicode and isinstance(s, bytes):
         s = s.decode('utf8')
-    return jsonmod.loads(s,**kwargs)
-
-if jsonmod is not None and jsonmod.__name__== 'jsonlib':
-    dumps = jsonlib_dumps
+    return jsonmod.loads(s, **kwargs)
 
 __all__ = ['jsonmod', 'dumps', 'loads']
 
