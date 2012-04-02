@@ -2,7 +2,7 @@
 
 Use jsonapi.loads() and jsonapi.dumps() for guaranteed symmetry.
 
-Priority: jsonlib2 > jsonlib > simplejson > json
+Priority: ujson > jsonlib2 > jsonlib > simplejson > json
 
 Ensures bytes instead of unicode on either side of serialization.
 
@@ -26,23 +26,26 @@ Authors
 #-----------------------------------------------------------------------------
 
 from zmq.utils.strtypes import bytes, unicode
-# priority: jsonlib2 > jsonlib > simplejson > json
+# priority: ujson > jsonlib2 > jsonlib > simplejson > json
 
 jsonmod = None
 
 try:
-    import jsonlib2 as jsonmod
+    import ujson as jsonmod
 except ImportError:
     try:
-        import jsonlib as jsonmod
+        import jsonlib2 as jsonmod
     except ImportError:
         try:
-            import simplejson as jsonmod
+            import jsonlib as jsonmod
         except ImportError:
             try:
-                import json as jsonmod
+                import simplejson as jsonmod
             except ImportError:
-                pass
+                try:
+                    import json as jsonmod
+                except ImportError:
+                    pass
 
 def _squash_unicode(s):
     if isinstance(s, unicode):

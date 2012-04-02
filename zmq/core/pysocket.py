@@ -306,7 +306,7 @@ def send_json(self, obj, flags=0):
         Any valid send flag.
     """
     if jsonapi.jsonmod is None:
-        raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
+        raise ImportError('ujson, jsonlib{1,2}, json or simplejson library is required.')
     else:
         msg = jsonapi.dumps(obj)
         return self.send(msg, flags)
@@ -327,7 +327,7 @@ def recv_json(self, flags=0):
         The Python object that arrives as a message.
     """
     if jsonapi.jsonmod is None:
-        raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
+        raise ImportError('ujson, jsonlib{1,2}, json or simplejson library is required.')
     else:
         msg = self.recv(flags)
         return jsonapi.loads(msg)
