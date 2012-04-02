@@ -14,7 +14,7 @@
 import zmq
 from zmq.utils.strtypes import asbytes
 
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -58,4 +58,8 @@ class TestPair(BaseZMQTestCase):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         o = dict(a=10,b=range(10))
         o2 = self.ping_pong_pyobj(s1, s2, o)
+
+if have_gevent:
+    class TestReqRepGreen(GreenTest, TestPair):
+        pass
 
