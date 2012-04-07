@@ -117,13 +117,29 @@ else:
     MAXMSGSIZE = ZMQ_MAXMSGSIZE
     SNDHWM = ZMQ_SNDHWM
     RCVHWM = ZMQ_RCVHWM
-    SNDLABEL = ZMQ_SNDLABEL # a FLAG, not a sockopt
-    RCVLABEL = ZMQ_RCVLABEL
     MULTICAST_HOPS = ZMQ_MULTICAST_HOPS
+    IPV4ONLY = ZMQ_IPV4ONLY
+    LAST_ENDPOINT = ZMQ_LAST_ENDPOINT
+    FAIL_UNROUTABLE = ZMQ_FAIL_UNROUTABLE
     
-    _optionals.extend(['MAXMSGSIZE', 'SNDHWM', 'RCVHWM', 'MULTICAST_HOPS'])
+    _optionals.extend([
+        'MAXMSGSIZE',
+        'SNDHWM',
+        'RCVHWM',
+        'MULTICAST_HOPS',
+        'IPV4ONLY',
+        'LAST_ENDPOINT',
+        'FAIL_UNROUTABLE',
+    ])
     int64_sockopts.append(MAXMSGSIZE)
-    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS])
+    bytes_sockopts.append('LAST_ENDPOINT')
+    int_sockopts.extend([
+        SNDHWM,
+        RCVHWM,
+        MULTICAST_HOPS,
+        IPV4ONLY,
+        FAIL_UNROUTABLE,
+    ])
 
 if ZMQ_VERSION < 40000:
     # removed in 4.0.0
@@ -174,14 +190,17 @@ ECONNREFUSED = ZMQ_ECONNREFUSED
 EINPROGRESS = ZMQ_EINPROGRESS
 ENOTSOCK = ZMQ_ENOTSOCK
 
+if ZMQ_VERSION >= 300000:
+    # new errnos in zmq3
+    EAFNOSUPPORT = ZMQ_EAFNOSUPPORT
+    EHOSTUNREACH = ZMQ_EHOSTUNREACH
+    _optionals.extend(['EAFNOSUPPORT', 'EHOSTUNREACH'])
+
 # 0MQ Native
 EFSM = ZMQ_EFSM
 ENOCOMPATPROTO = ZMQ_ENOCOMPATPROTO
 ETERM = ZMQ_ETERM
 EMTHREAD = ZMQ_EMTHREAD
-if ZMQ_VERSION >= 400000:
-    ECANTROUTE = ZMQ_ECANTROUTE
-    _optionals.append('ECANTROUTE')
 
 #-----------------------------------------------------------------------------
 # Symbols to export

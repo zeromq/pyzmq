@@ -68,6 +68,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
     enum: ZMQ_EINPROGRESS "EINPROGRESS"
     enum: ZMQ_ENOTSOCK "ENOTSOCK"
+    enum: ZMQ_EAFNOSUPPORT "EAFNOSUPPORT"
+    enum: ZMQ_EHOSTUNREACH "EHOSTUNREACH"
+
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
@@ -146,6 +149,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SNDTIMEO # 28
     enum: ZMQ_RCVLABEL # 29
     enum: ZMQ_RCVCMD # 30
+    enum: ZMQ_IPV4ONLY # 31
+    enum: ZMQ_LAST_ENDPOINT # 32
+    enum: ZMQ_FAIL_UNROUTABLE # 33
 
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_DONTWAIT # 1

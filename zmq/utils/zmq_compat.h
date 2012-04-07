@@ -28,8 +28,11 @@
 #endif
 
 // new in 3.0.0
-#ifndef ENOTSOCK
-    #define ENOTSOCK (-1)
+#ifndef EAFNOSUPPORT
+    #define EAFNOSUPPORT (-1)
+#endif
+#ifndef EHOSTUNREACH
+    #define EHOSTUNREACH (-1)
 #endif
 
 #ifndef ZMQ_MAXMSGSIZE
@@ -44,7 +47,6 @@
 #ifndef ZMQ_MULTICAST_HOPS
     #define ZMQ_MULTICAST_HOPS (-1)
 #endif
-
 #ifndef ZMQ_DONTWAIT
     #define ZMQ_DONTWAIT (-1)
 #endif
@@ -53,6 +55,15 @@
 #endif
 #ifndef ZMQ_SNDLABEL
     #define ZMQ_SNDLABEL (-1)
+#endif
+#ifndef ZMQ_IPV4ONLY
+    #define ZMQ_IPV4ONLY (-1)
+#endif
+#ifndef ZMQ_LAST_ENDPOINT
+    #define ZMQ_LAST_ENDPOINT (-1)
+#endif
+#ifndef ZMQ_FAIL_UNROUTABLE
+    #define ZMQ_FAIL_UNROUTABLE (-1)
 #endif
 
 
