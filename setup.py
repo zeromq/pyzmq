@@ -365,7 +365,7 @@ class GitRevisionCommand(Command):
     user_options = [ ]
     
     def initialize_options(self):
-        self.version_pyx = pjoin('zmq','core','version.pyx')
+        self.version_py = pjoin('zmq','core','version.py')
     
     def run(self):
         try:
@@ -386,15 +386,15 @@ class GitRevisionCommand(Command):
         
         rev = line.split()[-1]
         
-        # now that we have the git revision, we can apply it to version.pyx
-        with open(self.version_pyx) as f:
+        # now that we have the git revision, we can apply it to version.py
+        with open(self.version_py) as f:
             lines = f.readlines()
         
         for i,line in enumerate(lines):
             if line.startswith('__revision__'):
                 lines[i] = "__revision__ = '%s'\n"%rev
                 break
-        with open(self.version_pyx, 'w') as f:
+        with open(self.version_py, 'w') as f:
             f.writelines(lines)
     
     def finalize_options(self):
@@ -524,13 +524,13 @@ monqueue = pxd('devices', 'monitoredqueue')
 submodules = dict(
     core = {'constants': [libzmq],
             'error':[libzmq],
-            'poll':[libzmq, socket, context],
+            '_poll':[libzmq, socket, context],
             'stopwatch':[libzmq, pxd('core','stopwatch')],
             'context':[context, libzmq],
             'message':[libzmq, buffers, message],
             'socket':[context, message, socket, libzmq, buffers],
             'device':[libzmq, socket, context],
-            'version':[libzmq],
+            '_version':[libzmq],
     },
     devices = {
             'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
@@ -596,8 +596,8 @@ if bundle_libzmq:
     package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
-    """extract pyzmq version from core/version.pyx, so it's not multiply defined"""
-    with open(pjoin('zmq', 'core', 'version.pyx')) as f:
+    """extract pyzmq version from core/version.py, so it's not multiply defined"""
+    with open(pjoin('zmq', 'core', 'version.py')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()
