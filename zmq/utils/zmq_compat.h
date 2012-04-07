@@ -19,6 +19,13 @@
 #define _missing (PyErr_SetString(PyExc_NotImplementedError, \
                 "Not available in current zeromq."), -1)
 
+// new in 2.2.0
+#ifndef ZMQ_RCVTIMEO
+    #define ZMQ_RCVTIMEO (-1)
+#endif
+#ifndef ZMQ_SNDTIMEO
+    #define ZMQ_SNDTIMEO (-1)
+#endif
 
 // new in 3.0.0
 #ifndef ENOTSOCK
@@ -36,12 +43,6 @@
 #endif
 #ifndef ZMQ_MULTICAST_HOPS
     #define ZMQ_MULTICAST_HOPS (-1)
-#endif
-#ifndef ZMQ_RCVTIMEO
-    #define ZMQ_RCVTIMEO (-1)
-#endif
-#ifndef ZMQ_SNDTIMEO
-    #define ZMQ_SNDTIMEO (-1)
 #endif
 
 #ifndef ZMQ_DONTWAIT

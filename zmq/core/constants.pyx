@@ -97,6 +97,13 @@ if ZMQ_VERSION < 30000:
 else:
     int_sockopts.extend(switched)
 
+if ZMQ_VERSION >= 202000:
+    # sockopts new in 2.2.0
+    SNDTIMEO = ZMQ_SNDTIMEO
+    RCVTIMEO = ZMQ_RCVTIMEO
+    _optionals.extend(['RCVTIMEO', 'SNDTIMEO'])
+    int_sockopts.extend([RCVTIMEO, SNDTIMEO])
+
 if ZMQ_VERSION < 30000:
     # sockopts removed in 3.0.0
     HWM = ZMQ_HWM
@@ -112,14 +119,11 @@ else:
     RCVHWM = ZMQ_RCVHWM
     SNDLABEL = ZMQ_SNDLABEL # a FLAG, not a sockopt
     RCVLABEL = ZMQ_RCVLABEL
-    SNDTIMEO = ZMQ_SNDTIMEO
-    RCVTIMEO = ZMQ_RCVTIMEO
     MULTICAST_HOPS = ZMQ_MULTICAST_HOPS
     
-    _optionals.extend(['MAXMSGSIZE', 'SNDHWM', 'RCVHWM', 'MULTICAST_HOPS',
-                        'RCVTIMEO', 'SNDTIMEO'])
+    _optionals.extend(['MAXMSGSIZE', 'SNDHWM', 'RCVHWM', 'MULTICAST_HOPS'])
     int64_sockopts.append(MAXMSGSIZE)
-    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS, RCVTIMEO, SNDTIMEO])
+    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS])
 
 if ZMQ_VERSION < 40000:
     # removed in 4.0.0
