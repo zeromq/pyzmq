@@ -44,9 +44,28 @@ Example usage::
         # in the ioloop.
         http_client.fetch(url, callback)
     ioloop.start()
+
+Most applications shouln't have to work with `StackContext` directly.
+Here are a few rules of thumb for when it's necessary:
+
+* If you're writing an asynchronous library that doesn't rely on a
+  stack_context-aware library like `tornado.ioloop` or `tornado.iostream`
+  (for example, if you're writing a thread pool), use
+  `stack_context.wrap()` before any asynchronous operations to capture the
+  stack context from where the operation was started.
+
+* If you're writing an asynchronous library that has some shared
+  resources (such as a connection pool), create those shared resources
+  within a ``with stack_context.NullContext():`` block.  This will prevent
+  ``StackContexts`` from leaking from one request to another.
+
+* If you want to write something like an exception handler that will
+  persist across asynchronous calls, create a new `StackContext` (or
+  `ExceptionStackContext`), and make your asynchronous calls in a ``with``
+  block that references your `StackContext`.
 '''
 
-from __future__ import with_statement
+from __future__ import absolute_import, division, with_statement
 
 import contextlib
 import functools
@@ -62,6 +81,7 @@ class _State(threading.local):
     def __init__(self):
         self.contexts = ()
 _state = _State()
+
 
 class StackContext(object):
     '''Establishes the given context as a StackContext that will be transferred.
@@ -100,6 +120,7 @@ class StackContext(object):
         finally:
             _state.contexts = self.old_contexts
 
+
 class ExceptionStackContext(object):
     '''Specialization of StackContext for exception handling.
 
@@ -128,6 +149,7 @@ class ExceptionStackContext(object):
         finally:
             _state.contexts = self.old_contexts
 
+
 class NullContext(object):
     '''Resets the StackContext.
 
@@ -142,8 +164,10 @@ class NullContext(object):
     def __exit__(self, type, value, traceback):
         _state.contexts = self.old_contexts
 
+
 class _StackContextWrapper(functools.partial):
     pass
+
 
 def wrap(fn):
     '''Returns a callable object that will restore the current StackContext
@@ -157,6 +181,7 @@ def wrap(fn):
         return fn
     # functools.wraps doesn't appear to work on functools.partial objects
     #@functools.wraps(fn)
+
     def wrapped(callback, contexts, *args, **kwargs):
         if contexts is _state.contexts or not contexts:
             callback(*args, **kwargs)
@@ -190,6 +215,7 @@ def wrap(fn):
         return _StackContextWrapper(wrapped, fn, _state.contexts)
     else:
         return _StackContextWrapper(fn)
+
 
 @contextlib.contextmanager
 def _nested(*managers):

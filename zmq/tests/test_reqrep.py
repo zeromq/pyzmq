@@ -14,7 +14,6 @@
 from unittest import TestCase
 
 import zmq
-from zmq.utils.strtypes import asbytes
 from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
@@ -26,7 +25,7 @@ class TestReqRep(BaseZMQTestCase):
     def test_basic(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
 
-        msg1 = asbytes('message 1')
+        msg1 = b'message 1'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 
@@ -34,7 +33,7 @@ class TestReqRep(BaseZMQTestCase):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
 
         for i in range(10):
-            msg1 = asbytes(i*' ')
+            msg1 = i*b' '
             msg2 = self.ping_pong(s1, s2, msg1)
             self.assertEquals(msg1, msg2)
 
@@ -45,10 +44,10 @@ class TestReqRep(BaseZMQTestCase):
             # this doesn't work on 2.1.8
             for copy in (True,False):
                 self.assertRaisesErrno(zmq.EFSM, s1.recv, copy=copy)
-                self.assertRaisesErrno(zmq.EFSM, s2.send, asbytes('asdf'), copy=copy)
+                self.assertRaisesErrno(zmq.EFSM, s2.send, b'asdf', copy=copy)
 
         # I have to have this or we die on an Abort trap.
-        msg1 = asbytes('asdf')
+        msg1 = b'asdf'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 
@@ -64,7 +63,7 @@ class TestReqRep(BaseZMQTestCase):
 
     def test_large_msg(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
-        msg1 = asbytes(10000*'X')
+        msg1 = 10000*b'X'
 
         for i in range(10):
             msg2 = self.ping_pong(s1, s2, msg1)

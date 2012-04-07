@@ -12,7 +12,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
-from zmq.utils.strtypes import asbytes
+
 
 from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 
@@ -20,13 +20,13 @@ from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest
 # Tests
 #-----------------------------------------------------------------------------
 
-x = asbytes(' ')
+x = b' '
 class TestPair(BaseZMQTestCase):
 
     def test_basic(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
-        msg1 = asbytes('message1')
+        msg1 = b'message1'
         msg2 = self.ping_pong(s1, s2, msg1)
         self.assertEquals(msg1, msg2)
 

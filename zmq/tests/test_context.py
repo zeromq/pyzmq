@@ -16,8 +16,8 @@ import time
 from threading import Thread, Event
 
 import zmq
-from zmq.utils.strtypes import asbytes, b
 from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest, skip_green
+from zmq.tests import BaseZMQTestCase
 
 
 #-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class TestContext(BaseZMQTestCase):
     def test_term_hang(self):
         rep,req = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
         req.setsockopt(zmq.LINGER, 0)
-        req.send(asbytes('hello'), copy=False)
+        req.send(b'hello', copy=False)
         req.close()
         rep.close()
         self.context.term()
@@ -85,7 +85,7 @@ class TestContext(BaseZMQTestCase):
         self.assertEquals(s.getsockopt(zmq.LINGER), 5)
         s.close()
         # check that subscribe doesn't get set on sockets that don't subscribe:
-        ctx.subscribe = b('')
+        ctx.subscribe = b''
         s = ctx.socket(zmq.REQ)
         s.close()
         
@@ -109,7 +109,7 @@ class TestContext(BaseZMQTestCase):
     def test_destroy_linger(self):
         """Context.destroy should set linger on closing sockets"""
         req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
-        req.send(asbytes('hi'))
+        req.send(b'hi')
         time.sleep(1e-2)
         self.context.destroy(linger=0)
         # reaper is not instantaneous
@@ -125,8 +125,6 @@ class TestContext(BaseZMQTestCase):
         t = Thread(target=ctx.term)
         t.start()
         t.join(timeout=0.1)
-        if sys.version[:3] == '2.5':
-            t.is_alive = t.isAlive
         self.assertTrue(t.is_alive(), "Context should be waiting")
         s.close()
         t.join(timeout=0.1)
@@ -141,8 +139,6 @@ class TestContext(BaseZMQTestCase):
         t = Thread(target=gc)
         t.start()
         t.join(timeout=1)
-        if sys.version[:3] == '2.5':
-            t.is_alive = t.isAlive
         self.assertFalse(t.is_alive(), "Garbage collection should have cleaned up context")
     
     def test_cyclic_destroy(self):

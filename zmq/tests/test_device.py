@@ -16,7 +16,7 @@ import time
 import zmq
 from zmq import devices
 from zmq.tests import BaseZMQTestCase, SkipTest
-from zmq.utils.strtypes import (bytes,unicode,basestring,asbytes)
+from zmq.utils.strtypes import (bytes,unicode,basestring)
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -55,7 +55,7 @@ class TestDevice(BaseZMQTestCase):
         dev.connect_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = asbytes('hello')
+        msg = b'hello'
         req.send(msg)
         self.assertEquals(msg, self.recv(req))
         del dev
@@ -66,7 +66,7 @@ class TestDevice(BaseZMQTestCase):
         dev.connect_out('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = asbytes('hello again')
+        msg = b'hello again'
         req.send(msg)
         self.assertEquals(msg, self.recv(req))
         del dev
@@ -84,7 +84,7 @@ class TestDevice(BaseZMQTestCase):
         dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = asbytes('hello')
+        msg = b'hello'
         req.send(msg)
         self.assertEquals(msg, self.recv(req))
         del dev
@@ -100,7 +100,7 @@ class TestDevice(BaseZMQTestCase):
         dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = asbytes('hello again')
+        msg = b'hello again'
         req.send(msg)
         self.assertEquals(msg, self.recv(req))
         del dev
@@ -120,7 +120,7 @@ class TestDevice(BaseZMQTestCase):
         dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
-        msg = asbytes('hello')
+        msg = b'hello'
         req.send(msg, zmq.SNDLABEL)
         req.send(msg, zmq.SNDMORE)
         req.send(msg)
