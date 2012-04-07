@@ -30,7 +30,7 @@ from zmq.utils.rebuffer import array_from_buffer
 
 # some useful constants:
 
-x = asbytes('x')
+x = b'x'
 
 try:
     view = memoryview
@@ -161,7 +161,7 @@ class TestFrame(BaseZMQTestCase):
             del s
     
     def test_tracker(self):
-        m = zmq.Frame(asbytes('asdf'), track=True)
+        m = zmq.Frame(b'asdf', track=True)
         self.assertFalse(m.tracker.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
@@ -169,15 +169,15 @@ class TestFrame(BaseZMQTestCase):
         self.assertTrue(pm.done)
     
     def test_no_tracker(self):
-        m = zmq.Frame(asbytes('asdf'), track=False)
+        m = zmq.Frame(b'asdf', track=False)
         self.assertEquals(m.tracker, None)
         m2 = copy.copy(m)
         self.assertEquals(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
-        m = zmq.Frame(asbytes('asdf'), track=True)
-        m2 = zmq.Frame(asbytes('whoda'), track=True)
+        m = zmq.Frame(b'asdf', track=True)
+        m2 = zmq.Frame(b'whoda', track=True)
         mt = zmq.MessageTracker(m,m2)
         self.assertFalse(m.tracker.done)
         self.assertFalse(mt.done)
@@ -219,7 +219,7 @@ class TestFrame(BaseZMQTestCase):
     def test_multisend(self):
         """ensure that a message remains intact after multiple sends"""
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        s = asbytes("message")
+        s = b"message"
         m = zmq.Frame(s)
         self.assertEquals(s, m.bytes)
         
@@ -266,7 +266,7 @@ class TestFrame(BaseZMQTestCase):
         if not (major >= 3 or (major == 2 and minor >= 7)):
             raise SkipTest("memoryviews only in python >= 2.7")
 
-        s = asbytes('carrotjuice')
+        s = b'carrotjuice'
         v = memoryview(s)
         m = zmq.Frame(s)
         buf = m.buffer
@@ -276,7 +276,7 @@ class TestFrame(BaseZMQTestCase):
     
     def test_noncopying_recv(self):
         """check for clobbering message buffers"""
-        null = asbytes('\0'*64)
+        null = b'\0'*64
         sa,sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         for i in range(32):
             # try a few times
@@ -287,7 +287,7 @@ class TestFrame(BaseZMQTestCase):
             buf = m.buffer
             del m
             for i in range(5):
-                ff=asbytes('\xff'*(40 + i*10))
+                ff=b'\xff'*(40 + i*10)
                 sb.send(ff, copy=False)
                 m2 = sa.recv(copy=False)
                 if view.__name__ == 'buffer':
@@ -336,10 +336,10 @@ class TestFrame(BaseZMQTestCase):
     
     def test_frame_more(self):
         """test Frame.more attribute"""
-        frame = zmq.Frame(b("hello"))
+        frame = zmq.Frame(b"hello")
         self.assertFalse(frame.more)
         sa,sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        sa.send_multipart([b('hi'), b('there')])
+        sa.send_multipart([b'hi', b'there'])
         frame = self.recv(sb, copy=False)
         self.assertTrue(frame.more)
         frame = self.recv(sb, copy=False)

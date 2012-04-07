@@ -85,14 +85,12 @@ cdef extern from "Python.h":
 #-----------------------------------------------------------------------------
 
 
-cdef inline int newstyle_available():
-    return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 6)
-
 cdef inline int memoryview_available():
     return PY_MAJOR_VERSION >= 3 or (PY_MAJOR_VERSION >=2 and PY_MINOR_VERSION >= 7)
 
 cdef inline int oldstyle_available():
     return PY_MAJOR_VERSION < 3
+
 
 cdef inline int check_buffer(object ob):
     """Version independent check for whether an object is a buffer.
@@ -106,9 +104,8 @@ cdef inline int check_buffer(object ob):
     -------
     int : 0 if no buffer interface, 3 if newstyle buffer interface, 2 if oldstyle.
     """
-    if newstyle_available():
-        if PyObject_CheckBuffer(ob):
-            return 3
+    if PyObject_CheckBuffer(ob):
+        return 3
     if oldstyle_available():
         return PyObject_CheckReadBuffer(ob) and 2
     return 0
@@ -209,6 +206,7 @@ cdef inline object asbuffer_w(object ob, void **base, Py_ssize_t *size):
 # frombuffer: python buffer/view from C buffer
 #------------------------------------------------------------------------------
 
+
 cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     """Python 3 version of frombuffer.
 
@@ -218,13 +216,10 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     cdef Py_buffer pybuf
     cdef Py_ssize_t *shape = [s]
     cdef str astr=""
-    if newstyle_available():
-        PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
-        pybuf.format = "B"
-        pybuf.shape = shape
-        return PyMemoryView_FromBuffer(&pybuf)
-    else:
-        raise NotImplementedError("New style buffers not available.")
+    PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
+    pybuf.format = "B"
+    pybuf.shape = shape
+    return PyMemoryView_FromBuffer(&pybuf)
 
 
 cdef inline object frombuffer_2(void *ptr, Py_ssize_t s, int readonly):

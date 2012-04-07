@@ -439,8 +439,7 @@ class ZMQStream(object):
             return
         try:
             msg = self.socket.recv_multipart(zmq.NOBLOCK, copy=self._recv_copy)
-        except zmq.ZMQError:
-            e = sys.exc_info()[1]
+        except zmq.ZMQError as e:
             if e.errno == zmq.EAGAIN:
                 # state changed since poll event
                 pass
@@ -466,8 +465,7 @@ class ZMQStream(object):
         msg, kwargs = self._send_queue.get()
         try:
             status = self.socket.send_multipart(msg, **kwargs)
-        except zmq.ZMQError:
-            e = sys.exc_info()[1]
+        except zmq.ZMQError as e:
             status = e
         if self._send_callback:
             callback = self._send_callback
