@@ -97,6 +97,13 @@ if ZMQ_VERSION < 30000:
 else:
     int_sockopts.extend(switched)
 
+if ZMQ_VERSION >= 202000:
+    # sockopts new in 2.2.0
+    SNDTIMEO = ZMQ_SNDTIMEO
+    RCVTIMEO = ZMQ_RCVTIMEO
+    _optionals.extend(['RCVTIMEO', 'SNDTIMEO'])
+    int_sockopts.extend([RCVTIMEO, SNDTIMEO])
+
 if ZMQ_VERSION < 30000:
     # sockopts removed in 3.0.0
     HWM = ZMQ_HWM
@@ -110,16 +117,29 @@ else:
     MAXMSGSIZE = ZMQ_MAXMSGSIZE
     SNDHWM = ZMQ_SNDHWM
     RCVHWM = ZMQ_RCVHWM
-    SNDLABEL = ZMQ_SNDLABEL # a FLAG, not a sockopt
-    RCVLABEL = ZMQ_RCVLABEL
-    SNDTIMEO = ZMQ_SNDTIMEO
-    RCVTIMEO = ZMQ_RCVTIMEO
     MULTICAST_HOPS = ZMQ_MULTICAST_HOPS
+    IPV4ONLY = ZMQ_IPV4ONLY
+    LAST_ENDPOINT = ZMQ_LAST_ENDPOINT
+    FAIL_UNROUTABLE = ZMQ_FAIL_UNROUTABLE
     
-    _optionals.extend(['MAXMSGSIZE', 'SNDHWM', 'RCVHWM', 'MULTICAST_HOPS',
-                        'RCVTIMEO', 'SNDTIMEO'])
+    _optionals.extend([
+        'MAXMSGSIZE',
+        'SNDHWM',
+        'RCVHWM',
+        'MULTICAST_HOPS',
+        'IPV4ONLY',
+        'LAST_ENDPOINT',
+        'FAIL_UNROUTABLE',
+    ])
     int64_sockopts.append(MAXMSGSIZE)
-    int_sockopts.extend([SNDHWM, RCVHWM, MULTICAST_HOPS, RCVTIMEO, SNDTIMEO])
+    bytes_sockopts.append('LAST_ENDPOINT')
+    int_sockopts.extend([
+        SNDHWM,
+        RCVHWM,
+        MULTICAST_HOPS,
+        IPV4ONLY,
+        FAIL_UNROUTABLE,
+    ])
 
 if ZMQ_VERSION < 40000:
     # removed in 4.0.0
@@ -170,14 +190,17 @@ ECONNREFUSED = ZMQ_ECONNREFUSED
 EINPROGRESS = ZMQ_EINPROGRESS
 ENOTSOCK = ZMQ_ENOTSOCK
 
+if ZMQ_VERSION >= 300000:
+    # new errnos in zmq3
+    EAFNOSUPPORT = ZMQ_EAFNOSUPPORT
+    EHOSTUNREACH = ZMQ_EHOSTUNREACH
+    _optionals.extend(['EAFNOSUPPORT', 'EHOSTUNREACH'])
+
 # 0MQ Native
 EFSM = ZMQ_EFSM
 ENOCOMPATPROTO = ZMQ_ENOCOMPATPROTO
 ETERM = ZMQ_ETERM
 EMTHREAD = ZMQ_EMTHREAD
-if ZMQ_VERSION >= 400000:
-    ECANTROUTE = ZMQ_ECANTROUTE
-    _optionals.append('ECANTROUTE')
 
 #-----------------------------------------------------------------------------
 # Symbols to export

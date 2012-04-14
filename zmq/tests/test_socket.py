@@ -101,6 +101,9 @@ class TestSocket(BaseZMQTestCase):
                 backref[value] = name
         for opt in zmq.core.constants.int_sockopts+zmq.core.constants.int64_sockopts:
             sopt = backref[opt]
+            if sopt == 'FAIL_UNROUTABLE':
+                # fail_unroutable is write-only
+                continue
             try:
                 n = p.getsockopt(opt)
             except zmq.ZMQError as e:
