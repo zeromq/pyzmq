@@ -539,9 +539,6 @@ submodules = dict(
             'initthreads':[libzmq],
             'rebuffer':[buffers],
     },
-    green = {
-        'core' : [libzmq, context, socket],
-    }
 )
 
 try:
