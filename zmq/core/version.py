@@ -29,7 +29,7 @@ from zmq.core._version import zmq_version_info
 # Code
 #-----------------------------------------------------------------------------
 
-__version__ = '2.2dev'
+__version__ = '2.2.0'
 __revision__ = ''
 
 def pyzmq_version():
