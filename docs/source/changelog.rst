@@ -9,8 +9,8 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-2.2dev
-======
+2.2.0
+=====
 
 Some effort has gone into refining the pyzmq API in this release to make it a model for 
 other language bindings.  This is principally made in a few renames of objects and methods,
@@ -78,11 +78,6 @@ These features are marked 'experimental', which means that their APIs are not
 set in stone, and may be removed or changed in incompatible ways in later releases.
 
 * :mod:`zmq.web` added for load-balancing requests in a tornado webapp with zeromq.
-
-* The excellent `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_ socket
-  subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has been merged
-  as :mod:`zmq.green`.
-
 
 
 2.1.11
