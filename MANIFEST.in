@@ -1,4 +1,6 @@
+include COPYING.BSD
 include COPYING.LESSER
+include CONTRIBUTING.md
 include MANIFEST.in
 include README.rst
 include setup.cfg.template
