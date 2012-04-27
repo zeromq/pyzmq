@@ -16,8 +16,5 @@ Functions
 .. autofunction:: zmq.utils.jsonapi.dumps
 
 
-.. autofunction:: zmq.utils.jsonapi.jsonlib_dumps
-
-
 .. autofunction:: zmq.utils.jsonapi.loads
 

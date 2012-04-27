@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.ioloop &mdash; PyZMQ 2.1dev documentation</title>
+    <title>eventloop.ioloop &mdash; PyZMQ 2.2dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1dev',
+        VERSION:     '2.2dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" />
     <link rel="prev" title="devices.monitoredqueuedevice" href="zmq.devices.monitoredqueuedevice.html" /> 
@@ -230,6 +230,9 @@ control from other threads to the IOLoop&#8217;s thread.</p>
 <p><tt class="docutils literal"><span class="pre">deadline</span></tt> may be a number denoting a unix timestamp (as returned
 by <tt class="docutils literal"><span class="pre">time.time()</span></tt> or a <tt class="docutils literal"><span class="pre">datetime.timedelta</span></tt> object for a deadline
 relative to the current time.</p>
+<p>Note that it is not safe to call <cite>add_timeout</cite> from other threads.
+Instead, you must use <cite>add_callback</cite> to transfer control to the
+IOLoop&#8217;s thread, and then call <cite>add_timeout</cite> from there.</p>
 </dd></dl>
 
 <dl class="method">
@@ -237,7 +240,18 @@ relative to the current time.</p>
 <tt class="descname">close</tt><big>(</big><em>all_fds=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.ioloop.IOLoop.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes the IOLoop, freeing any resources used.</p>
 <p>If <tt class="docutils literal"><span class="pre">all_fds</span></tt> is true, all file descriptors registered on the
-IOLoop will be closed (not just the ones created by the IOLoop itself.</p>
+IOLoop will be closed (not just the ones created by the IOLoop itself).</p>
+<p>Many applications will only use a single IOLoop that runs for the
+entire lifetime of the process.  In that case closing the IOLoop
+is not necessary since everything will be cleaned up when the
+process exits.  <cite>IOLoop.close</cite> is provided mainly for scenarios
+such as unit tests, which create and destroy a large number of
+IOLoops.</p>
+<p>An IOLoop must be completely stopped before it can be closed.  This
+means that <cite>IOLoop.stop()</cite> must be called <em>and</em> <cite>IOLoop.start()</cite> must
+be allowed to return before attempting to call <cite>IOLoop.close()</cite>.
+Therefore the call to <cite>close</cite> will usually appear just after
+the call to <cite>start</cite> rather than near the call to <cite>stop</cite>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -351,6 +365,8 @@ unit tests), you can start and stop the event loop like this:</p>
 </div>
 <p>ioloop.start() will return after async_method has run its callback,
 whether that callback was invoked before or after ioloop.start.</p>
+<p>Note that even after <cite>stop</cite> has been called, the IOLoop is not
+completely stopped until <cite>IOLoop.start</cite> has also returned.</p>
 </dd></dl>
 
 <dl class="method">

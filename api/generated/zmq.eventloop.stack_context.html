@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.stack_context &mdash; PyZMQ 2.1dev documentation</title>
+    <title>eventloop.stack_context &mdash; PyZMQ 2.2dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1dev',
+        VERSION:     '2.2dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" />
     <link rel="prev" title="eventloop.ioloop" href="zmq.eventloop.ioloop.html" /> 
@@ -142,6 +142,23 @@ itself, IOLoop, thread pools, etc).</p>
 <span class="n">ioloop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>Most applications shouln&#8217;t have to work with <cite>StackContext</cite> directly.
+Here are a few rules of thumb for when it&#8217;s necessary:</p>
+<ul class="simple">
+<li>If you&#8217;re writing an asynchronous library that doesn&#8217;t rely on a
+stack_context-aware library like <cite>tornado.ioloop</cite> or <cite>tornado.iostream</cite>
+(for example, if you&#8217;re writing a thread pool), use
+<cite>stack_context.wrap()</cite> before any asynchronous operations to capture the
+stack context from where the operation was started.</li>
+<li>If you&#8217;re writing an asynchronous library that has some shared
+resources (such as a connection pool), create those shared resources
+within a <tt class="docutils literal"><span class="pre">with</span> <span class="pre">stack_context.NullContext():</span></tt> block.  This will prevent
+<tt class="docutils literal"><span class="pre">StackContexts</span></tt> from leaking from one request to another.</li>
+<li>If you want to write something like an exception handler that will
+persist across asynchronous calls, create a new <cite>StackContext</cite> (or
+<cite>ExceptionStackContext</cite>), and make your asynchronous calls in a <tt class="docutils literal"><span class="pre">with</span></tt>
+block that references your <cite>StackContext</cite>.</li>
+</ul>
 </div>
 <div class="section" id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>

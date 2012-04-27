@@ -9,12 +9,31 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-2.1dev
+2.2dev
 ======
+
+Experimental New Stuff
+----------------------
+
+These features are marked 'experimental', which means that their APIs are not
+set in stone, and may be removed or changed in incompatible ways in later releases.
+
+* The excellent `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_ socket
+  subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has been merged
+  as :mod:`zmq.green`.
+
+
+2.2.0
+=====
 
 Some effort has gone into refining the pyzmq API in this release to make it a model for 
 other language bindings.  This is principally made in a few renames of objects and methods,
 all of which leave the old name for backwards compatibility.
+
+.. note::
+
+    As of this release, all code outside ``zmq.core`` is BSD licensed (where
+    possible), to allow more permissive use of less-critical code and utilities.
 
 Name Changes
 ------------
@@ -23,7 +42,7 @@ Name Changes
   zmq bindings. The old Message name remains for backwards-compatibility.  Wherever pyzmq
   docs say "Message", they should refer to a complete zmq atom of communication (one or
   more Frames, connected by ZMQ_SNDMORE). Please report any remaining instances of
-  Message== MessagePart with an Issue (or better yet a Pull Request).
+  Message==MessagePart with an Issue (or better yet a Pull Request).
 
 * All ``foo_unicode`` methods are now called ``foo_string`` (``_unicode`` remains for
   backwards compatibility).  This is not only for cross-language consistency, but it makes
@@ -34,9 +53,21 @@ Other Changes and Removals
 --------------------------
 
 * ``prefix`` removed as an unused keyword argument from :meth:`~.Socket.send_multipart`.
+
 * ZMQStream :meth:`~.ZMQStream.send` default has been changed to `copy=True`, so it matches
   Socket :meth:`~.Socket.send`.
+
 * ZMQStream :meth:`~.ZMQStream.on_err` is deprecated, because it never did anything.
+
+* Python 2.5 compatibility has been dropped, and some code has been cleaned up to reflect
+  no-longer-needed hacks.
+
+* Some Cython files in :mod:`zmq.core` have been split, to reduce the amount of 
+  Cython-compiled code.  Much of the body of these files were pure Python, and thus did
+  not benefit from the increased compile time.  This change also aims to ease maintaining
+  feature parity in other projects, such as 
+  `pyzmq-ctypes <https://github.com/svpcom/pyzmq-ctypes>`_.
+
 
 New Stuff
 ---------
@@ -52,6 +83,15 @@ New Stuff
 * A :attr:`~Frame.more` boolean attribute has been added to the :class:`~.Frame` (née
   Message) class, so that frames can be identified as terminal without extra queires of
   :attr:`~.Socket.rcvmore`.
+
+
+Experimental New Stuff
+----------------------
+
+These features are marked 'experimental', which means that their APIs are not
+set in stone, and may be removed or changed in incompatible ways in later releases.
+
+* :mod:`zmq.web` added for load-balancing requests in a tornado webapp with zeromq.
 
 
 2.1.11

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>utils.jsonapi &mdash; PyZMQ 2.1dev documentation</title>
+    <title>utils.jsonapi &mdash; PyZMQ 2.2dev documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1dev',
+        VERSION:     '2.2dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.1dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="utils.rebuffer" href="zmq.utils.rebuffer.html" />
     <link rel="prev" title="utils.initthreads" href="zmq.utils.initthreads.html" /> 
@@ -112,8 +112,23 @@
 <span id="module-utils-jsonapi"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">utils.jsonapi</span></tt><a class="headerlink" href="#module-zmq.utils.jsonapi" title="Permalink to this headline">¶</a></h2>
 <p>Priority based json library imports.</p>
 <p>Use jsonapi.loads() and jsonapi.dumps() for guaranteed symmetry.</p>
-<p>Priority: jsonlib2 &gt; jsonlib &gt; simplejson &gt; json</p>
-<p>Ensures bytes instead of unicode on either side of serialization.</p>
+<p>Priority: simplejson &gt; jsonlib2 &gt; json</p>
+<p>Always serializes to bytes instead of unicode for zeromq compatibility.</p>
+<p>jsonapi.loads/dumps provide kwarg-compatibility with stdlib json.</p>
+<p>To override pyzmq&#8217;s choice of json library, you can simply override the loads/dumps
+methods, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ujson</span>
+<span class="kn">from</span> <span class="nn">zmq.utils</span> <span class="kn">import</span> <span class="n">jsonapi</span>
+<span class="n">jsonapi</span><span class="o">.</span><span class="n">jsonmod</span> <span class="o">=</span> <span class="n">ujson</span>
+<span class="c"># ujson doesn&#39;t support the `separators` kwarg we use, so force its own dumps:</span>
+<span class="n">jsonapi</span><span class="o">.</span><span class="n">dumps</span> <span class="o">=</span> <span class="n">ujson</span><span class="o">.</span><span class="n">dumps</span>
+</pre></div>
+</div>
+<p>To select the super-fast ujson module.  Note that using a different module such
+as ujson that does not support the same kwargs as stdlib json may break
+compatibility with other tools that depend on this, if used in the same process.
+A safer route is to just serialize your own messages yourself with your favorite
+library.</p>
 <div class="section" id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -128,13 +143,6 @@
 <dt id="zmq.utils.jsonapi.dumps">
 <tt class="descclassname">zmq.utils.jsonapi.</tt><tt class="descname">dumps</tt><big>(</big><em>o</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.utils.jsonapi.dumps" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="function">
-<dt id="zmq.utils.jsonapi.jsonlib_dumps">
-<tt class="descclassname">zmq.utils.jsonapi.</tt><tt class="descname">jsonlib_dumps</tt><big>(</big><em>o</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.utils.jsonapi.jsonlib_dumps" title="Permalink to this definition">¶</a></dt>
-<dd><p>This one is separate because jsonlib doesn&#8217;t allow specifying separators.
-See jsonlib.dumps for details on kwargs.</p>
-</dd></dl>
 
 <dl class="function">
 <dt id="zmq.utils.jsonapi.loads">

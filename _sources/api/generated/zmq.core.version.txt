@@ -21,6 +21,3 @@ Functions
 
 .. autofunction:: zmq.core.version.zmq_version
 
-
-.. autofunction:: zmq.core.version.zmq_version_info
-
