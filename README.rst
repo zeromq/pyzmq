@@ -8,8 +8,11 @@ This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 Versioning
 ==========
 
-Current release of pyzmq is 2.1.11, and targets libzmq-2.1.11. For libzmq
+Current release of pyzmq is 2.2.0, and targets libzmq-2.2.0. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
+
+pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5, and pyzmq 2.2.0 will
+require Python ≥ 2.6.
 
 PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
 as that of your libzmq, but due to the generally growing API of libzmq, your pyzmq should
@@ -107,7 +110,7 @@ The argument should be a directory containing ``lib`` and ``include`` directorie
 ``libzmq`` and ``zmq.h`` respectively. For instance (on Windows), if you have downloaded pyzmq
 and current libzmq into the same parent directory, this would be:
 
-    $ python setup.py configure --zmq=../zeromq-2.1.11
+    $ python setup.py configure --zmq=../zeromq-2.2.0
 
 Second, run this command::
 
@@ -199,7 +202,7 @@ How to release PyZMQ
 
 Currently, we are using the following steps to release PyZMQ:
 
-* Check the version number in ``version.pyx``.
+* Check the version number in ``version.py``.
 * Remove old ``MANIFEST`` and ``egg-info`` files and ``dist`` and ``build``
   directories.
 * Check ``MANIFEST.in``.
@@ -215,7 +218,7 @@ Currently, we are using the following steps to release PyZMQ:
 
     git checkout -b 2.1.9 master
 
-* commit the changed ``version.pyx`` to the branch::
+* commit the changed ``version.py`` to the branch::
 
     git add zmq/core/version.pyx && git commit -m "bump version to 2.1.9"
 
@@ -241,14 +244,16 @@ The following people have contributed to the project:
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
 * Brandon Craig Rhodes (brandon AT rhodesmill DOT org)
 * Brandyn A. White (bwhite AT dappervision DOT com)
-* Brian Granger (ellisonbg AT gmail DOT com)
+* Brian E. Granger (ellisonbg AT gmail DOT com)
 * Carlos A. Rocha (carlos DOT rocha AT gmail DOT com)
 * Daniel Lundin (dln AT spotify DOT com)
 * Daniel Truemper (truemped AT googlemail DOT com)
 * Erick Tryzelaar (erick DOT tryzelaar AT gmail DOT com)
 * Erik Tollerud (erik DOT tollerud AT gmail DOT com)
 * Fernando Perez (Fernando DOT Perez AT berkeley DOT edu)
+* Frank Wiles (frank AT revsys DOT com)
 * Ivo Danihelka (ivo AT danihelka DOT net)
+* John Gallagher (johnkgallagher AT gmail DOT com)
 * Justin Riley (justin DOT t DOT riley AT gmail DOT com)
 * Min Ragan-Kelley (benjaminrk AT gmail DOT com)
 * Nicholas Piël (nicholas AT nichol DOT as)
