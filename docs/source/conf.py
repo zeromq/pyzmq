@@ -59,8 +59,8 @@ intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
 # built documents.
 #
 def extract_version():
-    """extract pyzmq version from core/version.pyx, so it's not multiply defined"""
-    with open(os.path.join('..', '..', 'zmq', 'core', 'version.pyx')) as f:
+    """extract pyzmq version from core/version.py, so it's not multiply defined"""
+    with open(os.path.join('..', '..', 'zmq', 'core', 'version.py')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()
