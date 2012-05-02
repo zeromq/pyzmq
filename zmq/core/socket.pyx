@@ -41,6 +41,12 @@ from context cimport Context
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
+cdef extern from "errno.h":
+    enum: ENAMETOOLONG
+
+cdef extern from "ipc.h":
+    int get_ipc_path_max_len()
+
 #-----------------------------------------------------------------------------
 # Python Imports
 #-----------------------------------------------------------------------------
@@ -70,6 +76,8 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
+
+IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
@@ -444,7 +452,14 @@ cdef class Socket:
         with nogil:
             rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
-            raise ZMQError()
+            if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
+                path = addr.split('://', 1)[-1]
+                msg = ('ipc path "{0}" is longer than {1} '
+                                'characters (sizeof(sockaddr_un.sun_path)).'
+                                .format(path, IPC_PATH_MAX_LEN))
+                raise ZMQError(msg=msg)
+            else:
+                raise ZMQError()
 
     def connect(self, addr):
         """s.connect(addr)
@@ -595,4 +610,4 @@ cdef class Socket:
     recv_json = pysocket.recv_json
     poll = pysocket.poll
 
-__all__ = ['Socket']
+__all__ = ['Socket', 'IPC_PATH_MAX_LEN']

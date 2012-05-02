@@ -117,6 +117,7 @@ def settings_from_prefix(zmq=None):
            'libraries'      : ['zmq'],
            'include_dirs'   : [],
            'library_dirs'   : [],
+           'define_macros'  : [('PYZMQ_POSIX', 1)],
         }
     
         # add pthread on freebsd
