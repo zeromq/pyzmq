@@ -14,6 +14,7 @@
 
 import sys
 import time
+import errno
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
@@ -37,6 +38,8 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://a')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://a')
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
+        self.assertRaisesErrno(errno.ENAMETOOLONG, s.bind,
+                'ipc://{0}'.format('a'*200))
         s.close()
         del ctx
     
@@ -307,6 +310,33 @@ class TestSocket(BaseZMQTestCase):
         evt = b.poll(50)
         self.assertEquals(evt, 0)
         self.assertEquals(msg2, msg)
+
+    def test_ipc_path_max_length(self):
+        from zmq import IPC_PATH_MAX_LEN
+        if sys.platform == "darwin":
+            self.assertEquals(IPC_PATH_MAX_LEN, 103)
+        elif sys.platform == "posix":
+            self.assertEquals(IPC_PATH_MAX_LEN, 107)
+        elif sys.platform == "windows":
+            self.assertEquals(IPC_PATH_MAX_LEN, 0)
+        else:
+            msg = ("IPC_PATH_MAX_LEN value ({1}) is not tested on platform "
+                    "'{0}'.\n\nCan you extend the test, please ?"
+                    ).format(sys.platform, IPC_PATH_MAX_LEN)
+            raise SkipTest(msg)
+
+    def test_ipc_path_max_length_msg(self):
+        from zmq import IPC_PATH_MAX_LEN
+        from zmq import ZMQError
+        if IPC_PATH_MAX_LEN:
+            ctx = self.Context()
+            s = ctx.socket(zmq.PUB)
+            try:
+                s.bind('ipc://{0}'.format('a' * (IPC_PATH_MAX_LEN + 1)))
+            except ZMQError as e:
+                self.assertTrue(str(IPC_PATH_MAX_LEN) in e.strerror)
+            s.close()
+            del ctx
 
 
 if have_gevent:
