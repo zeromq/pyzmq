@@ -53,8 +53,11 @@ except ImportError:
     nose = None
 
 # local script imports:
-from buildutils import (discover_settings, v_str, localpath, savepickle, loadpickle, detect_zmq,
-                        warn, fatal, copy_and_patch_libzmq)
+from buildutils import (
+    discover_settings, v_str, savepickle, loadpickle, detect_zmq,
+    warn, fatal, debug, copy_and_patch_libzmq,
+    fetch_uuid, fetch_libzmq, stage_platform_hpp,
+    )
 
 #-----------------------------------------------------------------------------
 # Flags
@@ -88,37 +91,60 @@ doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 
 ZMQ = discover_settings()
 
-if ZMQ is not None and not os.path.exists(ZMQ):
+if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
     warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
 
 # bundle_libzmq flag for whether libzmq will be included in pyzmq:
 if sys.platform.startswith('win'):
     bundle_libzmq = True
 elif ZMQ is not None:
-    bundle_libzmq = doing_bdist
+    bundle_libzmq = doing_bdist or ZMQ == "bundled"
 else:
     bundle_libzmq = False
 
 # --- compiler settings -------------------------------------------------
 
+def bundled_settings():
+    settings = {
+       'libraries'      : [],
+       'include_dirs'   : ["bundled/zeromq/include"],
+       'library_dirs'   : [],
+    }
+    
+    
+    
+    libzmq_sources = glob("")
+    if sys.platform.startswith('win'):
+        libzmq = Extension('zmq.libzmq',)
+
+
 def settings_from_prefix(zmq=None):
     """load appropriate library/include settings from ZMQ prefix"""
     if sys.platform.startswith('win'):
         settings = {
-            'libraries'     : ['libzmq'],
+            'libraries'     : [],
             'include_dirs'  : [],
             'library_dirs'  : [],
         }
+        if zmq:
+            if zmq == "bundled":
+                settings['libraries'] = []
+            else:
+                settings['libraries'].append("libzmq")
         if zmq is not None:
             settings['include_dirs'] += [pjoin(zmq, 'include')]
             settings['library_dirs'] += [pjoin(zmq, 'lib')]
     else:
         settings = {
-           'libraries'      : ['zmq'],
+           'libraries'      : [],
            'include_dirs'   : [],
            'library_dirs'   : [],
            'define_macros'  : [('PYZMQ_POSIX', 1)],
         }
+        if zmq != "bundled":
+            settings['libraries'].append('zmq')
+        else:
+            zmq = pjoin("bundled", "zeromq")
     
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
@@ -211,6 +237,10 @@ class Configure(Command):
 
     def check_zmq_version(self):
         zmq = self.zmq
+        if zmq == "bundled":
+            print('*'*42)
+            print("Using bundled libzmq")
+            return
         if zmq is not None and not os.path.isdir(zmq):
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
@@ -254,6 +284,9 @@ class Configure(Command):
     def run(self):
         self.create_tempdir()
         settings = self.settings
+        if self.zmq == "bundled":
+            self.config = {'vers' : (2,2,0)}
+            return
         if bundle_libzmq and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
@@ -497,14 +530,63 @@ class CheckingBuildExt(build_ext):
         configure = self.distribution.get_command_obj('configure')
         configure.check_zmq_version()
         build_ext.run(self)
+
+class BundledLibZMQ(build_ext):
+    """subclass build_ext for building libzmq as a Python extension.
     
+    Code principally derived from pyzmq-static"""
+    
+    bundledir = "bundled"
+    
+    def build_extensions(self):
+        ext =     Extension(
+            'zmq.libzmq',
+            sources = glob(pjoin(self.bundledir, 'zeromq', 'src', '*.cpp')),
+            include_dirs = [
+                pjoin(self.bundledir, 'zeromq', 'include'),
+            ]
+        )
+        if sys.platform.startswith('win'):
+            # When compiling the C++ code inside of libzmq itself, we want to
+            # avoid "warning C4530: C++ exception handler used, but unwind
+            # semantics are not enabled. Specify /EHsc".
+
+            ext.extra_compile_args.append('/EHsc')
+
+            # Because Visual Studio is given the option "/EXPORT:initlibzmq"
+            # when compiling libzmq, so we need to provide such a function.
+
+            ext.sources.append(r'src_nt\initlibzmq.c')
+
+            # And things like sockets come from libraries that must be named.
+
+            ext.libraries.append('rpcrt4')
+            ext.libraries.append('ws2_32')
+        elif not sys.platform.startswith(('darwin', 'freebsd')):
+            ext.include_dirs.append(pjoin(self.bundledir, 'uuid'))
+            ext.sources.append(pjoin(self.bundledir, 'uuid', '*.c'))
+        
+        self.extensions = [ext]
+        self.check_extensions_list(self.extensions)
+        self.build_extension(ext)
+
+    def run(self):
+        if not os.path.exists(self.bundledir):
+            os.makedirs(self.bundledir)
+        if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
+            fetch_uuid(self.bundledir)
+        fetch_libzmq(self.bundledir)
+        
+        stage_platform_hpp(pjoin(self.bundledir, 'zeromq'))
+        build_ext.run(self)
+
 
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'build': CopyingBuild}
+            'configure': Configure, 'build': CopyingBuild, 'libzmq': BundledLibZMQ}
 
 def pxd(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
@@ -546,7 +628,7 @@ submodules = dict(
 )
 
 try:
-    from Cython.Distutils import build_ext
+    from Cython.Distutils import build_ext as build_ext_c
     cython=True
 except ImportError:
     cython=False
@@ -556,14 +638,14 @@ else:
     
     suffix = '.pyx'
     
-    class CythonCommand(build_ext):
+    class CythonCommand(build_ext_c):
         """Custom distutils command subclassed from Cython.Distutils.build_ext
         to compile pyx->c, and stop there. All this does is override the 
         C-compile method build_extension() with a no-op."""
         def build_extension(self, ext):
             pass
     
-    class zbuild_ext(build_ext):
+    class zbuild_ext(build_ext_c):
         def run(self):
             configure = self.distribution.get_command_obj('configure')
             configure.check_zmq_version()
@@ -586,7 +668,7 @@ for submod, packages in submodules.items():
         )
         extensions.append(ext)
 
-#
+
 package_data = {'zmq':['*.pxd'],
                 'zmq.core':['*.pxd'],
                 'zmq.devices':['*.pxd'],

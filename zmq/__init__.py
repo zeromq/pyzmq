@@ -13,15 +13,19 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
-import sys
 
-if sys.platform.startswith('win'):
-    import os, ctypes
-    here = os.path.dirname(__file__)
-    libzmq = os.path.join(here, 'libzmq.dll')
-    if os.path.exists(libzmq):
-        ctypes.cdll.LoadLibrary(libzmq)
-    del here, libzmq, ctypes, os
+import os
+import glob
+
+here = os.path.dirname(__file__)
+bundled = glob.glob(os.path.join(here, 'libzmq.*'))
+if bundled:
+    import ctypes
+    _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
+    print _libzmq
+    del ctypes
+
+del os, glob, here, bundled
 
 from zmq.utils import initthreads # initialize threads
 initthreads.init_threads()
