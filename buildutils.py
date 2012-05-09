@@ -26,6 +26,11 @@ try:
 except:
     from ConfigParser import ConfigParser
 
+try:
+    from functools import reduce
+except ImportError:
+    pass
+
 pjoin = os.path.join
 
 #-----------------------------------------------------------------------------
