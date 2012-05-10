@@ -63,9 +63,11 @@ class ZMQError(ZMQBaseError):
     error : int
         The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
         used.
+    msg : string
+        Description of the error or None.
     """
 
-    def __init__(self, error=None):
+    def __init__(self, error=None, msg=None):
         """Wrap an errno style error.
 
         Parameters
@@ -73,6 +75,8 @@ class ZMQError(ZMQBaseError):
         error : int
             The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
             used.
+        msg : string
+            Description of the error or None.
         """
         cdef int errno
         if error is None:
@@ -80,11 +84,17 @@ class ZMQError(ZMQBaseError):
                 errno = zmq_errno()
             error = errno
         if type(error) == int:
-            self.strerror = strerror(error)
             self.errno = error
+            if msg is None:
+                self.strerror = strerror(error)
+            else:
+                self.strerror = msg
         else:
-            self.strerror = str(error)
             self.errno = None
+            if msg is None:
+                self.strerror = str(error)
+            else:
+                self.strerror = msg
         # flush signals, because there could be a SIGINT
         # waiting to pounce, resulting in uncaught exceptions.
         # Doing this here means getting SIGINT during a blocking

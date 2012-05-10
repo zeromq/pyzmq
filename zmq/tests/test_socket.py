@@ -14,6 +14,7 @@
 
 import sys
 import time
+import errno
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
@@ -307,6 +308,26 @@ class TestSocket(BaseZMQTestCase):
         evt = b.poll(50)
         self.assertEquals(evt, 0)
         self.assertEquals(msg2, msg)
+    
+    def test_ipc_path_max_length(self):
+        """IPC_PATH_MAX_LEN is a sensible value"""
+        if zmq.IPC_PATH_MAX_LEN == 0:
+            raise SkipTest("IPC_PATH_MAX_LEN undefined")
+        
+        msg = "Surprising value for IPC_PATH_MAX_LEN: %s" % zmq.IPC_PATH_MAX_LEN
+        self.assertTrue(zmq.IPC_PATH_MAX_LEN > 30, msg)
+        self.assertTrue(zmq.IPC_PATH_MAX_LEN < 1025, msg)
+
+    def test_ipc_path_max_length_msg(self):
+        if zmq.IPC_PATH_MAX_LEN == 0:
+            raise SkipTest("IPC_PATH_MAX_LEN undefined")
+        
+        s = self.context.socket(zmq.PUB)
+        self.sockets.append(s)
+        try:
+            s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
+        except zmq.ZMQError as e:
+            self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
 
 
 if have_gevent:
