@@ -14,6 +14,7 @@
 
 import sys
 import time
+import errno
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
@@ -37,9 +38,11 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.bind, 'ftl://a')
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://a')
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
+        self.assertRaisesErrno(errno.ENAMETOOLONG, s.bind,
+                'ipc://{0}'.format('a'*200))
         s.close()
         del ctx
-    
+
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
         topic = "tést"
@@ -55,7 +58,7 @@ class TestSocket(BaseZMQTestCase):
         s.setsockopt_unicode(zmq.SUBSCRIBE, topic)
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
         self.assertRaisesErrno(zmq.EINVAL, s.getsockopt_unicode, zmq.SUBSCRIBE)
-        
+
         st = s.getsockopt(zmq.IDENTITY)
         self.assertEquals(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
         time.sleep(0.1) # wait for connection/subscription
@@ -63,7 +66,7 @@ class TestSocket(BaseZMQTestCase):
         p.send_unicode(topic*2, encoding='latin-1')
         self.assertEquals(topic, s.recv_unicode())
         self.assertEquals(topic*2, s.recv_unicode(encoding='latin-1'))
-    
+
     def test_int_sockopts(self):
         "test non-uint64 sockopts"
         v = zmq.zmq_version_info()
@@ -90,7 +93,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.TYPE), zmq.PUB)
         self.assertEquals(s.getsockopt(zmq.TYPE), s.socket_type)
         self.assertEquals(s.getsockopt(zmq.TYPE), zmq.SUB)
-        
+
         # check for overflow / wrong type:
         errors = []
         backref = {}
@@ -114,7 +117,7 @@ class TestSocket(BaseZMQTestCase):
                                     " It is probably the wrong type."%sopt)
         if errors:
             self.fail('\n'.join(errors))
-    
+
     def test_bad_sockopts(self):
         """Test that appropriate errors are raised on bad socket options"""
         s = self.context.socket(zmq.PUB)
@@ -127,7 +130,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(TypeError, s.setsockopt, 9999, b"5")
         # some sockopts are valid in general, but not on every socket:
         self.assertRaisesErrno(zmq.EINVAL, s.setsockopt, zmq.SUBSCRIBE, b'hi')
-    
+
     def test_sockopt_roundtrip(self):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)
@@ -135,7 +138,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEquals(p.getsockopt(zmq.LINGER), 11)
-    
+
     def test_poll(self):
         """test Socket.poll()"""
         req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
@@ -153,7 +156,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(rep.poll(0, zmq.POLLOUT), 0)
         self.assertEquals(req.poll(0, zmq.POLLOUT|zmq.POLLIN), 0)
         self.assertEquals(rep.poll(0, zmq.POLLOUT), zmq.POLLIN)
-    
+
     def test_send_unicode(self):
         "test sending unicode objects"
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
@@ -170,7 +173,7 @@ class TestSocket(BaseZMQTestCase):
         a.send_unicode(u,encoding='utf16')
         s = b.recv_unicode(encoding='utf16')
         self.assertEquals(s,u)
-        
+
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
@@ -221,7 +224,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(p2.done, True)
         m = zmq.Frame(b'something', track=False)
         self.assertRaises(ValueError, a.send, m, copy=False, track=True)
-        
+
 
     def test_close(self):
         ctx = self.Context()
@@ -233,7 +236,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(zmq.ZMQError, s.send, b'asdf')
         self.assertRaises(zmq.ZMQError, s.recv)
         del ctx
-    
+
     def test_attr(self):
         """set setting/getting sockopts as attributes"""
         s = self.context.socket(zmq.DEALER)
@@ -243,7 +246,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(linger, s.linger)
         self.assertEquals(linger, s.getsockopt(zmq.LINGER))
         self.assertEquals(s.fd, s.getsockopt(zmq.FD))
-    
+
     def test_bad_attr(self):
         s = self.context.socket(zmq.DEALER)
         self.sockets.append(s)
@@ -272,7 +275,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(s.a, 1)
         a=s.a
         self.assertEquals(a, 1)
-    
+
     def test_recv_multipart(self):
         a,b = self.create_bound_pair()
         msg = b'hi'
@@ -281,7 +284,7 @@ class TestSocket(BaseZMQTestCase):
         time.sleep(0.1)
         for i in range(3):
             self.assertEquals(b.recv_multipart(), [msg])
-    
+
     def test_close_after_destroy(self):
         """s.close() after ctx.destroy() should be fine"""
         ctx = self.Context()
@@ -291,7 +294,7 @@ class TestSocket(BaseZMQTestCase):
         time.sleep(1e-2)
         s.close()
         self.assertTrue(s.closed)
-    
+
     def test_poll(self):
         a,b = self.create_bound_pair()
         tic = time.time()
@@ -308,9 +311,34 @@ class TestSocket(BaseZMQTestCase):
         self.assertEquals(evt, 0)
         self.assertEquals(msg2, msg)
 
+    def test_ipc_path_max_length(self):
+        from zmq import IPC_PATH_MAX_LEN
+        if sys.platform == "darwin":
+            self.assertEquals(IPC_PATH_MAX_LEN, 103)
+        elif sys.platform == "posix":
+            self.assertEquals(IPC_PATH_MAX_LEN, 107)
+        elif sys.platform == "windows":
+            self.assertEquals(IPC_PATH_MAX_LEN, 0)
+        else:
+            msg = ("IPC_PATH_MAX_LEN value ({1}) is not tested on platform "
+                    "'{0}'.\n\nCan you extend the test, please ?"
+                    ).format(sys.platform, IPC_PATH_MAX_LEN)
+            raise SkipTest(msg)
+
+    def test_ipc_path_max_length_msg(self):
+        from zmq import IPC_PATH_MAX_LEN
+        from zmq import ZMQError
+        if IPC_PATH_MAX_LEN:
+            ctx = self.Context()
+            s = ctx.socket(zmq.PUB)
+            try:
+                s.bind('ipc://{0}'.format('a' * (IPC_PATH_MAX_LEN + 1)))
+            except ZMQError as e:
+                self.assertTrue(str(IPC_PATH_MAX_LEN) in e.strerror)
+            s.close()
+            del ctx
+
 
 if have_gevent:
     class TestSocketGreen(GreenTest, TestSocket):
         test_bad_attr = GreenTest.skip_green
-
-
