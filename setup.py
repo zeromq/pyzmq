@@ -105,6 +105,8 @@ if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
 
 # bundle_libzmq flag for whether libzmq will be included in pyzmq:
 if sys.platform.startswith('win'):
+    if ZMQ is None:
+        ZMQ = "bundled"
     bundle_libzmq = True
 elif ZMQ is not None:
     bundle_libzmq = doing_bdist or ZMQ == "bundled"
@@ -118,6 +120,7 @@ def bundled_settings():
        'libraries'      : [],
        'include_dirs'   : ["bundled/zeromq/include"],
        'library_dirs'   : [],
+       'define_macros'  : [],
     }
     # add pthread on freebsd
     # is this necessary?
@@ -136,31 +139,18 @@ def bundled_settings():
 def settings_from_prefix(zmq=None):
     """load appropriate library/include settings from ZMQ prefix"""
     
+    settings = {
+        'libraries'     : [],
+        'include_dirs'  : [],
+        'library_dirs'  : [],
+        'define_macros' : [],
+    }
     if sys.platform.startswith('win'):
-        settings = {
-            'libraries'     : [],
-            'include_dirs'  : [],
-            'library_dirs'  : [],
-        }
-        if zmq:
-            if zmq == "bundled":
-                settings['libraries'] = []
-            else:
-                settings['libraries'].append("libzmq")
-        if zmq is not None:
-            settings['include_dirs'] += [pjoin(zmq, 'include')]
-            settings['library_dirs'] += [pjoin(zmq, 'lib')]
+        settings['libraries'].append('libzmq')
+        settings['include_dirs'] += [pjoin(zmq, 'include')]
+        settings['library_dirs'] += [pjoin(zmq, 'lib')]
     else:
-        settings = {
-           'libraries'      : [],
-           'include_dirs'   : [],
-           'library_dirs'   : [],
-           'define_macros'  : [('PYZMQ_POSIX', 1)],
-        }
-        if zmq != "bundled":
-            settings['libraries'].append('zmq')
-        else:
-            zmq = pjoin("bundled", "zeromq")
+        settings['libraries'].append('zmq')
     
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
@@ -193,6 +183,9 @@ def init_settings(zmq=None):
         settings = bundled_settings()
     else:
         settings = settings_from_prefix(zmq)
+    
+    if not sys.platform.startswith('win'):
+        settings['define_macros'].append(('PYZMQ_POSIX', 1))
     
     # suppress common warnings
     
@@ -332,10 +325,13 @@ class Configure(Command):
             sources = glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')),
             include_dirs = [
                 pjoin(bundledir, 'zeromq', 'include'),
-            ]
+            ],
         )
         
         if sys.platform.startswith('win'):
+            # include defines from msvc project:
+            ext.define_macros.append(('FD_SETSIZE', 1024))
+            
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
