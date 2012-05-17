@@ -570,8 +570,9 @@ class BundledLibZMQ(build_ext):
             ext.sources.extend(glob(pjoin(self.bundledir, 'uuid', '*.c')))
         
         self.extensions = [ext]
-        self.check_extensions_list(self.extensions)
-        self.build_extension(ext)
+        build_ext.build_extensions(self)
+        # self.check_extensions_list(self.extensions)
+        # self.build_extension(ext)
 
     def run(self):
         if not os.path.exists(self.bundledir):
