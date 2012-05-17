@@ -118,16 +118,23 @@ def bundled_settings():
        'include_dirs'   : ["bundled/zeromq/include"],
        'library_dirs'   : [],
     }
+    # add pthread on freebsd
+    # is this necessary?
+    if sys.platform.startswith('freebsd'):
+        settings['libraries'].append('pthread')
+    elif sys.platform.startswith('win'):
+        # link against libzmq in build dir:
+        plat = distutils.util.get_platform()
+        temp = 'temp.%s-%s' % (plat, sys.version[0:3])
+        settings['libraries'].append('libzmq')
+        settings['library_dirs'].append(pjoin('build', temp, 'Release', 'src'))
     
-    
-    
-    libzmq_sources = glob("")
-    if sys.platform.startswith('win'):
-        libzmq = Extension('zmq.libzmq',)
+    return settings
 
 
 def settings_from_prefix(zmq=None):
     """load appropriate library/include settings from ZMQ prefix"""
+    
     if sys.platform.startswith('win'):
         settings = {
             'libraries'     : [],
@@ -178,13 +185,21 @@ def settings_from_prefix(zmq=None):
         elif sys.platform != 'darwin':
             settings['runtime_library_dirs'] = [os.path.abspath(x) for x in settings['library_dirs']]
 
-    # suppress common warnings
+    return settings
 
+def init_settings(zmq=None):
+    if zmq == 'bundled':
+        settings = bundled_settings()
+    else:
+        settings = settings_from_prefix(zmq)
+    
+    # suppress common warnings
+    
     extra_flags = []
     if ignore_common_warnings:
         for warning in ('unused-function', 'strict-aliasing'):
             extra_flags.append('-Wno-'+warning)
-
+    
     settings['extra_compile_args'] = extra_flags
     
     # include internal directories
@@ -192,7 +207,8 @@ def settings_from_prefix(zmq=None):
 
     return settings
 
-COMPILER_SETTINGS = settings_from_prefix(ZMQ)
+
+COMPILER_SETTINGS = init_settings(ZMQ)
 
 
 #-----------------------------------------------------------------------------
@@ -255,7 +271,7 @@ class Configure(Command):
         else:
             self.config = config
 
-        if zmq == "bundled":
+        if self.zmq == "bundled":
             line()
             print("Using bundled libzmq")
             return
@@ -291,7 +307,7 @@ class Configure(Command):
                     "libzmq into zmq/ manually.")
 
     
-    def use_bundled(self):
+    def bundle_libzmq(self):
         self.config
 
     def run(self):
@@ -542,6 +558,8 @@ class CheckingBuildExt(build_ext):
         # check version, to prevent confusing undefined constant errors
         configure = self.distribution.get_command_obj('configure')
         configure.check_zmq_version()
+        libzmq = self.distribution.get_command_obj('libzmq')
+        libzmq.run()
         build_ext.run(self)
 
 class BundledLibZMQ(build_ext):
@@ -667,6 +685,8 @@ else:
         def run(self):
             configure = self.distribution.get_command_obj('configure')
             configure.check_zmq_version()
+            libzmq = self.distribution.get_command_obj('libzmq')
+            libzmq.run()
             return build_ext.run(self)
     
     cmdclass['cython'] = CythonCommand
