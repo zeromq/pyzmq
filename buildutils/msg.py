@@ -36,4 +36,6 @@ def fatal(msg, code=1):
 def warn(msg):
     logger.error("Warning: " + msg)
 
+def line(c='*', width=48):
+    print (c * (width / len(c)))
 

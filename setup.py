@@ -55,7 +55,7 @@ except ImportError:
 # local script imports:
 from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
-    warn, fatal, debug, copy_and_patch_libzmq,
+    warn, fatal, debug, line, copy_and_patch_libzmq,
     fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
     )
 
@@ -248,7 +248,7 @@ class Configure(Command):
             self.config = config
 
         if zmq == "bundled":
-            print('*'*42)
+            line()
             print("Using bundled libzmq")
             return
         
@@ -264,10 +264,10 @@ class Configure(Command):
             warn("Detected ZMQ version: %s, but pyzmq targets zmq %s."%(
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
-            print('*'*42)
+            line()
         elif vs >= '3.0':
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
-            print('*'*42)
+            line()
 
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
@@ -302,7 +302,7 @@ class Configure(Command):
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
         try:
-            print ("*"*42)
+            line()
             print ("Configure: Autodetecting ZMQ settings...")
             print ("    Custom ZMQ dir:       %s" % (self.zmq,))
             config = detect_zmq(self.tempdir, **settings)
@@ -348,7 +348,7 @@ class Configure(Command):
             save_config('configure', config)
             print ("    ZMQ version detected: %s" % v_str(config['vers']))
         finally:
-            print ("*"*42)
+            line()
             self.erase_tempdir()
         self.config = config
 
