@@ -13,7 +13,7 @@
 
 import sys
 import os
-import pickle
+import json
 
 try:
     from configparser import ConfigParser
@@ -28,35 +28,28 @@ from msg import debug, fatal, warn
 #-----------------------------------------------------------------------------
 
 
-def loadpickle(name):
-    """ Load object from pickle file, or None if it can't be opened """
-    name = pjoin('conf', name)
-    try:
-        f = open(name,'rb')
-    except IOError:
-        # raise
+def load_config(name):
+    """Load config dict from JSON"""
+    fname = pjoin('conf', name+'.json')
+    if not os.path.exists(fname):
         return None
     try:
-        return pickle.load(f)
-    except Exception:
-        # raise
-        return None
-    finally:
-        f.close()
+        with open(fname) as f:
+            cfg = json.load(f)
+    except Exception as e:
+        warn("Couldn't load %s: %s" % (fname, e))
+        cfg = None
+    return cfg
 
-def savepickle(name, data):
-    """ Save to pickle file, exiting if it can't be written """
+
+def save_config(name, data):
+    """Save config dict to JSON"""
     if not os.path.exists('conf'):
         os.mkdir('conf')
-    name = pjoin('conf', name)
-    try:
-        f = open(name, 'wb')
-    except IOError:
-        fatal("Can't open pickle file \"%s\" for writing" % name)
-    try:
-        pickle.dump(data, f, 0)
-    finally:
-        f.close()
+    fname = pjoin('conf', name+'.json')
+    with open(fname, 'w') as f:
+        json.dump(data, f)
+
 
 def v_str(v_tuple):
     """turn (2,0,1) into '2.0.1'."""
@@ -97,7 +90,7 @@ def get_cfg_args():
 
 def get_cargs():
     """ Look for global options in the command line """
-    settings = loadpickle('buildconf.pickle')
+    settings = load_config('buildconf')
     if settings is None:  settings = {}
     for arg in sys.argv[:]:
         if arg.find('--zmq=') == 0:
@@ -107,7 +100,7 @@ def get_cargs():
             else:
                 settings['zmq'] = zmq
             sys.argv.remove(arg)
-    savepickle('buildconf.pickle', settings)
+    save_config('buildconf', settings)
     return settings
 
 def discover_settings():

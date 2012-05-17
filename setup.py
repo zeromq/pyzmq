@@ -54,7 +54,7 @@ except ImportError:
 
 # local script imports:
 from buildutils import (
-    discover_settings, v_str, savepickle, loadpickle, detect_zmq,
+    discover_settings, v_str, save_config, load_config, detect_zmq,
     warn, fatal, debug, copy_and_patch_libzmq,
     fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
     )
@@ -233,15 +233,11 @@ class Configure(Command):
             pass
 
     def getcached(self):
-        return loadpickle('configure.pickle')
+        return load_config('configure')
 
     def check_zmq_version(self):
         zmq = self.zmq
-        if zmq == "bundled":
-            print('*'*42)
-            print("Using bundled libzmq")
-            return
-        if zmq is not None and not os.path.isdir(zmq):
+        if zmq is not None and zmq is not "bundled" and not os.path.isdir(zmq):
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
         config = self.getcached()
@@ -251,6 +247,11 @@ class Configure(Command):
         else:
             self.config = config
 
+        if zmq == "bundled":
+            print('*'*42)
+            print("Using bundled libzmq")
+            return
+        
         vers = config['vers']
         vs = v_str(vers)
         if vers < min_zmq:
@@ -280,6 +281,10 @@ class Configure(Command):
                     warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
                     "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
                     "libzmq into zmq/ manually.")
+
+    
+    def use_bundled(self):
+        self.config
 
     def run(self):
         self.create_tempdir()
@@ -340,7 +345,7 @@ class Configure(Command):
     """%(action, v_str(min_zmq)))
             
         else:
-            savepickle('configure.pickle', config)
+            save_config('configure', config)
             print ("    ZMQ version detected: %s" % v_str(config['vers']))
         finally:
             print ("*"*42)
