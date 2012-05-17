@@ -48,6 +48,7 @@ def fetch_archive(savedir, url, fname, force=False):
     if os.path.exists(dest) and not force:
         info("already have %s" % fname)
         return dest
+    info("fetching %s into %s" % (url, savedir))
     if not os.path.exists(savedir):
         os.makedirs(savedir)
     req = urllib.urlopen(url)
@@ -56,7 +57,6 @@ def fetch_archive(savedir, url, fname, force=False):
     return dest
 
 def fetch_libzmq(savedir):
-    info("fetching libzmq from %s into %s" % (libzmq_url, savedir))
     dest = pjoin(savedir, 'zeromq')
     if os.path.exists(dest):
         info("already have %s" % dest)
@@ -100,7 +100,6 @@ def stage_platform_hpp(zmqroot):
 
 
 def fetch_uuid(savedir):
-    info("fetching libuuid from %s into %s" % (util_url, savedir))
     fname = fetch_archive(savedir, util_url, util)
     tf = tarfile.open(fname)
     util_name = untgz(util)
