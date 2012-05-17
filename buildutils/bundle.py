@@ -52,7 +52,7 @@ def fetch_archive(savedir, url, fname, force=False):
     if not os.path.exists(savedir):
         os.makedirs(savedir)
     req = urllib.urlopen(url)
-    with open(dest, 'w') as f:
+    with open(dest, 'wb') as f:
         f.write(req.read())
     return dest
 
@@ -76,7 +76,7 @@ def stage_platform_hpp(zmqroot):
         return
     if os.name == 'nt':
         # stage msvc platform header
-        platform_dir = pjoin(zmqroot, 'builds', 'msvc', 'platform.hpp')
+        platform_dir = pjoin(zmqroot, 'builds', 'msvc')
     else:
         info("attempting ./configure to generate platform.hpp")
         

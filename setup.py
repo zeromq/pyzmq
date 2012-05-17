@@ -128,7 +128,7 @@ def bundled_settings():
         plat = distutils.util.get_platform()
         temp = 'temp.%s-%s' % (plat, sys.version[0:3])
         settings['libraries'].append('libzmq')
-        settings['library_dirs'].append(pjoin('build', temp, 'Release', 'src'))
+        settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
     
     return settings
 
@@ -345,7 +345,7 @@ class Configure(Command):
             # Because Visual Studio is given the option "/EXPORT:initlibzmq"
             # when compiling libzmq, so we need to provide such a function.
 
-            ext.sources.append(r'src_nt\initlibzmq.c')
+            ext.sources.insert(0, pjoin('buildutils', 'initlibzmq.c'))
 
             # And things like sockets come from libraries that must be named.
 
