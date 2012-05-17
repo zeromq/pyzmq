@@ -534,12 +534,13 @@ class CheckingBuildExt(build_ext):
 class BundledLibZMQ(build_ext):
     """subclass build_ext for building libzmq as a Python extension.
     
-    Code principally derived from pyzmq-static"""
+    Code principally derived from pyzmq-static
+    """
     
     bundledir = "bundled"
     
     def build_extensions(self):
-        ext =     Extension(
+        ext = Extension(
             'zmq.libzmq',
             sources = glob(pjoin(self.bundledir, 'zeromq', 'src', '*.cpp')),
             include_dirs = [
@@ -563,8 +564,10 @@ class BundledLibZMQ(build_ext):
             ext.libraries.append('rpcrt4')
             ext.libraries.append('ws2_32')
         elif not sys.platform.startswith(('darwin', 'freebsd')):
+            # add uuid as both `uuid/uuid.h` and `uuid.h`:
             ext.include_dirs.append(pjoin(self.bundledir, 'uuid'))
-            ext.sources.append(pjoin(self.bundledir, 'uuid', '*.c'))
+            ext.include_dirs.append(self.bundledir)
+            ext.sources.extend(glob(pjoin(self.bundledir, 'uuid', '*.c')))
         
         self.extensions = [ext]
         self.check_extensions_list(self.extensions)
