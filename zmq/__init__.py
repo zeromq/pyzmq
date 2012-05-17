@@ -15,17 +15,25 @@
 #-----------------------------------------------------------------------------
 
 import os
+import sys
 import glob
 
 here = os.path.dirname(__file__)
-bundled = glob.glob(os.path.join(here, 'libzmq.*'))
+
+bundled = []
+for ext in ('pyd', 'so', 'dll', 'dylib'):
+    bundled.extend(glob.glob(os.path.join(here, 'libzmq.%s' % ext)))
+
 if bundled:
     import ctypes
-    _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
-    print _libzmq
+    if bundled[0].endswith('.pyd'):
+        # a Windows Extension
+        _libzmq = ctypes.cdll.LoadLibrary(bundled[0])
+    else:
+        _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
     del ctypes
 
-del os, glob, here, bundled
+del os, sys, glob, here, bundled, ext
 
 from zmq.utils import initthreads # initialize threads
 initthreads.init_threads()
