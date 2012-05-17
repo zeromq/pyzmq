@@ -56,7 +56,7 @@ except ImportError:
 from buildutils import (
     discover_settings, v_str, savepickle, loadpickle, detect_zmq,
     warn, fatal, debug, copy_and_patch_libzmq,
-    fetch_uuid, fetch_libzmq, stage_platform_hpp,
+    fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
     )
 
 #-----------------------------------------------------------------------------
@@ -578,6 +578,7 @@ class BundledLibZMQ(build_ext):
             os.makedirs(self.bundledir)
         if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
             fetch_uuid(self.bundledir)
+            patch_uuid(pjoin(self.bundledir, 'uuid'))
         fetch_libzmq(self.bundledir)
         
         stage_platform_hpp(pjoin(self.bundledir, 'zeromq'))

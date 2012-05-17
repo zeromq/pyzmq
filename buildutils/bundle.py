@@ -118,6 +118,30 @@ def fetch_uuid(savedir):
     shutil.rmtree(pjoin(savedir, util_name))
 
 
+def patch_uuid(uuid_dir):
+    """patch uuid.h
+    
+    from pyzmq-static
+    """
+    info("patching gen_uuid.c")
+    gen_uuid = pjoin(uuid_dir, "gen_uuid.c")
+    with open(gen_uuid) as f:
+        lines = f.readlines()
+    
+    if 'pyzmq-patch' in lines[0]:
+        info("already patched")
+        return
+    else:
+        lines.insert(0, "// end pyzmq-patch\n")
+        for h in ('UNISTD', 'STDLIB', 'SYS_FILE'):
+            lines.insert(0, "#define HAVE_%s_H\n" % h)
+        lines.insert(0, "// begin pyzmq-patch\n")
+
+    with open(gen_uuid, 'w') as f:
+        f.writelines(lines)
+    
+
+
 def copy_and_patch_libzmq(ZMQ, libzmq):
     """copy libzmq into source dir, and patch it if necessary.
     
