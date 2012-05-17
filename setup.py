@@ -308,13 +308,63 @@ class Configure(Command):
 
     
     def bundle_libzmq(self):
-        self.config
+        bundledir = "bundled"
+        if self.distribution.ext_modules[0].name == 'zmq.libzmq':
+            # I've already been run
+            return
+        
+        # fetch sources for libzmq extension:
+        if not os.path.exists(bundledir):
+            os.makedirs(self.bundledir)
+        if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
+            fetch_uuid(bundledir)
+            patch_uuid(pjoin(bundledir, 'uuid'))
+        
+        fetch_libzmq(bundledir)
+        
+        stage_platform_hpp(pjoin(bundledir, 'zeromq'))
+        
+        # construct the Extension:
+        
+        ext = Extension(
+            'zmq.libzmq',
+            sources = glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')),
+            include_dirs = [
+                pjoin(bundledir, 'zeromq', 'include'),
+            ]
+        )
+        
+        if sys.platform.startswith('win'):
+            # When compiling the C++ code inside of libzmq itself, we want to
+            # avoid "warning C4530: C++ exception handler used, but unwind
+            # semantics are not enabled. Specify /EHsc".
+
+            ext.extra_compile_args.append('/EHsc')
+
+            # Because Visual Studio is given the option "/EXPORT:initlibzmq"
+            # when compiling libzmq, so we need to provide such a function.
+
+            ext.sources.append(r'src_nt\initlibzmq.c')
+
+            # And things like sockets come from libraries that must be named.
+
+            ext.libraries.append('rpcrt4')
+            ext.libraries.append('ws2_32')
+        elif not sys.platform.startswith(('darwin', 'freebsd')):
+            # add uuid as both `uuid/uuid.h` and `uuid.h`:
+            ext.include_dirs.append(pjoin(bundledir, 'uuid'))
+            ext.include_dirs.append(bundledir)
+            ext.sources.extend(glob(pjoin(bundledir, 'uuid', '*.c')))
+        
+        # insert the extension:
+        self.distribution.ext_modules.insert(0, ext)
 
     def run(self):
         self.create_tempdir()
         settings = self.settings
         if self.zmq == "bundled":
             self.config = {'vers' : (2,2,0)}
+            self.bundle_libzmq()
             return
         if bundle_libzmq and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
@@ -558,62 +608,6 @@ class CheckingBuildExt(build_ext):
         # check version, to prevent confusing undefined constant errors
         configure = self.distribution.get_command_obj('configure')
         configure.check_zmq_version()
-        libzmq = self.distribution.get_command_obj('libzmq')
-        libzmq.run()
-        build_ext.run(self)
-
-class BundledLibZMQ(build_ext):
-    """subclass build_ext for building libzmq as a Python extension.
-    
-    Code principally derived from pyzmq-static
-    """
-    
-    bundledir = "bundled"
-    
-    def build_extensions(self):
-        ext = Extension(
-            'zmq.libzmq',
-            sources = glob(pjoin(self.bundledir, 'zeromq', 'src', '*.cpp')),
-            include_dirs = [
-                pjoin(self.bundledir, 'zeromq', 'include'),
-            ]
-        )
-        if sys.platform.startswith('win'):
-            # When compiling the C++ code inside of libzmq itself, we want to
-            # avoid "warning C4530: C++ exception handler used, but unwind
-            # semantics are not enabled. Specify /EHsc".
-
-            ext.extra_compile_args.append('/EHsc')
-
-            # Because Visual Studio is given the option "/EXPORT:initlibzmq"
-            # when compiling libzmq, so we need to provide such a function.
-
-            ext.sources.append(r'src_nt\initlibzmq.c')
-
-            # And things like sockets come from libraries that must be named.
-
-            ext.libraries.append('rpcrt4')
-            ext.libraries.append('ws2_32')
-        elif not sys.platform.startswith(('darwin', 'freebsd')):
-            # add uuid as both `uuid/uuid.h` and `uuid.h`:
-            ext.include_dirs.append(pjoin(self.bundledir, 'uuid'))
-            ext.include_dirs.append(self.bundledir)
-            ext.sources.extend(glob(pjoin(self.bundledir, 'uuid', '*.c')))
-        
-        self.extensions = [ext]
-        build_ext.build_extensions(self)
-        # self.check_extensions_list(self.extensions)
-        # self.build_extension(ext)
-
-    def run(self):
-        if not os.path.exists(self.bundledir):
-            os.makedirs(self.bundledir)
-        if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
-            fetch_uuid(self.bundledir)
-            patch_uuid(pjoin(self.bundledir, 'uuid'))
-        fetch_libzmq(self.bundledir)
-        
-        stage_platform_hpp(pjoin(self.bundledir, 'zeromq'))
         build_ext.run(self)
 
 
@@ -622,7 +616,8 @@ class BundledLibZMQ(build_ext):
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'build': CopyingBuild, 'libzmq': BundledLibZMQ}
+            'configure': Configure, 'build': CopyingBuild,
+        }
 
 def pxd(subdir, name):
     return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
@@ -685,8 +680,6 @@ else:
         def run(self):
             configure = self.distribution.get_command_obj('configure')
             configure.check_zmq_version()
-            libzmq = self.distribution.get_command_obj('libzmq')
-            libzmq.run()
             return build_ext.run(self)
     
     cmdclass['cython'] = CythonCommand
