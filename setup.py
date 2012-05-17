@@ -360,12 +360,14 @@ class Configure(Command):
         self.distribution.ext_modules.insert(0, ext)
 
     def run(self):
-        self.create_tempdir()
-        settings = self.settings
         if self.zmq == "bundled":
             self.config = {'vers' : (2,2,0)}
             self.bundle_libzmq()
             return
+        
+        self.create_tempdir()
+        settings = self.settings
+        
         if bundle_libzmq and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
