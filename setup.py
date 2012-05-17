@@ -34,6 +34,7 @@ if sys.version_info < (2,6):
     sys.exit(1)
 
 
+import distutils
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
@@ -62,7 +63,7 @@ except ImportError:
 # local script imports:
 from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
-    warn, fatal, debug, line, copy_and_patch_libzmq,
+    warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
     )
 
@@ -315,7 +316,7 @@ class Configure(Command):
         
         # fetch sources for libzmq extension:
         if not os.path.exists(bundledir):
-            os.makedirs(self.bundledir)
+            os.makedirs(bundledir)
         if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
             fetch_uuid(bundledir)
             patch_uuid(pjoin(bundledir, 'uuid'))
