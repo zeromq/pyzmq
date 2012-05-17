@@ -27,6 +27,13 @@ import shutil
 import sys
 from traceback import print_exc
 
+if sys.version_info < (2,6):
+    print("ERROR: PyZMQ >= 2.2.0 requires Python 2.6 or later.  \n" +
+          "       PyZMQ 2.1.11 was the last release to support Python 2.5."
+    )
+    sys.exit(1)
+
+
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.extension import Extension
@@ -62,6 +69,7 @@ from buildutils import (
 #-----------------------------------------------------------------------------
 # Flags
 #-----------------------------------------------------------------------------
+
 # ignore unused-function and strict-aliasing warnings, of which there
 # will be many from the Cython generated code:
 # note that this is only for gcc-style compilers
