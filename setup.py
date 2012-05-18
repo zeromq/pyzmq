@@ -114,7 +114,7 @@ if sys.platform.startswith('win'):
         ZMQ = "bundled"
     bundle_libzmq_dylib = True
 elif ZMQ is not None and ZMQ != "bundled":
-    stage = doing_bdist
+    bundle_libzmq_dylib = doing_bdist
 else:
     bundle_libzmq_dylib = False
 
