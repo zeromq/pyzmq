@@ -13,10 +13,16 @@ import os
 import shutil
 import sys
 import tarfile
-import urllib
 from subprocess import Popen, PIPE
 
-from msg import fatal, debug, info, warn
+try:
+    # py2
+    from urllib2 import urlopen
+except ImportError:
+    # py3
+    from urllib.request import urlopen
+
+from .msg import fatal, debug, info, warn
 
 pjoin = os.path.join
 
@@ -52,7 +58,7 @@ def fetch_archive(savedir, url, fname, force=False):
     info("fetching %s into %s" % (url, savedir))
     if not os.path.exists(savedir):
         os.makedirs(savedir)
-    req = urllib.urlopen(url)
+    req = urlopen(url)
     with open(dest, 'wb') as f:
         f.write(req.read())
     return dest

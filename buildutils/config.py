@@ -21,7 +21,7 @@ except:
     from ConfigParser import ConfigParser
 
 pjoin = os.path.join
-from msg import debug, fatal, warn
+from .msg import debug, fatal, warn
 
 #-----------------------------------------------------------------------------
 # Utility functions (adapted from h5py: http://h5py.googlecode.com)

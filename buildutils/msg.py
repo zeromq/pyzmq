@@ -11,6 +11,8 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+from __future__ import division
+
 import sys
 import logging
 
@@ -37,5 +39,5 @@ def warn(msg):
     logger.error("Warning: " + msg)
 
 def line(c='*', width=48):
-    print (c * (width / len(c)))
+    print (c * (width // len(c)))
 
