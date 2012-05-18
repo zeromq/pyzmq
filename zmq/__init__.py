@@ -22,7 +22,7 @@ here = os.path.dirname(__file__)
 
 bundled = []
 for ext in ('pyd', 'so', 'dll', 'dylib'):
-    bundled.extend(glob.glob(os.path.join(here, 'libzmq.%s' % ext)))
+    bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
 
 if bundled:
     import ctypes
