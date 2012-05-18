@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-
 #-----------------------------------------------------------------------------
 #  Copyright (c) 2012 Brian Granger, Min Ragan-Kelley
 #
@@ -13,6 +11,11 @@
 #  h5py source used under the New BSD license
 #
 #  h5py: <http://code.google.com/p/h5py/>
+#
+#  The code to bundle libzmq as an Extension is from pyzmq-static
+#  pyzmq-static source used under the New BSD license
+#
+#  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -105,15 +108,15 @@ ZMQ = discover_settings()
 if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
     warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
 
-# bundle_libzmq flag for whether libzmq will be included in pyzmq:
+# bundle_libzmq_dylib flag for whether external libzmq library will be included in pyzmq:
 if sys.platform.startswith('win'):
     if ZMQ is None:
         ZMQ = "bundled"
-    bundle_libzmq = True
-elif ZMQ is not None:
-    bundle_libzmq = doing_bdist or ZMQ == "bundled"
+    bundle_libzmq_dylib = True
+elif ZMQ is not None and ZMQ != "bundled":
+    stage = doing_bdist
 else:
-    bundle_libzmq = False
+    bundle_libzmq_dylib = False
 
 # --- compiler settings -------------------------------------------------
 
@@ -166,7 +169,7 @@ def settings_from_prefix(zmq=None):
             settings['include_dirs'] += ['/opt/local/include']
             settings['library_dirs'] += ['/opt/local/lib']
     
-        if bundle_libzmq:
+        if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
@@ -303,7 +306,7 @@ class Configure(Command):
                     "libzmq into zmq/ manually.")
 
     
-    def bundle_libzmq(self):
+    def bundle_libzmq_extension(self):
         bundledir = "bundled"
         if self.distribution.ext_modules[0].name == 'zmq.libzmq':
             # I've already been run
@@ -414,12 +417,12 @@ class Configure(Command):
         
         print ("")
         
-        return self.bundle_libzmq()
+        return self.bundle_libzmq_extension()
         
     
     def test_build(self, zmq, settings):
         self.create_tempdir()
-        if bundle_libzmq and not sys.platform.startswith('win'):
+        if bundle_libzmq_dylib and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
@@ -443,7 +446,7 @@ class Configure(Command):
 
     def run(self):
         if self.zmq == "bundled":
-            self.config = self.bundle_libzmq()
+            self.config = self.bundle_libzmq_extension()
             return
         
         config = None
@@ -642,7 +645,7 @@ class CopyingBuild(build):
     """subclass of build that copies libzmq if doing bdist."""
     
     def run(self):
-        if bundle_libzmq and not sys.platform.startswith('win'):
+        if bundle_libzmq_dylib and not sys.platform.startswith('win'):
             # always rebuild before bdist, because linking may be wrong:
             self.run_command('clean')
             copy_and_patch_libzmq(ZMQ, 'libzmq'+lib_ext)
@@ -770,7 +773,7 @@ package_data = {'zmq':['*.pxd'],
                 'zmq.utils':['*.pxd', '*.h'],
 }
 
-if bundle_libzmq:
+if bundle_libzmq_dylib:
     package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
