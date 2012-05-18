@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import sys
+import time
 from traceback import print_exc
 
 if sys.version_info < (2,6):
@@ -65,6 +66,7 @@ from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
     warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
+    bundled_version,
     )
 
 #-----------------------------------------------------------------------------
@@ -259,7 +261,7 @@ class Configure(Command):
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
         config = self.getcached()
-        if config is None or config['options'] != self.settings:
+        if not config or config.get('settings') != self.settings:
             self.run()
             config = self.config
         else:
@@ -307,6 +309,9 @@ class Configure(Command):
             # I've already been run
             return
         
+        line()
+        print ("Using bundled libzmq")
+        
         # fetch sources for libzmq extension:
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
@@ -329,7 +334,7 @@ class Configure(Command):
         )
         
         if sys.platform.startswith('win'):
-            # include defines from msvc project:
+            # include defines from zeromq msvc project:
             ext.define_macros.append(('FD_SETSIZE', 1024))
             
             # When compiling the C++ code inside of libzmq itself, we want to
@@ -355,16 +360,48 @@ class Configure(Command):
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
+        
+        # update other extensions, with bundled settings
+        settings = init_settings("bundled")
+        
+        for ext in self.distribution.ext_modules[1:]:
+            for attr, value in settings.items():
+                setattr(ext, attr, value)
+        
+        return dict(vers=bundled_version, settings=settings)
+        
+    
+    def fallback_on_bundled(self):
+        """Couldn't build, fallback after waiting a while"""
+        
+        print ("""
+        Failed to build or run libzmq test program.  Please check to make sure:
 
-    def run(self):
-        if self.zmq == "bundled":
-            self.config = {'vers' : (2,2,0)}
-            self.bundle_libzmq()
-            return
+        * You have a C compiler installed
+        * A development version of Python is installed (including header files)
+        * A development version of ZMQ >= %s is installed (including header files)
+        * If ZMQ is not in a default location, supply the argument --zmq=<path>
+        * If you did recently install ZMQ to a default location, 
+          try rebuilding the ld cache with `sudo ldconfig`
+          or specify zmq's location with `--zmq=/usr/local`
         
+        """ % (v_str(min_zmq)))
+        
+        print ("I will fetch the libzmq sources and build libzmq as a Python extension")
+        
+        for i in range(10,0,-1):
+            sys.stdout.write('\r')
+            sys.stdout.write("unless you interrupt me (^C) in the next %2i seconds..." % i)
+            sys.stdout.flush()
+            time.sleep(1)
+        
+        print ("")
+        
+        return self.bundle_libzmq()
+        
+    
+    def test_build(self, zmq, settings):
         self.create_tempdir()
-        settings = self.settings
-        
         if bundle_libzmq and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
@@ -374,56 +411,66 @@ class Configure(Command):
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
+        
+        line()
+        print ("Configure: Autodetecting ZMQ settings...")
+        print ("    Custom ZMQ dir:       %s" % zmq)
         try:
-            line()
-            print ("Configure: Autodetecting ZMQ settings...")
-            print ("    Custom ZMQ dir:       %s" % (self.zmq,))
             config = detect_zmq(self.tempdir, **settings)
-        except Exception:
-            # if zmq unspecified on *ix, try again with explicit /usr/local
-            if self.zmq is None and not sys.platform.startswith('win'):
-                self.erase_tempdir()
-                print ("Failed with default libzmq, trying again with /usr/local")
-                self.zmq = '/usr/local'
-                self.settings = settings_from_prefix(self.zmq)
-                
-                self.run()
+        finally:
+            self.erase_tempdir()
+        
+        print ("    ZMQ version detected: %s" % v_str(config['vers']))
+        
+        return config
+
+    def run(self):
+        if self.zmq == "bundled":
+            self.config = self.bundle_libzmq()
+            return
+        
+        config = None
+        
+        # There is no available default on Windows, so start with fallback unless
+        # zmq was given explicitly.
+        if self.zmq is None and sys.platform.startswith("win"):
+            config = self.fallback_on_bundled()
+        
+        if config is None:
+            # first try with given config or defaults
+            try:
+                config = self.test_build(self.zmq, self.settings)
+            except Exception:
+                etype, evalue, tb = sys.exc_info()
+                # print the error as distutils would if we let it raise:
+                print ("\nerror: %s\n" % evalue)
+        
+        # try fallback on /usr/local on *ix
+        if config is None and self.zmq is None and not sys.platform.startswith('win'):
+            print ("Failed with default libzmq, trying again with /usr/local")
+            time.sleep(1)
+            zmq = '/usr/local'
+            settings = settings_from_prefix(self.zmq)
+            try:
+                config = self.test_build(zmq, settings)
+            except Exception:
+                etype, evalue, tb = sys.exc_info()
+                # print the error as distutils would if we let it raise:
+                print ("\nerror: %s\n" % evalue)
+            else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
                 for ext in self.distribution.ext_modules:
-                    for key,value in self.settings.iteritems():
-                        setattr(ext, key, value)
-                return
-            
-            etype, evalue, tb = sys.exc_info()
-            # print the error as distutils would if we let it raise:
-            print ("error: %s" % evalue)
-            if etype is CompileError:
-                action = 'compile'
-            elif etype is LinkError:
-                action = 'link'
-            else:
-                action = 'build or run'
-            
-            fatal("""
-    Failed to %s ZMQ test program.  Please check to make sure:
-
-    * You have a C compiler installed
-    * A development version of Python is installed (including header files)
-    * A development version of ZMQ >= %s is installed (including header files)
-    * If ZMQ is not in a default location, supply the argument --zmq=<path>
-    * If you did recently install ZMQ to a default location, 
-      try rebuilding the ld cache with `sudo ldconfig`
-      or specify zmq's location with `--zmq=/usr/local`
-    """%(action, v_str(min_zmq)))
-            
-        else:
-            save_config('configure', config)
-            print ("    ZMQ version detected: %s" % v_str(config['vers']))
-        finally:
-            line()
-            self.erase_tempdir()
+                    for attr,value in settings.items():
+                        setattr(ext, attr, value)
+        
+        # finally, fallback on bundled
+        if config is None:
+            config = self.fallback_on_bundled()
+        
+        save_config('configure', config)
         self.config = config
+        line()
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
@@ -601,6 +648,7 @@ class CheckingBuildExt(build_ext):
         self.check_extensions_list(self.extensions)
         
         for ext in self.extensions:
+            
             self.build_extension(ext)
     
     def run(self):

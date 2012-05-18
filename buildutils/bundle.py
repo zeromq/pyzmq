@@ -24,7 +24,8 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-libzmq = "zeromq-2.2.0.tar.gz"
+bundled_version = (2,2,0)
+libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 util = "util-linux-2.21.tar.gz"
 util_url = "http://www.kernel.org/pub/linux/utils/util-linux/v2.21/" + util

@@ -48,7 +48,7 @@ def save_config(name, data):
         os.mkdir('conf')
     fname = pjoin('conf', name+'.json')
     with open(fname, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
 
 
 def v_str(v_tuple):

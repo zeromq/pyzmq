@@ -46,7 +46,7 @@ def detect_zmq(basedir, **compiler_attrs):
     
     vers : tuple
         The ZMQ version as a tuple of ints, e.g. (2,2,0)
-    options : dict
+    settings : dict
         The compiler options used to compile the test function, e.g. `include_dirs`,
         `library_dirs`, `libs`, etc.
     """
@@ -91,6 +91,6 @@ def detect_zmq(basedir, **compiler_attrs):
         key, val = line.split(':')
         props[key] = handlers[key](val)
 
-    props['options'] = compiler_attrs
+    props['settings'] = compiler_attrs
     return props
 
