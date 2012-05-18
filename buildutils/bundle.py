@@ -93,7 +93,7 @@ def stage_platform_hpp(zmqroot):
     else:
         info("attempting ./configure to generate platform.hpp")
         
-        p = Popen('./configurez', cwd=zmqroot, shell=True,
+        p = Popen('./configure', cwd=zmqroot, shell=True,
             stdout=PIPE, stderr=PIPE,
         )
         o,e = p.communicate()
