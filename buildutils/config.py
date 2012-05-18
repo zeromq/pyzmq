@@ -95,7 +95,7 @@ def get_cargs():
     for arg in sys.argv[:]:
         if arg.find('--zmq=') == 0:
             zmq = arg.split('=')[-1]
-            if zmq.lower() == 'default':
+            if zmq.lower() in ('default', 'auto', ''):
                 settings.pop('zmq', None)
             else:
                 settings['zmq'] = zmq
