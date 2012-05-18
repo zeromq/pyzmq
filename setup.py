@@ -400,13 +400,13 @@ class Configure(Command):
         ]))
         
         print ('\n'.join([
-            "I will fetch the libzmq sources and build libzmq as a Python extension",
-            "unless you interrupt me (^C) in the next 10 seconds...",
-            "",
             "You can skip all this detection/waiting nonsense if you know",
             "you want pyzmq to bundle libzmq as an extension by passing:",
             "",
             "    `--zmq=bundled`",
+            "",
+            "I will now fetch the libzmq sources and build libzmq as a Python extension",
+            "unless you interrupt me (^C) in the next 10 seconds...",
             "",
         ]))
         
@@ -455,6 +455,7 @@ class Configure(Command):
         # zmq was given explicitly.
         if self.zmq is None and sys.platform.startswith("win"):
             config = self.fallback_on_bundled()
+            self.zmq = "bundled"
         
         if config is None:
             # first try with given config or defaults
@@ -470,7 +471,7 @@ class Configure(Command):
             print ("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
             zmq = '/usr/local'
-            settings = settings_from_prefix(self.zmq)
+            settings = settings_from_prefix(zmq)
             try:
                 config = self.test_build(zmq, settings)
             except Exception:
@@ -480,13 +481,15 @@ class Configure(Command):
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
+                self.zmq = zmq
                 for ext in self.distribution.ext_modules:
                     for attr,value in settings.items():
                         setattr(ext, attr, value)
         
         # finally, fallback on bundled
-        if config is None:
+        if config is None and self.zmq is None:
             config = self.fallback_on_bundled()
+            self.zmq = "bundled"
         
         save_config('configure', config)
         self.config = config
