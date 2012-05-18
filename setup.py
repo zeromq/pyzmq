@@ -364,30 +364,51 @@ class Configure(Command):
             for attr, value in settings.items():
                 setattr(ext, attr, value)
         
+        save_config("buildconf", dict(zmq="bundled"))
+        
         return dict(vers=bundled_version, settings=settings)
         
     
     def fallback_on_bundled(self):
         """Couldn't build, fallback after waiting a while"""
         
-        print ("""
-        Failed to build or run libzmq test program.  Please check to make sure:
-
-        * You have a C compiler installed
-        * A development version of Python is installed (including header files)
-        * A development version of ZMQ >= %s is installed (including header files)
-        * If ZMQ is not in a default location, supply the argument --zmq=<path>
-        * If you did recently install ZMQ to a default location, 
-          try rebuilding the ld cache with `sudo ldconfig`
-          or specify zmq's location with `--zmq=/usr/local`
+        print ('\n'.join([
+        "Failed to build or run libzmq detection test.",
+        "",
+        "If you expected pyzmq to link against an installed libzmq, please check to make sure:",
+        "",
+        "    * You have a C compiler installed",
+        "    * A development version of Python is installed (including headers)",
+        "    * A development version of ZMQ >= %s is installed (including headers)" % v_str(min_zmq),
+        "    * If ZMQ is not in a default location, supply the argument --zmq=<path>",
+        "    * If you did recently install ZMQ to a default location,",
+        "      try rebuilding the ld cache with `sudo ldconfig`",
+        "      or specify zmq's location with `--zmq=/usr/local`",
+        "",
+        ]))
         
-        """ % (v_str(min_zmq)))
+        # ultra-lazy pip detection:
+        if 'pip' in ' '.join(sys.argv) or True:
+            print ('\n'.join([
+        "If you expected to get a binary install (egg), we have those for",
+        "current Pythons on OSX and Windows. These can be installed with",
+        "easy_install, but PIP DOES NOT SUPPORT EGGS.",
+        "",
+        ]))
         
-        print ("I will fetch the libzmq sources and build libzmq as a Python extension")
+        print ('\n'.join([
+            "I will fetch the libzmq sources and build libzmq as a Python extension",
+            "unless you interrupt me (^C) in the next 10 seconds...",
+            "",
+            "You can skip all this detection/waiting nonsense if you know",
+            "you want pyzmq to bundle libzmq as an extension by passing:",
+            "",
+            "    `--zmq=bundled`",
+            "",
+        ]))
         
         for i in range(10,0,-1):
-            sys.stdout.write('\r')
-            sys.stdout.write("unless you interrupt me (^C) in the next %2i seconds..." % i)
+            sys.stdout.write('\r%2i...' % i)
             sys.stdout.flush()
             time.sleep(1)
         
