@@ -57,7 +57,7 @@ class _Socket(_original_Socket):
         if not self._closed and getattr(self, '_state_event', None):
             try:
                 self._state_event.stop()
-            except AttributeError, e:
+            except AttributeError as e:
                 # gevent<1.0 compat
                 self._state_event.cancel()
         super(_Socket, self).close(linger)
@@ -81,7 +81,7 @@ class _Socket(_original_Socket):
                 self.__readable.set()
                 return
             events = self.getsockopt(zmq.EVENTS)
-        except ZMQError, exc:
+        except ZMQError as exc:
             self.__writable.set_exception(exc)
             self.__readable.set_exception(exc)
         else:
@@ -108,7 +108,7 @@ class _Socket(_original_Socket):
             try:
                 # attempt the actual call
                 return super(_Socket, self).send(data, flags, copy, track)
-            except zmq.ZMQError, e:
+            except zmq.ZMQError as e:
                 # if the raised ZMQError is not EAGAIN, reraise
                 if e.errno != zmq.EAGAIN:
                     raise
@@ -122,7 +122,7 @@ class _Socket(_original_Socket):
         while True:
             try:
                 return super(_Socket, self).recv(flags, copy, track)
-            except zmq.ZMQError, e:
+            except zmq.ZMQError as e:
                 if e.errno != zmq.EAGAIN:
                     raise
             self._wait_read()
