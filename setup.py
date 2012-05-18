@@ -327,7 +327,8 @@ class Configure(Command):
         
         ext = Extension(
             'zmq.libzmq',
-            sources = glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')),
+            sources = [pjoin('buildutils', 'initlibzmq.c')] + 
+                        glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')),
             include_dirs = [
                 pjoin(bundledir, 'zeromq', 'include'),
             ],
@@ -342,11 +343,6 @@ class Configure(Command):
             # semantics are not enabled. Specify /EHsc".
 
             ext.extra_compile_args.append('/EHsc')
-
-            # Because Visual Studio is given the option "/EXPORT:initlibzmq"
-            # when compiling libzmq, so we need to provide such a function.
-
-            ext.sources.insert(0, pjoin('buildutils', 'initlibzmq.c'))
 
             # And things like sockets come from libraries that must be named.
 
