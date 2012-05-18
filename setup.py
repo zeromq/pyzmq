@@ -110,8 +110,6 @@ if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
 
 # bundle_libzmq_dylib flag for whether external libzmq library will be included in pyzmq:
 if sys.platform.startswith('win'):
-    if ZMQ is None:
-        ZMQ = "bundled"
     bundle_libzmq_dylib = True
 elif ZMQ is not None and ZMQ != "bundled":
     bundle_libzmq_dylib = doing_bdist
@@ -152,8 +150,10 @@ def settings_from_prefix(zmq=None):
     }
     if sys.platform.startswith('win'):
         settings['libraries'].append('libzmq')
-        settings['include_dirs'] += [pjoin(zmq, 'include')]
-        settings['library_dirs'] += [pjoin(zmq, 'lib')]
+        
+        if zmq is not None:
+            settings['include_dirs'] += [pjoin(zmq, 'include')]
+            settings['library_dirs'] += [pjoin(zmq, 'lib')]
     else:
         settings['libraries'].append('zmq')
     
