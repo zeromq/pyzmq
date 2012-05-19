@@ -269,10 +269,9 @@ class Configure(Command):
             config = self.config
         else:
             self.config = config
+            line()
 
         if self.zmq == "bundled":
-            line()
-            print("Using bundled libzmq")
             return
         
         vers = config['vers']
@@ -375,6 +374,8 @@ class Configure(Command):
     def fallback_on_bundled(self):
         """Couldn't build, fallback after waiting a while"""
         
+        line()
+        
         print ('\n'.join([
         "Failed to build or run libzmq detection test.",
         "",
@@ -447,6 +448,7 @@ class Configure(Command):
     def run(self):
         if self.zmq == "bundled":
             self.config = self.bundle_libzmq_extension()
+            line()
             return
         
         config = None
@@ -536,7 +538,7 @@ class TestCommand(Command):
             sys.exit(1)
         
         if nose is None:
-            print ("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
+            warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
             return self.run_unittest()
         else:
             return self.run_nose()

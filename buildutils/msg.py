@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stderr))
 
 def debug(msg):
-    pass
+    logger.debug(msg)
 
 def info(msg):
     logger.info(msg)
@@ -39,5 +39,5 @@ def warn(msg):
     logger.error("Warning: " + msg)
 
 def line(c='*', width=48):
-    print (c * (width // len(c)))
+    print(c * (width // len(c)))
 
