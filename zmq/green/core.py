@@ -96,7 +96,12 @@ class _Socket(_original_Socket):
     def _wait_write(self):
         assert self.__writable.ready(), "Only one greenlet can be waiting on this event"
         self.__writable = AsyncResult()
-        self.__writable.get()
+        # timeout is because libzmq cannot be trusted to properly signal a new send event:
+        # this is effectively a maximum poll interval of 1s
+        try:
+            self.__writable.get(timeout=1)
+        except gevent.Timeout:
+            self.__writable.set()
 
     def _wait_read(self):
         assert self.__readable.ready(), "Only one greenlet can be waiting on this event"
