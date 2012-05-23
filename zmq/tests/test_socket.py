@@ -333,5 +333,6 @@ class TestSocket(BaseZMQTestCase):
 if have_gevent:
     class TestSocketGreen(GreenTest, TestSocket):
         test_bad_attr = GreenTest.skip_green
+        test_close_after_destroy = GreenTest.skip_green
 
 
