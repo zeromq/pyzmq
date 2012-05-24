@@ -11,6 +11,10 @@
 """This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
 """
 
+from __future__ import print_function
+
+import sys
+
 import zmq
 from zmq import *
 
@@ -101,12 +105,23 @@ class _Socket(_original_Socket):
         try:
             self.__writable.get(timeout=1)
         except gevent.Timeout:
+            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLIN:
+                print("BUG: gevent missed a libzmq send event!", file=sys.stderr)
             self.__writable.set()
 
     def _wait_read(self):
         assert self.__readable.ready(), "Only one greenlet can be waiting on this event"
         self.__readable = AsyncResult()
-        self.__readable.get()
+        # timeout is because libzmq cannot always be trusted to play nice with libevent.
+        # I can only confirm that this actually happens for send, but lets be symmetrical
+        # with our dirty hacks.
+        # this is effectively a maximum poll interval of 1s
+        try:
+            self.__readable.get(timeout=1)
+        except gevent.Timeout:
+            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLOUT:
+                print("BUG: gevent missed a libzmq recv event!", file=sys.stderr)
+            self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False):
         """send, which will only block current greenlet
