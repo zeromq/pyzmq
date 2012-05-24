@@ -1,12 +1,14 @@
 *.pyc
-*.c
+zmq/*/*.c
 build
 dist
 conf
+bundled_libzmq
 *.egg-info
 *.so
 *.pyd
 *.dll
+*.dylib
 docs/source/api/generated
 docs/gh-pages
 setup.cfg
