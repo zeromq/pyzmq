@@ -500,6 +500,8 @@ class Configure(Command):
 class FetchCommand(Command):
     """Fetch libzmq and uuid sources, that's it."""
     
+    description = "Fetch libuuid and libzmq sources into bundled"
+    
     user_options = [ ]
     
     def initialize_options(self):
@@ -522,6 +524,8 @@ class FetchCommand(Command):
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
+
+    description = "Test PyZMQ (must have been built inplace: `setup.py build_ext --inplace`)"
 
     user_options = [ ]
 
@@ -568,6 +572,8 @@ class TestCommand(Command):
 
 class GitRevisionCommand(Command):
     """find the current git revision and add it to zmq.core.verion.__revision__"""
+    
+    description = "Store current git revision in version.py"
     
     user_options = [ ]
     
@@ -768,6 +774,9 @@ else:
         """Custom distutils command subclassed from Cython.Distutils.build_ext
         to compile pyx->c, and stop there. All this does is override the 
         C-compile method build_extension() with a no-op."""
+        
+        description = "Compile Cython sources to C"
+        
         def build_extension(self, ext):
             pass
     

@@ -43,6 +43,7 @@ util = "util-linux-2.21.tar.gz"
 util_url = "http://www.kernel.org/pub/linux/utils/util-linux/v2.21/" + util
 
 HERE = os.path.dirname(__file__)
+ROOT = os.path.dirname(HERE)
 
 #-----------------------------------------------------------------------------
 # functions
@@ -53,10 +54,12 @@ def untgz(archive):
     return archive.replace('.tar.gz', '')
 
 def localpath(*args):
-    plist = [HERE]+list(args)
+    """construct an absolute path from a list relative to the root pyzmq directory"""
+    plist = [ROOT] + list(args)
     return os.path.abspath(pjoin(*plist))
 
 def fetch_archive(savedir, url, fname, force=False):
+    """download an archive to a specific location"""
     dest = pjoin(savedir, fname)
     if os.path.exists(dest) and not force:
         info("already have %s" % fname)
@@ -70,6 +73,7 @@ def fetch_archive(savedir, url, fname, force=False):
     return dest
 
 def fetch_libzmq(savedir):
+    """download and extract libzmq"""
     dest = pjoin(savedir, 'zeromq')
     if os.path.exists(dest):
         info("already have %s" % dest)
@@ -83,6 +87,12 @@ def fetch_libzmq(savedir):
     shutil.move(with_version, dest)
 
 def stage_platform_hpp(zmqroot):
+    """stage platform.hpp into libzmq sources
+    
+    Tries ./configure first (except on Windows),
+    then falls back on included platform.hpp previously generated.
+    """
+    
     platform_hpp = pjoin(zmqroot, 'src', 'platform.hpp')
     if os.path.exists(platform_hpp):
         info("already have platform.hpp")
@@ -113,6 +123,7 @@ def stage_platform_hpp(zmqroot):
 
 
 def fetch_uuid(savedir):
+    """download, extract, and patch libuuid sources"""
     dest = pjoin(savedir, 'uuid')
     if os.path.exists(dest):
         info("already have %s" % dest)
@@ -137,7 +148,7 @@ def fetch_uuid(savedir):
 
 
 def patch_uuid(uuid_dir):
-    """patch uuid.h
+    """patch uuid.h with a few defines
     
     from pyzmq-static
     """
