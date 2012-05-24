@@ -68,7 +68,7 @@ except ImportError:
 from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
     warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
-    fetch_uuid, fetch_libzmq, stage_platform_hpp, patch_uuid,
+    fetch_uuid, fetch_libzmq, stage_platform_hpp,
     bundled_version,
     )
 
@@ -319,7 +319,6 @@ class Configure(Command):
             os.makedirs(bundledir)
         if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
             fetch_uuid(bundledir)
-            patch_uuid(pjoin(bundledir, 'uuid'))
         
         fetch_libzmq(bundledir)
         
@@ -496,6 +495,30 @@ class Configure(Command):
         save_config('configure', config)
         self.config = config
         line()
+
+
+class FetchCommand(Command):
+    """Fetch libzmq and uuid sources, that's it."""
+    
+    user_options = [ ]
+    
+    def initialize_options(self):
+        pass
+    
+    def finalize_options(self):
+        pass
+    
+    def run(self):
+        # fetch sources for libzmq extension:
+        bundledir = "bundled"
+        if not os.path.exists(bundledir):
+            os.makedirs(bundledir)
+        fetch_uuid(bundledir)
+        fetch_libzmq(bundledir)
+        for tarball in glob(pjoin(bundledir, '*.tar.gz')):
+            os.remove(tarball)
+        
+
 
 class TestCommand(Command):
     """Custom distutils command to run the test suite."""
@@ -688,7 +711,7 @@ class CheckingBuildExt(build_ext):
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'build': CopyingBuild,
+            'configure': Configure, 'build': CopyingBuild, 'fetchbundle': FetchCommand,
         }
 
 def pxd(subdir, name):

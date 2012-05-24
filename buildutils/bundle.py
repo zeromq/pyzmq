@@ -113,6 +113,11 @@ def stage_platform_hpp(zmqroot):
 
 
 def fetch_uuid(savedir):
+    dest = pjoin(savedir, 'uuid')
+    if os.path.exists(dest):
+        info("already have %s" % dest)
+        return
+    
     fname = fetch_archive(savedir, util_url, util)
     tf = tarfile.open(fname)
     util_name = untgz(util)
@@ -123,11 +128,12 @@ def fetch_uuid(savedir):
     )
     # uuid_members = map(tf.getmember, uuid_names)
     tf.extractall(savedir, uuid)
-    dest = pjoin(savedir, 'uuid')
     if os.path.exists(dest):
         shutil.rmtree(dest)
     shutil.move(pjoin(savedir, util_name, 'libuuid', 'src'), dest)
     shutil.rmtree(pjoin(savedir, util_name))
+    
+    patch_uuid(dest)
 
 
 def patch_uuid(uuid_dir):
