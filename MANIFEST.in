@@ -7,12 +7,12 @@ include setup.cfg.template
 include setup.py
 include setupegg.py
 include zmqversion.py
-include buildutils.py
 
 graft docs
 prune docs/build
 prune docs/gh-pages
 
+graft buildutils
 graft examples
 graft zmq
 graft perf
