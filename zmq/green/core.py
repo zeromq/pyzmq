@@ -16,11 +16,9 @@ from __future__ import print_function
 import sys
 
 import zmq
-from zmq import *
 
-# imported with different names as to not have the star import try to to clobber (when building with cython)
-from zmq.core.context import Context as _original_Context
-from zmq.core.socket import Socket as _original_Socket
+from zmq import Context as _original_Context
+from zmq import Socket as _original_Socket
 
 import gevent
 from gevent.event import AsyncResult
@@ -72,12 +70,12 @@ class _Socket(_original_Socket):
         self.__writable.set()
         
         try:
-            self._state_event = get_hub().loop.io(self.getsockopt(FD), 1) # read state watcher
+            self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
             self._state_event.start(self.__state_changed)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(self.getsockopt(FD), self.__state_changed, persist=True)
+            self._state_event = read_event(self.getsockopt(zmq.FD), self.__state_changed, persist=True)
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
@@ -88,7 +86,7 @@ class _Socket(_original_Socket):
         try:
             # avoid triggering __state_changed from inside __state_changed
             events = super(_Socket, self).getsockopt(zmq.EVENTS)
-        except ZMQError as exc:
+        except zmq.ZMQError as exc:
             self.__writable.set_exception(exc)
             self.__readable.set_exception(exc)
         else:
