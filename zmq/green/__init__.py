@@ -31,6 +31,8 @@ to trigger needed events.
 
 from zmq import *
 from zmq.green.core import _Context, _Socket
+from zmq.green.poll import _Poller
 Context = _Context
 Socket = _Socket
+Poller = _Poller
 
