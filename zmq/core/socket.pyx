@@ -220,8 +220,7 @@ cdef class Socket:
         
         This method will likely do nothing unless init has failed."""
         if self.handle != NULL:
-            with nogil:
-                rc = zmq_close(self.handle)
+            rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 raise ZMQError()
@@ -253,10 +252,9 @@ cdef class Socket:
             setlinger=True
         
         if self.handle != NULL and not self._closed:
-            with nogil:
-                if setlinger:
-                    zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
-                rc = zmq_close(self.handle)
+            if setlinger:
+                zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
+            rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 raise ZMQError()
