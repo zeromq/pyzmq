@@ -77,6 +77,8 @@ cdef class Context:
         cdef int rc
         if self._sockets != NULL:
             free(self._sockets)
+            self._sockets = NULL
+            self.n_sockets = 0
         self.term()
     
     cdef inline void _add_socket(self, void* handle):

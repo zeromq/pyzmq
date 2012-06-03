@@ -211,19 +211,19 @@ cdef class Socket:
         self._attrs = {}
         context._add_socket(self.handle)
 
-    def __del__(self):
-        """close *and* remove from context's list"""
-        self.close()
-    
     def __dealloc__(self):
-        """don't touch the Context during dealloc, since it might have been cleaned up already.
+        """close *and* remove from context's list
         
-        This method will likely do nothing unless init has failed."""
+        But be careful that context might not exist if called during gc
+        """
         if self.handle != NULL:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 raise ZMQError()
+            # during gc, self.context might be NULL
+            if self.context:
+                self.context._remove_socket(self.handle)
     
     def __init__(self, context, socket_type):
         pass
@@ -258,9 +258,11 @@ cdef class Socket:
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 raise ZMQError()
-            self.context._remove_socket(self.handle)
-            self.handle = NULL
             self._closed = True
+            # during gc, self.context might be NULL
+            if self.context:
+                self.context._remove_socket(self.handle)
+            self.handle = NULL
 
     def setsockopt(self, int option, optval):
         """s.setsockopt(option, optval)
