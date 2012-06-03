@@ -77,6 +77,8 @@ cdef class Context:
         cdef int rc
         if self._sockets != NULL:
             free(self._sockets)
+            self._sockets = NULL
+            self.n_sockets = 0
         self.term()
     
     cdef inline void _add_socket(self, void* handle):
@@ -176,10 +178,9 @@ cdef class Context:
             setlinger=True
         if self.handle != NULL and not self.closed and self.n_sockets:
             while self.n_sockets:
-                with nogil:
-                    if setlinger:
-                        zmq_setsockopt(self._sockets[0], ZMQ_LINGER, &linger_c, sizeof(int))
-                    rc = zmq_close(self._sockets[0])
+                if setlinger:
+                    zmq_setsockopt(self._sockets[0], ZMQ_LINGER, &linger_c, sizeof(int))
+                rc = zmq_close(self._sockets[0])
                 if rc != 0 and zmq_errno() != ENOTSOCK:
                     raise ZMQError()
                 self.n_sockets -= 1
