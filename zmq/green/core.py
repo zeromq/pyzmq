@@ -103,7 +103,7 @@ class _Socket(_original_Socket):
         try:
             self.__writable.get(timeout=1)
         except gevent.Timeout:
-            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLIN:
+            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLOUT:
                 print("BUG: gevent missed a libzmq send event!", file=sys.stderr)
             self.__writable.set()
 
@@ -117,7 +117,7 @@ class _Socket(_original_Socket):
         try:
             self.__readable.get(timeout=1)
         except gevent.Timeout:
-            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLOUT:
+            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLIN:
                 print("BUG: gevent missed a libzmq recv event!", file=sys.stderr)
             self.__readable.set()
 
