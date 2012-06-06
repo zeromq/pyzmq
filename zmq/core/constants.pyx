@@ -97,7 +97,7 @@ if ZMQ_VERSION < 30000:
 else:
     int_sockopts.extend(switched)
 
-if ZMQ_VERSION >= 202000:
+if ZMQ_VERSION >= 20200:
     # sockopts new in 2.2.0
     SNDTIMEO = ZMQ_SNDTIMEO
     RCVTIMEO = ZMQ_RCVTIMEO
