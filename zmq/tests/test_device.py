@@ -106,29 +106,3 @@ class TestDevice(BaseZMQTestCase):
         del dev
         req.close()
 
-    def test_labels(self):
-        """test device support for SNDLABEL"""
-        raise SkipTest("LABELs have been removed")
-        dev = devices.ThreadDevice(zmq.QUEUE, zmq.XREP, -1)
-        # select random port:
-        binder = self.context.socket(zmq.XREQ)
-        port = binder.bind_to_random_port('tcp://127.0.0.1')
-        binder.close()
-        time.sleep(0.1)
-        req = self.context.socket(zmq.REQ)
-        req.connect('tcp://127.0.0.1:%i'%port)
-        dev.bind_in('tcp://127.0.0.1:%i'%port)
-        dev.start()
-        time.sleep(.25)
-        msg = b'hello'
-        req.send(msg, zmq.SNDLABEL)
-        req.send(msg, zmq.SNDMORE)
-        req.send(msg)
-        
-        self.assertEquals(msg, self.recv(req))
-        self.assertTrue(req.rcvlabel)
-        self.assertEquals(msg, self.recv(req))
-        self.assertTrue(req.rcvmore)
-        self.assertEquals(msg, self.recv(req))
-        del dev
-        req.close()
