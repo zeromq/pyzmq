@@ -45,29 +45,24 @@ PUB = ZMQ_PUB
 SUB = ZMQ_SUB
 REQ = ZMQ_REQ
 REP = ZMQ_REP
-XREQ = ZMQ_XREQ
-XREP = ZMQ_XREP
+DEALER = ZMQ_DEALER
+ROUTER = ZMQ_ROUTER
 PULL = ZMQ_PULL
 PUSH = ZMQ_PUSH
 XPUB = ZMQ_XPUB
 XSUB = ZMQ_XSUB
 
-if ZMQ_DEALER == -1:
-    DEALER = XREQ
-else:
-    DEALER = ZMQ_DEALER
-if ZMQ_ROUTER == -1:
-    ROUTER = XREP
-else:
-    ROUTER = ZMQ_ROUTER
-
 if ZMQ_VERSION < 30000:
-    UPSTREAM = ZMQ_UPSTREAM
-    DOWNSTREAM = ZMQ_DOWNSTREAM
-    _optionals.extend(['UPSTREAM','DOWNSTREAM'])
+    # keep deprecated aliases
+    XREQ = DEALER
+    XREP = ROUTER
+    UPSTREAM = PULL
+    DOWNSTREAM = PUSH
+    _optionals.extend(['XREQ','XREP','UPSTREAM','DOWNSTREAM'])
 
 # socket options
 AFFINITY = ZMQ_AFFINITY
+IDENTITY = ZMQ_IDENTITY
 SUBSCRIBE = ZMQ_SUBSCRIBE
 UNSUBSCRIBE = ZMQ_UNSUBSCRIBE
 RATE = ZMQ_RATE
@@ -86,7 +81,7 @@ FORWARDER = ZMQ_FORWARDER
 QUEUE = ZMQ_QUEUE
 
 # collections of sockopts, based on type:
-bytes_sockopts = [SUBSCRIBE, UNSUBSCRIBE]
+bytes_sockopts = [IDENTITY, SUBSCRIBE, UNSUBSCRIBE]
 int64_sockopts = [AFFINITY]
 int_sockopts = [RECONNECT_IVL_MAX]
 
@@ -140,19 +135,6 @@ else:
         IPV4ONLY,
         FAIL_UNROUTABLE,
     ])
-
-if ZMQ_VERSION < 40000:
-    # removed in 4.0.0
-    IDENTITY = ZMQ_IDENTITY
-    bytes_sockopts.append(IDENTITY)
-    _optionals.append('IDENTITY')
-else:
-    # new in 4.0.0
-    RCVCMD = ZMQ_RCVCMD
-    SNDCMD = ZMQ_SNDCMD # flag, not a sockopt
-    int_sockopts.append(RCVCMD)
-    _optionals.append('RCVCMD')
-    
 
 
 FD = ZMQ_FD
@@ -222,13 +204,12 @@ __all__ = [
     'XSUB',
     'REQ',
     'REP',
-    'XREQ',
     'DEALER',
-    'XREP',
     'ROUTER',
     'PULL',
     'PUSH',
     'AFFINITY',
+    'IDENTITY',
     'SUBSCRIBE',
     'UNSUBSCRIBE',
     'RATE',

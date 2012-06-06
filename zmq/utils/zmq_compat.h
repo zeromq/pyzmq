@@ -50,12 +50,6 @@
 #ifndef ZMQ_DONTWAIT
     #define ZMQ_DONTWAIT (-1)
 #endif
-#ifndef ZMQ_RCVLABEL
-    #define ZMQ_RCVLABEL (-1)
-#endif
-#ifndef ZMQ_SNDLABEL
-    #define ZMQ_SNDLABEL (-1)
-#endif
 #ifndef ZMQ_IPV4ONLY
     #define ZMQ_IPV4ONLY (-1)
 #endif
@@ -79,13 +73,6 @@
 #endif
 #ifndef ZMQ_MSG_SHARED
     #define ZMQ_MSG_SHARED (-1)
-#endif
-
-#ifndef ZMQ_UPSTREAM
-    #define ZMQ_UPSTREAM (-1)
-#endif
-#ifndef ZMQ_DOWNSTREAM
-    #define ZMQ_DOWNSTREAM (-1)
 #endif
 
 #ifndef ZMQ_HWM
@@ -116,33 +103,6 @@
     #define ZMQ_QUEUE 3
 #endif
 
-
-// new in 4.0.0
-#ifndef ECANTROUTE
-    #define ECANTROUTE (-1)
-#endif
-
-#ifndef ZMQ_RCVCMD
-    #define ZMQ_RCVCMD (-1)
-#endif
-#ifndef ZMQ_SNDCMD
-    #define ZMQ_SNDCMD (-1)
-#endif
-
-// removed in 4.0.0
-#ifndef ZMQ_XREQ
-    #define ZMQ_XREQ (-1)
-#endif
-#ifndef ZMQ_XREP
-    #define ZMQ_XREP (-1)
-#endif
-#ifndef ZMQ_DEALER
-    #define ZMQ_DEALER (-1)
-#endif
-
-#ifndef ZMQ_IDENTITY
-    #define ZMQ_IDENTITY (-1)
-#endif
 
 // define fd type (from libzmq's fd.hpp)
 #ifdef _WIN32
