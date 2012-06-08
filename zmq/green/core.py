@@ -57,11 +57,21 @@ class _Socket(_original_Socket):
         self.__in_recv_multipart = False
         self.__setup_events()
 
+    def __del__(self):
+        self.close()
+
     def close(self, linger=None):
-        # close the _state_event event, keeps the number of active file descriptors down
-        if not self._closed and getattr(self, '_state_event', None):
-                _stop(self._state_event)
         super(_Socket, self).close(linger)
+        self.__cleanup_events()
+
+    def __cleanup_events(self):
+        # close the _state_event event, keeps the number of active file descriptors down
+        if getattr(self, '_state_event', None):
+            _stop(self._state_event)
+            self._state_event = None
+        # if the socket has entered a close state resume any waiting greenlets
+        self.__writable.set()
+        self.__readable.set()
 
     def __setup_events(self):
         self.__readable = AsyncResult()
@@ -79,9 +89,7 @@ class _Socket(_original_Socket):
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
-            # if the socket has entered a close state resume any waiting greenlets
-            self.__writable.set()
-            self.__readable.set()
+            self.__cleanup_events()
             return
         try:
             # avoid triggering __state_changed from inside __state_changed
