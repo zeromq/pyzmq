@@ -74,7 +74,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
-    enum: ZMQ_ECANTROUTE "ECANTROUTE"
     enum: ZMQ_EMTHREAD "EMTHREAD"
     
     enum: errno
@@ -110,16 +109,12 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SUB # 2
     enum: ZMQ_REQ # 3
     enum: ZMQ_REP # 4
-    enum: ZMQ_XREQ # 5
-    enum: ZMQ_DEALER # 5 or 12
-    enum: ZMQ_XREP # 6
-    enum: ZMQ_ROUTER # 6 or 11 or 13
+    enum: ZMQ_DEALER # 5
+    enum: ZMQ_ROUTER # 6
     enum: ZMQ_PULL # 7
     enum: ZMQ_PUSH # 8
     enum: ZMQ_XPUB # 9
     enum: ZMQ_XSUB # 10
-    enum: ZMQ_UPSTREAM # 7
-    enum: ZMQ_DOWNSTREAM # 8
 
     enum: ZMQ_HWM # 1
     enum: ZMQ_SWAP # 3
@@ -147,8 +142,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MULTICAST_HOPS # 25
     enum: ZMQ_RCVTIMEO # 27
     enum: ZMQ_SNDTIMEO # 28
-    enum: ZMQ_RCVLABEL # 29
-    enum: ZMQ_RCVCMD # 30
     enum: ZMQ_IPV4ONLY # 31
     enum: ZMQ_LAST_ENDPOINT # 32
     enum: ZMQ_FAIL_UNROUTABLE # 33
@@ -156,8 +149,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_DONTWAIT # 1
     enum: ZMQ_SNDMORE # 2
-    enum: ZMQ_SNDLABEL # 4
-    enum: ZMQ_SNDCMD # 8
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
