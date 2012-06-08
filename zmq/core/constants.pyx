@@ -52,13 +52,12 @@ PUSH = ZMQ_PUSH
 XPUB = ZMQ_XPUB
 XSUB = ZMQ_XSUB
 
-if ZMQ_VERSION < 30000:
-    # keep deprecated aliases
-    XREQ = DEALER
-    XREP = ROUTER
-    UPSTREAM = PULL
-    DOWNSTREAM = PUSH
-    _optionals.extend(['XREQ','XREP','UPSTREAM','DOWNSTREAM'])
+# keep deprecated aliases
+XREQ = DEALER
+XREP = ROUTER
+UPSTREAM = PULL
+DOWNSTREAM = PUSH
+_optionals.extend(['XREQ','XREP','UPSTREAM','DOWNSTREAM'])
 
 # socket options
 AFFINITY = ZMQ_AFFINITY
