@@ -14,6 +14,7 @@
 from __future__ import print_function
 
 import sys
+import time
 
 import zmq
 
@@ -108,10 +109,14 @@ class _Socket(_original_Socket):
         self.__writable = AsyncResult()
         # timeout is because libzmq cannot be trusted to properly signal a new send event:
         # this is effectively a maximum poll interval of 1s
+        tic = time.time()
         try:
             self.__writable.get(timeout=1)
         except gevent.Timeout:
-            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLOUT:
+            toc = time.time()
+            # gevent bug: get can raise timeout even on clean return
+            # don't display zmq bug warning for gevent bug (this is getting ridiculous)
+            if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
                 print("BUG: gevent missed a libzmq send event!", file=sys.stderr)
             self.__writable.set()
 
@@ -122,10 +127,14 @@ class _Socket(_original_Socket):
         # I can only confirm that this actually happens for send, but lets be symmetrical
         # with our dirty hacks.
         # this is effectively a maximum poll interval of 1s
+        tic = time.time()
         try:
             self.__readable.get(timeout=1)
         except gevent.Timeout:
-            if super(_Socket, self).getsockopt(zmq.EVENTS) & zmq.POLLIN:
+            toc = time.time()
+            # gevent bug: get can raise timeout even on clean return
+            # don't display zmq bug warning for gevent bug (this is getting ridiculous)
+            if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
                 print("BUG: gevent missed a libzmq recv event!", file=sys.stderr)
             self.__readable.set()
 
