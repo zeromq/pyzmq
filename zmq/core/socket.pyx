@@ -451,6 +451,9 @@ cdef class Socket:
             rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             if IPC_PATH_MAX_LEN and zmq_errno() == errno_mod.ENAMETOOLONG:
+                # py3compat: addr is bytes, but msg wants str
+                if str is unicode:
+                    addr = addr.decode('utf-8', 'replace')
                 path = addr.split('://', 1)[-1]
                 msg = ('ipc path "{0}" is longer than {1} '
                                 'characters (sizeof(sockaddr_un.sun_path)).'
