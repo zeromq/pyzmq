@@ -354,6 +354,8 @@ class Configure(Command):
             ext.include_dirs.append(pjoin(bundledir, 'uuid'))
             ext.include_dirs.append(bundledir)
             ext.sources.extend(glob(pjoin(bundledir, 'uuid', '*.c')))
+
+            ext.libraries.append('rt')
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
