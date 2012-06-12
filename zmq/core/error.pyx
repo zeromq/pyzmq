@@ -33,15 +33,14 @@ from libzmq cimport zmq_strerror, zmq_errno
 
 from zmq.utils.strtypes import bytes
 
-def strerror(int errnum):
-    """strerror(errnum)
+def strerror(int errno):
+    """strerror(errno)
 
     Return the error string given the error number.
     """
     cdef const_char_ptr str_e
     # char * will be a bytes object:
-    with nogil:
-        str_e = zmq_strerror(errnum)
+    str_e = zmq_strerror(errno)
     if str is bytes:
         # Python 2: str is bytes, so we already have the right type
         return str_e
@@ -60,39 +59,37 @@ class ZMQError(ZMQBaseError):
 
     Parameters
     ----------
-    error : int
+    errno : int
         The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
         used.
     msg : string
         Description of the error or None.
     """
+    errno = None
 
-    def __init__(self, error=None, msg=None):
+    def __init__(self, errno=None, msg=None):
         """Wrap an errno style error.
 
         Parameters
         ----------
-        error : int
+        errno : int
             The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
             used.
         msg : string
             Description of the error or None.
         """
-        cdef int errno
-        if error is None:
-            with nogil:
-                errno = zmq_errno()
+        if errno is None:
+            errno = zmq_errno()
             error = errno
-        if type(error) == int:
-            self.errno = error
+        if type(errno) == int:
+            self.errno = errno
             if msg is None:
-                self.strerror = strerror(error)
+                self.strerror = strerror(errno)
             else:
                 self.strerror = msg
         else:
-            self.errno = None
             if msg is None:
-                self.strerror = str(error)
+                self.strerror = str(errno)
             else:
                 self.strerror = msg
         # flush signals, because there could be a SIGINT
