@@ -22,7 +22,8 @@ class _Poller(_original_Poller):
 
         for socket, flags in self.sockets.items():
             if isinstance(socket, zmq.Socket):
-                fd = socket.getsockopt(zmq.FD)
+                rlist.append(socket.getsockopt(zmq.FD))
+                continue
             elif isinstance(socket, int):
                 fd = socket
             elif hasattr(socket, 'fileno'):
@@ -36,12 +37,10 @@ class _Poller(_original_Poller):
 
             if flags & zmq.POLLIN:
                 rlist.append(fd)
-            # one should never poll for events other than read on a zmq FD
-            if not isinstance(socket, zmq.Socket):
-                if flags & zmq.POLLOUT:
-                    wlist.append(fd)
-                if flags & zmq.POLLERR:
-                    xlist.append(fd)
+            if flags & zmq.POLLOUT:
+                wlist.append(fd)
+            if flags & zmq.POLLERR:
+                xlist.append(fd)
 
         return (rlist, wlist, xlist)
 
