@@ -34,9 +34,14 @@ class _Poller(_original_Poller):
                 raise TypeError('Socket must be a 0MQ socket, an integer fd '
                                 'or have a fileno() method: %r' % socket)
 
-            if flags & zmq.POLLIN: rlist.append(fd)
-            if flags & zmq.POLLOUT: wlist.append(fd)
-            if flags & zmq.POLLERR: xlist.append(fd)
+            if flags & zmq.POLLIN:
+                rlist.append(fd)
+            # one should never poll for events other than read on a zmq FD
+            if not isinstance(socket, zmq.Socket):
+                if flags & zmq.POLLOUT:
+                    wlist.append(fd)
+                if flags & zmq.POLLERR:
+                    xlist.append(fd)
 
         return (rlist, wlist, xlist)
 
@@ -50,7 +55,6 @@ class _Poller(_original_Poller):
         if timeout is None:
             timeout = -1
 
-        timeout = int(timeout)
         if timeout < 0:
             timeout = -1
 
@@ -63,19 +67,17 @@ class _Poller(_original_Poller):
 
         try:
             # Loop until timeout or events available
+            rlist, wlist, xlist = self._get_descriptors()
             while True:
                 events = super(_Poller, self).poll(0)
                 if events or timeout == 0:
                     return events
 
-                # wait for activity on sockets in a green way
-                if not rlist and not wlist and not xlist:
-                    rlist, wlist, xlist = self._get_descriptors()
-
-                try:
-                    select.select(rlist, wlist, xlist)
-                except select.error, ex:
-                    raise zmq.ZMQError(*ex.args)
+                # wait for activity on sockets in a green way this
+                # timesout periodically due to reports of "missed
+                # events", since it's just a wait that loops through
+                # poll(0) anyway, the timeout is harmless
+                select.select(rlist, wlist, xlist, timeout=1)
 
         except gevent.Timeout, t:
             if t is not tout:

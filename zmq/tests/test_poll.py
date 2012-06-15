@@ -16,7 +16,7 @@ from unittest import TestCase
 
 import zmq
 
-from zmq.tests import PollZMQTestCase
+from zmq.tests import PollZMQTestCase, have_gevent, GreenTest
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -27,6 +27,8 @@ def wait():
 
 class TestPoll(PollZMQTestCase):
 
+    Poller = zmq.Poller
+
     # This test is failing due to this issue:
     # http://github.com/sustrik/zeromq2/issues#issue/26
     def test_pair(self):
@@ -35,7 +37,7 @@ class TestPoll(PollZMQTestCase):
         # Sleep to allow sockets to connect.
         wait()
 
-        poller = zmq.Poller()
+        poller = self.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
         # Poll result should contain both sockets
@@ -69,7 +71,7 @@ class TestPoll(PollZMQTestCase):
         # Sleep to allow sockets to connect.
         wait()
 
-        poller = zmq.Poller()
+        poller = self.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
 
@@ -116,7 +118,7 @@ class TestPoll(PollZMQTestCase):
     
     def test_no_events(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        poller = zmq.Poller()
+        poller = self.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, 0)
         self.assertTrue(s1 in poller.sockets)
@@ -131,7 +133,7 @@ class TestPoll(PollZMQTestCase):
         # Sleep to allow sockets to connect.
         wait()
 
-        poller = zmq.Poller()
+        poller = self.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, zmq.POLLIN)
 
@@ -162,7 +164,7 @@ class TestPoll(PollZMQTestCase):
     def test_timeout(self):
         """make sure Poller.poll timeout has the right units (milliseconds)."""
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        poller = zmq.Poller()
+        poller = self.Poller()
         poller.register(s1, zmq.POLLIN)
         tic = time.time()
         evt = poller.poll(.005)
@@ -208,3 +210,8 @@ class TestSelect(PollZMQTestCase):
         self.assertTrue(toc-tic > 0.1)
 
 
+if have_gevent:
+    from zmq import green as gzmq
+
+    class TestPollGreen(GreenTest, TestPoll):
+        Poller = gzmq.Poller
