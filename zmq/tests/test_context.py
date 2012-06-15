@@ -196,3 +196,4 @@ if have_gevent:
         # skip tests that use real threads:
         test_gc = GreenTest.skip_green
         test_term_thread = GreenTest.skip_green
+        test_destroy_linger = GreenTest.skip_green
