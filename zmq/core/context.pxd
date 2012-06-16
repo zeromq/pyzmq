@@ -30,6 +30,8 @@ cdef class Context:
     cdef void ** _sockets     # A C-array containg socket handles
     cdef size_t n_sockets         # the number of sockets
     cdef size_t max_sockets         # the size of the _sockets array
+    cdef int _pid # the pid of the process which created me (for fork safety)
+
     cdef public object closed # bool property for a closed context.
     # helpers for events on _sockets in Socket.__cinit__()/close()
     cdef inline void _add_socket(self, void* handle)

@@ -27,6 +27,8 @@ from libc.stdlib cimport free, malloc, realloc
 
 from libzmq cimport *
 
+from os import getpid
+
 from error import ZMQError
 from zmq.core import constants
 from constants import *
@@ -67,6 +69,7 @@ cdef class Context:
         
         self.sockopts = {}
         self._attrs = {}
+        self._pid = getpid()
 
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
@@ -149,7 +152,7 @@ cdef class Context:
         cdef int rc
         cdef int i=-1
 
-        if self.handle != NULL and not self.closed:
+        if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
                 rc = zmq_term(self.handle)
             if rc != 0:
