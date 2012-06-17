@@ -220,11 +220,13 @@ if have_gevent:
         def test_wakeup(self):
             s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
             poller = self.Poller()
-            poller.register(s1, zmq.POLLIN)
+            poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+            poller.register(s2, zmq.POLLIN)
+
             tic = time.time()
-            s = gevent.spawn(lambda: s1.send(b'msg1'))
             r = gevent.spawn(lambda: poller.poll(10000))
-            gevent.joinall([s, r])
+            s = gevent.spawn(lambda: s1.send(b'msg1'))
+            r.join()
             toc = time.time()
             self.assertTrue(toc-tic < 1)
             
