@@ -72,11 +72,8 @@ class _Poller(_original_Poller):
                 if events or timeout == 0:
                     return events
 
-                # wait for activity on sockets in a green way this
-                # timesout periodically due to reports of "missed
-                # events", since it's just a wait that loops through
-                # poll(0) anyway, the timeout is harmless
-                select.select(rlist, wlist, xlist, timeout=1)
+                # wait for activity on sockets in a green way
+                select.select(rlist, wlist, xlist)
 
         except gevent.Timeout, t:
             if t is not tout:
