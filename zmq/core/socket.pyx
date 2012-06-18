@@ -50,6 +50,7 @@ cdef extern from "ipcmaxlen.h":
 
 import copy as copy_mod
 import errno as errno_mod
+from os import getpid
 import time
 import sys
 import random
@@ -209,6 +210,7 @@ cdef class Socket:
             raise ZMQError()
         self._closed = False
         self._attrs = {}
+        self._pid = getpid()
         context._add_socket(self.handle)
 
     def __dealloc__(self):
@@ -216,7 +218,7 @@ cdef class Socket:
         
         But be careful that context might not exist if called during gc
         """
-        if self.handle != NULL:
+        if self.handle != NULL and getpid() == self._pid:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
@@ -251,7 +253,7 @@ cdef class Socket:
             linger_c = linger
             setlinger=True
         
-        if self.handle != NULL and not self._closed:
+        if self.handle != NULL and not self._closed and getpid() == self._pid:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
             rc = zmq_close(self.handle)
