@@ -9,7 +9,6 @@ before_install:
   - pip install -q --use-mirrors cython
 
 install:
-  - python setup.py configure --zmq=/usr/local
   - python setup.py build_ext --inplace
 
 script: python setup.py test
