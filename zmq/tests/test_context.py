@@ -190,7 +190,7 @@ class TestContext(BaseZMQTestCase):
         self.assertFalse(t.is_alive(), "term should have interrupted s.recv()")
 
 
-if have_gevent:
+if False: # disable green context tests
     class TestContextGreen(GreenTest, TestContext):
         """gevent subclass of context tests"""
         # skip tests that use real threads:

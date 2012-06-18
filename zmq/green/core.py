@@ -117,7 +117,7 @@ class _Socket(_original_Socket):
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
-                print("BUG: gevent missed a libzmq send event!", file=sys.stderr)
+                print("BUG: gevent missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
             self.__writable.set()
 
     def _wait_read(self):
@@ -135,7 +135,7 @@ class _Socket(_original_Socket):
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
-                print("BUG: gevent missed a libzmq recv event!", file=sys.stderr)
+                print("BUG: gevent missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
             self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False):
