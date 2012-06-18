@@ -220,7 +220,6 @@ if have_gevent:
         def test_wakeup(self):
             s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
             poller = self.Poller()
-            poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
             poller.register(s2, zmq.POLLIN)
 
             tic = time.time()
