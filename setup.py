@@ -474,7 +474,7 @@ class Configure(Command):
             print ("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
             zmq = '/usr/local'
-            settings = settings_from_prefix(zmq)
+            settings = init_settings(zmq)
             try:
                 config = self.test_build(zmq, settings)
             except Exception:
