@@ -113,6 +113,8 @@ def stage_platform_hpp(zmqroot):
                 platform_dir = pjoin(HERE, 'include_darwin')
             elif sys.platform.startswith('freebsd'):
                 platform_dir = pjoin(HERE, 'include_freebsd')
+            elif sys.platform.startswith('linux-armv'):
+                platform_dir = pjoin(HERE, 'include_linux-armv')
             else:
                 platform_dir = pjoin(HERE, 'include_linux')
         else:

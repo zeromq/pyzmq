@@ -76,15 +76,36 @@ def get_cfg_args():
         return settings
     cfg = ConfigParser()
     cfg.read('setup.cfg')
-    if 'build_ext' in cfg.sections() and \
-                cfg.has_option('build_ext', 'include_dirs'):
-        includes = cfg.get('build_ext', 'include_dirs')
-        include = includes.split(os.pathsep)[0]
-        if include.endswith('include') and os.path.isdir(include):
-            zmq = include[:-8]
+
+    #fetch pathsep separated 'include_dirs', 'library_dirs', 'libraries' from setup.cfg build_ext
+    if 'build_ext' in cfg.sections():
+        for element in ['include_dirs', 'library_dirs', 'libraries']:
+            if cfg.has_option('build_ext', element):
+                value = cfg.get('build_ext', element)
+		if len(value):
+                    settings[element] = value.split(os.pathsep)
+
+    #detect zmq
+    if settings.has_key('include_dirs') and settings['include_dirs'][0]\
+             and os.path.isdir(settings['include_dirs'][0])\
+             and settings['include_dirs'][0].endswith('include'):
+        zmq = settings['include_dirs'][0][:-8]
+
     if zmq != '':
         debug("Found ZMQ=%s in setup.cfg" % zmq)
         settings['zmq'] = zmq
+        try:
+            settings['library_dirs'].remove(zmq+'/lib')
+        except:
+            warn("It seems first include_dirs but not first library_dirs. Linking -L is probably wong.")
+
+    #fetch values 'plat-name', 'zmq-version' from setup.cfg global
+    if 'global' in cfg.sections():
+        for element in ['plat-name', 'zmq-version']:
+            if cfg.has_option('global', element):
+                value = cfg.get('global', element)
+		if len(value):
+                    settings[element] = value
 
     return settings
 
@@ -108,4 +129,4 @@ def discover_settings():
     settings = get_cfg_args()       # lowest priority
     settings.update(get_eargs())
     settings.update(get_cargs())    # highest priority
-    return settings.get('zmq')
+    return settings
