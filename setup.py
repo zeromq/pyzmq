@@ -172,9 +172,8 @@ def settings_from_prefix(settings,zmq=None):
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/..']
-        else:
-            if sys.platform != 'darwin':
-                settings['runtime_library_dirs'] = [os.path.abspath(x) for x in settings['library_dirs']]
+        elif sys.platform != 'darwin':
+            settings['runtime_library_dirs'] = [os.path.abspath(x) for x in settings['library_dirs']]
 
     return settings
 
