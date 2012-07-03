@@ -105,13 +105,17 @@ doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 #-----------------------------------------------------------------------------
 
 
-ZMQ = discover_settings()
+CONFIGURATION = discover_settings()
+TARGET = CONFIGURATION['plat-name'] if CONFIGURATION.has_key('plat-name') else sys.platform
+CROSSCOMPILE = TARGET != sys.platform
+ZMQ = CONFIGURATION['zmq'] if CONFIGURATION.has_key('zmq') else None
+ZMQVER = tuple(int(v) for v in CONFIGURATION['zmq-version'].split('.')) if CONFIGURATION.has_key('zmq-version') else None
 
 if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
     warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
 
 # bundle_libzmq_dylib flag for whether external libzmq library will be included in pyzmq:
-if sys.platform.startswith('win'):
+if sys.platform.startswith('win') or CROSSCOMPILE:
     bundle_libzmq_dylib = True
 elif ZMQ is not None and ZMQ != "bundled":
     bundle_libzmq_dylib = doing_bdist
@@ -120,13 +124,8 @@ else:
 
 # --- compiler settings -------------------------------------------------
 
-def bundled_settings():
-    settings = {
-       'libraries'      : [],
-       'include_dirs'   : ["bundled/zeromq/include"],
-       'library_dirs'   : [],
-       'define_macros'  : [],
-    }
+def bundled_settings(settings):
+    settings['include_dirs'].append("bundled/zeromq/include")
     # add pthread on freebsd
     # is this necessary?
     if sys.platform.startswith('freebsd'):
@@ -141,15 +140,9 @@ def bundled_settings():
     return settings
 
 
-def settings_from_prefix(zmq=None):
+def settings_from_prefix(settings,zmq=None):
     """load appropriate library/include settings from ZMQ prefix"""
     
-    settings = {
-        'libraries'     : [],
-        'include_dirs'  : [],
-        'library_dirs'  : [],
-        'define_macros' : [],
-    }
     if sys.platform.startswith('win'):
         settings['libraries'].append('libzmq')
         
@@ -165,7 +158,8 @@ def settings_from_prefix(zmq=None):
     
         if zmq is not None:
             settings['include_dirs'] += [pjoin(zmq, 'include')]
-            settings['library_dirs'] += [pjoin(zmq, 'lib')]
+            if not bundle_libzmq_dylib:
+                settings['library_dirs'] += [pjoin(zmq, 'lib')]
         elif sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
             # allow macports default
             settings['include_dirs'] += ['/opt/local/include']
@@ -173,7 +167,7 @@ def settings_from_prefix(zmq=None):
     
         if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
-            settings['library_dirs'] = ['zmq']
+            settings['library_dirs'].append('zmq')
             if sys.platform == 'darwin':
                 pass
                 # unused rpath args for OSX:
@@ -186,12 +180,17 @@ def settings_from_prefix(zmq=None):
     return settings
 
 def init_settings(zmq=None):
+    settings = {}
+    for key in ['libraries', 'include_dirs', 'library_dirs', 'define_macros', 'runtime_library_dirs']:
+	settings[key] = CONFIGURATION[key] if CONFIGURATION.has_key(key) else []
+
     if zmq == 'bundled':
-        settings = bundled_settings()
+        settings = bundled_settings(settings)
     else:
-        settings = settings_from_prefix(zmq)
+        settings = settings_from_prefix(settings,zmq)
     
-    if not sys.platform.startswith('win'):
+    #Windows and Android not POSIX
+    if not (TARGET.startswith('win') or TARGET.startswith('linux-armv')):
         settings['define_macros'].append(('PYZMQ_POSIX', 1))
     
     # suppress common warnings
@@ -472,6 +471,12 @@ class Configure(Command):
             return
         
         config = None
+        
+        # When cross-compiling and zmq is given explicitly, we can't testbuild
+        # (as we can't testrun the binary), we assume things are allright.
+        if CROSSCOMPILE:
+            self.config = dict(vers=ZMQVER)
+            return
         
         # There is no available default on Windows, so start with fallback unless
         # zmq was given explicitly.
