@@ -104,7 +104,7 @@ def get_cfg_args():
         for element in ['plat-name', 'zmq-version']:
             if cfg.has_option('global', element):
                 value = cfg.get('global', element)
-		if len(value):
+                if len(value):
                     settings[element] = value
 
     return settings
