@@ -407,7 +407,7 @@ class Configure(Command):
             "",
             "    `--zmq=bundled`",
             "",
-            "I will now fetch the libzmq sources and build libzmq as a Python extension",
+            "I will now try to build libzmq as a Python extension",
             "unless you interrupt me (^C) in the next 10 seconds...",
             "",
         ]))
@@ -667,6 +667,7 @@ class CheckSDist(sdist):
                 if f.endswith('.pyx'):
                     self._pyxfiles.append(pjoin(root, f))
     def run(self):
+        self.run_command('fetch_libzmq')
         if 'cython' in cmdclass:
             self.run_command('cython')
         else:
@@ -719,7 +720,8 @@ class CheckingBuildExt(build_ext):
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'build': CopyingBuild, 'fetchbundle': FetchCommand,
+            'configure': Configure, 'build': CopyingBuild, 'fetch_libzmq': FetchCommand,
+            'sdist': CheckSDist,
         }
 
 def pxd(subdir, name):
@@ -787,7 +789,6 @@ else:
     
     cmdclass['cython'] = CythonCommand
     cmdclass['build_ext'] =  zbuild_ext
-    cmdclass['sdist'] =  CheckSDist
 
 extensions = []
 for submod, packages in submodules.items():
