@@ -18,6 +18,8 @@ import os
 import sys
 import glob
 
+# load bundled libzmq, if there is one:
+
 here = os.path.dirname(__file__)
 
 bundled = []
@@ -35,8 +37,16 @@ if bundled:
 
 del os, sys, glob, here, bundled, ext
 
-from zmq.utils import initthreads # initialize threads
+# init Python threads
+
+try:
+    from zmq.utils import initthreads # initialize threads
+except ImportError as e:
+    raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
+
 initthreads.init_threads()
+
+# zmq top-level imports
 
 from zmq import core, devices
 from zmq.core import *
