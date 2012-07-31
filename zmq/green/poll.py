@@ -75,7 +75,7 @@ class _Poller(_original_Poller):
                 # wait for activity on sockets in a green way
                 select.select(rlist, wlist, xlist)
 
-        except gevent.Timeout, t:
+        except gevent.Timeout as t:
             if t is not tout:
                 raise
             return []
