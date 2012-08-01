@@ -103,6 +103,8 @@ class ZMQStream(object):
         self.connect = self.socket.connect
         self.setsockopt = self.socket.setsockopt
         self.getsockopt = self.socket.getsockopt
+        self.setsockopt_string = self.socket.setsockopt_string
+        self.getsockopt_string = self.socket.getsockopt_string
         self.setsockopt_unicode = self.socket.setsockopt_unicode
         self.getsockopt_unicode = self.socket.getsockopt_unicode
     
@@ -225,7 +227,7 @@ class ZMQStream(object):
         if callback is None:
             self.stop_on_send()
         else:
-            self.on_send(lambda msg, status: callback(stream, msg, status))
+            self.on_send(lambda msg, status: callback(self, msg, status))
         
         
     def send(self, msg, flags=0, copy=True, track=False, callback=None):
@@ -248,13 +250,15 @@ class ZMQStream(object):
             self.on_send(lambda *args: None)
         self._add_io_state(self.io_loop.WRITE)
     
-    def send_unicode(self, u, flags=0, encoding='utf-8', callback=None):
+    def send_string(self, u, flags=0, encoding='utf-8', callback=None):
         """Send a unicode message with an encoding.
         See zmq.socket.send_unicode for details.
         """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, callback=callback)
+
+    send_unicode = send_string
 
     def send_json(self, obj, flags=0, callback=None):
         """Send json-serialized version of an object.
