@@ -331,8 +331,20 @@ class TestSocket(BaseZMQTestCase):
 
 
 if have_gevent:
+    import gevent
+    
     class TestSocketGreen(GreenTest, TestSocket):
         test_bad_attr = GreenTest.skip_green
         test_close_after_destroy = GreenTest.skip_green
+        
+        def test_timeout(self):
+            a,b = self.create_bound_pair()
+            g = gevent.spawn_later(0.2, lambda: a.send(b'hi'))
+            timeout = gevent.Timeout(0.1)
+            timeout.start()
+            with self.assertRaises(gevent.Timeout) as cm:
+                b.recv()
+            g.kill()
+            self.assertEqual(cm.exception, timeout)
 
 
