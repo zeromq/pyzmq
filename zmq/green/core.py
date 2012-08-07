@@ -122,8 +122,8 @@ class _Socket(_original_Socket):
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
                 print("BUG: gevent missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
-            self.__writable.set()
         finally:
+            self.__writable.set()
             timeout.cancel()
 
     def _wait_read(self):
@@ -146,8 +146,8 @@ class _Socket(_original_Socket):
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
                 print("BUG: gevent missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
-            self.__readable.set()
         finally:
+            self.__readable.set()
             timeout.cancel()
 
     def send(self, data, flags=0, copy=True, track=False):
