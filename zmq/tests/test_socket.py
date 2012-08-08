@@ -339,12 +339,10 @@ if have_gevent:
         
         def test_timeout(self):
             a,b = self.create_bound_pair()
-            g = gevent.spawn_later(0.2, lambda: a.send(b'hi'))
+            g = gevent.spawn_later(0.5, lambda: a.send(b'hi'))
             timeout = gevent.Timeout(0.1)
             timeout.start()
-            with self.assertRaises(gevent.Timeout) as cm:
-                b.recv()
+            self.assertRaises(gevent.Timeout, b.recv)
             g.kill()
-            self.assertEqual(cm.exception, timeout)
 
 
