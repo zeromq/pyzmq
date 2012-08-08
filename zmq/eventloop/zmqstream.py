@@ -38,6 +38,20 @@ try:
 except NameError:
     callable = lambda obj: hasattr(obj, '__call__')
 
+def maybe_threadsafe(method):
+    """decorator for wrapping a method in IOLoop.add_callback for threadsafety
+    
+    use ZMQStream(..., threadsafe=True) to enable.
+    """
+    def ts_method(self, *args, **kwargs):
+        if self.threadsafe:
+            return self.io_loop.add_callback(lambda : method(self, *args, **kwargs))
+        else:
+            return method(self, *args, **kwargs)
+    
+    ts_method.__doc__ = method.__doc__
+    
+    return ts_method
 
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
@@ -79,11 +93,13 @@ class ZMQStream(object):
     socket = None
     io_loop = None
     poller = None
+    threadsafe = False
     
-    def __init__(self, socket, io_loop=None):
+    def __init__(self, socket, io_loop=None, threadsafe=False):
         self.socket = socket
         self.io_loop = io_loop or IOLoop.instance()
         self.poller = zmq.Poller()
+        self.threadsafe = threadsafe
         
         self._send_queue = Queue()
         self._recv_callback = None
@@ -93,9 +109,7 @@ class ZMQStream(object):
         self._flushed = False
         
         self._state = self.io_loop.ERROR
-        with stack_context.NullContext():
-            self.io_loop.add_handler(
-                self.socket, self._handle_events, self._state)
+        self._init_io_state()
         
         # shortcircuit some socket methods
         self.bind = self.socket.bind
@@ -257,6 +271,8 @@ class ZMQStream(object):
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, callback=callback)
+    
+    send_unicode = send_string
 
     send_unicode = send_string
 
@@ -480,7 +496,7 @@ class ZMQStream(object):
     def _check_closed(self):
         if not self.socket:
             raise IOError("Stream is closed")
-
+    
     def _rebuild_io_state(self):
         """rebuild io state based on self.sending() and receiving()"""
         if self.socket is None:
@@ -492,18 +508,34 @@ class ZMQStream(object):
             state |= self.io_loop.WRITE
         if state != self._state:
             self._state = state
-            self.io_loop.update_handler(self.socket, state)
+            self._update_handler(state)
     
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
-            self.io_loop.update_handler(self.socket, self._state)
+            self._update_handler(self._state)
     
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
             self._state = self._state & (~state)
-            self.io_loop.update_handler(self.socket, self._state)
+            self._update_handler(self._state)
     
+    @maybe_threadsafe
+    def _update_handler(self, state):
+        """update IOLoop handler with state
+        
+        This is the only method
+        threadsafe when self.threadsafe is True
+        """
+        if self.socket is None:
+            return
+        self.io_loop.update_handler(self.socket, state)
+    
+    @maybe_threadsafe
+    def _init_io_state(self):
+        """initialize the ioloop event handler"""
+        with stack_context.NullContext():
+            self.io_loop.add_handler(self.socket, self._handle_events, self._state)
 
