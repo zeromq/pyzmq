@@ -17,7 +17,7 @@
 #include "zmq.h"
 
 #define _missing (PyErr_SetString(PyExc_NotImplementedError, \
-                "Not available in current zeromq."), -1)
+"Not available in current zeromq."), -1)
 
 // new in 2.2.0
 #ifndef ZMQ_RCVTIMEO
@@ -27,7 +27,7 @@
     #define ZMQ_SNDTIMEO (-1)
 #endif
 
-// new in 3.0.0
+// new in 3.x
 #ifndef EAFNOSUPPORT
     #define EAFNOSUPPORT (-1)
 #endif
@@ -56,8 +56,65 @@
 #ifndef ZMQ_LAST_ENDPOINT
     #define ZMQ_LAST_ENDPOINT (-1)
 #endif
-#ifndef ZMQ_FAIL_UNROUTABLE
-    #define ZMQ_FAIL_UNROUTABLE (-1)
+
+#ifndef ZMQ_ROUTER_BEHAVIOR
+    #define ZMQ_ROUTER_BEHAVIOR (-1)
+#endif
+#ifndef ZMQ_TCP_KEEPALIVE
+    #define ZMQ_TCP_KEEPALIVE (-1)
+#endif
+#ifndef ZMQ_TCP_KEEPALIVE_CNT
+    #define ZMQ_TCP_KEEPALIVE_CNT (-1)
+#endif
+#ifndef ZMQ_TCP_KEEPALIVE_IDLE
+    #define ZMQ_TCP_KEEPALIVE_IDLE (-1)
+#endif
+#ifndef ZMQ_TCP_KEEPALIVE_INTVL
+    #define ZMQ_TCP_KEEPALIVE_INTVL (-1)
+#endif
+#ifndef ZMQ_TCP_ACCEPT_FILTER
+    #define ZMQ_TCP_ACCEPT_FILTER (-1)
+#endif
+#ifndef ZMQ_DELAY_ATTACH_ON_CONNECT
+    #define ZMQ_DELAY_ATTACH_ON_CONNECT (-1)
+#endif
+
+// Message options (3.x)
+
+#ifndef ZMQ_MORE
+    #define ZMQ_MORE (-1)
+#endif
+
+// Event Monitoring
+#ifndef ZMQ_EVENT_CONNECTED
+    #define ZMQ_EVENT_CONNECTED (-1)
+#endif
+#ifndef ZMQ_EVENT_CONNECT_DELAYED
+    #define ZMQ_EVENT_CONNECT_DELAYED (-1)
+#endif
+#ifndef ZMQ_EVENT_CONNECT_RETRIED
+    #define ZMQ_EVENT_CONNECT_RETRIED (-1)
+#endif
+#ifndef ZMQ_EVENT_LISTENING
+    #define ZMQ_EVENT_LISTENING (-1)
+#endif
+#ifndef ZMQ_EVENT_BIND_FAILED
+    #define ZMQ_EVENT_BIND_FAILED (-1)
+#endif
+#ifndef ZMQ_EVENT_ACCEPTED
+    #define ZMQ_EVENT_ACCEPTED (-1)
+#endif
+#ifndef ZMQ_EVENT_ACCEPT_FAILED
+    #define ZMQ_EVENT_ACCEPT_FAILED (-1)
+#endif
+#ifndef ZMQ_EVENT_CLOSED
+    #define ZMQ_EVENT_CLOSED (-1)
+#endif
+#ifndef ZMQ_EVENT_CLOSE_FAILED
+    #define ZMQ_EVENT_CLOSE_FAILED (-1)
+#endif
+#ifndef ZMQ_EVENT_DISCONNECTED
+    #define ZMQ_EVENT_DISCONNECTED (-1)
 #endif
 
 
