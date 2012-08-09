@@ -803,6 +803,9 @@ for submod, packages in submodules.items():
             sources = sources,
             **COMPILER_SETTINGS
         )
+        if suffix == '.pyx' and ext.sources[0].endswith('.c'):
+            # undo setuptools stupidly clobbering cython sources:
+            ext.sources = sources
         extensions.append(ext)
 
 
