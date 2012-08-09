@@ -566,6 +566,8 @@ class TestCommand(Command):
             "If you did build pyzmq in-place, then this is a real error."]))
             sys.exit(1)
         
+        print ("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
+        
         if nose is None:
             warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
             return self.run_unittest()
