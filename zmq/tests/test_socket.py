@@ -102,7 +102,7 @@ class TestSocket(BaseZMQTestCase):
                 backref[value] = name
         for opt in zmq.core.constants.int_sockopts+zmq.core.constants.int64_sockopts:
             sopt = backref[opt]
-            if sopt == 'FAIL_UNROUTABLE':
+            if sopt == 'ROUTER_BEHAVIOR' or 'TCP' in sopt:
                 # fail_unroutable is write-only
                 continue
             try:
@@ -114,7 +114,7 @@ class TestSocket(BaseZMQTestCase):
                     errors.append("getsockopt(zmq.%s) returned a ridiculous value."
                                     " It is probably the wrong type."%sopt)
         if errors:
-            self.fail('\n'.join(errors))
+            self.fail('\n'.join([''] + errors))
     
     def test_bad_sockopts(self):
         """Test that appropriate errors are raised on bad socket options"""
