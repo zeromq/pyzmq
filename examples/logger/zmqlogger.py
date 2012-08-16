@@ -1,43 +1,70 @@
+"""
+Simple example of using zmq log handlers
+
+This starts a number of subprocesses with PUBHandlers that generate
+log messages at a regular interval.  The main process has a SUB socket,
+which aggregates and logs all of the messages to the root logger.
+"""
+
 import logging
-import logging.config
+from multiprocessing import Process
+import os
+import random
+import sys
+import time
+
 import zmq
-import multiprocessing
+from zmq.log.handlers import PUBHandler
 
+LOG_LEVELS = (logging.DEBUG, logging.INFO, logging.WARN, logging.ERROR, logging.CRITICAL)
 
-def sub_logger(port):
+def sub_logger(port, level=logging.DEBUG):
     ctx = zmq.Context()
     sub = ctx.socket(zmq.SUB)
-    sub.connect('tcp://127.0.0.1:%i'%port)
-    sub.setsockopt(zmq.SUBSCRIBE,"")
+    sub.bind('tcp://127.0.0.1:%i' % port)
+    sub.setsockopt(zmq.SUBSCRIBE, "")
+    logging.basicConfig(level=level)
+    
     while True:
-        message = sub.recv_multipart()
-        name = message[0]
-        msg = message[1:]
-        if name == 'log':
-            msg[0] = int(msg[0])
-        getattr(logging, name)(*msg)
-    
+        level, message = sub.recv_multipart()
+        if message.endswith('\n'):
+            # trim trailing newline, which will get appended again
+            message = message[:-1]
+        log = getattr(logging, level.lower())
+        log(message)
 
-class ZLogger(object):
+def log_worker(port, interval=1, level=logging.DEBUG):
+    ctx = zmq.Context()
+    pub = ctx.socket(zmq.PUB)
+    pub.connect('tcp://127.0.0.1:%i' % port)
     
-    def __init__(self,fname=None):
-        if fname is not None:
-            logging.config.fileConfig(fname)
-        self.ctx = zmq.Context()
-        self.pub = self.ctx.socket(zmq.PUB)
-        self.port = self.pub.bind_to_random_port('tcp://127.0.0.1')
-        self.sub_proc = multiprocessing.Process(target=sub_logger, args=(self.port,))
-        self.sub_proc.start()
-    
-    def log(self, level, msg):
-        self.pub.send_multipart(['log', str(level), msg])
-    
-    def warn(self, msg):
-        self.pub.send_multipart(['warn', msg])
-    
-    def error(self, msg):
-        self.pub.send_multipart(['error', msg])
-    
+    logger = logging.getLogger(str(os.getpid()))
+    logger.setLevel(level)
+    handler = PUBHandler(pub)
+    logger.addHandler(handler)
+    print "starting logger at %i with level=%s" % (os.getpid(), level)
 
+    while True:
+        level = random.choice(LOG_LEVELS)
+        logger.log(level, "Hello from %i!" % os.getpid())
+        time.sleep(interval)
 
-
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        n = int(sys.argv[1])
+    else:
+        n = 2
+    
+    port = 5555
+    
+    # start the log generators
+    workers = [ Process(target=log_worker, args=(port,), kwargs=dict(level=random.choice(LOG_LEVELS))) for i in range(n) ]
+    [ w.start() for w in workers ]
+    
+    # start the log watcher
+    try:
+        sub_logger(port)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        [ w.terminate() for w in workers ]
