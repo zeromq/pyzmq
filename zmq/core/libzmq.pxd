@@ -150,6 +150,21 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_DONTWAIT # 1
     enum: ZMQ_SNDMORE # 2
 
+    # Socket transport events (tcp and ipc only)
+    enum: ZMQ_EVENT_CONNECTED # 1
+    enum: ZMQ_EVENT_CONNECT_DELAYED # 2
+    enum: ZMQ_EVENT_CONNECT_RETRIED # 4
+
+    enum: ZMQ_EVENT_LISTENING # 8
+    enum: ZMQ_EVENT_BIND_FAILED # 16
+
+    enum: ZMQ_EVENT_ACCEPTED # 32
+    enum: ZMQ_EVENT_ACCEPT_FAILED # 64
+
+    enum: ZMQ_EVENT_CLOSED # 128
+    enum: ZMQ_EVENT_CLOSE_FAILED # 256
+    enum: ZMQ_EVENT_DISCONNECTED # 512
+
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
     int zmq_setsockopt (void *s, int option, void *optval, size_t optvallen)
@@ -181,6 +196,26 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_QUEUE
     # removed in libzmq
     int zmq_device (int device_, void *insocket_, void *outsocket_)
+
+    ctypedef struct socket_event:
+        char *addr
+        int err
+        int fd
+
+    ctypedef union zmq_event_data_t:
+        socket_event connected
+        socket_event connect_delayed
+        socket_event connect_retried
+        socket_event listening
+        socket_event bind_failed
+        socket_event accepted
+        socket_event accept_failed
+        socket_event closed
+        socket_event close_failed
+        socket_event disconnected
+
+    ctypedef void zmq_monitor_fn (void *s, int event, zmq_event_data_t *data)
+    int zmq_ctx_set_monitor (void *context, zmq_monitor_fn *monitor)
 
 cdef extern from "zmq_utils.h" nogil:
 

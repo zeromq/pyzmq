@@ -38,6 +38,34 @@ from constants import *
 #-----------------------------------------------------------------------------
 
 _instance = None
+_callbacks = {}
+
+# Acquire the GIL since we're calling back into the interpreter
+# from zmq, this may manifest as a threading.DummyThread if one
+# tries to inspect the thread context of the callback.
+cdef void monitor_callback(void *s, int event, zmq_event_data_t *data) with gil:
+    # Global state hack to resolve a pyzmq Context object with
+    # its bound callback from the passed zmq::socket_base_t
+    # argument.
+    global _callbacks
+    ctx = _callbacks[<int>s]
+    ctx_cb = ctx._callback
+
+    if ctx_cb is not None:
+        if event == ZMQ_EVENT_LISTENING:
+            ctx_cb(event, data.listening.addr)
+        elif event == ZMQ_EVENT_ACCEPTED:
+            ctx_cb(event, data.accepted.addr)
+        elif event == ZMQ_EVENT_CONNECTED:
+            ctx_cb(event, data.connected.addr)
+        elif event == ZMQ_EVENT_CONNECT_DELAYED:
+            ctx_cb(event, data.connect_delayed.addr)
+        elif event == ZMQ_EVENT_CLOSE_FAILED:
+            ctx_cb(event, data.close_failed.addr)
+        elif event == ZMQ_EVENT_CLOSED:
+            ctx_cb(event, data.closed.addr)
+        elif event == ZMQ_EVENT_DISCONNECTED:
+            ctx_cb(event, data.disconnected.addr)
 
 cdef class Context:
     """Context(io_threads=1)
@@ -89,6 +117,7 @@ cdef class Context:
         
         This is to be called in the Socket constructor.
         """
+        global _callbacks
         # print self.n_sockets, self.max_sockets
         if self.n_sockets >= self.max_sockets:
             self.max_sockets *= 2
@@ -98,6 +127,10 @@ cdef class Context:
         
         self._sockets[self.n_sockets] = handle
         self.n_sockets += 1
+
+        # Maintain a mapping of libzmq socket pointers to
+        # pyzmq context instances.
+        _callbacks[<int>handle] = self
         # print self.n_sockets, self.max_sockets
 
     cdef inline void _remove_socket(self, void* handle):
@@ -189,6 +222,14 @@ cdef class Context:
                 self.n_sockets -= 1
                 self._sockets[0] = self._sockets[self.n_sockets]
             self.term()
+
+    def set_monitor(self, cb):
+        if self._callback != None:
+            raise Exception("Only one callback can be register per context")
+        if not callable(cb):
+            raise TypeError("callback must be callable")
+        self._callback = cb
+        zmq_ctx_set_monitor(self.handle, <zmq_monitor_fn*>monitor_callback)
     
     @property
     def _socket_class(self):
