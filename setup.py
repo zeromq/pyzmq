@@ -280,14 +280,15 @@ class Configure(Command):
             fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s'%(zmq or 'unspecified'))
-        pyzmq_version = extract_version().strip('abcdefghijklmnopqrstuvwxyz')
+        pyzmq_vs = extract_version()
+        pyzmq_version = tuple(int(d) for d in re.findall(r'\d+', pyzmq_vs))
 
-        if vs < pyzmq_version:
+        if vers < pyzmq_version[:len(vers)]:
             warn("Detected ZMQ version: %s, but pyzmq targets zmq %s."%(
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             line()
-        elif vs >= '3.0':
+        elif vers >= (3,0,0):
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
             line()
 
