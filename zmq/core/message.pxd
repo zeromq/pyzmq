@@ -23,7 +23,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport zmq_msg_t
+from cpython cimport PyBytes_FromStringAndSize
+
+from libzmq cimport zmq_msg_t, zmq_msg_data, zmq_msg_size
 
 #-----------------------------------------------------------------------------
 # Code
@@ -34,7 +36,7 @@ cdef class MessageTracker(object):
 
     cdef set events  # Message Event objects to track.
     cdef set peers   # Other Message or MessageTracker objects.
-    
+
 
 cdef class Frame:
     """A Message Frame class for non-copy send/recvs."""
@@ -51,4 +53,14 @@ cdef class Frame:
     cdef Frame fast_copy(self) # Create shallow copy of Message object.
     cdef object _getbuffer(self) # Construct self._buffer.
 
-cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg)
+
+cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg):
+    """ Copy the data from a zmq_msg_t """
+    cdef char *data_c = NULL
+    cdef Py_ssize_t data_len_c
+    with nogil:
+        data_c = <char *>zmq_msg_data(zmq_msg)
+        data_len_c = zmq_msg_size(zmq_msg)
+    return PyBytes_FromStringAndSize(data_c, data_len_c)
+
+

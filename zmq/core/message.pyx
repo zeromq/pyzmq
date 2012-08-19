@@ -27,7 +27,6 @@
 cdef extern from "pyversion_compat.h":
     pass
 
-from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport Py_DECREF, Py_INCREF
 
 from buffers cimport asbuffer_r, viewfromobject_r
@@ -64,16 +63,6 @@ cdef void free_python_msg(void *data, void *hint) with gil:
             # assert tracker_queue.empty(), "somebody else wrote to my Queue!"
             tracker_event.set()
         tracker_event = None
-
-cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg):
-    """ Copy the data from a zmq_msg_t """
-    cdef char *data_c = NULL
-    cdef Py_ssize_t data_len_c
-    with nogil:
-        data_c = <char *>zmq_msg_data(zmq_msg)
-        data_len_c = zmq_msg_size(zmq_msg)
-    return PyBytes_FromStringAndSize(data_c, data_len_c)
-
 
 cdef class MessageTracker(object):
     """MessageTracker(*towatch)

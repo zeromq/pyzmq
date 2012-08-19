@@ -17,6 +17,9 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 ØMQ in general, see the many examples in the excellent `ØMQ Guide`_, all of which
 have a version in Python.
 
+PyZMQ works with Python 3 (≥ 3.2), and Python 2 (≥ 2.6), with no transformations or 2to3,
+largely thanks to Cython_.
+
 Please don't hesitate to report pyzmq-specific issues to our tracker_ on GitHub.
 General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC Channel`_.
 
@@ -35,7 +38,7 @@ Binary distributions (eggs or MSIs on `PyPI <http://pypi.python.org/pypi/pyzmq>`
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
 matching libzmq release built with default configuration.
 
-PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.1.0 )
+PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.2.0 )
 versions of libzmq.
 
 

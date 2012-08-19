@@ -280,14 +280,15 @@ class Configure(Command):
             fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s'%(zmq or 'unspecified'))
-        pyzmq_version = extract_version().strip('abcdefghijklmnopqrstuvwxyz')
+        pyzmq_vs = extract_version()
+        pyzmq_version = tuple(int(d) for d in re.findall(r'\d+', pyzmq_vs))
 
-        if vs < pyzmq_version:
+        if vers < pyzmq_version[:len(vers)]:
             warn("Detected ZMQ version: %s, but pyzmq targets zmq %s."%(
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             line()
-        elif vs >= '3.0':
+        elif vers >= (3,0,0):
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
             line()
 
@@ -566,6 +567,8 @@ class TestCommand(Command):
             "If you did build pyzmq in-place, then this is a real error."]))
             sys.exit(1)
         
+        print ("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
+        
         if nose is None:
             warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
             return self.run_unittest()
@@ -801,6 +804,9 @@ for submod, packages in submodules.items():
             sources = sources,
             **COMPILER_SETTINGS
         )
+        if suffix == '.pyx' and ext.sources[0].endswith('.c'):
+            # undo setuptools stupidly clobbering cython sources:
+            ext.sources = sources
         extensions.append(ext)
 
 
@@ -822,8 +828,12 @@ def extract_version():
     exec(line, globals())
     if 'bdist_msi' in sys.argv:
         # msi has strict version requirements, which requires that
-        # we strip any dev suffix
-        return re.match(r'\d+(\.\d+)+', __version__).group()
+        # we strip any dev suffix, and have at most two dots
+        vlist = re.findall(r'\d+', __version__)
+        vs = '.'.join(vlist[:3])
+        if len(vlist) > 3:
+            vs = '-'.join([vs] + vlist[3:])
+        return vs
     else:
         return __version__
 
