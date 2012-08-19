@@ -7,16 +7,21 @@ include setup.cfg.template
 include setup.py
 include setupegg.py
 include zmqversion.py
+include tox.ini
+include .travis.yml
 
 graft docs
 prune docs/build
 prune docs/gh-pages
 
 graft bundled/uuid
+exclude bundled/uuid/Makefile*
 include bundled/zeromq/COPYING
 graft bundled/zeromq/include
 graft bundled/zeromq/src
-prune bundled/zeromq/src/Makefile*
+include bundled/zeromq/builds/msvc/platform.hpp
+exclude bundled/zeromq/src/Makefile*
+exclude bundled/zeromq/src/platform.hpp
 
 graft buildutils
 graft examples

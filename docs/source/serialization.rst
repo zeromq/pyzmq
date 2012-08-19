@@ -25,8 +25,8 @@ methods can be reconstructed with the :meth:`~.Socket.recv_json` and
 These methods designed for convenience, not for performance, so developers who do want 
 to emphasize performance should use their own serialized send/recv methods.
 
-Using your own serialization with PyZMQ
----------------------------------------
+Using your own serialization
+----------------------------
 
 In general, you will want to provide your own serialization that is optimized for your
 application or library availability.  This may include using your own preferred

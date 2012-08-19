@@ -9,7 +9,8 @@ The PUBHandler can be used with the regular logging module, as in::
     >>> handler = PUBHandler('tcp://127.0.0.1:12345')
     >>> handler.root_topic = 'foo'
     >>> logger = logging.getLogger('foobar')
-    >>> logger.addHandler(logging.DEBUG, handler)
+    >>> logger.setLevel(logging.DEBUG)
+    >>> logger.addHandler(handler)
 
 After this point, all messages logged by ``logger`` will be published on the
 PUB socket.
@@ -124,7 +125,6 @@ class PUBHandler(logging.Handler):
 
         topic = '.'.encode().join(topic_list)
 
-        # map str, since sometimes we get unicode, and zmq can't deal with it
         self.socket.send_multipart([topic,msg])
 
 

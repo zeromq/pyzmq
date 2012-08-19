@@ -144,11 +144,35 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SNDTIMEO # 28
     enum: ZMQ_IPV4ONLY # 31
     enum: ZMQ_LAST_ENDPOINT # 32
-    enum: ZMQ_FAIL_UNROUTABLE # 33
+
+    enum: ZMQ_ROUTER_BEHAVIOR # 33
+    enum: ZMQ_TCP_KEEPALIVE # 34
+    enum: ZMQ_TCP_KEEPALIVE_CNT # 35
+    enum: ZMQ_TCP_KEEPALIVE_IDLE # 36
+    enum: ZMQ_TCP_KEEPALIVE_INTVL # 37
+    enum: ZMQ_TCP_ACCEPT_FILTER # 38
+    enum: ZMQ_DELAY_ATTACH_ON_CONNECT # 39
+
+    enum: ZMQ_MORE # 1
 
     enum: ZMQ_NOBLOCK # 1
     enum: ZMQ_DONTWAIT # 1
     enum: ZMQ_SNDMORE # 2
+
+    # Socket transport events (tcp and ipc only)
+    enum: ZMQ_EVENT_CONNECTED # 1
+    enum: ZMQ_EVENT_CONNECT_DELAYED # 2
+    enum: ZMQ_EVENT_CONNECT_RETRIED # 4
+
+    enum: ZMQ_EVENT_LISTENING # 8
+    enum: ZMQ_EVENT_BIND_FAILED # 16
+
+    enum: ZMQ_EVENT_ACCEPTED # 32
+    enum: ZMQ_EVENT_ACCEPT_FAILED # 64
+
+    enum: ZMQ_EVENT_CLOSED # 128
+    enum: ZMQ_EVENT_CLOSE_FAILED # 256
+    enum: ZMQ_EVENT_DISCONNECTED # 512
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
