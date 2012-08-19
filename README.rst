@@ -5,6 +5,8 @@ PyZMQ: Python bindings for ØMQ
 This package contains Python bindings for `ØMQ <http://www.zeromq.org>`_.
 ØMQ is a lightweight and fast messaging implementation.
 
+PyZMQ should work with libzmq ≥ 2.1.4 (including libzmq 3.2.x), and Python ≥ 2.6 (including Python 3).
+
 Versioning
 ==========
 
@@ -50,6 +52,23 @@ or later.
 
 Building and installation
 =========================
+
+pip
+---
+
+We build eggs for OS X and Windows, so we recommend that those platforms use ``easy_install pyzmq``.
+But many users prefer pip, which unfortunately still ignores eggs.
+In an effort to make pyzmq easier to install,
+pyzmq will try to build libzmq as a Python extension if it cannot find a libzmq to link against.
+
+This is thanks to work done in `pyzmq_static <https://github.com/brandon-rhodes/pyzmq-static>`_.
+
+Linking against system libzmq is still the preferred mechanism,
+so pyzmq will try pretty hard to find it.
+You can skip the searching by explicitly specifying that pyzmq build its own libzmq::
+
+    $> pip install pyzmq --install-option="--zmq=bundled"
+
 
 Eggs and MSIs
 -------------
