@@ -9,18 +9,62 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-2.2dev
-======
+2.2.0.1
+=======
+
+This is a tech-preview release, to try out some new features.
+It is expected to be short-lived, as there are likely to be issues to iron out,
+particularly with the new pip-install support.
 
 Experimental New Stuff
 ----------------------
 
-These features are marked 'experimental', which means that their APIs are not
-set in stone, and may be removed or changed in incompatible ways in later releases.
+These features are marked 'experimental', which means that their APIs are not set in stone,
+and may be removed or changed in incompatible ways in later releases.
 
-* The excellent `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_ socket
-  subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has been merged
-  as :mod:`zmq.green`.
+
+Threadsafe ZMQStream
+********************
+
+With the IOLoop inherited from tornado, there is exactly one method that is threadsafe:
+:meth:`.IOLoop.add_callback`.  With this release, we are trying an experimental option
+to pass all IOLoop calls via this method, so that ZMQStreams can be used from one thread
+while the IOLoop runs in another.  To try out a threadsafe stream:
+
+.. sourcecode:: python
+
+    stream = ZMQStream(socket, threadsafe=True)
+
+
+pip install pyzmq
+*****************
+
+PyZMQ should now be pip installable, even on systems without libzmq.
+In these cases, when pyzmq fails to find an appropriate libzmq to link against,
+it will try to build libzmq as a Python extension.
+This work is derived from `pyzmq_static <https://github.com/brandon-rhodes/pyzmq-static>`_.
+
+To this end, PyZMQ source distributions include the sources for libzmq (2.2.0) and libuuid (2.21),
+both used under the LGPL.
+
+
+zmq.green
+*********
+
+The excellent `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_ socket
+subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has been merged as
+:mod:`zmq.green`.
+
+.. seealso::
+
+    :ref:`zmq_green`
+
+
+Bugs fixed
+----------
+
+* TIMEO sockopts are properly included for libzmq-2.2.0
+* avoid garbage collection of sockets after fork (would cause ``assert (mailbox.cpp:79)``).
 
 
 2.2.0
