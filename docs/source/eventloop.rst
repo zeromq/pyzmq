@@ -2,8 +2,12 @@
 
 .. _eventloop:
 
-Tornado Eventloop with PyZMQ
-============================
+====================
+Eventloops and PyZMQ
+====================
+
+Tornado IOLoop
+==============
 
 Facebook's `Tornado`_ includes an eventloop for handing poll events on filedescriptors and
 native sockets. We have included a small part of Tornado (specifically its
@@ -124,3 +128,36 @@ any events, and you can specify a limit for how many events to flush in order to
 starvation.
 
 .. _Tornado: https://github.com/facebook/tornado
+
+.. _zmq_green:
+
+gevent
+======
+
+PyZMQ ≥ 2.2.0.1 ships with a `gevent <http://www.gevent.org/>`_ compatible API as :mod:`zmq.green`.
+To use it, simply:
+
+.. sourcecode:: python
+
+    import zmq.green as zmq
+
+Then write your code as normal.
+
+Currently, Socket.send/recv methods and zmq.Poller are gevent-aware.
+The tornado-based ZMQStream/IOLoop *are not* compatible with gevent.
+
+.. warning::
+
+    There is a `known issue <https://github.com/zeromq/pyzmq/issues/229>`_ in gevent ≤ 1.0 or libevent,
+    which can cause zeromq socket events to be missed.
+    PyZMQ works around this by adding a timeout so it will not wait forever for gevent to notice events.
+    The only known solution for this is to use gevent ≥ 1.0, which is currently at 1.0b3,
+    and does not exhibit this behavior.
+
+.. seealso::
+
+    zmq.green examples `on GitHub <https://github.com/zeromq/pyzmq/tree/master/examples/gevent>`_.
+
+:mod:`zmq.green` is simply `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_,
+merged into the pyzmq project.
+
