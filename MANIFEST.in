@@ -7,6 +7,8 @@ include setup.cfg.template
 include setup.py
 include setupegg.py
 include zmqversion.py
+include tox.ini
+include .travis.yml
 
 graft docs
 prune docs/build
