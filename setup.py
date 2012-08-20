@@ -274,7 +274,7 @@ class Configure(Command):
         if self.zmq == "bundled":
             return
         
-        vers = config['vers']
+        vers = tuple(config['vers'])
         vs = v_str(vers)
         if vers < min_zmq:
             fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
