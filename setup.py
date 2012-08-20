@@ -854,8 +854,8 @@ def find_packages():
 
 long_desc = \
 """
-PyZMQ is a lightweight and super-fast messaging library built on top of
-the ZeroMQ library (http://www.zeromq.org). 
+PyZMQ is the official Python bindings for the lightweight and super-fast messaging
+library ZeroMQ (http://www.zeromq.org).
 """
 
 setup(
@@ -888,9 +888,8 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.0',
-        'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
     ]
 )
 
