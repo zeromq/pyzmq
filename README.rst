@@ -259,9 +259,9 @@ is the primary developer of pyzmq at this time.
 The following people have contributed to the project:
 
 
+* Andrea Crotti (andrea DOT crotti DOT 0 AT gmail DOT com)
 * Andrew Gwozdziewycz (git AT apgwoz DOT com)
 * Baptiste Lepilleur (baptiste DOT lepilleur AT gmail DOT com)
-* Brandon Craig Rhodes (brandon AT rhodesmill DOT org)
 * Brandyn A. White (bwhite AT dappervision DOT com)
 * Brian E. Granger (ellisonbg AT gmail DOT com)
 * Carlos A. Rocha (carlos DOT rocha AT gmail DOT com)
@@ -271,17 +271,24 @@ The following people have contributed to the project:
 * Erik Tollerud (erik DOT tollerud AT gmail DOT com)
 * Fernando Perez (Fernando DOT Perez AT berkeley DOT edu)
 * Frank Wiles (frank AT revsys DOT com)
+* Gavrie Philipson (gavriep AT il DOT ibm DOT com)
+* Godefroid Chapelle (gotcha AT bubblenet DOT be)
 * Ivo Danihelka (ivo AT danihelka DOT net)
 * John Gallagher (johnkgallagher AT gmail DOT com)
 * Justin Riley (justin DOT t DOT riley AT gmail DOT com)
+* Marc Abramowitz (marc AT marc-abramowitz DOT com)
+* Michel Pelletier (pelletier DOT michel AT gmail DOT com)
 * Min Ragan-Kelley (benjaminrk AT gmail DOT com)
 * Nicholas Piël (nicholas AT nichol DOT as)
+* Nick Pellegrino (npellegrino AT mozilla DOT com)
 * Ondrej Certik (ondrej AT certik DOT cz)
 * Paul Colomiets (paul AT colomiets DOT name)
 * Scott Sadler (github AT mashi DOT org)
+* Stefan Friesel (sf AT cloudcontrol DOT de)
 * Stefan van der Walt (stefan AT sun DOT ac DOT za)
 * Thomas Kluyver (takowl AT gmail DOT com)
 * Thomas Spura (tomspur AT fedoraproject DOT org)
+* Tigger Bear (Tigger AT Tiggers-Mac-mini DOT local)
 * Zbigniew Jędrzejewski-Szmek (zbyszek AT in DOT waw DOT pl)
 * hugo  shi (hugoshi AT bleb2 DOT (none))
 * spez (steve AT hipmunk DOT com)
@@ -295,6 +302,7 @@ with some adjustments.
 Not in git log
 --------------
 
+* Brandon Craig-Rhodes (brandon AT rhodesmill DOT org)
 * Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
 * Douglas Creager (dcreager AT dcreager DOT net)
 * Craig Austin (craig DOT austin AT gmail DOT com)
