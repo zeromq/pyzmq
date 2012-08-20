@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.error &mdash; PyZMQ 2.2dev documentation</title>
+    <title>core.error &mdash; PyZMQ 2.2.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2dev',
+        VERSION:     '2.2.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="core.message" href="zmq.core.message.html" />
     <link rel="prev" title="core.device" href="zmq.core.device.html" /> 
@@ -196,10 +196,14 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>error</strong> : int</p>
-<blockquote class="last">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>errno</strong> : int</p>
+<blockquote>
 <div><p>The ZMQ errno or None.  If None, then <tt class="docutils literal"><span class="pre">zmq_errno()</span></tt> is called and
 used.</p>
+</div></blockquote>
+<p><strong>msg</strong> : string</p>
+<blockquote class="last">
+<div><p>Description of the error or None.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -208,6 +212,11 @@ used.</p>
 <dl class="attribute">
 <dt id="zmq.core.error.ZMQError.args">
 <tt class="descname">args</tt><a class="headerlink" href="#zmq.core.error.ZMQError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.core.error.ZMQError.errno">
+<tt class="descname">errno</tt><em class="property"> = None</em><a class="headerlink" href="#zmq.core.error.ZMQError.errno" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -223,7 +232,7 @@ used.</p>
 <h2>Function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="zmq.core.error.strerror">
-<tt class="descclassname">zmq.core.error.</tt><tt class="descname">strerror</tt><big>(</big><em>errnum</em><big>)</big><a class="headerlink" href="#zmq.core.error.strerror" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">zmq.core.error.</tt><tt class="descname">strerror</tt><big>(</big><em>errno</em><big>)</big><a class="headerlink" href="#zmq.core.error.strerror" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the error string given the error number.</p>
 </dd></dl>
 
@@ -262,7 +271,7 @@ used.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

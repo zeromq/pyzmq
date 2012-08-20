@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.zmqstream &mdash; PyZMQ 2.2dev documentation</title>
+    <title>eventloop.zmqstream &mdash; PyZMQ 2.2.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2dev',
+        VERSION:     '2.2.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
     <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
@@ -113,7 +113,7 @@
 <h2><a class="reference internal" href="#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a><a class="headerlink" href="#zmqstream" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="zmq.eventloop.zmqstream.ZMQStream">
-<em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em>, <em>threadsafe=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>A utility class to register callbacks when a zmq socket sends and receives</p>
 <p>For use with zmq.eventloop.ioloop</p>
 <p>There are 4 main methods</p>
@@ -362,6 +362,13 @@ See zmq.socket.send_multipart for details.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.send_string">
+<tt class="descname">send_string</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>encoding='utf-8'</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a unicode message with an encoding.
+See zmq.socket.send_unicode for details.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="zmq.eventloop.zmqstream.ZMQStream.send_unicode">
 <tt class="descname">send_unicode</tt><big>(</big><em>u</em>, <em>flags=0</em>, <em>encoding='utf-8'</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.send_unicode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a unicode message with an encoding.
@@ -403,6 +410,18 @@ See zmq.socket.send_unicode for details.</p>
 <dd><p>Disable callback on sending.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="zmq.eventloop.zmqstream.ZMQStream.threadsafe">
+<tt class="descname">threadsafe</tt><em class="property"> = False</em><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.threadsafe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.eventloop.zmqstream.maybe_threadsafe">
+<tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">maybe_threadsafe</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.maybe_threadsafe" title="Permalink to this definition">¶</a></dt>
+<dd><p>decorator for wrapping a method in IOLoop.add_callback for threadsafety</p>
+<p>use ZMQStream(..., threadsafe=True) to enable.</p>
 </dd></dl>
 
 </div>
@@ -440,7 +459,7 @@ See zmq.socket.send_unicode for details.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

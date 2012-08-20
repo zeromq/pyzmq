@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>log.handlers &mdash; PyZMQ 2.2dev documentation</title>
+    <title>log.handlers &mdash; PyZMQ 2.2.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2dev',
+        VERSION:     '2.2.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="ssh.forward" href="zmq.ssh.forward.html" />
     <link rel="prev" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" /> 
@@ -122,7 +122,8 @@ a zmq.PUB socket.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">PUBHandler</span><span class="p">(</span><span class="s">&#39;tcp://127.0.0.1:12345&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">root_topic</span> <span class="o">=</span> <span class="s">&#39;foo&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;foobar&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>After this point, all messages logged by <tt class="docutils literal"><span class="pre">logger</span></tt> will be published on the
@@ -220,7 +221,7 @@ subclasses.</p>
 
 <dl class="attribute">
 <dt id="zmq.log.handlers.PUBHandler.formatters">
-<tt class="descname">formatters</tt><em class="property"> = {40: &lt;logging.Formatter object at 0x107ec6610&gt;, 10: &lt;logging.Formatter object at 0x107ec6550&gt;, 20: &lt;logging.Formatter object at 0x107ec6590&gt;, 50: &lt;logging.Formatter object at 0x107ec6650&gt;, 30: &lt;logging.Formatter object at 0x107ec65d0&gt;}</em><a class="headerlink" href="#zmq.log.handlers.PUBHandler.formatters" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">formatters</tt><em class="property"> = {40: &lt;logging.Formatter object at 0x110ef70d0&gt;, 10: &lt;logging.Formatter object at 0x110f24d90&gt;, 20: &lt;logging.Formatter object at 0x110ef76d0&gt;, 50: &lt;logging.Formatter object at 0x110ef7110&gt;, 30: &lt;logging.Formatter object at 0x110ef7210&gt;}</em><a class="headerlink" href="#zmq.log.handlers.PUBHandler.formatters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -443,7 +444,7 @@ specialized LogRecords.</p>
 
 <dl class="attribute">
 <dt id="zmq.log.handlers.TopicLogger.manager">
-<tt class="descname">manager</tt><em class="property"> = &lt;logging.Manager object at 0x105f83810&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.manager" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">manager</tt><em class="property"> = &lt;logging.Manager object at 0x10f01a8d0&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.manager" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -460,7 +461,7 @@ specialized LogRecords.</p>
 
 <dl class="attribute">
 <dt id="zmq.log.handlers.TopicLogger.root">
-<tt class="descname">root</tt><em class="property"> = &lt;logging.RootLogger object at 0x105f83750&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.root" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">root</tt><em class="property"> = &lt;logging.RootLogger object at 0x10f01a810&gt;</em><a class="headerlink" href="#zmq.log.handlers.TopicLogger.root" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -517,7 +518,7 @@ specialized LogRecords.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

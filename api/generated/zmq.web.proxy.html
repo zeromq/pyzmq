@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>web.proxy &mdash; PyZMQ 2.2dev documentation</title>
+    <title>web.proxy &mdash; PyZMQ 2.2.0.1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2dev',
+        VERSION:     '2.2.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2dev documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="web.zmqweb" href="zmq.web.zmqweb.html" />
     <link rel="prev" title="utils.rebuffer" href="zmq.utils.rebuffer.html" /> 
@@ -223,6 +223,14 @@ information please see
 </dd></dl>
 
 <dl class="method">
+<dt id="zmq.web.proxy.ZMQRequestHandlerProxy.clear_header">
+<tt class="descname">clear_header</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#zmq.web.proxy.ZMQRequestHandlerProxy.clear_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears an outgoing header, undoing a previous <cite>set_header</cite> call.</p>
+<p>Note that this method does not apply to multi-valued headers
+set by <cite>add_header</cite>.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="zmq.web.proxy.ZMQRequestHandlerProxy.compute_etag">
 <tt class="descname">compute_etag</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.web.proxy.ZMQRequestHandlerProxy.compute_etag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the etag header to be used for this request.</p>
@@ -349,6 +357,8 @@ last value.</p>
 <dt id="zmq.web.proxy.ZMQRequestHandlerProxy.get_secure_cookie">
 <tt class="descname">get_secure_cookie</tt><big>(</big><em>name</em>, <em>value=None</em>, <em>max_age_days=31</em><big>)</big><a class="headerlink" href="#zmq.web.proxy.ZMQRequestHandlerProxy.get_secure_cookie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the given signed cookie if it validates, or None.</p>
+<p>The decoded cookie value is returned as a byte string (unlike
+<cite>get_cookie</cite>).</p>
 </dd></dl>
 
 <dl class="method">
@@ -444,6 +454,11 @@ has been sent to the client.</p>
 <dl class="method">
 <dt id="zmq.web.proxy.ZMQRequestHandlerProxy.options">
 <tt class="descname">options</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.web.proxy.ZMQRequestHandlerProxy.options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.web.proxy.ZMQRequestHandlerProxy.patch">
+<tt class="descname">patch</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.web.proxy.ZMQRequestHandlerProxy.patch" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -552,6 +567,8 @@ to be used as the HMAC secret for the signature.</p>
 <p>Note that the <tt class="docutils literal"><span class="pre">expires_days</span></tt> parameter sets the lifetime of the
 cookie in the browser, but is independent of the <tt class="docutils literal"><span class="pre">max_age_days</span></tt>
 parameter to <cite>get_secure_cookie</cite>.</p>
+<p>Secure cookies may contain arbitrary byte values, not just unicode
+strings (unlike regular cookies)</p>
 </dd></dl>
 
 <dl class="method">
@@ -710,7 +727,7 @@ all reply parts as a single zmq message.</p>
         &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
