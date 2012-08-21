@@ -114,7 +114,7 @@ class _Socket(_original_Socket):
         try:
             timeout.start()
             self.__writable.get(block=True)
-        except gevent.Timeout, t:
+        except gevent.Timeout as t:
             if t is not timeout:
                 raise
             toc = time.time()
@@ -138,7 +138,7 @@ class _Socket(_original_Socket):
         try:
             timeout.start()
             self.__readable.get(block=True)
-        except gevent.Timeout, t:
+        except gevent.Timeout as t:
             if t is not timeout:
                 raise
             toc = time.time()
