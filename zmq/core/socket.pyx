@@ -218,7 +218,7 @@ cdef class Socket:
         
         But be careful that context might not exist if called during gc
         """
-        if self.handle != NULL and getpid() == self._pid:
+        if self.handle != NULL and getpid and getpid() == self._pid:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
@@ -253,7 +253,7 @@ cdef class Socket:
             linger_c = linger
             setlinger=True
         
-        if self.handle != NULL and not self._closed and getpid() == self._pid:
+        if self.handle != NULL and not self._closed and getpid and getpid() == self._pid:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
             rc = zmq_close(self.handle)
