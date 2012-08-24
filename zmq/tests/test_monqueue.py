@@ -18,6 +18,7 @@ import zmq
 from zmq import devices
 
 from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.utils.strtypes import unicode
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -173,6 +174,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
     def test_router_router(self):
         """test router-router MQ devices"""
         dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, b'in', b'out')
+        self.device = dev
         dev.setsockopt_in(zmq.LINGER, 0)
         dev.setsockopt_out(zmq.LINGER, 0)
         dev.setsockopt_mon(zmq.LINGER, 0)
@@ -209,3 +211,22 @@ class TestMonitoredQueue(BaseZMQTestCase):
         b.send_multipart(bmsg)
         amsg = self.recv_multipart(a)
         self.assertEquals(amsg, [b'b']+msg)
+        self.teardown_device()
+    
+    def test_default_mq_args(self):
+        self.device = dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.DEALER, zmq.PUB)
+        dev.setsockopt_in(zmq.LINGER, 0)
+        dev.setsockopt_out(zmq.LINGER, 0)
+        dev.setsockopt_mon(zmq.LINGER, 0)
+        # this will raise if default args are wrong
+        dev.start()
+        self.teardown_device()
+    
+    def test_mq_check_prefix(self):
+        ins = self.context.socket(zmq.ROUTER)
+        outs = self.context.socket(zmq.DEALER)
+        mons = self.context.socket(zmq.PUB)
+        
+        ins = unicode('in')
+        outs = unicode('out')
+        self.assertRaises(TypeError, devices.monitoredqueue, ins, outs, mons)
