@@ -22,7 +22,7 @@ Authors
 
 import time
 
-from zmq.core import QUEUE, FORWARDER, ZMQError
+from zmq.core import QUEUE, FORWARDER, ZMQError, PUB
 from zmq.devices.basedevice import Device,ThreadDevice,ProcessDevice
 from zmq.devices.monitoredqueue import monitored_queue
 
@@ -34,7 +34,7 @@ from zmq.devices.monitoredqueue import monitored_queue
 class MonitoredQueueBase(object):
     """Base class for overriding methods."""
     
-    def __init__(self, in_type, out_type, mon_type, in_prefix='in', out_prefix='out'):
+    def __init__(self, in_type, out_type, mon_type=PUB, in_prefix=b'in', out_prefix=b'out'):
         
         Device.__init__(self, QUEUE, in_type, out_type)
         
