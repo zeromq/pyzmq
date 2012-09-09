@@ -144,7 +144,10 @@ else:
     ])
     
     int64_sockopts.append(MAXMSGSIZE)
-    bytes_sockopts.append('LAST_ENDPOINT')
+    bytes_sockopts.extend([
+        LAST_ENDPOINT,
+        TCP_ACCEPT_FILTER,
+    ])
     int_sockopts.extend([
         SNDHWM,
         RCVHWM,
@@ -155,7 +158,6 @@ else:
         TCP_KEEPALIVE_CNT,
         TCP_KEEPALIVE_IDLE,
         TCP_KEEPALIVE_INTVL,
-        TCP_ACCEPT_FILTER,
         DELAY_ATTACH_ON_CONNECT,
     ])
     
