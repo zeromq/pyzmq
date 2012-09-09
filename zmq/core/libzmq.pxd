@@ -206,6 +206,26 @@ cdef extern from "zmq.h" nogil:
     # removed in libzmq
     int zmq_device (int device_, void *insocket_, void *outsocket_)
 
+    ctypedef struct socket_event:
+        char *addr
+        int err
+        int fd
+
+    ctypedef union zmq_event_data_t:
+        socket_event connected
+        socket_event connect_delayed
+        socket_event connect_retried
+        socket_event listening
+        socket_event bind_failed
+        socket_event accepted
+        socket_event accept_failed
+        socket_event closed
+        socket_event close_failed
+        socket_event disconnected
+
+    ctypedef void zmq_monitor_fn (void *s, int event, zmq_event_data_t *data)
+    int zmq_ctx_set_monitor (void *context, zmq_monitor_fn *monitor)
+
 cdef extern from "zmq_utils.h" nogil:
 
     void *zmq_stopwatch_start ()

@@ -40,4 +40,5 @@ cdef class Context:
     
     cdef public dict sockopts   # dict to store default sockopts
     cdef dict _attrs            # dict needed for *non-sockopt* get/setattr in subclasses
+    cdef public object _callback # callback for monitor events
 
