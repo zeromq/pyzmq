@@ -44,7 +44,7 @@ class TestContext(BaseZMQTestCase):
         self.assert_(c.closed)
 
     def test_fail_init(self):
-        self.assertRaisesErrno(zmq.EINVAL, self.Context, 0)
+        self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
     
     def test_term_hang(self):
         rep,req = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)

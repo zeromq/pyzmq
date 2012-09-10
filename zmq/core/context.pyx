@@ -53,7 +53,7 @@ cdef class Context:
     def __cinit__(self, int io_threads=1):
         self.handle = NULL
         self._sockets = NULL
-        if not io_threads > 0:
+        if not io_threads >= 0:
             raise ZMQError(EINVAL)
         with nogil:
             self.handle = zmq_init(io_threads)
