@@ -273,9 +273,7 @@ class ZMQStream(object):
         return self.send(u.encode(encoding), flags=flags, callback=callback)
     
     send_unicode = send_string
-
-    send_unicode = send_string
-
+    
     def send_json(self, obj, flags=0, callback=None):
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
