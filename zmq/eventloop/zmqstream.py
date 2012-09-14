@@ -484,6 +484,7 @@ class ZMQStream(object):
         try:
             status = self.socket.send_multipart(msg, **kwargs)
         except zmq.ZMQError as e:
+            logging.error("SEND Error: %s", e)
             status = e
         if self._send_callback:
             callback = self._send_callback
