@@ -15,7 +15,7 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
 from zmq.utils.strtypes import (bytes,unicode,basestring)
 
 #-----------------------------------------------------------------------------
@@ -106,3 +106,23 @@ class TestDevice(BaseZMQTestCase):
         del dev
         req.close()
 
+if have_gevent:
+    import gevent
+    import zmq.green
+    
+    class TestDeviceGreen(GreenTest, BaseZMQTestCase):
+        
+        def test_green_device(self):
+            rep = self.context.socket(zmq.REP)
+            req = self.context.socket(zmq.REQ)
+            self.sockets.extend([req, rep])
+            port = rep.bind_to_random_port('tcp://127.0.0.1')
+            g = gevent.spawn(zmq.green.device, zmq.QUEUE, rep, rep)
+            req.connect('tcp://127.0.0.1:%i' % port)
+            req.send(b'hi')
+            timeout = gevent.Timeout(1)
+            timeout.start()
+            receiver = gevent.spawn(req.recv)
+            self.assertEqual(receiver.get(1), b'hi')
+            g.kill()
+            
