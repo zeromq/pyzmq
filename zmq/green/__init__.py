@@ -36,3 +36,5 @@ Context = _Context
 Socket = _Socket
 Poller = _Poller
 
+from zmq.green.device import device
+
