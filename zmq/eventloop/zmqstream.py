@@ -23,7 +23,7 @@ import logging
 import zmq
 from zmq.core.socket import jsonapi, pickle
 
-from zmq.eventloop.ioloop import IOLoop, thread_get_ident
+from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop import stack_context
 
 try:
@@ -38,41 +38,13 @@ try:
 except NameError:
     callable = lambda obj: hasattr(obj, '__call__')
 
-def maybe_threadsafe(method):
-    """decorator for wrapping a method in IOLoop.add_callback for threadsafety
-    
-    use ZMQStream(..., threadsafe=True) to enable.
-    """
-    def ts_method(self, *args, **kwargs):
-        if self.threadsafe:
-            return self.io_loop.add_callback(lambda : method(self, *args, **kwargs))
-        else:
-            return method(self, *args, **kwargs)
-    
-    ts_method.__doc__ = method.__doc__
-    
-    return ts_method
 
-def not_threadsafe(method):
-    """decorator for asserting that a method is not threadsafe"""
-    
-    def ts_method(self, *args, **kwargs):
-        loop_thread = self.io_loop._thread_ident
-        if self.threadsafe and loop_thread and loop_thread != thread_get_ident():
-            raise RuntimeError("%r is not threadsafe, it can only be called from the main thread")
-        else:
-            return method(self, *args, **kwargs)
-    
-    ts_method.__doc__ = method.__doc__
-    
-    return ts_method
-    
 class ZMQStream(object):
     """A utility class to register callbacks when a zmq socket sends and receives
     
     For use with zmq.eventloop.ioloop
 
-    There are 4 main methods
+    There are three main methods
     
     Methods:
     
@@ -107,13 +79,11 @@ class ZMQStream(object):
     socket = None
     io_loop = None
     poller = None
-    threadsafe = False
     
-    def __init__(self, socket, io_loop=None, threadsafe=False):
+    def __init__(self, socket, io_loop=None):
         self.socket = socket
         self.io_loop = io_loop or IOLoop.instance()
         self.poller = zmq.Poller()
-        self.threadsafe = threadsafe
         
         self._send_queue = Queue()
         self._recv_callback = None
@@ -310,7 +280,6 @@ class ZMQStream(object):
         """callback for unsetting _flushed flag."""
         self._flushed = False
     
-    @not_threadsafe
     def flush(self, flag=zmq.POLLIN|zmq.POLLOUT, limit=None):
         """Flush pending messages.
 
@@ -524,14 +493,12 @@ class ZMQStream(object):
             self._state = state
             self._update_handler(state)
     
-    @maybe_threadsafe
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
             self._update_handler(self._state)
     
-    @maybe_threadsafe
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
@@ -539,16 +506,11 @@ class ZMQStream(object):
             self._update_handler(self._state)
     
     def _update_handler(self, state):
-        """update IOLoop handler with state
-        
-        This is the only method
-        threadsafe when self.threadsafe is True
-        """
+        """Update IOLoop handler with state."""
         if self.socket is None:
             return
         self.io_loop.update_handler(self.socket, state)
     
-    @maybe_threadsafe
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         with stack_context.NullContext():
