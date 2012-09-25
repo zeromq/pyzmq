@@ -9,6 +9,13 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+current dev
+===========
+
+* The Threadsafe ZMQStream experiment in 2.2.0.1 was deemed inappropriate and not useful,
+  and has been removed.
+
+
 2.2.0.1
 =======
 
