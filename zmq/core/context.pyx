@@ -152,6 +152,13 @@ cdef class Context:
         cdef int rc
         cdef int i=-1
 
+        # If this module has already been GC'ed (at process exit), the 
+        # globally imported `getpid` function will be None. There really
+        # isn't anything to do at that point, so just bail out of this
+        # function.
+        if getpid is None:
+            return
+
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
                 rc = zmq_term(self.handle)
