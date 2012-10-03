@@ -149,15 +149,15 @@ cdef class Context:
         This can be called to close the context by hand. If this is not called,
         the context will automatically be closed when it is garbage collected.
         """
+        global getpid
         cdef int rc
         cdef int i=-1
 
         # If this module has already been GC'ed (at process exit), the 
-        # globally imported `getpid` function will be None. There really
-        # isn't anything to do at that point, so just bail out of this
-        # function.
+        # globally imported `getpid` function will be None. We reimport
+        # it here in order to perform the PID check below.
         if getpid is None:
-            return
+            from os import getpid
 
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
