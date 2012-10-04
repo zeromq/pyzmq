@@ -124,5 +124,6 @@ if have_gevent:
             timeout.start()
             receiver = gevent.spawn(req.recv)
             self.assertEqual(receiver.get(1), b'hi')
+            timeout.cancel()
             g.kill()
             
