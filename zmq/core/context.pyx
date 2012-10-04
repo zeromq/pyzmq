@@ -153,11 +153,9 @@ cdef class Context:
         cdef int i=-1
 
         # If this module has already been GC'ed (at process exit), the 
-        # globally imported `getpid` function will be None. There really
-        # isn't anything to do at that point, so just bail out of this
-        # function.
-        if getpid is None:
-            return
+        # globally imported `getpid` function will be None. We reimport
+        # it here in order to perform the PID check below.
+        from os import getpid
 
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
