@@ -123,8 +123,8 @@ class _Socket(_original_Socket):
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
                 print("BUG: gevent missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
         finally:
-            self.__writable.set()
             timeout.cancel()
+            self.__writable.set()
 
     def _wait_read(self):
         assert self.__readable.ready(), "Only one greenlet can be waiting on this event"
@@ -147,8 +147,8 @@ class _Socket(_original_Socket):
             if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
                 print("BUG: gevent missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
         finally:
-            self.__readable.set()
             timeout.cancel()
+            self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False):
         """send, which will only block current greenlet
