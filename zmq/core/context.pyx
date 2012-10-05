@@ -27,7 +27,8 @@ from libc.stdlib cimport free, malloc, realloc
 
 from libzmq cimport *
 
-from os import getpid
+cdef extern from "getpid_compat.h":
+    int getpid()
 
 from error import ZMQError
 from zmq.core import constants
@@ -151,11 +152,6 @@ cdef class Context:
         """
         cdef int rc
         cdef int i=-1
-
-        # If this module has already been GC'ed (at process exit), the 
-        # globally imported `getpid` function will be None. We reimport
-        # it here in order to perform the PID check below.
-        from os import getpid
 
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
