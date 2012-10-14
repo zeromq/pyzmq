@@ -131,8 +131,8 @@ starvation.
 
 .. _zmq_green:
 
-gevent
-======
+PyZMQ and gevent
+================
 
 PyZMQ ≥ 2.2.0.1 ships with a `gevent <http://www.gevent.org/>`_ compatible API as :mod:`zmq.green`.
 To use it, simply:
@@ -143,8 +143,17 @@ To use it, simply:
 
 Then write your code as normal.
 
-Currently, Socket.send/recv methods and zmq.Poller are gevent-aware.
-The tornado-based ZMQStream/IOLoop *are not* compatible with gevent.
+Socket.send/recv and zmq.Poller are gevent-aware.
+
+In PyZMQ ≥ 2.2.0.2, green.device and green.eventloop should be gevent-friendly as well.
+
+.. note::
+
+    The green device does *not* release the GIL, unlike the true device in zmq.core.
+
+zmq.green.eventloop includes minimally patched IOLoop/ZMQStream in order to use the gevent-enabled Poller,
+so you should be able to use the ZMQStream interface in gevent apps as well,
+though using two eventloops simultaneously (tornado + gevent) is not recommended.
 
 .. warning::
 
