@@ -40,7 +40,22 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
         s.close()
         del ctx
-    
+
+    def test_bind_to_random_port(self):
+        # Check that bind_to_random_port do not hide usefull exception
+        ctx = self.Context()
+        c = ctx.socket(zmq.PUB)
+        # Invalid format
+        try:
+            c.bind_to_random_port('tcp:*')
+        except zmq.ZMQError as e:
+            self.assertEqual(e.errno, zmq.EINVAL)
+        # Invalid protocol
+        try:
+            c.bind_to_random_port('rand://*')
+        except zmq.ZMQError as e:
+            self.assertEqual(e.errno, zmq.EPROTONOSUPPORT)
+
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
         topic = "tést"
