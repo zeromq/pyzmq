@@ -328,6 +328,23 @@ class TestSocket(BaseZMQTestCase):
             s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
             self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
+    
+    def test_hwm(self):
+        zmq3 = zmq.zmq_version_info()[0] >= 3
+        for stype in (zmq.PUB, zmq.ROUTER, zmq.SUB, zmq.REQ, zmq.DEALER):
+            s = self.context.socket(stype)
+            s.hwm = 100
+            self.assertEqual(s.hwm, 100)
+            if zmq3:
+                try:
+                    self.assertEqual(s.sndhwm, 100)
+                except AttributeError:
+                    pass
+                try:
+                    self.assertEqual(s.rcvhwm, 100)
+                except AttributeError:
+                    pass
+            s.close()
 
 
 if have_gevent:
