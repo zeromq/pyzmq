@@ -402,14 +402,18 @@ cdef class Socket:
     def __setattr__(self, key, value):
         """set sockopts by attr"""
         key = key
+        upper_key = key.upper()
+        if upper_key == "HWM":
+            self.set_hwm(value)
+            return
         try:
-            opt = getattr(constants, key.upper())
+            opt = getattr(constants, upper_key)
         except AttributeError:
             # allow subclasses to have extended attributes
             if self.__class__.__module__ != 'zmq.core.socket':
                 self._attrs[key] = value
             else:
-                raise AttributeError("Socket has no such option: %s"%key.upper())
+                raise AttributeError("Socket has no such option: %s" % upper_key)
         else:
             self.setsockopt(opt, value)
     
@@ -419,12 +423,54 @@ cdef class Socket:
             # `key` is subclass extended attribute
             return self._attrs[key]
         key = key.upper()
+        if key == 'HWM':
+            return self.get_hwm()
         try:
             opt = getattr(constants, key)
         except AttributeError:
             raise AttributeError("Socket has no such option: %s"%key)
         else:
             return self.getsockopt(opt)
+    
+    def get_hwm(self):
+        """get the High Water Mark
+        
+        On libzmq ≥ 3.x, this gets SNDHWM if available, otherwise RCVHWM
+        """
+        major = zmq.zmq_version_info()[0]
+        if major >= 3:
+            # return sndhwm, fallback on rcvhwm
+            try:
+                return self.getsockopt(zmq.SNDHWM)
+            except zmq.ZMQError as e:
+                pass
+            
+            return self.getsockopt(zmq.RCVHWM)
+        else:
+            return self.getsockopt(zmq.HWM)
+    
+    def set_hwm(self, value):
+        """set the High Water Mark
+        
+        On libzmq ≥ 3.x, this sets *both* SNDHWM and RCVHWM
+        """
+        major = zmq.zmq_version_info()[0]
+        if major >= 3:
+            raised = None
+            try:
+                self.sndhwm = value
+            except Exception as e:
+                raised = e
+            try:
+                self.rcvhwm = value
+            except Exception:
+                raised = e
+            
+            if raised:
+                raise raised
+        else:
+            return self.setsockopt(zmq.HWM, value)
+    
     
     def bind(self, addr):
         """s.bind(addr)
