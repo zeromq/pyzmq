@@ -143,7 +143,7 @@ def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=10
             self.bind('%s:%s' % (addr, port))
         except ZMQError as exception:
             if not exception.errno == zmq.EADDRINUSE:
-                raise exception
+                raise
         else:
             return port
     raise ZMQBindError("Could not bind socket to random port.")
