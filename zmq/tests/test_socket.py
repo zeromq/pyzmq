@@ -86,19 +86,17 @@ class TestSocket(BaseZMQTestCase):
         if not v >= (2,1):
             raise SkipTest("only on libzmq >= 2.1")
         elif v < (3,0):
-            hwm = zmq.HWM
             default_hwm = 0
         else:
-            hwm = zmq.SNDHWM
             default_hwm = 1000
         p,s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         p.setsockopt(zmq.LINGER, 0)
         self.assertEquals(p.getsockopt(zmq.LINGER), 0)
         p.setsockopt(zmq.LINGER, -1)
         self.assertEquals(p.getsockopt(zmq.LINGER), -1)
-        self.assertEquals(p.getsockopt(hwm), default_hwm)
-        p.setsockopt(hwm, 11)
-        self.assertEquals(p.getsockopt(hwm), 11)
+        self.assertEquals(p.hwm, default_hwm)
+        p.hwm = 11
+        self.assertEquals(p.hwm, 11)
         # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
         self.assertEquals(p.getsockopt(zmq.EVENTS), zmq.POLLOUT)
         self.assertRaisesErrno(zmq.EINVAL, p.setsockopt,zmq.EVENTS, 2**7-1)
@@ -343,6 +341,23 @@ class TestSocket(BaseZMQTestCase):
             s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
             self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
+    
+    def test_hwm(self):
+        zmq3 = zmq.zmq_version_info()[0] >= 3
+        for stype in (zmq.PUB, zmq.ROUTER, zmq.SUB, zmq.REQ, zmq.DEALER):
+            s = self.context.socket(stype)
+            s.hwm = 100
+            self.assertEqual(s.hwm, 100)
+            if zmq3:
+                try:
+                    self.assertEqual(s.sndhwm, 100)
+                except AttributeError:
+                    pass
+                try:
+                    self.assertEqual(s.rcvhwm, 100)
+                except AttributeError:
+                    pass
+            s.close()
 
 
 if have_gevent:
