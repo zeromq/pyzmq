@@ -69,7 +69,7 @@ from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
     warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_uuid, fetch_libzmq, stage_platform_hpp,
-    bundled_version,
+    bundled_version, customize_mingw,
     )
 
 #-----------------------------------------------------------------------------
@@ -220,14 +220,19 @@ class Configure(Command):
     description = "Discover ZMQ version and features"
 
     # DON'T REMOVE: distutils demands these be here even if they do nothing.
-    user_options = []
+    user_options = [('compiler=', 'c',
+         "specify the compiler type"),
+    ]
     boolean_options = []
     def initialize_options(self):
+        self.compiler = None
         self.zmq = ZMQ
         self.settings = copy.copy(COMPILER_SETTINGS)
     
     def finalize_options(self):
-        pass
+        self.set_undefined_options('build',
+            ('compiler', 'compiler')
+        )
 
     tempdir = 'detect'
 
@@ -257,6 +262,18 @@ class Configure(Command):
 
     def getcached(self):
         return load_config('configure')
+
+    @property
+    def compiler_type(self):
+        if self.compiler:
+            return self.compiler
+        compiler = self.distribution.get_command_obj("build_ext").compiler
+        if compiler is None:
+            return get_default_compiler()
+        elif isinstance(compiler, str):
+            return compiler
+        else:
+            return compiler.compiler_type
 
     def check_zmq_version(self):
         zmq = self.zmq
@@ -343,8 +360,10 @@ class Configure(Command):
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
-
-            ext.extra_compile_args.append('/EHsc')
+            if self.compiler_type == 'msvc':
+                ext.extra_compile_args.append('/EHsc')
+            elif self.compiler_type == 'mingw32':
+                ext.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
 
@@ -439,14 +458,14 @@ class Configure(Command):
         print ("Configure: Autodetecting ZMQ settings...")
         print ("    Custom ZMQ dir:       %s" % zmq)
         try:
-            config = detect_zmq(self.tempdir, **settings)
+            config = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
         finally:
             self.erase_tempdir()
         
         print ("    ZMQ version detected: %s" % v_str(config['vers']))
         
         return config
-
+    
     def run(self):
         if self.zmq == "bundled":
             self.config = self.bundle_libzmq_extension()
@@ -707,6 +726,9 @@ class CheckingBuildExt(build_ext):
         self.check_cython_extensions(self.extensions)
         self.check_extensions_list(self.extensions)
         
+        if self.compiler.compiler_type == 'mingw32':
+            customize_mingw(self.compiler)
+        
         for ext in self.extensions:
             
             self.build_extension(ext)
@@ -785,6 +807,12 @@ else:
             pass
     
     class zbuild_ext(build_ext_c):
+        
+        def build_extensions(self):
+            if self.compiler.compiler_type == 'mingw32':
+                customize_mingw(self.compiler)
+            return build_ext_c.build_extensions(self)
+        
         def run(self):
             configure = self.distribution.get_command_obj('configure')
             configure.check_zmq_version()

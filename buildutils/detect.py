@@ -20,13 +20,15 @@ from distutils import ccompiler
 from distutils.sysconfig import customize_compiler
 from subprocess import Popen, PIPE
 
+from .misc import customize_mingw
+
 pjoin = os.path.join
 
 #-----------------------------------------------------------------------------
 # Utility functions (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
 
-def detect_zmq(basedir, **compiler_attrs):
+def detect_zmq(basedir, compiler=None, **compiler_attrs):
     """Compile, link & execute a test program, in empty directory `basedir`.
     
     The C compiler will be updated with any keywords given via setattr.
@@ -36,6 +38,8 @@ def detect_zmq(basedir, **compiler_attrs):
     
     basedir : path
         The location where the test program will be compiled and run
+    compiler : str
+        The distutils compiler key (e.g. 'unix', 'msvc', or 'mingw32')
     **compiler_attrs : dict
         Any extra compiler attributes, which will be set via ``setattr(cc)``.
     
@@ -50,9 +54,15 @@ def detect_zmq(basedir, **compiler_attrs):
         The compiler options used to compile the test function, e.g. `include_dirs`,
         `library_dirs`, `libs`, etc.
     """
-
-    cc = ccompiler.new_compiler()
-    customize_compiler(cc)
+    
+    if compiler is None or isinstance(compiler, str):
+        cc = ccompiler.new_compiler(compiler=compiler)
+        customize_compiler(cc)
+        if cc.compiler_type == 'mingw32':
+            customize_mingw(cc)
+    else:
+        cc = compiler
+    
     for name, val in compiler_attrs.items():
         setattr(cc, name, val)
 
