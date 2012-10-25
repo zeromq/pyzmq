@@ -20,44 +20,50 @@ import glob
 
 # load bundled libzmq, if there is one:
 
-here = os.path.dirname(__file__)
+pypy_install = 'PyPy' in sys.version
 
-bundled = []
-for ext in ('pyd', 'so', 'dll', 'dylib'):
-    bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
+if pypy_install:
+    from zmq.cffi_core._cffi import zmq_version_info
+    from zmq.cffi_core.constants import *
+    from zmq.cffi_core import *
+else:
+    here = os.path.dirname(__file__)
 
-if bundled:
-    import ctypes
-    if bundled[0].endswith('.pyd'):
-        # a Windows Extension
-        _libzmq = ctypes.cdll.LoadLibrary(bundled[0])
-    else:
-        _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
-    del ctypes
+    bundled = []
+    for ext in ('pyd', 'so', 'dll', 'dylib'):
+        bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
 
-del os, sys, glob, here, bundled, ext
+    if bundled:
+        import ctypes
+        if bundled[0].endswith('.pyd'):
+            # a Windows Extension
+            _libzmq = ctypes.cdll.LoadLibrary(bundled[0])
+        else:
+            _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
+        del ctypes
 
-# init Python threads
+    del os, sys, glob, here, bundled, ext
 
-try:
-    from zmq.utils import initthreads # initialize threads
-except ImportError as e:
-    raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
+    # init Python threads
 
-initthreads.init_threads()
+    try:
+        from zmq.utils import initthreads # initialize threads
+    except ImportError as e:
+        raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
 
-# zmq top-level imports
+    initthreads.init_threads()
 
-from zmq import core, devices
-from zmq.core import *
+    # zmq top-level imports
 
-def get_includes():
-    """Return a list of directories to include for linking against pyzmq with cython."""
-    from os.path import join, dirname, abspath, pardir
-    base = dirname(__file__)
-    parent = abspath(join(base, pardir))
-    return [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
+    from zmq import core, devices
+    from zmq.core import *
+
+    def get_includes():
+        """Return a list of directories to include for linking against pyzmq with cython."""
+        from os.path import join, dirname, abspath, pardir
+        base = dirname(__file__)
+        parent = abspath(join(base, pardir))
+        return [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
 
 
-__all__ = ['get_includes'] + core.__all__
-
+    __all__ = ['get_includes'] + core.__all__
