@@ -195,7 +195,6 @@ class Socket(object):
                                   min_port=49152,
                                   max_port=65536,
                                   max_tries=100):
-        import pytest; pytest.set_trace()
         for i in range(max_tries):
             try:
                 port = random.randrange(min_port, max_port)
