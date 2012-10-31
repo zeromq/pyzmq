@@ -50,7 +50,9 @@ class Context(object):
         for k, s in self._sockets.items():
             if not s.closed:
                 if linger:
-                    s.setsockopt(zmq.LINGER, linger)
+                    s.setsockopt(LINGER, linger)
+                elif self.linger:
+                    s.setsockopt(LINGER, self.linger)
                 s.close()
 
             del self._sockets[k]
@@ -93,6 +95,16 @@ class Context(object):
     def set_linger(self, value):
         self.sockopts[LINGER] = value
         self.linger = value
+
+    def __getattr__(self, attr_name):
+        if attr_name == "linger":
+            return self.sockopts[LINGER]
+        return getattr(self, attr_name)
+
+    def __setattr__(self, attr_name, value):
+        if attr_name == "linger":
+            self.sockopts[LINGER] = value
+        object.__setattr__(self, attr_name, value)
 
 def new_pointer_from_opt(option, length=0):
     if option in uint64_opts:
@@ -173,6 +185,9 @@ class Socket(object):
                                 option,
                                 ffi.cast('void*', low_level_value_pointer),
                                 low_level_sizet)
+        if option == LINGER:
+            self.linger = value
+
         return ret
 
     def getsockopt(self, option, length=0):
