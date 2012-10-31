@@ -40,10 +40,19 @@ class Context(object):
         global _instance
         _instance = self
 
-    def destroy(self, linger=None):
-        self.term(linger=linger)
-
     def term(self, linger=None):
+        if self.closed:
+            return
+
+        if zmq_version == 2:
+            C.zmq_term(self.zmq_ctx)
+        else:
+            C.zmq_ctx_destroy(self.zmq_ctx)
+
+        self.zmq_ctx = None
+        self._closed = True
+
+    def destroy(self, linger=None):
         if self.closed:
             return
 
@@ -57,12 +66,6 @@ class Context(object):
 
             del self._sockets[k]
 
-        if zmq_version == 2:
-            C.zmq_term(self.zmq_ctx)
-        else:
-            C.zmq_ctx_destroy(self.zmq_ctx)
-        self.zmq_ctx = None
-        self._closed = True
         self.n_sockets = 0
 
     @classmethod
@@ -108,6 +111,10 @@ class Context(object):
         if attr_name == "linger":
             self.sockopts[LINGER] = value
         object.__setattr__(self, attr_name, value)
+
+    def __del__(self):
+        super(Context, self).__del__()
+        self.term()
 
 def new_pointer_from_opt(option, length=0):
     if option in uint64_opts:
@@ -165,9 +172,15 @@ class Socket(object):
 
     def close(self, *args):
         if not self._closed:
+            if len(args) == 1:
+                self.setsockopt(LINGER, args[0])
             rc = C.zmq_close(self.zmq_socket)
             self._closed = True
             return rc
+
+    def __del__(self):
+        super(Socket, self).__del__()
+        self.close()
 
     def bind(self, address):
         ret = C.zmq_bind(self.zmq_socket, address)
