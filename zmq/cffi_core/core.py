@@ -254,7 +254,7 @@ class Socket(object):
 
         if ret < 0:
             C.zmq_msg_close(zmq_msg)
-            raise zmqpy.ZMQError(_errno=C.zmq_errno())
+            raise ZMQError(C.zmq_errno())
 
         value = ffi.buffer(C.zmq_msg_data(zmq_msg), int(C.zmq_msg_size(zmq_msg)))[:]
 
