@@ -154,6 +154,7 @@ class Socket(object):
         self._attrs = {}
         self.n = self.context._add_socket(self)
         self.last_errno = None
+        self.linger = 1
 
     @property
     def closed(self):
