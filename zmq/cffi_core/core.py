@@ -34,8 +34,8 @@ class Context(object):
         self.n_sockets = 0
         self.max_sockets = 32
         self._sockets = {}
-        self.sockopts = {LINGER: 1}
-        self.linger = 1
+        self.sockopts = {LINGER: 0}
+        self.linger = 0
 
         global _instance
         _instance = self
@@ -57,7 +57,10 @@ class Context(object):
 
             del self._sockets[k]
 
-        C.zmq_term(self.zmq_ctx)
+        if zmq_version == 2:
+            C.zmq_term(self.zmq_ctx)
+        else:
+            C.zmq_ctx_destroy(self.zmq_ctx)
         self.zmq_ctx = None
         self._closed = True
         self.n_sockets = 0
