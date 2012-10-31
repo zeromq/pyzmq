@@ -160,7 +160,7 @@ class Socket(object):
     def closed(self):
         return self._closed
 
-    def close(self):
+    def close(self, *args):
         if not self._closed:
             rc = C.zmq_close(self.zmq_socket)
             self._closed = True
