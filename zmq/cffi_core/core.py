@@ -149,7 +149,7 @@ class Socket(object):
         self.sock_type = sock_type
         self.zmq_socket = C.zmq_socket(context.zmq_ctx, sock_type)
         if not self.zmq_socket:
-            raise ZMQError()
+            raise ZMQError(EINVAL)
         self._closed = False
         self._attrs = {}
         self.n = self.context._add_socket(self)
