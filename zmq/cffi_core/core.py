@@ -113,7 +113,6 @@ class Context(object):
         object.__setattr__(self, attr_name, value)
 
     def __del__(self):
-        super(Context, self).__del__()
         self.term()
 
 def new_pointer_from_opt(option, length=0):
@@ -179,7 +178,6 @@ class Socket(object):
             return rc
 
     def __del__(self):
-        super(Socket, self).__del__()
         self.close()
 
     def bind(self, address):
