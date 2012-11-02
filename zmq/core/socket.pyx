@@ -498,8 +498,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        with nogil:
-            rc = zmq_bind(self.handle, c_addr)
+        rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             if IPC_PATH_MAX_LEN and zmq_errno() == errno_mod.ENAMETOOLONG:
                 # py3compat: addr is bytes, but msg wants str
@@ -536,8 +535,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
         
-        with nogil:
-            rc = zmq_connect(self.handle, c_addr)
+        rc = zmq_connect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
@@ -595,8 +593,7 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
         
-        with nogil:
-            rc = zmq_disconnect(self.handle, c_addr)
+        rc = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
