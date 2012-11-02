@@ -556,6 +556,10 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
+        
+        if ZMQ_VERSION_MAJOR < 3:
+            raise NotImplementedError("unbind requires libzmq >= 3.0, have %s" % zmq.zmq_version())
+        
 
         _check_closed(self, True)
         if isinstance(addr, unicode):
@@ -585,6 +589,9 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
+        
+        if ZMQ_VERSION_MAJOR < 3:
+            raise NotImplementedError("disconnect requires libzmq >= 3.0, have %s" % zmq.zmq_version())
 
         _check_closed(self, True)
         if isinstance(addr, unicode):
