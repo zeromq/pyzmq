@@ -178,6 +178,7 @@
     #define zmq_recvbuf zmq_recv
     #define zmq_device(type,in,out) _missing
 #else
+    #define zmq_disconnect(s, addr) _missing
     #define zmq_sendmsg zmq_send
     #define zmq_recvmsg zmq_recv
     #define zmq_sendbuf (void *s, const void *buf, size_t len, int flags) _missing
