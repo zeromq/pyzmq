@@ -1,19 +1,20 @@
 # coding: utf-8
 
-from ._cffi import C, ffi, zmq_version, new_uint64_pointer, \
-                                        new_int64_pointer, \
-                                        new_int_pointer, \
-                                        new_binary_data, \
-                                        value_uint64_pointer, \
-                                        value_int64_pointer, \
-                                        value_int_pointer, \
-                                        value_binary_data
+from ._cffi import C, ffi, zmq_version_info, new_uint64_pointer, \
+                                             new_int64_pointer, \
+                                             new_int_pointer, \
+                                             new_binary_data, \
+                                             value_uint64_pointer, \
+                                             value_int64_pointer, \
+                                             value_int_pointer, \
+                                             value_binary_data, \
+                                             zmq_major_version
 
 from ._cffi import strerror
 
 from .constants import *
 from .error import *
-from .poll import Poller, _poll
+from ._poll import Poller, _poll
 
 from zmq.utils import jsonapi
 import random
@@ -44,7 +45,7 @@ class Context(object):
         if self.closed:
             return
 
-        if zmq_version == 2:
+        if zmq_major_version == 2:
             C.zmq_term(self.zmq_ctx)
         else:
             C.zmq_ctx_destroy(self.zmq_ctx)
@@ -243,7 +244,7 @@ class Socket(object):
         C.zmq_msg_init_size(zmq_msg, len(message))
         C.strncpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
 
-        if zmq_version == 2:
+        if zmq_version_info()[0] == 2:
             ret = C.zmq_send(self.zmq_socket, zmq_msg, flags)
         else:
             ret = C.zmq_sendmsg(self. zmq_socket, zmq_msg, flags)
@@ -258,7 +259,7 @@ class Socket(object):
         zmq_msg = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg)
 
-        if zmq_version == 2:
+        if zmq_version_info()[0] == 2:
             ret = C.zmq_recv(self.zmq_socket, zmq_msg, flags)
         else:
             ret = C.zmq_recvmsg(self.zmq_socket, zmq_msg, flags)

@@ -1,4 +1,4 @@
-from ._cffi import zmq_version
+from ._cffi import zmq_version_info
 
 # Modified by Felipe Cruz
 # Copyright © 2011 Daniel Holth
@@ -68,7 +68,7 @@ zmq3_cons = ['ZMQ_DONTWAIT', 'ZMQ_MORE', 'ZMQ_MAXMSGSIZE', 'ZMQ_SNDHWM',
 
 names = None
 
-if zmq_version == 2:
+if zmq_version_info()[0] == 2:
     names = errnos + socket_cons + zmq_base_cons + zmq2_cons
 else:
     names = errnos + socket_cons + zmq_base_cons + zmq3_cons
@@ -80,11 +80,11 @@ for cname in names:
 info = configure.configure(CConfigure)
 globals().update(info)
 
-if zmq_version == 2:
+if zmq_version_info()[0] == 2:
     uint64_opts = [HWM, AFFINITY, SNDBUF, RCVBUF]
 
     int64_opts =  [SWAP, RECOVERY_IVL, RECOVERY_IVL_MSEC,
-                   MCAST_LOOP, RATE]
+                   MCAST_LOOP, RATE, RCVMORE]
 
     binary_opts = [IDENTITY, SUBSCRIBE, UNSUBSCRIBE]
 
@@ -99,4 +99,6 @@ else:
 
     int_opts =    [RCVHWM, SNDHWM, RCVTIMEO, SNDTIMEO,
                    LINGER, RECONNECT_IVL, RECONNECT_IVL_MAX,
-                   BACKLOG, RATE]
+                   BACKLOG, RATE, RCVMORE]
+
+    NOBLOCK = DONTWAIT

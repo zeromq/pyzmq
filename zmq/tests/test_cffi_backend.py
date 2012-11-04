@@ -1,6 +1,6 @@
 import pytest
 
-from zmq.cffi_core._cffi import zmq_version
+from zmq.cffi_core._cffi import zmq_version_info
 
 def test_zmq_version_info():
     from zmq.cffi_core._cffi import zmq_version_info
@@ -25,9 +25,9 @@ def test_zmq_term():
 
     assert ret == 0
 
-@pytest.mark.skipif('zmq_version == 2')
+@pytest.mark.skipif('zmq_version_info()[0] == 2')
 def test_zmq_ctx_destroy():
-    from zmq.cffi_core._cffi import C, zmq_version
+    from zmq.cffi_core._cffi import C, zmq_version_info
 
     ctx = C.zmq_init(1)
     ret = C.zmq_ctx_destroy(ctx)
@@ -188,7 +188,7 @@ def test_zmq_msg_data():
 
 def test_zmq_send():
     from zmq.cffi_core.constants import PAIR, NOBLOCK
-    from zmq.cffi_core._cffi import C, ffi, zmq_version
+    from zmq.cffi_core._cffi import C, ffi, zmq_version_info
 
     zmq_msg = ffi.new('zmq_msg_t*')
 
@@ -204,7 +204,7 @@ def test_zmq_send():
     r1 = C.zmq_bind(socket1, 'tcp://*:5555')
     r2 = C.zmq_connect(socket2, 'tcp://127.0.0.1:5555')
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret = C.zmq_send(socket2, zmq_msg, 0)
         assert ret == 0
     else:
@@ -217,7 +217,7 @@ def test_zmq_send():
 
 def test_zmq_recv():
     from zmq.cffi_core.constants import REQ, REP, NOBLOCK
-    from zmq.cffi_core._cffi import C, ffi, zmq_version
+    from zmq.cffi_core._cffi import C, ffi, zmq_version_info
 
     ctx = C.zmq_init(1)
 
@@ -239,7 +239,7 @@ def test_zmq_recv():
     zmq_msg2 = ffi.new('zmq_msg_t*')
     C.zmq_msg_init(zmq_msg2)
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret = C.zmq_send(sender, zmq_msg, 0)
         ret2 = C.zmq_recv(receiver, zmq_msg2, 0)
         assert ret == ret2 == 0
@@ -257,7 +257,7 @@ def test_zmq_recv():
 
 def test_zmq_poll():
     from zmq.cffi_core.constants import REQ, REP, NOBLOCK, POLLIN, POLLOUT
-    from zmq.cffi_core._cffi import C, ffi, zmq_version
+    from zmq.cffi_core._cffi import C, ffi, zmq_version_info
 
     ctx = C.zmq_init(1)
 
@@ -288,7 +288,7 @@ def test_zmq_poll():
     ret = C.zmq_poll(receiver_pollitem, 1, 0)
     assert ret == 0
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret = C.zmq_send(sender, zmq_msg, 0)
         assert ret == 0
     else:
@@ -310,7 +310,7 @@ def test_zmq_poll():
     zmq_msg2 = ffi.new('zmq_msg_t*')
     C.zmq_msg_init(zmq_msg2)
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret_recv = C.zmq_recv(receiver, zmq_msg2, 0)
         assert ret_recv == 0
     else:
@@ -340,7 +340,7 @@ def test_zmq_poll():
                         ffi.NULL,
                         ffi.NULL)
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret_send = C.zmq_send(receiver, zmq_msg_again, 0)
         assert ret_send == 0
     else:
@@ -355,7 +355,7 @@ def test_zmq_poll():
     assert ret >= 0
     assert int(sender_pollitem.revents) & POLLIN
 
-    if zmq_version == 2:
+    if zmq_version_info()[0] == 2:
         ret_recv = C.zmq_recv(sender, zmq_msg2, 0)
         assert ret_recv == 0
     else:
