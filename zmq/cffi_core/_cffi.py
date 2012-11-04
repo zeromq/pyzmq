@@ -118,7 +118,12 @@ def zmq_version_info():
 
     return (int(major[0]), int(minor[0]), int(patch[0]))
 
-zmq_version = zmq_version_info()[0]
+def zmq_version():
+    return str(zmq_version_info()[0]) + \
+           str(zmq_version_info()[1]) + \
+           str(zmq_version_info()[2])
+
+zmq_major_version = zmq_version_info()[0]
 
 if zmq_version_info()[0] == 2:
     functions = ''.join([core_functions,
