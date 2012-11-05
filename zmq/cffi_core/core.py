@@ -184,7 +184,7 @@ class Socket(object):
     def bind(self, address):
         ret = C.zmq_bind(self.zmq_socket, address)
         if ret != 0:
-            raise ZMQError()
+            raise ZMQError(EADDRINUSE)
 
     def connect(self, address):
         ret = C.zmq_connect(self.zmq_socket, address)
@@ -231,7 +231,7 @@ class Socket(object):
                 port = random.randrange(min_port, max_port)
                 self.bind('%s:%s' % (addr, port))
             except ZMQError as exception:
-                if not exception.errno == zmq.EADDRINUSE:
+                if not exception.errno == EADDRINUSE:
                     raise
             else:
                 return port
