@@ -11,6 +11,7 @@ from ._cffi import C, ffi, zmq_version_info, new_uint64_pointer, \
                                              zmq_major_version
 
 from ._cffi import strerror
+import cPickle as pickle
 
 from .constants import *
 from .error import *
@@ -380,6 +381,7 @@ class Socket(object):
         return codecs.decode(msg.bytes, encoding)
 
 
+    def send_pyobj(self, obj, flags=0, protocol=-1):
         """s.send_pyobj(obj, flags=0, protocol=-1)
 
         Send a Python object as a message using pickle to serialize.
