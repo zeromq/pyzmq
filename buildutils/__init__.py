@@ -7,3 +7,4 @@ from .msg import *
 from .config import *
 from .detect import *
 from .bundle import *
+from .misc import *
