@@ -180,6 +180,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_getsockopt (void *s, int option, void *optval, size_t *optvallen)
     int zmq_bind (void *s, char *addr)
     int zmq_connect (void *s, char *addr)
+    int zmq_unbind (void *s, char *addr)
+    int zmq_disconnect (void *s, char *addr)
     # send/recv
     int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags)
     int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags)
