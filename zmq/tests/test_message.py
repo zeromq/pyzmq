@@ -21,7 +21,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
-from zmq.utils.strtypes import unicode, bytes, asbytes, b
+from zmq.utils.strtypes import unicode, bytes, b, u
 from zmq.utils.rebuffer import array_from_buffer
 
 #-----------------------------------------------------------------------------
@@ -59,7 +59,9 @@ class TestFrame(BaseZMQTestCase):
         for i in range(16):
             s = (2**i)*x
             m = zmq.Frame(s)
-            self.assertEquals(s, asbytes(m))
+            m_str = str(m)
+            m_str_b = b(m_str) # py3compat
+            self.assertEquals(s, m_str_b)
 
     def test_bytes(self):
         """Test the Frame.bytes property."""
@@ -75,13 +77,10 @@ class TestFrame(BaseZMQTestCase):
 
     def test_unicode(self):
         """Test the unicode representations of the Frames."""
-        s = unicode('asdf')
+        s = u('asdf')
         self.assertRaises(TypeError, zmq.Frame, s)
-        u = '§'
-        if str is not unicode:
-            u = u.decode('utf8')
         for i in range(16):
-            s = (2**i)*u
+            s = (2**i)*u('§')
             m = zmq.Frame(s.encode('utf8'))
             self.assertEquals(s, unicode(m.bytes,'utf8'))
 
@@ -104,13 +103,13 @@ class TestFrame(BaseZMQTestCase):
             m2 = copy.copy(m)
             rc += 1
             self.assertEquals(grc(s), rc)
-            b = m2.buffer
+            buf = m2.buffer
 
             rc += view_rc
             self.assertEquals(grc(s), rc)
 
-            self.assertEquals(s, asbytes(str(m)))
-            self.assertEquals(s, asbytes(m2))
+            self.assertEquals(s, b(str(m)))
+            self.assertEquals(s, bytes(m2))
             self.assertEquals(s, m.bytes)
             # self.assert_(s is str(m))
             # self.assert_(s is str(m2))
@@ -118,7 +117,7 @@ class TestFrame(BaseZMQTestCase):
             rc -= 1
             self.assertEquals(grc(s), rc)
             rc -= view_rc
-            del b
+            del buf
             self.assertEquals(grc(s), rc)
             del m
             rc -= 2
@@ -138,16 +137,16 @@ class TestFrame(BaseZMQTestCase):
             m2 = copy.copy(m)
             rc += 1
             self.assertEquals(grc(s), rc)
-            b = m.buffer
+            buf = m.buffer
             rc += view_rc
             self.assertEquals(grc(s), rc)
-            self.assertEquals(s, asbytes(str(m)))
-            self.assertEquals(s, asbytes(m2))
+            self.assertEquals(s, b(str(m)))
+            self.assertEquals(s, bytes(m2))
             self.assertEquals(s, m2.bytes)
             self.assertEquals(s, m.bytes)
             # self.assert_(s is str(m))
             # self.assert_(s is str(m2))
-            del b
+            del buf
             self.assertEquals(grc(s), rc)
             del m
             # m.buffer is kept until m is del'd
@@ -193,10 +192,7 @@ class TestFrame(BaseZMQTestCase):
     
     def test_buffer_in(self):
         """test using a buffer as input"""
-        if unicode is str:
-            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
-        else:
-            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
+        ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(view(ins))
     
     def test_bad_buffer_in(self):
@@ -206,10 +202,7 @@ class TestFrame(BaseZMQTestCase):
         
     def test_buffer_out(self):
         """receiving buffered output"""
-        if unicode is str:
-            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode('utf8')
-        else:
-            ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√"
+        ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(ins)
         outb = m.buffer
         self.assertTrue(isinstance(outb, view))
