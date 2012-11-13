@@ -41,7 +41,7 @@ import logging
 from logging import INFO, DEBUG, WARN, ERROR, FATAL
 
 import zmq
-from zmq.utils.strtypes import bytes,unicode
+from zmq.utils.strtypes import bytes, unicode, cast_bytes
 
 #-----------------------------------------------------------------------------
 # Code
@@ -72,7 +72,7 @@ class PUBHandler(logging.Handler):
     (DEBUG,INFO,etc.), followed by any additional subtopics specified in the
     message by: log.debug("subtopic.subsub::the real message")
     """
-    root_topic="".encode()
+    root_topic=""
     socket = None
     
     formatters = {
@@ -104,28 +104,27 @@ class PUBHandler(logging.Handler):
         """Emit a log message on my socket."""
         try:
             topic, record.msg = record.msg.split(TOPIC_DELIM,1)
-            topic = topic.encode()
-        except:
-            topic = "".encode()
+        except Exception:
+            topic = ""
         try:
-            msg = self.format(record).encode()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+            bmsg = cast_bytes(self.format(record))
+        except Exception:
             self.handleError(record)
+            return
+        
         topic_list = []
 
         if self.root_topic:
             topic_list.append(self.root_topic)
 
-        topic_list.append(record.levelname.encode())
+        topic_list.append(record.levelname)
 
         if topic:
             topic_list.append(topic)
 
-        topic = '.'.encode().join(topic_list)
+        btopic = b'.'.join(cast_bytes(t) for t in topic_list)
 
-        self.socket.send_multipart([topic,msg])
+        self.socket.send_multipart([btopic, bmsg])
 
 
 class TopicLogger(logging.Logger):

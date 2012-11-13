@@ -1,3 +1,4 @@
+# encoding: utf-8
 #-----------------------------------------------------------------------------
 #  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
 #
@@ -17,7 +18,7 @@ from unittest import TestCase
 
 import zmq
 from zmq.log import handlers
-from zmq.utils.strtypes import b
+from zmq.utils.strtypes import b, u
 from zmq.tests import BaseZMQTestCase
 
 #-----------------------------------------------------------------------------
@@ -27,7 +28,7 @@ from zmq.tests import BaseZMQTestCase
 class TestPubLog(BaseZMQTestCase):
     
     iface = 'inproc://zmqlog'
-    topic= b'zmq'
+    topic= 'zmq'
     
     @property
     def logger(self):
@@ -36,14 +37,15 @@ class TestPubLog(BaseZMQTestCase):
         logger.setLevel(logging.DEBUG)
         return logger
     
-    def connect_handler(self):
+    def connect_handler(self, topic=None):
+        topic = self.topic if topic is None else topic
         logger = self.logger
         pub,sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
-        handler.root_topic = self.topic
+        handler.root_topic = topic
         logger.addHandler(handler)
-        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
+        sub.setsockopt(zmq.SUBSCRIBE, b(topic))
         time.sleep(0.1)
         return logger, handler, sub
     
@@ -62,7 +64,7 @@ class TestPubLog(BaseZMQTestCase):
         logger.addHandler(handler)
         sub = ctx.socket(zmq.SUB)
         self.sockets.append(sub)
-        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
+        sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
         sub.connect(self.iface)
         import time; time.sleep(0.25)
         msg1 = 'message'
@@ -84,7 +86,7 @@ class TestPubLog(BaseZMQTestCase):
         self.assertTrue(handler.socket is pub)
         self.assertTrue(handler.ctx is pub.context)
         self.assertTrue(handler.ctx is self.context)
-        sub.setsockopt(zmq.SUBSCRIBE, self.topic)
+        sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
         import time; time.sleep(0.1)
         msg1 = 'message'
         logger.info(msg1)
@@ -109,7 +111,17 @@ class TestPubLog(BaseZMQTestCase):
         self.assertEquals(topic, b'twoonly.INFO')
         self.assertEquals(msg2, b(msg1)+b'\n')
         
-        
-        
         logger.removeHandler(handler)
+    
+    def test_unicode_message(self):
+        logger, handler, sub = self.connect_handler()
+        base_topic = b(self.topic + '.INFO')
+        for msg, expected in [
+            (u('hello'), [base_topic, b('hello\n')]),
+            (u('héllo'), [base_topic, b('héllo\n')]),
+            (u('tøpic::héllo'), [base_topic + b('.tøpic'), b('héllo\n')]),
+        ]:
+            logger.info(msg)
+            received = sub.recv_multipart()
+            self.assertEqual(received, expected)
 
