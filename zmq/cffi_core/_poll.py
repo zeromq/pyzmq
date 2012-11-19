@@ -14,6 +14,13 @@ def _make_zmq_pollitem(socket, flags):
     zmq_pollitem.revents = 0
     return zmq_pollitem[0]
 
+def _make_zmq_pollitem_fromfd(socket_fd, flags):
+    zmq_pollitem = ffi.new('zmq_pollitem_t*')
+    zmq_pollitem.socket = ffi.NULL
+    zmq_pollitem.fd = socket_fd
+    zmq_pollitem.events = flags
+    zmq_pollitem.revents = 0
+    return zmq_pollitem[0]
 
 def _cffi_poll(zmq_pollitem_list, poller, timeout=-1):
     if zmq_version_info()[0] == 2:
@@ -48,16 +55,23 @@ def _poll(sockets, timeout):
 
 class Poller(object):
     def __init__(self):
-        self.sockets = {}
+        self.sockets_flags = {}
         self._sockets = {}
         self.c_sockets = {}
 
+    @property
+    def sockets(self):
+        return self.sockets_flags
+
     def register(self, socket, flags=POLLIN|POLLOUT):
         if flags:
-            self.sockets[socket] = flags
-            self._sockets[socket.zmq_socket] = socket
-            self.c_sockets[socket] =  _make_zmq_pollitem(socket, flags)
-        elif socket in self.sockets:
+            self.sockets_flags[socket] = flags
+            if isinstance(socket, int):
+                self.c_sockets[socket] = _make_zmq_pollitem_fromfd(socket, flags)
+            else:
+                self.c_sockets[socket] =  _make_zmq_pollitem(socket, flags)
+                self._sockets[socket.zmq_socket] = socket
+        elif socket in self.sockets_flags:
             # uregister sockets registered with no events
             self.unregister(socket)
         else:
@@ -68,9 +82,11 @@ class Poller(object):
         self.register(socket, flags)
 
     def unregister(self, socket):
-        del self.sockets[socket]
-        del self._sockets[socket.zmq_socket]
+        del self.sockets_flags[socket]
         del self.c_sockets[socket]
+
+        if not isinstance(socket, int):
+            del self._sockets[socket.zmq_socket]
 
     def poll(self, timeout=None):
         if timeout is None:
