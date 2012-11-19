@@ -23,9 +23,24 @@ import glob
 pypy_install = 'PyPy' in sys.version
 
 if pypy_install:
-    from zmq.cffi_core._cffi import zmq_version_info
+    import types
+    from zmq.cffi_core._cffi import zmq_version_info, zmq_version, \
+                                    IPC_PATH_MAX_LEN
+    from zmq.cffi_core import _poll, constants, context, message, version
     from zmq.cffi_core.constants import *
+    from zmq.cffi_core.context import *
+    from zmq.cffi_core.version import *
+    from zmq.cffi_core._poll import *
+    from zmq.cffi_core.message import *
     from zmq.cffi_core import *
+    import zmq.cffi_core as core
+
+    sys.modules['zmq.core._poll'] = _poll
+    sys.modules['zmq.core.constants'] = constants
+    sys.modules['zmq.core.context'] = context
+    sys.modules['zmq.core.message'] = message
+    sys.modules['zmq.core.version'] = version
+
 else:
     here = os.path.dirname(__file__)
 
