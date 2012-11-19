@@ -67,6 +67,7 @@ zmq3_cons = ['ZMQ_DONTWAIT', 'ZMQ_MORE', 'ZMQ_MAXMSGSIZE', 'ZMQ_SNDHWM',
              'ZMQ_EVENT_CLOSE_FAILED']
 
 names = None
+pynames = []
 
 if zmq_version_info()[0] == 2:
     names = errnos + socket_cons + zmq_base_cons + zmq2_cons
@@ -75,10 +76,13 @@ else:
 
 for cname in names:
     pyname = cname.split('_', 1)[-1]
+    pynames.append(pyname)
     setattr(CConfigure, pyname, configure.ConstantInteger(cname))
 
-info = configure.configure(CConfigure)
-globals().update(info)
+constants = configure.configure(CConfigure)
+globals().update(constants)
+
+uint64_opts = int64_opts = binary_opts = int_opts = []
 
 if zmq_version_info()[0] == 2:
     uint64_opts = [HWM, AFFINITY, SNDBUF, RCVBUF]
@@ -89,7 +93,7 @@ if zmq_version_info()[0] == 2:
     binary_opts = [IDENTITY, SUBSCRIBE, UNSUBSCRIBE]
 
     int_opts =    [RCVTIMEO, SNDTIMEO, LINGER, RECONNECT_IVL,
-                   RECONNECT_IVL_MAX, BACKLOG]
+                   RECONNECT_IVL_MAX, BACKLOG, FD, EVENTS, TYPE]
 else:
     uint64_opts = [AFFINITY, SNDBUF, RCVBUF]
 
@@ -99,6 +103,29 @@ else:
 
     int_opts =    [RCVHWM, SNDHWM, RCVTIMEO, SNDTIMEO,
                    LINGER, RECONNECT_IVL, RECONNECT_IVL_MAX,
-                   BACKLOG, RATE, RCVMORE]
+                   BACKLOG, RATE, RCVMORE, FD, EVENTS, TYPE]
 
     NOBLOCK = DONTWAIT
+
+# compatibility with default core constants
+
+int_sockopts = []
+int_sockopts.extend(int_opts)
+
+int64_sockopts = []
+int64_sockopts.extend(int64_opts)
+int64_sockopts.extend(uint64_opts)
+
+bytes_sockopts = []
+bytes_sockopts.extend(binary_opts)
+
+pynames.extend([
+    'binary_opts',
+    'int_opts',
+    'int64_opts',
+    'uint64_opts',
+    'constants',
+    'bytes_sockopts',
+])
+
+__all__ = pynames
