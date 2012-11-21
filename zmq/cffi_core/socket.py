@@ -226,6 +226,9 @@ class Socket(object):
 
         zmq_msg = ffi.new('zmq_msg_t*')
 
+        if isinstance(message, Frame):
+            message = str(message)
+
         c_message = ffi.new('char[]', message)
         C.zmq_msg_init_size(zmq_msg, len(message))
         C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
@@ -403,6 +406,8 @@ class Socket(object):
             The Python object that arrives as a message.
         """
         s = self.recv(flags)
+        if isinstance(s, Frame):
+            s = str(s)
         return pickle.loads(s)
 
     def send_json(self, obj, flags=0):
@@ -442,6 +447,8 @@ class Socket(object):
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = self.recv(flags)
+            if isinstance(msg, Frame):
+                msg = str(msg)
             return jsonapi.loads(msg)
 
     def poll(self, timeout=None, flags=POLLIN):

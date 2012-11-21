@@ -61,6 +61,8 @@ class Frame(object):
         return len(self.buffer)
 
     def __str__(self):
+        if type(self.buffer) == memoryview:
+            return self.buffer.tobytes()[:]
         return self.buffer
 
     def __eq__(self, other):
