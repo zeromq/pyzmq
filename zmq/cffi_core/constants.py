@@ -94,6 +94,8 @@ if zmq_version_info()[0] == 2:
 
     int_opts =    [RCVTIMEO, SNDTIMEO, LINGER, RECONNECT_IVL,
                    RECONNECT_IVL_MAX, BACKLOG, FD, EVENTS, TYPE]
+
+    DONTWAIT = NOBLOCK
 else:
     uint64_opts = [AFFINITY, SNDBUF, RCVBUF]
 
