@@ -498,8 +498,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        with nogil:
-            rc = zmq_bind(self.handle, c_addr)
+        rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             if IPC_PATH_MAX_LEN and zmq_errno() == errno_mod.ENAMETOOLONG:
                 # py3compat: addr is bytes, but msg wants str
@@ -536,8 +535,72 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
         
-        with nogil:
-            rc = zmq_connect(self.handle, c_addr)
+        rc = zmq_connect(self.handle, c_addr)
+        if rc != 0:
+            raise ZMQError()
+
+    def unbind(self, addr):
+        """s.unbind(addr)
+        
+        Unbind from an address (undoes a call to bind).
+        
+        This feature requires libzmq-3
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
+            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+        """
+        cdef int rc
+        cdef char* c_addr
+        
+        if ZMQ_VERSION_MAJOR < 3:
+            raise NotImplementedError("unbind requires libzmq >= 3.0, have %s" % zmq.zmq_version())
+        
+
+        _check_closed(self, True)
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, bytes):
+            raise TypeError('expected str, got: %r' % addr)
+        c_addr = addr
+        
+        rc = zmq_unbind(self.handle, c_addr)
+        if rc != 0:
+            raise ZMQError()
+
+    def disconnect(self, addr):
+        """s.disconnect(addr)
+
+        Disconnect from a remote 0MQ socket (undoes a call to connect).
+        
+        This feature requires libzmq-3
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
+            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+        """
+        cdef int rc
+        cdef char* c_addr
+        
+        if ZMQ_VERSION_MAJOR < 3:
+            raise NotImplementedError("disconnect requires libzmq >= 3.0, have %s" % zmq.zmq_version())
+
+        _check_closed(self, True)
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, bytes):
+            raise TypeError('expected str, got: %r' % addr)
+        c_addr = addr
+        
+        rc = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
