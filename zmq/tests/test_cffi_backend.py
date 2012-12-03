@@ -76,7 +76,7 @@ def test_zmq_getsockopt():
     ret = C.zmq_setsockopt(socket, IDENTITY, ffi.cast('void*', identity), 3)
     assert ret == 0
 
-    option_len = ffi.new('unsigned long*', 3)
+    option_len = ffi.new('size_t*', 3)
     option = ffi.new('char*')
     ret = C.zmq_getsockopt(socket,
                            IDENTITY,
