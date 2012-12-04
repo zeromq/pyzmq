@@ -14,3 +14,7 @@ class ZMQError(Exception):
 
 class ZMQBindError(Exception):
     pass
+
+class NotDone(ZMQError):
+    def __init__(self):
+        super(ZMQError, self).__init__(self)

@@ -47,8 +47,11 @@ ffi = PythonFFI()
 
 @ffi.pyexport("void(char*, int)")
 def python_free_callback(data, hint_index):
-    print(hints[hint_index])
-
+    tracker = hints[hint_index][1]
+    if isinstance(tracker.evt, Event):
+        tracker.evt.set()
+    tracker.evt = None
+    del data
 
 core_functions = \
 '''
