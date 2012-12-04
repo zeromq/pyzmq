@@ -14,15 +14,24 @@
 
 import copy
 import sys
-from sys import getrefcount as grc
+if hasattr(sys, 'getrefcount'):
+    from sys import getrefcount as grc
+    rc0 = grc(x)
+    v = view(x)
+    view_rc = grc(x) - rc0
+else:
+    grc = lambda x: x
 import time
 from pprint import pprint
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import unicode, bytes, asbytes, b
-from zmq.utils.rebuffer import array_from_buffer
+try:
+    from zmq.utils.rebuffer import array_from_buffer
+except:
+    pass
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -37,12 +46,11 @@ try:
 except NameError:
     view = buffer
 
-rc0 = grc(x)
-v = view(x)
-view_rc = grc(x) - rc0
+
 
 class TestFrame(BaseZMQTestCase):
 
+    @skipIf(not 'PyPy' in sys.version_info, "Not PyPy Compatible")
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -92,6 +100,7 @@ class TestFrame(BaseZMQTestCase):
             m = zmq.Frame(s)
             self.assertEquals(len(s), len(m))
 
+    @skipIf(not 'PyPy' in sys.version_info, "Not PyPy Compatible")
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -126,6 +135,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEquals(rc, 2)
             del s
 
+    @skipIf(not 'PyPy' in sys.version_info, "Not PyPy Compatible")
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -239,7 +249,8 @@ class TestFrame(BaseZMQTestCase):
             r = b.recv()
             self.assertEquals(s,r)
         self.assertEquals(s, m.bytes)
-    
+
+    @skipIf(not 'PyPy' in sys.version_info, "Not PyPy Compatible")
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
         try:
