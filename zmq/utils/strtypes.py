@@ -16,21 +16,36 @@ Authors
 
 import sys
 
-major,mior = sys.version_info[:2]
-if major >= 3:
+if sys.version_info[0] >= 3:
     bytes = bytes
     unicode = str
     basestring = (bytes, unicode)
-    asbytes = lambda s: s if isinstance(s, bytes) else unicode(s).encode('utf8')
-
-elif major == 2:
+else:
     unicode = unicode
     bytes = str
     basestring = basestring
-    asbytes = str
 
-# give short 'b' alias for asbytes, so that we can use fake b('stuff')
+def cast_bytes(s, encoding='utf8'):
+    """cast unicode or bytes to bytes"""
+    if isinstance(s, bytes):
+        return s
+    elif isinstance(s, unicode):
+        return s.encode(encoding)
+    else:
+        raise TypeError("Expected unicode or bytes, got %r" % s)
+
+def cast_unicode(s, encoding='utf8'):
+    """cast bytes or unicode to unicode"""
+    if isinstance(s, bytes):
+        return s.decode(encoding)
+    elif isinstance(s, unicode):
+        return s
+    else:
+        raise TypeError("Expected unicode or bytes, got %r" % s)
+
+# give short 'b' alias for cast_bytes, so that we can use fake b('stuff')
 # to simulate b'stuff'
-b = asbytes
+b = asbytes = cast_bytes
+u = cast_unicode
 
-__all__ = ['asbytes', 'bytes', 'unicode', 'basestring', 'b']
+__all__ = ['asbytes', 'bytes', 'unicode', 'basestring', 'b', 'u', 'cast_bytes', 'cast_unicode']
