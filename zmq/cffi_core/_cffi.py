@@ -2,6 +2,12 @@
 
 from cffi import FFI
 
+try:
+    # below 3.3
+    from threading import _Event as Event
+except (ImportError):
+    from threading import Event
+
 class PythonFFI(FFI):
 
     def __init__(self, backend=None):
@@ -47,11 +53,9 @@ ffi = PythonFFI()
 
 @ffi.pyexport("void(char*, int)")
 def python_free_callback(data, hint_index):
-    tracker = hints[hint_index][1]
-    if isinstance(tracker.evt, Event):
-        tracker.evt.set()
-    tracker.evt = None
-    del data
+    tracker_evt = hints[hint_index][1]
+    if isinstance(tracker_evt, Event):
+        tracker_evt.set()
 
 core_functions = \
 '''
