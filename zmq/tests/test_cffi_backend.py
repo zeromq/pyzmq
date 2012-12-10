@@ -249,7 +249,8 @@ def test_zmq_recv():
         assert ret == ret2 == 5
 
     assert 5 == C.zmq_msg_size(zmq_msg2)
-    assert "Hello" == ffi.string(ffi.cast('char*', C.zmq_msg_data(zmq_msg2)))
+    assert "Hello" == ffi.buffer(C.zmq_msg_data(zmq_msg2),
+                                 C.zmq_msg_size(zmq_msg2))[:]
 
     assert C.zmq_close(sender) == 0
     assert C.zmq_close(receiver) == 0
@@ -318,7 +319,8 @@ def test_zmq_poll():
         assert ret_recv == 5
 
     assert 5 == C.zmq_msg_size(zmq_msg2)
-    assert "Hello" == ffi.string(ffi.cast('char*', C.zmq_msg_data(zmq_msg2)))
+    assert "Hello" == ffi.buffer(C.zmq_msg_data(zmq_msg2),
+                                 C.zmq_msg_size(zmq_msg2))[:]
 
     #assert C.zmq_msg_close(zmq_msg2) == 0
 
