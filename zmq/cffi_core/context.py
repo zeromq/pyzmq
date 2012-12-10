@@ -105,4 +105,10 @@ class Context(object):
         object.__setattr__(self, attr_name, value)
 
     def __del__(self):
-        self.term()
+        if zmq_major_version == 2:
+            C.zmq_term(self.zmq_ctx)
+        else:
+            C.zmq_ctx_destroy(self.zmq_ctx)
+
+        self.zmq_ctx = None
+        self._closed = True
