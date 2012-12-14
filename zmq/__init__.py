@@ -40,6 +40,7 @@ if pypy_install:
     #fake modules just to pass imports
     devices = types.ModuleType('device')
 
+    sys.modules['zmq.core'] = core
     sys.modules['zmq.core._poll'] = _poll
     sys.modules['zmq.core.constants'] = constants
     sys.modules['zmq.core.context'] = context
