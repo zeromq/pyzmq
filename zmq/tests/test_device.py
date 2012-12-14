@@ -14,23 +14,31 @@
 import time
 
 import zmq
-from zmq import devices
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
+
+try:
+    from zmq import devices
+    devices.ThreadDevice.context_factory = zmq.Context
+except:
+    devices = False
+
+
+from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest, \
+                      skipIf
 from zmq.utils.strtypes import (bytes,unicode,basestring)
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
-devices.ThreadDevice.context_factory = zmq.Context
 
 class TestDevice(BaseZMQTestCase):
-    
+    @skipIf(not devices, "zmq.devices not available")
     def test_device_types(self):
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
             dev = devices.Device(devtype, zmq.PAIR, zmq.PAIR)
             self.assertEquals(dev.device_type, devtype)
             del dev
-    
+
+    @skipIf(not devices, "zmq.devices not available")
     def test_device_attributes(self):
         dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
         self.assertEquals(dev.in_type, zmq.SUB)
@@ -38,7 +46,8 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(dev.device_type, zmq.QUEUE)
         self.assertEquals(dev.daemon, True)
         del dev
-    
+
+    @skipIf(not devices, "zmq.devices not available")
     def test_tsdevice_attributes(self):
         dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
         self.assertEquals(dev.in_type, zmq.SUB)
@@ -46,8 +55,9 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(dev.device_type, zmq.QUEUE)
         self.assertEquals(dev.daemon, True)
         del dev
-        
-    
+
+
+    @skipIf(not devices, "zmq.devices not available")
     def test_single_socket_forwarder_connect(self):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
@@ -71,7 +81,8 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(msg, self.recv(req))
         del dev
         req.close()
-        
+
+    @skipIf(not devices, "zmq.devices not available")
     def test_single_socket_forwarder_bind(self):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         # select random port:
