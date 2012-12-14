@@ -21,7 +21,7 @@ import sys
 import logging
 
 import zmq
-from zmq.cffi_core.socket import jsonapi, pickle
+from zmq.core.socket import jsonapi, pickle
 
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop import stack_context
