@@ -48,8 +48,9 @@ initthreads.init_threads()
 
 # zmq top-level imports
 
-from zmq import core, devices
+from zmq import core
 from zmq.core import *
+from zmq import devices
 
 def get_includes():
     """Return a list of directories to include for linking against pyzmq with cython."""
