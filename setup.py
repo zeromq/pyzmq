@@ -773,7 +773,7 @@ submodules = dict(
             'context':[context, libzmq],
             'message':[libzmq, buffers, message],
             'socket':[context, message, socket, libzmq, buffers],
-            'device':[libzmq, socket, context],
+            '_device':[libzmq, socket, context],
             '_version':[libzmq],
     },
     devices = {
