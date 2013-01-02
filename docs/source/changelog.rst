@@ -20,6 +20,21 @@ Experiments Removed
 * The :mod:`zmq.web` experiment has been removed,
   to be developed as a `standalone project <https://github.com/ellisonbg/zmqweb>`_.
 
+New Stuff
+---------
+
+* Add :meth:`socket.disconnect`, :meth:`socket.unbind` for libzmq-3.
+* :attr:`socket.hwm` sets *both* SNDHWM/RCVHWM for libzmq-3.
+
+
+Bugs Fixed
+----------
+
+* Unicode fixes
+* MinGW build fixes
+* :mod:`zmq.green` should be complete - devices and tornado eventloop both work
+  in gevent contexts.
+
 
 2.2.0.1
 =======
@@ -72,7 +87,7 @@ subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has bee
     :ref:`zmq_green`
 
 
-Bugs fixed
+Bugs Fixed
 ----------
 
 * TIMEO sockopts are properly included for libzmq-2.2.0
