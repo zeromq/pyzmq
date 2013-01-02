@@ -12,8 +12,13 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 current dev
 ===========
 
+Experiments Removed
+-------------------
+
 * The Threadsafe ZMQStream experiment in 2.2.0.1 was deemed inappropriate and not useful,
   and has been removed.
+* The :mod:`zmq.web` experiment has been removed,
+  to be developed as a `standalone project <https://github.com/ellisonbg/zmqweb>`_.
 
 
 2.2.0.1
