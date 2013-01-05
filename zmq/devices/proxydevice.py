@@ -1,4 +1,4 @@
-"""MonitoredQueue classes and functions.
+"""Proxy classes and functions.
 
 Authors
 -------
@@ -7,7 +7,7 @@ Authors
 """
 
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
 #
 #  This file is part of pyzmq
 #
@@ -22,29 +22,25 @@ Authors
 
 import time
 
-from zmq.core import QUEUE, FORWARDER, ZMQError, PUB
-from zmq.devices.basedevice import Device,ThreadDevice,ProcessDevice
-from zmq.devices.monitoredqueue import monitored_queue
+from zmq import ZMQError, PUB
+from zmq.devices.basedevice import Device, ThreadDevice, ProcessDevice
 
 #-----------------------------------------------------------------------------
 # Classes
 #-----------------------------------------------------------------------------
 
 
-class MonitoredQueueBase(object):
+class ProxyBase(object):
     """Base class for overriding methods."""
     
-    def __init__(self, in_type, out_type, mon_type=PUB, in_prefix=b'in', out_prefix=b'out'):
+    def __init__(self, in_type, out_type, mon_type=PUB):
         
-        Device.__init__(self, QUEUE, in_type, out_type)
+        Device.__init__(self, in_type=in_type, out_type=out_type)
         
         self.mon_type = mon_type
-        self._mon_binds = list()
-        self._mon_connects = list()
-        self._mon_sockopts = list()
-        
-        self._in_prefix = in_prefix
-        self._out_prefix = out_prefix
+        self._mon_binds = []
+        self._mon_connects = []
+        self._mon_sockopts = []
 
     def bind_mon(self, addr):
         """Enqueue ZMQ address for binding on mon_socket.
@@ -86,13 +82,12 @@ class MonitoredQueueBase(object):
     
     def run(self):
         ins,outs,mons = self._setup_sockets()
-        rc = monitored_queue(ins, outs, mons, 
-            self._in_prefix, self._out_prefix)
+        rc = zmq.proxy(ins, outs, mons)
         self.done = True
         return rc
 
-class MonitoredQueue(MonitoredQueueBase, Device):
-    """Threadsafe MonitoredQueue object.
+class Proxy(ProxyBase, Device):
+    """Threadsafe Proxy object.
 
     *Warning* as with most 'threadsafe' Python objects, this is only
     threadsafe as long as you do not use private methods or attributes.
@@ -102,7 +97,7 @@ class MonitoredQueue(MonitoredQueueBase, Device):
     <method>_mon version of each <method>_{in|out} method, for configuring the
     monitor socket.
 
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a
+    A Proxy is a 3-socket ZMQ Device that functions just like a
     QUEUE, except each message is also sent out on the monitor socket.
 
     If a message comes from in_sock, it will be prefixed with 'in'. If it
@@ -113,19 +108,19 @@ class MonitoredQueue(MonitoredQueueBase, Device):
     """
     pass
 
-class ThreadMonitoredQueue(MonitoredQueueBase, ThreadDevice):
-    """MonitoredQueue in a Thread. See MonitoredQueue for more."""
+class ThreadProxy(ProxyBase, ThreadDevice):
+    """Proxy in a Thread. See Proxy for more."""
     pass
 
-class ProcessMonitoredQueue(MonitoredQueueBase, ProcessDevice):
-    """MonitoredQueue in a Process. See MonitoredQueue for more."""
+class ProcessProxy(ProxyBase, ProcessDevice):
+    """Proxy in a Process. See Proxy for more."""
     pass
 
 
 __all__ = [
-    'MonitoredQueue',
-    'ThreadMonitoredQueue',
+    'Proxy',
+    'ThreadProxy',
 ]
 if ProcessDevice is not None:
-    __all__.append('ProcessMonitoredQueue')
+    __all__.append('ProcessProxy')
 
