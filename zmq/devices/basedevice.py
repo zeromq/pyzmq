@@ -90,16 +90,20 @@ class Device:
     
     context_factory = Context.instance
 
-    def __init__(self, device_type, in_type, out_type):
+    def __init__(self, device_type=QUEUE, in_type=None, out_type=None):
         self.device_type = device_type
+        if in_type is None:
+            raise TypeError("in_type must be specified")
+        if out_type is None:
+            raise TypeError("out_type must be specified")
         self.in_type = in_type
         self.out_type = out_type
-        self._in_binds = list()
-        self._in_connects = list()
-        self._in_sockopts = list()
-        self._out_binds = list()
-        self._out_connects = list()
-        self._out_sockopts = list()
+        self._in_binds = []
+        self._in_connects = []
+        self._in_sockopts = []
+        self._out_binds = []
+        self._out_connects = []
+        self._out_sockopts = []
         self.daemon = True
         self.done = False
     
