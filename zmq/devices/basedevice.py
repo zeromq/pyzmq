@@ -26,7 +26,7 @@ try:
 except ImportError:
     Process = None
 
-from zmq.core import device, Context
+from zmq import device, QUEUE, Context
 
 #-----------------------------------------------------------------------------
 # Classes
