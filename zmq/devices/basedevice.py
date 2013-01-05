@@ -7,7 +7,7 @@ Authors
 """
 
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
 #
 #  This file is part of pyzmq
 #
@@ -21,10 +21,7 @@ Authors
 
 import time
 from threading import Thread
-try:
-    from multiprocessing import Process
-except ImportError:
-    Process = None
+from multiprocessing import Process
 
 from zmq import device, QUEUE, Context
 
@@ -236,6 +233,4 @@ class ProcessDevice(BackgroundDevice):
     context_factory = Context
 
 
-__all__ = [ 'Device', 'ThreadDevice']
-if Process is not None:
-    __all__.append('ProcessDevice')
+__all__ = ['Device', 'ThreadDevice', 'ProcessDevice']

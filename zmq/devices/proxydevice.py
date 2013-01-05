@@ -120,7 +120,5 @@ class ProcessProxy(ProxyBase, ProcessDevice):
 __all__ = [
     'Proxy',
     'ThreadProxy',
+    'ProcessProxy',
 ]
-if ProcessDevice is not None:
-    __all__.append('ProcessProxy')
-

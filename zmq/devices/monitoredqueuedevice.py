@@ -7,7 +7,7 @@ Authors
 """
 
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
 #
 #  This file is part of pyzmq
 #
@@ -85,7 +85,5 @@ class ProcessMonitoredQueue(MonitoredQueueBase, ProcessProxy):
 __all__ = [
     'MonitoredQueue',
     'ThreadMonitoredQueue',
+    'ProcessMonitoredQueue'
 ]
-if ProcessProxy is not None:
-    __all__.append('ProcessMonitoredQueue')
-
