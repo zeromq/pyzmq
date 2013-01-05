@@ -22,8 +22,8 @@ Authors
 
 import time
 
-from zmq.core import QUEUE, FORWARDER, ZMQError, PUB
-from zmq.devices.basedevice import Device,ThreadDevice,ProcessDevice
+from zmq import ZMQError, PUB
+from zmq.devices.proxydevice import ProxyBase, Proxy, ThreadProxy, ProcessProxy
 from zmq.devices.monitoredqueue import monitored_queue
 
 #-----------------------------------------------------------------------------
@@ -31,59 +31,19 @@ from zmq.devices.monitoredqueue import monitored_queue
 #-----------------------------------------------------------------------------
 
 
-class MonitoredQueueBase(object):
+class MonitoredQueueBase(ProxyBase):
     """Base class for overriding methods."""
+    
+    _in_prefix = b''
+    _out_prefix = b''
     
     def __init__(self, in_type, out_type, mon_type=PUB, in_prefix=b'in', out_prefix=b'out'):
         
-        Device.__init__(self, QUEUE, in_type, out_type)
-        
-        self.mon_type = mon_type
-        self._mon_binds = list()
-        self._mon_connects = list()
-        self._mon_sockopts = list()
+        ProxyBase.__init__(self, in_type=in_type, out_type=out_type, mon_type=mon_type)
         
         self._in_prefix = in_prefix
         self._out_prefix = out_prefix
 
-    def bind_mon(self, addr):
-        """Enqueue ZMQ address for binding on mon_socket.
-
-        See zmq.Socket.bind for details.
-        """
-        self._mon_binds.append(addr)
-
-    def connect_mon(self, addr):
-        """Enqueue ZMQ address for connecting on mon_socket.
-
-        See zmq.Socket.bind for details.
-        """
-        self._mon_connects.append(addr)
-
-    def setsockopt_mon(self, opt, value):
-        """Enqueue setsockopt(opt, value) for mon_socket
-
-        See zmq.Socket.setsockopt for details.
-        """
-        self._mon_sockopts.append((opt, value))
-
-    def _setup_sockets(self):
-        ins,outs = Device._setup_sockets(self)
-        ctx = self._context
-        mons = ctx.socket(self.mon_type)
-        
-        # set sockopts (must be done first, in case of zmq.IDENTITY)
-        for opt,value in self._mon_sockopts:
-            mons.setsockopt(opt, value)
-        
-        for iface in self._mon_binds:
-            mons.bind(iface)
-        
-        for iface in self._mon_connects:
-            mons.connect(iface)
-        
-        return ins,outs,mons
-    
     def run(self):
         ins,outs,mons = self._setup_sockets()
         rc = monitored_queue(ins, outs, mons, 
@@ -91,7 +51,7 @@ class MonitoredQueueBase(object):
         self.done = True
         return rc
 
-class MonitoredQueue(MonitoredQueueBase, Device):
+class MonitoredQueue(MonitoredQueueBase, Proxy):
     """Threadsafe MonitoredQueue object.
 
     *Warning* as with most 'threadsafe' Python objects, this is only
@@ -113,11 +73,11 @@ class MonitoredQueue(MonitoredQueueBase, Device):
     """
     pass
 
-class ThreadMonitoredQueue(MonitoredQueueBase, ThreadDevice):
+class ThreadMonitoredQueue(MonitoredQueueBase, ThreadProxy):
     """MonitoredQueue in a Thread. See MonitoredQueue for more."""
     pass
 
-class ProcessMonitoredQueue(MonitoredQueueBase, ProcessDevice):
+class ProcessMonitoredQueue(MonitoredQueueBase, ProcessProxy):
     """MonitoredQueue in a Process. See MonitoredQueue for more."""
     pass
 
@@ -126,6 +86,6 @@ __all__ = [
     'MonitoredQueue',
     'ThreadMonitoredQueue',
 ]
-if ProcessDevice is not None:
+if ProcessProxy is not None:
     __all__.append('ProcessMonitoredQueue')
 
