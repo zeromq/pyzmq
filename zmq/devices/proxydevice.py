@@ -36,8 +36,6 @@ class ProxyBase(object):
     def __init__(self, in_type, out_type, mon_type=zmq.PUB):
         
         Device.__init__(self, in_type=in_type, out_type=out_type)
-        if zmq.zmq_version_info() < (3,2):
-            raise RuntimeError("zmq.proxy only available with libzmq >= 3.2, not %s" % zmq.zmq_version())
         self.mon_type = mon_type
         self._mon_binds = []
         self._mon_connects = []
