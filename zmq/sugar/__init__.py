@@ -1,49 +1,35 @@
-"""Python bindings for core 0MQ objects."""
+"""pure-Python sugar wrappers for core 0MQ objects."""
 
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
 #
-#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
+#  This file is part of pyzmq
 #
-#    This file is part of pyzmq.
-#
-#    pyzmq is free software; you can redistribute it and/or modify it under
-#    the terms of the Lesser GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    pyzmq is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    Lesser GNU General Public License for more details.
-#
-#    You should have received a copy of the Lesser GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.sugar import (context, tracker)
-
-# from zmq.sugar import (constants, error, message, context,
-#                       socket, poll, stopwatch, version, _device )
+from zmq.sugar import (
+    context, socket, tracker,
+)
 
 __all__ = []
-for submod in (context, tracker):
-# for submod in (constants, error, message, context,
-               # socket, poll, stopwatch, version, _device):
+for submod in (
+    context, socket, tracker
+):
     __all__.extend(submod.__all__)
 
 from zmq.sugar.context import *
 from zmq.sugar.tracker import *
-# 
-# from zmq.core.constants import *
-# from zmq.core.error import *
-# from zmq.core.message import *
-# from zmq.core.context import *
-# from zmq.core.socket import *
-# from zmq.core.poll import *
-# from zmq.core.stopwatch import *
-# from zmq.core._device import *
-# from zmq.core.version import *
-# 
+from zmq.sugar.socket import *
+# from zmq.sugar.constants import *
+# from zmq.sugar.error import *
+# from zmq.sugar.message import *
+# from zmq.sugar.poll import *
+# from zmq.sugar.stopwatch import *
+# from zmq.sugar._device import *
+# from zmq.sugar.version import *

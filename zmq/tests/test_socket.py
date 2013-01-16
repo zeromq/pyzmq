@@ -277,6 +277,7 @@ class TestSocket(BaseZMQTestCase):
     def test_subclass(self):
         """subclasses can assign attributes"""
         class S(zmq.Socket):
+            a = None
             def __init__(self, *a, **kw):
                 self.a=-1
         s = S(self.context, zmq.REP)
