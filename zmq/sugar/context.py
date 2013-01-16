@@ -9,8 +9,6 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-# import zmq
-
 from .backend import Context as ContextBase
 from .backend import constants
 from .backend import ENOTSUP
@@ -27,8 +25,8 @@ class Context(ContextBase, object):
         self.opt = {}
     
     # static method copied from tornado IOLoop.instance
-    @staticmethod
-    def instance(io_threads=1):
+    @classmethod
+    def instance(cls, io_threads=1):
         """Returns a global Context instance.
 
         Most single-threaded applications have a single, global Context.
@@ -43,9 +41,9 @@ class Context(ContextBase, object):
                 def __init__(self, context=None):
                     self.context = context or Context.instance()
         """
-        if Context._instance is None or Context._instance.closed:
-            Context._instance = Context(io_threads)
-        return Context._instance
+        if cls._instance is None or cls._instance.closed:
+            cls._instance = cls(io_threads=io_threads)
+        return cls._instance
 
     @property
     def _socket_class(self):
@@ -79,10 +77,13 @@ class Context(ContextBase, object):
     
     def __setattr__(self, key, value):
         """set default sockopts as attributes"""
-        if key in self.__dict__ or key in self.__class__.__dict__:
-            # allow extended attributes
-            self.__dict__[key] = value
-            return
+        
+        # regular setattr only allowed for defined attributes
+        for obj in [self] + self.__class__.mro():
+            if key in obj.__dict__:
+                self.__dict__[key] = value
+                return
+        
         try:
             opt = getattr(constants, key.upper())
         except AttributeError:
