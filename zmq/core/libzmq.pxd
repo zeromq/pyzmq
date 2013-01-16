@@ -205,8 +205,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_STREAMER
     enum: ZMQ_FORWARDER
     enum: ZMQ_QUEUE
-    # removed in libzmq
+
     int zmq_device (int device_, void *insocket_, void *outsocket_)
+    int zmq_proxy (void *frontend, void *backend, void *capture)
 
 cdef extern from "zmq_utils.h" nogil:
 
