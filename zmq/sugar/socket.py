@@ -24,7 +24,7 @@ from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
 
-from zmq import (
+from .backend import (
     SNDMORE, ENOTSUP, POLLIN
 )
 try:

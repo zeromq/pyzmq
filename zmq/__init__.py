@@ -48,8 +48,8 @@ initthreads.init_threads()
 
 # zmq top-level imports
 
-from zmq import core
-from zmq.core import *
+from zmq.sugar import backend
+from zmq.sugar.backend import *
 from zmq import sugar
 from zmq.sugar import *
 from zmq import devices
@@ -62,5 +62,5 @@ def get_includes():
     return [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
 
 
-__all__ = ['get_includes'] + core.__all__ + sugar.__all__ + error.__all__
+__all__ = ['get_includes'] + sugar.__all__ + backend.__all__
 
