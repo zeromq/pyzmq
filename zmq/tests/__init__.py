@@ -72,7 +72,7 @@ class BaseZMQTestCase(TestCase):
             t.join(timeout=2)
             if t.is_alive():
                 # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
-                zmq.core.context._instance = None
+                zmq.sugar.context.Context._instance = None
                 raise RuntimeError("context could not terminate, open sockets likely remain in test")
 
     def create_bound_pair(self, type1=zmq.PAIR, type2=zmq.PAIR, interface='tcp://127.0.0.1'):
