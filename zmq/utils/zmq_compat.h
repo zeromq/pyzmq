@@ -16,8 +16,7 @@
 // version compatibility for constants:
 #include "zmq.h"
 
-#define _missing (PyErr_SetString(PyExc_NotImplementedError, \
-"Not available in current zeromq."), -1)
+#define _missing (-1)
 
 // new in 2.2.0
 #ifndef ZMQ_RCVTIMEO
@@ -149,7 +148,7 @@
     #define ZMQ_NOBLOCK (-1)
 #endif
 
-// keep the device constants, because we will roll our own zmq_device()
+// keep the device constants, because device will be deprecated
 #ifndef ZMQ_STREAMER
     #define ZMQ_STREAMER 1
 #endif
@@ -172,16 +171,30 @@
     #define ZMQ_FD_T int
 #endif
 
+// handle device->proxy transition
+#if ZMQ_VERSION_MAJOR >= 4
+    // zmq_device
+    // it is an assumption that zmq4 will remove zmq_device
+    #define zmq_device(device_type, isocket, osocket) _missing
+#endif
+
+#if ZMQ_VERSION_MAJOR < 3
+    // #error zmq_proxy not defined ZMQ_MAJOR_VERSION
+    #define zmq_proxy(isocket, osocket, csocket) _missing
+#endif
+
+
 // use unambiguous aliases for zmq_send/recv functions
+
+
 #if ZMQ_VERSION_MAJOR >= 3
     #define zmq_sendbuf zmq_send
     #define zmq_recvbuf zmq_recv
-    #define zmq_device(type,in,out) _missing
 #else
     #define zmq_disconnect(s, addr) _missing
     #define zmq_unbind(s, addr) _missing
     #define zmq_sendmsg zmq_send
     #define zmq_recvmsg zmq_recv
-    #define zmq_sendbuf (void *s, const void *buf, size_t len, int flags) _missing
-    #define zmq_recvbuf (void *s, void *buf, size_t len, int flags) _missing
+    #define zmq_sendbuf(s, buf, len, flags) _missing
+    #define zmq_recvbuf(s, buf, len, flags) _missing
 #endif
