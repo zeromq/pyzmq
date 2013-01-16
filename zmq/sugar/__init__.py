@@ -23,18 +23,19 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.sugar import (context)
+from zmq.sugar import (context, tracker)
 
 # from zmq.sugar import (constants, error, message, context,
 #                       socket, poll, stopwatch, version, _device )
 
 __all__ = []
-for submod in (context,):
+for submod in (context, tracker):
 # for submod in (constants, error, message, context,
                # socket, poll, stopwatch, version, _device):
     __all__.extend(submod.__all__)
 
 from zmq.sugar.context import *
+from zmq.sugar.tracker import *
 # 
 # from zmq.core.constants import *
 # from zmq.core.error import *
