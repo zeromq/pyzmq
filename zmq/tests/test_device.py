@@ -105,6 +105,36 @@ class TestDevice(BaseZMQTestCase):
         self.assertEquals(msg, self.recv(req))
         del dev
         req.close()
+    
+    def test_proxy(self):
+        if zmq.zmq_version_info() < (3,2):
+            raise SkipTest("Proxies only in libzmq >= 3")
+        dev = devices.ThreadProxy(zmq.PULL, zmq.PUSH, zmq.PUSH)
+        binder = self.context.socket(zmq.REQ)
+        iface = 'tcp://127.0.0.1'
+        port = binder.bind_to_random_port(iface)
+        port2 = binder.bind_to_random_port(iface)
+        port3 = binder.bind_to_random_port(iface)
+        binder.close()
+        time.sleep(0.1)
+        dev.bind_in("%s:%i" % (iface, port))
+        dev.bind_out("%s:%i" % (iface, port2))
+        dev.bind_mon("%s:%i" % (iface, port3))
+        dev.start()
+        time.sleep(0.25)
+        msg = b'hello'
+        push = self.context.socket(zmq.PUSH)
+        push.connect("%s:%i" % (iface, port))
+        pull = self.context.socket(zmq.PULL)
+        pull.connect("%s:%i" % (iface, port2))
+        mon = self.context.socket(zmq.PULL)
+        mon.connect("%s:%i" % (iface, port3))
+        push.send(msg)
+        self.assertEqual(msg, self.recv(pull))
+        self.assertEqual(msg, self.recv(mon))
+        
+        
+        
 
 if have_gevent:
     import gevent
