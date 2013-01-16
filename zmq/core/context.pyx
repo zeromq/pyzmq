@@ -120,28 +120,10 @@ cdef class Context:
                 # move last handle to closed socket's index
                 self._sockets[idx] = self._sockets[self.n_sockets]
     
-    # instance method copied from tornado IOLoop.instance
-    @classmethod
-    def instance(cls, int io_threads=1):
-        """Returns a global Context instance.
-
-        Most single-threaded applications have a single, global Context.
-        Use this method instead of passing around Context instances
-        throughout your code.
-
-        A common pattern for classes that depend on Contexts is to use
-        a default argument to enable programs with multiple Contexts
-        but not require the argument for simpler applications:
-
-            class MyClass(object):
-                def __init__(self, context=None):
-                    self.context = context or Context.instance()
-        """
-        global _instance
-        if _instance is None or _instance.closed:
-            _instance = cls(io_threads)
-        return _instance
-
+    @property
+    def _handle(self):
+        return <Py_ssize_t> self.handle
+    
     def term(self):
         """ctx.term()
 
@@ -191,84 +173,4 @@ cdef class Context:
                 self._sockets[0] = self._sockets[self.n_sockets]
             self.term()
     
-    @property
-    def _socket_class(self):
-        # import here to prevent circular import
-        from zmq.core.socket import Socket
-        return Socket
-    
-    def socket(self, int socket_type):
-        """ctx.socket(socket_type)
-
-        Create a Socket associated with this Context.
-
-        Parameters
-        ----------
-        socket_type : int
-            The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.
-        """
-        if self.closed:
-            raise ZMQError(ENOTSUP)
-        s = self._socket_class(self, socket_type)
-        for opt, value in self.sockopts.iteritems():
-            try:
-                s.setsockopt(opt, value)
-            except ZMQError:
-                # ignore ZMQErrors, which are likely for socket options
-                # that do not apply to a particular socket type, e.g.
-                # SUBSCRIBE for non-SUB sockets.
-                pass
-        return s
-    
-    def __setattr__(self, key, value):
-        """set default sockopts as attributes"""
-        try:
-            opt = getattr(constants, key.upper())
-        except AttributeError:
-            # allow subclasses to have extended attributes
-            if self.__class__.__module__ != 'zmq.core.context':
-                self._attrs[key] = value
-            else:
-                raise AttributeError("No such socket option: %s" % key.upper())
-        else:
-            self.sockopts[opt] = value
-    
-    def __getattr__(self, key):
-        """get default sockopts as attributes"""
-        if key in self._attrs:
-            # `key` is subclass extended attribute
-            return self._attrs[key]
-        key = key.upper()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("no such socket option: %s" % key)
-        else:
-            if opt not in self.sockopts:
-                raise AttributeError(key)
-            else:
-                return self.sockopts[opt]
-    
-    def __delattr__(self, key):
-        """delete default sockopts as attributes"""
-        if key in self._attrs:
-            # `key` is subclass extended attribute
-            del self._attrs[key]
-            return
-        key = key.upper()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("no such socket option: %s" % key)
-        else:
-            if opt not in self.sockopts:
-                raise AttributeError(key)
-            else:
-                del self.sockopts[opt]
-    
-    @property
-    def _handle(self):
-        return <Py_ssize_t> self.handle
-
 __all__ = ['Context']
