@@ -70,7 +70,7 @@ except:
     import pickle
 
 import zmq
-from zmq.core import constants, pysocket
+from zmq.core import constants
 from zmq.core.constants import *
 from zmq.core.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -632,24 +632,5 @@ cdef class Socket:
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
     
-
-    # pure Python methods - import from pysocket so we can change them without
-    # having to rebuild socket.pyx
-    setsockopt_string = pysocket.setsockopt_string
-    getsockopt_string = pysocket.getsockopt_string
-    setsockopt_unicode = setsockopt_string
-    getsockopt_unicode = getsockopt_string
-    bind_to_random_port = pysocket.bind_to_random_port
-    send_multipart = pysocket.send_multipart
-    recv_multipart = pysocket.recv_multipart
-    send_string = pysocket.send_string
-    recv_string = pysocket.recv_string
-    send_unicode = send_string
-    recv_unicode = recv_string
-    send_pyobj = pysocket.send_pyobj
-    recv_pyobj = pysocket.recv_pyobj
-    send_json = pysocket.send_json
-    recv_json = pysocket.recv_json
-    poll = pysocket.poll
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']
