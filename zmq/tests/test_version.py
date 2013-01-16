@@ -30,7 +30,7 @@ class TestVersion(TestCase):
             self.assertEquals(vs, vs2)
 
     def test_pyzmq_version_info(self):
-        version = zmq.core.version
+        version = zmq.sugar.version
         save = version.__version__
         try:
             version.__version__ = '2.10dev'

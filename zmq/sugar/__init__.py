@@ -14,12 +14,12 @@
 #-----------------------------------------------------------------------------
 
 from zmq.sugar import (
-    context, socket, tracker,
+    context, poll, socket, tracker, version
 )
 
 __all__ = []
 for submod in (
-    context, socket, tracker
+    context, poll, socket, tracker, version
 ):
     __all__.extend(submod.__all__)
 
@@ -29,7 +29,7 @@ from zmq.sugar.socket import *
 # from zmq.sugar.constants import *
 # from zmq.sugar.error import *
 # from zmq.sugar.message import *
-# from zmq.sugar.poll import *
+from zmq.sugar.poll import *
 # from zmq.sugar.stopwatch import *
 # from zmq.sugar._device import *
-# from zmq.sugar.version import *
+from zmq.sugar.version import *

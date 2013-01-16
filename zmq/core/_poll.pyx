@@ -23,10 +23,12 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport zmq_poll, zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
+from libzmq cimport zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
+from libzmq cimport zmq_poll as zmq_poll_c
 from socket cimport Socket
 
 import sys
+
 from zmq.core.error import ZMQError
 
 #-----------------------------------------------------------------------------
@@ -39,8 +41,8 @@ if sys.version_info[0] >= 3:
 else:
     int_t = (int,long)
 
-def _poll(sockets, long timeout=-1):
-    """_poll(sockets, timeout=-1)
+def zmq_poll(sockets, long timeout=-1):
+    """zmq_poll(sockets, timeout=-1)
 
     Poll a set of 0MQ sockets, native file descs. or sockets.
 
@@ -95,7 +97,7 @@ def _poll(sockets, long timeout=-1):
             )
 
     with nogil:
-        rc = zmq_poll(pollitems, nsockets, timeout)
+        rc = zmq_poll_c(pollitems, nsockets, timeout)
     if rc == -1:
         raise ZMQError()
 
@@ -116,4 +118,4 @@ def _poll(sockets, long timeout=-1):
 # Symbols to export
 #-----------------------------------------------------------------------------
 
-__all__ = [ '_poll' ]
+__all__ = [ 'zmq_poll' ]
