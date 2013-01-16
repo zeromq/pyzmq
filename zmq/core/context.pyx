@@ -71,6 +71,11 @@ cdef class Context:
         self.sockopts = {}
         self._attrs = {}
         self._pid = getpid()
+    
+    def __init__(self, io_threads=1):
+        # no-op
+        pass
+    
 
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""

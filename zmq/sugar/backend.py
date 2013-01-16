@@ -2,15 +2,14 @@
 try:
     from zmq.core import (
         Context,
-        Socket,
+        Socket, IPC_PATH_MAX_LEN,
         Frame, Message,
-        zmq_poll,
-        strerror, zmq_errno,
-        constants,
         Stopwatch,
+        device, proxy,
+        strerror, zmq_errno,
+        zmq_poll,
         zmq_version_info,
-        device,
-        IPC_PATH_MAX_LEN,
+        constants,
     )
     from zmq.core import constants
     from zmq.core.constants import *
@@ -25,6 +24,7 @@ __all__ = [
     'Message',
     'Stopwatch',
     'device',
+    'proxy',
     'zmq_poll',
     'strerror',
     'zmq_errno',

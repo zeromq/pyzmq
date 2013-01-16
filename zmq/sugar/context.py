@@ -14,13 +14,13 @@ from .backend import constants
 from .backend import ENOTSUP
 from zmq.error import ZMQError
 
-class Context(ContextBase, object):
+class Context(ContextBase):
     sockopt = None
     opt = None
     _instance = None
     
     def __init__(self, io_threads=1):
-        ContextBase.__init__(self, io_threads=io_threads)
+        super(Context, self).__init__(io_threads=io_threads)
         self.sockopt = {}
         self.opt = {}
     
@@ -65,7 +65,7 @@ class Context(ContextBase, object):
         if self.closed:
             raise ZMQError(ENOTSUP)
         s = self._socket_class(self, socket_type)
-        for opt, value in self.sockopt.iteritems():
+        for opt, value in self.sockopt.items():
             try:
                 s.setsockopt(opt, value)
             except ZMQError:
