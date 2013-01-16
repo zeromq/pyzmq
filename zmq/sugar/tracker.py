@@ -18,7 +18,7 @@ except (ImportError, AttributeError):
     # python throws ImportError, cython throws AttributeError
     from threading import Event
 
-from zmq.core.error import NotDone
+from zmq.error import NotDone
 from zmq import Frame
 
 class MessageTracker(object):

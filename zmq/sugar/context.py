@@ -12,7 +12,7 @@
 from .backend import Context as ContextBase
 from .backend import constants
 from .backend import ENOTSUP
-from .backend import ZMQError
+from zmq.error import ZMQError
 
 class Context(ContextBase, object):
     sockopt = None

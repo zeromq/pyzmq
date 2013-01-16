@@ -29,7 +29,7 @@ from socket cimport Socket
 
 import sys
 
-from zmq.core.error import ZMQError
+from zmq.error import ZMQError
 
 #-----------------------------------------------------------------------------
 # Polling related methods

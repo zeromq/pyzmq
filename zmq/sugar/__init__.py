@@ -16,18 +16,19 @@
 from zmq.sugar import (
     context, poll, socket, tracker, version
 )
+from zmq import error
 
 __all__ = []
 for submod in (
-    context, poll, socket, tracker, version
+    context, error, poll, socket, tracker, version
 ):
     __all__.extend(submod.__all__)
 
+from zmq.error import *
 from zmq.sugar.context import *
 from zmq.sugar.tracker import *
 from zmq.sugar.socket import *
 # from zmq.sugar.constants import *
-# from zmq.sugar.error import *
 # from zmq.sugar.message import *
 from zmq.sugar.poll import *
 # from zmq.sugar.stopwatch import *

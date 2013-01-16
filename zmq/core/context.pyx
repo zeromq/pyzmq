@@ -30,7 +30,7 @@ from libzmq cimport *
 cdef extern from "getpid_compat.h":
     int getpid()
 
-from error import ZMQError
+from zmq.error import ZMQError
 from zmq.core import constants
 from constants import *
 

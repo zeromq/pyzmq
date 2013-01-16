@@ -72,7 +72,7 @@ except:
 import zmq
 from zmq.core import constants
 from zmq.core.constants import *
-from zmq.core.error import ZMQError, ZMQBindError
+from zmq.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
