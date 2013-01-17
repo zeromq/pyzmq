@@ -12,6 +12,7 @@
 from .backend import Context as ContextBase
 from . import constants
 from .constants import ENOTSUP
+from .socket import Socket
 from zmq.error import ZMQError
 
 class Context(ContextBase):
@@ -47,8 +48,6 @@ class Context(ContextBase):
 
     @property
     def _socket_class(self):
-        # import here to prevent circular import
-        from zmq import Socket
         return Socket
     
     def socket(self, socket_type):
