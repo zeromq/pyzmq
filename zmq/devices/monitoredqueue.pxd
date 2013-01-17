@@ -56,22 +56,22 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
     
     if swap_ids:# both router, must send second identity first
         # recv two ids into msg, id_msg
-        rc = zmq_recvmsg (insocket_, &msg, 0)
-        rc = zmq_recvmsg (insocket_, &id_msg, 0)
+        rc = zmq_msg_recv(&msg, insocket_, 0)
+        rc = zmq_msg_recv(&id_msg, insocket_, 0)
 
         # send second id (id_msg) first
         #!!!! always send a copy before the original !!!!
         rc = zmq_msg_copy(&side_msg, &id_msg)
-        rc = zmq_sendmsg (outsocket_, &side_msg, ZMQ_SNDMORE)
-        rc = zmq_sendmsg (sidesocket_, &id_msg, ZMQ_SNDMORE)
+        rc = zmq_msg_send(&side_msg, outsocket_, ZMQ_SNDMORE)
+        rc = zmq_msg_send(&id_msg, sidesocket_, ZMQ_SNDMORE)
         # send first id (msg) second
         rc = zmq_msg_copy(&side_msg, &msg)
-        rc = zmq_sendmsg (outsocket_, &side_msg, ZMQ_SNDMORE)
-        rc = zmq_sendmsg (sidesocket_, &msg, ZMQ_SNDMORE)
+        rc = zmq_msg_send(&side_msg, outsocket_, ZMQ_SNDMORE)
+        rc = zmq_msg_send(&msg, sidesocket_, ZMQ_SNDMORE)
         if rc < 0:
             return rc
     while (True):
-        rc = zmq_recvmsg (insocket_, &msg, 0)
+        rc = zmq_msg_recv(&msg, insocket_, 0)
         # assert (rc == 0)
         rc = zmq_getsockopt (insocket_, ZMQ_RCVMORE, flag_ptr, &flagsz)
         flags = 0
@@ -89,12 +89,12 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
 
         rc = zmq_msg_copy(&side_msg, &msg)
         if flags:
-            rc = zmq_sendmsg (outsocket_, &side_msg, flags)
+            rc = zmq_msg_send(&side_msg, outsocket_, flags)
             # only SNDMORE for side-socket
-            rc = zmq_sendmsg (sidesocket_, &msg, ZMQ_SNDMORE)
+            rc = zmq_msg_send(&msg, sidesocket_, ZMQ_SNDMORE)
         else:
-            rc = zmq_sendmsg (outsocket_, &side_msg, 0)
-            rc = zmq_sendmsg (sidesocket_, &msg, 0)
+            rc = zmq_msg_send(&side_msg, outsocket_, 0)
+            rc = zmq_msg_send(&msg, sidesocket_, 0)
             break
     return rc
 
@@ -146,7 +146,7 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
         if (items [0].revents & ZMQ_POLLIN):
             # send in_prefix to side socket
             rc = zmq_msg_copy(&side_msg, in_msg_ptr)
-            rc = zmq_sendmsg (sidesocket_, &side_msg, ZMQ_SNDMORE)
+            rc = zmq_msg_send(&side_msg, sidesocket_, ZMQ_SNDMORE)
             if rc < 0:
                 return rc
             # relay the rest of the message
@@ -156,7 +156,7 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
         if (items [1].revents & ZMQ_POLLIN):
             # send out_prefix to side socket
             rc = zmq_msg_copy(&side_msg, out_msg_ptr)
-            rc = zmq_sendmsg (sidesocket_, &side_msg, ZMQ_SNDMORE)
+            rc = zmq_msg_send(&side_msg, sidesocket_, ZMQ_SNDMORE)
             if rc < 0:
                 return rc
             # relay the rest of the message

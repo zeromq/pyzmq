@@ -29,8 +29,8 @@ cdef class Context:
     cdef object __weakref__     # enable weakref
     cdef void *handle           # The C handle for the underlying zmq object.
     cdef void **_sockets        # A C-array containg socket handles
-    cdef size_t n_sockets       # the number of sockets
-    cdef size_t max_sockets     # the size of the _sockets array
+    cdef size_t _n_sockets       # the number of sockets
+    cdef size_t _max_sockets     # the size of the _sockets array
     cdef int _pid               # the pid of the process which created me (for fork safety)
 
     cdef public object closed   # bool property for a closed context.

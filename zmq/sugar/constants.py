@@ -71,15 +71,15 @@ names = [
     'EVENT_CLOSE_FAILED',
     'EVENT_DISCONNECTED',
    
-   ## ERRNO
-   # Often used (these are alse in errno.)
+    ## ERRNO
+    # Often used (these are alse in errno.)
     'EAGAIN',
     'EINVAL',
     'EFAULT',
     'ENOMEM',
     'ENODEV',
 
-   # For Windows compatability
+    # For Windows compatability
     'ENOTSUP',
     'EPROTONOSUPPORT',
     'ENOBUFS',
@@ -90,11 +90,11 @@ names = [
     'EINPROGRESS',
     'ENOTSOCK',
 
-   # new errnos in zmq3
+    # new errnos in zmq3
     'EAFNOSUPPORT',
     'EHOSTUNREACH',
 
-   # 0MQ Native
+    # 0MQ Native
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
@@ -106,7 +106,7 @@ names = [
     'ENOMEM',
     'ENODEV',
 
-   # For Windows compatability
+    # For Windows compatability
     'ENOTSUP',
     'EPROTONOSUPPORT',
     'ENOBUFS',
@@ -117,11 +117,18 @@ names = [
     'EINPROGRESS',
     'ENOTSOCK',
 
-   # new errnos in zmq3
-    'EAFNOSUPPORT',
-    'EHOSTUNREACH',
+    # new errnos in zmq3
+    "EMSGSIZE",
+    "EAFNOSUPPORT",
+    "ENETUNREACH",
+    "ECONNABORTED",
+    "ECONNRESET",
+    "ENOTCONN",
+    "ETIMEDOUT",
+    "EHOSTUNREACH",
+    "ENETRESET",
 
-   # 0MQ Native
+    # 0MQ Native
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
@@ -133,7 +140,7 @@ int64_sockopt_names = [
     'AFFINITY',
     'MAXMSGSIZE',
 
-   # sockopts removed in 3.0.0
+    # sockopts removed in 3.0.0
     'HWM',
     'SWAP',
     'MCAST_LOOP',
@@ -152,11 +159,11 @@ int_sockopt_names = [
     # sockopts
     'RECONNECT_IVL_MAX',
 
-   # sockopts new in 2.2.0
+    # sockopts new in 2.2.0
     'SNDTIMEO',
     'RCVTIMEO',
 
-   # new in 3.x
+    # new in 3.x
     'SNDHWM',
     'RCVHWM',
     'MULTICAST_HOPS',
@@ -168,6 +175,8 @@ int_sockopt_names = [
     'TCP_KEEPALIVE_IDLE',
     'TCP_KEEPALIVE_INTVL',
     'DELAY_ATTACH_ON_CONNECT',
+    'XPUB_VERBOSE',
+    'ROUTER_RAW',
 
     'FD',
     'EVENTS',

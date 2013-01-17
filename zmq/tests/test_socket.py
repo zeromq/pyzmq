@@ -115,7 +115,7 @@ class TestSocket(BaseZMQTestCase):
                 backref[value] = name
         for opt in zmq.constants.int_sockopts + zmq.constants.int64_sockopts:
             sopt = backref[opt]
-            if sopt == 'ROUTER_BEHAVIOR' or 'TCP' in sopt:
+            if sopt.startswith(('ROUTER', 'XPUB', 'TCP')):
                 # fail_unroutable is write-only
                 continue
             try:

@@ -31,8 +31,6 @@ cdef extern from "getpid_compat.h":
     int getpid()
 
 from zmq.error import ZMQError
-from zmq.core import constants
-from constants import *
 
 #-----------------------------------------------------------------------------
 # Code
@@ -51,20 +49,29 @@ cdef class Context:
         The number of IO threads.
     """
     
-    def __cinit__(self, int io_threads=1):
+    def __cinit__(self, int io_threads = 1, **kwargs):
         self.handle = NULL
         self._sockets = NULL
-        if not io_threads >= 0:
-            raise ZMQError(EINVAL)
-        with nogil:
+        
+        if ZMQ_VERSION_MAJOR >= 3:
+            self.handle = zmq_ctx_new()
+        else:
             self.handle = zmq_init(io_threads)
+        
         if self.handle == NULL:
             raise ZMQError()
-        self.closed = False
-        self.n_sockets = 0
-        self.max_sockets = 32
         
-        self._sockets = <void **>malloc(self.max_sockets*sizeof(void *))
+        cdef int rc = 0
+        if ZMQ_VERSION_MAJOR >= 3:
+            rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
+            if rc < 0:
+                raise ZMQError()
+        
+        self.closed = False
+        self._n_sockets = 0
+        self._max_sockets = 32
+        
+        self._sockets = <void **>malloc(self._max_sockets*sizeof(void *))
         if self._sockets == NULL:
             raise MemoryError("Could not allocate _sockets array")
         
@@ -87,7 +94,7 @@ cdef class Context:
         if self._sockets != NULL:
             free(self._sockets)
             self._sockets = NULL
-            self.n_sockets = 0
+            self._n_sockets = 0
         self.term()
     
     cdef inline void _add_socket(self, void* handle):
@@ -95,16 +102,16 @@ cdef class Context:
         
         This is to be called in the Socket constructor.
         """
-        # print self.n_sockets, self.max_sockets
-        if self.n_sockets >= self.max_sockets:
-            self.max_sockets *= 2
-            self._sockets = <void **>realloc(self._sockets, self.max_sockets*sizeof(void *))
+        # print self._n_sockets, self._max_sockets
+        if self._n_sockets >= self._max_sockets:
+            self._max_sockets *= 2
+            self._sockets = <void **>realloc(self._sockets, self._max_sockets*sizeof(void *))
             if self._sockets == NULL:
                 raise MemoryError("Could not reallocate _sockets array")
         
-        self._sockets[self.n_sockets] = handle
-        self.n_sockets += 1
-        # print self.n_sockets, self.max_sockets
+        self._sockets[self._n_sockets] = handle
+        self._n_sockets += 1
+        # print self._n_sockets, self._max_sockets
 
     cdef inline void _remove_socket(self, void* handle):
         """Remove a socket from the collected handles.
@@ -114,16 +121,16 @@ cdef class Context:
         """
         cdef bint found = False
         
-        for idx in range(self.n_sockets):
+        for idx in range(self._n_sockets):
             if self._sockets[idx] == handle:
                 found=True
                 break
         
         if found:
-            self.n_sockets -= 1
-            if self.n_sockets:
+            self._n_sockets -= 1
+            if self._n_sockets:
                 # move last handle to closed socket's index
-                self._sockets[idx] = self._sockets[self.n_sockets]
+                self._sockets[idx] = self._sockets[self._n_sockets]
     
     @property
     def _handle(self):
@@ -142,7 +149,7 @@ cdef class Context:
 
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
-                rc = zmq_term(self.handle)
+                rc = zmq_ctx_destroy(self.handle)
             if rc != 0:
                 raise ZMQError()
             self.handle = NULL
@@ -167,15 +174,15 @@ cdef class Context:
         if linger is not None:
             linger_c = linger
             setlinger=True
-        if self.handle != NULL and not self.closed and self.n_sockets:
-            while self.n_sockets:
+        if self.handle != NULL and not self.closed and self._n_sockets:
+            while self._n_sockets:
                 if setlinger:
                     zmq_setsockopt(self._sockets[0], ZMQ_LINGER, &linger_c, sizeof(int))
                 rc = zmq_close(self._sockets[0])
-                if rc != 0 and zmq_errno() != ENOTSOCK:
+                if rc != 0 and zmq_errno() != ZMQ_ENOTSOCK:
                     raise ZMQError()
-                self.n_sockets -= 1
-                self._sockets[0] = self._sockets[self.n_sockets]
+                self._n_sockets -= 1
+                self._sockets[0] = self._sockets[self._n_sockets]
             self.term()
     
 __all__ = ['Context']
