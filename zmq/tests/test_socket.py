@@ -108,12 +108,12 @@ class TestSocket(BaseZMQTestCase):
         # check for overflow / wrong type:
         errors = []
         backref = {}
-        constants = zmq.core.constants
+        constants = zmq.constants
         for name in constants.__all__:
             value = getattr(constants, name)
             if isinstance(value, int):
                 backref[value] = name
-        for opt in zmq.core.constants.int_sockopts+zmq.core.constants.int64_sockopts:
+        for opt in zmq.constants.int_sockopts + zmq.constants.int64_sockopts:
             sopt = backref[opt]
             if sopt == 'ROUTER_BEHAVIOR' or 'TCP' in sopt:
                 # fail_unroutable is write-only

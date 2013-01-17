@@ -19,12 +19,12 @@ import codecs
 
 import zmq
 from .backend import Socket as SocketBase
-from .backend import constants
+from . import constants
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
 
-from .backend import (
+from .constants import (
     SNDMORE, ENOTSUP, POLLIN
 )
 try:

@@ -10,8 +10,8 @@
 #-----------------------------------------------------------------------------
 
 from .backend import Context as ContextBase
-from .backend import constants
-from .backend import ENOTSUP
+from . import constants
+from .constants import ENOTSUP
 from zmq.error import ZMQError
 
 class Context(ContextBase):

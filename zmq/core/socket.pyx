@@ -297,7 +297,7 @@ cdef class Socket:
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_string")
 
-        if option in constants.bytes_sockopts:
+        if option in zmq.constants.bytes_sockopts:
             if not isinstance(optval, bytes):
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
@@ -307,7 +307,7 @@ cdef class Socket:
                     self.handle, option,
                     optval_c, sz
                 )
-        elif option in constants.int64_sockopts:
+        elif option in zmq.constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
@@ -363,14 +363,14 @@ cdef class Socket:
 
         _check_closed(self, True)
 
-        if option in constants.bytes_sockopts:
+        if option in zmq.constants.bytes_sockopts:
             sz = 255
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
-        elif option in  constants.int64_sockopts:
+        elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)

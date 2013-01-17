@@ -11,8 +11,6 @@ try:
         zmq_version_info,
         constants,
     )
-    from zmq.core import constants
-    from zmq.core.constants import *
 except ImportError:
     # here will be the cffi backend import, when it exists
     raise
@@ -30,6 +28,5 @@ __all__ = [
     'zmq_errno',
     'constants',
     'zmq_version_info',
-    'constants',
     'IPC_PATH_MAX_LEN',
-] + constants.__all__
+]

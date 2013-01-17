@@ -15,7 +15,7 @@
 
 import zmq
 from .backend import zmq_poll
-from .backend import POLLIN, POLLOUT, POLLERR
+from .constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
 # Polling related methods
