@@ -132,6 +132,12 @@ names = [
 int64_sockopt_names = [
     'AFFINITY',
     'MAXMSGSIZE',
+
+   # sockopts removed in 3.0.0
+    'HWM',
+    'SWAP',
+    'MCAST_LOOP',
+    'RECOVERY_IVL_MSEC',
 ]
 
 bytes_sockopt_names = [
@@ -149,12 +155,6 @@ int_sockopt_names = [
    # sockopts new in 2.2.0
     'SNDTIMEO',
     'RCVTIMEO',
-
-   # sockopts removed in 3.0.0
-    'HWM',
-    'SWAP',
-    'MCAST_LOOP',
-    'RECOVERY_IVL_MSEC',
 
    # new in 3.x
     'SNDHWM',
