@@ -25,7 +25,7 @@
 
 from libzmq cimport zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep
 
-from zmq.core.error import ZMQError
+from zmq.error import ZMQError
 
 #-----------------------------------------------------------------------------
 # Code

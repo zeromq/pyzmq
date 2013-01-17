@@ -52,11 +52,18 @@ class _Socket(_original_Socket):
     Some double underscore prefixes are used to minimize pollution of
     :class:`zmq.core.socket.Socket`'s namespace.
     """
+    __in_send_multipart = False
+    __in_recv_multipart = False
+    __writable = None
+    __readable = None
+    _state_event = None
     
     def __init__(self, context, socket_type):
+        _original_Socket.__init__(self, context, socket_type)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
+        
 
     def __del__(self):
         self.close()

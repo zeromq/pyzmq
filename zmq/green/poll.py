@@ -2,7 +2,7 @@ import zmq
 import gevent
 from gevent import select
 
-from zmq.core.poll import Poller as _original_Poller
+from zmq import Poller as _original_Poller
 
 
 class _Poller(_original_Poller):

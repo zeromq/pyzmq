@@ -1,31 +1,21 @@
 """0MQ polling related functions and classes."""
 
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
 #
-#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
+#  This file is part of pyzmq
 #
-#    This file is part of pyzmq.
-#
-#    pyzmq is free software; you can redistribute it and/or modify it under
-#    the terms of the Lesser GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    pyzmq is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    Lesser GNU General Public License for more details.
-#
-#    You should have received a copy of the Lesser GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
 
 import zmq
-from zmq.core._poll import _poll
-from zmq.core.constants import POLLIN, POLLOUT, POLLERR
+from .backend import zmq_poll
+from .constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -104,7 +94,7 @@ class Poller(object):
         timeout = int(timeout)
         if timeout < 0:
             timeout = -1
-        return _poll(list(self.sockets.items()), timeout=timeout)
+        return zmq_poll(list(self.sockets.items()), timeout=timeout)
 
 
 def select(rlist, wlist, xlist, timeout=None):
@@ -149,7 +139,7 @@ def select(rlist, wlist, xlist, timeout=None):
         if s in xlist:
             flags |= POLLERR
         sockets.append((s, flags))
-    return_sockets = _poll(sockets, timeout)
+    return_sockets = zmq_poll(sockets, timeout)
     rlist, wlist, xlist = [], [], []
     for s, flags in return_sockets:
         if flags & POLLIN:

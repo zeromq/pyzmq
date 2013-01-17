@@ -70,9 +70,9 @@ except:
     import pickle
 
 import zmq
-from zmq.core import constants, pysocket
+from zmq.core import constants
 from zmq.core.constants import *
-from zmq.core.error import ZMQError, ZMQBindError
+from zmq.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ cdef class Socket:
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_string")
 
-        if option in constants.bytes_sockopts:
+        if option in zmq.constants.bytes_sockopts:
             if not isinstance(optval, bytes):
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
@@ -307,7 +307,7 @@ cdef class Socket:
                     self.handle, option,
                     optval_c, sz
                 )
-        elif option in constants.int64_sockopts:
+        elif option in zmq.constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
@@ -363,14 +363,14 @@ cdef class Socket:
 
         _check_closed(self, True)
 
-        if option in constants.bytes_sockopts:
+        if option in zmq.constants.bytes_sockopts:
             sz = 255
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             if rc != 0:
                 raise ZMQError()
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
-        elif option in  constants.int64_sockopts:
+        elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
@@ -398,79 +398,6 @@ cdef class Socket:
             result = optval_int_c
 
         return result
-    
-    def __setattr__(self, key, value):
-        """set sockopts by attr"""
-        key = key
-        upper_key = key.upper()
-        if upper_key == "HWM":
-            self.set_hwm(value)
-            return
-        try:
-            opt = getattr(constants, upper_key)
-        except AttributeError:
-            # allow subclasses to have extended attributes
-            if self.__class__.__module__ != 'zmq.core.socket':
-                self._attrs[key] = value
-            else:
-                raise AttributeError("Socket has no such option: %s" % upper_key)
-        else:
-            self.setsockopt(opt, value)
-    
-    def __getattr__(self, key):
-        """get sockopts by attr"""
-        if key in self._attrs:
-            # `key` is subclass extended attribute
-            return self._attrs[key]
-        key = key.upper()
-        if key == 'HWM':
-            return self.get_hwm()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("Socket has no such option: %s"%key)
-        else:
-            return self.getsockopt(opt)
-    
-    def get_hwm(self):
-        """get the High Water Mark
-        
-        On libzmq ≥ 3.x, this gets SNDHWM if available, otherwise RCVHWM
-        """
-        major = zmq.zmq_version_info()[0]
-        if major >= 3:
-            # return sndhwm, fallback on rcvhwm
-            try:
-                return self.getsockopt(zmq.SNDHWM)
-            except zmq.ZMQError as e:
-                pass
-            
-            return self.getsockopt(zmq.RCVHWM)
-        else:
-            return self.getsockopt(zmq.HWM)
-    
-    def set_hwm(self, value):
-        """set the High Water Mark
-        
-        On libzmq ≥ 3.x, this sets *both* SNDHWM and RCVHWM
-        """
-        major = zmq.zmq_version_info()[0]
-        if major >= 3:
-            raised = None
-            try:
-                self.sndhwm = value
-            except Exception as e:
-                raised = e
-            try:
-                self.rcvhwm = value
-            except Exception:
-                raised = e
-            
-            if raised:
-                raise raised
-        else:
-            return self.setsockopt(zmq.HWM, value)
-    
     
     def bind(self, addr):
         """s.bind(addr)
@@ -705,24 +632,5 @@ cdef class Socket:
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
     
-
-    # pure Python methods - import from pysocket so we can change them without
-    # having to rebuild socket.pyx
-    setsockopt_string = pysocket.setsockopt_string
-    getsockopt_string = pysocket.getsockopt_string
-    setsockopt_unicode = setsockopt_string
-    getsockopt_unicode = getsockopt_string
-    bind_to_random_port = pysocket.bind_to_random_port
-    send_multipart = pysocket.send_multipart
-    recv_multipart = pysocket.recv_multipart
-    send_string = pysocket.send_string
-    recv_string = pysocket.recv_string
-    send_unicode = send_string
-    recv_unicode = recv_string
-    send_pyobj = pysocket.send_pyobj
-    recv_pyobj = pysocket.recv_pyobj
-    send_json = pysocket.send_json
-    recv_json = pysocket.recv_json
-    poll = pysocket.poll
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']
