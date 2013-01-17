@@ -214,7 +214,7 @@ def _add_constant(name, container=None):
     globals()[name] = c
     __all__.append(name)
     if container is not None:
-        container.add(name)
+        container.add(c)
     return c
     
 for name in names:

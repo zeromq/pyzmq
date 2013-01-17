@@ -113,7 +113,7 @@ class TestSocket(BaseZMQTestCase):
             value = getattr(constants, name)
             if isinstance(value, int):
                 backref[value] = name
-        for opt in zmq.constants.int_sockopts + zmq.constants.int64_sockopts:
+        for opt in zmq.constants.int_sockopts.union(zmq.constants.int64_sockopts):
             sopt = backref[opt]
             if sopt.startswith(('ROUTER', 'XPUB', 'TCP')):
                 # fail_unroutable is write-only
