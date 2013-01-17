@@ -75,8 +75,6 @@ cdef class Context:
         if self._sockets == NULL:
             raise MemoryError("Could not allocate _sockets array")
         
-        self.sockopts = {}
-        self._attrs = {}
         self._pid = getpid()
     
     def __init__(self, io_threads=1):

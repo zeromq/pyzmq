@@ -212,7 +212,6 @@ cdef class Socket:
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
-        self._attrs = {}
         self._pid = getpid()
         context._add_socket(self.handle)
 

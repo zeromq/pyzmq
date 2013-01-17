@@ -37,7 +37,4 @@ cdef class Context:
     # helpers for events on _sockets in Socket.__cinit__()/close()
     cdef inline void _add_socket(self, void* handle)
     cdef inline void _remove_socket(self, void* handle)
-    
-    cdef public dict sockopts   # dict to store default sockopts
-    cdef dict _attrs            # dict needed for *non-sockopt* get/setattr in subclasses
 
