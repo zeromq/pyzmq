@@ -16,14 +16,12 @@ from .socket import Socket
 from zmq.error import ZMQError
 
 class Context(ContextBase):
-    sockopt = None
-    opt = None
+    sockopts = None
     _instance = None
     
     def __init__(self, io_threads=1):
         super(Context, self).__init__(io_threads=io_threads)
-        self.sockopt = {}
-        self.opt = {}
+        self.sockopts = {}
     
     # static method copied from tornado IOLoop.instance
     @classmethod
@@ -64,7 +62,7 @@ class Context(ContextBase):
         if self.closed:
             raise ZMQError(ENOTSUP)
         s = self._socket_class(self, socket_type)
-        for opt, value in self.sockopt.items():
+        for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)
             except ZMQError:
@@ -83,12 +81,16 @@ class Context(ContextBase):
                 self.__dict__[key] = value
                 return
         
+        key = key.upper()
         try:
-            opt = getattr(constants, key.upper())
+            opt = getattr(constants, key)
         except AttributeError:
-            raise AttributeError("No such socket option: %s" % key.upper())
+            raise AttributeError("No such socket or context option: %s" % key)
+        
+        if key in constants.ctx_opt_names:
+            return self.set(opt, value)
         else:
-            self.sockopt[opt] = value
+            self.sockopts[opt] = value
     
     def __getattr__(self, key):
         """get default sockopts as attributes"""
@@ -96,12 +98,15 @@ class Context(ContextBase):
         try:
             opt = getattr(constants, key)
         except AttributeError:
-            raise AttributeError("no such socket option: %s" % key)
+            raise AttributeError("no such socket or context option: %s" % key)
+        
+        if key in constants.ctx_opt_names:
+            return self.get(opt)
         else:
-            if opt not in self.sockopt:
+            if opt not in self.sockopts:
                 raise AttributeError(key)
             else:
-                return self.sockopt[opt]
+                return self.sockopts[opt]
     
     def __delattr__(self, key):
         """delete default sockopts as attributes"""
@@ -111,9 +116,9 @@ class Context(ContextBase):
         except AttributeError:
             raise AttributeError("no such socket option: %s" % key)
         else:
-            if opt not in self.sockopt:
+            if opt not in self.sockopts:
                 raise AttributeError(key)
             else:
-                del self.sockopt[opt]
+                del self.sockopts[opt]
 
 __all__ = ['Context']

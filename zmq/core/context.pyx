@@ -152,6 +152,77 @@ cdef class Context:
                 raise ZMQError()
             self.handle = NULL
             self.closed = True
+    
+    def set(self, int option, optval):
+        """ctx.set(option, optval)
+
+        Set context options.
+
+        See the 0MQ API documentation for zmq_ctx_set
+        for details on specific options.
+        
+        New in libzmq-3.2
+
+        Parameters
+        ----------
+        option : int
+            The option to set.  Available values will depend on your
+            version of libzmq.  Examples include::
+            
+                zmq.IO_THREADS, zmq.MAX_SOCKETS
+        
+        optval : int
+            The value of the option to set.
+        """
+        cdef int optval_int_c
+        cdef int rc
+        cdef char* optval_c
+
+        if self.closed:
+            raise RuntimeError("Context has been destroyed")
+        
+        if not isinstance(optval, int):
+            raise TypeError('expected int, got: %r' % optval)
+        optval_int_c = optval
+        rc = zmq_ctx_set(self.handle, option, optval_int_c)
+        if rc < 0:
+            raise ZMQError()
+
+    def get(self, int option):
+        """ctx.get(option)
+
+        Get the value of a context option.
+
+        See the 0MQ API documentation for zmq_ctx_get
+        for details on specific options.
+        
+        New in libzmq-3.2
+
+        Parameters
+        ----------
+        option : int
+            The option to get.  Available values will depend on your
+            version of libzmq.  Examples include::
+            
+                zmq.IO_THREADS, zmq.MAX_SOCKETS
+            
+        Returns
+        -------
+        optval : int
+            The value of the option as an integer.
+        """
+        cdef int optval_int_c
+        cdef size_t sz
+        cdef int rc
+
+        if self.closed:
+            raise RuntimeError("Context has been destroyed")
+
+        rc = zmq_ctx_get(self.handle, option)
+        if rc < 0:
+            raise ZMQError()
+
+        return rc
 
     def destroy(self, linger=None):
         """ctx.destroy(linger=None)

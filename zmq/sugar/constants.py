@@ -23,11 +23,14 @@ __all__ = [
     'int_sockopts',
     'int64_sockopts',
     'bytes_sockopts',
+    'ctx_opts',
+    'ctx_opt_names',
     ]
 
-int_sockopts = []
-int64_sockopts = []
-bytes_sockopts = []
+int_sockopts    = set()
+int64_sockopts  = set()
+bytes_sockopts  = set()
+ctx_opts        = set()
 
 names = [
     # base
@@ -186,6 +189,11 @@ int_sockopt_names = [
     'BACKLOG',
 ]
 
+ctx_opt_names = [
+    'IO_THREADS',
+    'MAX_SOCKETS',
+]
+
 switched_names = [
     'RATE',
     'RECOVERY_IVL',
@@ -199,28 +207,28 @@ if constants.VERSION < 30000:
 else:
     int_sockopt_names.extend(switched_names)
 
-def _add_constant(name):
+def _add_constant(name, container=None):
     c = getattr(constants, name, -1)
     if c == -1:
-        return c
+        return
     globals()[name] = c
     __all__.append(name)
+    if container is not None:
+        container.add(name)
     return c
     
 for name in names:
     _add_constant(name)
 
 for name in int_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        int_sockopts.append(c)
+    _add_constant(name, int_sockopts)
 
 for name in int64_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        int64_sockopts.append(c)
+    _add_constant(name, int64_sockopts)
 
 for name in bytes_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        bytes_sockopts.append(c)
+    _add_constant(name, bytes_sockopts)
+
+for name in ctx_opt_names:
+    _add_constant(name, ctx_opts)
+
