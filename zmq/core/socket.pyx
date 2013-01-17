@@ -268,8 +268,8 @@ cdef class Socket:
                 self.context._remove_socket(self.handle)
             self.handle = NULL
 
-    def setsockopt(self, int option, optval):
-        """s.setsockopt(option, optval)
+    def set(self, int option, optval):
+        """s.set(option, optval)
 
         Set socket options.
 
@@ -333,8 +333,8 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def getsockopt(self, int option):
-        """s.getsockopt(option)
+    def get(self, int option):
+        """s.get(option)
 
         Get the value of a socket option.
 
