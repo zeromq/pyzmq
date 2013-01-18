@@ -849,7 +849,7 @@ if bundle_libzmq_dylib:
 
 def extract_version():
     """extract pyzmq version from core/version.py, so it's not multiply defined"""
-    with open(pjoin('zmq', 'core', 'version.py')) as f:
+    with open(pjoin('zmq', 'sugar', 'version.py')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()

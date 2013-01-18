@@ -29,7 +29,7 @@ cdef extern from *:
 
 from cpython cimport PyErr_CheckSignals
 
-from libzmq cimport zmq_strerror, zmq_errno
+from libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
 
 from zmq.utils.strtypes import bytes
 
@@ -48,81 +48,11 @@ def strerror(int errno):
         # Python 3: decode bytes to unicode str
         return str_e.decode()
 
-
-class ZMQBaseError(Exception):
-    """Base exception class for 0MQ errors in Python."""
-    pass
-
-
-class ZMQError(ZMQBaseError):
-    """Wrap an errno style error.
-
-    Parameters
-    ----------
-    errno : int
-        The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
-        used.
-    msg : string
-        Description of the error or None.
-    """
-    errno = None
-
-    def __init__(self, errno=None, msg=None):
-        """Wrap an errno style error.
-
-        Parameters
-        ----------
-        errno : int
-            The ZMQ errno or None.  If None, then ``zmq_errno()`` is called and
-            used.
-        msg : string
-            Description of the error or None.
-        """
-        if errno is None:
-            errno = zmq_errno()
-            error = errno
-        if type(errno) == int:
-            self.errno = errno
-            if msg is None:
-                self.strerror = strerror(errno)
-            else:
-                self.strerror = msg
-        else:
-            if msg is None:
-                self.strerror = str(errno)
-            else:
-                self.strerror = msg
-        # flush signals, because there could be a SIGINT
-        # waiting to pounce, resulting in uncaught exceptions.
-        # Doing this here means getting SIGINT during a blocking
-        # libzmq call will raise a *catchable* KeyboardInterrupt
-        PyErr_CheckSignals()
-
-    def __str__(self):
-        return self.strerror
+def zmq_errno():
+    """zmq_errno()
     
-    def __repr__(self):
-        return "ZMQError('%s')"%self.strerror
-
-
-class ZMQBindError(ZMQBaseError):
-    """An error for ``Socket.bind_to_random_port()``.
-    
-    See Also
-    --------
-    .Socket.bind_to_random_port
+    Return the integer errno of the most recent zmq error.
     """
-    pass
+    return zmq_errno_c()
 
-
-class NotDone(ZMQBaseError):
-    """Raised when timeout is reached while waiting for 0MQ to finish with a Message
-    
-    See Also
-    --------
-    .MessageTracker.wait : object for tracking when ZeroMQ is done
-    """
-    pass
-
-
-__all__ = ['strerror', 'ZMQBaseError', 'ZMQBindError', 'ZMQError', 'NotDone']
+__all__ = ['strerror', 'zmq_errno']

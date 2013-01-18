@@ -27,7 +27,7 @@ from libzmq cimport *
 
 from zmq.core.socket cimport Socket
 
-from zmq.core import ROUTER, ZMQError
+from zmq import ROUTER, ZMQError
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue functions

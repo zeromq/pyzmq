@@ -31,12 +31,13 @@ class TestImports(TestCase):
         import zmq.core
         from zmq.core import constants
         from zmq.core import error
-        from zmq.core import version
         from zmq.core import context
         from zmq.core import socket
         from zmq.core import message
         from zmq.core import stopwatch
-        from zmq.core import device
+        from zmq.core import _device
+        from zmq.core import _poll
+        from zmq.core import _version
     
     def test_devices(self):
         """test device imports"""
