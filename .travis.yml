@@ -5,11 +5,13 @@ python:
   - 2.7
   - 3.2
   - 3.3
-
+env:
+    - ZMQ=bundled
+    - ZMQ=
 before_install:
   - pip install -q --use-mirrors cython
 
 install:
-  - python setup.py build_ext --inplace
+  - python setup.py build_ext --inplace --zmq=$ZMQ
 
 script: python setup.py test

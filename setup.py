@@ -277,7 +277,7 @@ class Configure(Command):
 
     def check_zmq_version(self):
         zmq = self.zmq
-        if zmq is not None and zmq is not "bundled" and not os.path.isdir(zmq):
+        if zmq is not None and zmq != "bundled" and not os.path.isdir(zmq):
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
         config = self.getcached()
