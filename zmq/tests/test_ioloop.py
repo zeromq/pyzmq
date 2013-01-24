@@ -17,7 +17,7 @@ import threading
 
 import zmq
 from zmq.tests import BaseZMQTestCase
-from zmq.eventloop import ioloop
+from zmq.eventloop import ioloop, zmqstream
 
 
 #-----------------------------------------------------------------------------
@@ -96,3 +96,18 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEquals(events.get(rep), ioloop.IOLoop.READ)
         self.assertEquals(events.get(req), None)
 
+    def test_ioloop_start_stop(self):
+        """Ensure that an ioloop start() does at least one iteration."""
+
+        pub = zmq.Socket(self.context, zmq.PUB)
+        self.sockets.append(pub)
+        pub = zmqstream.ZMQStream(pub)
+        status = []
+        def callback(stream, msg):
+            status.append("called")
+        pub.on_send(callback)
+        loop = ioloop.IOLoop.instance()
+        loop.add_timeout(0, loop.stop)
+        pub.send(b"hi")
+        loop.start()
+        self.assertEqual(status, ["called"])

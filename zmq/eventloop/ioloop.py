@@ -303,9 +303,6 @@ class IOLoop(object):
                 # we don't want to wait in poll() before we run them.
                 poll_timeout = 0.0
 
-            if not self._running:
-                break
-
             if self._blocking_signal_threshold is not None:
                 # clear alarm so it doesn't fire while poll is waiting for
                 # events.
@@ -354,6 +351,10 @@ class IOLoop(object):
                 except Exception:
                     logging.error("Exception in I/O handler for fd %s",
                                   fd, exc_info=True)
+
+            if not self._running:
+                break
+
         # reset the stopped flag so another start/stop pair can be issued
         self._stopped = False
         if self._blocking_signal_threshold is not None:
