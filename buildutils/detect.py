@@ -75,8 +75,12 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
     if sys.platform == 'darwin':
         # use appropriate arch for compiler
         if platform.architecture()[0]=='32bit':
-            cpreargs = ['-arch','i386']
-            lpreargs = ['-arch', 'i386', '-undefined', 'dynamic_lookup']
+            if platform.processor() == 'powerpc':
+                cpu = 'ppc'
+            else:
+                cpu = 'i386'
+            cpreargs = ['-arch', cpu]
+            lpreargs = ['-arch', cpu, '-undefined', 'dynamic_lookup']
         else:
             # allow for missing UB arch, since it will still work:
             lpreargs = ['-undefined', 'dynamic_lookup']
