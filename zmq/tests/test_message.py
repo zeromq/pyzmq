@@ -335,7 +335,10 @@ class TestFrame(BaseZMQTestCase):
         sa.send_multipart([b'hi', b'there'])
         frame = self.recv(sb, copy=False)
         self.assertTrue(frame.more)
+        if zmq.zmq_version_info()[0] >= 3:
+            self.assertTrue(frame.get(zmq.MORE))
         frame = self.recv(sb, copy=False)
         self.assertFalse(frame.more)
-        
+        if zmq.zmq_version_info()[0] >= 3:
+            self.assertFalse(frame.get(zmq.MORE))
 
