@@ -17,7 +17,7 @@ import threading
 
 import zmq
 from zmq.tests import BaseZMQTestCase
-from zmq.eventloop import ioloop
+from zmq.eventloop import ioloop, zmqstream
 
 
 #-----------------------------------------------------------------------------
@@ -96,3 +96,25 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEquals(events.get(rep), ioloop.IOLoop.READ)
         self.assertEquals(events.get(req), None)
 
+    def test_ioloop_at_least_one_iteration(self):
+        pub = zmq.Socket(self.context, zmq.PUB)
+        self.sockets.append(pub)
+        pub = zmqstream.ZMQStream(pub)
+        pub.send(b"hi")
+        status = []
+        pub.on_send(lambda s, m: status.append("called"))
+        loop = ioloop.IOLoop.instance()
+        loop.add_timeout(0, loop.stop)
+        loop.start()
+        self.assertEqual(status, ["called"])
+
+    def test_ioloop_stop_prevents_block(self):
+        loop = ioloop.IOLoop.instance()
+        loop.add_timeout(0, loop.stop)
+        t = Delay(loop.stop, 1)
+        t.start()
+        loop.start()
+        if t.isAlive():
+            t.abort()
+        else:
+            self.fail("IOLoop.stop() did not prevent blocking poll")
