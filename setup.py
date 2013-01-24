@@ -305,7 +305,7 @@ class Configure(Command):
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             line()
-        elif vers >= (3,0,0):
+        elif vers >= (3,3,0):
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
             line()
 
