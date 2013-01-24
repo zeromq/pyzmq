@@ -235,7 +235,7 @@ cdef class Frame:
 
     def __len__(self):
         """Return the length of the message in bytes."""
-        cdef int sz
+        cdef size_t sz
         with nogil:
             sz = zmq_msg_size(&self.zmq_msg)
         return sz
@@ -281,6 +281,19 @@ cdef class Frame:
         if self._bytes is None:
             self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
+    
+    def set(self, int option, int value):
+        """Set a message property"""
+        cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
+        if rc < 0:
+            raise zmq.ZMQError()
+    
+    def get(self, int option):
+        """Get a message property"""
+        cdef int rc = zmq_msg_get(&self.zmq_msg, option)
+        if rc < 0:
+            raise zmq.ZMQError()
+        return rc
 
 # legacy Message name
 Message = Frame
