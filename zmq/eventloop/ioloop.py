@@ -298,9 +298,10 @@ class IOLoop(object):
                         poll_timeout = min(seconds, poll_timeout)
                         break
 
-            if self._callbacks:
+            if self._callbacks or not self._running:
                 # If any callbacks or timeouts called add_callback,
                 # we don't want to wait in poll() before we run them.
+                # Also do not block if we are supposed to stop the loop.
                 poll_timeout = 0.0
 
             if self._blocking_signal_threshold is not None:
