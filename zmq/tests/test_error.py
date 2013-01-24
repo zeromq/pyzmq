@@ -33,6 +33,6 @@ class TestZMQError(TestCase):
     def test_zmqerror(self):
         for errno in range(10):
             e = ZMQError(errno)
-            self.assertEquals(e.errno, errno)
-            self.assertEquals(str(e), strerror(errno))
+            self.assertEqual(e.errno, errno)
+            self.assertEqual(str(e), strerror(errno))
 
