@@ -31,6 +31,7 @@ int_sockopts    = set()
 int64_sockopts  = set()
 bytes_sockopts  = set()
 ctx_opts        = set()
+msg_opts        = set()
 
 names = [
     # base
@@ -46,7 +47,6 @@ names = [
     'FORWARDER',
     'QUEUE',
     
-    'MORE',
     'SNDMORE',
     
     # socktypes
@@ -194,6 +194,10 @@ ctx_opt_names = [
     'MAX_SOCKETS',
 ]
 
+msg_opt_names = [
+    'MORE',
+]
+
 switched_names = [
     'RATE',
     'RECOVERY_IVL',
@@ -231,4 +235,8 @@ for name in bytes_sockopt_names:
 
 for name in ctx_opt_names:
     _add_constant(name, ctx_opts)
+
+for name in msg_opt_names:
+    _add_constant(name, msg_opts)
+
 

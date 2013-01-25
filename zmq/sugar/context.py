@@ -11,11 +11,12 @@
 
 from .backend import Context as ContextBase
 from . import constants
+from .attrsettr import AttributeSetter
 from .constants import ENOTSUP
 from .socket import Socket
 from zmq.error import ZMQError
 
-class Context(ContextBase):
+class Context(ContextBase, AttributeSetter):
     sockopts = None
     _instance = None
     
@@ -72,39 +73,28 @@ class Context(ContextBase):
                 pass
         return s
     
-    def __setattr__(self, key, value):
+    def setsockopt(self, opt, value):
+        """set default socket options for new sockets created by this Context"""
+        self.sockopts[opt] = value
+    
+    def getsockopt(self, opt):
+        """get default socket options for new sockets created by this Context"""
+        return self.sockopts[opt]
+    
+    def _set_attr_opt(self, name, opt, value):
         """set default sockopts as attributes"""
-        
-        # regular setattr only allowed for defined attributes
-        for obj in [self] + self.__class__.mro():
-            if key in obj.__dict__:
-                self.__dict__[key] = value
-                return
-        
-        key = key.upper()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("No such socket or context option: %s" % key)
-        
-        if key in constants.ctx_opt_names:
+        if name in constants.ctx_opt_names:
             return self.set(opt, value)
         else:
             self.sockopts[opt] = value
     
-    def __getattr__(self, key):
+    def _get_attr_opt(self, name, opt):
         """get default sockopts as attributes"""
-        key = key.upper()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("no such socket or context option: %s" % key)
-        
-        if key in constants.ctx_opt_names:
+        if name in constants.ctx_opt_names:
             return self.get(opt)
         else:
             if opt not in self.sockopts:
-                raise AttributeError(key)
+                raise AttributeError(name)
             else:
                 return self.sockopts[opt]
     

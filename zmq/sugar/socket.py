@@ -20,6 +20,7 @@ import codecs
 import zmq
 from .backend import Socket as SocketBase
 from . import constants
+from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -38,12 +39,11 @@ except:
 # Code
 #-----------------------------------------------------------------------------
 
-class Socket(SocketBase):
+class Socket(SocketBase, AttributeSetter):
 
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------
-
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
     
@@ -127,35 +127,6 @@ class Socket(SocketBase):
             else:
                 return port
         raise ZMQBindError("Could not bind socket to random port.")
-
-    def __setattr__(self, key, value):
-        """set sockopts by attr"""
-        if key in self.__dict__ or key in self.__class__.__dict__:
-            # allow extended attributes
-            self.__dict__[key] = value
-            return
-        upper_key = key.upper()
-        if upper_key == "HWM":
-            self.set_hwm(value)
-            return
-        try:
-            opt = getattr(constants, upper_key)
-        except AttributeError:
-            raise AttributeError("Socket has no such option: %s" % upper_key)
-        else:
-            self.setsockopt(opt, value)
-    
-    def __getattr__(self, key):
-        """get sockopts by attr"""
-        key = key.upper()
-        if key == 'HWM':
-            return self.get_hwm()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("Socket has no such option: %s" % key)
-        else:
-            return self.getsockopt(opt)
     
     def get_hwm(self):
         """get the High Water Mark
@@ -195,6 +166,8 @@ class Socket(SocketBase):
                 raise raised
         else:
             return self.setsockopt(zmq.HWM, value)
+    
+    hwm = property(get_hwm, set_hwm)
     
     #-------------------------------------------------------------------------
     # Sending and receiving messages
