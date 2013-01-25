@@ -49,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyZMQ'
-copyright = u"""2010-2011, Brian E. Granger & Min Ragan-Kelley.  
+copyright = u"""2013, Brian E. Granger & Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
@@ -59,8 +59,8 @@ intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
 # built documents.
 #
 def extract_version():
-    """extract pyzmq version from core/version.py, so it's not multiply defined"""
-    with open(os.path.join('..', '..', 'zmq', 'core', 'version.py')) as f:
+    """extract pyzmq version from version.py, so it's not multiply defined"""
+    with open(os.path.join('..', '..', 'zmq', 'sugar', 'version.py')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
             line = f.readline()
