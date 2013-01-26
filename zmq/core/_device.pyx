@@ -25,7 +25,7 @@
 
 from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
 from zmq.core.socket cimport Socket as cSocket
-from zmq.error import ZMQError
+from zmq.core.error import _check_rc
 
 #-----------------------------------------------------------------------------
 # Basic device API
@@ -54,8 +54,7 @@ def device(int device_type, cSocket frontend, cSocket backend=None):
     cdef int rc = 0
     with nogil:
         rc = zmq_device(device_type, frontend.handle, backend.handle)
-    if rc < 0:
-        raise ZMQError()
+    _check_rc(rc)
     return rc
 
 def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
@@ -80,8 +79,7 @@ def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
         capture_handle = NULL
     with nogil:
         rc = zmq_proxy(frontend.handle, backend.handle, capture_handle)
-    if rc < 0:
-        raise ZMQError()
+    _check_rc(rc)
     return rc
 
 __all__ = ['device', 'proxy']

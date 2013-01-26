@@ -31,6 +31,7 @@ cdef extern from "getpid_compat.h":
     int getpid()
 
 from zmq.error import ZMQError
+from zmq.core.error import _check_rc
 
 #-----------------------------------------------------------------------------
 # Code
@@ -64,8 +65,7 @@ cdef class Context:
         cdef int rc = 0
         if ZMQ_VERSION_MAJOR >= 3:
             rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
-            if rc < 0:
-                raise ZMQError()
+            _check_rc(rc)
         
         self.closed = False
         self._n_sockets = 0
@@ -148,8 +148,7 @@ cdef class Context:
         if self.handle != NULL and not self.closed and getpid() == self._pid:
             with nogil:
                 rc = zmq_ctx_destroy(self.handle)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             self.handle = NULL
             self.closed = True
     
@@ -185,8 +184,7 @@ cdef class Context:
             raise TypeError('expected int, got: %r' % optval)
         optval_int_c = optval
         rc = zmq_ctx_set(self.handle, option, optval_int_c)
-        if rc < 0:
-            raise ZMQError()
+        _check_rc(rc)
 
     def get(self, int option):
         """ctx.get(option)
@@ -219,8 +217,7 @@ cdef class Context:
             raise RuntimeError("Context has been destroyed")
 
         rc = zmq_ctx_get(self.handle, option)
-        if rc < 0:
-            raise ZMQError()
+        _check_rc(rc)
 
         return rc
 
@@ -248,7 +245,7 @@ cdef class Context:
                 if setlinger:
                     zmq_setsockopt(self._sockets[0], ZMQ_LINGER, &linger_c, sizeof(int))
                 rc = zmq_close(self._sockets[0])
-                if rc != 0 and zmq_errno() != ZMQ_ENOTSOCK:
+                if rc < 0 and zmq_errno() != ZMQ_ENOTSOCK:
                     raise ZMQError()
                 self._n_sockets -= 1
                 self._sockets[0] = self._sockets[self._n_sockets]
