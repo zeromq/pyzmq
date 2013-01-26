@@ -433,7 +433,9 @@ cdef class Socket:
                     addr = addr.decode('utf-8', 'replace')
                 path = addr.split('://', 1)[-1]
                 msg = ('ipc path "{0}" is longer than {1} '
-                                'characters (sizeof(sockaddr_un.sun_path)).'
+                                'characters (sizeof(sockaddr_un.sun_path)). '
+                                'zmq.IPC_PATH_MAX_LEN constant can be used '
+                                'to check addr length.'
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(msg=msg)
             else:
