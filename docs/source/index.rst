@@ -29,8 +29,9 @@ General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC
 PyZMQ Versioning
 ================
 
-PyZMQ versioning follows libzmq, so your pyzmq version should match that of your
-libzmq. Building the same pyzmq against various versions of libzmq is supported,
+PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2 ) and active development ( ≥3.3.0 )
+versions of libzmq.
+Building the same pyzmq against various versions of libzmq is supported,
 and should only result in the addition/removal of a few socket types and socket
 options, depending on the active libzmq's support.
 
@@ -38,8 +39,6 @@ Binary distributions (eggs or MSIs on `PyPI <http://pypi.python.org/pypi/pyzmq>`
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
 matching libzmq release built with default configuration.
 
-PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.2.0 )
-versions of libzmq.
 
 
 Notes from developing PyZMQ
