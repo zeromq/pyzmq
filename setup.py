@@ -84,8 +84,10 @@ if get_default_compiler() in ('unix', 'mingw32'):
 else:
     ignore_common_warnings=False
 
-# the minimum zeromq version this will work against:
+# reference points for zmq compatibility
 min_zmq = (2,1,4)
+target_zmq = (3,2,2)
+dev_zmq = (4,0,0)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
@@ -297,16 +299,15 @@ class Configure(Command):
             fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s'%(zmq or 'unspecified'))
-        pyzmq_vs = extract_version()
-        pyzmq_version = tuple(int(d) for d in re.findall(r'\d+', pyzmq_vs))
-
-        if vers < pyzmq_version[:len(vers)]:
-            warn("Detected ZMQ version: %s, but pyzmq targets zmq %s."%(
-                    vs, pyzmq_version))
-            warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
+        
+        if vers < target_zmq:
+            warn("Detected ZMQ version: %s, but pyzmq targets ZMQ %s." % (
+                    vs, v_str(target_zmq))
+            )
+            warn("libzmq features and fixes introduced after %s will be unavailable." % vs)
             line()
-        elif vers >= (3,3,0):
-            warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
+        elif vers >= dev_zmq:
+            warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental." % vs)
             line()
 
         if sys.platform.startswith('win'):
