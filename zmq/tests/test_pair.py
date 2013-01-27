@@ -28,7 +28,7 @@ class TestPair(BaseZMQTestCase):
 
         msg1 = b'message1'
         msg2 = self.ping_pong(s1, s2, msg1)
-        self.assertEquals(msg1, msg2)
+        self.assertEqual(msg1, msg2)
 
     def test_multiple(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
@@ -43,11 +43,11 @@ class TestPair(BaseZMQTestCase):
 
         for i in range(10):
             msg = s1.recv()
-            self.assertEquals(msg, i*x)
+            self.assertEqual(msg, i*x)
 
         for i in range(10):
             msg = s2.recv()
-            self.assertEquals(msg, i*x)
+            self.assertEqual(msg, i*x)
 
     def test_json(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)

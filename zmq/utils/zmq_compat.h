@@ -27,11 +27,35 @@
 #endif
 
 // new in 3.x
+#ifndef EMSGSIZE
+    #define EMSGSIZE (-1)
+#endif
 #ifndef EAFNOSUPPORT
     #define EAFNOSUPPORT (-1)
 #endif
+#ifndef ENETUNREACH
+    #define ENETUNREACH (-1)
+#endif
+#ifndef ECONNABORTED
+    #define ECONNABORTED (-1)
+#endif
+#ifndef ECONNABORTED
+    #define ECONNABORTED (-1)
+#endif
+#ifndef ECONNRESET
+    #define ECONNRESET (-1)
+#endif
+#ifndef ENOTCONN
+    #define ENOTCONN (-1)
+#endif
+#ifndef ETIMEDOUT
+    #define ETIMEDOUT (-1)
+#endif
 #ifndef EHOSTUNREACH
     #define EHOSTUNREACH (-1)
+#endif
+#ifndef ENETRESET
+    #define ENETRESET (-1)
 #endif
 
 #ifndef ZMQ_MAXMSGSIZE
@@ -56,8 +80,8 @@
     #define ZMQ_LAST_ENDPOINT (-1)
 #endif
 
-#ifndef ZMQ_ROUTER_BEHAVIOR
-    #define ZMQ_ROUTER_BEHAVIOR (-1)
+#ifndef ZMQ_ROUTER_MANDATORY
+    #define ZMQ_ROUTER_MANDATORY (-1)
 #endif
 #ifndef ZMQ_TCP_KEEPALIVE
     #define ZMQ_TCP_KEEPALIVE (-1)
@@ -76,6 +100,31 @@
 #endif
 #ifndef ZMQ_DELAY_ATTACH_ON_CONNECT
     #define ZMQ_DELAY_ATTACH_ON_CONNECT (-1)
+#endif
+#ifndef ZMQ_XPUB_VERBOSE
+    #define ZMQ_XPUB_VERBOSE (-1)
+#endif
+#ifndef ZMQ_ROUTER_RAW
+    #define ZMQ_ROUTER_RAW (-1)
+#endif
+
+
+// Context options (3.x)
+
+#ifndef ZMQ_IO_THREADS
+    #define ZMQ_IO_THREADS (-1)
+#endif
+
+#ifndef ZMQ_MAX_SOCKETS
+    #define ZMQ_MAX_SOCKETS (-1)
+#endif
+
+#ifndef ZMQ_IO_THREADS_DFLT
+    #define ZMQ_IO_THREADS_DFLT 1
+#endif
+
+#ifndef ZMQ_MAX_SOCKETS_DFLT
+    #define ZMQ_MAX_SOCKETS_DFLT 1024
 #endif
 
 // Message options (3.x)
@@ -115,22 +164,12 @@
 #ifndef ZMQ_EVENT_DISCONNECTED
     #define ZMQ_EVENT_DISCONNECTED (-1)
 #endif
+#ifndef ZMQ_EVENT_ALL
+    #define ZMQ_EVENT_ALL (-1)
+#endif
 
 
 // removed in 3.0.0
-#ifndef ZMQ_MAX_VSM_SIZE
-    #define ZMQ_MAX_VSM_SIZE (-1)
-#endif
-#ifndef ZMQ_DELIMITER
-    #define ZMQ_DELIMITER (-1)
-#endif
-#ifndef ZMQ_MSG_MORE
-    #define ZMQ_MSG_MORE (-1)
-#endif
-#ifndef ZMQ_MSG_SHARED
-    #define ZMQ_MSG_SHARED (-1)
-#endif
-
 #ifndef ZMQ_HWM
     #define ZMQ_HWM (-1)
 #endif
@@ -171,30 +210,34 @@
     #define ZMQ_FD_T int
 #endif
 
-// handle device->proxy transition
-#if ZMQ_VERSION_MAJOR >= 4
-    // zmq_device
-    // it is an assumption that zmq4 will remove zmq_device
-    #define zmq_device(device_type, isocket, osocket) _missing
-#endif
-
-#if ZMQ_VERSION_MAJOR < 3
-    // #error zmq_proxy not defined ZMQ_MAJOR_VERSION
-    #define zmq_proxy(isocket, osocket, csocket) _missing
-#endif
-
-
 // use unambiguous aliases for zmq_send/recv functions
-
 
 #if ZMQ_VERSION_MAJOR >= 3
     #define zmq_sendbuf zmq_send
     #define zmq_recvbuf zmq_recv
+
+    // 3.x deprecations - these symbols haven't been removed,
+    // but let's protect against their planned removal
+    #define zmq_device(device_type, isocket, osocket) _missing
+    #define zmq_init(io_threads) ((void*)NULL)
+    #define zmq_term zmq_ctx_destroy
 #else
+    #define zmq_ctx_set(ctx, opt, val) _missing
+    #define zmq_ctx_get(ctx, opt) _missing
+    #define zmq_ctx_destroy zmq_term
+    #define zmq_ctx_new() ((void*)NULL)
+
+    #define zmq_proxy(a,b,c) _missing
+
     #define zmq_disconnect(s, addr) _missing
     #define zmq_unbind(s, addr) _missing
-    #define zmq_sendmsg zmq_send
-    #define zmq_recvmsg zmq_recv
+    
+    #define zmq_msg_more(msg) _missing
+    #define zmq_msg_get(msg, opt) _missing
+    #define zmq_msg_set(msg, opt, val) _missing
+    #define zmq_msg_send(msg, s, flags) zmq_send(s, msg, flags)
+    #define zmq_msg_recv(msg, s, flags) zmq_recv(s, msg, flags)
+    
     #define zmq_sendbuf(s, buf, len, flags) _missing
     #define zmq_recvbuf(s, buf, len, flags) _missing
 #endif

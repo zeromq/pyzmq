@@ -43,21 +43,21 @@ class TestPoll(PollZMQTestCase):
         # Poll result should contain both sockets
         socks = dict(poller.poll())
         # Now make sure that both are send ready.
-        self.assertEquals(socks[s1], zmq.POLLOUT)
-        self.assertEquals(socks[s2], zmq.POLLOUT)
+        self.assertEqual(socks[s1], zmq.POLLOUT)
+        self.assertEqual(socks[s2], zmq.POLLOUT)
         # Now do a send on both, wait and test for zmq.POLLOUT|zmq.POLLIN
         s1.send(b'msg1')
         s2.send(b'msg2')
         wait()
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLOUT|zmq.POLLIN)
-        self.assertEquals(socks[s2], zmq.POLLOUT|zmq.POLLIN)
+        self.assertEqual(socks[s1], zmq.POLLOUT|zmq.POLLIN)
+        self.assertEqual(socks[s2], zmq.POLLOUT|zmq.POLLIN)
         # Make sure that both are in POLLOUT after recv.
         s1.recv()
         s2.recv()
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLOUT)
-        self.assertEquals(socks[s2], zmq.POLLOUT)
+        self.assertEqual(socks[s1], zmq.POLLOUT)
+        self.assertEqual(socks[s2], zmq.POLLOUT)
 
         poller.unregister(s1)
         poller.unregister(s2)
@@ -77,38 +77,38 @@ class TestPoll(PollZMQTestCase):
 
         # Make sure that s1 is in state 0 and s2 is in POLLOUT
         socks = dict(poller.poll())
-        self.assertEquals(s1 in socks, 0)
-        self.assertEquals(socks[s2], zmq.POLLOUT)
+        self.assertEqual(s1 in socks, 0)
+        self.assertEqual(socks[s2], zmq.POLLOUT)
 
         # Make sure that s2 goes immediately into state 0 after send.
         s2.send(b'msg1')
         socks = dict(poller.poll())
-        self.assertEquals(s2 in socks, 0)
+        self.assertEqual(s2 in socks, 0)
 
         # Make sure that s1 goes into POLLIN state after a time.sleep().
         time.sleep(0.5)
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLIN)
+        self.assertEqual(socks[s1], zmq.POLLIN)
 
         # Make sure that s1 goes into POLLOUT after recv.
         s1.recv()
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLOUT)
+        self.assertEqual(socks[s1], zmq.POLLOUT)
 
         # Make sure s1 goes into state 0 after send.
         s1.send(b'msg2')
         socks = dict(poller.poll())
-        self.assertEquals(s1 in socks, 0)
+        self.assertEqual(s1 in socks, 0)
 
         # Wait and then see that s2 is in POLLIN.
         time.sleep(0.5)
         socks = dict(poller.poll())
-        self.assertEquals(socks[s2], zmq.POLLIN)
+        self.assertEqual(socks[s2], zmq.POLLIN)
 
         # Make sure that s2 is in POLLOUT after recv.
         s2.recv()
         socks = dict(poller.poll())
-        self.assertEquals(socks[s2], zmq.POLLOUT)
+        self.assertEqual(socks[s2], zmq.POLLOUT)
 
         poller.unregister(s1)
         poller.unregister(s2)
@@ -139,22 +139,22 @@ class TestPoll(PollZMQTestCase):
 
         # Now make sure that both are send ready.
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLOUT)
-        self.assertEquals(s2 in socks, 0)
+        self.assertEqual(socks[s1], zmq.POLLOUT)
+        self.assertEqual(s2 in socks, 0)
         # Make sure that s1 stays in POLLOUT after a send.
         s1.send(b'msg1')
         socks = dict(poller.poll())
-        self.assertEquals(socks[s1], zmq.POLLOUT)
+        self.assertEqual(socks[s1], zmq.POLLOUT)
 
         # Make sure that s2 is POLLIN after waiting.
         wait()
         socks = dict(poller.poll())
-        self.assertEquals(socks[s2], zmq.POLLIN)
+        self.assertEqual(socks[s2], zmq.POLLIN)
 
         # Make sure that s2 goes into 0 after recv.
         s2.recv()
         socks = dict(poller.poll())
-        self.assertEquals(s2 in socks, 0)
+        self.assertEqual(s2 in socks, 0)
 
         poller.unregister(s1)
         poller.unregister(s2)

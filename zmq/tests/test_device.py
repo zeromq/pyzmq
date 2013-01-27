@@ -28,23 +28,23 @@ class TestDevice(BaseZMQTestCase):
     def test_device_types(self):
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
             dev = devices.Device(devtype, zmq.PAIR, zmq.PAIR)
-            self.assertEquals(dev.device_type, devtype)
+            self.assertEqual(dev.device_type, devtype)
             del dev
     
     def test_device_attributes(self):
         dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
-        self.assertEquals(dev.in_type, zmq.SUB)
-        self.assertEquals(dev.out_type, zmq.PUB)
-        self.assertEquals(dev.device_type, zmq.QUEUE)
-        self.assertEquals(dev.daemon, True)
+        self.assertEqual(dev.in_type, zmq.SUB)
+        self.assertEqual(dev.out_type, zmq.PUB)
+        self.assertEqual(dev.device_type, zmq.QUEUE)
+        self.assertEqual(dev.daemon, True)
         del dev
     
     def test_tsdevice_attributes(self):
         dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
-        self.assertEquals(dev.in_type, zmq.SUB)
-        self.assertEquals(dev.out_type, zmq.PUB)
-        self.assertEquals(dev.device_type, zmq.QUEUE)
-        self.assertEquals(dev.daemon, True)
+        self.assertEqual(dev.in_type, zmq.SUB)
+        self.assertEqual(dev.out_type, zmq.PUB)
+        self.assertEqual(dev.device_type, zmq.QUEUE)
+        self.assertEqual(dev.daemon, True)
         del dev
         
     
@@ -57,7 +57,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = b'hello'
         req.send(msg)
-        self.assertEquals(msg, self.recv(req))
+        self.assertEqual(msg, self.recv(req))
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -68,7 +68,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = b'hello again'
         req.send(msg)
-        self.assertEquals(msg, self.recv(req))
+        self.assertEqual(msg, self.recv(req))
         del dev
         req.close()
         
@@ -86,7 +86,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = b'hello'
         req.send(msg)
-        self.assertEquals(msg, self.recv(req))
+        self.assertEqual(msg, self.recv(req))
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -102,7 +102,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(.25)
         msg = b'hello again'
         req.send(msg)
-        self.assertEquals(msg, self.recv(req))
+        self.assertEqual(msg, self.recv(req))
         del dev
         req.close()
     

@@ -79,10 +79,10 @@ class TestContext(BaseZMQTestCase):
         """setting socket options with ctx attributes"""
         ctx = self.Context()
         ctx.linger = 5
-        self.assertEquals(ctx.linger, 5)
+        self.assertEqual(ctx.linger, 5)
         s = ctx.socket(zmq.REQ)
-        self.assertEquals(s.linger, 5)
-        self.assertEquals(s.getsockopt(zmq.LINGER), 5)
+        self.assertEqual(s.linger, 5)
+        self.assertEqual(s.getsockopt(zmq.LINGER), 5)
         s.close()
         # check that subscribe doesn't get set on sockets that don't subscribe:
         ctx.subscribe = b''
@@ -174,7 +174,7 @@ class TestContext(BaseZMQTestCase):
             try:
                 s.recv()
             except zmq.ZMQError as e:
-                self.assertEquals(e.errno, zmq.ETERM)
+                self.assertEqual(e.errno, zmq.ETERM)
                 return
             finally:
                 s.close()

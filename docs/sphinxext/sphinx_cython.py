@@ -36,11 +36,13 @@ class MyDocumenter(SphinxAutodoc.Documenter):
 
     def get_doc(self, encoding=None):
         docstr = self.get_attr(self.object, '__doc__', None)
+        if docstr:
+            docstr = force_decode(docstr, encoding)
         
         myname = self.fullname[len(self.modname)+1:]
         if myname.endswith('()'):
             myname = myname[:-2]
-            
+        
         if (docstr
             and (myname + '(') in docstr
             and '\n' in docstr
@@ -60,6 +62,8 @@ class MyDocumenter(SphinxAutodoc.Documenter):
             myname = myname[:-2]
         # Try to parse docstring
         docstr = self.get_attr(self.object, '__doc__', None)
+        if docstr:
+            docstr = force_decode(docstr, 'utf-8')
         if (docstr 
             and (myname + '(') in docstr
             and '\n' in docstr

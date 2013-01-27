@@ -11,19 +11,18 @@
 
 from .backend import Context as ContextBase
 from . import constants
+from .attrsettr import AttributeSetter
 from .constants import ENOTSUP
 from .socket import Socket
 from zmq.error import ZMQError
 
-class Context(ContextBase):
-    sockopt = None
-    opt = None
+class Context(ContextBase, AttributeSetter):
+    sockopts = None
     _instance = None
     
     def __init__(self, io_threads=1):
         super(Context, self).__init__(io_threads=io_threads)
-        self.sockopt = {}
-        self.opt = {}
+        self.sockopts = {}
     
     # static method copied from tornado IOLoop.instance
     @classmethod
@@ -64,7 +63,7 @@ class Context(ContextBase):
         if self.closed:
             raise ZMQError(ENOTSUP)
         s = self._socket_class(self, socket_type)
-        for opt, value in self.sockopt.items():
+        for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)
             except ZMQError:
@@ -74,34 +73,30 @@ class Context(ContextBase):
                 pass
         return s
     
-    def __setattr__(self, key, value):
-        """set default sockopts as attributes"""
-        
-        # regular setattr only allowed for defined attributes
-        for obj in [self] + self.__class__.mro():
-            if key in obj.__dict__:
-                self.__dict__[key] = value
-                return
-        
-        try:
-            opt = getattr(constants, key.upper())
-        except AttributeError:
-            raise AttributeError("No such socket option: %s" % key.upper())
-        else:
-            self.sockopt[opt] = value
+    def setsockopt(self, opt, value):
+        """set default socket options for new sockets created by this Context"""
+        self.sockopts[opt] = value
     
-    def __getattr__(self, key):
-        """get default sockopts as attributes"""
-        key = key.upper()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("no such socket option: %s" % key)
+    def getsockopt(self, opt):
+        """get default socket options for new sockets created by this Context"""
+        return self.sockopts[opt]
+    
+    def _set_attr_opt(self, name, opt, value):
+        """set default sockopts as attributes"""
+        if name in constants.ctx_opt_names:
+            return self.set(opt, value)
         else:
-            if opt not in self.sockopt:
-                raise AttributeError(key)
+            self.sockopts[opt] = value
+    
+    def _get_attr_opt(self, name, opt):
+        """get default sockopts as attributes"""
+        if name in constants.ctx_opt_names:
+            return self.get(opt)
+        else:
+            if opt not in self.sockopts:
+                raise AttributeError(name)
             else:
-                return self.sockopt[opt]
+                return self.sockopts[opt]
     
     def __delattr__(self, key):
         """delete default sockopts as attributes"""
@@ -111,9 +106,9 @@ class Context(ContextBase):
         except AttributeError:
             raise AttributeError("no such socket option: %s" % key)
         else:
-            if opt not in self.sockopt:
+            if opt not in self.sockopts:
                 raise AttributeError(key)
             else:
-                del self.sockopt[opt]
+                del self.sockopts[opt]
 
 __all__ = ['Context']
