@@ -10,16 +10,16 @@ PyZMQ should work with libzmq ≥ 2.1.4 (including libzmq 3.2.x), and Python ≥
 Versioning
 ==========
 
-Current release of pyzmq is 2.2.0, and targets libzmq-2.2.0. For libzmq
+Current release of pyzmq is 2.2.0.1, and targets libzmq-2.2.0. For libzmq
 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development branch.
 
-pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5, and pyzmq 2.2.0 will
-require Python ≥ 2.6.
+pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5, and pyzmq ≥ 2.2.0
+requires Python ≥ 2.6.
 
-PyZMQ versioning follows libzmq versioning. In general, your pyzmq version should be the same
-as that of your libzmq, but due to the generally growing API of libzmq, your pyzmq should
-*not* be newer than your libzmq. This is a strict restriction for pyzmq <= 2.1.0, but we
-intend to support libzmq >= 2.1.4 (the first 'stable' 2.1 release) for pyzmq 2.1.x.
+PyZMQ releases ≤ 2.2.0 matched libzmq versioning, but this will no longer be the case.
+To avoid confusion with the contemporary libzmq-3.2 major version release,
+PyZMQ is jumping to 13.0 (it will be the thirteenth release, so why not?).
+PyZMQ ≥ 13.0 will follow semantic versioning conventions accounting only for PyZMQ itself.
 
 For a summary of changes to pyzmq, see our `changelog <http://zeromq.github.com/pyzmq/changelog.html>`_.
 
@@ -35,7 +35,7 @@ Documentation
 
 See PyZMQ's Sphinx-generated `documentation <http://zeromq.github.com/pyzmq>`_ on GitHub for API
 details, and some notes on Python and Cython development.  If you want to learn about
-using ØMQ in general, the excellect `ØMQ Guide <http://zguide.zeromq.org>`_ is the place
+using ØMQ in general, the excellent `ØMQ Guide <http://zguide.zeromq.org>`_ is the place
 to start, which has a Python version of every example.
 
 Downloading
@@ -46,7 +46,7 @@ PyZMQ source code or MSI installer from our `GitHub download page <https://githu
 or an egg from `PyPI <http://pypi.python.org/pypi/pyzmq>`_.
 
 You can also get the latest source code from our GitHub repository, but
-building from the repository will require that you install Cython version 0.13
+building from the repository will require that you install Cython version 0.15
 or later.
 
 
