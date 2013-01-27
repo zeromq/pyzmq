@@ -36,9 +36,10 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (2,2,0)
+bundled_version = (3,2,2)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
+# util no longer used
 util = "util-linux-2.21.tar.gz"
 util_url = "http://www.kernel.org/pub/linux/utils/util-linux/v2.21/" + util
 
@@ -120,6 +121,9 @@ def stage_platform_hpp(zmqroot):
     
     info("staging platform.hpp from: %s" % platform_dir)
     shutil.copy(pjoin(platform_dir, 'platform.hpp'), platform_hpp)
+
+
+# fetch/patch_uuid no longer needed for libzmq >= 3
 
 
 def fetch_uuid(savedir):

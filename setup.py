@@ -68,7 +68,7 @@ except ImportError:
 from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq,
     warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
-    fetch_uuid, fetch_libzmq, stage_platform_hpp,
+    fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
     )
 
@@ -305,7 +305,7 @@ class Configure(Command):
                     vs, pyzmq_version))
             warn("libzmq features and fixes introduced after %s will be unavailable."%vs)
             line()
-        elif vers >= (3,0,0):
+        elif vers >= (3,3,0):
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental."%vs)
             line()
 
@@ -335,8 +335,6 @@ class Configure(Command):
         # fetch sources for libzmq extension:
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
-        if not sys.platform.startswith(('darwin', 'freebsd', 'win')):
-            fetch_uuid(bundledir)
         
         fetch_libzmq(bundledir)
         
@@ -370,10 +368,7 @@ class Configure(Command):
             ext.libraries.append('rpcrt4')
             ext.libraries.append('ws2_32')
         elif not sys.platform.startswith(('darwin', 'freebsd')):
-            # add uuid as both `uuid/uuid.h` and `uuid.h`:
-            ext.include_dirs.append(pjoin(bundledir, 'uuid'))
             ext.include_dirs.append(bundledir)
-            ext.sources.extend(glob(pjoin(bundledir, 'uuid', '*.c')))
 
             ext.libraries.append('rt')
         
@@ -520,9 +515,9 @@ class Configure(Command):
 
 
 class FetchCommand(Command):
-    """Fetch libzmq and uuid sources, that's it."""
+    """Fetch libzmq sources, that's it."""
     
-    description = "Fetch libuuid and libzmq sources into bundled"
+    description = "Fetch libzmq sources into bundled"
     
     user_options = [ ]
     
@@ -537,7 +532,6 @@ class FetchCommand(Command):
         bundledir = "bundled"
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
-        fetch_uuid(bundledir)
         fetch_libzmq(bundledir)
         for tarball in glob(pjoin(bundledir, '*.tar.gz')):
             os.remove(tarball)

@@ -47,11 +47,11 @@ class TestFrame(BaseZMQTestCase):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
-            self.assertEquals(grc(s), 2)
+            self.assertEqual(grc(s), 2)
             m = zmq.Frame(s)
-            self.assertEquals(grc(s), 4)
+            self.assertEqual(grc(s), 4)
             del m
-            self.assertEquals(grc(s), 2)
+            self.assertEqual(grc(s), 2)
             del s
 
     def test_str(self):
@@ -61,7 +61,7 @@ class TestFrame(BaseZMQTestCase):
             m = zmq.Frame(s)
             m_str = str(m)
             m_str_b = b(m_str) # py3compat
-            self.assertEquals(s, m_str_b)
+            self.assertEqual(s, m_str_b)
 
     def test_bytes(self):
         """Test the Frame.bytes property."""
@@ -69,7 +69,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i)*x
             m = zmq.Frame(s)
             b = m.bytes
-            self.assertEquals(s, m.bytes)
+            self.assertEqual(s, m.bytes)
             # check that it copies
             self.assert_(b is not s)
             # check that it copies only once
@@ -82,47 +82,47 @@ class TestFrame(BaseZMQTestCase):
         for i in range(16):
             s = (2**i)*u('§')
             m = zmq.Frame(s.encode('utf8'))
-            self.assertEquals(s, unicode(m.bytes,'utf8'))
+            self.assertEqual(s, unicode(m.bytes,'utf8'))
 
     def test_len(self):
         """Test the len of the Frames."""
         for i in range(16):
             s = (2**i)*x
             m = zmq.Frame(s)
-            self.assertEquals(len(s), len(m))
+            self.assertEqual(len(s), len(m))
 
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             rc = 2
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             m = zmq.Frame(s)
             rc += 2
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             m2 = copy.copy(m)
             rc += 1
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             buf = m2.buffer
 
             rc += view_rc
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
 
-            self.assertEquals(s, b(str(m)))
-            self.assertEquals(s, bytes(m2))
-            self.assertEquals(s, m.bytes)
+            self.assertEqual(s, b(str(m)))
+            self.assertEqual(s, bytes(m2))
+            self.assertEqual(s, m.bytes)
             # self.assert_(s is str(m))
             # self.assert_(s is str(m2))
             del m2
             rc -= 1
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             rc -= view_rc
             del buf
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             del m
             rc -= 2
-            self.assertEquals(grc(s), rc)
-            self.assertEquals(rc, 2)
+            self.assertEqual(grc(s), rc)
+            self.assertEqual(rc, 2)
             del s
 
     def test_lifecycle2(self):
@@ -130,33 +130,33 @@ class TestFrame(BaseZMQTestCase):
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             rc = 2
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             m = zmq.Frame(s)
             rc += 2
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             m2 = copy.copy(m)
             rc += 1
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             buf = m.buffer
             rc += view_rc
-            self.assertEquals(grc(s), rc)
-            self.assertEquals(s, b(str(m)))
-            self.assertEquals(s, bytes(m2))
-            self.assertEquals(s, m2.bytes)
-            self.assertEquals(s, m.bytes)
+            self.assertEqual(grc(s), rc)
+            self.assertEqual(s, b(str(m)))
+            self.assertEqual(s, bytes(m2))
+            self.assertEqual(s, m2.bytes)
+            self.assertEqual(s, m.bytes)
             # self.assert_(s is str(m))
             # self.assert_(s is str(m2))
             del buf
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             del m
             # m.buffer is kept until m is del'd
             rc -= view_rc
             rc -= 1
-            self.assertEquals(grc(s), rc)
+            self.assertEqual(grc(s), rc)
             del m2
             rc -= 2
-            self.assertEquals(grc(s), rc)
-            self.assertEquals(rc, 2)
+            self.assertEqual(grc(s), rc)
+            self.assertEqual(rc, 2)
             del s
     
     def test_tracker(self):
@@ -169,9 +169,9 @@ class TestFrame(BaseZMQTestCase):
     
     def test_no_tracker(self):
         m = zmq.Frame(b'asdf', track=False)
-        self.assertEquals(m.tracker, None)
+        self.assertEqual(m.tracker, None)
         m2 = copy.copy(m)
-        self.assertEquals(m2.tracker, None)
+        self.assertEqual(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     def test_multi_tracker(self):
@@ -214,24 +214,24 @@ class TestFrame(BaseZMQTestCase):
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         s = b"message"
         m = zmq.Frame(s)
-        self.assertEquals(s, m.bytes)
+        self.assertEqual(s, m.bytes)
         
         a.send(m, copy=False)
         time.sleep(0.1)
-        self.assertEquals(s, m.bytes)
+        self.assertEqual(s, m.bytes)
         a.send(m, copy=False)
         time.sleep(0.1)
-        self.assertEquals(s, m.bytes)
+        self.assertEqual(s, m.bytes)
         a.send(m, copy=True)
         time.sleep(0.1)
-        self.assertEquals(s, m.bytes)
+        self.assertEqual(s, m.bytes)
         a.send(m, copy=True)
         time.sleep(0.1)
-        self.assertEquals(s, m.bytes)
+        self.assertEqual(s, m.bytes)
         for i in range(4):
             r = b.recv()
-            self.assertEquals(s,r)
-        self.assertEquals(s, m.bytes)
+            self.assertEqual(s,r)
+        self.assertEqual(s, m.bytes)
     
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
@@ -246,12 +246,12 @@ class TestFrame(BaseZMQTestCase):
             A = numpy.random.random(shape)
             m = zmq.Frame(A)
             if view.__name__ == 'buffer':
-                self.assertEquals(A.data, m.buffer)
+                self.assertEqual(A.data, m.buffer)
                 B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
             else:
-                self.assertEquals(memoryview(A), m.buffer)
+                self.assertEqual(memoryview(A), m.buffer)
                 B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
-            self.assertEquals((A==B).all(), True)
+            self.assertEqual((A==B).all(), True)
     
     def test_memoryview(self):
         """test messages from memoryview"""
@@ -264,8 +264,8 @@ class TestFrame(BaseZMQTestCase):
         m = zmq.Frame(s)
         buf = m.buffer
         s2 = buf.tobytes()
-        self.assertEquals(s2,s)
-        self.assertEquals(m.bytes,s)
+        self.assertEqual(s2,s)
+        self.assertEqual(m.bytes,s)
     
     def test_noncopying_recv(self):
         """check for clobbering message buffers"""
@@ -287,9 +287,9 @@ class TestFrame(BaseZMQTestCase):
                     b = bytes(buf)
                 else:
                     b = buf.tobytes()
-                self.assertEquals(b, null)
-                self.assertEquals(mb, null)
-                self.assertEquals(m2.bytes, ff)
+                self.assertEqual(b, null)
+                self.assertEqual(mb, null)
+                self.assertEqual(m2.bytes, ff)
 
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
@@ -314,7 +314,7 @@ class TestFrame(BaseZMQTestCase):
                 msg = b.recv(copy=False)
                 
                 B = array_from_buffer(msg, A.dtype, A.shape)
-                self.assertEquals(A.shape, B.shape)
+                self.assertEqual(A.shape, B.shape)
                 self.assertTrue((A==B).all())
             A = numpy.ndarray(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
             A['a'] = 1024
@@ -324,7 +324,7 @@ class TestFrame(BaseZMQTestCase):
             msg = b.recv(copy=False)
             
             B = array_from_buffer(msg, A.dtype, A.shape)
-            self.assertEquals(A.shape, B.shape)
+            self.assertEqual(A.shape, B.shape)
             self.assertTrue((A==B).all())
     
     def test_frame_more(self):
@@ -335,7 +335,10 @@ class TestFrame(BaseZMQTestCase):
         sa.send_multipart([b'hi', b'there'])
         frame = self.recv(sb, copy=False)
         self.assertTrue(frame.more)
+        if zmq.zmq_version_info()[0] >= 3:
+            self.assertTrue(frame.get(zmq.MORE))
         frame = self.recv(sb, copy=False)
         self.assertFalse(frame.more)
-        
+        if zmq.zmq_version_info()[0] >= 3:
+            self.assertFalse(frame.get(zmq.MORE))
 

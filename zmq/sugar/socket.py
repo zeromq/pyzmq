@@ -20,6 +20,7 @@ import codecs
 import zmq
 from .backend import Socket as SocketBase
 from . import constants
+from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -38,13 +39,15 @@ except:
 # Code
 #-----------------------------------------------------------------------------
 
-class Socket(SocketBase):
+class Socket(SocketBase, AttributeSetter):
 
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------
-
-    def setsockopt_string(self, option, optval, encoding='utf-8'):
+    setsockopt = SocketBase.set
+    getsockopt = SocketBase.get
+    
+    def set_string(self, option, optval, encoding='utf-8'):
         """set socket options with a unicode object
         
         This is simply a wrapper for setsockopt to protect from encoding ambiguity.
@@ -63,11 +66,11 @@ class Socket(SocketBase):
         """
         if not isinstance(optval, unicode):
             raise TypeError("unicode strings only")
-        return self.setsockopt(option, optval.encode(encoding))
+        return self.set(option, optval.encode(encoding))
     
-    setsockopt_unicode = setsockopt_string
+    setsockopt_unicode = setsockopt_string = set_string
     
-    def getsockopt_string(self, option, encoding='utf-8'):
+    def get_string(self, option, encoding='utf-8'):
         """get the value of a socket option
 
         See the 0MQ documentation for details on specific options.
@@ -88,7 +91,7 @@ class Socket(SocketBase):
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
     
-    getsockopt_unicode = getsockopt_string
+    getsockopt_unicode = getsockopt_string = get_string
     
     def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
         """bind this socket to a random port in a range
@@ -124,35 +127,6 @@ class Socket(SocketBase):
             else:
                 return port
         raise ZMQBindError("Could not bind socket to random port.")
-
-    def __setattr__(self, key, value):
-        """set sockopts by attr"""
-        if key in self.__dict__ or key in self.__class__.__dict__:
-            # allow extended attributes
-            self.__dict__[key] = value
-            return
-        upper_key = key.upper()
-        if upper_key == "HWM":
-            self.set_hwm(value)
-            return
-        try:
-            opt = getattr(constants, upper_key)
-        except AttributeError:
-            raise AttributeError("Socket has no such option: %s" % upper_key)
-        else:
-            self.setsockopt(opt, value)
-    
-    def __getattr__(self, key):
-        """get sockopts by attr"""
-        key = key.upper()
-        if key == 'HWM':
-            return self.get_hwm()
-        try:
-            opt = getattr(constants, key)
-        except AttributeError:
-            raise AttributeError("Socket has no such option: %s" % key)
-        else:
-            return self.getsockopt(opt)
     
     def get_hwm(self):
         """get the High Water Mark
@@ -192,6 +166,8 @@ class Socket(SocketBase):
                 raise raised
         else:
             return self.setsockopt(zmq.HWM, value)
+    
+    hwm = property(get_hwm, set_hwm)
     
     #-------------------------------------------------------------------------
     # Sending and receiving messages

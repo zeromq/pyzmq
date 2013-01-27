@@ -71,8 +71,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, b'zmq.INFO')
-        self.assertEquals(msg2, b(msg1)+b'\n')
+        self.assertEqual(topic, b'zmq.INFO')
+        self.assertEqual(msg2, b(msg1)+b'\n')
         logger.removeHandler(handler)
     
     def test_init_socket(self):
@@ -92,8 +92,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         
         (topic, msg2) = sub.recv_multipart()
-        self.assertEquals(topic, b'zmq.INFO')
-        self.assertEquals(msg2, b(msg1)+b'\n')
+        self.assertEqual(topic, b'zmq.INFO')
+        self.assertEqual(msg2, b(msg1)+b'\n')
         logger.removeHandler(handler)
     
     def test_root_topic(self):
@@ -108,8 +108,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
         topic,msg2 = sub2.recv_multipart()
-        self.assertEquals(topic, b'twoonly.INFO')
-        self.assertEquals(msg2, b(msg1)+b'\n')
+        self.assertEqual(topic, b'twoonly.INFO')
+        self.assertEqual(msg2, b(msg1)+b'\n')
         
         logger.removeHandler(handler)
     

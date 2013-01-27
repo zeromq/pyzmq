@@ -21,7 +21,7 @@ from .backend import zmq_version_info
 # Code
 #-----------------------------------------------------------------------------
 
-__version__ = '2.2dev'
+__version__ = '3.2dev'
 __revision__ = ''
 
 def pyzmq_version():

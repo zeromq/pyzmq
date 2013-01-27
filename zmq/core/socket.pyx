@@ -113,7 +113,7 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     msg = Frame(track=track)
 
     with nogil:
-        rc = zmq_recvmsg(handle, &msg.zmq_msg, flags)
+        rc = zmq_msg_recv(&msg.zmq_msg, handle, flags)
 
     if rc < 0:
         raise ZMQError()
@@ -124,7 +124,7 @@ cdef inline object _recv_copy(void *handle, int flags=0):
     cdef zmq_msg_t zmq_msg
     with nogil:
         zmq_msg_init (&zmq_msg)
-        rc = zmq_recvmsg(handle, &zmq_msg, flags)
+        rc = zmq_msg_recv(&zmq_msg, handle, flags)
     if rc < 0:
         raise ZMQError()
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
@@ -142,7 +142,7 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     msg_copy = msg.fast_copy()
 
     with nogil:
-        rc = zmq_sendmsg(handle, &msg_copy.zmq_msg, flags)
+        rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
 
     if rc < 0:
         # don't pop from the Queue here, because the free_fn will
@@ -172,7 +172,7 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
         raise ZMQError()
 
     with nogil:
-        rc = zmq_sendmsg(handle, &data, flags)
+        rc = zmq_msg_send(&data, handle, flags)
         rc2 = zmq_msg_close(&data)
     if rc < 0 or rc2 != 0:
         raise ZMQError()
@@ -212,7 +212,6 @@ cdef class Socket:
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
-        self._attrs = {}
         self._pid = getpid()
         context._add_socket(self.handle)
 
@@ -269,8 +268,8 @@ cdef class Socket:
                 self.context._remove_socket(self.handle)
             self.handle = NULL
 
-    def setsockopt(self, int option, optval):
-        """s.setsockopt(option, optval)
+    def set(self, int option, optval):
+        """s.set(option, optval)
 
         Set socket options.
 
@@ -334,8 +333,8 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def getsockopt(self, int option):
-        """s.getsockopt(option)
+    def get(self, int option):
+        """s.get(option)
 
         Get the value of a socket option.
 
@@ -623,7 +622,7 @@ cdef class Socket:
         Raises
         ------
         ZMQError
-            for any of the reasons zmq_recvmsg might fail.
+            for any of the reasons zmq_msg_recv might fail.
         """
         _check_closed(self, True)
         

@@ -68,8 +68,15 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
     enum: ZMQ_EINPROGRESS "EINPROGRESS"
     enum: ZMQ_ENOTSOCK "ENOTSOCK"
+    enum: ZMQ_EMSGSIZE "EMSGSIZE"
     enum: ZMQ_EAFNOSUPPORT "EAFNOSUPPORT"
+    enum: ZMQ_ENETUNREACH "ENETUNREACH"
+    enum: ZMQ_ECONNABORTED "ECONNABORTED"
+    enum: ZMQ_ECONNRESET "ECONNRESET"
+    enum: ZMQ_ENOTCONN "ENOTCONN"
+    enum: ZMQ_ETIMEDOUT "ETIMEDOUT"
     enum: ZMQ_EHOSTUNREACH "EHOSTUNREACH"
+    enum: ZMQ_ENETRESET "ENETRESET"
 
     enum: ZMQ_EFSM "EFSM"
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
@@ -80,11 +87,20 @@ cdef extern from "zmq.h" nogil:
     char *zmq_strerror (int errnum)
     int zmq_errno()
 
-    enum: ZMQ_MAX_VSM_SIZE # 30
-    enum: ZMQ_DELIMITER # 31
-    enum: ZMQ_VSM # 32
-    enum: ZMQ_MSG_MORE # 1
-    enum: ZMQ_MSG_SHARED # 128
+    # Context options
+    enum: ZMQ_IO_THREADS    # 1
+    enum: ZMQ_MAX_SOCKETS   # 2
+
+    # Default for new contexts
+    enum: ZMQ_IO_THREADS_DFLT   # 1
+    enum: ZMQ_MAX_SOCKETS_DFLT  # 1024
+
+    void *zmq_ctx_new ()
+    int zmq_ctx_destroy (void *context)
+    int zmq_ctx_set (void *context, int option, int optval)
+    int zmq_ctx_get (void *context, int option)
+    void *zmq_init (int io_threads)
+    int zmq_term (void *context)
     
     # blackbox def for zmq_msg_t
     ctypedef void * zmq_msg_t "zmq_msg_t"
@@ -95,14 +111,16 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_init_size (zmq_msg_t *msg, size_t size)
     int zmq_msg_init_data (zmq_msg_t *msg, void *data,
         size_t size, zmq_free_fn *ffn, void *hint)
+    int zmq_msg_send (zmq_msg_t *msg, void *s, int flags)
+    int zmq_msg_recv (zmq_msg_t *msg, void *s, int flags)
     int zmq_msg_close (zmq_msg_t *msg)
     int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src)
     int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src)
     void *zmq_msg_data (zmq_msg_t *msg)
     size_t zmq_msg_size (zmq_msg_t *msg)
-
-    void *zmq_init (int io_threads)
-    int zmq_term (void *context)
+    int zmq_msg_more (zmq_msg_t *msg)
+    int zmq_msg_get (zmq_msg_t *msg, int option)
+    int zmq_msg_set (zmq_msg_t *msg, int option, int optval)
 
     enum: ZMQ_PAIR # 0
     enum: ZMQ_PUB # 1
@@ -145,13 +163,15 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_IPV4ONLY # 31
     enum: ZMQ_LAST_ENDPOINT # 32
 
-    enum: ZMQ_ROUTER_BEHAVIOR # 33
+    enum: ZMQ_ROUTER_MANDATORY # 33
     enum: ZMQ_TCP_KEEPALIVE # 34
     enum: ZMQ_TCP_KEEPALIVE_CNT # 35
     enum: ZMQ_TCP_KEEPALIVE_IDLE # 36
     enum: ZMQ_TCP_KEEPALIVE_INTVL # 37
     enum: ZMQ_TCP_ACCEPT_FILTER # 38
     enum: ZMQ_DELAY_ATTACH_ON_CONNECT # 39
+    enum: ZMQ_XPUB_VERBOSE # 40
+    enum: ZMQ_ROUTER_RAW # 41
 
     enum: ZMQ_MORE # 1
 
@@ -182,9 +202,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_connect (void *s, char *addr)
     int zmq_unbind (void *s, char *addr)
     int zmq_disconnect (void *s, char *addr)
+    
     # send/recv
-    int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags)
-    int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags)
     int zmq_sendbuf (void *s, const_void_ptr buf, size_t n, int flags)
     int zmq_recvbuf (void *s, void *buf, size_t n, int flags)
 

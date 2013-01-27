@@ -23,11 +23,15 @@ __all__ = [
     'int_sockopts',
     'int64_sockopts',
     'bytes_sockopts',
+    'ctx_opts',
+    'ctx_opt_names',
     ]
 
-int_sockopts = []
-int64_sockopts = []
-bytes_sockopts = []
+int_sockopts    = set()
+int64_sockopts  = set()
+bytes_sockopts  = set()
+ctx_opts        = set()
+msg_opts        = set()
 
 names = [
     # base
@@ -43,7 +47,6 @@ names = [
     'FORWARDER',
     'QUEUE',
     
-    'MORE',
     'SNDMORE',
     
     # socktypes
@@ -71,15 +74,15 @@ names = [
     'EVENT_CLOSE_FAILED',
     'EVENT_DISCONNECTED',
    
-   ## ERRNO
-   # Often used (these are alse in errno.)
+    ## ERRNO
+    # Often used (these are alse in errno.)
     'EAGAIN',
     'EINVAL',
     'EFAULT',
     'ENOMEM',
     'ENODEV',
 
-   # For Windows compatability
+    # For Windows compatability
     'ENOTSUP',
     'EPROTONOSUPPORT',
     'ENOBUFS',
@@ -90,11 +93,11 @@ names = [
     'EINPROGRESS',
     'ENOTSOCK',
 
-   # new errnos in zmq3
+    # new errnos in zmq3
     'EAFNOSUPPORT',
     'EHOSTUNREACH',
 
-   # 0MQ Native
+    # 0MQ Native
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
@@ -106,7 +109,7 @@ names = [
     'ENOMEM',
     'ENODEV',
 
-   # For Windows compatability
+    # For Windows compatability
     'ENOTSUP',
     'EPROTONOSUPPORT',
     'ENOBUFS',
@@ -117,11 +120,18 @@ names = [
     'EINPROGRESS',
     'ENOTSOCK',
 
-   # new errnos in zmq3
-    'EAFNOSUPPORT',
-    'EHOSTUNREACH',
+    # new errnos in zmq3
+    "EMSGSIZE",
+    "EAFNOSUPPORT",
+    "ENETUNREACH",
+    "ECONNABORTED",
+    "ECONNRESET",
+    "ENOTCONN",
+    "ETIMEDOUT",
+    "EHOSTUNREACH",
+    "ENETRESET",
 
-   # 0MQ Native
+    # 0MQ Native
     'EFSM',
     'ENOCOMPATPROTO',
     'ETERM',
@@ -133,7 +143,7 @@ int64_sockopt_names = [
     'AFFINITY',
     'MAXMSGSIZE',
 
-   # sockopts removed in 3.0.0
+    # sockopts removed in 3.0.0
     'HWM',
     'SWAP',
     'MCAST_LOOP',
@@ -152,11 +162,11 @@ int_sockopt_names = [
     # sockopts
     'RECONNECT_IVL_MAX',
 
-   # sockopts new in 2.2.0
+    # sockopts new in 2.2.0
     'SNDTIMEO',
     'RCVTIMEO',
 
-   # new in 3.x
+    # new in 3.x
     'SNDHWM',
     'RCVHWM',
     'MULTICAST_HOPS',
@@ -168,6 +178,8 @@ int_sockopt_names = [
     'TCP_KEEPALIVE_IDLE',
     'TCP_KEEPALIVE_INTVL',
     'DELAY_ATTACH_ON_CONNECT',
+    'XPUB_VERBOSE',
+    'ROUTER_RAW',
 
     'FD',
     'EVENTS',
@@ -175,6 +187,15 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
+]
+
+ctx_opt_names = [
+    'IO_THREADS',
+    'MAX_SOCKETS',
+]
+
+msg_opt_names = [
+    'MORE',
 ]
 
 switched_names = [
@@ -190,28 +211,32 @@ if constants.VERSION < 30000:
 else:
     int_sockopt_names.extend(switched_names)
 
-def _add_constant(name):
+def _add_constant(name, container=None):
     c = getattr(constants, name, -1)
     if c == -1:
-        return c
+        return
     globals()[name] = c
     __all__.append(name)
+    if container is not None:
+        container.add(c)
     return c
     
 for name in names:
     _add_constant(name)
 
 for name in int_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        int_sockopts.append(c)
+    _add_constant(name, int_sockopts)
 
 for name in int64_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        int64_sockopts.append(c)
+    _add_constant(name, int64_sockopts)
 
 for name in bytes_sockopt_names:
-    c = _add_constant(name)
-    if c != -1:
-        bytes_sockopts.append(c)
+    _add_constant(name, bytes_sockopts)
+
+for name in ctx_opt_names:
+    _add_constant(name, ctx_opts)
+
+for name in msg_opt_names:
+    _add_constant(name, msg_opts)
+
+

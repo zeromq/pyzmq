@@ -27,7 +27,7 @@ class TestReqRep(BaseZMQTestCase):
 
         msg1 = b'message 1'
         msg2 = self.ping_pong(s1, s2, msg1)
-        self.assertEquals(msg1, msg2)
+        self.assertEqual(msg1, msg2)
 
     def test_multiple(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
@@ -35,7 +35,7 @@ class TestReqRep(BaseZMQTestCase):
         for i in range(10):
             msg1 = i*b' '
             msg2 = self.ping_pong(s1, s2, msg1)
-            self.assertEquals(msg1, msg2)
+            self.assertEqual(msg1, msg2)
 
     def test_bad_send_recv(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
@@ -49,7 +49,7 @@ class TestReqRep(BaseZMQTestCase):
         # I have to have this or we die on an Abort trap.
         msg1 = b'asdf'
         msg2 = self.ping_pong(s1, s2, msg1)
-        self.assertEquals(msg1, msg2)
+        self.assertEqual(msg1, msg2)
 
     def test_json(self):
         s1, s2 = self.create_bound_pair(zmq.REQ, zmq.REP)
@@ -67,7 +67,7 @@ class TestReqRep(BaseZMQTestCase):
 
         for i in range(10):
             msg2 = self.ping_pong(s1, s2, msg1)
-            self.assertEquals(msg1, msg2)
+            self.assertEqual(msg1, msg2)
 
 if have_gevent:
     class TestReqRepGreen(GreenTest, TestReqRep):
