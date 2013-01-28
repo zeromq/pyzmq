@@ -19,6 +19,7 @@ import codecs
 
 import zmq
 from .backend import Socket as SocketBase
+from .poll import Poller
 from . import constants
 from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
@@ -341,6 +342,8 @@ class Socket(SocketBase, AttributeSetter):
         else:
             msg = self.recv(flags)
             return jsonapi.loads(msg)
+    
+    _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):
         """poll the socket for events
@@ -367,7 +370,7 @@ class Socket(SocketBase, AttributeSetter):
         if self.closed:
             raise ZMQError(ENOTSUP)
 
-        p = zmq.Poller()
+        p = self._poller_class()
         p.register(self, flags)
         evts = dict(p.poll(timeout))
         # return 0 if no events, otherwise return event bitfield
