@@ -20,6 +20,7 @@ import zmq
 
 from zmq import Context as _original_Context
 from zmq import Socket as _original_Socket
+from .poll import _Poller
 
 import gevent
 from gevent.event import AsyncResult
@@ -57,6 +58,7 @@ class _Socket(_original_Socket):
     __writable = None
     __readable = None
     _state_event = None
+    _poller_class = _Poller
     
     def __init__(self, context, socket_type):
         _original_Socket.__init__(self, context, socket_type)
@@ -240,12 +242,13 @@ class _Socket(_original_Socket):
             self.__state_changed()
         return msg
     
-    def getsockopt(self, opt):
+    def get(self, opt):
         """trigger state_changed on getsockopt(EVENTS)"""
-        optval = super(_Socket, self).getsockopt(opt)
+        optval = super(_Socket, self).get(opt)
         if opt == zmq.EVENTS:
             self.__state_changed()
         return optval
+    
 
 
 class _Context(_original_Context):
