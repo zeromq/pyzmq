@@ -228,5 +228,14 @@ if have_gevent:
             r.join()
             toc = time.time()
             self.assertTrue(toc-tic < 1)
-            
+        
+        def test_socket_poll(self):
+            s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+
+            tic = time.time()
+            r = gevent.spawn(lambda: s2.poll(10000))
+            s = gevent.spawn(lambda: s1.send(b'msg1'))
+            r.join()
+            toc = time.time()
+            self.assertTrue(toc-tic < 1)
 
