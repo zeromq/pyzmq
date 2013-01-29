@@ -832,6 +832,8 @@ for submod, packages in submodules.items():
             ext.sources = sources
         extensions.append(ext)
 
+if 'PyPy' in sys.version:
+    extensions = []
 
 package_data = {'zmq':['*.pxd'],
                 'zmq.core':['*.pxd'],

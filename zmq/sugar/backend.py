@@ -26,8 +26,17 @@ try:
         constants,
     )
 except ImportError:
-    # here will be the cffi backend import, when it exists
-    raise
+    from zmq.cffi_core import (
+        Context,
+        Socket, IPC_PATH_MAX_LEN,
+        Frame, Message,
+        Stopwatch,
+        device, proxy,
+        strerror, zmq_errno,
+        zmq_poll,
+        zmq_version_info,
+        constants,
+    )
 
 __all__ = [
     'Context',
