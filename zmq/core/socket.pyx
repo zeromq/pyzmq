@@ -72,6 +72,7 @@ except:
 import zmq
 from zmq.core import constants
 from zmq.core.constants import *
+from zmq.core.error import _check_rc
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
 
@@ -96,14 +97,14 @@ cdef inline _check_closed(Socket s, bint raise_notsup):
             return True
     else:
         rc = zmq_getsockopt(s.handle, ZMQ_TYPE, <void *>&stype, &sz)
-        if rc and zmq_errno() == ENOTSOCK:
+        if rc < 0 and zmq_errno() == ENOTSOCK:
             s._closed = True
             if raise_notsup:
                 raise ZMQError(ENOTSUP)
             else:
                 return True
-        elif rc:
-            raise ZMQError()
+        else:
+            _check_rc(rc)
     return False
 
 cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
@@ -114,9 +115,8 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
 
     with nogil:
         rc = zmq_msg_recv(&msg.zmq_msg, handle, flags)
-
-    if rc < 0:
-        raise ZMQError()
+    
+    _check_rc(rc)
     return msg
 
 cdef inline object _recv_copy(void *handle, int flags=0):
@@ -125,8 +125,7 @@ cdef inline object _recv_copy(void *handle, int flags=0):
     with nogil:
         zmq_msg_init (&zmq_msg)
         rc = zmq_msg_recv(&zmq_msg, handle, flags)
-    if rc < 0:
-        raise ZMQError()
+    _check_rc(rc)
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     with nogil:
         zmq_msg_close(&zmq_msg)
@@ -144,10 +143,7 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     with nogil:
         rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
 
-    if rc < 0:
-        # don't pop from the Queue here, because the free_fn will
-        #  still call Queue.get() even if the send fails
-        raise ZMQError()
+    _check_rc(rc)
     return msg.tracker
 
 
@@ -166,16 +162,15 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
     with nogil:
         rc = zmq_msg_init_size(&data, msg_c_len)
-        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
 
-    if rc != 0:
-        raise ZMQError()
+    _check_rc(rc)
 
     with nogil:
+        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
         rc = zmq_msg_send(&data, handle, flags)
         rc2 = zmq_msg_close(&data)
-    if rc < 0 or rc2 != 0:
-        raise ZMQError()
+    _check_rc(rc)
+    _check_rc(rc2)
 
 
 cdef class Socket:
@@ -224,7 +219,7 @@ cdef class Socket:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
-                raise ZMQError()
+                _check_rc(rc)
             # during gc, self.context might be NULL
             if self.context:
                 self.context._remove_socket(self.handle)
@@ -261,7 +256,7 @@ cdef class Socket:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
-                raise ZMQError()
+                _check_rc(rc)
             self._closed = True
             # during gc, self.context might be NULL
             if self.context:
@@ -330,8 +325,7 @@ cdef class Socket:
                     &optval_int_c, sizeof(int)
                 )
 
-        if rc != 0:
-            raise ZMQError()
+        _check_rc(rc)
 
     def get(self, int option):
         """s.get(option)
@@ -366,22 +360,19 @@ cdef class Socket:
             sz = 255
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             result = optval_int64_c
         elif option == ZMQ_FD:
             sz = sizeof(fd_t)
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             result = optval_fd_c
         else:
             # default is to assume int, which is what most new sockopts will be
@@ -392,8 +383,7 @@ cdef class Socket:
             sz = sizeof(int)
             with nogil:
                 rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             result = optval_int_c
 
         return result
@@ -437,8 +427,7 @@ cdef class Socket:
                                 'to check addr length (if it is defined).'
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(msg=msg)
-            else:
-                raise ZMQError()
+        _check_rc(rc)
 
     def connect(self, addr):
         """s.connect(addr)

@@ -46,7 +46,7 @@ except (ImportError, AttributeError):
     from threading import Event
 
 import zmq
-from zmq.error import ZMQError
+from zmq.core.error import _check_rc
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
@@ -123,8 +123,7 @@ cdef class Frame:
         if data is None:
             with nogil:
                 rc = zmq_msg_init(&self.zmq_msg)
-            if rc != 0:
-                raise ZMQError()
+            _check_rc(rc)
             self._failed_init = False
             return
         else:
@@ -141,7 +140,7 @@ cdef class Frame:
             )
         if rc != 0:
             Py_DECREF(hint)
-            raise ZMQError()
+            _check_rc(rc)
         self._failed_init = False
     
     def __init__(self, object data=None, track=False):
@@ -155,8 +154,7 @@ cdef class Frame:
         # This simply decreases the 0MQ ref-count of zmq_msg.
         with nogil:
             rc = zmq_msg_close(&self.zmq_msg)
-        if rc != 0:
-            raise ZMQError()
+        _check_rc(rc)
     
     # buffer interface code adapted from petsc4py by Lisandro Dalcin, a BSD project
     
@@ -285,14 +283,12 @@ cdef class Frame:
     def set(self, int option, int value):
         """Set a message property"""
         cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
-        if rc < 0:
-            raise zmq.ZMQError()
+        _check_rc(rc)
     
     def get(self, int option):
         """Get a message property"""
         cdef int rc = zmq_msg_get(&self.zmq_msg, option)
-        if rc < 0:
-            raise zmq.ZMQError()
+        _check_rc(rc)
         return rc
 
 # legacy Message name
