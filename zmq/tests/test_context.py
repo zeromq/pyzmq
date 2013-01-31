@@ -17,7 +17,6 @@ from threading import Thread, Event
 
 import zmq
 from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest, skip_green
-from zmq.tests import BaseZMQTestCase
 
 
 #-----------------------------------------------------------------------------
