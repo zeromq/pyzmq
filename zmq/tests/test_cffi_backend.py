@@ -1,14 +1,17 @@
 # -*- coding: utf8 -*-
 
 import sys
-from unittest import TestCase, skipIf
+from unittest import TestCase
 
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.cffi_core._cffi import zmq_version_info
 
 
-@skipIf(not 'PyPy' in sys.version, 'Tests for PyPy only')
 class TestCffiBackend(TestCase):
+    def setUp(self):
+        if not 'PyPy' in sys.version:
+            raise SkipTest('PyPy Tests Only')
+
     def test_zmq_version_info(self):
         from zmq.cffi_core._cffi import zmq_version_info
 
