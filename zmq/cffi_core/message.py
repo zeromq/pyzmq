@@ -37,7 +37,6 @@ class Frame(object):
             self.zmq_msg = ffi.new('zmq_msg_t*')
             rc = C.zmq_msg_init(self.zmq_msg)
         elif data is not None and zmq_msg is not None:
-            self._trim_null()
             self.zmq_msg = zmq_msg
         else:
             self.zmq_msg = ffi.new('zmq_msg_t*')
@@ -50,12 +49,6 @@ class Frame(object):
 
         if rc != 0:
             raise ZMQErrror()
-
-    def _trim_null(self):
-        if self.data.count(b'\x00') == 1 and \
-           len(self.data) > 1 and \
-           self.data[len(self.data) - 1] == b'\x00': # hide last NULL char
-            self.data = self.data[:len(self.data) - 1]
 
     @property
     def bytes(self):
