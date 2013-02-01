@@ -73,6 +73,7 @@ core32_functions = \
 '''
 int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
+void* zmq_ctx_new();
 int zmq_ctx_destroy(void *context);
 int zmq_proxy(const void *frontend, const void *backend, const void *capture);
 '''
