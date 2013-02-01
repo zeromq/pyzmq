@@ -55,7 +55,12 @@ class Context(object):
         if self.closed:
             return
 
-        C.zmq_ctx_destroy(self.zmq_ctx)
+        for k, s in self._sockets.items():
+            if not s.closed:
+                if linger:
+                    s.setsockopt(LINGER, linger)
+
+        C.zmq_term(self.zmq_ctx)
 
         self.zmq_ctx = None
         self._closed = True
