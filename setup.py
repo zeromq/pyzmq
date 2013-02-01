@@ -708,9 +708,7 @@ class CopyingBuild(build):
     
     def run(self):
         if bundle_libzmq_dylib and not sys.platform.startswith('win'):
-            # always rebuild before bdist, because linking may be wrong:
-            self.run_command('clean')
-            copy_and_patch_libzmq(ZMQ, 'libzmq'+lib_ext)
+            copy_and_patch_libzmq(CONFIG['zmq_prefix'], 'libzmq'+lib_ext)
         build.run(self)
 
 class CheckingBuildExt(build_ext):
