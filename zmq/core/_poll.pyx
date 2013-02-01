@@ -23,7 +23,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport zmq_pollitem_t, allocate, ZMQ_VERSION_MAJOR
+from libc.stdlib cimport free, malloc
+
+from libzmq cimport zmq_pollitem_t, ZMQ_VERSION_MAJOR
 from libzmq cimport zmq_poll as zmq_poll_c
 from socket cimport Socket
 
@@ -59,9 +61,16 @@ def zmq_poll(sockets, long timeout=-1):
     """
     cdef int rc, i
     cdef zmq_pollitem_t *pollitems = NULL
-    cdef int nsockets = len(sockets)
+    cdef int nsockets = <int>len(sockets)
     cdef Socket current_socket
-    pollitems_o = allocate(nsockets*sizeof(zmq_pollitem_t),<void**>&pollitems)
+    
+    if nsockets == 0:
+        return []
+    
+    pollitems = <zmq_pollitem_t *>malloc(nsockets*sizeof(zmq_pollitem_t))
+    if pollitems == NULL:
+        raise MemoryError("Could not allocate poll items")
+        
     if ZMQ_VERSION_MAJOR < 3:
         # timeout is us in 2.x, ms in 3.x
         # expected input is ms (matches 3.x)
@@ -84,6 +93,7 @@ def zmq_poll(sockets, long timeout=-1):
             try:
                 fileno = int(s.fileno())
             except:
+                free(pollitems)
                 raise ValueError('fileno() must return an valid integer fd')
             else:
                 pollitems[i].socket = NULL
@@ -91,15 +101,20 @@ def zmq_poll(sockets, long timeout=-1):
                 pollitems[i].events = events
                 pollitems[i].revents = 0
         else:
+            free(pollitems)
             raise TypeError(
                 "Socket must be a 0MQ socket, an integer fd or have "
                 "a fileno() method: %r" % s
             )
+    
 
     with nogil:
         rc = zmq_poll_c(pollitems, nsockets, timeout)
-    _check_rc(rc)
-
+    
+    if rc < 0:
+        free(pollitems)
+        _check_rc(rc)
+    
     results = []
     for i in range(nsockets):
         s = sockets[i][0]
@@ -111,6 +126,7 @@ def zmq_poll(sockets, long timeout=-1):
         if revents > 0:
             results.append((s, revents))
 
+    free(pollitems)
     return results
 
 #-----------------------------------------------------------------------------
