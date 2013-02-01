@@ -122,9 +122,8 @@ size_t zmq_msg_size(zmq_msg_t *msg);
 void *zmq_msg_data(zmq_msg_t *msg);
 int zmq_msg_close(zmq_msg_t *msg);
 
-int zmq_sendmsg(void *socket, zmq_msg_t *msg, int flags);
-int zmq_recvmsg(void *socket, zmq_msg_t *msg, int flags);
-
+int zmq_msg_send(zmq_msg_t *msg, void *socket, int flags);
+int zmq_msg_recv(zmq_msg_t *msg, void *socket, int flags);
 '''
 
 sockopt_functions = \

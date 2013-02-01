@@ -196,9 +196,7 @@ class Socket(object):
             rc = C.zmq_msg_init_size(zmq_msg, len(message))
             C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
 
-        print(ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))[:])
-
-        ret = C.zmq_sendmsg(self.zmq_socket, zmq_msg, flags)
+        ret = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
 
         if ret < 0:
             C.zmq_msg_close(zmq_msg)
@@ -218,7 +216,7 @@ class Socket(object):
         zmq_msg = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg)
 
-        ret = C.zmq_recvmsg(self.zmq_socket, zmq_msg, flags)
+        ret = C.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
 
         if ret < 0:
             C.zmq_msg_close(zmq_msg)
