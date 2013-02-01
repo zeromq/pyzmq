@@ -47,11 +47,9 @@ class ZMQError(ZMQBaseError):
             Description of the error or None.
         """
         from zmq.sugar.backend import strerror, zmq_errno
-        
         if errno is None:
             errno = zmq_errno()
-            error = errno
-        if type(errno) == int:
+        if isinstance(errno, int):
             self.errno = errno
             if msg is None:
                 self.strerror = strerror(errno)
@@ -95,4 +93,35 @@ class NotDone(ZMQBaseError):
     pass
 
 
-__all__ = ['ZMQBaseError', 'ZMQBindError', 'ZMQError', 'NotDone']
+class ContextTerminated(ZMQError):
+    """Wrapper for zmq.ETERM"""
+    pass
+
+
+class Again(ZMQError):
+    """Wrapper for zmq.EAGAIN"""
+    pass
+
+
+def _check_rc(rc, errno=None):
+    """internal utility for checking zmq return condition
+    
+    and raising the appropriate Exception class
+    """
+    from zmq.sugar.backend import zmq_errno
+    from errno import EINTR
+    from zmq import EAGAIN, ETERM
+    if rc < 0:
+        if errno is None:
+            errno = zmq_errno()
+        if errno == EAGAIN:
+            raise Again(errno)
+        elif errno == ETERM:
+            raise ContextTerminated(errno)
+        elif errno == EINTR:
+            raise KeyboardInterrupt
+        else:
+            raise ZMQError(errno)
+
+
+__all__ = ['ZMQBaseError', 'ZMQBindError', 'ZMQError', 'NotDone', 'ContextTerminated', 'Again']

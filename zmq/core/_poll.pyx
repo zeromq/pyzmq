@@ -29,7 +29,7 @@ from socket cimport Socket
 
 import sys
 
-from zmq.error import ZMQError
+from zmq.core.error import _check_rc
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -98,8 +98,7 @@ def zmq_poll(sockets, long timeout=-1):
 
     with nogil:
         rc = zmq_poll_c(pollitems, nsockets, timeout)
-    if rc == -1:
-        raise ZMQError()
+    _check_rc(rc)
 
     results = []
     for i in range(nsockets):

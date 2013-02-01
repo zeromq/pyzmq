@@ -55,4 +55,11 @@ def zmq_errno():
     """
     return zmq_errno_c()
 
+def _check_rc(rc):
+    # need to check signals deep in Python
+    cdef int errnum = zmq_errno()
+    from zmq.error import _check_rc
+    PyErr_CheckSignals()
+    _check_rc(rc, errnum)
+
 __all__ = ['strerror', 'zmq_errno']
