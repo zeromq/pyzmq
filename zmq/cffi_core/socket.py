@@ -163,6 +163,7 @@ class Socket(object):
         return ret
 
     def get(self, option, length=0):
+        from zmq.sugar.constants import bytes_sockopts
         if option in bytes_sockopts:
             length = 255
 
