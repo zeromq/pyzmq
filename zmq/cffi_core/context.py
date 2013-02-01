@@ -31,13 +31,6 @@ class Context(object):
         global _instance
         _instance = self
 
-    @classmethod
-    def instance(cls, io_threads=1):
-        global _instance
-        if _instance is None or _instance.closed:
-            _instance = cls(io_threads)
-        return _instance
-
     @property
     def closed(self):
         return self._closed
@@ -80,10 +73,9 @@ class Context(object):
         self.n_sockets = 0
 
     def __del__(self):
-        if self.zmq_ctx:
-            C.zmq_ctx_destroy(self.zmq_ctx)
-
-        self.zmq_ctx = None
-        self._closed = True
+        if self.zmq_ctx and not self._closed:
+            C.zmq_term(self.zmq_ctx)
+            self.zmq_ctx = None
+            self._closed = True
 
 __all__ = ['Context']
