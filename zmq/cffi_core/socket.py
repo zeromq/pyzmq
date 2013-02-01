@@ -75,7 +75,7 @@ class Socket(object):
     def __init__(self, context, sock_type):
         self.context = context
         self.socket_type = sock_type
-        self._zmq_socket = C.zmq_socket(context.zmq_ctx, sock_type)
+        self._zmq_socket = C.zmq_socket(context._zmq_ctx, sock_type)
         if self._zmq_socket == ffi.NULL:
             raise ZMQError(C.zmq_errno())
         self._closed = False
