@@ -30,9 +30,6 @@
 cdef extern from *:
     ctypedef void* const_void_ptr "const void *"
 
-cdef extern from "allocate.h":
-    object allocate(size_t n, void **pp)
-
 cdef extern from "errno.h" nogil:
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EAGAIN "EAGAIN"
