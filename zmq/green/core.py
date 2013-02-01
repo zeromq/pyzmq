@@ -43,7 +43,7 @@ class _Socket(_original_Socket):
         * send
         * recv
 
-    To ensure that the ``zmq.NOBLOCK`` flag is set and that sending or recieving
+    To ensure that the ``zmq.NOBLOCK`` flag is set and that sending or receiving
     is deferred to the hub if a ``zmq.EAGAIN`` (retry) error is raised.
     
     The `__state_changed` method is triggered when the zmq.FD for the socket is
@@ -58,6 +58,8 @@ class _Socket(_original_Socket):
     __writable = None
     __readable = None
     _state_event = None
+    _gevent_bug_timeout = 11.6 # timeout for not trusting gevent
+    _debug_gevent = False # turn on if you think gevent is missing events
     _poller_class = _Poller
     
     def __init__(self, context, socket_type):
@@ -119,9 +121,14 @@ class _Socket(_original_Socket):
         # timeout is because libzmq cannot be trusted to properly signal a new send event:
         # this is effectively a maximum poll interval of 1s
         tic = time.time()
-        timeout = gevent.Timeout(seconds=1)
+        dt = self._gevent_bug_timeout
+        if dt:
+            timeout = gevent.Timeout(seconds=dt)
+        else:
+            timeout = None
         try:
-            timeout.start()
+            if timeout:
+                timeout.start()
             self.__writable.get(block=True)
         except gevent.Timeout as t:
             if t is not timeout:
@@ -129,10 +136,12 @@ class _Socket(_original_Socket):
             toc = time.time()
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
-            if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
-                print("BUG: gevent missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
+            if self._debug_gevent and timeout and toc-tic > dt and \
+                    self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
+                print("BUG: gevent may have missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
         finally:
-            timeout.cancel()
+            if timeout:
+                timeout.cancel()
             self.__writable.set()
 
     def _wait_read(self):
@@ -143,9 +152,14 @@ class _Socket(_original_Socket):
         # with our dirty hacks.
         # this is effectively a maximum poll interval of 1s
         tic = time.time()
-        timeout = gevent.Timeout(seconds=1)
+        dt = self._gevent_bug_timeout
+        if dt:
+            timeout = gevent.Timeout(seconds=dt)
+        else:
+            timeout = None
         try:
-            timeout.start()
+            if timeout:
+                timeout.start()
             self.__readable.get(block=True)
         except gevent.Timeout as t:
             if t is not timeout:
@@ -153,10 +167,12 @@ class _Socket(_original_Socket):
             toc = time.time()
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
-            if toc-tic > 0.9 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
-                print("BUG: gevent missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
+            if self._debug_gevent and timeout and toc-tic > dt and \
+                    self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
+                print("BUG: gevent may have missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
         finally:
-            timeout.cancel()
+            if timeout:
+                timeout.cancel()
             self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False):
