@@ -68,36 +68,36 @@ def initialize_opt_pointer(option, value, length=0):
 class Socket(object):
     context = None
     socket_type = None
-    zmq_socket = None
+    _zmq_socket = None
     _closed = None
-    n = None
-    rcvmore = None
+    _n = None
 
     def __init__(self, context, sock_type):
         self.context = context
         self.socket_type = sock_type
-        self.zmq_socket = C.zmq_socket(context.zmq_ctx, sock_type)
-        if not self.zmq_socket:
+        self._zmq_socket = C.zmq_socket(context.zmq_ctx, sock_type)
+        if self._zmq_socket == ffi.NULL:
             raise ZMQError(C.zmq_errno())
         self._closed = False
-        self.n = self.context._add_socket(self)
-        self.rcvmore = False
+        self._n = self.context._add_socket(self)
 
     @property
     def closed(self):
         return self._closed
 
     def close(self, linger=None):
-        if not self._closed:
-            rc = C.zmq_close(self.zmq_socket)
+        rc = 0
+        if not self._closed and hasattr(self, '_zmq_socket'):
+            if self._zmq_socket is not None:
+                rc = C.zmq_close(self._zmq_socket)
             self._closed = True
-            return rc
+        return rc
 
     def __del__(self):
         self.close()
 
     def bind(self, address):
-        ret = C.zmq_bind(self.zmq_socket, address)
+        ret = C.zmq_bind(self._zmq_socket, address)
         if ret != 0:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
                 # py3compat: address is bytes, but msg wants str
@@ -112,7 +112,7 @@ class Socket(object):
                 raise ZMQError(C.zmq_errno())
 
     def unbind(self, address):
-        ret = C.zmq_unbind(self.zmq_socket, address)
+        ret = C.zmq_unbind(self._zmq_socket, address)
 
         if ret != 0:
             raise ZMQError(C.zmq_errno())
@@ -120,7 +120,7 @@ class Socket(object):
         return ret
 
     def connect(self, address):
-        ret = C.zmq_connect(self.zmq_socket, address)
+        ret = C.zmq_connect(self._zmq_socket, address)
 
         if ret != 0:
             raise ZMQError(C.zmq_errno())
@@ -128,7 +128,7 @@ class Socket(object):
         return ret
 
     def disconnect(self, address):
-        ret = C.zmq_disconnect(self.zmq_socket, address)
+        ret = C.zmq_disconnect(self._zmq_socket, address)
 
         if ret != 0:
             raise ZMQError(C.zmq_errno())
@@ -153,7 +153,7 @@ class Socket(object):
         low_level_value_pointer = low_level_data[0]
         low_level_sizet = low_level_data[1]
 
-        ret = C.zmq_setsockopt(self.zmq_socket,
+        ret = C.zmq_setsockopt(self._zmq_socket,
                                option,
                                ffi.cast('void*', low_level_value_pointer),
                                low_level_sizet)
@@ -174,7 +174,7 @@ class Socket(object):
         low_level_value_pointer = low_level_data[0]
         low_level_sizet_pointer = low_level_data[1]
 
-        ret = C.zmq_getsockopt(self.zmq_socket,
+        ret = C.zmq_getsockopt(self._zmq_socket,
                                option,
                                low_level_value_pointer,
                                low_level_sizet_pointer)
@@ -212,7 +212,7 @@ class Socket(object):
                 return zmq.MessageTracker(message)
             return message
         else:
-            message = Frame(message, zmq_msg=zmq_msg)
+            message = Frame(message, zmq_msg=zmq_msg, track=track)
             if track:
                 return zmq.MessageTracker(message)
             return message
