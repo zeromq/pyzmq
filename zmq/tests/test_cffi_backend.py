@@ -4,7 +4,6 @@ import sys
 from unittest import TestCase
 
 from zmq.tests import BaseZMQTestCase, SkipTest
-from zmq.cffi_core._cffi import zmq_version_info
 
 
 class TestCffiBackend(TestCase):
