@@ -227,12 +227,10 @@ class Socket(object):
             C.zmq_msg_close(zmq_msg)
             raise ZMQError(C.zmq_errno())
 
-        self.rcvmore = self.getsockopt(RCVMORE)
-
         value = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))[:]
 
         frame = Frame(value, zmq_msg=zmq_msg)
-        frame.more = self.rcvmore
+        frame.more = self.getsockopt(RCVMORE)
 
         return frame
 
