@@ -12,6 +12,7 @@ from ._cffi import C, ffi, new_uint64_pointer, \
                            IPC_PATH_MAX_LEN, \
                            strerror
 
+
 from .message import Frame
 from .constants import *
 
@@ -23,38 +24,42 @@ import codecs
 
 import errno as errno_mod
 
+
 def new_pointer_from_opt(option, length=0):
-    if option in uint64_opts:
-        return new_uint64_pointer()
-    elif option in int64_opts:
+    from zmq.sugar.constants import int_sockopts,   \
+                                    int64_sockopts, \
+                                    bytes_sockopts
+    if option in int64_sockopts:
         return new_int64_pointer()
-    elif option in int_opts:
+    elif option in int_sockopts:
         return new_int_pointer()
-    elif option in binary_opts:
+    elif option in bytes_sockopts:
         return new_binary_data(length)
     else:
         raise ValueError('Invalid option')
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
-    if option in uint64_opts:
+    from zmq.sugar.constants import int_sockopts,   \
+                                    int64_sockopts, \
+                                    bytes_sockopts
+    if option in int64_sockopts:
         return int(opt_pointer[0])
-    elif option in int64_opts:
+    elif option in int_sockopts:
         return int(opt_pointer[0])
-    elif option in int_opts:
-        return int(opt_pointer[0])
-    elif option in binary_opts:
+    elif option in bytes_sockopts:
         return ffi.buffer(opt_pointer, length)[:]
     else:
         raise ValueError('Invalid option')
 
 def initialize_opt_pointer(option, value, length=0):
-    if option in uint64_opts:
-        return value_uint64_pointer(value)
-    elif option in int64_opts:
+    from zmq.sugar.constants import int_sockopts,   \
+                                    int64_sockopts, \
+                                    bytes_sockopts
+    if option in int64_sockopts:
         return value_int64_pointer(value)
-    elif option in int_opts:
+    elif option in int_sockopts:
         return value_int_pointer(value)
-    elif option in binary_opts:
+    elif option in bytes_sockopts:
         return value_binary_data(value, length)
     else:
         raise ValueError('Invalid option')
