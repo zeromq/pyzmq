@@ -4,21 +4,21 @@ from ._cffi import C, ffi, zmq_version_info
 from .socket import Socket
 from zmq.error import ZMQError
 
-def device(device_type, isocket, osocket):
-    rc = C.zmq_device(device_type, isocket.zmq_socket, osocket.zmq_socket)
+def device(device_type, frontend, backend):
+    rc = C.zmq_device(device_type, frontend._zmq_socket, backend._zmq_socket)
 
     if rc != 0:
         raise ZMQError(C.zmq_errno())
 
     return rc
 
-def proxy(isocket, osocket, msocket=None):
-    if isinstance(msocket, Socket):
-        msocket = msocket.zmq_socket
+def proxy(frontend, backend, capture=None):
+    if isinstance(capture, Socket):
+        capture = capture._zmq_socket
     else:
-        msocket = ffi.NULL
+        capture = ffi.NULL
 
-    rc = C.zmq_proxy(isocket.zmq_socket, osocket.zmq_socket, msocket)
+    rc = C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, capture)
 
     if rc != 0:
         raise ZMQError(C.zmq_errno())
