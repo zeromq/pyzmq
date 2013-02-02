@@ -14,15 +14,22 @@
 
 import copy
 import sys
-from sys import getrefcount as grc
+try:
+    from sys import getrefcount as grc
+except ImportError:
+    grc = None
+
 import time
 from pprint import pprint
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy, PYPY
 from zmq.utils.strtypes import unicode, bytes, b, u
-from zmq.utils.rebuffer import array_from_buffer
+try:
+    from zmq.utils.rebuffer import array_from_buffer
+except:
+    array_from_buffer = None
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -37,12 +44,14 @@ try:
 except NameError:
     view = buffer
 
-rc0 = grc(x)
-v = view(x)
-view_rc = grc(x) - rc0
+if grc:
+    rc0 = grc(x)
+    v = view(x)
+    view_rc = grc(x) - rc0
 
 class TestFrame(BaseZMQTestCase):
 
+    @skip_pypy
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -70,8 +79,9 @@ class TestFrame(BaseZMQTestCase):
             m = zmq.Frame(s)
             b = m.bytes
             self.assertEqual(s, m.bytes)
-            # check that it copies
-            self.assert_(b is not s)
+            if not PYPY:
+                # check that it copies
+                self.assert_(b is not s)
             # check that it copies only once
             self.assert_(b is m.bytes)
 
@@ -91,6 +101,7 @@ class TestFrame(BaseZMQTestCase):
             m = zmq.Frame(s)
             self.assertEqual(len(s), len(m))
 
+    @skip_pypy
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -125,6 +136,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(rc, 2)
             del s
 
+    @skip_pypy
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -159,6 +171,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(rc, 2)
             del s
     
+    @skip_pypy
     def test_tracker(self):
         m = zmq.Frame(b'asdf', track=True)
         self.assertFalse(m.tracker.done)
@@ -174,6 +187,7 @@ class TestFrame(BaseZMQTestCase):
         self.assertEqual(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
+    @skip_pypy
     def test_multi_tracker(self):
         m = zmq.Frame(b'asdf', track=True)
         m2 = zmq.Frame(b'whoda', track=True)
@@ -291,6 +305,7 @@ class TestFrame(BaseZMQTestCase):
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
 
+    @skip_pypy
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
         try:
@@ -335,10 +350,10 @@ class TestFrame(BaseZMQTestCase):
         sa.send_multipart([b'hi', b'there'])
         frame = self.recv(sb, copy=False)
         self.assertTrue(frame.more)
-        if zmq.zmq_version_info()[0] >= 3:
+        if zmq.zmq_version_info()[0] >= 3 and not PYPY:
             self.assertTrue(frame.get(zmq.MORE))
         frame = self.recv(sb, copy=False)
         self.assertFalse(frame.more)
-        if zmq.zmq_version_info()[0] >= 3:
+        if zmq.zmq_version_info()[0] >= 3 and not PYPY:
             self.assertFalse(frame.get(zmq.MORE))
 
