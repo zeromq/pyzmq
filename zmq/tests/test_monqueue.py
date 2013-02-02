@@ -26,6 +26,7 @@ from zmq.utils.strtypes import unicode
 devices.ThreadMonitoredQueue.context_factory = zmq.Context
 
 class TestMonitoredQueue(BaseZMQTestCase):
+    
     sockets = []
     
     def build_device(self, mon_sub=b"", in_prefix=b'in', out_prefix=b'out'):
@@ -188,6 +189,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         a.identity = b'a'
         b = self.context.socket(zmq.DEALER)
         b.identity = b'b'
+        self.sockets.extend([a, b])
         
         a.connect('tcp://127.0.0.1:%i'%porta)
         dev.bind_in('tcp://127.0.0.1:%i'%porta)
@@ -226,6 +228,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         ins = self.context.socket(zmq.ROUTER)
         outs = self.context.socket(zmq.DEALER)
         mons = self.context.socket(zmq.PUB)
+        self.sockets.extend([ins, outs, mons])
         
         ins = unicode('in')
         outs = unicode('out')

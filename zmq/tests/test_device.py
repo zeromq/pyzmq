@@ -130,11 +130,9 @@ class TestDevice(BaseZMQTestCase):
         mon = self.context.socket(zmq.PULL)
         mon.connect("%s:%i" % (iface, port3))
         push.send(msg)
+        self.sockets.extend([push, pull, mon])
         self.assertEqual(msg, self.recv(pull))
         self.assertEqual(msg, self.recv(mon))
-        
-        
-        
 
 if have_gevent:
     import gevent
