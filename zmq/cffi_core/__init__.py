@@ -1,9 +1,9 @@
 from zmq.cffi_core import (constants, error, message, context, socket,
-                           _poll, devices, _version)
+                           _poll, devices, _version, stopwatch)
 
 __all__ = []
 for submod in (constants, error, message, context, socket,
-               _poll, devices, _version):
+               _poll, devices, _version, stopwatch):
     __all__.extend(submod.__all__)
 
 from zmq.cffi_core.constants import *
@@ -14,5 +14,4 @@ from zmq.cffi_core.socket import *
 from zmq.cffi_core.devices import *
 from zmq.cffi_core._poll import *
 from zmq.cffi_core._version import *
-
-Stopwatch = None
+from zmq.cffi_core.stopwatch import *

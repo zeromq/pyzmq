@@ -62,6 +62,10 @@ int zmq_connect(void *socket, const char *endpoint);
 
 int zmq_errno(void);
 const char * zmq_strerror(int errnum);
+
+void* zmq_stopwatch_start(void);
+unsigned long zmq_stopwatch_stop(void *watch);
+void zmq_sleep(int seconds_);
 '''
 
 core22_functions = \
@@ -201,6 +205,7 @@ ffi.cdef(functions)
 C = ffi.verify('''
     #include <string.h>
     #include <zmq.h>
+    #include <zmq_utils.h>
     #include <stdio.h>
     #include <sys/un.h>
 
