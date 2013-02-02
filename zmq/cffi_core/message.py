@@ -2,6 +2,8 @@ from ._cffi import ffi, C
 import codecs
 import time
 
+import zmq
+
 try:
     view = memoryview
 except NameError:
@@ -16,13 +18,20 @@ except (ImportError):
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 
 class Frame(object):
-    def __init__(self, data, zmq_msg=None, track=False):
+    _data = None
+    tracker = None
+    closed = False
+    more = False
+    buffer = None
+    
+    
+    def __init__(self, data, track=False):
         try:
             view(data)
         except TypeError:
             raise
 
-        self.data = data
+        self._data = data
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, " +
@@ -31,28 +40,14 @@ class Frame(object):
         self.more = False
         self.tracker = None
         self.closed = False
-
-        rc = 0
-        if data is None:
-            self.zmq_msg = ffi.new('zmq_msg_t*')
-            rc = C.zmq_msg_init(self.zmq_msg)
-        elif data is not None and zmq_msg is not None:
-            self.zmq_msg = zmq_msg
-        else:
-            self.zmq_msg = ffi.new('zmq_msg_t*')
-            cffi_data = ffi.new('char[]', _content(data))
-            data_len = len(cffi_data)
-            rc = C.zmq_msg_init_size(self.zmq_msg, data_len)
-            C.memcpy(C.zmq_msg_data(self.zmq_msg), cffi_data, data_len)
+        if track:
+            self.tracker = zmq.MessageTracker()
 
         self.buffer = view(self.bytes)
 
-        if rc != 0:
-            raise ZMQErrror()
-
     @property
     def bytes(self):
-        data = _content(self.data)
+        data = _content(self._data)
         return data
 
     def __len__(self):
@@ -62,16 +57,10 @@ class Frame(object):
         return self.bytes == _content(other)
 
     def __str__(self):
-        return str(self.bytes)
-
-    def __repr__(self):
-        return str(self.bytes)
-
-    def __del__(self):
-        C.zmq_msg_close(self.zmq_msg)
-
-    def decode(self, encoding):
-        return codecs.decode(self.data, encoding)
+        if str is unicode:
+            return self.bytes.decode()
+        else:
+            return self.bytes
 
     @property
     def done(self):

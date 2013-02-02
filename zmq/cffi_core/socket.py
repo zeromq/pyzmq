@@ -1,5 +1,10 @@
 # coding: utf-8
 
+import random
+import codecs
+
+import errno as errno_mod
+
 from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
                     new_int_pointer, new_binary_data, value_uint64_pointer,
                     value_int64_pointer, value_int_pointer, value_binary_data,
@@ -10,11 +15,7 @@ from .constants import *
 
 import zmq
 from zmq.error import ZMQError
-
-import random
-import codecs
-
-import errno as errno_mod
+from zmq.utils.strtypes import unicode
 
 
 def new_pointer_from_opt(option, length=0):
@@ -62,7 +63,7 @@ class Socket(object):
     socket_type = None
     _zmq_socket = None
     _closed = None
-    _n = None
+    _ref = None
 
     def __init__(self, context, sock_type):
         self.context = context
@@ -71,7 +72,7 @@ class Socket(object):
         if self._zmq_socket == ffi.NULL:
             raise ZMQError(C.zmq_errno())
         self._closed = False
-        self._n = self.context._add_socket(self)
+        self._ref = self.context._add_socket(self)
 
     @property
     def closed(self):
@@ -83,6 +84,7 @@ class Socket(object):
             if self._zmq_socket is not None:
                 rc = C.zmq_close(self._zmq_socket)
             self._closed = True
+            self.context._rm_socket(self._ref)
         return rc
 
     def __del__(self):
@@ -178,37 +180,25 @@ class Socket(object):
         return value_from_opt_pointer(option, low_level_value_pointer)
 
     def send(self, message, flags=0, copy=False, track=False):
-        if bytes == str and isinstance(message, unicode):
+        if isinstance(message, unicode):
             raise TypeError("Message must be in bytes, not an unicode Object")
 
-        send_frame = False
-
         if isinstance(message, Frame):
-            send_frame = True
+            message = message.bytes
 
-        if send_frame:
-            zmq_msg = message.zmq_msg
-        else:
-            zmq_msg = ffi.new('zmq_msg_t*')
-            c_message = ffi.new('char[]', message)
-            rc = C.zmq_msg_init_size(zmq_msg, len(message))
-            C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
+        zmq_msg = ffi.new('zmq_msg_t*')
+        c_message = ffi.new('char[]', message)
+        rc = C.zmq_msg_init_size(zmq_msg, len(message))
+        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
 
         ret = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
+        C.zmq_msg_close(zmq_msg)
 
         if ret < 0:
-            C.zmq_msg_close(zmq_msg)
             raise ZMQError(C.zmq_errno())
 
-        if send_frame:
-            if track:
-                return zmq.MessageTracker(message)
-            return message
-        else:
-            message = Frame(message, zmq_msg=zmq_msg, track=track)
-            if track:
-                return zmq.MessageTracker(message)
-            return message
+        if track:
+            return zmq.MessageTracker()
 
     def recv(self, flags=0, copy=True, track=False):
         zmq_msg = ffi.new('zmq_msg_t*')
@@ -222,9 +212,12 @@ class Socket(object):
 
         value = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))[:]
 
-        frame = Frame(value, zmq_msg=zmq_msg)
+        frame = Frame(value, track=track)
         frame.more = self.getsockopt(RCVMORE)
-
-        return frame
+        if copy:
+            return frame.bytes
+        else:
+            return frame
+            
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']

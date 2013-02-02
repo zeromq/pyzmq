@@ -11,13 +11,15 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import gc
 import sys
 import time
 from threading import Thread, Event
 
 import zmq
-from zmq.tests import BaseZMQTestCase, have_gevent, GreenTest, skip_green
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import (
+    BaseZMQTestCase, have_gevent, GreenTest, skip_green, PYPY, SkipTest,
+)
 
 
 #-----------------------------------------------------------------------------
@@ -132,11 +134,17 @@ class TestContext(BaseZMQTestCase):
     
     def test_gc(self):
         """test close&term by garbage collection alone"""
+        if PYPY:
+            raise SkipTest("GC doesn't work ")
+            
         # test credit @dln (GH #137):
-        def gc():
-            ctx = self.Context()
-            s = ctx.socket(zmq.PUSH)
-        t = Thread(target=gc)
+        def gcf():
+            def inner():
+                ctx = self.Context()
+                s = ctx.socket(zmq.PUSH)
+            inner()
+            gc.collect()
+        t = Thread(target=gcf)
         t.start()
         t.join(timeout=1)
         self.assertFalse(t.is_alive(), "Garbage collection should have cleaned up context")

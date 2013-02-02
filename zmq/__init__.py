@@ -35,16 +35,17 @@ if bundled:
         _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
     del ctypes
 
-del os, sys, glob, here, bundled, ext
-
 # init Python threads
 
-try:
-    from zmq.utils import initthreads # initialize threads
-except ImportError as e:
-    raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
+if 'PyPy' not in sys.version:
+    try:
+        from zmq.utils import initthreads # initialize threads
+    except ImportError as e:
+        raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
+    else:
+        initthreads.init_threads()
 
-initthreads.init_threads()
+del os, sys, glob, here, bundled, ext
 
 # zmq top-level imports
 
