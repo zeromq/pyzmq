@@ -62,7 +62,7 @@ class Socket(object):
     socket_type = None
     _zmq_socket = None
     _closed = None
-    _n = None
+    _ref = None
 
     def __init__(self, context, sock_type):
         self.context = context
@@ -71,7 +71,7 @@ class Socket(object):
         if self._zmq_socket == ffi.NULL:
             raise ZMQError(C.zmq_errno())
         self._closed = False
-        self._n = self.context._add_socket(self)
+        self._ref = self.context._add_socket(self)
 
     @property
     def closed(self):
@@ -83,6 +83,7 @@ class Socket(object):
             if self._zmq_socket is not None:
                 rc = C.zmq_close(self._zmq_socket)
             self._closed = True
+            self.context._rm_socket(self._ref)
         return rc
 
     def __del__(self):
