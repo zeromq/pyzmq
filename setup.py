@@ -326,7 +326,10 @@ class Configure(Command):
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
-        if self.distribution.ext_modules[0].name == 'zmq.libzmq':
+        if "PyPy" in sys.version:
+            fatal("Can't bundle libzmq as an Extension in PyPy (yet!)")
+        ext_modules = self.distribution.ext_modules
+        if ext_modules and ext_modules[0].name == 'zmq.libzmq':
             # I've already been run
             return
         
