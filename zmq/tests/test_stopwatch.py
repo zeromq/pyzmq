@@ -18,10 +18,12 @@ import time
 from unittest import TestCase
 
 from zmq import Stopwatch, ZMQError
+from zmq.tests import skip_pypy
 
 if sys.version_info[0] >= 3:
     long = int
 
+@skip_pypy
 class TestStopWatch(TestCase):
     
     def test_stop_long(self):
