@@ -11,6 +11,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import functools
 import sys
 import time
 from threading import Thread
@@ -36,12 +37,43 @@ except ImportError:
         class SkipTest(Exception):
             pass
 
+PYPY = 'PyPy' in sys.version
+
 #-----------------------------------------------------------------------------
-# Utilities
+# skip decorators (directly from unittest)
 #-----------------------------------------------------------------------------
-if zmq.zmq_version_info() >= (3,0,0):
-    # keep NOBLOCK for tests
-    zmq.NOBLOCK = zmq.DONTWAIT
+
+_id = lambda x: x
+
+def skip(reason):
+    """
+    Unconditionally skip a test.
+    """
+    def decorator(test_item):
+        if not (isinstance(test_item, type) and issubclass(test_item, TestCase)):
+            @functools.wraps(test_item)
+            def skip_wrapper(*args, **kwargs):
+                raise SkipTest(reason)
+            test_item = skip_wrapper
+
+        test_item.__unittest_skip__ = True
+        test_item.__unittest_skip_why__ = reason
+        return test_item
+    return decorator
+
+def skip_if(condition, reason="Skipped"):
+    """
+    Skip a test if the condition is true.
+    """
+    if condition:
+        return skip(reason)
+    return _id
+
+skip_pypy = skip_if(PYPY, "Doesn't work on PyPy")
+
+#-----------------------------------------------------------------------------
+# Base test class
+#-----------------------------------------------------------------------------
 
 class BaseZMQTestCase(TestCase):
     green = False
