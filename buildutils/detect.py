@@ -28,6 +28,58 @@ pjoin = os.path.join
 # Utility functions (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
 
+def test_compilation(cfile, compiler=None, **compiler_attrs):
+    """Test simple compilation with given settings"""
+    if compiler is None or isinstance(compiler, str):
+        cc = ccompiler.new_compiler(compiler=compiler)
+        customize_compiler(cc)
+        if cc.compiler_type == 'mingw32':
+            customize_mingw(cc)
+    else:
+        cc = compiler
+    
+    for name, val in compiler_attrs.items():
+        setattr(cc, name, val)
+    
+    efile, ext = os.path.splitext(cfile)
+
+    cpreargs = lpreargs = None
+    if sys.platform == 'darwin':
+        # use appropriate arch for compiler
+        if platform.architecture()[0]=='32bit':
+            if platform.processor() == 'powerpc':
+                cpu = 'ppc'
+            else:
+                cpu = 'i386'
+            cpreargs = ['-arch', cpu]
+            lpreargs = ['-arch', cpu, '-undefined', 'dynamic_lookup']
+        else:
+            # allow for missing UB arch, since it will still work:
+            lpreargs = ['-undefined', 'dynamic_lookup']
+    extra = compiler_attrs.get('extra_compile_args', None)
+
+    objs = cc.compile([cfile],extra_preargs=cpreargs, extra_postargs=extra)
+    cc.link_executable(objs, efile, extra_preargs=lpreargs)
+    return efile
+
+def compile_and_run(basedir, src, compiler=None, **compiler_attrs):
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
+    cfile = pjoin(basedir, os.path.basename(src))
+    shutil.copy(src, cfile)
+    try:
+        efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
+        result = Popen(efile, stdout=PIPE, stderr=PIPE)
+        so, se = result.communicate()
+        # for py3k:
+        so = so.decode()
+        se = se.decode()
+    finally:
+        shutil.rmtree(basedir)
+    
+    return result.returncode, so, se
+    
+    
 def detect_zmq(basedir, compiler=None, **compiler_attrs):
     """Compile, link & execute a test program, in empty directory `basedir`.
     
@@ -55,39 +107,11 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
         `library_dirs`, `libs`, etc.
     """
     
-    if compiler is None or isinstance(compiler, str):
-        cc = ccompiler.new_compiler(compiler=compiler)
-        customize_compiler(cc)
-        if cc.compiler_type == 'mingw32':
-            customize_mingw(cc)
-    else:
-        cc = compiler
-    
-    for name, val in compiler_attrs.items():
-        setattr(cc, name, val)
-
     cfile = pjoin(basedir, 'vers.c')
-    efile = pjoin(basedir, 'vers')
-    
     shutil.copy(pjoin(os.path.dirname(__file__), 'vers.c'), cfile)
-
-    cpreargs = lpreargs = None
-    if sys.platform == 'darwin':
-        # use appropriate arch for compiler
-        if platform.architecture()[0]=='32bit':
-            if platform.processor() == 'powerpc':
-                cpu = 'ppc'
-            else:
-                cpu = 'i386'
-            cpreargs = ['-arch', cpu]
-            lpreargs = ['-arch', cpu, '-undefined', 'dynamic_lookup']
-        else:
-            # allow for missing UB arch, since it will still work:
-            lpreargs = ['-undefined', 'dynamic_lookup']
-
-    objs = cc.compile([cfile],extra_preargs=cpreargs)
-    cc.link_executable(objs, efile, extra_preargs=lpreargs)
-
+    
+    efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
+    
     result = Popen(efile, stdout=PIPE, stderr=PIPE)
     so, se = result.communicate()
     # for py3k:

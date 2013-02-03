@@ -1,6 +1,14 @@
+[global]
+# zmq_prefix = /usr/local # (adds zmq_prefix/include to include_dirs and zmq_prefix/lib to library_dirs)
+# have_sys_un_h = False # does sys/un.h exist? pyzmq will try to detect it, but you can override
+# ignore_common_warnings = True # 
+# skip_check_zmq = True # skip checking zmq verson (if it doesn't work for some reason)
+# libzmq_path = /full/path/to/libzmq # only necessary if pyzmq can't find the libzmq dll from the prefix
+# libzmq_extension = True # force building libzmq as an extension (same as --zmq=bundled)
+# no_libzmq_extension = True # prevent fallback on building libzmq as an extension if regular build fails
 [build_ext]
 
-# Edit these to point to your installed zeromq library and header dirs.
+# Edit these to add any paths you need to include (e.g. where libzmq is defined)
 library_dirs = /usr/local/lib
 include_dirs = /usr/local/include
 
