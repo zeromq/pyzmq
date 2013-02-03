@@ -2,7 +2,7 @@
 
 import weakref
 
-from ._cffi import C, ffi, strerror
+from ._cffi import C, ffi
 
 from .socket import *
 from .constants import *
@@ -16,7 +16,7 @@ class Context(object):
     _sockets = None
 
     def __init__(self, io_threads=1):
-        if not io_threads > 0:
+        if not io_threads >= 0:
             raise ZMQError(EINVAL)
 
         self._zmq_ctx = C.zmq_init(io_threads)

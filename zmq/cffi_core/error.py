@@ -1,7 +1,7 @@
-from ._cffi import C, ffi, strerror
+from ._cffi import C, ffi
 
 def strerror(errno):
-    return ffi.buffer(C.zmq_strerror(ffi.cast('int', errno)))[:]
+    return ffi.string(C.zmq_strerror(errno))
 
 zmq_errno = C.zmq_errno
 

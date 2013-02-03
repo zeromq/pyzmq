@@ -8,13 +8,13 @@ import errno as errno_mod
 from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
                     new_int_pointer, new_binary_data, value_uint64_pointer,
                     value_int64_pointer, value_int_pointer, value_binary_data,
-                    zmq_major_version, IPC_PATH_MAX_LEN, strerror)
+                    zmq_major_version, IPC_PATH_MAX_LEN)
 
 from .message import Frame
 from .constants import *
 
 import zmq
-from zmq.error import ZMQError
+from zmq.error import ZMQError, _check_rc
 from zmq.utils.strtypes import unicode
 
 
@@ -70,7 +70,7 @@ class Socket(object):
         self.socket_type = sock_type
         self._zmq_socket = C.zmq_socket(context._zmq_ctx, sock_type)
         if self._zmq_socket == ffi.NULL:
-            raise ZMQError(C.zmq_errno())
+            raise ZMQError()
         self._closed = False
         self._ref = self.context._add_socket(self)
 
@@ -91,8 +91,8 @@ class Socket(object):
         self.close()
 
     def bind(self, address):
-        ret = C.zmq_bind(self._zmq_socket, address)
-        if ret != 0:
+        rc = C.zmq_bind(self._zmq_socket, address)
+        if rc < 0:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
                 # py3compat: address is bytes, but msg wants str
                 if str is unicode:
@@ -103,31 +103,19 @@ class Socket(object):
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(C.zmq_errno(), msg=msg)
             else:
-                raise ZMQError(C.zmq_errno())
+                _check_rc(rc)
 
     def unbind(self, address):
-        ret = C.zmq_unbind(self._zmq_socket, address)
-
-        if ret != 0:
-            raise ZMQError(C.zmq_errno())
-
-        return ret
+        rc = C.zmq_unbind(self._zmq_socket, address)
+        _check_rc(rc)
 
     def connect(self, address):
-        ret = C.zmq_connect(self._zmq_socket, address)
-
-        if ret != 0:
-            raise ZMQError(C.zmq_errno())
-
-        return ret
+        rc = C.zmq_connect(self._zmq_socket, address)
+        _check_rc(rc)
 
     def disconnect(self, address):
-        ret = C.zmq_disconnect(self._zmq_socket, address)
-
-        if ret != 0:
-            raise ZMQError(C.zmq_errno())
-
-        return ret
+        rc = C.zmq_disconnect(self._zmq_socket, address)
+        _check_rc(rc)
 
     def set(self, option, value):
         length = None
@@ -147,14 +135,11 @@ class Socket(object):
         low_level_value_pointer = low_level_data[0]
         low_level_sizet = low_level_data[1]
 
-        ret = C.zmq_setsockopt(self._zmq_socket,
+        rc = C.zmq_setsockopt(self._zmq_socket,
                                option,
                                ffi.cast('void*', low_level_value_pointer),
                                low_level_sizet)
-        if ret < 0:
-            raise ZMQError(C.zmq_errno())
-
-        return ret
+        _check_rc(rc)
 
     def get(self, option, length=0):
         from zmq.sugar.constants import bytes_sockopts
@@ -169,13 +154,11 @@ class Socket(object):
         low_level_value_pointer = low_level_data[0]
         low_level_sizet_pointer = low_level_data[1]
 
-        ret = C.zmq_getsockopt(self._zmq_socket,
+        rc = C.zmq_getsockopt(self._zmq_socket,
                                option,
                                low_level_value_pointer,
                                low_level_sizet_pointer)
-
-        if ret < 0:
-            raise ZMQError(C.zmq_errno())
+        _check_rc(rc)
 
         return value_from_opt_pointer(option, low_level_value_pointer)
 
@@ -191,11 +174,9 @@ class Socket(object):
         rc = C.zmq_msg_init_size(zmq_msg, len(message))
         C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
 
-        ret = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
+        rc = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
         C.zmq_msg_close(zmq_msg)
-
-        if ret < 0:
-            raise ZMQError(C.zmq_errno())
+        _check_rc(rc)
 
         if track:
             return zmq.MessageTracker()
@@ -204,11 +185,11 @@ class Socket(object):
         zmq_msg = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg)
 
-        ret = C.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
+        rc = C.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
 
-        if ret < 0:
+        if rc < 0:
             C.zmq_msg_close(zmq_msg)
-            raise ZMQError(C.zmq_errno())
+            _check_rc(rc)
 
         value = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))[:]
 

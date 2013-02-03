@@ -5,12 +5,7 @@ from .socket import Socket
 from zmq.error import ZMQError
 
 def device(device_type, frontend, backend):
-    rc = C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, ffi.NULL)
-
-    if rc != 0:
-        raise ZMQError(C.zmq_errno())
-
-    return rc
+    return C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, ffi.NULL)
 
 def proxy(frontend, backend, capture=None):
     if isinstance(capture, Socket):
@@ -19,10 +14,6 @@ def proxy(frontend, backend, capture=None):
         capture = ffi.NULL
 
     rc = C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, capture)
-
-    if rc != 0:
-        raise ZMQError(C.zmq_errno())
-
-    return rc
+    _check_rc(rc)
 
 __all__ = ['device', 'proxy']

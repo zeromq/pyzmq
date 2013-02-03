@@ -236,7 +236,4 @@ value_int_pointer = lambda val: (ffi.new('int*', val),
 value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length), val),
                                          ffi.sizeof('char') * length)
 
-def strerror(errnum):
-    return ffi.string(C.strerror(errnum))
-
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()

@@ -4,6 +4,8 @@ from ._cffi import C, ffi, zmq_version_info
 
 from .constants import *
 
+from zmq.error import _check_rc
+
 
 def _make_zmq_pollitem(socket, flags):
     zmq_socket = socket._zmq_socket
@@ -35,7 +37,8 @@ def zmq_poll(sockets, timeout):
     items = ffi.new('zmq_pollitem_t[]', cffi_pollitem_list)
     list_length = ffi.cast('int', len(cffi_pollitem_list))
     c_timeout = ffi.cast('long', timeout)
-    C.zmq_poll(items, list_length, c_timeout)
+    rc = C.zmq_poll(items, list_length, c_timeout)
+    _check_rc(rc)
     result = []
     for index in range(len(items)):
         if not items[index].socket == ffi.NULL:
