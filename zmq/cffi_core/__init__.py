@@ -10,11 +10,11 @@
 #-----------------------------------------------------------------------------
 
 from zmq.cffi_core import (constants, error, message, context, socket,
-                           _poll, devices, _version, stopwatch)
+                           _poll, devices, stopwatch)
 
 __all__ = []
 for submod in (constants, error, message, context, socket,
-               _poll, devices, _version, stopwatch):
+               _poll, devices, stopwatch):
     __all__.extend(submod.__all__)
 
 from zmq.cffi_core.constants import *
