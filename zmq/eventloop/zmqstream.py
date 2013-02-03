@@ -21,7 +21,12 @@ import sys
 import logging
 
 import zmq
-from zmq.core.socket import jsonapi, pickle
+from zmq.utils import jsonapi
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop import stack_context

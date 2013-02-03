@@ -17,7 +17,9 @@ import time
 import errno
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
+from zmq.tests import (
+    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy
+)
 from zmq.utils.strtypes import bytes, unicode
 
 try:
@@ -184,7 +186,8 @@ class TestSocket(BaseZMQTestCase):
         a.send_unicode(u,encoding='utf16')
         s = b.recv_unicode(encoding='utf16')
         self.assertEqual(s,u)
-        
+    
+    @skip_pypy
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
@@ -280,6 +283,8 @@ class TestSocket(BaseZMQTestCase):
             a = None
             def __init__(self, *a, **kw):
                 self.a=-1
+                super(S, self).__init__(*a, **kw)
+        
         s = S(self.context, zmq.REP)
         self.sockets.append(s)
         self.assertEqual(s.a, -1)

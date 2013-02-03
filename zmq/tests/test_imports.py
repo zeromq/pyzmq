@@ -28,16 +28,19 @@ class TestImports(TestCase):
         
     def test_core(self):
         """test core imports"""
-        import zmq.core
-        from zmq.core import constants
-        from zmq.core import error
-        from zmq.core import context
-        from zmq.core import socket
-        from zmq.core import message
-        from zmq.core import stopwatch
-        from zmq.core import _device
-        from zmq.core import _poll
-        from zmq.core import _version
+        from zmq import Context
+        from zmq import Socket
+        from zmq import Poller
+        from zmq import Frame
+        from zmq import constants
+        from zmq import device, proxy
+        from zmq import Stopwatch
+        from zmq import ( 
+            zmq_version,
+            zmq_version_info,
+            pyzmq_version,
+            pyzmq_version_info,
+        )
     
     def test_devices(self):
         """test device imports"""
