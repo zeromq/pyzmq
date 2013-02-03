@@ -70,19 +70,12 @@ from buildutils import (
     warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
+    test_compilation, compile_and_run
     )
 
 #-----------------------------------------------------------------------------
 # Flags
 #-----------------------------------------------------------------------------
-
-# ignore unused-function and strict-aliasing warnings, of which there
-# will be many from the Cython generated code:
-# note that this is only for gcc-style compilers
-if get_default_compiler() in ('unix', 'mingw32'):
-    ignore_common_warnings=True
-else:
-    ignore_common_warnings=False
 
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
@@ -105,15 +98,23 @@ doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 #-----------------------------------------------------------------------------
 
 
-ZMQ = discover_settings()
+CONFIG = discover_settings()
+CROSSCOMPILE = CONFIG['bdist_egg'].get('plat-name', sys.platform) != sys.platform
 
-if ZMQ is not None and ZMQ != "bundled" and not os.path.exists(ZMQ):
-    warn("ZMQ directory \"%s\" does not appear to exist" % ZMQ)
+if not CONFIG['libzmq_extension'] and \
+    CONFIG['zmq_prefix'] and \
+    not os.path.exists(CONFIG['zmq_prefix']):
+    warn("ZMQ prefix %r does not appear to exist" % CONFIG['zmq_prefix'])
 
 # bundle_libzmq_dylib flag for whether external libzmq library will be included in pyzmq:
-if sys.platform.startswith('win'):
+# only relevant when not building libzmq extension
+if 'bundle_libzmq_dylib' in CONFIG:
+    bundle_libzmq_dylib = CONFIG['bundle_libzmq_dylib']
+elif (sys.platform.startswith('win') or CROSSCOMPILE) and not CONFIG['libzmq_extension']:
+    # always bundle libzmq on Windows and cross-compilation
     bundle_libzmq_dylib = True
-elif ZMQ is not None and ZMQ != "bundled":
+elif CONFIG['zmq_prefix'] and not CONFIG['libzmq_extension']:
+    # only bundle for bdists in sane environments
     bundle_libzmq_dylib = doing_bdist
 else:
     bundle_libzmq_dylib = False
@@ -121,12 +122,11 @@ else:
 # --- compiler settings -------------------------------------------------
 
 def bundled_settings():
-    settings = {
-       'libraries'      : [],
-       'include_dirs'   : ["bundled/zeromq/include"],
-       'library_dirs'   : [],
-       'define_macros'  : [],
-    }
+    settings = {}
+    settings['libraries'] = []
+    settings['library_dirs'] = []
+    settings['include_dirs'] = [pjoin("bundled", "zeromq", "include")]
+    settings['runtime_library_dirs'] = []
     # add pthread on freebsd
     # is this necessary?
     if sys.platform.startswith('freebsd'):
@@ -141,76 +141,93 @@ def bundled_settings():
     return settings
 
 
-def settings_from_prefix(zmq=None):
+def settings_from_prefix(prefix=None):
     """load appropriate library/include settings from ZMQ prefix"""
+    settings = {}
+    settings['libraries'] = []
+    settings['include_dirs'] = []
+    settings['library_dirs'] = []
+    settings['runtime_library_dirs'] = []
     
-    settings = {
-        'libraries'     : [],
-        'include_dirs'  : [],
-        'library_dirs'  : [],
-        'define_macros' : [],
-    }
     if sys.platform.startswith('win'):
         settings['libraries'].append('libzmq')
         
-        if zmq is not None:
-            settings['include_dirs'] += [pjoin(zmq, 'include')]
-            settings['library_dirs'] += [pjoin(zmq, 'lib')]
+        if prefix:
+            settings['include_dirs'] += [pjoin(prefix, 'include')]
+            settings['library_dirs'] += [pjoin(prefix, 'lib')]
     else:
         settings['libraries'].append('zmq')
-    
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
             settings['libraries'].append('pthread')
     
-        if zmq is not None:
-            settings['include_dirs'] += [pjoin(zmq, 'include')]
-            settings['library_dirs'] += [pjoin(zmq, 'lib')]
-        elif sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
-            # allow macports default
-            settings['include_dirs'] += ['/opt/local/include']
-            settings['library_dirs'] += ['/opt/local/lib']
+        if prefix:
+            settings['include_dirs'] += [pjoin(prefix, 'include')]
+            if not bundle_libzmq_dylib:
+                settings['library_dirs'] += [pjoin(prefix, 'lib')]
+        else:
+            if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
+                # allow macports default
+                settings['include_dirs'] += ['/opt/local/include']
+                settings['library_dirs'] += ['/opt/local/lib']
+            if os.environ.get('VIRTUAL_ENV', None):
+                # find libzmq installed in virtualenv
+                env = os.environ['VIRTUAL_ENV']
+                settings['include_dirs'] += pjoin(env, 'include')
+                settings['library_dirs'] += pjoin(env, 'lib')
     
         if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
-            settings['library_dirs'] = ['zmq']
+            settings['library_dirs'].append('zmq')
             if sys.platform == 'darwin':
                 pass
-                # unused rpath args for OSX:
+                # unused rpath args for OS X:
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
             else:
-                settings['runtime_library_dirs'] = ['$ORIGIN/..']
+                settings['runtime_library_dirs'] += ['$ORIGIN/..']
         elif sys.platform != 'darwin':
-            settings['runtime_library_dirs'] = [os.path.abspath(x) for x in settings['library_dirs']]
-
+            settings['runtime_library_dirs'] += [
+                os.path.abspath(x) for x in settings['library_dirs']
+            ]
+    
     return settings
 
-def init_settings(zmq=None):
-    if zmq == 'bundled':
+
+def init_settings(cfg):
+    if 'PyPy' in sys.version:
+        return {}
+    settings = cfg['build_ext']
+    if cfg['libzmq_extension']:
         settings = bundled_settings()
     else:
-        settings = settings_from_prefix(zmq)
+        settings = settings_from_prefix(CONFIG['zmq_prefix'])
     
-    if not sys.platform.startswith('win'):
-        settings['define_macros'].append(('PYZMQ_POSIX', 1))
+    if 'have_sys_un_h' not in cfg:
+        try:
+            compile_and_run(pjoin("build", "sock_un"),
+                pjoin('buildutils', 'check_sys_un.c'),
+                **settings
+            )
+        except Exception as e:
+            warn("No sys/un.h, IPC_PATH_MAX_LEN will be undefined: %s" % e)
+            cfg['have_sys_un_h'] = False
+        else:
+            cfg['have_sys_un_h'] = True
+        
+        save_config('buildconf', cfg)
     
-    # suppress common warnings
+    if cfg['have_sys_un_h']:
+        settings['define_macros'] = [('HAVE_SYS_UN_H', 1)]
     
-    extra_flags = []
-    if ignore_common_warnings:
-        for warning in ('unused-function', 'strict-aliasing'):
-            extra_flags.append('-Wno-'+warning)
-    
-    settings['extra_compile_args'] = extra_flags
+    settings.setdefault('define_macros', [])
     
     # include internal directories
+    settings.setdefault('include_dirs', [])
     settings['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
 
     return settings
 
-
-COMPILER_SETTINGS = init_settings(ZMQ)
-
+COMPILER_SETTINGS = init_settings(CONFIG)
 
 #-----------------------------------------------------------------------------
 # Extra commands
@@ -228,7 +245,7 @@ class Configure(Command):
     boolean_options = []
     def initialize_options(self):
         self.compiler = None
-        self.zmq = ZMQ
+        self.config = None
         self.settings = copy.copy(COMPILER_SETTINGS)
     
     def finalize_options(self):
@@ -244,11 +261,12 @@ class Configure(Command):
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
             local_dll = pjoin(self.tempdir, 'libzmq.dll')
-            if ZMQ is None and not os.path.exists(local_dll):
-                fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
+            if not CONFIG['zmq_prefix'] and not os.path.exists(local_dll):
+                fatal("ZMQ directory must be specified on Windows via setup.cfg"
+                " or 'python setup.py configure --zmq=/path/to/zeromq2'")
             
             try:
-                shutil.copy(pjoin(ZMQ, 'lib', 'libzmq.dll'), local_dll)
+                shutil.copy(pjoin(CONFIG['zmq_prefix'], 'lib', 'libzmq.dll'), local_dll)
             except Exception:
                 if not os.path.exists(local_dll):
                     warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
@@ -278,8 +296,10 @@ class Configure(Command):
             return compiler.compiler_type
 
     def check_zmq_version(self):
-        zmq = self.zmq
-        if zmq is not None and zmq != "bundled" and not os.path.isdir(zmq):
+        
+        zmq = CONFIG['zmq_prefix']
+        if zmq and not os.path.exists(zmq) and \
+            not CONFIG['libzmq_extension']:
             fatal("Custom zmq directory \"%s\" does not exist" % zmq)
 
         config = self.getcached()
@@ -287,11 +307,16 @@ class Configure(Command):
             self.run()
             config = self.config
         else:
+            if CONFIG['libzmq_extension']:
+                config = self.bundle_libzmq_extension()
             self.config = config
+            
             line()
-
-        if self.zmq == "bundled":
+        
+        if CONFIG['libzmq_extension'] or CONFIG['skip_check_zmq'] or CROSSCOMPILE:
             return
+        
+        # now check the libzmq version
         
         vers = tuple(config['vers'])
         vs = v_str(vers)
@@ -313,7 +338,7 @@ class Configure(Command):
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
             local_dll = localpath('zmq','libzmq.dll')
-            if zmq is None and not os.path.exists(local_dll):
+            if not zmq and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
             try:
                 shutil.copy(pjoin(zmq, 'lib', 'libzmq.dll'), local_dll)
@@ -369,8 +394,7 @@ class Configure(Command):
 
             # And things like sockets come from libraries that must be named.
 
-            ext.libraries.append('rpcrt4')
-            ext.libraries.append('ws2_32')
+            ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         elif not sys.platform.startswith(('darwin', 'freebsd')):
             ext.include_dirs.append(bundledir)
 
@@ -380,13 +404,14 @@ class Configure(Command):
         self.distribution.ext_modules.insert(0, ext)
         
         # update other extensions, with bundled settings
-        settings = init_settings("bundled")
+        CONFIG['libzmq_extension'] = True
+        settings = init_settings(CONFIG)
         
         for ext in self.distribution.ext_modules[1:]:
             for attr, value in settings.items():
                 setattr(ext, attr, value)
         
-        save_config("buildconf", dict(zmq="bundled"))
+        save_config("buildconf", dict(libzmq_extension=True))
         
         return dict(vers=bundled_version, settings=settings)
         
@@ -412,10 +437,10 @@ class Configure(Command):
         ]))
         
         # ultra-lazy pip detection:
-        if 'pip' in ' '.join(sys.argv) or True:
+        if 'pip' in ' '.join(sys.argv):
             print ('\n'.join([
         "If you expected to get a binary install (egg), we have those for",
-        "current Pythons on OSX and Windows. These can be installed with",
+        "current Pythons on OS X and Windows. These can be installed with",
         "easy_install, but PIP DOES NOT SUPPORT EGGS.",
         "",
         ]))
@@ -441,21 +466,21 @@ class Configure(Command):
         return self.bundle_libzmq_extension()
         
     
-    def test_build(self, zmq, settings):
+    def test_build(self, prefix, settings):
         self.create_tempdir()
         if bundle_libzmq_dylib and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
                 pass
-                # unused rpath args for OSX:
+                # unused rpath args for OS X:
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
         
         line()
         print ("Configure: Autodetecting ZMQ settings...")
-        print ("    Custom ZMQ dir:       %s" % zmq)
+        print ("    Custom ZMQ dir:       %s" % prefix)
         try:
             config = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
         finally:
@@ -466,36 +491,44 @@ class Configure(Command):
         return config
     
     def run(self):
-        if self.zmq == "bundled":
+        if CONFIG['libzmq_extension']:
             self.config = self.bundle_libzmq_extension()
+            save_config('configure', self.config)
             line()
             return
         
-        config = None
+        # When cross-compiling and zmq is given explicitly, we can't testbuild
+        # (as we can't testrun the binary), we assume things are alright.
+        if CONFIG['skip_check_zmq'] or CROSSCOMPILE:
+            warn("Skipping zmq version check")
+            return
         
+        config = None
+        zmq_prefix = CONFIG['zmq_prefix']
         # There is no available default on Windows, so start with fallback unless
-        # zmq was given explicitly.
-        if self.zmq is None and sys.platform.startswith("win"):
+        # zmq was given explicitly, or libzmq extension was explicitly prohibited.
+        if sys.platform.startswith("win") and \
+            not CONFIG['no_libzmq_extension'] and \
+            not zmq_prefix:
             config = self.fallback_on_bundled()
-            self.zmq = "bundled"
         
         if config is None:
             # first try with given config or defaults
             try:
-                config = self.test_build(self.zmq, self.settings)
+                config = self.test_build(zmq_prefix, self.settings)
             except Exception:
                 etype, evalue, tb = sys.exc_info()
                 # print the error as distutils would if we let it raise:
                 print ("\nerror: %s\n" % evalue)
         
         # try fallback on /usr/local on *ix
-        if config is None and self.zmq is None and not sys.platform.startswith('win'):
+        if config is None and not zmq_prefix and not sys.platform.startswith('win'):
             print ("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
-            zmq = '/usr/local'
-            settings = init_settings(zmq)
+            zmq_prefix = CONFIG['zmq_prefix'] = '/usr/local'
+            settings = init_settings(CONFIG)
             try:
-                config = self.test_build(zmq, settings)
+                config = self.test_build(zmq_prefix, settings)
             except Exception:
                 etype, evalue, tb = sys.exc_info()
                 # print the error as distutils would if we let it raise:
@@ -503,15 +536,18 @@ class Configure(Command):
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
-                self.zmq = zmq
                 for ext in self.distribution.ext_modules:
                     for attr,value in settings.items():
                         setattr(ext, attr, value)
         
         # finally, fallback on bundled
-        if config is None and self.zmq is None:
+        if config is None and CONFIG['no_libzmq_extension']:
+            fatal("Falling back on bundled libzmq,"
+            " but setup.cfg has explicitly prohibited building the libzmq extension."
+            )
+        
+        if config is None:
             config = self.fallback_on_bundled()
-            self.zmq = "bundled"
         
         save_config('configure', config)
         self.config = config
@@ -651,7 +687,7 @@ class CleanCommand(Command):
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
         
-        for d in ('build',):
+        for d in ('build', 'conf'):
             if os.path.exists(d):
                 self._clean_trees.append(d)
 
@@ -703,9 +739,7 @@ class CopyingBuild(build):
     
     def run(self):
         if bundle_libzmq_dylib and not sys.platform.startswith('win'):
-            # always rebuild before bdist, because linking may be wrong:
-            self.run_command('clean')
-            copy_and_patch_libzmq(ZMQ, 'libzmq'+lib_ext)
+            copy_and_patch_libzmq(CONFIG['zmq_prefix'], 'libzmq'+lib_ext)
         build.run(self)
 
 class CheckingBuildExt(build_ext):
@@ -854,16 +888,7 @@ def extract_version():
         while not line.startswith("__version__"):
             line = f.readline()
     exec(line, globals())
-    if 'bdist_msi' in sys.argv:
-        # msi has strict version requirements, which requires that
-        # we strip any dev suffix, and have at most two dots
-        vlist = re.findall(r'\d+', __version__)
-        vs = '.'.join(vlist[:3])
-        if len(vlist) > 3:
-            vs = '-'.join([vs] + vlist[3:])
-        return vs
-    else:
-        return __version__
+    return __version__
 
 def find_packages():
     """adapted from IPython's setupbase.find_packages()"""
@@ -886,16 +911,7 @@ PyZMQ is the official Python bindings for the lightweight and super-fast messagi
 library ZeroMQ (http://www.zeromq.org).
 """
 
-if 'PyPy' in sys.version:
-    install_requires = [
-        'py',
-        'ctypes-configure',
-        'cffi',
-    ]
-else:
-    install_requires = None
-
-setup(
+setup_args = dict(
     name = "pyzmq",
     version = extract_version(),
     packages = find_packages(),
@@ -904,12 +920,10 @@ setup(
     author = "Brian E. Granger, Min Ragan-Kelley",
     author_email = "zeromq-dev@lists.zeromq.org",
     url = 'http://github.com/zeromq/pyzmq',
-    download_url = 'http://github.com/zeromq/pyzmq/downloads',
     description = "Python bindings for 0MQ.",
     long_description = long_desc, 
     license = "LGPL+BSD",
     cmdclass = cmdclass,
-    install_requires = install_requires,
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -928,6 +942,14 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
-    ]
+    ],
 )
+if 'setuptools' in sys.modules and 'PyPy' in sys.version:
+    setup_args['install_requires'] = [
+        'py',
+        'ctypes-configure',
+        'cffi',
+    ]
+
+setup(**setup_args)
 

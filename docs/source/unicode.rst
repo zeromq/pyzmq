@@ -49,7 +49,7 @@ Unicode Buffers
 
 Since unicode objects have a wide range of representations, they are not stored
 as the bytes according to their encoding, but rather in a format called UCS (an
-older fixed-width Unicode format). On some platforms (OSX,Windows), the storage
+older fixed-width Unicode format). On some platforms (OS X, Windows), the storage
 is UCS-2, which is 2 bytes per character. On most \*ix systems, it is UCS-4, or
 4 bytes per character. The contents of the *buffer* of a ``unicode`` object are
 not encoding dependent (always UCS-2 or UCS-4), but they are *platform*

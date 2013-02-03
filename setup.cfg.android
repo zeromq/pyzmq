@@ -1,0 +1,17 @@
+[global]
+# the prefix with which libzmq was configured / installed
+zmq_prefix = /tmp/zeromq-android
+have_sys_un_h = False
+
+[build_ext]
+libraries = python2.6
+# path to your python-for-android
+# the result of:
+# wget http://python-for-android.googlecode.com/files/python-lib_r16.zip
+# unzip python-lib_r16.zip -dpython-lib
+library_dirs = ../python-lib/lib/
+include_dirs = ../python-lib/include/python2.6
+
+[bdist_egg]
+plat-name = linux-armv
+

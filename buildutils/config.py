@@ -30,15 +30,15 @@ from .msg import debug, fatal, warn
 
 def load_config(name):
     """Load config dict from JSON"""
-    fname = pjoin('conf', name+'.json')
+    fname = pjoin('conf', name + '.json')
     if not os.path.exists(fname):
-        return None
+        return {}
     try:
         with open(fname) as f:
             cfg = json.load(f)
     except Exception as e:
         warn("Couldn't load %s: %s" % (fname, e))
-        cfg = None
+        cfg = {}
     return cfg
 
 
@@ -60,52 +60,101 @@ def get_eargs():
 
     settings = {}
 
-    zmq = os.environ.get("ZMQ_DIR", '')
-    if zmq != '':
-        debug("Found environ var ZMQ_DIR=%s" % zmq)
-        settings['zmq'] = zmq
+    zmq = os.environ.get("ZMQ_PREFIX", None)
+    if zmq is not None:
+        debug("Found environ var ZMQ_PREFIX=%s" % zmq)
+        settings['zmq_prefix'] = zmq
 
     return settings
+
+def cfg2dict(cfg):
+    """turn a ConfigParser into a nested dict
+    
+    because ConfigParser objects are dumb.
+    """
+    d = {}
+    for section in cfg.sections():
+        d[section] = dict(cfg.items(section))
+    return d
 
 def get_cfg_args():
     """ Look for options in setup.cfg """
 
-    settings = {}
-    zmq = ''
     if not os.path.exists('setup.cfg'):
-        return settings
+        return {}
     cfg = ConfigParser()
     cfg.read('setup.cfg')
-    if 'build_ext' in cfg.sections() and \
-                cfg.has_option('build_ext', 'include_dirs'):
-        includes = cfg.get('build_ext', 'include_dirs')
-        include = includes.split(os.pathsep)[0]
-        if include.endswith('include') and os.path.isdir(include):
-            zmq = include[:-8]
-    if zmq != '':
-        debug("Found ZMQ=%s in setup.cfg" % zmq)
-        settings['zmq'] = zmq
+    cfg = cfg2dict(cfg)
 
-    return settings
+    g = cfg.setdefault('global', {})
+    # boolean keys:
+    for key in ['libzmq_extension',
+                'bundle_libzmq_dylib',
+                'no_libzmq_extension',
+                'have_sys_un_h',
+                'skip_check_zmq',
+                ]:
+        if key in g:
+            g[key] = eval(g[key])
+
+    # globals go to top level
+    cfg.update(cfg.pop('global'))
+    return cfg
 
 def get_cargs():
     """ Look for global options in the command line """
     settings = load_config('buildconf')
-    if settings is None:  settings = {}
     for arg in sys.argv[:]:
         if arg.find('--zmq=') == 0:
-            zmq = arg.split('=')[-1]
-            if zmq.lower() in ('default', 'auto', ''):
-                settings.pop('zmq', None)
+            prefix = arg.split('=', 1)[-1]
+            if prefix.lower() in ('default', 'auto', ''):
+                settings['zmq_prefix'] = ''
+                settings['libzmq_extension'] = False
+                settings['no_libzmq_extension'] = False
+            elif prefix.lower() in ('bundled', 'extension'):
+                settings['zmq_prefix'] = ''
+                settings['libzmq_extension'] = True
+                settings['no_libzmq_extension'] = False
             else:
-                settings['zmq'] = zmq
+                settings['zmq_prefix'] = prefix
+                settings['libzmq_extension'] = False
+                settings['no_libzmq_extension'] = True
             sys.argv.remove(arg)
     save_config('buildconf', settings)
     return settings
 
+def merge(into, d):
+    """merge two containers
+    
+    into is updated, d has priority
+    """
+    if isinstance(into, dict):
+        for key in d.keys():
+            if key not in into:
+                into[key] = d[key]
+            else:
+                into[key] = merge(into[key], d[key])
+        return into
+    elif isinstance(into, list):
+        return into + d
+    else:
+        return d
+
 def discover_settings():
     """ Discover custom settings for ZMQ path"""
-    settings = get_cfg_args()       # lowest priority
-    settings.update(get_eargs())
-    settings.update(get_cargs())    # highest priority
-    return settings.get('zmq')
+    settings = {
+        'zmq_prefix': '',
+        'libzmq_extension': False,
+        'no_libzmq_extension': False,
+        'skip_check_zmq': False,
+        'build_ext': {},
+        'bdist_egg': {},
+    }
+    if sys.platform.startswith('win'):
+        settings['have_sys_un_h'] = False
+    
+    merge(settings, get_cfg_args())     # lowest priority
+    merge(settings, get_eargs())
+    merge(settings, get_cargs())        # highest priority
+    
+    return settings

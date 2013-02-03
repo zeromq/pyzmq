@@ -114,6 +114,8 @@ def stage_platform_hpp(zmqroot):
                 platform_dir = pjoin(HERE, 'include_darwin')
             elif sys.platform.startswith('freebsd'):
                 platform_dir = pjoin(HERE, 'include_freebsd')
+            elif sys.platform.startswith('linux-armv'):
+                platform_dir = pjoin(HERE, 'include_linux-armv')
             else:
                 platform_dir = pjoin(HERE, 'include_linux')
         else:
@@ -184,7 +186,7 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
         return
     # copy libzmq into zmq for bdist
     local = localpath('zmq',libzmq)
-    if ZMQ is None and not os.path.exists(local):
+    if not ZMQ and not os.path.exists(local):
         fatal("Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
         "or copy libzmq into zmq/ manually prior to running bdist.")
     try:
