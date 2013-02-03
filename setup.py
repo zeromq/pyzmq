@@ -181,7 +181,7 @@ def settings_from_prefix(prefix=None):
             settings['library_dirs'].append('zmq')
             if sys.platform == 'darwin':
                 pass
-                # unused rpath args for OSX:
+                # unused rpath args for OS X:
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
             else:
                 settings['runtime_library_dirs'] += ['$ORIGIN/..']
@@ -440,7 +440,7 @@ class Configure(Command):
         if 'pip' in ' '.join(sys.argv):
             print ('\n'.join([
         "If you expected to get a binary install (egg), we have those for",
-        "current Pythons on OSX and Windows. These can be installed with",
+        "current Pythons on OS X and Windows. These can be installed with",
         "easy_install, but PIP DOES NOT SUPPORT EGGS.",
         "",
         ]))
@@ -473,7 +473,7 @@ class Configure(Command):
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
                 pass
-                # unused rpath args for OSX:
+                # unused rpath args for OS X:
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
             else:
                 settings['runtime_library_dirs'] = ['$ORIGIN/../zmq']
