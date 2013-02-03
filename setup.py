@@ -131,11 +131,10 @@ else:
 
 def bundled_settings():
     settings = {}
-    settings['library_dirs'] = []
     settings['libraries'] = []
-    settings['include_dirs'] = []
+    settings['library_dirs'] = []
+    settings['include_dirs'] = [pjoin("bundled", "zeromq", "include")]
     settings['runtime_library_dirs'] = []
-    settings['include_dirs'].append("bundled/zeromq/include")
     # add pthread on freebsd
     # is this necessary?
     if sys.platform.startswith('freebsd'):
@@ -153,10 +152,11 @@ def bundled_settings():
 def settings_from_prefix(prefix=None):
     """load appropriate library/include settings from ZMQ prefix"""
     settings = {}
-    settings['library_dirs'] = []
     settings['libraries'] = []
     settings['include_dirs'] = []
+    settings['library_dirs'] = []
     settings['runtime_library_dirs'] = []
+    
     if sys.platform.startswith('win'):
         settings['libraries'].append('libzmq')
         
@@ -210,25 +210,6 @@ def init_settings(cfg):
     else:
         settings = settings_from_prefix(CONFIG['zmq_prefix'])
     
-    # suppress common warnings if the compiler allows it
-    if ignore_common_warnings:
-        extra_flags = []
-        for warning in ('unused-function', 'strict-aliasing'):
-            extra_flags.append('-Wno-%s' % warning)
-        tempdir = pjoin("build", "warntest")
-        try:
-            compile_and_run(tempdir, 
-                pjoin('buildutils', 'dummy.c'),
-                extra_compile_args=extra_flags,
-                **settings
-            )
-        except Exception as e:
-            warn("Skipping common warning suppression: %s" % e)
-        else:
-            # skip warnings
-            settings['extra_compile_args'] = extra_flags
-    
-
     if 'have_sys_un_h' not in cfg:
         try:
             compile_and_run(pjoin("build", "sock_un"),
@@ -240,6 +221,8 @@ def init_settings(cfg):
             cfg['have_sys_un_h'] = False
         else:
             cfg['have_sys_un_h'] = True
+        
+        save_config('buildconf', cfg)
     
     if cfg['have_sys_un_h']:
         settings['define_macros'] = [('HAVE_SYS_UN_H', 1)]
