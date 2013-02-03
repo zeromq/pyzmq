@@ -1,4 +1,5 @@
 # coding: utf-8
+"""zmq constants"""
 
 from ._cffi import zmq_version_info
 
