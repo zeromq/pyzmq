@@ -452,6 +452,14 @@ class IOLoop(object):
         in sys.exc_info.
         """
         logging.error("Exception in callback %r", callback, exc_info=True)
+    
+    def time(self):
+        """This method will be added in tornado 3.0
+        
+        When 3.0 is closer to done, we will do a real upstream sync,
+        but this seems to be enough for now.
+        """
+        return time.time()
 
 
 class _Timeout(object):
