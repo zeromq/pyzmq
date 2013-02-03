@@ -687,7 +687,7 @@ class CleanCommand(Command):
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
         
-        for d in ('build',):
+        for d in ('build', 'conf'):
             if os.path.exists(d):
                 self._clean_trees.append(d)
 
