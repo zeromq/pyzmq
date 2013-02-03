@@ -77,14 +77,6 @@ from buildutils import (
 # Flags
 #-----------------------------------------------------------------------------
 
-# ignore unused-function and strict-aliasing warnings, of which there
-# will be many from the Cython generated code:
-# note that this is only for gcc-style compilers
-if get_default_compiler() in ('unix', 'mingw32'):
-    ignore_common_warnings=True
-else:
-    ignore_common_warnings=False
-
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
 target_zmq = (3,2,2)
@@ -269,7 +261,7 @@ class Configure(Command):
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
             local_dll = pjoin(self.tempdir, 'libzmq.dll')
-            if CONFIG['zmq_prefix'] and not os.path.exists(local_dll):
+            if not CONFIG['zmq_prefix'] and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg"
                 " or 'python setup.py configure --zmq=/path/to/zeromq2'")
             
@@ -315,7 +307,10 @@ class Configure(Command):
             self.run()
             config = self.config
         else:
+            if CONFIG['libzmq_extension']:
+                config = self.bundle_libzmq_extension()
             self.config = config
+            
             line()
         
         if CONFIG['libzmq_extension'] or CONFIG['skip_check_zmq'] or CROSSCOMPILE:
@@ -399,8 +394,7 @@ class Configure(Command):
 
             # And things like sockets come from libraries that must be named.
 
-            ext.libraries.append('rpcrt4')
-            ext.libraries.append('ws2_32')
+            ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         elif not sys.platform.startswith(('darwin', 'freebsd')):
             ext.include_dirs.append(bundledir)
 
@@ -443,7 +437,7 @@ class Configure(Command):
         ]))
         
         # ultra-lazy pip detection:
-        if 'pip' in ' '.join(sys.argv) or True:
+        if 'pip' in ' '.join(sys.argv):
             print ('\n'.join([
         "If you expected to get a binary install (egg), we have those for",
         "current Pythons on OSX and Windows. These can be installed with",
