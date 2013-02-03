@@ -886,6 +886,15 @@ PyZMQ is the official Python bindings for the lightweight and super-fast messagi
 library ZeroMQ (http://www.zeromq.org).
 """
 
+if 'PyPy' in sys.version:
+    install_requires = [
+        'py',
+        'ctypes-configure',
+        'cffi',
+    ]
+else:
+    install_requires = None
+
 setup(
     name = "pyzmq",
     version = extract_version(),
@@ -900,6 +909,7 @@ setup(
     long_description = long_desc, 
     license = "LGPL+BSD",
     cmdclass = cmdclass,
+    install_requires = install_requires,
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
