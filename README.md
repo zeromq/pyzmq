@@ -5,13 +5,13 @@ This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
 PyZMQ should work with libzmq ≥ 2.1.4 (including libzmq 3.2.x), and
-Python ≥ 2.6 (including Python 3).
+Python ≥ 2.6 (including Python 3), as well as PyPy.
 
 ## Versioning
 
-Current release of pyzmq is 2.2.0.1, and targets libzmq-2.2.0. For
+Current release of pyzmq is 13.0, and targets libzmq-3.2.2. For
 libzmq 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development
-branch.
+branch.  PyZMQ continues to support libzmq ≥ 2.1.4.
 
 pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5, and
 pyzmq ≥ 2.2.0 requires Python ≥ 2.6.
