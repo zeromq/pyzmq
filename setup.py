@@ -411,7 +411,7 @@ class Configure(Command):
             for attr, value in settings.items():
                 setattr(ext, attr, value)
         
-        save_config("buildconf", dict(libzmq_extension=True))
+        save_config("buildconf", CONFIG)
         
         return dict(vers=bundled_version, settings=settings)
         
@@ -536,6 +536,7 @@ class Configure(Command):
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
+                save_config('buildconf', CONFIG)
                 for ext in self.distribution.ext_modules:
                     for attr,value in settings.items():
                         setattr(ext, attr, value)
