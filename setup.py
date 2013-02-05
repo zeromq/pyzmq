@@ -173,8 +173,8 @@ def settings_from_prefix(prefix=None):
             if os.environ.get('VIRTUAL_ENV', None):
                 # find libzmq installed in virtualenv
                 env = os.environ['VIRTUAL_ENV']
-                settings['include_dirs'] += pjoin(env, 'include')
-                settings['library_dirs'] += pjoin(env, 'lib')
+                settings['include_dirs'] += [pjoin(env, 'include')]
+                settings['library_dirs'] += [pjoin(env, 'lib')]
     
         if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
