@@ -9,12 +9,15 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-current dev
-===========
+13.0
+====
 
-PyZMQ now officially targets libzmq-3 (3.2.2).
-0MQ ≥ 2.1.4 is still supported for the indefinite future,
-but 3.x is recommended.
+PyZMQ now officially targets libzmq-3 (3.2.2),
+0MQ ≥ 2.1.4 is still supported for the indefinite future, but 3.x is recommended.
+PyZMQ has detached from libzmq versioning,
+and will just follow its own regular versioning scheme from now on.
+PyZMQ bdists will include whatever is the latest stable libzmq release (3.2.2 for pyzmq-13.0).
+
 
 Experiments Removed
 -------------------
@@ -27,6 +30,7 @@ Experiments Removed
 New Stuff
 ---------
 
+* Support for PyPy via CFFI backend (requires py, ctypes-configure, and cffi).
 * Add support for new APIs in libzmq-3
   - :meth:`socket.disconnect`
   - :meth:`socket.unbind`
@@ -38,14 +42,14 @@ New Stuff
 * Setting and getting :attr:`socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 * Implementation splits core Cython bindings from pure-Python subclasses
   with sugar methods (send/recv_multipart). This should facilitate
-  non-Cython backends and PyPy support.
+  non-Cython backends and PyPy support [spoiler: it did!].
 
 
 Bugs Fixed
 ----------
 
-* Unicode fixes
-* MinGW and ppc build fixes
+* Unicode fixes in log and monitored queue
+* MinGW, ppc, cross-compilation, and HP-UX build fixes
 * :mod:`zmq.green` should be complete - devices and tornado eventloop both work
   in gevent contexts.
 

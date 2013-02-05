@@ -20,12 +20,18 @@ if __name__ == '__main__':
     # You must do make clean if you change this!
     docwriter.package_skip_patterns += [
         r'\.tests$',
-        r'\.platform$',
         r'\.core$',
+        r'\.cffi_core$',
+        r'\.eventloop\.platform$',
         r'\.green\.eventloop$',
     ]
 
-    docwriter.module_skip_patterns += [ r'\.tests' ]
+    docwriter.module_skip_patterns += [
+        r'\.eventloop\.stack_context$',
+        r'\.sugar\.attrsettr$',
+        r'\.utils\.initthreads$',
+        r'\.utils\.rebuffer$',
+        ]
     
     # Now, generate the outputs
     docwriter.write_api_docs(outdir)

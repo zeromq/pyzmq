@@ -2,8 +2,10 @@ include COPYING.BSD
 include COPYING.LESSER
 include CONTRIBUTING.md
 include MANIFEST.in
-include README.rst
+include README.md
+include AUTHORS.md
 include setup.cfg.template
+include setup.cfg.android
 include setup.py
 include setupegg.py
 include zmqversion.py
@@ -33,6 +35,8 @@ exclude zmq/libzmq*
 # exclude docs/_static
 # exclude docs/_templates
 
+global-exclude __pycache__/*
+global-exclude .deps/*
 global-exclude *.so
 global-exclude *.pyd
 global-exclude *.pyc
