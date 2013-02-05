@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyZMQ Documentation &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>PyZMQ Documentation &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '2.2.0.1',
+        URL_ROOT:    './',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="#" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="#" />
     <link rel="next" title="PyZMQ, Python2.5, and Python3" href="pyversions.html" /> 
   </head>
   <body>
@@ -59,7 +57,7 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">PyZMQ Documentation</a></li>
-<li><a class="reference internal" href="#pyzmq-versioning">PyZMQ Versioning</a></li>
+<li><a class="reference internal" href="#supported-libzmq">Supported LibZMQ</a></li>
 <li><a class="reference internal" href="#notes-from-developing-pyzmq">Notes from developing PyZMQ</a><ul>
 </ul>
 </li>
@@ -105,34 +103,34 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Release:</th><td class="field-body">2.2.0.1</td>
+<tr class="field-odd field"><th class="field-name">Release:</th><td class="field-body">13.0.0-rc1</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">August 20, 2012</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">February 04, 2013</td>
 </tr>
 </tbody>
 </table>
-<p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>, written almost entirely in <a class="reference external" href="http://cython.org/">Cython</a>. This
+<p>PyZMQ is the Python bindings for <a class="reference external" href="http://www.zeromq.org">ØMQ</a>. This
 documentation currently contains notes on some important aspects of developing PyZMQ and
 an overview of what the ØMQ API looks like in Python. For information on how to use
 ØMQ in general, see the many examples in the excellent <a class="reference external" href="http://zguide.zeromq.org">ØMQ Guide</a>, all of which
 have a version in Python.</p>
 <p>PyZMQ works with Python 3 (≥ 3.2), and Python 2 (≥ 2.6), with no transformations or 2to3,
-largely thanks to <a class="reference external" href="http://cython.org/">Cython</a>.</p>
+as well as PyPy (at least 2.0 beta), thanks to a new CFFI backend.</p>
 <p>Please don&#8217;t hesitate to report pyzmq-specific issues to our <a class="reference external" href="https://www.github.com/zeromq/pyzmq/issues">tracker</a> on GitHub.
 General questions about ØMQ are better sent to the ØMQ <a class="reference external" href="http://www.zeromq.org/docs:mailing-lists">mailing list</a> or <a class="reference external" href="http://www.zeromq.org/chatroom">IRC Channel</a>.</p>
 <p><a class="reference internal" href="changelog.html#changelog"><em>Summary of Changes in PyZMQ</em></a></p>
 </div>
-<div class="section" id="pyzmq-versioning">
-<h1>PyZMQ Versioning<a class="headerlink" href="#pyzmq-versioning" title="Permalink to this headline">¶</a></h1>
-<p>PyZMQ versioning follows libzmq, so your pyzmq version should match that of your
-libzmq. Building the same pyzmq against various versions of libzmq is supported,
+<div class="section" id="supported-libzmq">
+<h1>Supported LibZMQ<a class="headerlink" href="#supported-libzmq" title="Permalink to this headline">¶</a></h1>
+<p>PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2 ) and active development ( ≥3.3.0 )
+versions of libzmq.  Note that libzmq 3.0-3.1 are not, and will never be supported.
+There never was a stable release of either.
+Building the same pyzmq against various versions of libzmq is supported,
 and should only result in the addition/removal of a few socket types and socket
 options, depending on the active libzmq&#8217;s support.</p>
 <p>Binary distributions (eggs or MSIs on <a class="reference external" href="http://pypi.python.org/pypi/pyzmq">PyPI</a>
 or <a class="reference external" href="https://www.github.com/zeromq/pyzmq/downloads">GitHub</a>) of PyZMQ ship with
-matching libzmq release built with default configuration.</p>
-<p>PyZMQ aims to support all stable ( ≥2.1.4 ) and active development ( ≥3.2.0 )
-versions of libzmq.</p>
+the stable version of libzmq at the time of release, built with default configuration.</p>
 </div>
 <div class="section" id="notes-from-developing-pyzmq">
 <h1>Notes from developing PyZMQ<a class="headerlink" href="#notes-from-developing-pyzmq" title="Permalink to this headline">¶</a></h1>
@@ -178,7 +176,7 @@ versions of libzmq.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="eventloop.html">Eventloops and PyZMQ</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="eventloop.html#tornado-ioloop">Tornado IOLoop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="eventloop.html#gevent">gevent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eventloop.html#pyzmq-and-gevent">PyZMQ and gevent</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="logging.html">Asynchronous Logging via PyZMQ</a><ul>
@@ -189,29 +187,26 @@ versions of libzmq.</p>
 <li class="toctree-l1"><a class="reference internal" href="ssh.html">Tunneling PyZMQ Connections with SSH</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">The PyZMQ API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.html">zmq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.context.html">core.context</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.device.html">core.device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.error.html">core.error</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.message.html">core.message</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.poll.html">core.poll</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.pysocket.html">core.pysocket</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.socket.html">core.socket</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.stopwatch.html">core.stopwatch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.core.version.html">core.version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.basedevice.html">devices.basedevice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.monitoredqueue.html">devices.monitoredqueue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.monitoredqueue.html">devices.monitoredqueue</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html">devices.monitoredqueuedevice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.devices.proxydevice.html">devices.proxydevice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.error.html">error</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html">eventloop.ioloop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.stack_context.html">eventloop.stack_context</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html">eventloop.zmqstream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.green.device.html">green.device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.log.handlers.html">log.handlers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.ssh.forward.html">ssh.forward</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.ssh.tunnel.html">ssh.tunnel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.initthreads.html">utils.initthreads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.context.html">sugar.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.frame.html">sugar.frame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.poll.html">sugar.poll</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.socket.html">sugar.socket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.tracker.html">sugar.tracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.sugar.version.html">sugar.version</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.jsonapi.html">utils.jsonapi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.rebuffer.html">utils.rebuffer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.web.proxy.html">web.proxy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.web.zmqweb.html">web.zmqweb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/zmq.utils.strtypes.html">utils.strtypes</a></li>
 </ul>
 </li>
 </ul>
@@ -261,10 +256,10 @@ versions of libzmq.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

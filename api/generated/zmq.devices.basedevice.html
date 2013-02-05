@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>devices.basedevice &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>devices.basedevice &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0.1',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
     <link rel="next" title="devices.monitoredqueue" href="zmq.devices.monitoredqueue.html" />
-    <link rel="prev" title="core.version" href="zmq.core.version.html" /> 
+    <link rel="prev" title="zmq" href="zmq.html" /> 
   </head>
   <body>
 
@@ -50,7 +48,7 @@
           <a href="zmq.devices.monitoredqueue.html" title="devices.monitoredqueue"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.version.html" title="core.version"
+          <a href="zmq.html" title="zmq"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -81,8 +79,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="zmq.core.version.html"
-                        title="previous chapter">core.version</a></p>
+  <p class="topless"><a href="zmq.html"
+                        title="previous chapter">zmq</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="zmq.devices.monitoredqueue.html"
                         title="next chapter">devices.monitoredqueue</a></p>
@@ -131,7 +129,7 @@
 <h3><a class="reference internal" href="#zmq.devices.basedevice.BackgroundDevice" title="zmq.devices.basedevice.BackgroundDevice"><tt class="xref py py-class docutils literal"><span class="pre">BackgroundDevice</span></tt></a><a class="headerlink" href="#backgrounddevice" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.basedevice.BackgroundDevice">
-<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">BackgroundDevice</tt><big>(</big><em>device_type</em>, <em>in_type</em>, <em>out_type</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.BackgroundDevice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">BackgroundDevice</tt><big>(</big><em>device_type=3</em>, <em>in_type=None</em>, <em>out_type=None</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.BackgroundDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for launching Devices in background processes and threads.</p>
 <dl class="method">
 <dt id="zmq.devices.basedevice.BackgroundDevice.bind_in">
@@ -161,9 +159,9 @@
 <p>See zmq.Socket.connect for details.</p>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="zmq.devices.basedevice.BackgroundDevice.context_factory">
-<em class="property">static </em><tt class="descname">context_factory</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.BackgroundDevice.context_factory" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.BackgroundDevice.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global Context instance.</p>
 <p>Most single-threaded applications have a single, global Context.
 Use this method instead of passing around Context instances
@@ -227,7 +225,7 @@ Thread.</p>
 <h3><a class="reference internal" href="#zmq.devices.basedevice.Device" title="zmq.devices.basedevice.Device"><tt class="xref py py-class docutils literal"><span class="pre">Device</span></tt></a><a class="headerlink" href="#device" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.basedevice.Device">
-<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">Device</tt><big>(</big><em>device_type</em>, <em>in_type</em>, <em>out_type</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.Device" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">Device</tt><big>(</big><em>device_type=3</em>, <em>in_type=None</em>, <em>out_type=None</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.Device" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Threadsafe 0MQ Device.</p>
 <p><em>Warning</em> as with most &#8216;threadsafe&#8217; Python objects, this is only
 threadsafe as long as you do not use private methods or attributes.
@@ -324,9 +322,9 @@ the thread</p>
 <p>See zmq.Socket.connect for details.</p>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="zmq.devices.basedevice.Device.context_factory">
-<em class="property">static </em><tt class="descname">context_factory</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.Device.context_factory" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.Device.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global Context instance.</p>
 <p>Most single-threaded applications have a single, global Context.
 Use this method instead of passing around Context instances
@@ -388,7 +386,7 @@ Thread.</p>
 <h3><a class="reference internal" href="#zmq.devices.basedevice.ProcessDevice" title="zmq.devices.basedevice.ProcessDevice"><tt class="xref py py-class docutils literal"><span class="pre">ProcessDevice</span></tt></a><a class="headerlink" href="#processdevice" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.basedevice.ProcessDevice">
-<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">ProcessDevice</tt><big>(</big><em>device_type</em>, <em>in_type</em>, <em>out_type</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ProcessDevice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">ProcessDevice</tt><big>(</big><em>device_type=3</em>, <em>in_type=None</em>, <em>out_type=None</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ProcessDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Device that will be run in a background Process.</p>
 <p>See Device for details.</p>
 <dl class="method">
@@ -421,7 +419,7 @@ Thread.</p>
 
 <dl class="attribute">
 <dt id="zmq.devices.basedevice.ProcessDevice.context_factory">
-<tt class="descname">context_factory</tt><a class="headerlink" href="#zmq.devices.basedevice.ProcessDevice.context_factory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ProcessDevice.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></p>
 </dd></dl>
 
@@ -469,7 +467,7 @@ Thread.</p>
 <h3><a class="reference internal" href="#zmq.devices.basedevice.ThreadDevice" title="zmq.devices.basedevice.ThreadDevice"><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevice</span></tt></a><a class="headerlink" href="#threaddevice" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.basedevice.ThreadDevice">
-<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">ThreadDevice</tt><big>(</big><em>device_type</em>, <em>in_type</em>, <em>out_type</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ThreadDevice" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.basedevice.</tt><tt class="descname">ThreadDevice</tt><big>(</big><em>device_type=3</em>, <em>in_type=None</em>, <em>out_type=None</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ThreadDevice" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Device that will be run in a background Thread.</p>
 <p>See Device for details.</p>
 <dl class="method">
@@ -500,9 +498,9 @@ Thread.</p>
 <p>See zmq.Socket.connect for details.</p>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="zmq.devices.basedevice.ThreadDevice.context_factory">
-<em class="property">static </em><tt class="descname">context_factory</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ThreadDevice.context_factory" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.basedevice.ThreadDevice.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global Context instance.</p>
 <p>Most single-threaded applications have a single, global Context.
 Use this method instead of passing around Context instances
@@ -584,7 +582,7 @@ Thread.</p>
           <a href="zmq.devices.monitoredqueue.html" title="devices.monitoredqueue"
              >next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.version.html" title="core.version"
+          <a href="zmq.html" title="zmq"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -594,10 +592,10 @@ Thread.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

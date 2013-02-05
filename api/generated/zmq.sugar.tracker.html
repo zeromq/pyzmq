@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>sugar.tracker &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '13.0.0-rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="sugar.version" href="zmq.sugar.version.html" />
+    <link rel="prev" title="sugar.socket" href="zmq.sugar.socket.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.version.html" title="sugar.version"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.socket.html" title="sugar.socket"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">sugar.tracker</a><ul>
+<li><a class="reference internal" href="#module-zmq.sugar.tracker">Module: <tt class="docutils literal"><span class="pre">sugar.tracker</span></tt></a></li>
+<li><a class="reference internal" href="#messagetracker"><tt class="docutils literal"><span class="pre">MessageTracker</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.sugar.socket.html"
+                        title="previous chapter">sugar.socket</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.sugar.version.html"
+                        title="next chapter">sugar.version</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.sugar.tracker.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="sugar-tracker">
+<h1>sugar.tracker<a class="headerlink" href="#sugar-tracker" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.sugar.tracker">
+<span id="module-sugar-tracker"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">sugar.tracker</span></tt><a class="headerlink" href="#module-zmq.sugar.tracker" title="Permalink to this headline">¶</a></h2>
+<p>Tracker for zero-copy messages with 0MQ.</p>
+</div>
+<div class="section" id="messagetracker">
+<h2><a class="reference internal" href="#zmq.sugar.tracker.MessageTracker" title="zmq.sugar.tracker.MessageTracker"><tt class="xref py py-class docutils literal"><span class="pre">MessageTracker</span></tt></a><a class="headerlink" href="#messagetracker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.sugar.tracker.MessageTracker">
+<em class="property">class </em><tt class="descclassname">zmq.sugar.tracker.</tt><tt class="descname">MessageTracker</tt><big>(</big><em>*towatch</em><big>)</big><a class="headerlink" href="#zmq.sugar.tracker.MessageTracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for tracking if 0MQ is done using one or more messages.</p>
+<p>When you send a 0MQ message, it is not sent immediately. The 0MQ IO thread
+sends the message at some later time. Often you want to know when 0MQ has
+actually sent the message though. This is complicated by the fact that
+a single 0MQ message can be sent multiple times using different sockets.
+This class allows you to track all of the 0MQ usages of a message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>*towatch</strong> : tuple of Event, MessageTracker, Message instances.</p>
+<blockquote class="last">
+<div><p>This list of objects to track. This class can track the low-level
+Events used by the Message class, other MessageTrackers or
+actual Messages.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="zmq.sugar.tracker.MessageTracker.done">
+<tt class="descname">done</tt><a class="headerlink" href="#zmq.sugar.tracker.MessageTracker.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is 0MQ completely done with the message(s) being tracked?</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.sugar.tracker.MessageTracker.events">
+<tt class="descname">events</tt><em class="property"> = None</em><a class="headerlink" href="#zmq.sugar.tracker.MessageTracker.events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.sugar.tracker.MessageTracker.peers">
+<tt class="descname">peers</tt><em class="property"> = None</em><a class="headerlink" href="#zmq.sugar.tracker.MessageTracker.peers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.tracker.MessageTracker.wait">
+<tt class="descname">wait</tt><big>(</big><em>timeout=-1</em><big>)</big><a class="headerlink" href="#zmq.sugar.tracker.MessageTracker.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for 0MQ to be done with the message or until <cite>timeout</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float [default: -1, wait forever]</p>
+<blockquote>
+<div><p>Maximum time in (s) to wait before raising NotDone.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
+<blockquote>
+<div><p>if done before <cite>timeout</cite></p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises :</th><td class="field-body"><p class="first"><strong>NotDone</strong> :</p>
+<blockquote class="last">
+<div><p>if <cite>timeout</cite> reached before I am done.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.version.html" title="sugar.version"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.socket.html" title="sugar.socket"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
+    </div>
+  </body>
+</html>

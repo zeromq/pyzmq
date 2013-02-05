@@ -3,26 +3,23 @@
 .. toctree::
 
    generated/zmq
-   generated/zmq.core.context
-   generated/zmq.core.device
-   generated/zmq.core.error
-   generated/zmq.core.message
-   generated/zmq.core.poll
-   generated/zmq.core.pysocket
-   generated/zmq.core.socket
-   generated/zmq.core.stopwatch
-   generated/zmq.core.version
    generated/zmq.devices.basedevice
    generated/zmq.devices.monitoredqueue
+   generated/zmq.devices.monitoredqueue
    generated/zmq.devices.monitoredqueuedevice
+   generated/zmq.devices.proxydevice
+   generated/zmq.error
    generated/zmq.eventloop.ioloop
-   generated/zmq.eventloop.stack_context
    generated/zmq.eventloop.zmqstream
+   generated/zmq.green.device
    generated/zmq.log.handlers
    generated/zmq.ssh.forward
    generated/zmq.ssh.tunnel
-   generated/zmq.utils.initthreads
+   generated/zmq.sugar.context
+   generated/zmq.sugar.frame
+   generated/zmq.sugar.poll
+   generated/zmq.sugar.socket
+   generated/zmq.sugar.tracker
+   generated/zmq.sugar.version
    generated/zmq.utils.jsonapi
-   generated/zmq.utils.rebuffer
-   generated/zmq.web.proxy
-   generated/zmq.web.zmqweb
+   generated/zmq.utils.strtypes

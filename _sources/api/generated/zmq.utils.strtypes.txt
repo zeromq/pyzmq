@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.strtypes
+==============
+
+Module: :mod:`utils.strtypes`
+-----------------------------
+.. automodule:: zmq.utils.strtypes
+
+.. currentmodule:: zmq.utils.strtypes
+
+Functions
+---------
+
+
+.. autofunction:: zmq.utils.strtypes.cast_bytes
+
+
+.. autofunction:: zmq.utils.strtypes.cast_unicode
+

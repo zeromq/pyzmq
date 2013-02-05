@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>devices.monitoredqueuedevice &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>devices.monitoredqueuedevice &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0.1',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,9 +24,9 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
-    <link rel="next" title="eventloop.ioloop" href="zmq.eventloop.ioloop.html" />
+    <link rel="next" title="devices.proxydevice" href="zmq.devices.proxydevice.html" />
     <link rel="prev" title="devices.monitoredqueue" href="zmq.devices.monitoredqueue.html" /> 
   </head>
   <body>
@@ -47,7 +45,7 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
+          <a href="zmq.devices.proxydevice.html" title="devices.proxydevice"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="zmq.devices.monitoredqueue.html" title="devices.monitoredqueue"
@@ -84,8 +82,8 @@
   <p class="topless"><a href="zmq.devices.monitoredqueue.html"
                         title="previous chapter">devices.monitoredqueue</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="zmq.eventloop.ioloop.html"
-                        title="next chapter">eventloop.ioloop</a></p>
+  <p class="topless"><a href="zmq.devices.proxydevice.html"
+                        title="next chapter">devices.proxydevice</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/api/generated/zmq.devices.monitoredqueuedevice.txt"
@@ -131,7 +129,7 @@
 <h3><a class="reference internal" href="#zmq.devices.monitoredqueuedevice.MonitoredQueue" title="zmq.devices.monitoredqueuedevice.MonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">MonitoredQueue</span></tt></a><a class="headerlink" href="#monitoredqueue" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.monitoredqueuedevice.MonitoredQueue">
-<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">MonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueue" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">MonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>Threadsafe MonitoredQueue object.</p>
 <p><em>Warning</em> as with most &#8216;threadsafe&#8217; Python objects, this is only
 threadsafe as long as you do not use private methods or attributes.
@@ -187,9 +185,9 @@ restricted.</p>
 <p>See zmq.Socket.connect for details.</p>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="zmq.devices.monitoredqueuedevice.MonitoredQueue.context_factory">
-<em class="property">static </em><tt class="descname">context_factory</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global Context instance.</p>
 <p>Most single-threaded applications have a single, global Context.
 Use this method instead of passing around Context instances
@@ -255,7 +253,7 @@ but not require the argument for simpler applications:</p>
 <h3><a class="reference internal" href="#zmq.devices.monitoredqueuedevice.MonitoredQueueBase" title="zmq.devices.monitoredqueuedevice.MonitoredQueueBase"><tt class="xref py py-class docutils literal"><span class="pre">MonitoredQueueBase</span></tt></a><a class="headerlink" href="#monitoredqueuebase" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.monitoredqueuedevice.MonitoredQueueBase">
-<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">MonitoredQueueBase</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueueBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">MonitoredQueueBase</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.MonitoredQueueBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for overriding methods.</p>
 <dl class="method">
 <dt id="zmq.devices.monitoredqueuedevice.MonitoredQueueBase.bind_mon">
@@ -290,7 +288,7 @@ but not require the argument for simpler applications:</p>
 <h3><a class="reference internal" href="#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a><a class="headerlink" href="#processmonitoredqueue" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue">
-<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">ProcessMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">ProcessMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>MonitoredQueue in a Process. See MonitoredQueue for more.</p>
 <dl class="method">
 <dt id="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue.bind_in">
@@ -336,7 +334,7 @@ but not require the argument for simpler applications:</p>
 
 <dl class="attribute">
 <dt id="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue.context_factory">
-<tt class="descname">context_factory</tt><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></p>
 </dd></dl>
 
@@ -388,7 +386,7 @@ but not require the argument for simpler applications:</p>
 <h3><a class="reference internal" href="#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a><a class="headerlink" href="#threadmonitoredqueue" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue">
-<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">ThreadMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.devices.monitoredqueuedevice.</tt><tt class="descname">ThreadMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>MonitoredQueue in a Thread. See MonitoredQueue for more.</p>
 <dl class="method">
 <dt id="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue.bind_in">
@@ -432,9 +430,9 @@ but not require the argument for simpler applications:</p>
 <p>See zmq.Socket.connect for details.</p>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue.context_factory">
-<em class="property">static </em><tt class="descname">context_factory</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">context_factory</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue.context_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a global Context instance.</p>
 <p>Most single-threaded applications have a single, global Context.
 Use this method instead of passing around Context instances
@@ -517,7 +515,7 @@ but not require the argument for simpler applications:</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
+          <a href="zmq.devices.proxydevice.html" title="devices.proxydevice"
              >next</a> |</li>
         <li class="right" >
           <a href="zmq.devices.monitoredqueue.html" title="devices.monitoredqueue"
@@ -530,10 +528,10 @@ but not require the argument for simpler applications:</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

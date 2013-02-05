@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+green.device
+============
+
+Module: :mod:`green.device`
+---------------------------
+.. automodule:: zmq.green.device
+
+.. currentmodule:: zmq.green.device
+
+.. autofunction:: zmq.green.device.device
+

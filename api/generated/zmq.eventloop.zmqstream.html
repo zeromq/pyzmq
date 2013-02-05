@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>eventloop.zmqstream &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>eventloop.zmqstream &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0.1',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
-    <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
-    <link rel="prev" title="eventloop.stack_context" href="zmq.eventloop.stack_context.html" /> 
+    <link rel="next" title="green.device" href="zmq.green.device.html" />
+    <link rel="prev" title="eventloop.ioloop" href="zmq.eventloop.ioloop.html" /> 
   </head>
   <body>
 
@@ -47,10 +45,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.log.handlers.html" title="log.handlers"
+          <a href="zmq.green.device.html" title="green.device"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -72,11 +70,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="zmq.eventloop.stack_context.html"
-                        title="previous chapter">eventloop.stack_context</a></p>
+  <p class="topless"><a href="zmq.eventloop.ioloop.html"
+                        title="previous chapter">eventloop.ioloop</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="zmq.log.handlers.html"
-                        title="next chapter">log.handlers</a></p>
+  <p class="topless"><a href="zmq.green.device.html"
+                        title="next chapter">green.device</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../../_sources/api/generated/zmq.eventloop.zmqstream.txt"
@@ -113,10 +111,10 @@
 <h2><a class="reference internal" href="#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a><a class="headerlink" href="#zmqstream" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="zmq.eventloop.zmqstream.ZMQStream">
-<em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em>, <em>threadsafe=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">ZMQStream</tt><big>(</big><em>socket</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>A utility class to register callbacks when a zmq socket sends and receives</p>
 <p>For use with zmq.eventloop.ioloop</p>
-<p>There are 4 main methods</p>
+<p>There are three main methods</p>
 <p>Methods:</p>
 <ul>
 <li><dl class="first docutils">
@@ -410,18 +408,6 @@ See zmq.socket.send_unicode for details.</p>
 <dd><p>Disable callback on sending.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="zmq.eventloop.zmqstream.ZMQStream.threadsafe">
-<tt class="descname">threadsafe</tt><em class="property"> = False</em><a class="headerlink" href="#zmq.eventloop.zmqstream.ZMQStream.threadsafe" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="zmq.eventloop.zmqstream.maybe_threadsafe">
-<tt class="descclassname">zmq.eventloop.zmqstream.</tt><tt class="descname">maybe_threadsafe</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#zmq.eventloop.zmqstream.maybe_threadsafe" title="Permalink to this definition">¶</a></dt>
-<dd><p>decorator for wrapping a method in IOLoop.add_callback for threadsafety</p>
-<p>use ZMQStream(..., threadsafe=True) to enable.</p>
 </dd></dl>
 
 </div>
@@ -443,10 +429,10 @@ See zmq.socket.send_unicode for details.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.log.handlers.html" title="log.handlers"
+          <a href="zmq.green.device.html" title="green.device"
              >next</a> |</li>
         <li class="right" >
-          <a href="zmq.eventloop.stack_context.html" title="eventloop.stack_context"
+          <a href="zmq.eventloop.ioloop.html" title="eventloop.ioloop"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -456,10 +442,10 @@ See zmq.socket.send_unicode for details.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

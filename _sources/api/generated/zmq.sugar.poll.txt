@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+sugar.poll
+==========
+
+Module: :mod:`sugar.poll`
+-------------------------
+.. automodule:: zmq.sugar.poll
+
+.. currentmodule:: zmq.sugar.poll
+
+:class:`Poller`
+---------------
+
+
+.. autoclass:: Poller
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+.. autofunction:: zmq.sugar.poll.select
+

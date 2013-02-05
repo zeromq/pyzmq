@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>sugar.context &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '13.0.0-rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
+    <link rel="up" title="The PyZMQ API" href="../index.html" />
+    <link rel="next" title="sugar.frame" href="zmq.sugar.frame.html" />
+    <link rel="prev" title="ssh.tunnel" href="zmq.ssh.tunnel.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.frame.html" title="sugar.frame"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.tunnel.html" title="ssh.tunnel"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">sugar.context</a><ul>
+<li><a class="reference internal" href="#module-zmq.sugar.context">Module: <tt class="docutils literal"><span class="pre">sugar.context</span></tt></a></li>
+<li><a class="reference internal" href="#context"><tt class="docutils literal"><span class="pre">Context</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="zmq.ssh.tunnel.html"
+                        title="previous chapter">ssh.tunnel</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="zmq.sugar.frame.html"
+                        title="next chapter">sugar.frame</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.sugar.context.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="sugar-context">
+<h1>sugar.context<a class="headerlink" href="#sugar-context" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.sugar.context">
+<span id="module-sugar-context"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">sugar.context</span></tt><a class="headerlink" href="#module-zmq.sugar.context" title="Permalink to this headline">¶</a></h2>
+<p>Python bindings for 0MQ.</p>
+</div>
+<div class="section" id="context">
+<h2><a class="reference internal" href="#zmq.sugar.context.Context" title="zmq.sugar.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a><a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.sugar.context.Context">
+<em class="property">class </em><tt class="descclassname">zmq.sugar.context.</tt><tt class="descname">Context</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="zmq.sugar.context.Context.closed">
+<tt class="descname">closed</tt><a class="headerlink" href="#zmq.sugar.context.Context.closed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.destroy">
+<tt class="descname">destroy</tt><big>(</big><em>linger=None</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close all sockets associated with this context, and then terminate
+the context. If linger is specified,
+the LINGER sockopt of the sockets will be set prior to closing.</p>
+<p>WARNING:</p>
+<p>destroy involves calling zmq_close(), which is <em>NOT</em> threadsafe.
+If there are active sockets in other threads, this must not be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.get">
+<tt class="descname">get</tt><big>(</big><em>option</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of a context option.</p>
+<p>See the 0MQ API documentation for zmq_ctx_get
+for details on specific options.</p>
+<p>New in libzmq-3.2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<blockquote>
+<div><p>The option to get.  Available values will depend on your
+version of libzmq.  Examples include:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zmq</span><span class="o">.</span><span class="n">IO_THREADS</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">MAX_SOCKETS</span>
+</pre></div>
+</div>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>optval</strong> : int</p>
+<blockquote class="last">
+<div><p>The value of the option as an integer.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.getsockopt">
+<tt class="descname">getsockopt</tt><big>(</big><em>opt</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.getsockopt" title="Permalink to this definition">¶</a></dt>
+<dd><p>get default socket options for new sockets created by this Context</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.sugar.context.Context.instance">
+<em class="property">classmethod </em><tt class="descname">instance</tt><big>(</big><em>io_threads=1</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global Context instance.</p>
+<p>Most single-threaded applications have a single, global Context.
+Use this method instead of passing around Context instances
+throughout your code.</p>
+<p>A common pattern for classes that depend on Contexts is to use
+a default argument to enable programs with multiple Contexts
+but not require the argument for simpler applications:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class MyClass(object):</dt>
+<dd><dl class="first last docutils">
+<dt>def __init__(self, context=None):</dt>
+<dd>self.context = context or Context.instance()</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.set">
+<tt class="descname">set</tt><big>(</big><em>option</em>, <em>optval</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set context options.</p>
+<p>See the 0MQ API documentation for zmq_ctx_set
+for details on specific options.</p>
+<p>New in libzmq-3.2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>option</strong> : int</p>
+<blockquote>
+<div><p>The option to set.  Available values will depend on your
+version of libzmq.  Examples include:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">zmq</span><span class="o">.</span><span class="n">IO_THREADS</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">MAX_SOCKETS</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>optval</strong> : int</p>
+<blockquote class="last">
+<div><p>The value of the option to set.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.setsockopt">
+<tt class="descname">setsockopt</tt><big>(</big><em>opt</em>, <em>value</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.setsockopt" title="Permalink to this definition">¶</a></dt>
+<dd><p>set default socket options for new sockets created by this Context</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.socket">
+<tt class="descname">socket</tt><big>(</big><em>socket_type</em><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Socket associated with this Context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket_type</strong> : int</p>
+<blockquote class="last">
+<div><p>The socket type, which can be any of the 0MQ socket types: 
+REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.sugar.context.Context.sockopts">
+<tt class="descname">sockopts</tt><em class="property"> = None</em><a class="headerlink" href="#zmq.sugar.context.Context.sockopts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.sugar.context.Context.term">
+<tt class="descname">term</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.sugar.context.Context.term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close or terminate the context.</p>
+<p>This can be called to close the context by hand. If this is not called,
+the context will automatically be closed when it is garbage collected.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="zmq.sugar.frame.html" title="sugar.frame"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zmq.ssh.tunnel.html" title="ssh.tunnel"
+             >previous</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+
+          <li><a href="../index.html" >The PyZMQ API</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
+    </div>
+  </body>
+</html>

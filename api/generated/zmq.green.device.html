@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.stopwatch &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>green.device &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0.1',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
-    <link rel="next" title="core.version" href="zmq.core.version.html" />
-    <link rel="prev" title="core.socket" href="zmq.core.socket.html" /> 
+    <link rel="next" title="log.handlers" href="zmq.log.handlers.html" />
+    <link rel="prev" title="eventloop.zmqstream" href="zmq.eventloop.zmqstream.html" /> 
   </head>
   <body>
 
@@ -47,10 +45,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.core.version.html" title="core.version"
+          <a href="zmq.log.handlers.html" title="log.handlers"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.socket.html" title="core.socket"
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -64,22 +62,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">core.stopwatch</a><ul>
-<li><a class="reference internal" href="#module-zmq.core.stopwatch">Module: <tt class="docutils literal"><span class="pre">core.stopwatch</span></tt></a></li>
-<li><a class="reference internal" href="#stopwatch"><tt class="docutils literal"><span class="pre">Stopwatch</span></tt></a></li>
+<li><a class="reference internal" href="#">green.device</a><ul>
+<li><a class="reference internal" href="#module-zmq.green.device">Module: <tt class="docutils literal"><span class="pre">green.device</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="zmq.core.socket.html"
-                        title="previous chapter">core.socket</a></p>
+  <p class="topless"><a href="zmq.eventloop.zmqstream.html"
+                        title="previous chapter">eventloop.zmqstream</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="zmq.core.version.html"
-                        title="next chapter">core.version</a></p>
+  <p class="topless"><a href="zmq.log.handlers.html"
+                        title="next chapter">log.handlers</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../_sources/api/generated/zmq.core.stopwatch.txt"
+    <li><a href="../../_sources/api/generated/zmq.green.device.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -103,49 +100,35 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="core-stopwatch">
-<h1>core.stopwatch<a class="headerlink" href="#core-stopwatch" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-zmq.core.stopwatch">
-<span id="module-core-stopwatch"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.stopwatch</span></tt><a class="headerlink" href="#module-zmq.core.stopwatch" title="Permalink to this headline">¶</a></h2>
-<p>0MQ Stopwatch class.</p>
-</div>
-<div class="section" id="stopwatch">
-<h2><a class="reference internal" href="#zmq.core.stopwatch.Stopwatch" title="zmq.core.stopwatch.Stopwatch"><tt class="xref py py-class docutils literal"><span class="pre">Stopwatch</span></tt></a><a class="headerlink" href="#stopwatch" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="zmq.core.stopwatch.Stopwatch">
-<em class="property">class </em><tt class="descclassname">zmq.core.stopwatch.</tt><tt class="descname">Stopwatch</tt><a class="headerlink" href="#zmq.core.stopwatch.Stopwatch" title="Permalink to this definition">¶</a></dt>
-<dd><p>A simple stopwatch based on zmq_stopwatch_start/stop.</p>
-<p>This class should be used for benchmarking and timing 0MQ code.</p>
-<dl class="method">
-<dt id="zmq.core.stopwatch.Stopwatch.sleep">
-<tt class="descname">sleep</tt><big>(</big><em>seconds</em><big>)</big><a class="headerlink" href="#zmq.core.stopwatch.Stopwatch.sleep" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sleep for an integer number of seconds.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.core.stopwatch.Stopwatch.start">
-<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.stopwatch.Stopwatch.start" title="Permalink to this definition">¶</a></dt>
-<dd><p>Start the stopwatch.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.core.stopwatch.Stopwatch.stop">
-<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.core.stopwatch.Stopwatch.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stop the stopwatch.</p>
+  <div class="section" id="green-device">
+<h1>green.device<a class="headerlink" href="#green-device" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.green.device">
+<span id="module-green-device"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">green.device</span></tt><a class="headerlink" href="#module-zmq.green.device" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="zmq.green.device.device">
+<tt class="descclassname">zmq.green.device.</tt><tt class="descname">device</tt><big>(</big><em>device_type</em>, <em>isocket</em>, <em>osocket</em><big>)</big><a class="headerlink" href="#zmq.green.device.device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start a zeromq device (gevent-compatible).</p>
+<p>Unlike the true zmq.device, this does not release the GIL.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>t</strong> : unsigned long int</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>device_type</strong> : (QUEUE, FORWARDER, STREAMER)</p>
+<blockquote>
+<div><p>The type of device to start (ignored).</p>
+</div></blockquote>
+<p><strong>isocket</strong> : Socket</p>
+<blockquote>
+<div><p>The Socket instance for the incoming traffic.</p>
+</div></blockquote>
+<p><strong>osocket</strong> : Socket</p>
 <blockquote class="last">
-<div><p>the number of microseconds since <tt class="docutils literal"><span class="pre">start()</span></tt> was called.</p>
+<div><p>The Socket instance for the outbound traffic.</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -167,10 +150,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.core.version.html" title="core.version"
+          <a href="zmq.log.handlers.html" title="log.handlers"
              >next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.socket.html" title="core.socket"
+          <a href="zmq.eventloop.zmqstream.html" title="eventloop.zmqstream"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -180,10 +163,10 @@
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

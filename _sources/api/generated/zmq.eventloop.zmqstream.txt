@@ -18,6 +18,3 @@ Module: :mod:`eventloop.zmqstream`
   :undoc-members:
   :inherited-members:
 
-
-.. autofunction:: zmq.eventloop.zmqstream.maybe_threadsafe
-

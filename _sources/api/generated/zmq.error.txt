@@ -1,16 +1,36 @@
 .. AUTO-GENERATED FILE -- DO NOT EDIT!
 
-core.error
-==========
+error
+=====
 
-Module: :mod:`core.error`
--------------------------
-.. automodule:: zmq.core.error
+Module: :mod:`error`
+--------------------
+.. automodule:: zmq.error
 
-.. currentmodule:: zmq.core.error
+.. currentmodule:: zmq.error
 
 Classes
 -------
+
+:class:`Again`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Again
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ContextTerminated`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ContextTerminated
+  :members:
+  :undoc-members:
+  :inherited-members:
+
 
 :class:`NotDone`
 ~~~~~~~~~~~~~~~~
@@ -50,11 +70,4 @@ Classes
   :members:
   :undoc-members:
   :inherited-members:
-
-
-Function
---------
-
-
-.. autofunction:: zmq.core.error.strerror
 

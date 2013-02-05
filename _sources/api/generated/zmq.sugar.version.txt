@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+sugar.version
+=============
+
+Module: :mod:`sugar.version`
+----------------------------
+.. automodule:: zmq.sugar.version
+
+.. currentmodule:: zmq.sugar.version
+
+Functions
+---------
+
+
+.. autofunction:: zmq.sugar.version.pyzmq_version
+
+
+.. autofunction:: zmq.sugar.version.pyzmq_version_info
+
+
+.. autofunction:: zmq.sugar.version.zmq_version
+

@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>core.poll &mdash; PyZMQ 2.2.0.1 documentation</title>
+    <title>sugar.poll &mdash; PyZMQ 13.0.0-rc1 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -16,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0.1',
+        VERSION:     '13.0.0-rc1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,10 +24,10 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 2.2.0.1 documentation" href="../../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="../../index.html" />
     <link rel="up" title="The PyZMQ API" href="../index.html" />
-    <link rel="next" title="core.pysocket" href="zmq.core.pysocket.html" />
-    <link rel="prev" title="core.message" href="zmq.core.message.html" /> 
+    <link rel="next" title="sugar.socket" href="zmq.sugar.socket.html" />
+    <link rel="prev" title="sugar.frame" href="zmq.sugar.frame.html" /> 
   </head>
   <body>
 
@@ -47,10 +45,10 @@
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.core.pysocket.html" title="core.pysocket"
+          <a href="zmq.sugar.socket.html" title="sugar.socket"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.message.html" title="core.message"
+          <a href="zmq.sugar.frame.html" title="sugar.frame"
              accesskey="P">previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -64,22 +62,22 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">core.poll</a><ul>
-<li><a class="reference internal" href="#module-zmq.core.poll">Module: <tt class="docutils literal"><span class="pre">core.poll</span></tt></a></li>
+<li><a class="reference internal" href="#">sugar.poll</a><ul>
+<li><a class="reference internal" href="#module-zmq.sugar.poll">Module: <tt class="docutils literal"><span class="pre">sugar.poll</span></tt></a></li>
 <li><a class="reference internal" href="#poller"><tt class="docutils literal"><span class="pre">Poller</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="zmq.core.message.html"
-                        title="previous chapter">core.message</a></p>
+  <p class="topless"><a href="zmq.sugar.frame.html"
+                        title="previous chapter">sugar.frame</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="zmq.core.pysocket.html"
-                        title="next chapter">core.pysocket</a></p>
+  <p class="topless"><a href="zmq.sugar.socket.html"
+                        title="next chapter">sugar.socket</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../_sources/api/generated/zmq.core.poll.txt"
+    <li><a href="../../_sources/api/generated/zmq.sugar.poll.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -103,27 +101,27 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="core-poll">
-<h1>core.poll<a class="headerlink" href="#core-poll" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-zmq.core.poll">
-<span id="module-core-poll"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">core.poll</span></tt><a class="headerlink" href="#module-zmq.core.poll" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="sugar-poll">
+<h1>sugar.poll<a class="headerlink" href="#sugar-poll" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.sugar.poll">
+<span id="module-sugar-poll"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">sugar.poll</span></tt><a class="headerlink" href="#module-zmq.sugar.poll" title="Permalink to this headline">¶</a></h2>
 <p>0MQ polling related functions and classes.</p>
 </div>
 <div class="section" id="poller">
-<h2><a class="reference internal" href="#zmq.core.poll.Poller" title="zmq.core.poll.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a><a class="headerlink" href="#poller" title="Permalink to this headline">¶</a></h2>
+<h2><a class="reference internal" href="#zmq.sugar.poll.Poller" title="zmq.sugar.poll.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a><a class="headerlink" href="#poller" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="zmq.core.poll.Poller">
-<em class="property">class </em><tt class="descclassname">zmq.core.poll.</tt><tt class="descname">Poller</tt><a class="headerlink" href="#zmq.core.poll.Poller" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.Poller">
+<em class="property">class </em><tt class="descclassname">zmq.sugar.poll.</tt><tt class="descname">Poller</tt><a class="headerlink" href="#zmq.sugar.poll.Poller" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stateful poll interface that mirrors Python&#8217;s built-in poll.</p>
 <dl class="method">
-<dt id="zmq.core.poll.Poller.modify">
-<tt class="descname">modify</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.modify" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.Poller.modify">
+<tt class="descname">modify</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.sugar.poll.Poller.modify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modify the flags for an already registered 0MQ socket or native fd.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="zmq.core.poll.Poller.poll">
-<tt class="descname">poll</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.poll" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.Poller.poll">
+<tt class="descname">poll</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.sugar.poll.Poller.poll" title="Permalink to this definition">¶</a></dt>
 <dd><p>Poll the registered 0MQ or native fds for I/O.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -143,8 +141,8 @@ this function.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="zmq.core.poll.Poller.register">
-<tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.register" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.Poller.register">
+<tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.sugar.poll.Poller.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register a 0MQ socket or native fd for I/O monitoring.</p>
 <p>register(s,0) is equivalent to unregister(s).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -168,8 +166,8 @@ If <cite>flags=0</cite>, socket will be unregistered.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="zmq.core.poll.Poller.unregister">
-<tt class="descname">unregister</tt><big>(</big><em>socket</em><big>)</big><a class="headerlink" href="#zmq.core.poll.Poller.unregister" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.Poller.unregister">
+<tt class="descname">unregister</tt><big>(</big><em>socket</em><big>)</big><a class="headerlink" href="#zmq.sugar.poll.Poller.unregister" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a 0MQ socket or native fd for I/O monitoring.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -188,8 +186,8 @@ If <cite>flags=0</cite>, socket will be unregistered.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="zmq.core.poll.select">
-<tt class="descclassname">zmq.core.poll.</tt><tt class="descname">select</tt><big>(</big><em>rlist</em>, <em>wlist</em>, <em>xlist</em>, <em>timeout=None) -&gt; (rlist</em>, <em>wlist</em>, <em>xlist</em><big>)</big><a class="headerlink" href="#zmq.core.poll.select" title="Permalink to this definition">¶</a></dt>
+<dt id="zmq.sugar.poll.select">
+<tt class="descclassname">zmq.sugar.poll.</tt><tt class="descname">select</tt><big>(</big><em>rlist</em>, <em>wlist</em>, <em>xlist</em>, <em>timeout=None) -&gt; (rlist</em>, <em>wlist</em>, <em>xlist</em><big>)</big><a class="headerlink" href="#zmq.sugar.poll.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the result of poll as a lists of sockets ready for r/w/exception.</p>
 <p>This has the same interface as Python&#8217;s built-in <tt class="docutils literal"><span class="pre">select.select()</span></tt> function.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -245,10 +243,10 @@ and we convert to that in this function.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="zmq.core.pysocket.html" title="core.pysocket"
+          <a href="zmq.sugar.socket.html" title="sugar.socket"
              >next</a> |</li>
         <li class="right" >
-          <a href="zmq.core.message.html" title="core.message"
+          <a href="zmq.sugar.frame.html" title="sugar.frame"
              >previous</a> |</li>
         <li><a href="../../index.html">home</a>|&nbsp;</li>
         <li><a href="../../search.html">search</a>|&nbsp;</li>
@@ -258,10 +256,10 @@ and we convert to that in this function.</p>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010-2011, Brian E. Granger &amp; Min Ragan-Kelley.  
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
     </div>
   </body>
 </html>

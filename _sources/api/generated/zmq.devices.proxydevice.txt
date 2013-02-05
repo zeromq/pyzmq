@@ -1,0 +1,53 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+devices.proxydevice
+===================
+
+Module: :mod:`devices.proxydevice`
+----------------------------------
+.. automodule:: zmq.devices.proxydevice
+
+.. currentmodule:: zmq.devices.proxydevice
+
+Classes
+-------
+
+:class:`ProcessProxy`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ProcessProxy
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`Proxy`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Proxy
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ProxyBase`
+~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ProxyBase
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`ThreadProxy`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ThreadProxy
+  :members:
+  :undoc-members:
+  :inherited-members:
+
