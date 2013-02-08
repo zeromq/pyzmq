@@ -262,7 +262,7 @@ class Configure(build):
 
     def create_tempdir(self):
         self.erase_tempdir()
-        os.mkdir(self.tempdir)
+        os.makedirs(self.tempdir)
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
             local_dll = pjoin(self.tempdir, 'libzmq.dll')
@@ -541,7 +541,7 @@ class Configure(build):
             print ("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
             zmq_prefix = cfg['zmq_prefix'] = '/usr/local'
-            self.settings_from_config()
+            self.init_settings_from_config()
             try:
                 self.check_zmq_version()
             except Exception:
