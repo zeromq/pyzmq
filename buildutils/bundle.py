@@ -17,6 +17,7 @@
 
 import os
 import shutil
+import stat
 import sys
 import tarfile
 from subprocess import Popen, PIPE
@@ -201,6 +202,10 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
             "or copy libzmq into zmq/ manually.")
     
     if sys.platform == 'darwin':
+        # chmod u+w on the lib,
+        # which can be user-read-only for some reason
+        mode = os.stat(local).st_mode
+        os.chmod(local, mode | stat.S_IWUSR)
         # patch install_name on darwin, instead of using rpath
         cmd = ['install_name_tool', '-id', '@loader_path/../%s'%libzmq, local]
         try:

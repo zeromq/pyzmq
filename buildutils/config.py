@@ -28,9 +28,9 @@ from .msg import debug, fatal, warn
 #-----------------------------------------------------------------------------
 
 
-def load_config(name):
+def load_config(name, base='conf'):
     """Load config dict from JSON"""
-    fname = pjoin('conf', name + '.json')
+    fname = pjoin(base, name + '.json')
     if not os.path.exists(fname):
         return {}
     try:
@@ -42,11 +42,11 @@ def load_config(name):
     return cfg
 
 
-def save_config(name, data):
+def save_config(name, data, base='conf'):
     """Save config dict to JSON"""
-    if not os.path.exists('conf'):
-        os.mkdir('conf')
-    fname = pjoin('conf', name+'.json')
+    if not os.path.exists(base):
+        os.mkdir(base)
+    fname = pjoin(base, name+'.json')
     with open(fname, 'w') as f:
         json.dump(data, f, indent=2)
 
@@ -101,26 +101,21 @@ def get_cfg_args():
     cfg.update(cfg.pop('global'))
     return cfg
 
-def get_cargs():
-    """ Look for global options in the command line """
-    settings = load_config('buildconf')
-    for arg in sys.argv[:]:
-        if arg.find('--zmq=') == 0:
-            prefix = arg.split('=', 1)[-1]
-            if prefix.lower() in ('default', 'auto', ''):
-                settings['zmq_prefix'] = ''
-                settings['libzmq_extension'] = False
-                settings['no_libzmq_extension'] = False
-            elif prefix.lower() in ('bundled', 'extension'):
-                settings['zmq_prefix'] = ''
-                settings['libzmq_extension'] = True
-                settings['no_libzmq_extension'] = False
-            else:
-                settings['zmq_prefix'] = prefix
-                settings['libzmq_extension'] = False
-                settings['no_libzmq_extension'] = True
-            sys.argv.remove(arg)
-    save_config('buildconf', settings)
+def config_from_prefix(prefix):
+    """Get config from zmq prefix"""
+    settings = {}
+    if prefix.lower() in ('default', 'auto', ''):
+        settings['zmq_prefix'] = ''
+        settings['libzmq_extension'] = False
+        settings['no_libzmq_extension'] = False
+    elif prefix.lower() in ('bundled', 'extension'):
+        settings['zmq_prefix'] = ''
+        settings['libzmq_extension'] = True
+        settings['no_libzmq_extension'] = False
+    else:
+        settings['zmq_prefix'] = prefix
+        settings['libzmq_extension'] = False
+        settings['no_libzmq_extension'] = True
     return settings
 
 def merge(into, d):
@@ -140,7 +135,7 @@ def merge(into, d):
     else:
         return d
 
-def discover_settings():
+def discover_settings(conf_base=None):
     """ Discover custom settings for ZMQ path"""
     settings = {
         'zmq_prefix': '',
@@ -153,8 +148,10 @@ def discover_settings():
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False
     
-    merge(settings, get_cfg_args())     # lowest priority
+    if conf_base:
+        # lowest priority
+        merge(settings, load_config('config', conf_base))
+    merge(settings, get_cfg_args())
     merge(settings, get_eargs())
-    merge(settings, get_cargs())        # highest priority
     
     return settings
