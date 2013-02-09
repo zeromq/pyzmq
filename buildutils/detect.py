@@ -129,6 +129,5 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
         key, val = line.split(':')
         props[key] = handlers[key](val)
 
-    props['settings'] = compiler_attrs
     return props
 
