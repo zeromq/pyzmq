@@ -864,6 +864,7 @@ for submod, packages in submodules.items():
         ext = Extension(
             'zmq.%s.%s'%(submod, pkg),
             sources = sources,
+            include_dirs=[pjoin('zmq', sub) for sub in ('utils','core','devices')],
         )
         if suffix == '.pyx' and ext.sources[0].endswith('.c'):
             # undo setuptools stupidly clobbering cython sources:
