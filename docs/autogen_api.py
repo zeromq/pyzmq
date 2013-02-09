@@ -24,12 +24,16 @@ if __name__ == '__main__':
         r'\.cffi_core$',
         r'\.eventloop\.platform$',
         r'\.green\.eventloop$',
+        r'\.sugar$',
+        r'\.devices$',
     ]
 
     docwriter.module_skip_patterns += [
         r'\.eventloop\.stack_context$',
-        r'\.sugar\.attrsettr$',
+        r'\.error$',
+        r'\.green\..+$',
         r'\.utils\.initthreads$',
+        r'\.utils\.rebuffer$',
         r'\.utils\.rebuffer$',
         ]
     
