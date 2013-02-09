@@ -1,8 +1,6 @@
 zmq
 ===
 
-:mod:`zmq`
-----------
 .. automodule:: zmq
 
 .. currentmodule:: zmq
