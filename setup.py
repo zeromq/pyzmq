@@ -641,14 +641,14 @@ class TestCommand(Command):
             return self.run_nose()
 
 class GitRevisionCommand(Command):
-    """find the current git revision and add it to zmq.core.verion.__revision__"""
+    """find the current git revision and add it to zmq.sugar.version.__revision__"""
     
     description = "Store current git revision in version.py"
     
     user_options = [ ]
     
     def initialize_options(self):
-        self.version_py = pjoin('zmq','core','version.py')
+        self.version_py = pjoin('zmq','sugar','version.py')
     
     def run(self):
         try:
@@ -882,7 +882,7 @@ package_data = {'zmq':['*.pxd'],
 package_data['zmq'].append('libzmq'+lib_ext)
 
 def extract_version():
-    """extract pyzmq version from core/version.py, so it's not multiply defined"""
+    """extract pyzmq version from sugar/version.py, so it's not multiply defined"""
     with open(pjoin('zmq', 'sugar', 'version.py')) as f:
         line = f.readline()
         while not line.startswith("__version__"):
