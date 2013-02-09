@@ -32,6 +32,7 @@ New Stuff
 
 * Support for PyPy via CFFI backend (requires py, ctypes-configure, and cffi).
 * Add support for new APIs in libzmq-3
+
   - :meth:`socket.disconnect`
   - :meth:`socket.unbind`
   - :meth:`context.set`
@@ -39,6 +40,7 @@ New Stuff
   - :meth:`Frame.set`
   - :meth:`Frame.get`
   - :func:`zmq.proxy`
+
 * Setting and getting :attr:`socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 * Implementation splits core Cython bindings from pure-Python subclasses
   with sugar methods (send/recv_multipart). This should facilitate

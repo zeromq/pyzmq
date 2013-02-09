@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Devices in PyZMQ &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    <title>Devices in PyZMQ &mdash; PyZMQ 13.0.0-rc2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.0.0-rc1',
+        VERSION:     '13.0.0-rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" />
     <link rel="next" title="Eventloops and PyZMQ" href="eventloop.html" />
     <link rel="prev" title="Serializing messages with PyZMQ" href="serialization.html" /> 
   </head>
@@ -113,10 +113,10 @@ well as a custom three-socket <a class="reference internal" href="#monitoredqueu
 <div class="section" id="backgrounddevices">
 <h2>BackgroundDevices<a class="headerlink" href="#backgrounddevices" title="Permalink to this headline">¶</a></h2>
 <p>It seems fairly rare that in a Python program one would actually want to create a zmq
-device via <a class="reference internal" href="api/generated/zmq.green.device.html#zmq.green.device.device" title="zmq.green.device.device"><tt class="xref py py-func docutils literal"><span class="pre">device()</span></tt></a> in the main thread, since such a call would block execution
+device via <tt class="xref py py-func docutils literal"><span class="pre">device()</span></tt> in the main thread, since such a call would block execution
 forever. The most likely model for launching devices is in background threads or
 processes. We have provided classes for launching devices in a background thread with
-<a class="reference internal" href="api/generated/zmq.devices.basedevice.html#zmq.devices.basedevice.ThreadDevice" title="zmq.devices.basedevice.ThreadDevice"><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevice</span></tt></a> and via multiprocessing with <a class="reference internal" href="api/generated/zmq.devices.basedevice.html#zmq.devices.basedevice.ProcessDevice" title="zmq.devices.basedevice.ProcessDevice"><tt class="xref py py-class docutils literal"><span class="pre">ProcessDevice</span></tt></a>. For
+<a class="reference internal" href="api/zmq.devices.html#zmq.devices.ThreadDevice" title="zmq.devices.ThreadDevice"><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevice</span></tt></a> and via multiprocessing with <a class="reference internal" href="api/zmq.devices.html#zmq.devices.ProcessDevice" title="zmq.devices.ProcessDevice"><tt class="xref py py-class docutils literal"><span class="pre">ProcessDevice</span></tt></a>. For
 threadsafety and running across processes, these methods do not take Socket objects as
 arguments, but rather socket types, and then the socket creation and configuration happens
 via the BackgroundDevice&#8217;s <tt class="xref py py-meth docutils literal"><span class="pre">foo_in()</span></tt> proxy methods. For each configuration method
@@ -141,7 +141,7 @@ corresponding to the <cite>in_socket</cite> and <cite>out_socket</cite>:</p>
 fully supports passing messages in either direction via any pattern. We saw a logical
 extension of the <tt class="docutils literal"><span class="pre">QUEUE</span></tt> as one that behaves in the same way with respect to the in/out
 sockets, but also sends every message in either direction <em>also</em> on a third <cite>monitor</cite>
-socket. For performance reasons, this <a class="reference internal" href="api/generated/zmq.devices.monitoredqueue.html#zmq.devices.monitoredqueue.monitored_queue" title="zmq.devices.monitoredqueue.monitored_queue"><tt class="xref py py-func docutils literal"><span class="pre">monitored_queue()</span></tt></a> function is written in
+socket. For performance reasons, this <a class="reference internal" href="api/zmq.devices.html#zmq.devices.monitored_queue" title="zmq.devices.monitored_queue"><tt class="xref py py-func docutils literal"><span class="pre">monitored_queue()</span></tt></a> function is written in
 Cython, so the loop does not involve Python, and should have the same performance as the
 basic <tt class="docutils literal"><span class="pre">QUEUE</span></tt> device.</p>
 <p>One shortcoming of the <tt class="docutils literal"><span class="pre">QUEUE</span></tt> device is that it does not support having <tt class="docutils literal"><span class="pre">ROUTER</span></tt>
@@ -165,8 +165,8 @@ is most logical for the monitor socket, since it will never receive messages, an
 in/out prefix is well suited to the PUB/SUB topic subscription model. All messages sent on
 <cite>mons</cite> will be multipart, the first part being the prefix corresponding to the socket that
 received the message.</p>
-<p>Or for launching an MQ in the background, there are <a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html#zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a> and
-<a class="reference internal" href="api/generated/zmq.devices.monitoredqueuedevice.html#zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue" title="zmq.devices.monitoredqueuedevice.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a>, which function just like the base
+<p>Or for launching an MQ in the background, there are <a class="reference internal" href="api/zmq.devices.html#zmq.devices.ThreadMonitoredQueue" title="zmq.devices.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a> and
+<a class="reference internal" href="api/zmq.devices.html#zmq.devices.ProcessMonitoredQueue" title="zmq.devices.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a>, which function just like the base
 BackgroundDevice objects, but add <tt class="xref py py-meth docutils literal"><span class="pre">foo_mon()</span></tt> methods for configuring the monitor socket.</p>
 </div>
 </div>

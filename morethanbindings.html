@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>More Than Just Bindings &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    <title>More Than Just Bindings &mdash; PyZMQ 13.0.0-rc2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.0.0-rc1',
+        VERSION:     '13.0.0-rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" />
     <link rel="next" title="Serializing messages with PyZMQ" href="serialization.html" />
     <link rel="prev" title="PyZMQ and Unicode" href="unicode.html" /> 
   </head>
@@ -120,8 +120,8 @@ objects for calling into the ØMQ C++ library.</p>
 contains the actual bindings for ZeroMQ, and no extended functionality beyond the very
 basic. The core modules are split, such that each basic ZeroMQ object (or function, if no
 object is associated) is a separate module, e.g. <tt class="xref py py-mod docutils literal"><span class="pre">zmq.core.context</span></tt> contains the
-<a class="reference internal" href="api/generated/zmq.sugar.context.html#zmq.sugar.context.Context" title="zmq.sugar.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> object, <tt class="xref py py-mod docutils literal"><span class="pre">zmq.core.poll</span></tt> contains a <a class="reference internal" href="api/generated/zmq.sugar.poll.html#zmq.sugar.poll.Poller" title="zmq.sugar.poll.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a> object, as well
-as the <a class="reference internal" href="api/generated/zmq.sugar.poll.html#zmq.sugar.poll.select" title="zmq.sugar.poll.select"><tt class="xref py py-func docutils literal"><span class="pre">select()</span></tt></a> function, etc. ZMQ constants are, for convenience, all kept
+<a class="reference internal" href="api/zmq.html#zmq.Context" title="zmq.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> object, <tt class="xref py py-mod docutils literal"><span class="pre">zmq.core.poll</span></tt> contains a <a class="reference internal" href="api/zmq.html#zmq.Poller" title="zmq.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a> object, as well
+as the <tt class="xref py py-func docutils literal"><span class="pre">select()</span></tt> function, etc. ZMQ constants are, for convenience, all kept
 together in <tt class="xref py py-mod docutils literal"><span class="pre">zmq.core.constants</span></tt>.</p>
 <p>There are two reasons for breaking the core into submodules: <em>recompilation</em> and
 <em>derivative projects</em>. The monolithic PyZMQ became quite tedious to have to recompile
@@ -135,7 +135,7 @@ going through our Python objects.</p>
 <div class="section" id="thread-safety">
 <h2>Thread Safety<a class="headerlink" href="#thread-safety" title="Permalink to this headline">¶</a></h2>
 <p>In ØMQ, Contexts are threadsafe objects, but Sockets are <strong>not</strong>. It is safe to use a
-single Context (e.g. via <tt class="xref py py-meth docutils literal"><span class="pre">zmq.Context.instance()</span></tt>) in your entire multithreaded
+single Context (e.g. via <a class="reference internal" href="api/zmq.html#zmq.Context.instance" title="zmq.Context.instance"><tt class="xref py py-meth docutils literal"><span class="pre">zmq.Context.instance()</span></tt></a>) in your entire multithreaded
 application, but you should create sockets on a per-thread basis. If you share sockets
 across threads, you are likely to encounter uncatchable c-level crashes of your
 application unless you use judicious application of <tt class="xref py py-class docutils literal"><span class="pre">threading.Lock</span></tt>, but this
@@ -187,12 +187,12 @@ bindings, and are not general ØMQ features.</p>
 <h3>Builtin Serialization<a class="headerlink" href="#builtin-serialization" title="Permalink to this headline">¶</a></h3>
 <p>First, we added common serialization with the builtin <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>
 as first-class methods to the <tt class="xref py py-class docutils literal"><span class="pre">Socket</span></tt> class. A socket has the methods
-<a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_json" title="zmq.sugar.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_pyobj" title="zmq.sugar.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an
+<a class="reference internal" href="api/zmq.html#zmq.Socket.send_json" title="zmq.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and <a class="reference internal" href="api/zmq.html#zmq.Socket.send_pyobj" title="zmq.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an
 object over the wire after serializing with <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a> respectively,
 and any object sent via those methods can be reconstructed with the
-<a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_json" title="zmq.sugar.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_pyobj" title="zmq.sugar.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods. Unicode strings are
+<a class="reference internal" href="api/zmq.html#zmq.Socket.recv_json" title="zmq.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and <a class="reference internal" href="api/zmq.html#zmq.Socket.recv_pyobj" title="zmq.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
-<a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_string" title="zmq.sugar.socket.Socket.send_string"><tt class="xref py py-meth docutils literal"><span class="pre">send_string()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_string" title="zmq.sugar.socket.Socket.recv_string"><tt class="xref py py-meth docutils literal"><span class="pre">recv_string()</span></tt></a> that simply send bytes
+<a class="reference internal" href="api/zmq.html#zmq.Socket.send_string" title="zmq.Socket.send_string"><tt class="xref py py-meth docutils literal"><span class="pre">send_string()</span></tt></a> and <a class="reference internal" href="api/zmq.html#zmq.Socket.recv_string" title="zmq.Socket.recv_string"><tt class="xref py py-meth docutils literal"><span class="pre">recv_string()</span></tt></a> that simply send bytes
 after encoding the message (&#8216;utf-8&#8217; is the default).</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -220,10 +220,10 @@ amount of time (10s of µs), so in situations instantiating many small messages,
 actually dominate performance. As a result, tracking is optional, via the <tt class="docutils literal"><span class="pre">track</span></tt> flag,
 which is optionally passed, always defaulting to <tt class="docutils literal"><span class="pre">False</span></tt>, in each of the three places
 where a Frame object (the pyzmq object for wrapping a segment of a message) is
-instantiated: The <a class="reference internal" href="api/generated/zmq.sugar.frame.html#zmq.sugar.frame.Frame" title="zmq.sugar.frame.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> constructor, and non-copying sends and receives.</p>
+instantiated: The <a class="reference internal" href="api/zmq.html#zmq.Frame" title="zmq.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> constructor, and non-copying sends and receives.</p>
 <p>A MessageTracker is very simple, and has just one method and one attribute. The property
 <tt class="xref py py-attr docutils literal"><span class="pre">MessageTracker.done</span></tt> will be <tt class="docutils literal"><span class="pre">True</span></tt> when the Frame(s) being tracked are no
-longer in use by ØMQ, and <a class="reference internal" href="api/generated/zmq.sugar.tracker.html#zmq.sugar.tracker.MessageTracker.wait" title="zmq.sugar.tracker.MessageTracker.wait"><tt class="xref py py-meth docutils literal"><span class="pre">MessageTracker.wait()</span></tt></a> will block, waiting for the
+longer in use by ØMQ, and <a class="reference internal" href="api/zmq.html#zmq.MessageTracker.wait" title="zmq.MessageTracker.wait"><tt class="xref py py-meth docutils literal"><span class="pre">MessageTracker.wait()</span></tt></a> will block, waiting for the
 Frame(s) to be released.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Serializing messages with PyZMQ &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    <title>Serializing messages with PyZMQ &mdash; PyZMQ 13.0.0-rc2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.0.0-rc1',
+        VERSION:     '13.0.0-rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" />
     <link rel="next" title="Devices in PyZMQ" href="devices.html" />
     <link rel="prev" title="More Than Just Bindings" href="morethanbindings.html" /> 
   </head>
@@ -108,11 +108,11 @@
 methods for convenience, to help Python developers learn libzmq. Python has two primary
 packages for serializing objects: <a class="reference external" href="http://docs.python.org/library/json.html#json" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">json</span></tt></a> and <a class="reference external" href="http://docs.python.org/library/pickle.html#pickle" title="(in Python v2.7)"><tt class="xref py py-mod docutils literal"><span class="pre">pickle</span></tt></a>, so we provide
 simple convenience methods for sending and receiving objects serialized with these
-modules. A socket has the methods <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_json" title="zmq.sugar.socket.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and
-<a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_pyobj" title="zmq.sugar.socket.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an object over the wire after
+modules. A socket has the methods <a class="reference internal" href="api/zmq.html#zmq.Socket.send_json" title="zmq.Socket.send_json"><tt class="xref py py-meth docutils literal"><span class="pre">send_json()</span></tt></a> and
+<a class="reference internal" href="api/zmq.html#zmq.Socket.send_pyobj" title="zmq.Socket.send_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">send_pyobj()</span></tt></a>, which correspond to sending an object over the wire after
 serializing with json and pickle respectively, and any object sent via those
-methods can be reconstructed with the <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_json" title="zmq.sugar.socket.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and
-<a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_pyobj" title="zmq.sugar.socket.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods.</p>
+methods can be reconstructed with the <a class="reference internal" href="api/zmq.html#zmq.Socket.recv_json" title="zmq.Socket.recv_json"><tt class="xref py py-meth docutils literal"><span class="pre">recv_json()</span></tt></a> and
+<a class="reference internal" href="api/zmq.html#zmq.Socket.recv_pyobj" title="zmq.Socket.recv_pyobj"><tt class="xref py py-meth docutils literal"><span class="pre">recv_pyobj()</span></tt></a> methods.</p>
 <p>These methods designed for convenience, not for performance, so developers who do want
 to emphasize performance should use their own serialized send/recv methods.</p>
 </div>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.0-rc1 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.0-rc2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '13.0.0-rc1',
+        VERSION:     '13.0.0-rc2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc1 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -157,7 +157,7 @@ non-Cython backends and PyPy support [spoiler: it did!].</li>
 <ul class="simple">
 <li>Unicode fixes in log and monitored queue</li>
 <li>MinGW, ppc, cross-compilation, and HP-UX build fixes</li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt> should be complete - devices and tornado eventloop both work
+<li><a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a> should be complete - devices and tornado eventloop both work
 in gevent contexts.</li>
 </ul>
 </div>
@@ -194,7 +194,7 @@ both used under the LGPL.</p>
 <h4>zmq.green<a class="headerlink" href="#zmq-green" title="Permalink to this headline">¶</a></h4>
 <p>The excellent <a class="reference external" href="https://github.com/traviscline/gevent_zeromq">gevent_zeromq</a> socket
 subclass which provides <a class="reference external" href="http://www.gevent.org/">gevent</a> compatibility has been merged as
-<tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt>.</p>
+<a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a>.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="eventloop.html#zmq-green"><em>PyZMQ and gevent</em></a></p>
@@ -222,7 +222,7 @@ possible), to allow more permissive use of less-critical code and utilities.</p>
 <div class="section" id="name-changes">
 <h3>Name Changes<a class="headerlink" href="#name-changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>The <tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt> class has been renamed to <a class="reference internal" href="api/generated/zmq.sugar.frame.html#zmq.sugar.frame.Frame" title="zmq.sugar.frame.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a>, to better match other
+<li>The <tt class="xref py py-class docutils literal"><span class="pre">Message</span></tt> class has been renamed to <a class="reference internal" href="api/zmq.html#zmq.Frame" title="zmq.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a>, to better match other
 zmq bindings. The old Message name remains for backwards-compatibility.  Wherever pyzmq
 docs say &#8220;Message&#8221;, they should refer to a complete zmq atom of communication (one or
 more Frames, connected by ZMQ_SNDMORE). Please report any remaining instances of
@@ -236,9 +236,9 @@ was wedded too much to Python 2.</li>
 <div class="section" id="other-changes-and-removals">
 <h3>Other Changes and Removals<a class="headerlink" href="#other-changes-and-removals" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">prefix</span></tt> removed as an unused keyword argument from <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_multipart" title="zmq.sugar.socket.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>.</li>
+<li><tt class="docutils literal"><span class="pre">prefix</span></tt> removed as an unused keyword argument from <a class="reference internal" href="api/zmq.html#zmq.Socket.send_multipart" title="zmq.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>.</li>
 <li>ZMQStream <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a> default has been changed to <cite>copy=True</cite>, so it matches
-Socket <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send" title="zmq.sugar.socket.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a>.</li>
+Socket <a class="reference internal" href="api/zmq.html#zmq.Socket.send" title="zmq.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a>.</li>
 <li>ZMQStream <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_err" title="zmq.eventloop.zmqstream.ZMQStream.on_err"><tt class="xref py py-meth docutils literal"><span class="pre">on_err()</span></tt></a> is deprecated, because it never did anything.</li>
 <li>Python 2.5 compatibility has been dropped, and some code has been cleaned up to reflect
 no-longer-needed hacks.</li>
@@ -252,13 +252,13 @@ feature parity in other projects, such as
 <div class="section" id="id5">
 <h3>New Stuff<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><a class="reference internal" href="api/generated/zmq.sugar.context.html#zmq.sugar.context.Context" title="zmq.sugar.context.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> objects can now set default options when they create a socket. These
+<li><a class="reference internal" href="api/zmq.html#zmq.Context" title="zmq.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> objects can now set default options when they create a socket. These
 are set and accessed as attributes to the context.  Socket options that do not apply to a
 socket (e.g. SUBSCRIBE on non-SUB sockets) will simply be ignored.</li>
 <li><a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv_stream" title="zmq.eventloop.zmqstream.ZMQStream.on_recv_stream"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv_stream()</span></tt></a> has been added, which adds the stream itself as a
 second argument to the callback, making it easier to use a single callback on multiple
 streams.</li>
-<li>A <tt class="xref py py-attr docutils literal"><span class="pre">more</span></tt> boolean attribute has been added to the <a class="reference internal" href="api/generated/zmq.sugar.frame.html#zmq.sugar.frame.Frame" title="zmq.sugar.frame.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> (née
+<li>A <tt class="xref py py-attr docutils literal"><span class="pre">more</span></tt> boolean attribute has been added to the <a class="reference internal" href="api/zmq.html#zmq.Frame" title="zmq.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a> (née
 Message) class, so that frames can be identified as terminal without extra queires of
 <tt class="xref py py-attr docutils literal"><span class="pre">rcvmore</span></tt>.</li>
 </ul>
@@ -278,13 +278,13 @@ set in stone, and may be removed or changed in incompatible ways in later releas
 <li><p class="first">remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
 prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.</p>
 <ul class="simple">
-<li>The prefix argument to <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.send_multipart" title="zmq.sugar.socket.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a> remains, but it continue to behave in
+<li>The prefix argument to <a class="reference internal" href="api/zmq.html#zmq.Socket.send_multipart" title="zmq.Socket.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a> remains, but it continue to behave in
 exactly the same way as it always has on 2.1.x, simply prepending message parts.</li>
-<li><a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.recv_multipart" title="zmq.sugar.socket.Socket.recv_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">recv_multipart()</span></tt></a> will always return a list, because prefixes are once
+<li><a class="reference internal" href="api/zmq.html#zmq.Socket.recv_multipart" title="zmq.Socket.recv_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">recv_multipart()</span></tt></a> will always return a list, because prefixes are once
 again indistinguishable from regular message parts.</li>
 </ul>
 </li>
-<li><p class="first">add <a class="reference internal" href="api/generated/zmq.sugar.socket.html#zmq.sugar.socket.Socket.poll" title="zmq.sugar.socket.Socket.poll"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.poll()</span></tt></a> method, for simple polling of events on a single socket.</p>
+<li><p class="first">add <a class="reference internal" href="api/zmq.html#zmq.Socket.poll" title="zmq.Socket.poll"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.poll()</span></tt></a> method, for simple polling of events on a single socket.</p>
 </li>
 <li><p class="first">no longer require monkeypatching tornado IOLoop.  The <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.ZMQPoller" title="zmq.eventloop.ioloop.ZMQPoller"><tt class="xref py py-class docutils literal"><span class="pre">ioloop.ZMQPoller</span></tt></a> class
 is a poller implementation that matches tornado&#8217;s expectations, and pyzmq sockets can
