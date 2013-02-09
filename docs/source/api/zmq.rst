@@ -11,7 +11,7 @@ Classes
 -------
 
 :class:`Context`
-----------------
+~~~~~~~~~~~~~~~~
 
 
 .. autoclass:: Context
@@ -19,8 +19,9 @@ Classes
   :undoc-members:
   :inherited-members:
 
+
 :class:`Socket`
----------------
+~~~~~~~~~~~~~~~
 
 
 .. autoclass:: Socket
@@ -30,7 +31,7 @@ Classes
 
 
 :class:`Poller`
----------------
+~~~~~~~~~~~~~~~
 
 
 .. autoclass:: Poller
@@ -40,7 +41,7 @@ Classes
 
 
 :class:`Frame`
---------------
+~~~~~~~~~~~~~~
 
 
 .. autoclass:: Frame
@@ -50,7 +51,7 @@ Classes
 
 
 :class:`MessageTracker`
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. autoclass:: MessageTracker
