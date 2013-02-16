@@ -27,8 +27,6 @@
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
-from cpython cimport PyErr_CheckSignals
-
 from libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
 
 from zmq.utils.strtypes import bytes
@@ -54,12 +52,5 @@ def zmq_errno():
     Return the integer errno of the most recent zmq error.
     """
     return zmq_errno_c()
-
-def _check_rc(rc):
-    # need to check signals deep in Python
-    cdef int errnum = zmq_errno()
-    from zmq.error import _check_rc
-    PyErr_CheckSignals()
-    _check_rc(rc, errnum)
 
 __all__ = ['strerror', 'zmq_errno']

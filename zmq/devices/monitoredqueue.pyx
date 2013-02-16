@@ -22,6 +22,8 @@ Authors
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
+from libc.string cimport memcpy
+
 from buffers cimport asbuffer_r
 from libzmq cimport *
 

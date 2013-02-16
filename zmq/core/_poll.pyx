@@ -31,7 +31,7 @@ from socket cimport Socket
 
 import sys
 
-from zmq.core.error import _check_rc
+from zmq.core.checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------
 # Polling related methods

@@ -25,7 +25,7 @@
 
 from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
 from zmq.core.socket cimport Socket as cSocket
-from zmq.core.error import _check_rc
+from zmq.core.checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------
 # Basic device API

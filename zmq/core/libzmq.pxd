@@ -30,17 +30,6 @@
 cdef extern from *:
     ctypedef void* const_void_ptr "const void *"
 
-cdef extern from "errno.h" nogil:
-    enum: ZMQ_EINVAL "EINVAL"
-    enum: ZMQ_EAGAIN "EAGAIN"
-    enum: ZMQ_EFAULT "EFAULT"
-    enum: ZMQ_ENOMEM "ENOMEM"
-    enum: ZMQ_ENODEV "ENODEV"
-
-cdef extern from "string.h" nogil:
-    void *memcpy(void *dest, void *src, size_t n)
-    size_t strlen(char *s)
-
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
 
