@@ -27,6 +27,9 @@
 cdef extern from "pyversion_compat.h":
     pass
 
+from libc.errno cimport ENAMETOOLONG
+from libc.string cimport memcpy
+
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
@@ -53,7 +56,6 @@ cdef extern from "getpid_compat.h":
 #-----------------------------------------------------------------------------
 
 import copy as copy_mod
-import errno as errno_mod
 import time
 import sys
 import random
@@ -72,7 +74,7 @@ except:
 import zmq
 from zmq.core import constants
 from zmq.core.constants import *
-from zmq.core.error import _check_rc
+from zmq.core.checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
 
@@ -416,7 +418,7 @@ cdef class Socket:
         c_addr = addr
         rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
-            if IPC_PATH_MAX_LEN and zmq_errno() == errno_mod.ENAMETOOLONG:
+            if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
                 # py3compat: addr is bytes, but msg wants str
                 if str is unicode:
                     addr = addr.decode('utf-8', 'replace')

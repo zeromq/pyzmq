@@ -146,12 +146,14 @@ BACKLOG = ZMQ_BACKLOG
 # Error handling
 #-----------------------------------------------------------------------------
 
-# Often used (these are alse in errno.)
-EAGAIN = ZMQ_EAGAIN
-EINVAL = ZMQ_EINVAL
-EFAULT = ZMQ_EFAULT
-ENOMEM = ZMQ_ENOMEM
-ENODEV = ZMQ_ENODEV
+# Often used standard errnos
+from errno import (
+    EAGAIN,
+    EINVAL,
+    EFAULT,
+    ENOMEM,
+    ENODEV
+)
 
 # For Windows compatability
 ENOTSUP = ZMQ_ENOTSUP

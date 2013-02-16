@@ -46,7 +46,7 @@ except (ImportError, AttributeError):
     from threading import Event
 
 import zmq
-from zmq.core.error import _check_rc
+from zmq.core.checkrc cimport _check_rc
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
