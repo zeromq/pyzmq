@@ -27,7 +27,10 @@ from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 from .constants import (
-    SNDMORE, ENOTSUP, POLLIN
+    SNDMORE, ENOTSUP, POLLIN,
+    int64_sockopt_names,
+    int_sockopt_names,
+    bytes_sockopt_names,
 )
 try:
     import cPickle
@@ -41,6 +44,20 @@ except:
 #-----------------------------------------------------------------------------
 
 class Socket(SocketBase, AttributeSetter):
+
+    #-------------------------------------------------------------------------
+    # Hooks for sockopt completion
+    #-------------------------------------------------------------------------
+    
+    def __dir__(self):
+        keys = dir(self.__class__)
+        for collection in (
+            bytes_sockopt_names,
+            int_sockopt_names,
+            int64_sockopt_names,
+        ):
+            keys.extend(collection)
+        return keys
 
     #-------------------------------------------------------------------------
     # Getting/Setting options
