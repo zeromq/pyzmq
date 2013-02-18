@@ -52,7 +52,7 @@ Polling
 -------
 
 :class:`Poller`
-~~~~~~~~~~~~~~~
+***************
 
 .. autoclass:: Poller
   :members:
