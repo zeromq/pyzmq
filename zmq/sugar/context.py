@@ -12,7 +12,7 @@
 from .backend import Context as ContextBase
 from . import constants
 from .attrsettr import AttributeSetter
-from .constants import ENOTSUP
+from .constants import ENOTSUP, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
@@ -44,6 +44,23 @@ class Context(ContextBase, AttributeSetter):
         if cls._instance is None or cls._instance.closed:
             cls._instance = cls(io_threads=io_threads)
         return cls._instance
+
+    #-------------------------------------------------------------------------
+    # Hooks for ctxopt completion
+    #-------------------------------------------------------------------------
+    
+    def __dir__(self):
+        keys = dir(self.__class__)
+
+        for collection in (
+            ctx_opt_names,
+        ):
+            keys.extend(collection)
+        return keys
+
+    #-------------------------------------------------------------------------
+    # Creating Sockets
+    #-------------------------------------------------------------------------
 
     @property
     def _socket_class(self):
