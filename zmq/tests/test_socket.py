@@ -42,6 +42,16 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
         s.close()
         del ctx
+    
+    def test_dir(self):
+        ctx = self.Context()
+        s = ctx.socket(zmq.PUB)
+        self.assertTrue('send' in dir(s))
+        self.assertTrue('IDENTITY' in dir(s))
+        self.assertTrue('AFFINITY' in dir(s))
+        self.assertTrue('FD' in dir(s))
+        s.close()
+        ctx.term()
 
     def test_bind_to_random_port(self):
         # Check that bind_to_random_port do not hide usefull exception
