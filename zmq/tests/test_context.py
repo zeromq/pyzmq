@@ -43,7 +43,7 @@ class TestContext(BaseZMQTestCase):
     def test_dir(self):
         ctx = self.Context()
         self.assertTrue('socket' in dir(ctx))
-        if zmq.zmq_version() > (3,):
+        if zmq.zmq_version_info() > (3,):
             self.assertTrue('IO_THREADS' in dir(ctx))
         ctx.term()
 
