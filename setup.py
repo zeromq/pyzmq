@@ -191,21 +191,24 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
 # Extra commands
 #-----------------------------------------------------------------------------
 
-class Configure(build):
+class Configure(build_ext):
     """Configure command adapted from h5py"""
 
     description = "Discover ZMQ version and features"
     
-    user_options = build.user_options + [
-        ('zmq=', None, "libzmq install prefix")
+    user_options = build_ext.user_options + [
+        ('zmq=', None, "libzmq install prefix"),
+        ('build-base=', 'b', "base directory for build library"), # build_base from build
+        
     ]
     def initialize_options(self):
-        build.initialize_options(self)
+        build_ext.initialize_options(self)
         self.zmq = None
+        self.build_base = 'build'
 
     # DON'T REMOVE: distutils demands these be here even if they do nothing.
     def finalize_options(self):
-        build.finalize_options(self)
+        build_ext.finalize_options(self)
         self.tempdir = pjoin(self.build_temp, 'scratch')
         self.has_run = False
         self.config = discover_settings(self.build_base)
@@ -390,6 +393,7 @@ class Configure(build):
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:
             ext.define_macros.append(('FD_SETSIZE', 1024))
+            ext.define_macros.append(('DLL_EXPORT', 1))
             
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
