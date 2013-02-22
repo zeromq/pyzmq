@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,15 +8,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Eventloops and PyZMQ &mdash; PyZMQ 13.0.0-rc2 documentation</title>
+    <title>Eventloops and PyZMQ &mdash; PyZMQ 13.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '13.0.0-rc2',
+        URL_ROOT:    '',
+        VERSION:     '13.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 13.0.0 documentation" href="index.html" />
     <link rel="next" title="Asynchronous Logging via PyZMQ" href="logging.html" />
     <link rel="prev" title="Devices in PyZMQ" href="devices.html" /> 
   </head>
@@ -212,7 +214,7 @@ starvation.</p>
 </div>
 <div class="section" id="pyzmq-and-gevent">
 <span id="zmq-green"></span><h2>PyZMQ and gevent<a class="headerlink" href="#pyzmq-and-gevent" title="Permalink to this headline">¶</a></h2>
-<p>PyZMQ ≥ 2.2.0.1 ships with a <a class="reference external" href="http://www.gevent.org/">gevent</a> compatible API as <a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a>.
+<p>PyZMQ ≥ 2.2.0.1 ships with a <a class="reference external" href="http://www.gevent.org/">gevent</a> compatible API as <tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt>.
 To use it, simply:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">zmq.green</span> <span class="kn">as</span> <span class="nn">zmq</span>
 </pre></div>
@@ -235,11 +237,11 @@ PyZMQ works around this by adding a timeout so it will not wait forever for geve
 The only known solution for this is to use gevent ≥ 1.0, which is currently at 1.0b3,
 and does not exhibit this behavior.</p>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last">zmq.green examples <a class="reference external" href="https://github.com/zeromq/pyzmq/tree/master/examples/gevent">on GitHub</a>.</p>
 </div>
-<p><a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a> is simply <a class="reference external" href="https://github.com/traviscline/gevent_zeromq">gevent_zeromq</a>,
+<p><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt> is simply <a class="reference external" href="https://github.com/traviscline/gevent_zeromq">gevent_zeromq</a>,
 merged into the pyzmq project.</p>
 </div>
 </div>
@@ -275,7 +277,7 @@ merged into the pyzmq project.</p>
         &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

@@ -5,11 +5,11 @@ zmq
 
 .. currentmodule:: zmq
 
-Classes
--------
+Basic Classes
+-------------
 
 :class:`Context`
-~~~~~~~~~~~~~~~~
+****************
 
 
 .. autoclass:: Context
@@ -19,7 +19,7 @@ Classes
 
 
 :class:`Socket`
-~~~~~~~~~~~~~~~
+***************
 
 
 .. autoclass:: Socket
@@ -28,18 +28,8 @@ Classes
   :inherited-members:
 
 
-:class:`Poller`
-~~~~~~~~~~~~~~~
-
-
-.. autoclass:: Poller
-  :members:
-  :undoc-members:
-  :inherited-members:
-
-
 :class:`Frame`
-~~~~~~~~~~~~~~
+**************
 
 
 .. autoclass:: Frame
@@ -49,7 +39,7 @@ Classes
 
 
 :class:`MessageTracker`
-~~~~~~~~~~~~~~~~~~~~~~~
+***********************
 
 
 .. autoclass:: MessageTracker
@@ -58,11 +48,26 @@ Classes
   :inherited-members:
 
 
+Polling
+-------
+
+:class:`Poller`
+***************
+
+.. autoclass:: Poller
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+.. autofunction:: zmq.select
+
+
 Exceptions
 ----------
 
 :class:`ZMQError`
-~~~~~~~~~~~~~~~~~
+*****************
 
 .. autoclass:: ZMQError
   :members:
@@ -71,28 +76,28 @@ Exceptions
 
 
 :class:`Again`
-~~~~~~~~~~~~~~
+**************
 
 
 .. autoclass:: Again
 
 
 :class:`ContextTerminated`
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+**************************
 
 
 .. autoclass:: ContextTerminated
 
 
 :class:`NotDone`
-~~~~~~~~~~~~~~~~
+****************
 
 
 .. autoclass:: NotDone
 
 
 :class:`ZMQBindError`
-~~~~~~~~~~~~~~~~~~~~~
+*********************
 
 
 .. autoclass:: ZMQBindError

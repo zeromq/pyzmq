@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,15 +8,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.0-rc2 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '13.0.0-rc2',
+        URL_ROOT:    '',
+        VERSION:     '13.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 13.0.0 documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -157,7 +159,7 @@ non-Cython backends and PyPy support [spoiler: it did!].</li>
 <ul class="simple">
 <li>Unicode fixes in log and monitored queue</li>
 <li>MinGW, ppc, cross-compilation, and HP-UX build fixes</li>
-<li><a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a> should be complete - devices and tornado eventloop both work
+<li><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt> should be complete - devices and tornado eventloop both work
 in gevent contexts.</li>
 </ul>
 </div>
@@ -194,8 +196,8 @@ both used under the LGPL.</p>
 <h4>zmq.green<a class="headerlink" href="#zmq-green" title="Permalink to this headline">¶</a></h4>
 <p>The excellent <a class="reference external" href="https://github.com/traviscline/gevent_zeromq">gevent_zeromq</a> socket
 subclass which provides <a class="reference external" href="http://www.gevent.org/">gevent</a> compatibility has been merged as
-<a class="reference internal" href="api/zmq.green.html#module-zmq.green" title="zmq.green"><tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt></a>.</p>
-<div class="admonition seealso">
+<tt class="xref py py-mod docutils literal"><span class="pre">zmq.green</span></tt>.</p>
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="eventloop.html#zmq-green"><em>PyZMQ and gevent</em></a></p>
 </div>
@@ -360,7 +362,7 @@ with the names of socket options is mapped to calls of set/getsockopt.</li>
 <a class="reference external" href="http://czmq.zeromq.org/">czmq</a>.</li>
 <li><tt class="xref py py-class docutils literal"><span class="pre">ThreadDevices</span></tt> use <tt class="xref py py-meth docutils literal"><span class="pre">Context.instance()</span></tt> to create sockets, so they can use
 inproc connections to sockets in other threads.</li>
-<li>fixed units error on <tt class="xref py py-func docutils literal"><span class="pre">zmq.select()</span></tt>, where the poll timeout was 1000 times longer
+<li>fixed units error on <a class="reference internal" href="api/zmq.html#zmq.select" title="zmq.select"><tt class="xref py py-func docutils literal"><span class="pre">zmq.select()</span></tt></a>, where the poll timeout was 1000 times longer
 than expected.</li>
 <li>Add missing <tt class="docutils literal"><span class="pre">DEALER/ROUTER</span></tt> socket type names (currently aliases, to be replacements for <tt class="docutils literal"><span class="pre">XREP/XREQ</span></tt>).</li>
 <li>base libzmq dependency raised to 2.1.4 (first stable release) from 2.1.0.</li>
@@ -416,7 +418,7 @@ without passing references around.</li>
         &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>zmq &mdash; PyZMQ 13.0.0-rc2 documentation</title>
+    <title>zmq &mdash; PyZMQ 13.0.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '13.0.0-rc2',
+        VERSION:     '13.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.0-rc2 documentation" href="../index.html" />
+    <link rel="top" title="PyZMQ 13.0.0 documentation" href="../index.html" />
     <link rel="up" title="The PyZMQ API" href="index.html" />
     <link rel="next" title="devices" href="zmq.devices.html" />
     <link rel="prev" title="The PyZMQ API" href="index.html" /> 
@@ -63,12 +65,15 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">zmq</a><ul>
-<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#basic-classes">Basic Classes</a><ul>
 <li><a class="reference internal" href="#context"><tt class="docutils literal"><span class="pre">Context</span></tt></a></li>
 <li><a class="reference internal" href="#socket"><tt class="docutils literal"><span class="pre">Socket</span></tt></a></li>
-<li><a class="reference internal" href="#poller"><tt class="docutils literal"><span class="pre">Poller</span></tt></a></li>
 <li><a class="reference internal" href="#frame"><tt class="docutils literal"><span class="pre">Frame</span></tt></a></li>
 <li><a class="reference internal" href="#messagetracker"><tt class="docutils literal"><span class="pre">MessageTracker</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#polling">Polling</a><ul>
+<li><a class="reference internal" href="#poller"><tt class="docutils literal"><span class="pre">Poller</span></tt></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#exceptions">Exceptions</a><ul>
@@ -119,8 +124,8 @@
   <div class="section" id="module-zmq">
 <span id="zmq"></span><h1>zmq<a class="headerlink" href="#module-zmq" title="Permalink to this headline">¶</a></h1>
 <p>Python bindings for 0MQ.</p>
-<div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-classes">
+<h2>Basic Classes<a class="headerlink" href="#basic-classes" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="context">
 <h3><a class="reference internal" href="#zmq.Context" title="zmq.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a><a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -1157,85 +1162,6 @@ encoded to utf-8 first.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="poller">
-<h3><a class="reference internal" href="#zmq.Poller" title="zmq.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a><a class="headerlink" href="#poller" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="zmq.Poller">
-<em class="property">class </em><tt class="descclassname">zmq.</tt><tt class="descname">Poller</tt><a class="headerlink" href="#zmq.Poller" title="Permalink to this definition">¶</a></dt>
-<dd><p>A stateful poll interface that mirrors Python&#8217;s built-in poll.</p>
-<dl class="method">
-<dt id="zmq.Poller.modify">
-<tt class="descname">modify</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.Poller.modify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modify the flags for an already registered 0MQ socket or native fd.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.Poller.poll">
-<tt class="descname">poll</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.Poller.poll" title="Permalink to this definition">¶</a></dt>
-<dd><p>Poll the registered 0MQ or native fds for I/O.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int</p>
-<blockquote class="last">
-<div><p>The timeout in milliseconds. If None, no <cite>timeout</cite> (infinite). This
-is in milliseconds to be compatible with <tt class="docutils literal"><span class="pre">select.poll()</span></tt>. The
-underlying zmq_poll uses microseconds and we convert to that in
-this function.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.Poller.register">
-<tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.Poller.register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register a 0MQ socket or native fd for I/O monitoring.</p>
-<p>register(s,0) is equivalent to unregister(s).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : zmq.Socket or native socket</p>
-<blockquote>
-<div><p>A zmq.Socket or any Python object having a <tt class="docutils literal"><span class="pre">fileno()</span></tt> 
-method that returns a valid file descriptor.</p>
-</div></blockquote>
-<p><strong>flags</strong> : int</p>
-<blockquote class="last">
-<div><p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
-If <cite>flags=0</cite>, socket will be unregistered.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="zmq.Poller.unregister">
-<tt class="descname">unregister</tt><big>(</big><em>socket</em><big>)</big><a class="headerlink" href="#zmq.Poller.unregister" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove a 0MQ socket or native fd for I/O monitoring.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : Socket</p>
-<blockquote class="last">
-<div><p>The socket instance to stop polling.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="frame">
 <h3><a class="reference internal" href="#zmq.Frame" title="zmq.Frame"><tt class="xref py py-class docutils literal"><span class="pre">Frame</span></tt></a><a class="headerlink" href="#frame" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
@@ -1361,6 +1287,127 @@ actual Messages.</p>
 
 </div>
 </div>
+<div class="section" id="polling">
+<h2>Polling<a class="headerlink" href="#polling" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="poller">
+<h3><a class="reference internal" href="#zmq.Poller" title="zmq.Poller"><tt class="xref py py-class docutils literal"><span class="pre">Poller</span></tt></a><a class="headerlink" href="#poller" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.Poller">
+<em class="property">class </em><tt class="descclassname">zmq.</tt><tt class="descname">Poller</tt><a class="headerlink" href="#zmq.Poller" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stateful poll interface that mirrors Python&#8217;s built-in poll.</p>
+<dl class="method">
+<dt id="zmq.Poller.modify">
+<tt class="descname">modify</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.Poller.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify the flags for an already registered 0MQ socket or native fd.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.Poller.poll">
+<tt class="descname">poll</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.Poller.poll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poll the registered 0MQ or native fds for I/O.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int</p>
+<blockquote class="last">
+<div><p>The timeout in milliseconds. If None, no <cite>timeout</cite> (infinite). This
+is in milliseconds to be compatible with <tt class="docutils literal"><span class="pre">select.poll()</span></tt>. The
+underlying zmq_poll uses microseconds and we convert to that in
+this function.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.Poller.register">
+<tt class="descname">register</tt><big>(</big><em>socket</em>, <em>flags=POLLIN|POLLOUT</em><big>)</big><a class="headerlink" href="#zmq.Poller.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a 0MQ socket or native fd for I/O monitoring.</p>
+<p>register(s,0) is equivalent to unregister(s).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : zmq.Socket or native socket</p>
+<blockquote>
+<div><p>A zmq.Socket or any Python object having a <tt class="docutils literal"><span class="pre">fileno()</span></tt> 
+method that returns a valid file descriptor.</p>
+</div></blockquote>
+<p><strong>flags</strong> : int</p>
+<blockquote class="last">
+<div><p>The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
+If <cite>flags=0</cite>, socket will be unregistered.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.Poller.unregister">
+<tt class="descname">unregister</tt><big>(</big><em>socket</em><big>)</big><a class="headerlink" href="#zmq.Poller.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a 0MQ socket or native fd for I/O monitoring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>socket</strong> : Socket</p>
+<blockquote class="last">
+<div><p>The socket instance to stop polling.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.select">
+<tt class="descclassname">zmq.</tt><tt class="descname">select</tt><big>(</big><em>rlist</em>, <em>wlist</em>, <em>xlist</em>, <em>timeout=None) -&gt; (rlist</em>, <em>wlist</em>, <em>xlist</em><big>)</big><a class="headerlink" href="#zmq.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of poll as a lists of sockets ready for r/w/exception.</p>
+<p>This has the same interface as Python&#8217;s built-in <tt class="docutils literal"><span class="pre">select.select()</span></tt> function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>timeout</strong> : float, int, optional</p>
+<blockquote>
+<div><p>The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
+compatible with <tt class="docutils literal"><span class="pre">select.select()</span></tt>. The underlying zmq_poll uses microseconds
+and we convert to that in this function.</p>
+</div></blockquote>
+<p><strong>rlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<div><p>sockets/FDs to be polled for read events</p>
+</div></blockquote>
+<p><strong>wlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<div><p>sockets/FDs to be polled for write events</p>
+</div></blockquote>
+<p><strong>xlist</strong> : list of sockets/FDs</p>
+<blockquote>
+<div><p>sockets/FDs to be polled for error events</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>(rlist, wlist, xlist)</strong> : tuple of lists of sockets (length 3)</p>
+<blockquote class="last">
+<div><p>Lists correspond to sockets available for read/write/error events respectively.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="exceptions">
 <h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="zmqerror">
@@ -1428,7 +1475,7 @@ used.</p>
 <dt id="zmq.NotDone">
 <em class="property">class </em><tt class="descclassname">zmq.</tt><tt class="descname">NotDone</tt><a class="headerlink" href="#zmq.NotDone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raised when timeout is reached while waiting for 0MQ to finish with a Message</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <dl class="last docutils">
 <dt><a class="reference internal" href="#zmq.MessageTracker.wait" title="zmq.MessageTracker.wait"><tt class="xref py py-obj docutils literal"><span class="pre">MessageTracker.wait</span></tt></a></dt>
@@ -1444,7 +1491,7 @@ used.</p>
 <dt id="zmq.ZMQBindError">
 <em class="property">class </em><tt class="descclassname">zmq.</tt><tt class="descname">ZMQBindError</tt><a class="headerlink" href="#zmq.ZMQBindError" title="Permalink to this definition">¶</a></dt>
 <dd><p>An error for <tt class="docutils literal"><span class="pre">Socket.bind_to_random_port()</span></tt>.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="#zmq.Socket.bind_to_random_port" title="zmq.Socket.bind_to_random_port"><tt class="xref py py-obj docutils literal"><span class="pre">Socket.bind_to_random_port</span></tt></a></p>
 </div>
@@ -1522,7 +1569,7 @@ comparison is no longer legal for some reason.</p>
         &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre/71444a5b6286+.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
