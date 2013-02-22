@@ -5,10 +5,9 @@
 
 PyZMQ Documentation
 ===================
-.. htmlonly::
 
-   :Release: |release|
-   :Date: |today|
+:Release: |release|
+:Date: |today|
 
 
 PyZMQ is the Python bindings for ØMQ_. This
