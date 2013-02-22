@@ -257,10 +257,11 @@ class Configure(build_ext):
 
         # check if we need to link against deprecated Realtime Extensions library
         # if libc doesn't provide the functionality
-        compiler = new_compiler()
-        if not compiler.has_function('timer_create') \
-            and compiler.has_function('timer_create',libraries=('rt',)):
-            settings['libraries'].append('rt')
+        if sys.platform.startswith('linux'):
+            compiler = new_compiler(compiler=self.compiler_type)
+            if not compiler.has_function('timer_create') \
+                and compiler.has_function('timer_create',libraries=('rt',)):
+                settings['libraries'].append('rt')
         
         for ext in self.distribution.ext_modules:
             if ext.name == 'zmq.libzmq':
