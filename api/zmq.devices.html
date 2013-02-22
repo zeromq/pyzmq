@@ -76,7 +76,11 @@
 <li><a class="reference internal" href="#threadproxy"><tt class="docutils literal"><span class="pre">ThreadProxy</span></tt></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#monitoredqueue-devices">MonitoredQueue Devices</a></li>
+<li><a class="reference internal" href="#monitoredqueue-devices">MonitoredQueue Devices</a><ul>
+<li><a class="reference internal" href="#processmonitoredqueue"><tt class="docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a></li>
+<li><a class="reference internal" href="#threadmonitoredqueue"><tt class="docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -562,8 +566,8 @@ with an in/out prefix specifying which one it was.</p>
 </table>
 </dd></dl>
 
-<p><a class="reference internal" href="#zmq.devices.ProcessMonitoredQueue" title="zmq.devices.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a>
-~~~~~~~~~&#8212;&#8212;&#8211;~~~~~~~~~~~~~</p>
+<div class="section" id="processmonitoredqueue">
+<h3><a class="reference internal" href="#zmq.devices.ProcessMonitoredQueue" title="zmq.devices.ProcessMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ProcessMonitoredQueue</span></tt></a><a class="headerlink" href="#processmonitoredqueue" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.ProcessMonitoredQueue">
 <em class="property">class </em><tt class="descclassname">zmq.devices.</tt><tt class="descname">ProcessMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.ProcessMonitoredQueue" title="Permalink to this definition">¶</a></dt>
@@ -659,8 +663,9 @@ with an in/out prefix specifying which one it was.</p>
 
 </dd></dl>
 
-<p><a class="reference internal" href="#zmq.devices.ThreadMonitoredQueue" title="zmq.devices.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a>
-~~~~~~~~~~~~~~~~~~~&#8212;&#8212;&#8211;~~</p>
+</div>
+<div class="section" id="threadmonitoredqueue">
+<h3><a class="reference internal" href="#zmq.devices.ThreadMonitoredQueue" title="zmq.devices.ThreadMonitoredQueue"><tt class="xref py py-class docutils literal"><span class="pre">ThreadMonitoredQueue</span></tt></a><a class="headerlink" href="#threadmonitoredqueue" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="zmq.devices.ThreadMonitoredQueue">
 <em class="property">class </em><tt class="descclassname">zmq.devices.</tt><tt class="descname">ThreadMonitoredQueue</tt><big>(</big><em>in_type</em>, <em>out_type</em>, <em>mon_type=1</em>, <em>in_prefix='in'</em>, <em>out_prefix='out'</em><big>)</big><a class="headerlink" href="#zmq.devices.ThreadMonitoredQueue" title="Permalink to this definition">¶</a></dt>
@@ -772,6 +777,7 @@ but not require the argument for simpler applications:</p>
 
 </dd></dl>
 
+</div>
 </div>
 </div>
 

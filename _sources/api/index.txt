@@ -4,10 +4,8 @@
   The PyZMQ API
 ###################
 
-.. htmlonly::
-
-    :Release: |release|
-    :Date: |today|
+:Release: |release|
+:Date: |today|
 
 .. toctree::
 
