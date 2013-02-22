@@ -41,6 +41,7 @@ if sys.version_info < (2,6):
 import distutils
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
+from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
 from distutils.errors import CompileError, LinkError
 from distutils.command.build import build
@@ -253,6 +254,13 @@ class Configure(build_ext):
         # include internal directories
         settings.setdefault('include_dirs', [])
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+
+        # check if we need to link against deprecated Realtime Extensions library
+        # if libc doesn't provide the functionality
+        compiler = new_compiler()
+        if not compiler.has_function('timer_create') \
+            and compiler.has_function('timer_create',libraries=('rt',)):
+            settings['libraries'].append('rt')
         
         for ext in self.distribution.ext_modules:
             if ext.name == 'zmq.libzmq':
@@ -408,8 +416,6 @@ class Configure(build_ext):
             ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         elif not sys.platform.startswith(('darwin', 'freebsd')):
             ext.include_dirs.append(bundledir)
-
-            ext.libraries.append('rt')
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
