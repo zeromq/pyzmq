@@ -13,7 +13,7 @@ Base Devices
 ------------
 
 :class:`ProcessDevice`
-~~~~~~~~~~~~~~~~~~~~~~
+**********************
 
 
 .. autoclass:: ProcessDevice
@@ -23,7 +23,7 @@ Base Devices
 
 
 :class:`ThreadDevice`
-~~~~~~~~~~~~~~~~~~~~~
+*********************
 
 
 .. autoclass:: ThreadDevice
@@ -36,7 +36,7 @@ Proxy Devices
 
 
 :class:`ProcessProxy`
-~~~~~~~~~~~~~~~~~~~~~~
+*********************
 
 
 .. autoclass:: ProcessProxy
@@ -46,7 +46,7 @@ Proxy Devices
 
 
 :class:`ThreadProxy`
-~~~~~~~~~~~~~~~~~~~~~
+********************
 
 
 .. autoclass:: ThreadProxy
@@ -62,7 +62,7 @@ MonitoredQueue Devices
 
 
 :class:`ProcessMonitoredQueue`
-~~~~~~~~~--------~~~~~~~~~~~~~
+******************************
 
 
 .. autoclass:: ProcessMonitoredQueue
@@ -72,7 +72,7 @@ MonitoredQueue Devices
 
 
 :class:`ThreadMonitoredQueue`
-~~~~~~~~~~~~~~~~~~~--------~~
+*****************************
 
 
 .. autoclass:: ThreadMonitoredQueue
