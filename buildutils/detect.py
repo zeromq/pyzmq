@@ -110,6 +110,12 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
     cfile = pjoin(basedir, 'vers.c')
     shutil.copy(pjoin(os.path.dirname(__file__), 'vers.c'), cfile)
     
+    # check if we need to link against Realtime Extensions library
+    if sys.platform.startswith('linux'):
+        cc = ccompiler.new_compiler(compiler=compiler)
+        if not cc.has_function('timer_create'):
+            compiler_attrs['libraries'].append('rt')
+            
     efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
     
     result = Popen(efile, stdout=PIPE, stderr=PIPE)
