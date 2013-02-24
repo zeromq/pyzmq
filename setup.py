@@ -132,8 +132,9 @@ def bundled_settings():
         temp = 'temp.%s-%s' % (plat, sys.version[0:3])
         settings['libraries'].append('libzmq')
         settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
-
+    
     return settings
+
 
 def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     """load appropriate library/include settings from ZMQ prefix"""
@@ -253,20 +254,21 @@ class Configure(build_ext):
         # include internal directories
         settings.setdefault('include_dirs', [])
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+
+        # check if we need to link against deprecated Realtime Extensions library
+        # if libc doesn't provide the functionality
+        if sys.platform.startswith('linux'):
+            compiler = new_compiler(compiler=self.compiler_type)
+            if not compiler.has_function('timer_create') \
+                and compiler.has_function('timer_create',libraries=('rt',)):
+                settings['libraries'].append('rt')
         
         for ext in self.distribution.ext_modules:
             if ext.name == 'zmq.libzmq':
                 continue
             for attr, value in settings.items():
                 setattr(ext, attr, value)
-                
-        # check if we need to link against deprecated Realtime Extensions library
-        # if libc doesn't provide the functionality
-        if sys.platform.startswith('linux'):
-            compiler = new_compiler(compiler=self.compiler_type)
-            if not compiler.has_function('timer_create'):
-                settings['libraries'].append('rt')
-      
+        
         self.compiler_settings = settings
         self.save_config('compiler', settings)
 
@@ -414,7 +416,7 @@ class Configure(build_ext):
 
             ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         elif not sys.platform.startswith(('darwin', 'freebsd')):
-            ext.include_dirs.append(bundledir)  
+            ext.include_dirs.append(bundledir)
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
