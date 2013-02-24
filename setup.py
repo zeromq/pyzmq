@@ -41,6 +41,7 @@ if sys.version_info < (2,6):
 import distutils
 from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
+from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
 from distutils.errors import CompileError, LinkError
 from distutils.command.build import build
@@ -408,8 +409,11 @@ class Configure(build_ext):
             ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         elif not sys.platform.startswith(('darwin', 'freebsd')):
             ext.include_dirs.append(bundledir)
-
-            ext.libraries.append('rt')
+            
+            # check if we need to link against Realtime Extensions library
+            cc = new_compiler(compiler=self.compiler_type)
+            if not cc.has_function('timer_create'):
+                ext.libraries.append('rt')
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
