@@ -31,8 +31,8 @@ def client():
 
 
 # broker
-frontend = context.socket(zmq.XREP)
-backend  = context.socket(zmq.XREQ);
+frontend = context.socket(zmq.ROUTER)
+backend  = context.socket(zmq.DEALER);
 frontend.bind("tcp://*:5559")
 backend.bind("tcp://*:5560")
 
