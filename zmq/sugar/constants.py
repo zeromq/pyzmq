@@ -73,7 +73,8 @@ names = [
     'EVENT_CLOSED',
     'EVENT_CLOSE_FAILED',
     'EVENT_DISCONNECTED',
-   
+    'EVENT_ALL',
+
     ## ERRNO
     # Often used (these are alse in errno.)
     'EAGAIN',

@@ -523,14 +523,14 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def monitor(self, addr, flags):
+    def monitor(self, addr, int events=ZMQ_EVENT_ALL):
         """s.monitor(addr, flags)
 
         Starts to collect and publish socket related events.
         See zmq_start_monitor for details.
 
-        addr is the inproc endpoint identifier to use for the monitoring.
-        flags denotes the events to notify on.
+        addr     is the inproc endpoint identifier to use for the monitoring.
+        events   denotes the events to notify on.
         """
         cdef int rc, c_flags
         cdef char* c_addr
@@ -543,7 +543,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        c_flags = flags
+        c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
         if rc != 0:
             raise ZMQError()

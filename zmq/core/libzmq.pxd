@@ -179,6 +179,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EVENT_CLOSED # 128
     enum: ZMQ_EVENT_CLOSE_FAILED # 256
     enum: ZMQ_EVENT_DISCONNECTED # 512
+    enum: ZMQ_EVENT_ALL # 1023
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
