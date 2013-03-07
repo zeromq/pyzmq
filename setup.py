@@ -47,6 +47,7 @@ from distutils.errors import CompileError, LinkError
 from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
+from distutils.version import LooseVersion as V
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -755,14 +756,14 @@ class CheckSDist(sdist):
         sdist.run(self)
 
 class CheckingBuildExt(build_ext):
-    """Subclass build_ext to get clearer report if Cython is neccessary."""
+    """Subclass build_ext to get clearer report if Cython is necessary."""
     
     def check_cython_extensions(self, extensions):
         for ext in extensions:
           for src in ext.sources:
             if not os.path.exists(src):
                 fatal("""Cython-generated file '%s' not found.
-                Cython is required to compile pyzmq from a development branch.
+                Cython >= 0.16 is required to compile pyzmq from a development branch.
                 Please install Cython or download a release package of pyzmq.
                 """%src)
     
@@ -829,12 +830,35 @@ submodules = dict(
 )
 
 try:
+    import Cython
+    if V(Cython.__version__) < V('0.16'):
+        raise ImportError("Cython >= 0.16 required, have %s" % Cython.__version__)
     from Cython.Distutils import build_ext as build_ext_c
     cython=True
 except ImportError:
     cython=False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
+    
+    class MissingCython(Command):
+        
+        user_options = []
+        
+        def initialize_options(self):
+            pass
+        
+        def finalize_options(self):
+            pass
+        
+        def run(self):
+            try:
+                import Cython
+            except ImportError:
+                warn("Cython is missing")
+            else:
+                if V(Cython.__version__) < V('0.16'):
+                    warn("Cython >= 0.16 required for compiling Cython sources, but we have %s" % Cython.__version__)
+    cmdclass['cython'] = MissingCython
 else:
     
     suffix = '.pyx'
