@@ -118,8 +118,6 @@ def _check_rc(rc, errno=None):
             raise Again(errno)
         elif errno == ETERM:
             raise ContextTerminated(errno)
-        elif errno == EINTR:
-            raise KeyboardInterrupt
         else:
             raise ZMQError(errno)
 
