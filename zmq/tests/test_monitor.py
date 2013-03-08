@@ -26,7 +26,8 @@ if zmq.zmq_version_info()[:2] < (3,2):
 
 
 def unpack_event(msg):
-    ret = struct.unpack("@l16x", msg)
+    # assuming 4 byte integer, might not work on some architectures!
+    ret = struct.unpack("@i20x", msg)
     return ret[0]
 
 class TestSocketMonitor(TestCase):
