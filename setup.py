@@ -807,21 +807,22 @@ buffers = pxd('utils', 'buffers')
 message = pxd('core', 'message')
 context = pxd('core', 'context')
 socket = pxd('core', 'socket')
+checkrc = pxd('core', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = dict(
     core = {'constants': [libzmq],
-            'error':[libzmq],
-            '_poll':[libzmq, socket, context],
-            'stopwatch':[libzmq, pxd('core','stopwatch')],
-            'context':[context, libzmq],
-            'message':[libzmq, buffers, message],
-            'socket':[context, message, socket, libzmq, buffers],
-            '_device':[libzmq, socket, context],
+            'error':[libzmq, checkrc],
+            '_poll':[libzmq, socket, context, checkrc],
+            'stopwatch':[libzmq, pxd('core','stopwatch'), checkrc],
+            'context':[context, libzmq, checkrc],
+            'message':[libzmq, buffers, message, checkrc],
+            'socket':[context, message, socket, libzmq, buffers, checkrc],
+            '_device':[libzmq, socket, context, checkrc],
             '_version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
+            'monitoredqueue':[buffers, libzmq, monqueue, socket, context, checkrc],
     },
     utils = {
             'initthreads':[libzmq],
