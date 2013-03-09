@@ -16,8 +16,6 @@ cdef inline int _check_rc(int rc) except -1:
         elif errno == ZMQ_ETERM:
             from zmq.error import ContextTerminated
             raise ContextTerminated(errno)
-        elif errno == EINTR:
-            raise KeyboardInterrupt
         else:
             from zmq.error import ZMQError
             raise ZMQError(errno)

@@ -47,6 +47,7 @@ from distutils.errors import CompileError, LinkError
 from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
+from distutils.version import LooseVersion as V
 
 from unittest import TextTestRunner, TestLoader
 from glob import glob
@@ -755,14 +756,14 @@ class CheckSDist(sdist):
         sdist.run(self)
 
 class CheckingBuildExt(build_ext):
-    """Subclass build_ext to get clearer report if Cython is neccessary."""
+    """Subclass build_ext to get clearer report if Cython is necessary."""
     
     def check_cython_extensions(self, extensions):
         for ext in extensions:
           for src in ext.sources:
             if not os.path.exists(src):
                 fatal("""Cython-generated file '%s' not found.
-                Cython is required to compile pyzmq from a development branch.
+                Cython >= 0.16 is required to compile pyzmq from a development branch.
                 Please install Cython or download a release package of pyzmq.
                 """%src)
     
@@ -806,21 +807,22 @@ buffers = pxd('utils', 'buffers')
 message = pxd('core', 'message')
 context = pxd('core', 'context')
 socket = pxd('core', 'socket')
+checkrc = pxd('core', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = dict(
     core = {'constants': [libzmq],
-            'error':[libzmq],
-            '_poll':[libzmq, socket, context],
-            'stopwatch':[libzmq, pxd('core','stopwatch')],
-            'context':[context, libzmq],
-            'message':[libzmq, buffers, message],
-            'socket':[context, message, socket, libzmq, buffers],
-            '_device':[libzmq, socket, context],
+            'error':[libzmq, checkrc],
+            '_poll':[libzmq, socket, context, checkrc],
+            'stopwatch':[libzmq, pxd('core','stopwatch'), checkrc],
+            'context':[context, libzmq, checkrc],
+            'message':[libzmq, buffers, message, checkrc],
+            'socket':[context, message, socket, libzmq, buffers, checkrc],
+            '_device':[libzmq, socket, context, checkrc],
             '_version':[libzmq],
     },
     devices = {
-            'monitoredqueue':[buffers, libzmq, monqueue, socket, context],
+            'monitoredqueue':[buffers, libzmq, monqueue, socket, context, checkrc],
     },
     utils = {
             'initthreads':[libzmq],
@@ -829,12 +831,35 @@ submodules = dict(
 )
 
 try:
+    import Cython
+    if V(Cython.__version__) < V('0.16'):
+        raise ImportError("Cython >= 0.16 required, have %s" % Cython.__version__)
     from Cython.Distutils import build_ext as build_ext_c
     cython=True
 except ImportError:
     cython=False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
+    
+    class MissingCython(Command):
+        
+        user_options = []
+        
+        def initialize_options(self):
+            pass
+        
+        def finalize_options(self):
+            pass
+        
+        def run(self):
+            try:
+                import Cython
+            except ImportError:
+                warn("Cython is missing")
+            else:
+                if V(Cython.__version__) < V('0.16'):
+                    warn("Cython >= 0.16 required for compiling Cython sources, but we have %s" % Cython.__version__)
+    cmdclass['cython'] = MissingCython
 else:
     
     suffix = '.pyx'

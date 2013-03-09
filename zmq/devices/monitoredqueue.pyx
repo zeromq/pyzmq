@@ -28,6 +28,7 @@ from buffers cimport asbuffer_r
 from libzmq cimport *
 
 from zmq.core.socket cimport Socket
+from zmq.core.checkrc cimport _check_rc
 
 from zmq import ROUTER, ZMQError
 
@@ -88,8 +89,8 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
     with nogil:
         rc = zmq_msg_init_size(&in_msg, msg_c_len)
-    if rc != 0:
-        raise ZMQError()
+    _check_rc(rc)
+    
     with nogil:
         memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
     
@@ -97,8 +98,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     
     with nogil:
         rc = zmq_msg_init_size(&out_msg, msg_c_len)
-    if rc != 0:
-        raise ZMQError()
+    _check_rc(rc)
     
     with nogil:
         memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))

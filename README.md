@@ -50,7 +50,7 @@ the PyZMQ source code, eggs, or MSI installer from
 
 You can also get the latest source code from our GitHub repository, but
 building from the repository will require that you install Cython
-version 0.15 or later.
+version 0.16 or later.
 
 ## Building and installation
 
