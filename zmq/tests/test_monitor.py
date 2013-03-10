@@ -19,19 +19,15 @@ import struct
 from unittest import TestCase
 
 import zmq
+from zmq.tests import BaseZMQTestCase, skip_if
+from zmq.utils.monitor import get_monitor_message
 
-if zmq.zmq_version_info()[:2] < (3,2):
-    print "Monitoring test skipped due to ZMQ version < 3.2!"
-    sys.exit(0)
+skip_version = skip_if(zmq.zmq_version_info()[:2] < (3,2),
+                       "Monitoring test skipped due to ZMQ version < 3.2!")
 
+class TestSocketMonitor(BaseZMQTestCase):
 
-def unpack_event(msg):
-    # assuming 4 byte integer, might not work on some architectures!
-    ret = struct.unpack("@i20x", msg)
-    return ret[0]
-
-class TestSocketMonitor(TestCase):
-    
+    @skip_version
     def test_monitor(self):
         """Test monitoring interface for sockets."""
         zmq_ctx = zmq.Context()
@@ -45,29 +41,28 @@ class TestSocketMonitor(TestCase):
         s_event.connect("inproc://monitor.rep")
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6666")
-        m = s_event.recv()
-        eid = unpack_event(m)
-        self.assertEqual(eid, zmq.EVENT_CONNECT_DELAYED)
+        m = get_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_CONNECT_DELAYED)
+        self.assertEqual(m['endpoint'], "tcp://127.0.0.1:6666")
         # test receive event for connected event
-        m = s_event.recv()
-        eid = unpack_event(m)
-        self.assertEqual(eid, zmq.EVENT_CONNECTED)
+        m = get_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
 
+    @skip_version
     def test_monitor_connected(self):
         """Test connected monitoring socket."""
         zmq_ctx = zmq.Context()
         s_rep = zmq_ctx.socket(zmq.REP)
         s_req = zmq_ctx.socket(zmq.REQ)
-        s_req.bind("tcp://127.0.0.1:6666")
+        s_req.bind("tcp://127.0.0.1:6667")
         # try monitoring the REP socket
         # create listening socket for monitor
         s_event = s_rep.get_monitor_socket()
         # test receive event for connect event
-        s_rep.connect("tcp://127.0.0.1:6666")
-        m = s_event.recv()
-        eid = unpack_event(m)
-        self.assertEqual(eid, zmq.EVENT_CONNECT_DELAYED)
+        s_rep.connect("tcp://127.0.0.1:6667")
+        m = get_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_CONNECT_DELAYED)
+        self.assertEqual(m['endpoint'], "tcp://127.0.0.1:6667")
         # test receive event for connected event
-        m = s_event.recv()
-        eid = unpack_event(m)
-        self.assertEqual(eid, zmq.EVENT_CONNECTED)
+        m = get_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
