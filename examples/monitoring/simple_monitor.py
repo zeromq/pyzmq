@@ -27,12 +27,10 @@ __version__ = '0.0'
 import sys
 import time
 import struct
-import zmq
 import threading
 
-def unpack_event(msg):
-    ret = struct.unpack("@i20x", msg)
-    return ret
+import zmq
+from zmq.utils.monitor import get_monitor_message
 
 
 def logger():
@@ -42,12 +40,10 @@ def logger():
     while not done:
         done = s_event.poll(timeout=5000) == 0
         if not done:
-            msg = s_event.recv()
-            eid = unpack_event(msg)[0]
-            print eid, repr(msg)
-            if eid == 128:
+            emsg = get_monitor_message(s_event)
+            print emsg['event'], emsg['value'], repr(emsg['endpoint'])
+            if emsg['event'] == 128:
                 done = True
-                print "XXX"
     print
     print "Logger done!"
     return
