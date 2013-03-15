@@ -10,8 +10,6 @@
 #-----------------------------------------------------------------------------
 
 from ._cffi import ffi, C
-import codecs
-import time
 
 import zmq
 
@@ -19,12 +17,6 @@ try:
     view = memoryview
 except NameError:
     view = buffer
-
-try:
-    # below 3.3
-    from threading import _Event as Event
-except (ImportError):
-    from threading import Event
 
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 
@@ -34,8 +26,8 @@ class Frame(object):
     closed = False
     more = False
     buffer = None
-    
-    
+
+
     def __init__(self, data, track=False):
         try:
             view(data)
