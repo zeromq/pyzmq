@@ -201,14 +201,17 @@ class Socket(object):
             C.zmq_msg_close(zmq_msg)
             _check_rc(rc)
 
-        value = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))[:]
+        _buffer = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))
+        value = _buffer[:]
+        C.zmq_msg_close(zmq_msg)
 
         frame = Frame(value, track=track)
         frame.more = self.getsockopt(RCVMORE)
+
         if copy:
             return frame.bytes
         else:
             return frame
-            
+
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']
