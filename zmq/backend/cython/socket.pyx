@@ -547,8 +547,7 @@ cdef class Socket:
         c_addr = addr
         c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
-        if rc != 0:
-            raise ZMQError()
+        _check_rc(rc)
 
     #-------------------------------------------------------------------------
     # Sending and receiving messages
