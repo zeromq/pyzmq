@@ -980,7 +980,6 @@ setup_args = dict(
 if 'setuptools' in sys.modules and 'PyPy' in sys.version:
     setup_args['install_requires'] = [
         'py',
-        'ctypes-configure',
         'cffi',
     ]
 
