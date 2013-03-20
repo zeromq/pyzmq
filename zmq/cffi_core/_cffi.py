@@ -14,6 +14,41 @@ from cffi import FFI
 
 ffi = FFI()
 
+errnos =  ['EADDRINUSE', 'EADDRNOTAVAIL', 'EAGAIN', 'ECONNREFUSED', 'EFAULT',
+           'EFSM', 'EINPROGRESS', 'EINVAL', 'EMTHREAD', 'ENETDOWN', 'ENOBUFS',
+           'ENOCOMPATPROTO', 'ENODEV', 'ENOMEM', 'ENOTSUP', 'EPROTONOSUPPORT',
+           'ETERM', 'ENOTSOCK', 'EMSGSIZE', 'EAFNOSUPPORT', 'ENETUNREACH',
+           'ECONNABORTED', 'ECONNRESET', 'ENOTCONN', 'ETIMEDOUT',
+           'EHOSTUNREACH', 'ENETRESET']
+
+zmq2_cons = ['ZMQ_MSG_MORE' , 'ZMQ_MSG_SHARED', 'ZMQ_MSG_MASK',
+             'ZMQ_UPSTREAM', 'ZMQ_DOWNSTREAM', 'ZMQ_MCAST_LOOP',
+             'ZMQ_RECOVERY_IVL_MSEC', 'ZMQ_NOBLOCK', 'ZMQ_HWM',
+             'ZMQ_SWAP']
+
+socket_cons = ['ZMQ_PAIR', 'ZMQ_PUB', 'ZMQ_SUB', 'ZMQ_REQ', 'ZMQ_REP',
+               'ZMQ_DEALER', 'ZMQ_ROUTER', 'ZMQ_PULL', 'ZMQ_PUSH', 'ZMQ_XPUB',
+               'ZMQ_XSUB', 'ZMQ_XREQ', 'ZMQ_XREP']
+
+zmq_base_cons = ['ZMQ_VERSION', 'ZMQ_AFFINITY', 'ZMQ_IDENTITY', 'ZMQ_SUBSCRIBE',
+                 'ZMQ_UNSUBSCRIBE', 'ZMQ_RATE', 'ZMQ_RECOVERY_IVL',
+                 'ZMQ_SNDBUF', 'ZMQ_RCVBUF', 'ZMQ_RCVMORE', 'ZMQ_FD',
+                 'ZMQ_EVENTS', 'ZMQ_TYPE', 'ZMQ_LINGER', 'ZMQ_RECONNECT_IVL',
+                 'ZMQ_BACKLOG', 'ZMQ_RECONNECT_IVL_MAX', 'ZMQ_RCVTIMEO',
+                 'ZMQ_SNDTIMEO', 'ZMQ_SNDMORE', 'ZMQ_POLLIN', 'ZMQ_POLLOUT',
+                 'ZMQ_POLLERR', 'ZMQ_STREAMER', 'ZMQ_FORWARDER', 'ZMQ_QUEUE']
+
+zmq3_cons = ['ZMQ_DONTWAIT', 'ZMQ_MORE', 'ZMQ_MAXMSGSIZE', 'ZMQ_SNDHWM',
+             'ZMQ_RCVHWM', 'ZMQ_MULTICAST_HOPS', 'ZMQ_IPV4ONLY',
+             'ZMQ_LAST_ENDPOINT', 'ZMQ_ROUTER_BEHAVIOR', 'ZMQ_TCP_KEEPALIVE',
+             'ZMQ_TCP_KEEPALIVE_CNT', 'ZMQ_TCP_KEEPALIVE_IDLE',
+             'ZMQ_TCP_KEEPALIVE_INTVL', 'ZMQ_TCP_ACCEPT_FILTER',
+             'ZMQ_EVENT_CONNECTED', 'ZMQ_EVENT_CONNECT_DELAYED',
+             'ZMQ_EVENT_CONNECT_RETRIED', 'ZMQ_EVENT_LISTENING',
+             'ZMQ_EVENT_BIND_FAILED', 'ZMQ_EVENT_ACCEPTED',
+             'ZMQ_EVENT_ACCEPT_FAILED', 'ZMQ_EVENT_CLOSED',
+             'ZMQ_EVENT_CLOSE_FAILED']
+
 core_functions = \
 '''
 void* zmq_init(int);
@@ -148,15 +183,36 @@ def zmq_version():
 
 zmq_major_version = zmq_version_info()[0]
 
+constant_names = []
+
+if zmq_major_version == 2:
+    constant_names = errnos + socket_cons + zmq_base_cons + zmq2_cons
+else:
+    constant_names = errnos + socket_cons + zmq_base_cons + zmq3_cons
+
+
+def _make_defines(names):
+    _names = []
+    for name in names:
+        define_line = "#define %s ..." % (name)
+        _names.append(define_line)
+
+    return "\n".join(_names)
+
+constants = _make_defines(constant_names)
+
+
 if zmq_version_info()[0] == 2:
-    functions = ''.join([core_functions,
+    functions = ''.join([constants,
+                         core_functions,
                          core22_functions,
                          message_functions,
                          sockopt_functions,
                          polling_functions,
                          extra_functions])
 elif zmq_version_info()[0] == 3:
-    functions = ''.join([core_functions,
+    functions = ''.join([constants,
+                         core_functions,
                          core32_functions,
                          message32_functions,
                          sockopt_functions,
