@@ -531,14 +531,16 @@ cdef class Socket:
         Starts to collect and publish socket related events.
         See zmq_start_monitor for details.
 
+        * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.2! *
+        
         addr     is the inproc endpoint identifier to use for the monitoring.
         events   denotes the events to notify on.
         """
         cdef int rc, c_flags
         cdef char* c_addr
         
-        if ZMQ_VERSION_MAJOR < 3:
-            raise NotImplementedError("unbind requires libzmq >= 3.0, have %s" % zmq.zmq_version())
+        if zmq.zmq_version()[:2] < (3,2):
+            raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
         
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
