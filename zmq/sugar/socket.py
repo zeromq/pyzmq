@@ -414,7 +414,7 @@ class Socket(SocketBase, AttributeSetter):
         if zmq.zmq_version_info()[:2] < (3,2):
             raise NotImplementedError("get_monitor_socket requires libzmq >= 3.2, have %s" % zmq.zmq_version())
         if addr is None:
-            # create endpoint name
+            # create endpoint name from internal fd
             addr = "inproc://monitor.s-%d" % self.FD
         if events is None:
             # use all events

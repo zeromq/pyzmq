@@ -20,9 +20,6 @@ __license__ = '''
 '''
 
 __author__ = 'Guido Goldstein'
-__email__ = 'gst-py@a-nugget.de'
-__version__ = '0.0'
-
 
 import sys
 import time
@@ -47,6 +44,10 @@ def logger():
     print
     print "Logger done!"
     return
+
+
+if zmq.zmq_version()[:2] < (3,3):
+    raise RuntimeError("Libzmq versions < 3.3 are not supported at the moment!")
 
 zmq_ctx = zmq.Context()
 

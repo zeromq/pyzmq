@@ -39,6 +39,8 @@ def _decode_new_msg(msg):
 def get_monitor_message(socket):
     """Read and decode the given raw message from the monitoring socket and return a dict.
 
+    * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.3! *
+        
     The function will do a *blocking* read on the given socket!
 
     The returned dict will have the following entries:
@@ -55,8 +57,6 @@ def get_monitor_message(socket):
     # will always return a list
     msg = socket.recv_multipart()
     if LIBZMQVERSION < (3,3):
-        # use old style event interface
-        raise NotImplementedError("libzmq event API not supported yet!")
-    else:
-        # new style event API
-        return _decode_new_msg(msg)
+        raise NotImplementedError("libzmq event API needs libzmq version >= 3.3, you have %s!" % zmq.zmq_version())
+    # new style event API
+    return _decode_new_msg(msg)
