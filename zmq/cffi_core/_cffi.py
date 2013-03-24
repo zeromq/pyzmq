@@ -188,7 +188,11 @@ def _make_defines(names):
 
 constants = _make_defines(constant_names)
 
-_version_info = zmq_version_info()
+try:
+    _version_info = zmq_version_info()
+except Exception as e:
+    raise ImportError("PyZMQ CFFI backend couldn't find zeromq: %s\n"
+    "Please check that you have zeromq headers and libraries." % e)
 
 if _version_info >= (3,2,2):
     functions = ''.join([constants,
