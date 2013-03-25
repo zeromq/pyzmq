@@ -176,20 +176,7 @@ def zmq_version_info():
 
     return (int(major[0]), int(minor[0]), int(patch[0]))
 
-def zmq_version():
-    return str(zmq_version_info()[0]) + \
-           str(zmq_version_info()[1]) + \
-           str(zmq_version_info()[2])
-
-zmq_major_version = zmq_version_info()[0]
-
-constant_names = []
-
-if zmq_major_version == 2:
-    constant_names = errnos + socket_cons + zmq_base_cons + zmq2_cons
-else:
-    constant_names = errnos + socket_cons + zmq_base_cons + zmq3_cons
-
+constant_names = errnos + socket_cons + zmq_base_cons + zmq3_cons
 
 def _make_defines(names):
     _names = []
@@ -201,16 +188,13 @@ def _make_defines(names):
 
 constants = _make_defines(constant_names)
 
+try:
+    _version_info = zmq_version_info()
+except Exception as e:
+    raise ImportError("PyZMQ CFFI backend couldn't find zeromq: %s\n"
+    "Please check that you have zeromq headers and libraries." % e)
 
-if zmq_version_info()[0] == 2:
-    functions = ''.join([constants,
-                         core_functions,
-                         core22_functions,
-                         message_functions,
-                         sockopt_functions,
-                         polling_functions,
-                         extra_functions])
-elif zmq_version_info()[0] == 3:
+if _version_info >= (3,2,2):
     functions = ''.join([constants,
                          core_functions,
                          core32_functions,
@@ -219,7 +203,9 @@ elif zmq_version_info()[0] == 3:
                          polling_functions,
                          extra_functions])
 else:
-    raise Exception("Bad ZMQ Install")
+    raise ImportError("PyZMQ CFFI backend requires zeromq >= 3.2.2,"
+        " but found %i.%i.%i" % _version_info
+    )
 
 ffi.cdef(functions)
 
