@@ -225,7 +225,7 @@ class Configure(build_ext):
     def init_settings_from_config(self):
         """set up compiler settings, based on config"""
         if 'PyPy' in sys.version:
-            return {}
+            self.compiler_settings = {}
         cfg = self.config
         
         if cfg['libzmq_extension']:
@@ -508,6 +508,9 @@ class Configure(build_ext):
     
     def run(self):
         cfg = self.config
+        if 'PyPy' in sys.version:
+            print ("PyPy: Nothing to configure")
+            return
         
         if cfg['libzmq_extension']:
             self.bundle_libzmq_extension()
