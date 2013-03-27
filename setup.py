@@ -944,8 +944,7 @@ def find_packages():
 
 long_desc = \
 """
-PyZMQ is the official Python bindings for the lightweight and super-fast messaging
-library ZeroMQ (http://www.zeromq.org).
+PyZMQ is the official Python binding for the ZeroMQ Messaging Library (http://www.zeromq.org).
 """
 
 setup_args = dict(
@@ -957,7 +956,7 @@ setup_args = dict(
     author = "Brian E. Granger, Min Ragan-Kelley",
     author_email = "zeromq-dev@lists.zeromq.org",
     url = 'http://github.com/zeromq/pyzmq',
-    description = "Python bindings for 0MQ.",
+    description = "Python bindings for 0MQ",
     long_description = long_desc, 
     license = "LGPL+BSD",
     cmdclass = cmdclass,
