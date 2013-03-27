@@ -10,7 +10,7 @@ but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2.
 
 ## Versioning
 
-Current release of pyzmq is 13.0, and targets libzmq-3.2.2. For
+Current release of pyzmq is 13.0.1, and targets libzmq-3.2.2. For
 libzmq 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development
 branch.  PyZMQ (on CPython via Cython) continues to support libzmq ≥ 2.1.4.
 
