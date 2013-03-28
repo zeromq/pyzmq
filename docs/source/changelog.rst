@@ -9,7 +9,7 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-13.0.1
+13.0.2
 ======
 
 Bugfix release!
@@ -22,6 +22,10 @@ A few things were broken in 13.0.0, so this is a quick bugfix release.
 * **FIXED** typo prevented IPC_PATH_MAX_LEN from ever being defined
 * **FIXED** various build fixes - linking with librt, Cython compatibility, etc.
 
+13.0.1
+======
+
+defunct bugfix. We do not speak of this...
 
 13.0.0
 ======
