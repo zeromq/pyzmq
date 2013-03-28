@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.1 documentation</title>
+    <title>Changes in PyZMQ &mdash; PyZMQ 13.0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '13.0.1',
+        VERSION:     '13.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.1 documentation" href="index.html" /> 
+    <link rel="top" title="PyZMQ 13.0.2 documentation" href="index.html" /> 
   </head>
   <body>
 
@@ -55,36 +55,37 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Changes in PyZMQ</a><ul>
-<li><a class="reference internal" href="#id1">13.0.1</a></li>
-<li><a class="reference internal" href="#id2">13.0.0</a><ul>
+<li><a class="reference internal" href="#id1">13.0.2</a></li>
+<li><a class="reference internal" href="#id2">13.0.1</a></li>
+<li><a class="reference internal" href="#id3">13.0.0</a><ul>
 <li><a class="reference internal" href="#experiments-removed">Experiments Removed</a></li>
 <li><a class="reference internal" href="#new-stuff">New Stuff</a></li>
 <li><a class="reference internal" href="#bugs-fixed">Bugs Fixed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">2.2.0.1</a><ul>
+<li><a class="reference internal" href="#id4">2.2.0.1</a><ul>
 <li><a class="reference internal" href="#experimental-new-stuff">Experimental New Stuff</a><ul>
 <li><a class="reference internal" href="#threadsafe-zmqstream">Threadsafe ZMQStream</a></li>
 <li><a class="reference internal" href="#pip-install-pyzmq">pip install pyzmq</a></li>
 <li><a class="reference internal" href="#zmq-green">zmq.green</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">Bugs Fixed</a></li>
+<li><a class="reference internal" href="#id5">Bugs Fixed</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">2.2.0</a><ul>
+<li><a class="reference internal" href="#id6">2.2.0</a><ul>
 <li><a class="reference internal" href="#name-changes">Name Changes</a></li>
 <li><a class="reference internal" href="#other-changes-and-removals">Other Changes and Removals</a></li>
-<li><a class="reference internal" href="#id6">New Stuff</a></li>
-<li><a class="reference internal" href="#id7">Experimental New Stuff</a></li>
+<li><a class="reference internal" href="#id7">New Stuff</a></li>
+<li><a class="reference internal" href="#id8">Experimental New Stuff</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id8">2.1.11</a></li>
-<li><a class="reference internal" href="#id9">2.1.10</a></li>
-<li><a class="reference internal" href="#id10">2.1.9</a></li>
-<li><a class="reference internal" href="#id11">2.1.7.1</a></li>
-<li><a class="reference internal" href="#id12">2.1.7</a></li>
-<li><a class="reference internal" href="#id13">2.1.4</a></li>
+<li><a class="reference internal" href="#id9">2.1.11</a></li>
+<li><a class="reference internal" href="#id10">2.1.10</a></li>
+<li><a class="reference internal" href="#id11">2.1.9</a></li>
+<li><a class="reference internal" href="#id12">2.1.7.1</a></li>
+<li><a class="reference internal" href="#id13">2.1.7</a></li>
+<li><a class="reference internal" href="#id14">2.1.4</a></li>
 </ul>
 </li>
 </ul>
@@ -120,7 +121,7 @@
 <p>This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 <a class="reference external" href="https://github.com/zeromq/pyzmq/commits">git log</a></p>
 <div class="section" id="id1">
-<h2>13.0.1<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>13.0.2<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Bugfix release!</p>
 <p>A few things were broken in 13.0.0, so this is a quick bugfix release.</p>
 <ul class="simple">
@@ -132,7 +133,11 @@
 </ul>
 </div>
 <div class="section" id="id2">
-<h2>13.0.0<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<h2>13.0.1<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>defunct bugfix. We do not speak of this...</p>
+</div>
+<div class="section" id="id3">
+<h2>13.0.0<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>PyZMQ now officially targets libzmq-3 (3.2.2),
 0MQ ≥ 2.1.4 is still supported for the indefinite future, but 3.x is recommended.
 PyZMQ has detached from libzmq versioning,
@@ -183,8 +188,8 @@ in gevent contexts.</li>
 </ul>
 </div>
 </div>
-<div class="section" id="id3">
-<h2>2.2.0.1<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>2.2.0.1<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <p>This is a tech-preview release, to try out some new features.
 It is expected to be short-lived, as there are likely to be issues to iron out,
 particularly with the new pip-install support.</p>
@@ -222,16 +227,16 @@ subclass which provides <a class="reference external" href="http://www.gevent.or
 </div>
 </div>
 </div>
-<div class="section" id="id4">
-<h3>Bugs Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Bugs Fixed<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>TIMEO sockopts are properly included for libzmq-2.2.0</li>
 <li>avoid garbage collection of sockets after fork (would cause <tt class="docutils literal"><span class="pre">assert</span> <span class="pre">(mailbox.cpp:79)</span></tt>).</li>
 </ul>
 </div>
 </div>
-<div class="section" id="id5">
-<h2>2.2.0<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>2.2.0<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>Some effort has gone into refining the pyzmq API in this release to make it a model for
 other language bindings.  This is principally made in a few renames of objects and methods,
 all of which leave the old name for backwards compatibility.</p>
@@ -270,8 +275,8 @@ feature parity in other projects, such as
 <a class="reference external" href="https://github.com/svpcom/pyzmq-ctypes">pyzmq-ctypes</a>.</li>
 </ul>
 </div>
-<div class="section" id="id6">
-<h3>New Stuff<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id7">
+<h3>New Stuff<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><a class="reference internal" href="api/zmq.html#zmq.Context" title="zmq.Context"><tt class="xref py py-class docutils literal"><span class="pre">Context</span></tt></a> objects can now set default options when they create a socket. These
 are set and accessed as attributes to the context.  Socket options that do not apply to a
@@ -284,8 +289,8 @@ Message) class, so that frames can be identified as terminal without extra queir
 <tt class="xref py py-attr docutils literal"><span class="pre">rcvmore</span></tt>.</li>
 </ul>
 </div>
-<div class="section" id="id7">
-<h3>Experimental New Stuff<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Experimental New Stuff<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <p>These features are marked &#8216;experimental&#8217;, which means that their APIs are not
 set in stone, and may be removed or changed in incompatible ways in later releases.</p>
 <ul class="simple">
@@ -293,8 +298,8 @@ set in stone, and may be removed or changed in incompatible ways in later releas
 </ul>
 </div>
 </div>
-<div class="section" id="id8">
-<h2>2.1.11<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id9">
+<h2>2.1.11<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
 prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.</p>
@@ -325,8 +330,8 @@ constants should be insensitive to the actual value of the constants.</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id9">
-<h2>2.1.10<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id10">
+<h2>2.1.10<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">Add support for libzmq-3.0 LABEL prefixes:</p>
 <div class="admonition warning">
@@ -361,8 +366,8 @@ once versions get into double-digits.</p>
 </li>
 </ul>
 </div>
-<div class="section" id="id10">
-<h2>2.1.9<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id11">
+<h2>2.1.9<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>added zmq.ssh tools for tunneling socket connections, copied from IPython</li>
 <li>Expanded sockopt support to cover changes in libzmq-4.0 dev.</li>
@@ -387,23 +392,23 @@ than expected.</li>
 <li>base libzmq dependency raised to 2.1.4 (first stable release) from 2.1.0.</li>
 </ul>
 </div>
-<div class="section" id="id11">
-<h2>2.1.7.1<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id12">
+<h2>2.1.7.1<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>bdist for 64b Windows only.  This fixed a type mismatch on the <tt class="docutils literal"><span class="pre">ZMQ_FD</span></tt> sockopt
 that only affected that platform.</li>
 </ul>
 </div>
-<div class="section" id="id12">
-<h2>2.1.7<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id13">
+<h2>2.1.7<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>Added experimental support for libzmq-3.0 API</li>
 <li>Add <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">zmq.eventloop.ioloop.install()</span></tt></a> for using pyzmq&#8217;s IOLoop in a tornado
 application.</li>
 </ul>
 </div>
-<div class="section" id="id13">
-<h2>2.1.4<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id14">
+<h2>2.1.4<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>First version with binary distribution support</li>
 <li>Added <tt class="xref py py-meth docutils literal"><span class="pre">instance()</span></tt> method for using a single Context throughout an application
