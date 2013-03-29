@@ -234,10 +234,16 @@ class Configure(build_ext):
             settings = settings_from_prefix(cfg['zmq_prefix'], self.bundle_libzmq_dylib)
     
         if 'have_sys_un_h' not in cfg:
+            # don't link against anything when checking for sys/un.h
+            minus_zmq = copy.deepcopy(settings)
+            try:
+                minus_zmq['libraries'] = []
+            except Exception:
+                pass
             try:
                 compile_and_run(self.tempdir,
                     pjoin('buildutils', 'check_sys_un.c'),
-                    **settings
+                    **minus_zmq
                 )
             except Exception as e:
                 warn("No sys/un.h, IPC_PATH_MAX_LEN will be undefined: %s" % e)
@@ -413,6 +419,7 @@ class Configure(build_ext):
             
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
+            cc.output_dir = self.build_temp
             if not cc.has_function('timer_create'):
                 ext.libraries.append('rt')
         
