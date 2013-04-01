@@ -100,15 +100,24 @@ doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 # but always assign it to configure
 
 configure_idx = -1
+fetch_idx = -1
 for idx, arg in enumerate(list(sys.argv)):
+    # track index of configure and fetch_libzmq
     if arg == 'configure':
         configure_idx = idx
+    elif arg == 'fetch_libzmq':
+        fetch_idx = idx
+    
     if arg.startswith('--zmq='):
         sys.argv.pop(idx)
         if configure_idx < 0:
-            sys.argv.insert(1, 'configure')
-            configure_idx = 1
+            if fetch_idx < 0:
+                configure_idx = 1
+            else:
+                configure_idx = fetch_idx + 1
+            sys.argv.insert(configure_idx, 'configure')
         sys.argv.insert(configure_idx + 1, arg)
+        break
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
