@@ -588,7 +588,7 @@ class Configure(build_ext):
 class FetchCommand(Command):
     """Fetch libzmq sources, that's it."""
     
-    description = "Fetch libzmq sources into bundled"
+    description = "Fetch libzmq sources into bundled/zeromq"
     
     user_options = [ ]
     
@@ -601,6 +601,9 @@ class FetchCommand(Command):
     def run(self):
         # fetch sources for libzmq extension:
         bundledir = "bundled"
+        if os.path.exists(bundledir):
+            info("Scrubbing directory: %s" % bundledir)
+            shutil.rmtree(bundledir)
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
         fetch_libzmq(bundledir)
