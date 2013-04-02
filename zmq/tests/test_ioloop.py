@@ -18,6 +18,7 @@ import threading
 import zmq
 from zmq.tests import BaseZMQTestCase
 from zmq.eventloop import ioloop
+from zmq.eventloop.minitornado.ioloop import _Timeout
 
 
 #-----------------------------------------------------------------------------
@@ -68,10 +69,11 @@ class TestIOLoop(BaseZMQTestCase):
     
     def test_timeout_compare(self):
         """test timeout comparisons"""
-        t = ioloop._Timeout(1,2)
-        t2 = ioloop._Timeout(1,3)
+        loop = ioloop.IOLoop()
+        t = _Timeout(1, 2, loop)
+        t2 = _Timeout(1, 3, loop)
         self.assertEqual(t < t2, id(t) < id(t2))
-        t2 = ioloop._Timeout(2,1)
+        t2 = _Timeout(2,1, loop)
         self.assertTrue(t < t2)
 
     def test_poller_events(self):
