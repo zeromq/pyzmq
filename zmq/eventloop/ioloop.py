@@ -59,7 +59,7 @@ class DelayedCallback(PeriodicCallback):
     def __init__(self, callback, callback_time, io_loop=None):
         # PeriodicCallback require callback_time to be positive
         warnings.warn("""DelayedCallback is deprecated.
-        Use loop.add_timeout instead.""", warnings.DeprecationWarning)
+        Use loop.add_timeout instead.""", DeprecationWarning)
         callback_time = max(callback_time, 1e-3)
         super(DelayedCallback, self).__init__(callback, callback_time, io_loop)
     

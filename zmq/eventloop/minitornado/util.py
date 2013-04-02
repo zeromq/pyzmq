@@ -12,6 +12,8 @@ and `.Resolver`.
 
 from __future__ import absolute_import, division, print_function, with_statement
 
+import sys
+
 
 def import_object(name):
     """Imports an object by name.
@@ -45,6 +47,30 @@ else:
     bytes_type = str
     unicode_type = unicode
     basestring_type = basestring
+
+
+if sys.version_info > (3,):
+    exec("""
+def raise_exc_info(exc_info):
+    raise exc_info[1].with_traceback(exc_info[2])
+
+def exec_in(code, glob, loc=None):
+    if isinstance(code, str):
+        code = compile(code, '<string>', 'exec', dont_inherit=True)
+    exec(code, glob, loc)
+""")
+else:
+    exec("""
+def raise_exc_info(exc_info):
+    raise exc_info[0], exc_info[1], exc_info[2]
+
+def exec_in(code, glob, loc=None):
+    if isinstance(code, basestring):
+        # exec(string) inherits the caller's future imports; compile
+        # the string first to prevent that.
+        code = compile(code, '<string>', 'exec', dont_inherit=True)
+    exec code in glob, loc
+""")
 
 
 class Configurable(object):

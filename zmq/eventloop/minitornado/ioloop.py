@@ -56,7 +56,7 @@ try:
 except ImportError:
     import _thread as thread  # py3
 
-from tornado.platform.auto import set_close_exec, Waker
+from .platform.auto import set_close_exec, Waker
 
 
 class TimeoutError(Exception):
@@ -200,6 +200,11 @@ class IOLoop(Configurable):
 
     @classmethod
     def configurable_default(cls):
+        # this is the only patch to IOLoop:
+        from zmq.eventloop.ioloop import ZMQIOLoop
+        return ZMQIOLoop
+        # the remainder of this method is unused,
+        # but left for preservation reasons
         if hasattr(select, "epoll"):
             from tornado.platform.epoll import EPollIOLoop
             return EPollIOLoop
