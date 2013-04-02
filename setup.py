@@ -70,10 +70,10 @@ except ImportError:
 from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq, merge,
     config_from_prefix,
-    warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
+    info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
-    test_compilation, compile_and_run
+    test_compilation, compile_and_run,
     )
 
 #-----------------------------------------------------------------------------
@@ -100,15 +100,24 @@ doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 # but always assign it to configure
 
 configure_idx = -1
+fetch_idx = -1
 for idx, arg in enumerate(list(sys.argv)):
+    # track index of configure and fetch_libzmq
     if arg == 'configure':
         configure_idx = idx
+    elif arg == 'fetch_libzmq':
+        fetch_idx = idx
+    
     if arg.startswith('--zmq='):
         sys.argv.pop(idx)
         if configure_idx < 0:
-            sys.argv.insert(1, 'configure')
-            configure_idx = 1
+            if fetch_idx < 0:
+                configure_idx = 1
+            else:
+                configure_idx = fetch_idx + 1
+            sys.argv.insert(configure_idx, 'configure')
         sys.argv.insert(configure_idx + 1, arg)
+        break
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
@@ -377,7 +386,7 @@ class Configure(build_ext):
             return
         
         line()
-        print ("Using bundled libzmq")
+        info("Using bundled libzmq")
         
         # fetch sources for libzmq extension:
         if not os.path.exists(bundledir):
@@ -437,7 +446,7 @@ class Configure(build_ext):
         
         line()
         
-        print ('\n'.join([
+        warn('\n'.join([
         "Failed to build or run libzmq detection test.",
         "",
         "If you expected pyzmq to link against an installed libzmq, please check to make sure:",
@@ -454,14 +463,14 @@ class Configure(build_ext):
         
         # ultra-lazy pip detection:
         if 'pip' in ' '.join(sys.argv):
-            print ('\n'.join([
+            info('\n'.join([
         "If you expected to get a binary install (egg), we have those for",
         "current Pythons on OS X and Windows. These can be installed with",
         "easy_install, but PIP DOES NOT SUPPORT EGGS.",
         "",
         ]))
         
-        print ('\n'.join([
+        info('\n'.join([
             "You can skip all this detection/waiting nonsense if you know",
             "you want pyzmq to bundle libzmq as an extension by passing:",
             "",
@@ -477,7 +486,7 @@ class Configure(build_ext):
             sys.stdout.flush()
             time.sleep(1)
         
-        print ("")
+        info("")
         
         return self.bundle_libzmq_extension()
         
@@ -497,14 +506,14 @@ class Configure(build_ext):
                 settings['runtime_library_dirs'] = [ os.path.abspath(pjoin('.', 'zmq')) ]
         
         line()
-        print ("Configure: Autodetecting ZMQ settings...")
-        print ("    Custom ZMQ dir:       %s" % prefix)
+        info("Configure: Autodetecting ZMQ settings...")
+        info("    Custom ZMQ dir:       %s" % prefix)
         try:
             detected = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
         finally:
             self.erase_tempdir()
         
-        print ("    ZMQ version detected: %s" % v_str(detected['vers']))
+        info("    ZMQ version detected: %s" % v_str(detected['vers']))
         
         return detected
     
@@ -516,7 +525,7 @@ class Configure(build_ext):
     def run(self):
         cfg = self.config
         if 'PyPy' in sys.version:
-            print ("PyPy: Nothing to configure")
+            info("PyPy: Nothing to configure")
             return
         
         if cfg['libzmq_extension']:
@@ -550,14 +559,14 @@ class Configure(build_ext):
         except Exception:
             etype, evalue, tb = sys.exc_info()
             # print the error as distutils would if we let it raise:
-            print ("\nerror: %s\n" % evalue)
+            info("\nerror: %s\n" % evalue)
         else:
             self.finish_run()
             return
         
         # try fallback on /usr/local on *ix if no prefix is given
         if not zmq_prefix and not sys.platform.startswith('win'):
-            print ("Failed with default libzmq, trying again with /usr/local")
+            info("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
             zmq_prefix = cfg['zmq_prefix'] = '/usr/local'
             self.init_settings_from_config()
@@ -566,7 +575,7 @@ class Configure(build_ext):
             except Exception:
                 etype, evalue, tb = sys.exc_info()
                 # print the error as distutils would if we let it raise:
-                print ("\nerror: %s\n" % evalue)
+                info("\nerror: %s\n" % evalue)
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
@@ -588,7 +597,7 @@ class Configure(build_ext):
 class FetchCommand(Command):
     """Fetch libzmq sources, that's it."""
     
-    description = "Fetch libzmq sources into bundled"
+    description = "Fetch libzmq sources into bundled/zeromq"
     
     user_options = [ ]
     
@@ -601,6 +610,9 @@ class FetchCommand(Command):
     def run(self):
         # fetch sources for libzmq extension:
         bundledir = "bundled"
+        if os.path.exists(bundledir):
+            info("Scrubbing directory: %s" % bundledir)
+            shutil.rmtree(bundledir)
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
         fetch_libzmq(bundledir)
@@ -651,7 +663,7 @@ class TestCommand(Command):
             "If you did build pyzmq in-place, then this is a real error."]))
             sys.exit(1)
         
-        print ("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
+        info("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
         
         if nose is None:
             warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
@@ -673,17 +685,17 @@ class GitRevisionCommand(Command):
         try:
             p = Popen('git log -1'.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
         except IOError:
-            print ("No git found, skipping git revision")
+            warn("No git found, skipping git revision")
             return
         
         if p.wait():
-            print ("checking git branch failed")
-            print (p.stderr.read())
+            warn("checking git branch failed")
+            info(p.stderr.read())
             return
         
         line = p.stdout.readline().decode().strip()
         if not line.startswith('commit'):
-            print ("bad commit line: %r"%line)
+            warn("bad commit line: %r" % line)
             return
         
         rev = line.split()[-1]
