@@ -57,10 +57,10 @@ class TestImports(TestCase):
     def test_eventloop(self):
         """test eventloop imports"""
         import zmq.eventloop
-        from zmq.eventloop import stack_context
         from zmq.eventloop import ioloop
         from zmq.eventloop import zmqstream
-        from zmq.eventloop.platform import auto
+        from zmq.eventloop.minitornado.platform import auto
+        from zmq.eventloop.minitornado import ioloop
     
     def test_utils(self):
         """test util imports"""

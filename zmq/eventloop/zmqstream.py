@@ -29,7 +29,7 @@ except ImportError:
     import pickle
 
 from zmq.eventloop.ioloop import IOLoop
-from zmq.eventloop import stack_context
+from zmq.eventloop.minitornado import stack_context
 
 try:
     from queue import Queue
