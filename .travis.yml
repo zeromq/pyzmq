@@ -5,14 +5,21 @@ python:
   - 2.7
   - 3.2
   - 3.3
+  - pypy
 env:
     - ZMQ=
     - ZMQ=bundled
 before_install:
-  - sudo apt-get install -qq libzmq3-dev
-  - pip install -q --use-mirrors cython
+  - sudo apt-get install -qq libzmq3-dev cython
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install cffi --use-mirrors; fi
 
 install:
+  - /usr/bin/python setup.py cython
   - python setup.py build_ext --inplace --zmq=$ZMQ
+
+matrix:
+  exclude:
+    - python: pypy
+      ZMQ: bundled
 
 script: python setup.py test
