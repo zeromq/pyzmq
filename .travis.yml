@@ -9,6 +9,7 @@ env:
     - ZMQ=bundled
     - ZMQ=
 before_install:
+  - sudo apt-get install -qq libzmq3-dev
   - pip install -q --use-mirrors cython
 
 install:
