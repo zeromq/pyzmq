@@ -6,8 +6,8 @@ python:
   - 3.2
   - 3.3
 env:
-    - ZMQ=bundled
     - ZMQ=
+    - ZMQ=bundled
 before_install:
   - sudo apt-get install -qq libzmq3-dev
   - pip install -q --use-mirrors cython
