@@ -11,8 +11,8 @@ env:
     - ZMQ=bundled
 before_install:
   - sudo apt-get install -qq libzmq3-dev
-  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install cffi --use-mirrors; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install cython --use-mirrors; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -q --use-mirrors cffi; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install -q --use-mirrors cython; fi
 
 install:
   # uncomment this when travis ships Cython ≥ 0.16
