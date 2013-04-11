@@ -20,6 +20,6 @@ install:
 matrix:
   exclude:
     - python: pypy
-      ZMQ: bundled
+      env: ZMQ=bundled
 
 script: python setup.py test
