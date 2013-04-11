@@ -10,11 +10,13 @@ env:
     - ZMQ=
     - ZMQ=bundled
 before_install:
-  - sudo apt-get install -qq libzmq3-dev cython
+  - sudo apt-get install -qq libzmq3-dev
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install cffi --use-mirrors; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install cython --use-mirrors; fi
 
 install:
-  - /usr/bin/python setup.py cython
+  # uncomment this when travis ships Cython ≥ 0.16
+  # - /usr/bin/python setup.py cython
   - python setup.py build_ext --inplace --zmq=$ZMQ
 
 matrix:
