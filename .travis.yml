@@ -15,8 +15,6 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install -q --use-mirrors cython; fi
 
 install:
-  # uncomment this when travis ships Cython ≥ 0.16
-  # - /usr/bin/python setup.py cython
   - python setup.py build_ext --inplace --zmq=$ZMQ
 
 matrix:
