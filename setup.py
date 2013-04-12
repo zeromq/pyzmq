@@ -855,10 +855,10 @@ submodules = dict(
 try:
     import Cython
     if V(Cython.__version__) < V('0.16'):
-        raise ImportError("Cython >= 0.16 required, have %s" % Cython.__version__)
+        raise ImportError("Cython >= 0.16 required, found %s" % Cython.__version__)
     from Cython.Distutils import build_ext as build_ext_c
     cython=True
-except ImportError:
+except Exception:
     cython=False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
@@ -879,8 +879,12 @@ except ImportError:
             except ImportError:
                 warn("Cython is missing")
             else:
-                if V(Cython.__version__) < V('0.16'):
-                    warn("Cython >= 0.16 required for compiling Cython sources, but we have %s" % Cython.__version__)
+                cv = getattr(Cython, "__version__", None)
+                if cv is None or V(cv) < V('0.16'):
+                    warn(
+                        "Cython >= 0.16 is required for compiling Cython sources, "
+                        "found: %s" % (cv or "super old")
+                    )
     cmdclass['cython'] = MissingCython
 else:
     
