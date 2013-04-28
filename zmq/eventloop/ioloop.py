@@ -153,6 +153,30 @@ class ZMQIOLoop(PollIOLoop):
             PollIOLoop.configure(ZMQIOLoop)
         return PollIOLoop.instance()
     
+    def close(self, all_fds=False):
+        """override to use *method* to close FDs
+        
+        instead of os.close on everything, which doesn't work on zmq Sockets.
+        
+        Should be fixed in a future tornado release.
+        """
+        with self._callback_lock:
+            self._closing = True
+        self.remove_handler(self._waker.fileno())
+        if all_fds:
+            for fd in self._handlers.keys():
+                try:
+                    # begin patch
+                    try:
+                        fd.close()
+                    except AttributeError:
+                        os.close(fd)
+                    # end patch
+                except Exception:
+                    gen_log.debug("error closing fd %s", fd, exc_info=True)
+        self._waker.close()
+        self._impl.close()
+    
     def start(self):
         try:
             super(ZMQIOLoop, self).start()
