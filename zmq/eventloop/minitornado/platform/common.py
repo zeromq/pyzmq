@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 import errno
 import socket
 
-from .platform import interface
+from . import interface
 
 
 class Waker(interface.Waker):
