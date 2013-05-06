@@ -37,7 +37,7 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (3,2,2)
+bundled_version = (3,2,3)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 # util no longer used
