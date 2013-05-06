@@ -37,12 +37,9 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (3,2,2)
+bundled_version = (3,2,3)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
-# util no longer used
-util = "util-linux-2.21.tar.gz"
-util_url = "http://www.kernel.org/pub/linux/utils/util-linux/v2.21/" + util
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -124,58 +121,6 @@ def stage_platform_hpp(zmqroot):
     
     info("staging platform.hpp from: %s" % platform_dir)
     shutil.copy(pjoin(platform_dir, 'platform.hpp'), platform_hpp)
-
-
-# fetch/patch_uuid no longer needed for libzmq >= 3
-
-
-def fetch_uuid(savedir):
-    """download, extract, and patch libuuid sources"""
-    dest = pjoin(savedir, 'uuid')
-    if os.path.exists(dest):
-        info("already have %s" % dest)
-        return
-    
-    fname = fetch_archive(savedir, util_url, util)
-    tf = tarfile.open(fname)
-    util_name = untgz(util)
-    uuid_path = util_name+'/libuuid/src'
-    uuid = filter(
-        lambda m: m.name.startswith(uuid_path) and not m.name.endswith("nt.c"),
-        tf.getmembers()
-    )
-    # uuid_members = map(tf.getmember, uuid_names)
-    tf.extractall(savedir, uuid)
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    shutil.move(pjoin(savedir, util_name, 'libuuid', 'src'), dest)
-    shutil.rmtree(pjoin(savedir, util_name))
-    
-    patch_uuid(dest)
-
-
-def patch_uuid(uuid_dir):
-    """patch uuid.h with a few defines
-    
-    from pyzmq-static
-    """
-    info("patching gen_uuid.c")
-    gen_uuid = pjoin(uuid_dir, "gen_uuid.c")
-    with open(gen_uuid) as f:
-        lines = f.readlines()
-    
-    if 'pyzmq-patch' in lines[0]:
-        info("already patched")
-        return
-    else:
-        lines.insert(0, "// end pyzmq-patch\n")
-        for h in ('UNISTD', 'STDLIB', 'SYS_FILE'):
-            lines.insert(0, "#define HAVE_%s_H\n" % h)
-        lines.insert(0, "// begin pyzmq-patch\n")
-
-    with open(gen_uuid, 'w') as f:
-        f.writelines(lines)
-    
 
 
 def copy_and_patch_libzmq(ZMQ, libzmq):
