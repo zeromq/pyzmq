@@ -25,7 +25,6 @@ Authors
 from __future__ import absolute_import, division, with_statement
 
 import os
-import logging
 import time
 import warnings
 
@@ -44,8 +43,10 @@ except (ImportError, AttributeError):
 try:
     # tornado ≥ 3
     from tornado.ioloop import PollIOLoop, PeriodicCallback
+    from tornado.log import gen_log
 except ImportError:
     from .minitornado.ioloop import PollIOLoop, PeriodicCallback
+    from .minitornado.log import gen_log
 
 
 class DelayedCallback(PeriodicCallback):
@@ -77,7 +78,7 @@ class DelayedCallback(PeriodicCallback):
         try:
             self.callback()
         except Exception:
-            logging.error("Error in delayed callback", exc_info=True)
+            gen_log.error("Error in delayed callback", exc_info=True)
 
 
 class ZMQPoller(object):
@@ -174,7 +175,7 @@ class ZMQIOLoop(PollIOLoop):
                         os.close(fd)
                     # end patch
                 except Exception:
-                    logging.debug("error closing fd %s", fd, exc_info=True)
+                    gen_log.debug("error closing fd %s", fd, exc_info=True)
         self._waker.close()
         self._impl.close()
     
