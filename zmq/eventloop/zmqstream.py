@@ -18,7 +18,6 @@
 from __future__ import with_statement
 
 import sys
-import logging
 
 import zmq
 from zmq.utils import jsonapi
@@ -28,8 +27,15 @@ try:
 except ImportError:
     import pickle
 
-from zmq.eventloop.ioloop import IOLoop
-from zmq.eventloop.minitornado import stack_context
+from .ioloop import IOLoop
+
+try:
+    # gen_log will only import from >= 3.0
+    from tornado.log import gen_log
+    from tornado import stack_context
+except ImportError:
+    from .minitornado.log import gen_log
+    from .minitornado import stack_context
 
 try:
     from queue import Queue
@@ -122,11 +128,11 @@ class ZMQStream(object):
     
     def stop_on_err(self):
         """DEPRECATED, does nothing"""
-        logging.warn("on_err does nothing, and will be removed")
+        gen_log.warn("on_err does nothing, and will be removed")
     
     def on_err(self, callback):
         """DEPRECATED, does nothing"""
-        logging.warn("on_err does nothing, and will be removed")
+        gen_log.warn("on_err does nothing, and will be removed")
     
     def on_recv(self, callback, copy=True):
         """Register a callback for when a message is ready to recv.
@@ -400,7 +406,7 @@ class ZMQStream(object):
             with stack_context.NullContext():
                 callback(*args, **kwargs)
         except:
-            logging.error("Uncaught exception, closing connection.",
+            gen_log.error("Uncaught exception, closing connection.",
                           exc_info=True)
             # Close the socket on an uncaught exception from a user callback
             # (It would eventually get closed when the socket object is
@@ -416,12 +422,12 @@ class ZMQStream(object):
         an event on my socket is posted. It dispatches to _handle_recv, etc."""
         # print "handling events"
         if not self.socket:
-            logging.warning("Got events for closed stream %s", fd)
+            gen_log.warning("Got events for closed stream %s", fd)
             return
         try:
             # dispatch events:
             if events & IOLoop.ERROR:
-                logging.error("got POLLERR event on ZMQStream, which doesn't make sense")
+                gen_log.error("got POLLERR event on ZMQStream, which doesn't make sense")
                 return
             if events & IOLoop.READ:
                 self._handle_recv()
@@ -435,7 +441,7 @@ class ZMQStream(object):
             # rebuild the poll state
             self._rebuild_io_state()
         except:
-            logging.error("Uncaught exception, closing connection.",
+            gen_log.error("Uncaught exception, closing connection.",
                           exc_info=True)
             self.close()
             raise
@@ -451,7 +457,7 @@ class ZMQStream(object):
                 # state changed since poll event
                 pass
             else:
-                logging.error("RECV Error: %s"%zmq.strerror(e.errno))
+                gen_log.error("RECV Error: %s"%zmq.strerror(e.errno))
         else:
             if self._recv_callback:
                 callback = self._recv_callback
@@ -466,14 +472,14 @@ class ZMQStream(object):
         if self._flushed:
             return
         if not self.sending():
-            logging.error("Shouldn't have handled a send event")
+            gen_log.error("Shouldn't have handled a send event")
             return
         
         msg, kwargs = self._send_queue.get()
         try:
             status = self.socket.send_multipart(msg, **kwargs)
         except zmq.ZMQError as e:
-            logging.error("SEND Error: %s", e)
+            gen_log.error("SEND Error: %s", e)
             status = e
         if self._send_callback:
             callback = self._send_callback
