@@ -24,6 +24,7 @@ Authors
 
 from __future__ import absolute_import, division, with_statement
 
+import os
 import logging
 import time
 import warnings
@@ -173,7 +174,7 @@ class ZMQIOLoop(PollIOLoop):
                         os.close(fd)
                     # end patch
                 except Exception:
-                    gen_log.debug("error closing fd %s", fd, exc_info=True)
+                    logging.debug("error closing fd %s", fd, exc_info=True)
         self._waker.close()
         self._impl.close()
     
