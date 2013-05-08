@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import sys
 import time
+import warnings
 
 import zmq
 
@@ -26,6 +27,10 @@ import gevent
 from gevent.event import AsyncResult
 from gevent.hub import get_hub
 
+if hasattr(zmq, 'RCVTIMEO'):
+    TIMEOS = (zmq.RCVTIMEO, zmq.SNDTIMEO)
+else:
+    TIMEOS = ()
 
 def _stop(evt):
     """simple wrapper for stopping an Event, allowing for method rename in gevent 1.0"""
@@ -260,11 +265,18 @@ class _Socket(_original_Socket):
     
     def get(self, opt):
         """trigger state_changed on getsockopt(EVENTS)"""
+        if opt in TIMEOS:
+            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
         optval = super(_Socket, self).get(opt)
         if opt == zmq.EVENTS:
             self.__state_changed()
         return optval
     
+    def set(self, opt, val):
+        """set socket option"""
+        if opt in TIMEOS:
+            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
+        return super(_Socket, self).set(opt, val)
 
 
 class _Context(_original_Context):
