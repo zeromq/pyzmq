@@ -15,10 +15,11 @@
 import sys
 import time
 import errno
+import warnings
 
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy
+    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy, skip_if
 )
 from zmq.utils.strtypes import bytes, unicode
 
@@ -390,5 +391,24 @@ if have_gevent:
             timeout.start()
             self.assertRaises(gevent.Timeout, b.recv)
             g.kill()
+        
+        @skip_if(not hasattr(zmq, 'RCVTIMEO'))
+        def test_warn_set_timeo(self):
+            s = self.context.socket(zmq.REQ)
+            with warnings.catch_warnings(record=True) as w:
+                s.rcvtimeo = 5
+            s.close()
+            self.assertEqual(len(w), 1)
+            self.assertEqual(w[0].category, UserWarning)
+            
+
+        @skip_if(not hasattr(zmq, 'SNDTIMEO'))
+        def test_warn_get_timeo(self):
+            s = self.context.socket(zmq.REQ)
+            with warnings.catch_warnings(record=True) as w:
+                s.sndtimeo
+            s.close()
+            self.assertEqual(len(w), 1)
+            self.assertEqual(w[0].category, UserWarning)
 
 
