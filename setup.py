@@ -716,16 +716,34 @@ class GitRevisionCommand(Command):
 
 class CleanCommand(Command):
     """Custom distutils command to clean the .so and .pyc files."""
+    user_options = [('all', 'a',
+         "remove all build output, not just temporary by-products")
+    ]
 
-    user_options = [ ]
+    boolean_options = ['all']
 
     def initialize_options(self):
+        self.all = None
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
         self._clean_me = []
         self._clean_trees = []
+        for root, dirs, files in list(os.walk('buildutils')):
+            for f in files:
+                if os.path.splitext(f)[-1] == '.pyc':
+                    self._clean_me.append(pjoin(root, f))
+
         for root, dirs, files in list(os.walk('zmq')):
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd'):
                     self._clean_me.append(pjoin(root, f))
+                # remove generated cython files
+                if self.all and os.path.splitext(f)[-1] == '.c':
+                    self._clean_me.append(pjoin(root, f))
+
             for d in dirs:
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
@@ -736,13 +754,6 @@ class CleanCommand(Command):
 
         bundled = glob(pjoin('zmq', 'libzmq*'))
         self._clean_me.extend(bundled)
-        
-
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
         for clean_me in self._clean_me:
             try:
                 os.unlink(clean_me)
