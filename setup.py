@@ -731,6 +731,11 @@ class CleanCommand(Command):
     def run(self):
         self._clean_me = []
         self._clean_trees = []
+        for root, dirs, files in list(os.walk('buildutils')):
+            for f in files:
+                if os.path.splitext(f)[-1] == '.pyc':
+                    self._clean_me.append(pjoin(root, f))
+
         for root, dirs, files in list(os.walk('zmq')):
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd'):
