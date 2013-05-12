@@ -15,7 +15,7 @@
 #-----------------------------------------------------------------------------
 
 from .attrsettr import AttributeSetter
-from .backend import Frame as FrameBase
+from zmq.backend import Frame as FrameBase
 
 #-----------------------------------------------------------------------------
 # Code

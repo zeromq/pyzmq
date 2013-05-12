@@ -1,35 +1,41 @@
 # -*- coding: utf8 -*-
 
 import sys
+import time
+
 from unittest import TestCase
 
 from zmq.tests import BaseZMQTestCase, SkipTest
 
+try:
+    from zmq.backend.cffi import (
+        zmq_version_info,
+        PUSH, PULL, IDENTITY,
+        REQ, REP, NOBLOCK, POLLIN, POLLOUT,
+    )
+    from zmq.backend.cffi._cffi import ffi, C
+    have_ffi_backend = True
+except ImportError:
+    have_ffi_backend = False
+
 
 class TestCffiBackend(TestCase):
     def setUp(self):
-        if not 'PyPy' in sys.version:
+        if not have_ffi_backend or not 'PyPy' in sys.version:
             raise SkipTest('PyPy Tests Only')
 
     def test_zmq_version_info(self):
-        from zmq.cffi_core._cffi import zmq_version_info
-
         version = zmq_version_info()
 
         assert version[0] in (2, 3)
 
     def test_zmq_ctx_new_destroy(self):
-        from zmq.cffi_core._cffi import ffi, C
-
         ctx = C.zmq_ctx_new()
 
         assert ctx != ffi.NULL
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_socket_open_close(self):
-        from zmq.cffi_core._cffi import ffi, C
-        from zmq.cffi_core.constants import PUSH
-
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, PUSH)
 
@@ -39,9 +45,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_setsockopt(self):
-        from zmq.cffi_core._cffi import C, ffi
-        from zmq.cffi_core.constants import PUSH, IDENTITY
-
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, PUSH)
 
@@ -55,9 +58,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_getsockopt(self):
-        from zmq.cffi_core._cffi import C, ffi
-        from zmq.cffi_core.constants import PUSH, IDENTITY
-
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, PUSH)
 
@@ -82,9 +82,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_bind(self):
-        from zmq.cffi_core._cffi import C, ffi
-        from zmq.cffi_core.constants import PUSH
-
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, 8)
 
@@ -95,9 +92,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_bind_connect(self):
-        from zmq.cffi_core._cffi import C, ffi
-        from zmq.cffi_core.constants import PUSH, PULL
-
         ctx = C.zmq_ctx_new()
 
         socket1 = C.zmq_socket(ctx, PUSH)
@@ -113,8 +107,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_ctx_destroy(ctx)
 
     def test_zmq_msg_init_close(self):
-        from zmq.cffi_core._cffi import C, ffi
-
         zmq_msg = ffi.new('zmq_msg_t*')
 
         assert ffi.NULL != zmq_msg
@@ -122,8 +114,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_msg_close(zmq_msg)
 
     def test_zmq_msg_init_size(self):
-        from zmq.cffi_core._cffi import C, ffi
-
         zmq_msg = ffi.new('zmq_msg_t*')
 
         assert ffi.NULL != zmq_msg
@@ -131,8 +121,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_msg_close(zmq_msg)
 
     def test_zmq_msg_init_data(self):
-        from zmq.cffi_core._cffi import C, ffi
-
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[5]', 'Hello')
 
@@ -146,8 +134,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_msg_close(zmq_msg)
 
     def test_zmq_msg_data(self):
-        from zmq.cffi_core._cffi import C, ffi
-
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[]', 'Hello')
         assert 0 == C.zmq_msg_init_data(zmq_msg,
@@ -164,9 +150,6 @@ class TestCffiBackend(TestCase):
 
 
     def test_zmq_send(self):
-        from zmq.cffi_core.constants import REP, REQ
-        from zmq.cffi_core._cffi import C, ffi
-
         ctx = C.zmq_ctx_new()
 
         sender = C.zmq_socket(ctx, REQ)
@@ -175,7 +158,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_bind(receiver, 'tcp://*:7777')
         assert 0 == C.zmq_connect(sender, 'tcp://127.0.0.1:7777')
 
-        import time
         time.sleep(0.1)
 
         zmq_msg = ffi.new('zmq_msg_t*')
@@ -194,9 +176,6 @@ class TestCffiBackend(TestCase):
         assert C.zmq_ctx_destroy(ctx) == 0
 
     def test_zmq_recv(self):
-        from zmq.cffi_core.constants import REQ, REP
-        from zmq.cffi_core._cffi import C, ffi
-
         ctx = C.zmq_ctx_new()
 
         sender = C.zmq_socket(ctx, REQ)
@@ -205,7 +184,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_bind(receiver, 'tcp://*:2222')
         assert 0 == C.zmq_connect(sender, 'tcp://127.0.0.1:2222')
 
-        import time
         time.sleep(0.1)
 
         zmq_msg = ffi.new('zmq_msg_t*')
@@ -230,9 +208,6 @@ class TestCffiBackend(TestCase):
         assert C.zmq_ctx_destroy(ctx) == 0
 
     def test_zmq_poll(self):
-        from zmq.cffi_core.constants import REQ, REP, NOBLOCK, POLLIN, POLLOUT
-        from zmq.cffi_core._cffi import C, ffi
-
         ctx = C.zmq_ctx_new()
 
         sender = C.zmq_socket(ctx, REQ)
@@ -266,7 +241,6 @@ class TestCffiBackend(TestCase):
         print(ffi.string(C.zmq_strerror(C.zmq_errno())))
         assert ret == 5
 
-        import time
         time.sleep(0.2)
 
         ret = C.zmq_poll(receiver_pollitem, 1, 0)
@@ -305,7 +279,6 @@ class TestCffiBackend(TestCase):
 
         assert 11 == C.zmq_msg_send(zmq_msg_again, receiver, 0)
 
-        import time
         time.sleep(0.2)
 
         assert 0 <= C.zmq_poll(sender_pollitem, 1, 0)
@@ -322,8 +295,6 @@ class TestCffiBackend(TestCase):
         assert 0 == C.zmq_msg_close(zmq_msg_again)
 
     def test_zmq_stopwatch_functions(self):
-        from zmq.cffi_core._cffi import C, ffi
-
         stopwatch = C.zmq_stopwatch_start()
         ret = C.zmq_stopwatch_stop(stopwatch)
 
@@ -331,8 +302,6 @@ class TestCffiBackend(TestCase):
         assert 0 < int(ret)
 
     def test_zmq_sleep(self):
-        from zmq.cffi_core._cffi import C
-
         try:
             C.zmq_sleep(1)
         except Exception as e:

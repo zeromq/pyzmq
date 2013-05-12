@@ -6,10 +6,10 @@ from zmq import Poller as _original_Poller
 
 
 class _Poller(_original_Poller):
-    """Replacement for :class:`zmq.core.Poller`
+    """Replacement for :class:`zmq.Poller`
 
     Ensures that the greened Poller below is used in calls to
-    :meth:`zmq.core.Poller.poll`.
+    :meth:`zmq.Poller.poll`.
     """
 
     def _get_descriptors(self):

@@ -15,7 +15,7 @@
 
 import re
 
-from .backend import zmq_version_info
+from zmq.backend import zmq_version_info
 
 #-----------------------------------------------------------------------------
 # Code

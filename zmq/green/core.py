@@ -41,7 +41,7 @@ def _stop(evt):
         evt.cancel()
 
 class _Socket(_original_Socket):
-    """Green version of :class:`zmq.core.socket.Socket`
+    """Green version of :class:`zmq.Socket`
 
     The following methods are overridden:
 
@@ -56,7 +56,7 @@ class _Socket(_original_Socket):
     are waited for in the recv and send methods).
 
     Some double underscore prefixes are used to minimize pollution of
-    :class:`zmq.core.socket.Socket`'s namespace.
+    :class:`zmq.Socket`'s namespace.
     """
     __in_send_multipart = False
     __in_recv_multipart = False
@@ -280,7 +280,7 @@ class _Socket(_original_Socket):
 
 
 class _Context(_original_Context):
-    """Replacement for :class:`zmq.core.context.Context`
+    """Replacement for :class:`zmq.Context`
 
     Ensures that the greened Socket above is used in calls to `socket`.
     """
