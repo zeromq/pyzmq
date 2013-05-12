@@ -148,10 +148,10 @@ if have_gevent:
             g = gevent.spawn(zmq.green.device, zmq.QUEUE, rep, rep)
             req.connect('tcp://127.0.0.1:%i' % port)
             req.send(b'hi')
-            timeout = gevent.Timeout(1)
+            timeout = gevent.Timeout(3)
             timeout.start()
             receiver = gevent.spawn(req.recv)
-            self.assertEqual(receiver.get(1), b'hi')
+            self.assertEqual(receiver.get(2), b'hi')
             timeout.cancel()
-            g.kill()
+            g.kill(block=True)
             
