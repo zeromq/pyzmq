@@ -24,8 +24,8 @@
 #-----------------------------------------------------------------------------
 
 from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
-from zmq.core.socket cimport Socket as cSocket
-from zmq.core.checkrc cimport _check_rc
+from zmq.backend.cython.socket cimport Socket as cSocket
+from zmq.backend.cython.checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------
 # Basic device API

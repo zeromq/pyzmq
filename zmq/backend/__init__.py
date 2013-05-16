@@ -1,5 +1,4 @@
-# coding: utf-8
-"""0MQ Frame pure Python methods."""
+"""Import basic exposure of libzmq C API as a backend"""
 
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
@@ -14,16 +13,14 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from .attrsettr import AttributeSetter
-from zmq.backend import Frame as FrameBase
+from .select import public_api, select_backend
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
-class Frame(FrameBase, AttributeSetter):
-    pass
+try:
+    _ns = select_backend('zmq.backend.cython')
+except ImportError:
+    _ns = select_backend('zmq.backend.cffi')
 
-# keep deprecated alias
-Message = Frame
-__all__ = ['Frame', 'Message']
+globals().update(_ns)
+
+__all__ = public_api

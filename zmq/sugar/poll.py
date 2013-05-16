@@ -14,7 +14,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
-from .backend import zmq_poll
+from zmq.backend import zmq_poll
 from .constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------

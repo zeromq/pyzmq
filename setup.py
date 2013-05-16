@@ -269,7 +269,11 @@ class Configure(build_ext):
     
         # include internal directories
         settings.setdefault('include_dirs', [])
-        settings['include_dirs'] += [pjoin('zmq', sub) for sub in ('utils','core','devices')]
+        settings['include_dirs'] += [pjoin('zmq', sub) for sub in (
+            'utils',
+            pjoin('backend', 'cython'),
+            'devices',
+        )]
         
         for ext in self.distribution.ext_modules:
             if ext.name == 'zmq.libzmq':
@@ -826,42 +830,41 @@ cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionComm
             'sdist': CheckSDist,
         }
 
-def pxd(subdir, name):
-    return os.path.abspath(pjoin('zmq', subdir, name+'.pxd'))
+def makename(path, ext):
+    return os.path.abspath(pjoin('zmq', *path)) + ext
 
-def pyx(subdir, name):
-    return os.path.abspath(pjoin('zmq', subdir, name+'.pyx'))
+pxd = lambda *path: makename(path, '.pxd')
+pyx = lambda *path: makename(path, '.pyx')
+dotc = lambda *path: makename(path, '.c')
 
-def dotc(subdir, name):
-    return os.path.abspath(pjoin('zmq', subdir, name+'.c'))
-
-libzmq = pxd('core', 'libzmq')
+libzmq = pxd('backend', 'cython', 'libzmq')
 buffers = pxd('utils', 'buffers')
-message = pxd('core', 'message')
-context = pxd('core', 'context')
-socket = pxd('core', 'socket')
-checkrc = pxd('core', 'checkrc')
+message = pxd('backend', 'cython', 'message')
+context = pxd('backend', 'cython', 'context')
+socket = pxd('backend', 'cython', 'socket')
+stopwatch = pxd('backend', 'cython', 'stopwatch')
+checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
-submodules = dict(
-    core = {'constants': [libzmq],
+submodules = {
+    'backend.cython' : {'constants': [libzmq],
             'error':[libzmq, checkrc],
             '_poll':[libzmq, socket, context, checkrc],
-            'stopwatch':[libzmq, pxd('core','stopwatch'), checkrc],
+            'stopwatch':[libzmq, stopwatch, checkrc],
             'context':[context, libzmq, checkrc],
             'message':[libzmq, buffers, message, checkrc],
             'socket':[context, message, socket, libzmq, buffers, checkrc],
             '_device':[libzmq, socket, context, checkrc],
             '_version':[libzmq],
     },
-    devices = {
+    'devices' : {
             'monitoredqueue':[buffers, libzmq, monqueue, socket, context, checkrc],
     },
-    utils = {
+    'utils' : {
             'initthreads':[libzmq],
             'rebuffer':[buffers],
     },
-)
+}
 
 try:
     import Cython
@@ -928,13 +931,13 @@ else:
 extensions = []
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
-        sources = [pjoin('zmq', submod, pkg+suffix)]
+        sources = [pjoin('zmq', submod.replace('.', os.path.sep), pkg+suffix)]
         if suffix == '.pyx':
             sources.extend(packages[pkg])
         ext = Extension(
             'zmq.%s.%s'%(submod, pkg),
             sources = sources,
-            include_dirs=[pjoin('zmq', sub) for sub in ('utils','core','devices')],
+            include_dirs=[pjoin('zmq', sub) for sub in ('utils',pjoin('backend', 'cython'),'devices')],
         )
         if suffix == '.pyx' and ext.sources[0].endswith('.c'):
             # undo setuptools stupidly clobbering cython sources:
@@ -945,7 +948,7 @@ if 'PyPy' in sys.version:
     extensions = []
 
 package_data = {'zmq':['*.pxd'],
-                'zmq.core':['*.pxd'],
+                'zmq.backend.cython':['*.pxd'],
                 'zmq.devices':['*.pxd'],
                 'zmq.utils':['*.pxd', '*.h'],
 }

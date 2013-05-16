@@ -19,7 +19,7 @@ except (ImportError, AttributeError):
     from threading import Event
 
 from zmq.error import NotDone
-from .backend import Frame
+from zmq.backend import Frame
 
 class MessageTracker(object):
     """MessageTracker(*towatch)
