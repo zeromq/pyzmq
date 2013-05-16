@@ -31,7 +31,7 @@ cdef extern from "getpid_compat.h":
     int getpid()
 
 from zmq.error import ZMQError
-from zmq.core.checkrc cimport _check_rc
+from zmq.backend.cython.checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------
 # Code

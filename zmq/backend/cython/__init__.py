@@ -23,7 +23,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from zmq.core import (constants, error, message, context,
+from . import (constants, error, message, context,
                       socket, stopwatch, _poll, _version, _device )
 
 __all__ = []
@@ -31,13 +31,13 @@ for submod in (constants, error, message, context,
                socket, stopwatch, _poll, _version, _device):
     __all__.extend(submod.__all__)
 
-from zmq.core.constants import *
-from zmq.core.error import *
-from zmq.core.message import *
-from zmq.core.context import *
-from zmq.core.socket import *
-from zmq.core._poll import *
-from zmq.core.stopwatch import *
-from zmq.core._device import *
-from zmq.core._version import *
+from .constants import *
+from .error import *
+from .message import *
+from .context import *
+from .socket import *
+from ._poll import *
+from .stopwatch import *
+from ._device import *
+from ._version import *
 

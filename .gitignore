@@ -1,5 +1,6 @@
 *.pyc
 zmq/*/*.c
+zmq/*/*/*.c
 __pycache__
 build
 dist

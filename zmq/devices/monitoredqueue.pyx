@@ -27,8 +27,8 @@ from libc.string cimport memcpy
 from buffers cimport asbuffer_r
 from libzmq cimport *
 
-from zmq.core.socket cimport Socket
-from zmq.core.checkrc cimport _check_rc
+from zmq.backend.cython.socket cimport Socket
+from zmq.backend.cython.checkrc cimport _check_rc
 
 from zmq import ROUTER, ZMQError
 

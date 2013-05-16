@@ -9,7 +9,7 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from .backend import Context as ContextBase
+from zmq.backend import Context as ContextBase
 from . import constants
 from .attrsettr import AttributeSetter
 from .constants import ENOTSUP, ctx_opt_names

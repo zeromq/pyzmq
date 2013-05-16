@@ -72,9 +72,9 @@ except:
     import pickle
 
 import zmq
-from zmq.core import constants
-from zmq.core.constants import *
-from zmq.core.checkrc cimport _check_rc
+from zmq.backend.cython import constants
+from zmq.backend.cython.constants import *
+from zmq.backend.cython.checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils.strtypes import bytes,unicode,basestring
 

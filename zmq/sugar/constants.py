@@ -13,7 +13,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from .backend import constants
+from zmq.backend import constants
 
 #-----------------------------------------------------------------------------
 # Python module level constants
