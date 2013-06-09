@@ -22,21 +22,11 @@ Classes
   :inherited-members:
 
 
-:class:`IOLoop`
-~~~~~~~~~~~~~~~
+:class:`ZMQIOLoop`
+~~~~~~~~~~~~~~~~~~
 
 
-.. autoclass:: IOLoop
-  :members:
-  :undoc-members:
-  :inherited-members:
-
-
-:class:`PeriodicCallback`
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-.. autoclass:: PeriodicCallback
+.. autoclass:: ZMQIOLoop
   :members:
   :undoc-members:
   :inherited-members:

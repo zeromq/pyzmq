@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.platform.common
+=====================================
+
+Module: :mod:`eventloop.minitornado.platform.common`
+----------------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.platform.common
+
+.. currentmodule:: zmq.eventloop.minitornado.platform.common
+
+:class:`Waker`
+--------------
+
+
+.. autoclass:: Waker
+  :members:
+  :undoc-members:
+  :inherited-members:
+

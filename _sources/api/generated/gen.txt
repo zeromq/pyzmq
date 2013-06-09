@@ -4,6 +4,14 @@
 
    generated/zmq
    generated/zmq.eventloop.ioloop
+   generated/zmq.eventloop.minitornado.concurrent
+   generated/zmq.eventloop.minitornado.ioloop
+   generated/zmq.eventloop.minitornado.platform.common
+   generated/zmq.eventloop.minitornado.platform.interface
+   generated/zmq.eventloop.minitornado.platform.posix
+   generated/zmq.eventloop.minitornado.platform.windows
+   generated/zmq.eventloop.minitornado.stack_context
+   generated/zmq.eventloop.minitornado.util
    generated/zmq.eventloop.zmqstream
    generated/zmq.log.handlers
    generated/zmq.ssh.forward

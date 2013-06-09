@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>zmq &mdash; PyZMQ 13.1.0 documentation</title>
+    <title>eventloop.minitornado.platform.posix &mdash; PyZMQ 13.1.0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -54,15 +54,16 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">zmq</a><ul>
-<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">zmq</span></tt></a></li>
+<li><a class="reference internal" href="#">eventloop.minitornado.platform.posix</a><ul>
+<li><a class="reference internal" href="#module-zmq.eventloop.minitornado.platform.posix">Module: <tt class="docutils literal"><span class="pre">eventloop.minitornado.platform.posix</span></tt></a></li>
+<li><a class="reference internal" href="#waker"><tt class="docutils literal"><span class="pre">Waker</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../../_sources/api/generated/zmq.txt"
+    <li><a href="../../_sources/api/generated/zmq.eventloop.minitornado.platform.posix.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -86,16 +87,48 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="zmq">
-<h1>zmq<a class="headerlink" href="#zmq" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id1">
-<h2><a class="reference internal" href="../zmq.html#module-zmq" title="zmq"><tt class="xref py py-mod docutils literal"><span class="pre">zmq</span></tt></a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-zmq"></span><p>Python bindings for 0MQ.</p>
-<dl class="function">
-<dt id="zmq.get_includes">
-<tt class="descclassname">zmq.</tt><tt class="descname">get_includes</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.get_includes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of directories to include for linking against pyzmq with cython.</p>
+  <div class="section" id="eventloop-minitornado-platform-posix">
+<h1>eventloop.minitornado.platform.posix<a class="headerlink" href="#eventloop-minitornado-platform-posix" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.eventloop.minitornado.platform.posix">
+<span id="module-eventloop-minitornado-platform-posix"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.minitornado.platform.posix</span></tt><a class="headerlink" href="#module-zmq.eventloop.minitornado.platform.posix" title="Permalink to this headline">¶</a></h2>
+<p>Posix implementations of platform-specific functionality.</p>
+</div>
+<div class="section" id="waker">
+<h2><a class="reference internal" href="#zmq.eventloop.minitornado.platform.posix.Waker" title="zmq.eventloop.minitornado.platform.posix.Waker"><tt class="xref py py-class docutils literal"><span class="pre">Waker</span></tt></a><a class="headerlink" href="#waker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.platform.posix.</tt><tt class="descname">Waker</tt><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker.consume">
+<tt class="descname">consume</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker.consume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker.fileno">
+<tt class="descname">fileno</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker.fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker.wake">
+<tt class="descname">wake</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker.wake" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.posix.Waker.write_fileno">
+<tt class="descname">write_fileno</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.Waker.write_fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
+
+<dl class="function">
+<dt id="zmq.eventloop.minitornado.platform.posix.set_close_exec">
+<tt class="descclassname">zmq.eventloop.minitornado.platform.posix.</tt><tt class="descname">set_close_exec</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.posix.set_close_exec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 </div>

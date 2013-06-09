@@ -1,0 +1,60 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.stack_context
+===================================
+
+Module: :mod:`eventloop.minitornado.stack_context`
+--------------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.stack_context
+
+.. currentmodule:: zmq.eventloop.minitornado.stack_context
+
+Classes
+-------
+
+:class:`ExceptionStackContext`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ExceptionStackContext
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`NullContext`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NullContext
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`StackContext`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: StackContext
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`StackContextInconsistentError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: StackContextInconsistentError
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+Function
+--------
+
+
+.. autofunction:: zmq.eventloop.minitornado.stack_context.wrap
+

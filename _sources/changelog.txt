@@ -9,6 +9,15 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+13.1.0
+======
+
+The main new feature is improved tornado 3 compatibility.
+PyZMQ ships a 'minitornado' submodule, which contains a small subset of tornado 3.0.1,
+in order to get the IOLoop base class.  zmq.eventloop.ioloop.IOLoop is now a simple subclass,
+and if the system tornado is ≥ 3.0, then the zmq IOLoop is a proper registered subclass
+of the tornado one itself, and minitornado is entirely unused.
+
 13.0.2
 ======
 

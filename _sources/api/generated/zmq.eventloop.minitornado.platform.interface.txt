@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.platform.interface
+========================================
+
+Module: :mod:`eventloop.minitornado.platform.interface`
+-------------------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.platform.interface
+
+.. currentmodule:: zmq.eventloop.minitornado.platform.interface
+
+:class:`Waker`
+--------------
+
+
+.. autoclass:: Waker
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+.. autofunction:: zmq.eventloop.minitornado.platform.interface.set_close_exec
+

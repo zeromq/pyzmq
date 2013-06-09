@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.platform.windows
+======================================
+
+Module: :mod:`eventloop.minitornado.platform.windows`
+-----------------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.platform.windows
+
+.. currentmodule:: zmq.eventloop.minitornado.platform.windows
+
+.. autofunction:: zmq.eventloop.minitornado.platform.windows.set_close_exec
+

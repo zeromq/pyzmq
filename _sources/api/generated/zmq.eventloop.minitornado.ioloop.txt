@@ -1,0 +1,53 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.ioloop
+============================
+
+Module: :mod:`eventloop.minitornado.ioloop`
+-------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.ioloop
+
+.. currentmodule:: zmq.eventloop.minitornado.ioloop
+
+Classes
+-------
+
+:class:`IOLoop`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: IOLoop
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`PeriodicCallback`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PeriodicCallback
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`PollIOLoop`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: PollIOLoop
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+:class:`TimeoutError`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: TimeoutError
+  :members:
+  :undoc-members:
+  :inherited-members:
+

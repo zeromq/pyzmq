@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+eventloop.minitornado.platform.posix
+====================================
+
+Module: :mod:`eventloop.minitornado.platform.posix`
+---------------------------------------------------
+.. automodule:: zmq.eventloop.minitornado.platform.posix
+
+.. currentmodule:: zmq.eventloop.minitornado.platform.posix
+
+:class:`Waker`
+--------------
+
+
+.. autoclass:: Waker
+  :members:
+  :undoc-members:
+  :inherited-members:
+
+
+.. autofunction:: zmq.eventloop.minitornado.platform.posix.set_close_exec
+

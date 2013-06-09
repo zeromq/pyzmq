@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Eventloops and PyZMQ &mdash; PyZMQ 13.0.2 documentation</title>
+    <title>Eventloops and PyZMQ &mdash; PyZMQ 13.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '13.0.2',
+        VERSION:     '13.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/zeromq.ico"/>
-    <link rel="top" title="PyZMQ 13.0.2 documentation" href="index.html" />
+    <link rel="top" title="PyZMQ 13.1.0 documentation" href="index.html" />
     <link rel="next" title="Asynchronous Logging via PyZMQ" href="logging.html" />
     <link rel="prev" title="Devices in PyZMQ" href="devices.html" /> 
   </head>
@@ -114,7 +114,7 @@
 <h2>Tornado IOLoop<a class="headerlink" href="#tornado-ioloop" title="Permalink to this headline">¶</a></h2>
 <p>Facebook&#8217;s <a class="reference external" href="https://github.com/facebook/tornado">Tornado</a> includes an eventloop for handing poll events on filedescriptors and
 native sockets. We have included a small part of Tornado (specifically its
-<a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#module-zmq.eventloop.ioloop" title="zmq.eventloop.ioloop"><tt class="xref py py-mod docutils literal"><span class="pre">ioloop</span></tt></a>), and adapted its <tt class="xref py py-class docutils literal"><span class="pre">IOStream</span></tt> class into <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a> for
+<a class="reference internal" href="api/generated/zmq.eventloop.minitornado.ioloop.html#module-zmq.eventloop.minitornado.ioloop" title="zmq.eventloop.minitornado.ioloop"><tt class="xref py py-mod docutils literal"><span class="pre">ioloop</span></tt></a>), and adapted its <tt class="xref py py-class docutils literal"><span class="pre">IOStream</span></tt> class into <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream" title="zmq.eventloop.zmqstream.ZMQStream"><tt class="xref py py-class docutils literal"><span class="pre">ZMQStream</span></tt></a> for
 handling poll events on ØMQ sockets. A ZMQStream object works much like a Socket object,
 but instead of calling <a class="reference internal" href="api/zmq.html#zmq.Socket.recv" title="zmq.Socket.recv"><tt class="xref py py-meth docutils literal"><span class="pre">recv()</span></tt></a> directly, you register a callback with
 <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_recv" title="zmq.eventloop.zmqstream.ZMQStream.on_recv"><tt class="xref py py-meth docutils literal"><span class="pre">on_recv()</span></tt></a>. callbacks can also be registered for send events
@@ -122,16 +122,16 @@ with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.h
 <div class="section" id="install">
 <h3><tt class="xref py py-func docutils literal"><span class="pre">install()</span></tt><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
 <p>With PyZMQ&#8217;s ioloop, you can use zmq sockets in any tornado application.  You must first
-install PyZMQ&#8217;s <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a>, with the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">ioloop.install()</span></tt></a> function:</p>
+install PyZMQ&#8217;s <a class="reference internal" href="api/generated/zmq.eventloop.minitornado.ioloop.html#zmq.eventloop.minitornado.ioloop.IOLoop" title="zmq.eventloop.minitornado.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a>, with the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.install" title="zmq.eventloop.ioloop.install"><tt class="xref py py-func docutils literal"><span class="pre">ioloop.install()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">zmq.eventloop</span> <span class="kn">import</span> <span class="n">ioloop</span>
 <span class="n">ioloop</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>This sets the global instance of <tt class="xref py py-class docutils literal"><span class="pre">tornado.ioloop.IOLoop</span></tt> with the global instance of
 our IOLoop class. The reason this must happen is that tornado objects avoid having to pass
-the active IOLoop instance around by having a staticmethod <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop.instance" title="zmq.eventloop.ioloop.IOLoop.instance"><tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt></a>, which
+the active IOLoop instance around by having a staticmethod <a class="reference internal" href="api/generated/zmq.eventloop.minitornado.ioloop.html#zmq.eventloop.minitornado.ioloop.IOLoop.instance" title="zmq.eventloop.minitornado.ioloop.IOLoop.instance"><tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt></a>, which
 always returns the active instance. If PyZMQ&#8217;s IOLoop is installed after the first call to
-<a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop.instance" title="zmq.eventloop.ioloop.IOLoop.instance"><tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt></a> (called in almost every tornado object constructor), then it will
+<a class="reference internal" href="api/generated/zmq.eventloop.minitornado.ioloop.html#zmq.eventloop.minitornado.ioloop.IOLoop.instance" title="zmq.eventloop.minitornado.ioloop.IOLoop.instance"><tt class="xref py py-meth docutils literal"><span class="pre">IOLoop.instance()</span></tt></a> (called in almost every tornado object constructor), then it will
 raise an <tt class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></tt>, because the global IOLoop instance has already been
 created, and proceeding would result in not all objects being associated with the right
 IOLoop.</p>
@@ -156,7 +156,7 @@ your ZMQStream constructors.</p>
 <h3><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt><a class="headerlink" href="#send" title="Permalink to this headline">¶</a></h3>
 <p>ZMQStream objects do have <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send" title="zmq.eventloop.zmqstream.ZMQStream.send"><tt class="xref py py-meth docutils literal"><span class="pre">send()</span></tt></a> and <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.send_multipart" title="zmq.eventloop.zmqstream.ZMQStream.send_multipart"><tt class="xref py py-meth docutils literal"><span class="pre">send_multipart()</span></tt></a>
 methods, which behaves the same way as <a class="reference internal" href="api/zmq.html#zmq.Socket.send" title="zmq.Socket.send"><tt class="xref py py-meth docutils literal"><span class="pre">Socket.send()</span></tt></a>, but instead of sending right
-away, the <a class="reference internal" href="api/generated/zmq.eventloop.ioloop.html#zmq.eventloop.ioloop.IOLoop" title="zmq.eventloop.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a> will wait until socket is able to send (for instance if <tt class="docutils literal"><span class="pre">HWM</span></tt>
+away, the <a class="reference internal" href="api/generated/zmq.eventloop.minitornado.ioloop.html#zmq.eventloop.minitornado.ioloop.IOLoop" title="zmq.eventloop.minitornado.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a> will wait until socket is able to send (for instance if <tt class="docutils literal"><span class="pre">HWM</span></tt>
 is met, or a <tt class="docutils literal"><span class="pre">REQ/REP</span></tt> pattern prohibits sending at a certain point). Messages sent via
 send will also be passed to the callback registered with <a class="reference internal" href="api/generated/zmq.eventloop.zmqstream.html#zmq.eventloop.zmqstream.ZMQStream.on_send" title="zmq.eventloop.zmqstream.ZMQStream.on_send"><tt class="xref py py-meth docutils literal"><span class="pre">on_send()</span></tt></a> after
 sending.</p>

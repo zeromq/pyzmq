@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventloop.minitornado.platform.interface &mdash; PyZMQ 13.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '13.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ 13.1.0 documentation" href="../../index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eventloop.minitornado.platform.interface</a><ul>
+<li><a class="reference internal" href="#module-zmq.eventloop.minitornado.platform.interface">Module: <tt class="docutils literal"><span class="pre">eventloop.minitornado.platform.interface</span></tt></a></li>
+<li><a class="reference internal" href="#waker"><tt class="docutils literal"><span class="pre">Waker</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.eventloop.minitornado.platform.interface.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="eventloop-minitornado-platform-interface">
+<h1>eventloop.minitornado.platform.interface<a class="headerlink" href="#eventloop-minitornado-platform-interface" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.eventloop.minitornado.platform.interface">
+<span id="module-eventloop-minitornado-platform-interface"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.minitornado.platform.interface</span></tt><a class="headerlink" href="#module-zmq.eventloop.minitornado.platform.interface" title="Permalink to this headline">¶</a></h2>
+<p>Interfaces for platform-specific functionality.</p>
+<p>This module exists primarily for documentation purposes and as base classes
+for other tornado.platform modules.  Most code should import the appropriate
+implementation from <cite>tornado.platform.auto</cite>.</p>
+</div>
+<div class="section" id="waker">
+<h2><a class="reference internal" href="#zmq.eventloop.minitornado.platform.interface.Waker" title="zmq.eventloop.minitornado.platform.interface.Waker"><tt class="xref py py-class docutils literal"><span class="pre">Waker</span></tt></a><a class="headerlink" href="#waker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.platform.interface.</tt><tt class="descname">Waker</tt><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker" title="Permalink to this definition">¶</a></dt>
+<dd><p>A socket-like object that can wake another thread from <tt class="docutils literal"><span class="pre">select()</span></tt>.</p>
+<p>The <cite>~tornado.ioloop.IOLoop</cite> will add the Waker&#8217;s <cite>fileno()</cite> to
+its <tt class="docutils literal"><span class="pre">select</span></tt> (or <tt class="docutils literal"><span class="pre">epoll</span></tt> or <tt class="docutils literal"><span class="pre">kqueue</span></tt>) calls.  When another
+thread wants to wake up the loop, it calls <cite>wake</cite>.  Once it has woken
+up, it will call <cite>consume</cite> to do any necessary per-wake cleanup.  When
+the <tt class="docutils literal"><span class="pre">IOLoop</span></tt> is closed, it closes its waker too.</p>
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the waker&#8217;s file descriptor(s).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker.consume">
+<tt class="descname">consume</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker.consume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after the listen has woken up to do any necessary cleanup.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker.fileno">
+<tt class="descname">fileno</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker.fileno" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the read file descriptor for this waker.</p>
+<p>Must be suitable for use with <tt class="docutils literal"><span class="pre">select()</span></tt> or equivalent on the
+local platform.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker.wake">
+<tt class="descname">wake</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker.wake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Triggers activity on the waker&#8217;s file descriptor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.platform.interface.Waker.write_fileno">
+<tt class="descname">write_fileno</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.Waker.write_fileno" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the write file descriptor for this waker.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="zmq.eventloop.minitornado.platform.interface.set_close_exec">
+<tt class="descclassname">zmq.eventloop.minitornado.platform.interface.</tt><tt class="descname">set_close_exec</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.platform.interface.set_close_exec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the close-on-exec bit (<tt class="docutils literal"><span class="pre">FD_CLOEXEC</span></tt>)for a file descriptor.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

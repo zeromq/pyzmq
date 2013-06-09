@@ -1,0 +1,783 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>eventloop.minitornado.ioloop &mdash; PyZMQ 13.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '13.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/zeromq.ico"/>
+    <link rel="top" title="PyZMQ 13.1.0 documentation" href="../../index.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.png" border="0" alt="PyZMQ Documentation"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eventloop.minitornado.ioloop</a><ul>
+<li><a class="reference internal" href="#module-zmq.eventloop.minitornado.ioloop">Module: <tt class="docutils literal"><span class="pre">eventloop.minitornado.ioloop</span></tt></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ioloop"><tt class="docutils literal"><span class="pre">IOLoop</span></tt></a></li>
+<li><a class="reference internal" href="#periodiccallback"><tt class="docutils literal"><span class="pre">PeriodicCallback</span></tt></a></li>
+<li><a class="reference internal" href="#pollioloop"><tt class="docutils literal"><span class="pre">PollIOLoop</span></tt></a></li>
+<li><a class="reference internal" href="#timeouterror"><tt class="docutils literal"><span class="pre">TimeoutError</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/api/generated/zmq.eventloop.minitornado.ioloop.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="eventloop-minitornado-ioloop">
+<h1>eventloop.minitornado.ioloop<a class="headerlink" href="#eventloop-minitornado-ioloop" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-zmq.eventloop.minitornado.ioloop">
+<span id="module-eventloop-minitornado-ioloop"></span><h2>Module: <tt class="xref py py-mod docutils literal"><span class="pre">eventloop.minitornado.ioloop</span></tt><a class="headerlink" href="#module-zmq.eventloop.minitornado.ioloop" title="Permalink to this headline">¶</a></h2>
+<p>An I/O event loop for non-blocking sockets.</p>
+<p>Typical applications will use a single <cite>IOLoop</cite> object, in the
+<cite>IOLoop.instance</cite> singleton.  The <cite>IOLoop.start</cite> method should usually
+be called at the end of the <tt class="docutils literal"><span class="pre">main()</span></tt> function.  Atypical applications may
+use more than one <cite>IOLoop</cite>, such as one <cite>IOLoop</cite> per thread, or per <cite>unittest</cite>
+case.</p>
+<p>In addition to I/O events, the <cite>IOLoop</cite> can also schedule time-based events.
+<cite>IOLoop.add_timeout</cite> is a non-blocking alternative to <cite>time.sleep</cite>.</p>
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ioloop">
+<h3><a class="reference internal" href="#zmq.eventloop.minitornado.ioloop.IOLoop" title="zmq.eventloop.minitornado.ioloop.IOLoop"><tt class="xref py py-class docutils literal"><span class="pre">IOLoop</span></tt></a><a class="headerlink" href="#ioloop" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.ioloop.</tt><tt class="descname">IOLoop</tt><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop" title="Permalink to this definition">¶</a></dt>
+<dd><p>A level-triggered I/O loop.</p>
+<p>We use <tt class="docutils literal"><span class="pre">epoll</span></tt> (Linux) or <tt class="docutils literal"><span class="pre">kqueue</span></tt> (BSD and Mac OS X) if they
+are available, or else we fall back on select(). If you are
+implementing a system that needs to handle thousands of
+simultaneous connections, you should use a system that supports
+either <tt class="docutils literal"><span class="pre">epoll</span></tt> or <tt class="docutils literal"><span class="pre">kqueue</span></tt>.</p>
+<p>Example usage for a simple TCP server:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">ioloop</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="k">def</span> <span class="nf">connection_ready</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">events</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">connection</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EWOULDBLOCK</span><span class="p">,</span> <span class="n">errno</span><span class="o">.</span><span class="n">EAGAIN</span><span class="p">):</span>
+                <span class="k">raise</span>
+            <span class="k">return</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">handle_connection</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+
+<span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+<span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+
+<span class="n">io_loop</span> <span class="o">=</span> <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+<span class="n">callback</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">connection_ready</span><span class="p">,</span> <span class="n">sock</span><span class="p">)</span>
+<span class="n">io_loop</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">callback</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">.</span><span class="n">READ</span><span class="p">)</span>
+<span class="n">io_loop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.ERROR">
+<tt class="descname">ERROR</tt><em class="property"> = 24</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.NONE">
+<tt class="descname">NONE</tt><em class="property"> = 0</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.NONE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.READ">
+<tt class="descname">READ</tt><em class="property"> = 1</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.READ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.WRITE">
+<tt class="descname">WRITE</tt><em class="property"> = 4</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.WRITE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.add_callback">
+<tt class="descname">add_callback</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.add_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the given callback on the next I/O loop iteration.</p>
+<p>It is safe to call this method from any thread at any time,
+except from a signal handler.  Note that this is the <strong>only</strong>
+method in <cite>IOLoop</cite> that makes this thread-safety guarantee; all
+other interaction with the <cite>IOLoop</cite> must be done from that
+<cite>IOLoop</cite>&#8216;s thread.  <cite>add_callback()</cite> may be used to transfer
+control from other threads to the <cite>IOLoop</cite>&#8216;s thread.</p>
+<p>To add a callback from a signal handler, see
+<cite>add_callback_from_signal</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.add_callback_from_signal">
+<tt class="descname">add_callback_from_signal</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.add_callback_from_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls the given callback on the next I/O loop iteration.</p>
+<p>Safe for use from a Python signal handler; should not be used
+otherwise.</p>
+<p>Callbacks added with this method will be run without any
+<cite>.stack_context</cite>, to avoid picking up the context of the function
+that was interrupted by the signal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.add_future">
+<tt class="descname">add_future</tt><big>(</big><em>future</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.add_future" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedules a callback on the <tt class="docutils literal"><span class="pre">IOLoop</span></tt> when the given
+<cite>.Future</cite> is finished.</p>
+<p>The callback is invoked with one argument, the
+<cite>.Future</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.add_handler">
+<tt class="descname">add_handler</tt><big>(</big><em>fd</em>, <em>handler</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.add_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers the given handler to receive the given events for fd.</p>
+<p>The <tt class="docutils literal"><span class="pre">events</span></tt> argument is a bitwise or of the constants
+<tt class="docutils literal"><span class="pre">IOLoop.READ</span></tt>, <tt class="docutils literal"><span class="pre">IOLoop.WRITE</span></tt>, and <tt class="docutils literal"><span class="pre">IOLoop.ERROR</span></tt>.</p>
+<p>When an event occurs, <tt class="docutils literal"><span class="pre">handler(fd,</span> <span class="pre">events)</span></tt> will be run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.add_timeout">
+<tt class="descname">add_timeout</tt><big>(</big><em>deadline</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.add_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the <tt class="docutils literal"><span class="pre">callback</span></tt> at the time <tt class="docutils literal"><span class="pre">deadline</span></tt> from the I/O loop.</p>
+<p>Returns an opaque handle that may be passed to
+<cite>remove_timeout</cite> to cancel.</p>
+<p><tt class="docutils literal"><span class="pre">deadline</span></tt> may be a number denoting a time (on the same
+scale as <cite>IOLoop.time</cite>, normally <cite>time.time</cite>), or a
+<cite>datetime.timedelta</cite> object for a deadline relative to the
+current time.</p>
+<p>Note that it is not safe to call <cite>add_timeout</cite> from other threads.
+Instead, you must use <cite>add_callback</cite> to transfer control to the
+<cite>IOLoop</cite>&#8216;s thread, and then call <cite>add_timeout</cite> from there.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.clear_current">
+<em class="property">static </em><tt class="descname">clear_current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.clear_current" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.close">
+<tt class="descname">close</tt><big>(</big><em>all_fds=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the <cite>IOLoop</cite>, freeing any resources used.</p>
+<p>If <tt class="docutils literal"><span class="pre">all_fds</span></tt> is true, all file descriptors registered on the
+IOLoop will be closed (not just the ones created by the
+<cite>IOLoop</cite> itself).</p>
+<p>Many applications will only use a single <cite>IOLoop</cite> that runs for the
+entire lifetime of the process.  In that case closing the <cite>IOLoop</cite>
+is not necessary since everything will be cleaned up when the
+process exits.  <cite>IOLoop.close</cite> is provided mainly for scenarios
+such as unit tests, which create and destroy a large number of
+<tt class="docutils literal"><span class="pre">IOLoops</span></tt>.</p>
+<p>An <cite>IOLoop</cite> must be completely stopped before it can be closed.  This
+means that <cite>IOLoop.stop()</cite> must be called <em>and</em> <cite>IOLoop.start()</cite> must
+be allowed to return before attempting to call <cite>IOLoop.close()</cite>.
+Therefore the call to <cite>close</cite> will usually appear just after
+the call to <cite>start</cite> rather than near the call to <cite>stop</cite>.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.configurable_base">
+<em class="property">classmethod </em><tt class="descname">configurable_base</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.configurable_base" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.configurable_default">
+<em class="property">classmethod </em><tt class="descname">configurable_default</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.configurable_default" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.configure">
+<em class="property">classmethod </em><tt class="descname">configure</tt><big>(</big><em>impl</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the class to use when the base class is instantiated.</p>
+<p>Keyword arguments will be saved and added to the arguments passed
+to the constructor.  This can be used to set global defaults for
+some parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.configured_class">
+<em class="property">classmethod </em><tt class="descname">configured_class</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.configured_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently configured class.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.current">
+<em class="property">static </em><tt class="descname">current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current thread&#8217;s <cite>IOLoop</cite>.</p>
+<p>If an <cite>IOLoop</cite> is currently running or has been marked as current
+by <cite>make_current</cite>, returns that instance.  Otherwise returns
+<cite>IOLoop.instance()</cite>, i.e. the main thread&#8217;s <cite>IOLoop</cite>.</p>
+<p>A common pattern for classes that depend on <tt class="docutils literal"><span class="pre">IOLoops</span></tt> is to use
+a default argument to enable programs with multiple <tt class="docutils literal"><span class="pre">IOLoops</span></tt>
+but not require the argument for simpler applications:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span> <span class="o">=</span> <span class="n">io_loop</span> <span class="ow">or</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In general you should use <cite>IOLoop.current</cite> as the default when
+constructing an asynchronous object, and use <cite>IOLoop.instance</cite>
+when you mean to communicate to the main thread from a different
+one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.handle_callback_exception">
+<tt class="descname">handle_callback_exception</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.handle_callback_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is called whenever a callback run by the <cite>IOLoop</cite>
+throws an exception.</p>
+<p>By default simply logs the exception as an error.  Subclasses
+may override this method to customize reporting of exceptions.</p>
+<p>The exception itself is not passed explicitly, but is available
+in <cite>sys.exc_info</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.initialized">
+<em class="property">static </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if the singleton instance has been created.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.install">
+<tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Installs this <cite>IOLoop</cite> object as the singleton instance.</p>
+<p>This is normally not necessary as <cite>instance()</cite> will create
+an <cite>IOLoop</cite> on demand, but you may want to call <cite>install</cite> to use
+a custom subclass of <cite>IOLoop</cite>.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.instance">
+<em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global <cite>IOLoop</cite> instance.</p>
+<p>Most applications have a single, global <cite>IOLoop</cite> running on the
+main thread.  Use this method to get this instance from
+another thread.  To get the current thread&#8217;s <cite>IOLoop</cite>, use <cite>current()</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.log_stack">
+<tt class="descname">log_stack</tt><big>(</big><em>signal</em>, <em>frame</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.log_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signal handler to log the stack trace of the current thread.</p>
+<p>For use with <cite>set_blocking_signal_threshold</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.make_current">
+<tt class="descname">make_current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.make_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes this the <cite>IOLoop</cite> for the current thread.</p>
+<p>An <cite>IOLoop</cite> automatically becomes current for its thread
+when it is started, but it is sometimes useful to call
+<cite>make_current</cite> explictly before starting the <cite>IOLoop</cite>,
+so that code run at startup time can find the right
+instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.remove_handler">
+<tt class="descname">remove_handler</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.remove_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop listening for events on fd.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.remove_timeout">
+<tt class="descname">remove_timeout</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.remove_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancels a pending timeout.</p>
+<p>The argument is a handle as returned by <cite>add_timeout</cite>.  It is
+safe to call <cite>remove_timeout</cite> even if the callback has already
+been run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.run_sync">
+<tt class="descname">run_sync</tt><big>(</big><em>func</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.run_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the <cite>IOLoop</cite>, runs the given function, and stops the loop.</p>
+<p>If the function returns a <cite>.Future</cite>, the <cite>IOLoop</cite> will run
+until the future is resolved.  If it raises an exception, the
+<cite>IOLoop</cite> will stop and the exception will be re-raised to the
+caller.</p>
+<p>The keyword-only argument <tt class="docutils literal"><span class="pre">timeout</span></tt> may be used to set
+a maximum duration for the function.  If the timeout expires,
+a <cite>TimeoutError</cite> is raised.</p>
+<p>This method is useful in conjunction with <cite>tornado.gen.coroutine</cite>
+to allow asynchronous calls in a <tt class="docutils literal"><span class="pre">main()</span></tt> function:</p>
+<div class="highlight-python"><pre>@gen.coroutine
+def main():
+    # do stuff...
+
+if __name__ == '__main__':
+    IOLoop.instance().run_sync(main)</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.set_blocking_log_threshold">
+<tt class="descname">set_blocking_log_threshold</tt><big>(</big><em>seconds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.set_blocking_log_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs a stack trace if the <cite>IOLoop</cite> is blocked for more than
+<tt class="docutils literal"><span class="pre">s</span></tt> seconds.</p>
+<p>Equivalent to <tt class="docutils literal"><span class="pre">set_blocking_signal_threshold(seconds,</span>
+<span class="pre">self.log_stack)</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.set_blocking_signal_threshold">
+<tt class="descname">set_blocking_signal_threshold</tt><big>(</big><em>seconds</em>, <em>action</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.set_blocking_signal_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a signal if the <cite>IOLoop</cite> is blocked for more than
+<tt class="docutils literal"><span class="pre">s</span></tt> seconds.</p>
+<p>Pass <tt class="docutils literal"><span class="pre">seconds=None</span></tt> to disable.  Requires Python 2.6 on a unixy
+platform.</p>
+<p>The action parameter is a Python signal handler.  Read the
+documentation for the <cite>signal</cite> module for more information.
+If <tt class="docutils literal"><span class="pre">action</span></tt> is None, the process will be killed if it is
+blocked for too long.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the I/O loop.</p>
+<p>The loop will run until one of the callbacks calls <cite>stop()</cite>, which
+will make the loop stop after the current event iteration completes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the I/O loop.</p>
+<p>If the event loop is not currently running, the next call to <cite>start()</cite>
+will return immediately.</p>
+<p>To use asynchronous methods from otherwise-synchronous code (such as
+unit tests), you can start and stop the event loop like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ioloop</span> <span class="o">=</span> <span class="n">IOLoop</span><span class="p">()</span>
+<span class="n">async_method</span><span class="p">(</span><span class="n">ioloop</span><span class="o">=</span><span class="n">ioloop</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">ioloop</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+<span class="n">ioloop</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">ioloop.start()</span></tt> will return after <tt class="docutils literal"><span class="pre">async_method</span></tt> has run
+its callback, whether that callback was invoked before or
+after <tt class="docutils literal"><span class="pre">ioloop.start</span></tt>.</p>
+<p>Note that even after <cite>stop</cite> has been called, the <cite>IOLoop</cite> is not
+completely stopped until <cite>IOLoop.start</cite> has also returned.
+Some work that was scheduled before the call to <cite>stop</cite> may still
+be run before the <cite>IOLoop</cite> shuts down.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.time">
+<tt class="descname">time</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current time according to the <cite>IOLoop</cite>&#8216;s clock.</p>
+<p>The return value is a floating-point number relative to an
+unspecified time in the past.</p>
+<p>By default, the <cite>IOLoop</cite>&#8216;s time function is <cite>time.time</cite>.  However,
+it may be configured to use e.g. <cite>time.monotonic</cite> instead.
+Calls to <cite>add_timeout</cite> that pass a number instead of a
+<cite>datetime.timedelta</cite> should use this function to compute the
+appropriate time, so they can work no matter what time function
+is chosen.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.IOLoop.update_handler">
+<tt class="descname">update_handler</tt><big>(</big><em>fd</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.IOLoop.update_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the events we listen for fd.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="periodiccallback">
+<h3><a class="reference internal" href="#zmq.eventloop.minitornado.ioloop.PeriodicCallback" title="zmq.eventloop.minitornado.ioloop.PeriodicCallback"><tt class="xref py py-class docutils literal"><span class="pre">PeriodicCallback</span></tt></a><a class="headerlink" href="#periodiccallback" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.ioloop.PeriodicCallback">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.ioloop.</tt><tt class="descname">PeriodicCallback</tt><big>(</big><em>callback</em>, <em>callback_time</em>, <em>io_loop=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PeriodicCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedules the given callback to be called periodically.</p>
+<p>The callback is called every <tt class="docutils literal"><span class="pre">callback_time</span></tt> milliseconds.</p>
+<p><cite>start</cite> must be called after the <cite>PeriodicCallback</cite> is created.</p>
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PeriodicCallback.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PeriodicCallback.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the timer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PeriodicCallback.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PeriodicCallback.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the timer.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pollioloop">
+<h3><a class="reference internal" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop" title="zmq.eventloop.minitornado.ioloop.PollIOLoop"><tt class="xref py py-class docutils literal"><span class="pre">PollIOLoop</span></tt></a><a class="headerlink" href="#pollioloop" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.ioloop.</tt><tt class="descname">PollIOLoop</tt><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for IOLoops built around a select-like function.</p>
+<p>For concrete implementations, see <cite>tornado.platform.epoll.EPollIOLoop</cite>
+(Linux), <cite>tornado.platform.kqueue.KQueueIOLoop</cite> (BSD and Mac), or
+<cite>tornado.platform.select.SelectIOLoop</cite> (all platforms).</p>
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.ERROR">
+<tt class="descname">ERROR</tt><em class="property"> = 24</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.NONE">
+<tt class="descname">NONE</tt><em class="property"> = 0</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.NONE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.READ">
+<tt class="descname">READ</tt><em class="property"> = 1</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.READ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.WRITE">
+<tt class="descname">WRITE</tt><em class="property"> = 4</em><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.WRITE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.add_callback">
+<tt class="descname">add_callback</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.add_callback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.add_callback_from_signal">
+<tt class="descname">add_callback_from_signal</tt><big>(</big><em>callback</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.add_callback_from_signal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.add_future">
+<tt class="descname">add_future</tt><big>(</big><em>future</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.add_future" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedules a callback on the <tt class="docutils literal"><span class="pre">IOLoop</span></tt> when the given
+<cite>.Future</cite> is finished.</p>
+<p>The callback is invoked with one argument, the
+<cite>.Future</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.add_handler">
+<tt class="descname">add_handler</tt><big>(</big><em>fd</em>, <em>handler</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.add_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.add_timeout">
+<tt class="descname">add_timeout</tt><big>(</big><em>deadline</em>, <em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.add_timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.clear_current">
+<em class="property">static </em><tt class="descname">clear_current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.clear_current" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.close">
+<tt class="descname">close</tt><big>(</big><em>all_fds=False</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.configurable_base">
+<em class="property">classmethod </em><tt class="descname">configurable_base</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.configurable_base" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.configurable_default">
+<em class="property">classmethod </em><tt class="descname">configurable_default</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.configurable_default" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.configure">
+<em class="property">classmethod </em><tt class="descname">configure</tt><big>(</big><em>impl</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the class to use when the base class is instantiated.</p>
+<p>Keyword arguments will be saved and added to the arguments passed
+to the constructor.  This can be used to set global defaults for
+some parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.configured_class">
+<em class="property">classmethod </em><tt class="descname">configured_class</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.configured_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently configured class.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.current">
+<em class="property">static </em><tt class="descname">current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current thread&#8217;s <cite>IOLoop</cite>.</p>
+<p>If an <cite>IOLoop</cite> is currently running or has been marked as current
+by <cite>make_current</cite>, returns that instance.  Otherwise returns
+<cite>IOLoop.instance()</cite>, i.e. the main thread&#8217;s <cite>IOLoop</cite>.</p>
+<p>A common pattern for classes that depend on <tt class="docutils literal"><span class="pre">IOLoops</span></tt> is to use
+a default argument to enable programs with multiple <tt class="docutils literal"><span class="pre">IOLoops</span></tt>
+but not require the argument for simpler applications:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span> <span class="o">=</span> <span class="n">io_loop</span> <span class="ow">or</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In general you should use <cite>IOLoop.current</cite> as the default when
+constructing an asynchronous object, and use <cite>IOLoop.instance</cite>
+when you mean to communicate to the main thread from a different
+one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.handle_callback_exception">
+<tt class="descname">handle_callback_exception</tt><big>(</big><em>callback</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.handle_callback_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is called whenever a callback run by the <cite>IOLoop</cite>
+throws an exception.</p>
+<p>By default simply logs the exception as an error.  Subclasses
+may override this method to customize reporting of exceptions.</p>
+<p>The exception itself is not passed explicitly, but is available
+in <cite>sys.exc_info</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>impl</em>, <em>time_func=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.initialized">
+<em class="property">static </em><tt class="descname">initialized</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if the singleton instance has been created.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.install">
+<tt class="descname">install</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Installs this <cite>IOLoop</cite> object as the singleton instance.</p>
+<p>This is normally not necessary as <cite>instance()</cite> will create
+an <cite>IOLoop</cite> on demand, but you may want to call <cite>install</cite> to use
+a custom subclass of <cite>IOLoop</cite>.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.instance">
+<em class="property">static </em><tt class="descname">instance</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a global <cite>IOLoop</cite> instance.</p>
+<p>Most applications have a single, global <cite>IOLoop</cite> running on the
+main thread.  Use this method to get this instance from
+another thread.  To get the current thread&#8217;s <cite>IOLoop</cite>, use <cite>current()</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.log_stack">
+<tt class="descname">log_stack</tt><big>(</big><em>signal</em>, <em>frame</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.log_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signal handler to log the stack trace of the current thread.</p>
+<p>For use with <cite>set_blocking_signal_threshold</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.make_current">
+<tt class="descname">make_current</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.make_current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes this the <cite>IOLoop</cite> for the current thread.</p>
+<p>An <cite>IOLoop</cite> automatically becomes current for its thread
+when it is started, but it is sometimes useful to call
+<cite>make_current</cite> explictly before starting the <cite>IOLoop</cite>,
+so that code run at startup time can find the right
+instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.remove_handler">
+<tt class="descname">remove_handler</tt><big>(</big><em>fd</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.remove_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.remove_timeout">
+<tt class="descname">remove_timeout</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.remove_timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.run_sync">
+<tt class="descname">run_sync</tt><big>(</big><em>func</em>, <em>timeout=None</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.run_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the <cite>IOLoop</cite>, runs the given function, and stops the loop.</p>
+<p>If the function returns a <cite>.Future</cite>, the <cite>IOLoop</cite> will run
+until the future is resolved.  If it raises an exception, the
+<cite>IOLoop</cite> will stop and the exception will be re-raised to the
+caller.</p>
+<p>The keyword-only argument <tt class="docutils literal"><span class="pre">timeout</span></tt> may be used to set
+a maximum duration for the function.  If the timeout expires,
+a <cite>TimeoutError</cite> is raised.</p>
+<p>This method is useful in conjunction with <cite>tornado.gen.coroutine</cite>
+to allow asynchronous calls in a <tt class="docutils literal"><span class="pre">main()</span></tt> function:</p>
+<div class="highlight-python"><pre>@gen.coroutine
+def main():
+    # do stuff...
+
+if __name__ == '__main__':
+    IOLoop.instance().run_sync(main)</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.set_blocking_log_threshold">
+<tt class="descname">set_blocking_log_threshold</tt><big>(</big><em>seconds</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.set_blocking_log_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs a stack trace if the <cite>IOLoop</cite> is blocked for more than
+<tt class="docutils literal"><span class="pre">s</span></tt> seconds.</p>
+<p>Equivalent to <tt class="docutils literal"><span class="pre">set_blocking_signal_threshold(seconds,</span>
+<span class="pre">self.log_stack)</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.set_blocking_signal_threshold">
+<tt class="descname">set_blocking_signal_threshold</tt><big>(</big><em>seconds</em>, <em>action</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.set_blocking_signal_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.time">
+<tt class="descname">time</tt><big>(</big><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="zmq.eventloop.minitornado.ioloop.PollIOLoop.update_handler">
+<tt class="descname">update_handler</tt><big>(</big><em>fd</em>, <em>events</em><big>)</big><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.PollIOLoop.update_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="timeouterror">
+<h3><a class="reference internal" href="#zmq.eventloop.minitornado.ioloop.TimeoutError" title="zmq.eventloop.minitornado.ioloop.TimeoutError"><tt class="xref py py-class docutils literal"><span class="pre">TimeoutError</span></tt></a><a class="headerlink" href="#timeouterror" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="zmq.eventloop.minitornado.ioloop.TimeoutError">
+<em class="property">class </em><tt class="descclassname">zmq.eventloop.minitornado.ioloop.</tt><tt class="descname">TimeoutError</tt><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.TimeoutError" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.TimeoutError.args">
+<tt class="descname">args</tt><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.TimeoutError.args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="zmq.eventloop.minitornado.ioloop.TimeoutError.message">
+<tt class="descname">message</tt><a class="headerlink" href="#zmq.eventloop.minitornado.ioloop.TimeoutError.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+       <li><a href="../index.html">API</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Brian E. Granger &amp; Min Ragan-Kelley.  
+ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
