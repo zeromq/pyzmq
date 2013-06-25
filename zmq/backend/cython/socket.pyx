@@ -87,24 +87,33 @@ IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
 
-cdef inline _check_closed(Socket s, bint raise_notsup):
+cdef inline _check_closed(Socket s):
+    """raise ENOTSUP if socket is closed
+    
+    Does not do a deep check
+    """
+    if s._closed:
+        raise ZMQError(ENOTSUP)
+
+cdef inline _check_closed_deep(Socket s):
+    """thorough check of whether the socket has been closed,
+    even if by another entity (e.g. ctx.destroy).
+    
+    Only used by the `closed` property.
+    
+    returns True if closed, False otherwise
+    """
     cdef int rc
     cdef int errno
     cdef int stype
     cdef size_t sz=sizeof(int)
     if s._closed:
-        if raise_notsup:
-            raise ZMQError(ENOTSUP)
-        else:
-            return True
+        return True
     else:
         rc = zmq_getsockopt(s.handle, ZMQ_TYPE, <void *>&stype, &sz)
         if rc < 0 and zmq_errno() == ENOTSOCK:
             s._closed = True
-            if raise_notsup:
-                raise ZMQError(ENOTSUP)
-            else:
-                return True
+            return True
         else:
             _check_rc(rc)
     return False
@@ -129,8 +138,7 @@ cdef inline object _recv_copy(void *handle, int flags=0):
         rc = zmq_msg_recv(&zmq_msg, handle, flags)
     _check_rc(rc)
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
-    with nogil:
-        zmq_msg_close(&zmq_msg)
+    zmq_msg_close(&zmq_msg)
     return msg_bytes
 
 cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
@@ -231,7 +239,7 @@ cdef class Socket:
 
     @property
     def closed(self):
-        return _check_closed(self, False)
+        return _check_closed_deep(self)
     
     def close(self, linger=None):
         """s.close(linger=None)
@@ -289,7 +297,7 @@ cdef class Socket:
         cdef char* optval_c
         cdef Py_ssize_t sz
 
-        _check_closed(self, True)
+        _check_closed(self)
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_string")
 
@@ -356,7 +364,7 @@ cdef class Socket:
         cdef size_t sz
         cdef int rc
 
-        _check_closed(self, True)
+        _check_closed(self)
 
         if option in zmq.constants.bytes_sockopts:
             sz = 255
@@ -410,7 +418,7 @@ cdef class Socket:
         cdef int rc
         cdef char* c_addr
 
-        _check_closed(self, True)
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -447,7 +455,7 @@ cdef class Socket:
         cdef int rc
         cdef char* c_addr
 
-        _check_closed(self, True)
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -480,7 +488,7 @@ cdef class Socket:
             raise NotImplementedError("unbind requires libzmq >= 3.0, have %s" % zmq.zmq_version())
         
 
-        _check_closed(self, True)
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -512,7 +520,7 @@ cdef class Socket:
         if ZMQ_VERSION_MAJOR < 3:
             raise NotImplementedError("disconnect requires libzmq >= 3.0, have %s" % zmq.zmq_version())
 
-        _check_closed(self, True)
+        _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
@@ -564,7 +572,7 @@ cdef class Socket:
             If the send does not succeed for any reason.
         
         """
-        _check_closed(self, True)
+        _check_closed(self)
         
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_unicode")
@@ -615,7 +623,7 @@ cdef class Socket:
         ZMQError
             for any of the reasons zmq_msg_recv might fail.
         """
-        _check_closed(self, True)
+        _check_closed(self)
         
         if copy:
             return _recv_copy(self.handle, flags)
