@@ -33,6 +33,7 @@ class Poller(object):
     def __init__(self):
         self.sockets = []
         self._map = {}
+    
 
     def register(self, socket, flags=POLLIN|POLLOUT):
         """p.register(socket, flags=POLLIN|POLLOUT)
@@ -57,6 +58,7 @@ class Poller(object):
             else:
                 idx = len(self.sockets)
                 self.sockets.append((socket, flags))
+                self._map[socket] = idx
         elif socket in self._map:
             # uregister sockets registered with no events
             self.unregister(socket)
@@ -83,6 +85,9 @@ class Poller(object):
         """
         idx = self._map.pop(socket)
         self.sockets.pop(idx)
+        # shift indices after deletion
+        for socket, flags in self.sockets[idx:]:
+            self._map[socket] -= 1
 
     def poll(self, timeout=None):
         """p.poll(timeout=None)
