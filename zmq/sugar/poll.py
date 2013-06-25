@@ -34,6 +34,8 @@ class Poller(object):
         self.sockets = []
         self._map = {}
     
+    def __contains__(self, socket):
+        return socket in self._map
 
     def register(self, socket, flags=POLLIN|POLLOUT):
         """p.register(socket, flags=POLLIN|POLLOUT)
