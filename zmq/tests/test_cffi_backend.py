@@ -19,7 +19,8 @@ except ImportError:
     have_ffi_backend = False
 
 
-class TestCffiBackend(TestCase):
+class TestCFFIBackend(TestCase):
+    
     def setUp(self):
         if not have_ffi_backend or not 'PyPy' in sys.version:
             raise SkipTest('PyPy Tests Only')
