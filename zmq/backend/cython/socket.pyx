@@ -170,8 +170,7 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
     # Copy the msg before sending. This avoids any complications with
     # the GIL, etc.
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
-    with nogil:
-        rc = zmq_msg_init_size(&data, msg_c_len)
+    rc = zmq_msg_init_size(&data, msg_c_len)
 
     _check_rc(rc)
 
@@ -212,8 +211,7 @@ cdef class Socket:
         self.handle = NULL
         self.context = context
         self.socket_type = socket_type
-        with nogil:
-            self.handle = zmq_socket(<void *>c_handle, socket_type)
+        self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
@@ -306,8 +304,7 @@ cdef class Socket:
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
-            with nogil:
-                rc = zmq_setsockopt(
+            rc = zmq_setsockopt(
                     self.handle, option,
                     optval_c, sz
                 )
@@ -315,8 +312,7 @@ cdef class Socket:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
-            with nogil:
-                rc = zmq_setsockopt(
+            rc = zmq_setsockopt(
                     self.handle, option,
                     &optval_int64_c, sizeof(int64_t)
                 )
@@ -329,8 +325,7 @@ cdef class Socket:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
-            with nogil:
-                rc = zmq_setsockopt(
+            rc = zmq_setsockopt(
                     self.handle, option,
                     &optval_int_c, sizeof(int)
                 )
@@ -368,20 +363,17 @@ cdef class Socket:
 
         if option in zmq.constants.bytes_sockopts:
             sz = 255
-            with nogil:
-                rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
+            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             _check_rc(rc)
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
-            with nogil:
-                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             _check_rc(rc)
             result = optval_int64_c
         elif option == ZMQ_FD:
             sz = sizeof(fd_t)
-            with nogil:
-                rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             _check_rc(rc)
             result = optval_fd_c
         else:
@@ -391,8 +383,7 @@ cdef class Socket:
             # sockopts will still raise just the same, but it will be libzmq doing
             # the raising.
             sz = sizeof(int)
-            with nogil:
-                rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
+            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             _check_rc(rc)
             result = optval_int_c
 

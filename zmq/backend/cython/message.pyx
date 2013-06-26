@@ -121,8 +121,7 @@ cdef class Frame:
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
 
         if data is None:
-            with nogil:
-                rc = zmq_msg_init(&self.zmq_msg)
+            rc = zmq_msg_init(&self.zmq_msg)
             _check_rc(rc)
             self._failed_init = False
             return
@@ -133,8 +132,7 @@ cdef class Frame:
         # object to take over the ref counting of data properly.
         hint = (data, self.tracker_event)
         Py_INCREF(hint)
-        with nogil:
-            rc = zmq_msg_init_data(
+        rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
                 <zmq_free_fn *>free_python_msg, <void *>hint
             )
@@ -160,9 +158,8 @@ cdef class Frame:
     
     def __getbuffer__(self, Py_buffer* buffer, int flags):
         # new-style (memoryview) buffer interface
-        with nogil:
-            buffer.buf = zmq_msg_data(&self.zmq_msg)
-            buffer.len = zmq_msg_size(&self.zmq_msg)
+        buffer.buf = zmq_msg_data(&self.zmq_msg)
+        buffer.len = zmq_msg_size(&self.zmq_msg)
         
         buffer.obj = self
         buffer.readonly = 1
@@ -177,8 +174,7 @@ cdef class Frame:
     def __getsegcount__(self, Py_ssize_t *lenp):
         # required for getreadbuffer
         if lenp != NULL:
-            with nogil:
-                lenp[0] = zmq_msg_size(&self.zmq_msg)
+            lenp[0] = zmq_msg_size(&self.zmq_msg)
         return 1
     
     def __getreadbuffer__(self, Py_ssize_t idx, void **p):
@@ -189,9 +185,8 @@ cdef class Frame:
             raise SystemError("accessing non-existent buffer segment")
         # read-only, because we don't want to allow
         # editing of the message in-place
-        with nogil:
-            data_c = <char *>zmq_msg_data(&self.zmq_msg)
-            data_len_c = zmq_msg_size(&self.zmq_msg)
+        data_c = <char *>zmq_msg_data(&self.zmq_msg)
+        data_len_c = zmq_msg_size(&self.zmq_msg)
         if p != NULL:
             p[0] = <void*>data_c
         return data_len_c
@@ -214,8 +209,7 @@ cdef class Frame:
         new_msg = Frame()
         # This does not copy the contents, but just increases the ref-count 
         # of the zmq_msg by one.
-        with nogil:
-            zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
+        zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
         # Copy the ref to data so the copy won't create a copy when str is
         # called.
         if self._data is not None:
@@ -234,8 +228,7 @@ cdef class Frame:
     def __len__(self):
         """Return the length of the message in bytes."""
         cdef size_t sz
-        with nogil:
-            sz = zmq_msg_size(&self.zmq_msg)
+        sz = zmq_msg_size(&self.zmq_msg)
         return sz
         # return <int>zmq_msg_size(&self.zmq_msg)
 
