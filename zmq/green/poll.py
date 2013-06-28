@@ -21,7 +21,7 @@ class _Poller(_original_Poller):
         wlist = []
         xlist = []
 
-        for socket, flags in self.sockets.items():
+        for socket, flags in self.sockets:
             if isinstance(socket, zmq.Socket):
                 rlist.append(socket.getsockopt(zmq.FD))
                 continue

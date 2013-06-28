@@ -121,10 +121,10 @@ class TestPoll(PollZMQTestCase):
         poller = self.Poller()
         poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
         poller.register(s2, 0)
-        self.assertTrue(s1 in poller.sockets)
-        self.assertFalse(s2 in poller.sockets)
+        self.assertTrue(s1 in poller)
+        self.assertFalse(s2 in poller)
         poller.register(s1, 0)
-        self.assertFalse(s1 in poller.sockets)
+        self.assertFalse(s1 in poller)
 
     def test_pubsub(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
