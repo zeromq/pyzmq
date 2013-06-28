@@ -58,9 +58,8 @@ cdef inline object copy_zmq_msg_bytes(zmq_msg_t *zmq_msg):
     """ Copy the data from a zmq_msg_t """
     cdef char *data_c = NULL
     cdef Py_ssize_t data_len_c
-    with nogil:
-        data_c = <char *>zmq_msg_data(zmq_msg)
-        data_len_c = zmq_msg_size(zmq_msg)
+    data_c = <char *>zmq_msg_data(zmq_msg)
+    data_len_c = zmq_msg_size(zmq_msg)
     return PyBytes_FromStringAndSize(data_c, data_len_c)
 
 

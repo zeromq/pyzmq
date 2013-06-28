@@ -87,17 +87,14 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     
     # build zmq_msg objects from str prefixes
     asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
-    with nogil:
-        rc = zmq_msg_init_size(&in_msg, msg_c_len)
+    rc = zmq_msg_init_size(&in_msg, msg_c_len)
     _check_rc(rc)
     
-    with nogil:
-        memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
+    memcpy(zmq_msg_data(&in_msg), msg_c, zmq_msg_size(&in_msg))
     
     asbuffer_r(out_prefix, <void **>&msg_c, &msg_c_len)
     
-    with nogil:
-        rc = zmq_msg_init_size(&out_msg, msg_c_len)
+    rc = zmq_msg_init_size(&out_msg, msg_c_len)
     _check_rc(rc)
     
     with nogil:
