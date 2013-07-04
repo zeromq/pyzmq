@@ -137,7 +137,7 @@ class ZMQPoller(object):
 
 
 class ZMQIOLoop(PollIOLoop):
-    """ZMMQ subclass of tornado's IOLoop"""
+    """ZMQ subclass of tornado's IOLoop"""
     def initialize(self, **kwargs):
         super(ZMQIOLoop, self).initialize(impl=ZMQPoller(), **kwargs)
     
