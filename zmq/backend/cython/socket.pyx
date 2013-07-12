@@ -566,7 +566,7 @@ cdef class Socket:
         _check_closed(self)
         
         if isinstance(data, unicode):
-            raise TypeError("unicode not allowed, use send_unicode")
+            raise TypeError("unicode not allowed, use send_string")
         
         if copy:
             # msg.bytes never returns the input data object
