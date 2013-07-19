@@ -18,7 +18,7 @@ import errno as errno_mod
 from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
                     new_int_pointer, new_binary_data, value_uint64_pointer,
                     value_int64_pointer, value_int_pointer, value_binary_data,
-                    zmq_major_version, IPC_PATH_MAX_LEN)
+                    IPC_PATH_MAX_LEN)
 
 from .message import Frame
 from .constants import *

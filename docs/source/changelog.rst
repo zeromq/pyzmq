@@ -9,8 +9,35 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-13.0
-====
+13.1.0
+======
+
+The main new feature is improved tornado 3 compatibility.
+PyZMQ ships a 'minitornado' submodule, which contains a small subset of tornado 3.0.1,
+in order to get the IOLoop base class.  zmq.eventloop.ioloop.IOLoop is now a simple subclass,
+and if the system tornado is ≥ 3.0, then the zmq IOLoop is a proper registered subclass
+of the tornado one itself, and minitornado is entirely unused.
+
+13.0.2
+======
+
+Bugfix release!
+
+A few things were broken in 13.0.0, so this is a quick bugfix release.
+
+* **FIXED** EAGAIN was unconditionally turned into KeyboardInterrupt
+* **FIXED** we used totally deprecated ctypes_configure to generate constants in CFFI backend
+* **FIXED** memory leak in CFFI backend for PyPy
+* **FIXED** typo prevented IPC_PATH_MAX_LEN from ever being defined
+* **FIXED** various build fixes - linking with librt, Cython compatibility, etc.
+
+13.0.1
+======
+
+defunct bugfix. We do not speak of this...
+
+13.0.0
+======
 
 PyZMQ now officially targets libzmq-3 (3.2.2),
 0MQ ≥ 2.1.4 is still supported for the indefinite future, but 3.x is recommended.
@@ -18,6 +45,11 @@ PyZMQ has detached from libzmq versioning,
 and will just follow its own regular versioning scheme from now on.
 PyZMQ bdists will include whatever is the latest stable libzmq release (3.2.2 for pyzmq-13.0).
 
+.. note::
+
+    set/get methods are exposed via get/setattr on all Context, Socket, and Frame classes.
+    This means that subclasses of these classes that require extra attributes
+    **must declare these attributes at the class level**.
 
 Experiments Removed
 -------------------
@@ -40,6 +72,7 @@ New Stuff
   - :meth:`Frame.set`
   - :meth:`Frame.get`
   - :func:`zmq.proxy`
+  
 
 * Setting and getting :attr:`socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 * Implementation splits core Cython bindings from pure-Python subclasses

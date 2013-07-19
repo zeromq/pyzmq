@@ -187,5 +187,5 @@ EMTHREAD = ZMQ_EMTHREAD
 #-----------------------------------------------------------------------------
 # Symbols to export
 #-----------------------------------------------------------------------------
-
-__all__ = [ key for key in locals().keys() if not key.startswith('_') ]
+_names = list(locals().keys())
+__all__ = [ key for key in _names if not key.startswith('_') ]

@@ -1,30 +1,19 @@
-# NOTE: win32 support is currently experimental, and not recommended
-# for production use.
+"""Lowest-common-denominator implementations of platform functionality."""
+from __future__ import absolute_import, division, print_function, with_statement
 
-import ctypes
-import ctypes.wintypes
-import socket
-import sys
 import errno
+import socket
 
-from zmq.utils.strtypes import asbytes as b
-
-# See: http://msdn.microsoft.com/en-us/library/ms724935(VS.85).aspx
-SetHandleInformation = ctypes.windll.kernel32.SetHandleInformation
-SetHandleInformation.argtypes = (ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD, ctypes.wintypes.DWORD)
-SetHandleInformation.restype = ctypes.wintypes.BOOL
-
-HANDLE_FLAG_INHERIT = 0x00000001
+from . import interface
 
 
-def set_close_exec(fd):
-    success = SetHandleInformation(fd, HANDLE_FLAG_INHERIT, 0)
-    if not success:
-        raise ctypes.GetLastError()
+class Waker(interface.Waker):
+    """Create an OS independent asynchronous pipe.
 
-
-class Waker(object):
-    """Create an OS independent asynchronous pipe"""
+    For use on platforms that don't have os.pipe() (or where pipes cannot
+    be passed to select()), but do have sockets.  This includes Windows
+    and Jython.
+    """
     def __init__(self):
         # Based on Zope async.py: http://svn.zope.org/zc.ngi/trunk/src/zc/ngi/async.py
 
@@ -48,13 +37,14 @@ class Waker(object):
             # for hideous details.
             a = socket.socket()
             a.bind(("127.0.0.1", 0))
-            connect_address = a.getsockname()  # assigned (host, port) pair
             a.listen(1)
+            connect_address = a.getsockname()  # assigned (host, port) pair
             try:
                 self.writer.connect(connect_address)
                 break    # success
             except socket.error as detail:
-                if detail[0] != errno.WSAEADDRINUSE:
+                if (not hasattr(errno, 'WSAEADDRINUSE') or
+                        detail[0] != errno.WSAEADDRINUSE):
                     # "Address already in use" is the only error
                     # I've seen on two WinXP Pro SP2 boxes, under
                     # Pythons 2.3.5 and 2.4.1.
@@ -78,18 +68,22 @@ class Waker(object):
     def fileno(self):
         return self.reader.fileno()
 
+    def write_fileno(self):
+        return self.writer.fileno()
+
     def wake(self):
         try:
-            self.writer.send(b("x"))
-        except IOError:
+            self.writer.send(b"x")
+        except (IOError, socket.error):
             pass
 
     def consume(self):
         try:
             while True:
                 result = self.reader.recv(1024)
-                if not result: break
-        except IOError:
+                if not result:
+                    break
+        except (IOError, socket.error):
             pass
 
     def close(self):

@@ -54,8 +54,7 @@ cdef class Stopwatch:
         Start the stopwatch.
         """
         if self.watch == NULL:
-            with nogil:
-                self.watch = zmq_stopwatch_start()
+            self.watch = zmq_stopwatch_start()
         else:
             raise ZMQError('Stopwatch is already runing.')
 
@@ -73,8 +72,7 @@ cdef class Stopwatch:
         if self.watch == NULL:
             raise ZMQError('Must start the Stopwatch before calling stop.')
         else:
-            with nogil:
-                time = zmq_stopwatch_stop(self.watch)
+            time = zmq_stopwatch_stop(self.watch)
             self.watch = NULL
             return time
 

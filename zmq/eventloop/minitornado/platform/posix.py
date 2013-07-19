@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright 2011 Facebook
 #
@@ -15,20 +16,25 @@
 
 """Posix implementations of platform-specific functionality."""
 
+from __future__ import absolute_import, division, print_function, with_statement
+
 import fcntl
 import os
 
-from zmq.utils.strtypes import b
+from . import interface
+
 
 def set_close_exec(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFD)
     fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
 
+
 def _set_nonblocking(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-    
-class Waker(object):
+
+
+class Waker(interface.Waker):
     def __init__(self):
         r, w = os.pipe()
         _set_nonblocking(r)
@@ -41,9 +47,12 @@ class Waker(object):
     def fileno(self):
         return self.reader.fileno()
 
+    def write_fileno(self):
+        return self.writer.fileno()
+
     def wake(self):
         try:
-            self.writer.write(b("x"))
+            self.writer.write(b"x")
         except IOError:
             pass
 
@@ -51,7 +60,8 @@ class Waker(object):
         try:
             while True:
                 result = self.reader.read()
-                if not result: break;
+                if not result:
+                    break
         except IOError:
             pass
 

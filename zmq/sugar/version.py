@@ -15,13 +15,13 @@
 
 import re
 
-from .backend import zmq_version_info
+from zmq.backend import zmq_version_info
 
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
 
-__version__ = '13.0.dev'
+__version__ = '14.0.dev'
 __revision__ = ''
 
 def pyzmq_version():

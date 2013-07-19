@@ -10,7 +10,7 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from zmq.cffi_core._cffi import ffi, C
+from ._cffi import ffi, C
 
 from zmq.error import ZMQError
 

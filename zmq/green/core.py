@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import sys
 import time
+import warnings
 
 import zmq
 
@@ -26,6 +27,10 @@ import gevent
 from gevent.event import AsyncResult
 from gevent.hub import get_hub
 
+if hasattr(zmq, 'RCVTIMEO'):
+    TIMEOS = (zmq.RCVTIMEO, zmq.SNDTIMEO)
+else:
+    TIMEOS = ()
 
 def _stop(evt):
     """simple wrapper for stopping an Event, allowing for method rename in gevent 1.0"""
@@ -36,7 +41,7 @@ def _stop(evt):
         evt.cancel()
 
 class _Socket(_original_Socket):
-    """Green version of :class:`zmq.core.socket.Socket`
+    """Green version of :class:`zmq.Socket`
 
     The following methods are overridden:
 
@@ -51,7 +56,7 @@ class _Socket(_original_Socket):
     are waited for in the recv and send methods).
 
     Some double underscore prefixes are used to minimize pollution of
-    :class:`zmq.core.socket.Socket`'s namespace.
+    :class:`zmq.Socket`'s namespace.
     """
     __in_send_multipart = False
     __in_recv_multipart = False
@@ -260,15 +265,22 @@ class _Socket(_original_Socket):
     
     def get(self, opt):
         """trigger state_changed on getsockopt(EVENTS)"""
+        if opt in TIMEOS:
+            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
         optval = super(_Socket, self).get(opt)
         if opt == zmq.EVENTS:
             self.__state_changed()
         return optval
     
+    def set(self, opt, val):
+        """set socket option"""
+        if opt in TIMEOS:
+            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
+        return super(_Socket, self).set(opt, val)
 
 
 class _Context(_original_Context):
-    """Replacement for :class:`zmq.core.context.Context`
+    """Replacement for :class:`zmq.Context`
 
     Ensures that the greened Socket above is used in calls to `socket`.
     """

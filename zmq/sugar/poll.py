@@ -14,7 +14,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
-from .backend import zmq_poll
+from zmq.backend import zmq_poll
 from .constants import POLLIN, POLLOUT, POLLERR
 
 #-----------------------------------------------------------------------------
@@ -27,9 +27,15 @@ class Poller(object):
 
     A stateful poll interface that mirrors Python's built-in poll.
     """
+    sockets = None
+    _map = {}
 
     def __init__(self):
-        self.sockets = {}
+        self.sockets = []
+        self._map = {}
+    
+    def __contains__(self, socket):
+        return socket in self._map
 
     def register(self, socket, flags=POLLIN|POLLOUT):
         """p.register(socket, flags=POLLIN|POLLOUT)
@@ -48,8 +54,14 @@ class Poller(object):
             If `flags=0`, socket will be unregistered.
         """
         if flags:
-            self.sockets[socket] = flags
-        elif socket in self.sockets:
+            if socket in self._map:
+                idx = self._map[socket]
+                self.sockets[idx] = (socket, flags)
+            else:
+                idx = len(self.sockets)
+                self.sockets.append((socket, flags))
+                self._map[socket] = idx
+        elif socket in self._map:
             # uregister sockets registered with no events
             self.unregister(socket)
         else:
@@ -73,7 +85,11 @@ class Poller(object):
         socket : Socket
             The socket instance to stop polling.
         """
-        del self.sockets[socket]
+        idx = self._map.pop(socket)
+        self.sockets.pop(idx)
+        # shift indices after deletion
+        for socket, flags in self.sockets[idx:]:
+            self._map[socket] -= 1
 
     def poll(self, timeout=None):
         """p.poll(timeout=None)
@@ -88,13 +104,11 @@ class Poller(object):
             underlying zmq_poll uses microseconds and we convert to that in
             this function.
         """
-        if timeout is None:
+        if timeout is None or timeout < 0:
             timeout = -1
-        
-        timeout = int(timeout)
-        if timeout < 0:
-            timeout = -1
-        return zmq_poll(list(self.sockets.items()), timeout=timeout)
+        elif isinstance(timeout, float):
+            timeout = int(timeout)
+        return zmq_poll(self.sockets, timeout=timeout)
 
 
 def select(rlist, wlist, xlist, timeout=None):

@@ -31,7 +31,7 @@ from socket cimport Socket
 
 import sys
 
-from zmq.core.checkrc cimport _check_rc
+from zmq.backend.cython.checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -42,6 +42,7 @@ if sys.version_info[0] >= 3:
     int_t = int
 else:
     int_t = (int,long)
+
 
 def zmq_poll(sockets, long timeout=-1):
     """zmq_poll(sockets, timeout=-1)
@@ -75,13 +76,11 @@ def zmq_poll(sockets, long timeout=-1):
         # timeout is us in 2.x, ms in 3.x
         # expected input is ms (matches 3.x)
         timeout = 1000*timeout
-
+    
     for i in range(nsockets):
-        s = sockets[i][0]
-        events = sockets[i][1]
+        s, events = sockets[i]
         if isinstance(s, Socket):
-            current_socket = s
-            pollitems[i].socket = current_socket.handle
+            pollitems[i].socket = (<Socket>s).handle
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif isinstance(s, int_t):
@@ -94,7 +93,7 @@ def zmq_poll(sockets, long timeout=-1):
                 fileno = int(s.fileno())
             except:
                 free(pollitems)
-                raise ValueError('fileno() must return an valid integer fd')
+                raise ValueError('fileno() must return a valid integer fd')
             else:
                 pollitems[i].socket = NULL
                 pollitems[i].fd = fileno
@@ -117,13 +116,15 @@ def zmq_poll(sockets, long timeout=-1):
     
     results = []
     for i in range(nsockets):
-        s = sockets[i][0]
-        # Return the fd for sockets, for compat. with select.poll.
-        if hasattr(s, 'fileno'):
-            s = s.fileno()
         revents = pollitems[i].revents
-        # Only return sockets with non-zero status for compat. with select.poll.
+        # for compatibility with select.poll:
+        # - only return sockets with non-zero status
+        # - return the fd for plain sockets
         if revents > 0:
+            if pollitems[i].socket != NULL:
+                s = sockets[i][0]
+            else:
+                s = pollitems[i].fd
             results.append((s, revents))
 
     free(pollitems)

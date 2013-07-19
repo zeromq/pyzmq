@@ -18,7 +18,7 @@ import random
 import codecs
 
 import zmq
-from .backend import Socket as SocketBase
+from zmq.backend import Socket as SocketBase
 from .poll import Poller
 from . import constants
 from .attrsettr import AttributeSetter

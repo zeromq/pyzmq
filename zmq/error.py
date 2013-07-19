@@ -46,7 +46,7 @@ class ZMQError(ZMQBaseError):
         msg : string
             Description of the error or None.
         """
-        from zmq.sugar.backend import strerror, zmq_errno
+        from zmq.backend import strerror, zmq_errno
         if errno is None:
             errno = zmq_errno()
         if isinstance(errno, int):
@@ -108,7 +108,7 @@ def _check_rc(rc, errno=None):
     
     and raising the appropriate Exception class
     """
-    from zmq.sugar.backend import zmq_errno
+    from zmq.backend import zmq_errno
     from errno import EINTR
     from zmq import EAGAIN, ETERM
     if rc < 0:

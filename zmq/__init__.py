@@ -49,8 +49,7 @@ del os, sys, glob, here, bundled, ext
 
 # zmq top-level imports
 
-from zmq.sugar import backend
-from zmq.sugar.backend import *
+from zmq.backend import *
 from zmq import sugar
 from zmq.sugar import *
 from zmq import devices
