@@ -45,8 +45,9 @@ def logger():
     print "Logger done!"
     return
 
-
-if zmq.zmq_version()[:2] < (3,3):
+version = zmq.zmq_version_info()
+print repr(version)
+if version < (3,3,0):
     raise RuntimeError("Libzmq versions < 3.3 are not supported at the moment!")
 
 zmq_ctx = zmq.Context()
