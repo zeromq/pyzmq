@@ -43,7 +43,8 @@ approach is not recommended.
 
 .. seealso::
 
-    ZeroMQ API `note on threadsafety <http://api.zeromq.org/2-1:zmq>`_
+    ZeroMQ API note on threadsafety on `2.2 <http://api.zeromq.org/2-2:zmq>`_
+    or `3.2 <http://api.zeromq.org/3-2:zmq>`_
 
 
 Socket Options as Attributes
