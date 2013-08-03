@@ -21,11 +21,6 @@ errnos =  ['EADDRINUSE', 'EADDRNOTAVAIL', 'EAGAIN', 'ECONNREFUSED', 'EFAULT',
            'ECONNABORTED', 'ECONNRESET', 'ENOTCONN', 'ETIMEDOUT',
            'EHOSTUNREACH', 'ENETRESET']
 
-zmq2_cons = ['ZMQ_MSG_MORE' , 'ZMQ_MSG_SHARED', 'ZMQ_MSG_MASK',
-             'ZMQ_UPSTREAM', 'ZMQ_DOWNSTREAM', 'ZMQ_MCAST_LOOP',
-             'ZMQ_RECOVERY_IVL_MSEC', 'ZMQ_NOBLOCK', 'ZMQ_HWM',
-             'ZMQ_SWAP']
-
 socket_cons = ['ZMQ_PAIR', 'ZMQ_PUB', 'ZMQ_SUB', 'ZMQ_REQ', 'ZMQ_REP',
                'ZMQ_DEALER', 'ZMQ_ROUTER', 'ZMQ_PULL', 'ZMQ_PUSH', 'ZMQ_XPUB',
                'ZMQ_XSUB', 'ZMQ_XREQ', 'ZMQ_XREP']
