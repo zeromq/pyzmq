@@ -25,7 +25,5 @@
 
 
 cdef class Stopwatch:
-    """A simple stopwatch based on zmq_stopwatch_start/stop."""
-
     cdef void *watch # The C handle for the underlying zmq object
 
