@@ -322,7 +322,7 @@ class TestFrame(BaseZMQTestCase):
             shape = shapes[:i]
             for dt in dtypes:
                 A = numpy.ndarray(shape, dtype=dt)
-                while not (A < 1e400).all():
+                while numpy.isnan(A).any():
                     # don't let nan sneak in
                     A = numpy.ndarray(shape, dtype=dt)
                 a.send(A, copy=False)
