@@ -70,6 +70,14 @@
     #define ZMQ_QUEUE (-1)
 #endif
 
+#ifndef ZMQ_IO_THREADS_DFLT
+    #define ZMQ_IO_THREADS_DFLT (-1)
+#endif
+
+#ifndef ZMQ_MAX_SOCKETS_DFLT
+    #define ZMQ_MAX_SOCKETS_DFLT (-1)
+#endif
+
 #ifndef ZMQ_PAIR
     #define ZMQ_PAIR (-1)
 #endif
@@ -114,6 +122,14 @@
     #define ZMQ_XSUB (-1)
 #endif
 
+#ifndef ZMQ_UPSTREAM
+    #define ZMQ_UPSTREAM (-1)
+#endif
+
+#ifndef ZMQ_DOWNSTREAM
+    #define ZMQ_DOWNSTREAM (-1)
+#endif
+
 #ifndef ZMQ_EVENT_CONNECTED
     #define ZMQ_EVENT_CONNECTED (-1)
 #endif
@@ -154,6 +170,10 @@
     #define ZMQ_EVENT_DISCONNECTED (-1)
 #endif
 
+#ifndef ZMQ_EVENT_ALL
+    #define ZMQ_EVENT_ALL (-1)
+#endif
+
 #ifndef EAGAIN
     #define EAGAIN (-1)
 #endif
@@ -172,82 +192,46 @@
 
 #ifndef ENODEV
     #define ENODEV (-1)
+#endif
+
+#ifndef EMSGSIZE
+    #define EMSGSIZE (-1)
+#endif
+
+#ifndef EAFNOSUPPORT
+    #define EAFNOSUPPORT (-1)
+#endif
+
+#ifndef ENETUNREACH
+    #define ENETUNREACH (-1)
+#endif
+
+#ifndef ECONNABORTED
+    #define ECONNABORTED (-1)
+#endif
+
+#ifndef ECONNRESET
+    #define ECONNRESET (-1)
+#endif
+
+#ifndef ENOTCONN
+    #define ENOTCONN (-1)
+#endif
+
+#ifndef ETIMEDOUT
+    #define ETIMEDOUT (-1)
+#endif
+
+#ifndef EHOSTUNREACH
+    #define EHOSTUNREACH (-1)
+#endif
+
+#ifndef ENETRESET
+    #define ENETRESET (-1)
 #endif
 
 #ifndef ZMQ_HAUSNUMERO
     #define ZMQ_HAUSNUMERO (-1)
-#endif
-
-#ifndef ENOTSUP
-    #define ENOTSUP (-1)
-#endif
-
-#ifndef EPROTONOSUPPORT
-    #define EPROTONOSUPPORT (-1)
-#endif
-
-#ifndef ENOBUFS
-    #define ENOBUFS (-1)
-#endif
-
-#ifndef ENETDOWN
-    #define ENETDOWN (-1)
-#endif
-
-#ifndef EADDRINUSE
-    #define EADDRINUSE (-1)
-#endif
-
-#ifndef EADDRNOTAVAIL
-    #define EADDRNOTAVAIL (-1)
-#endif
-
-#ifndef ECONNREFUSED
-    #define ECONNREFUSED (-1)
-#endif
-
-#ifndef EINPROGRESS
-    #define EINPROGRESS (-1)
-#endif
-
-#ifndef ENOTSOCK
-    #define ENOTSOCK (-1)
-#endif
-
-#ifndef EFSM
-    #define EFSM (-1)
-#endif
-
-#ifndef ENOCOMPATPROTO
-    #define ENOCOMPATPROTO (-1)
-#endif
-
-#ifndef ETERM
-    #define ETERM (-1)
-#endif
-
-#ifndef EMTHREAD
-    #define EMTHREAD (-1)
-#endif
-
-#ifndef EAGAIN
-    #define EAGAIN (-1)
-#endif
-
-#ifndef EINVAL
-    #define EINVAL (-1)
-#endif
-
-#ifndef EFAULT
-    #define EFAULT (-1)
-#endif
-
-#ifndef ENOMEM
-    #define ENOMEM (-1)
-#endif
-
-#ifndef ENODEV
-    #define ENODEV (-1)
 #endif
 
 #ifndef ENOTSUP
@@ -416,6 +400,14 @@
 
 #ifndef ZMQ_BACKLOG
     #define ZMQ_BACKLOG (-1)
+#endif
+
+#ifndef ZMQ_ROUTER_MANDATORY
+    #define ZMQ_ROUTER_MANDATORY (-1)
+#endif
+
+#ifndef ZMQ_FAIL_UNROUTABLE
+    #define ZMQ_FAIL_UNROUTABLE (-1)
 #endif
 
 #ifndef ZMQ_AFFINITY

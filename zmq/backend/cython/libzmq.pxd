@@ -52,6 +52,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_STREAMER
     enum: ZMQ_FORWARDER
     enum: ZMQ_QUEUE
+    enum: ZMQ_IO_THREADS_DFLT
+    enum: ZMQ_MAX_SOCKETS_DFLT
     enum: ZMQ_PAIR
     enum: ZMQ_PUB
     enum: ZMQ_SUB
@@ -63,6 +65,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_PUSH
     enum: ZMQ_XPUB
     enum: ZMQ_XSUB
+    enum: ZMQ_UPSTREAM
+    enum: ZMQ_DOWNSTREAM
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED
@@ -73,30 +77,22 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EVENT_CLOSED
     enum: ZMQ_EVENT_CLOSE_FAILED
     enum: ZMQ_EVENT_DISCONNECTED
+    enum: ZMQ_EVENT_ALL
     enum: ZMQ_EAGAIN "EAGAIN"
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EFAULT "EFAULT"
     enum: ZMQ_ENOMEM "ENOMEM"
     enum: ZMQ_ENODEV "ENODEV"
+    enum: ZMQ_EMSGSIZE "EMSGSIZE"
+    enum: ZMQ_EAFNOSUPPORT "EAFNOSUPPORT"
+    enum: ZMQ_ENETUNREACH "ENETUNREACH"
+    enum: ZMQ_ECONNABORTED "ECONNABORTED"
+    enum: ZMQ_ECONNRESET "ECONNRESET"
+    enum: ZMQ_ENOTCONN "ENOTCONN"
+    enum: ZMQ_ETIMEDOUT "ETIMEDOUT"
+    enum: ZMQ_EHOSTUNREACH "EHOSTUNREACH"
+    enum: ZMQ_ENETRESET "ENETRESET"
     enum: ZMQ_HAUSNUMERO
-    enum: ZMQ_ENOTSUP "ENOTSUP"
-    enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
-    enum: ZMQ_ENOBUFS "ENOBUFS"
-    enum: ZMQ_ENETDOWN "ENETDOWN"
-    enum: ZMQ_EADDRINUSE "EADDRINUSE"
-    enum: ZMQ_EADDRNOTAVAIL "EADDRNOTAVAIL"
-    enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
-    enum: ZMQ_EINPROGRESS "EINPROGRESS"
-    enum: ZMQ_ENOTSOCK "ENOTSOCK"
-    enum: ZMQ_EFSM "EFSM"
-    enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
-    enum: ZMQ_ETERM "ETERM"
-    enum: ZMQ_EMTHREAD "EMTHREAD"
-    enum: ZMQ_EAGAIN "EAGAIN"
-    enum: ZMQ_EINVAL "EINVAL"
-    enum: ZMQ_EFAULT "EFAULT"
-    enum: ZMQ_ENOMEM "ENOMEM"
-    enum: ZMQ_ENODEV "ENODEV"
     enum: ZMQ_ENOTSUP "ENOTSUP"
     enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
     enum: ZMQ_ENOBUFS "ENOBUFS"
@@ -139,6 +135,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_LINGER
     enum: ZMQ_RECONNECT_IVL
     enum: ZMQ_BACKLOG
+    enum: ZMQ_ROUTER_MANDATORY
+    enum: ZMQ_FAIL_UNROUTABLE
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
