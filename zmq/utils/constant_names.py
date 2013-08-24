@@ -22,20 +22,20 @@ new_in = {
     ],
     (3,2,2) : [
         # errnos
-        "EMSGSIZE",
-        "EAFNOSUPPORT",
-        "ENETUNREACH",
-        "ECONNABORTED",
-        "ECONNRESET",
-        "ENOTCONN",
-        "ETIMEDOUT",
-        "EHOSTUNREACH",
-        "ENETRESET",
+        'EMSGSIZE',
+        'EAFNOSUPPORT',
+        'ENETUNREACH',
+        'ECONNABORTED',
+        'ECONNRESET',
+        'ENOTCONN',
+        'ETIMEDOUT',
+        'EHOSTUNREACH',
+        'ENETRESET',
         
-        "IO_THREADS",
-        "MAX_SOCKETS",
-        "IO_THREADS_DFLT",
-        "MAX_SOCKETS_DFLT",
+        'IO_THREADS',
+        'MAX_SOCKETS',
+        'IO_THREADS_DFLT',
+        'MAX_SOCKETS_DFLT',
         
         'ROUTER_BEHAVIOR',
         'ROUTER_MANDATORY',
@@ -64,13 +64,13 @@ new_in = {
 
 removed_in = {
     (3,2,2) : [
-        "UPSTREAM",
-        "DOWNSTREAM",
+        'UPSTREAM',
+        'DOWNSTREAM',
         
-        "HWM",
-        "SWAP",
-        "MCAST_LOOP",
-        "RECOVERY_IVL_MSEC",
+        'HWM',
+        'SWAP',
+        'MCAST_LOOP',
+        'RECOVERY_IVL_MSEC',
     ]
 }
 
@@ -97,6 +97,9 @@ base_names = [
     'FORWARDER',
     'QUEUE',
 
+    'IO_THREADS_DFLT',
+    'MAX_SOCKETS_DFLT',
+
     # socktypes
     'PAIR',
     'PUB',
@@ -109,6 +112,8 @@ base_names = [
     'PUSH',
     'XPUB',
     'XSUB',
+    'UPSTREAM',
+    'DOWNSTREAM',
 
     # events
     'EVENT_CONNECTED',
@@ -121,6 +126,7 @@ base_names = [
     'EVENT_CLOSED',
     'EVENT_CLOSE_FAILED',
     'EVENT_DISCONNECTED',
+    'EVENT_ALL',
 
     ## ERRNO
     # Often used (these are alse in errno.)
@@ -129,26 +135,18 @@ base_names = [
     'EFAULT',
     'ENOMEM',
     'ENODEV',
+    'EMSGSIZE',
+    'EAFNOSUPPORT',
+    'ENETUNREACH',
+    'ECONNABORTED',
+    'ECONNRESET',
+    'ENOTCONN',
+    'ETIMEDOUT',
+    'EHOSTUNREACH',
+    'ENETRESET',
 
     # For Windows compatability
     'HAUSNUMERO',
-    'ENOTSUP',
-    'EPROTONOSUPPORT',
-    'ENOBUFS',
-    'ENETDOWN',
-    'EADDRINUSE',
-    'EADDRNOTAVAIL',
-    'ECONNREFUSED',
-    'EINPROGRESS',
-    'ENOTSOCK',
-
-    # 0MQ Native
-    'EFSM',
-    'ENOCOMPATPROTO',
-    'ETERM',
-    'EMTHREAD',
-
-    # For Windows compatability
     'ENOTSUP',
     'EPROTONOSUPPORT',
     'ENOBUFS',
@@ -214,6 +212,9 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
+    
+    'ROUTER_MANDATORY',
+    'FAIL_UNROUTABLE',
 ]
 
 switched_sockopt_names = [
