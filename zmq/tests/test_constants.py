@@ -82,3 +82,32 @@ class TestConstants(TestCase):
                 self.assertRaises(AttributeError, getattr, zmq, name)
             else:
                 self.assertEqual(getattr(zmq, name), raw)
+    
+    def test_new(self):
+        zmq_version = zmq.zmq_version_info()
+        for version, new_names in constant_names.new_in.items():
+            should_have = zmq_version >= version
+            for name in new_names:
+                try:
+                    value = getattr(zmq, name)
+                except AttributeError:
+                    if should_have:
+                        self.fail("AttributeError: zmq.%s" % name)
+                else:
+                    if not should_have:
+                        self.fail("Shouldn't have: zmq.%s=%s" % (name, value))
+
+    def test_removed(self):
+        zmq_version = zmq.zmq_version_info()
+        for version, new_names in constant_names.removed_in.items():
+            should_have = zmq_version < version
+            for name in new_names:
+                try:
+                    value = getattr(zmq, name)
+                except AttributeError:
+                    if should_have:
+                        self.fail("AttributeError: zmq.%s" % name)
+                else:
+                    if not should_have:
+                        self.fail("Shouldn't have: zmq.%s=%s" % (name, value))
+
