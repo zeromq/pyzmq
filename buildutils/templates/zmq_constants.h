@@ -1,0 +1,6 @@
+#ifndef _PYZMQ_CONSTANT_DEFS
+#define _PYZMQ_CONSTANT_DEFS
+
+{ZMQ_IFNDEFS}
+
+#endif // ifndef _PYZMQ_CONSTANT_DEFS

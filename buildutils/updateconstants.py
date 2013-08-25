@@ -5,9 +5,9 @@ Run this after updating utils/constant_names
 
 Currently generates the following files from templates:
 
-- libzmq.pxd
-- constants.pyx
-- zmq_compat.h
+- constant_enums.pxi
+- constants.pxi
+- zmq_constants.h
 
 """
 
@@ -36,7 +36,7 @@ ifndef_t = """#ifndef {0}
 """
 
 def cython_enums():
-    """generate `enum: ZMQ_CONST` block for libzmq.pxd"""
+    """generate `enum: ZMQ_CONST` block for constant_enums.pxi"""
     lines = []
     for name in all_names:
         if no_prefix(name):
@@ -47,7 +47,7 @@ def cython_enums():
     return dict(ZMQ_ENUMS='\n    '.join(lines))
 
 def ifndefs():
-    """generate `#ifndef ZMQ_CONST` block for zmq_compat.h"""
+    """generate `#ifndef ZMQ_CONST` block for zmq_constants.h"""
     lines = []
     for name in all_names:
         if not no_prefix(name):
@@ -56,7 +56,7 @@ def ifndefs():
     return dict(ZMQ_IFNDEFS='\n'.join(lines))
 
 def constants_pyx():
-    """generate CONST = ZMQ_CONST and __all__ for constants.pyx"""
+    """generate CONST = ZMQ_CONST and __all__ for constants.pxi"""
     all_lines = []
     assign_lines = []
     for name in all_names:
@@ -66,13 +66,13 @@ def constants_pyx():
 
 def generate_file(fname, ns_func, dest_dir="."):
     """generate a constants file from its template"""
-    with open(pjoin(root, 'buildutils', '%s.tpl' % fname), 'r') as f:
+    with open(pjoin(root, 'buildutils', 'templates', '%s' % fname), 'r') as f:
         tpl = f.read()
     out = tpl.format(**ns_func())
     with open(pjoin(dest_dir, fname), 'w') as f:
         f.write(out)
 
 if __name__ == '__main__':
-    generate_file("libzmq.pxd", cython_enums, pjoin(root, 'zmq', 'backend', 'cython'))
-    generate_file("constants.pyx", constants_pyx, pjoin(root, 'zmq', 'backend', 'cython'))
-    generate_file("zmq_compat.h", ifndefs, pjoin(root, 'zmq', 'utils'))
+    generate_file("constant_enums.pxi", cython_enums, pjoin(root, 'zmq', 'backend', 'cython'))
+    generate_file("constants.pxi", constants_pyx, pjoin(root, 'zmq', 'backend', 'cython'))
+    generate_file("zmq_constants.h", ifndefs, pjoin(root, 'zmq', 'utils'))

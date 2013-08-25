@@ -33,121 +33,13 @@ cdef extern from *:
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
 
+include "constant_enums.pxi"
+
 cdef extern from "zmq.h" nogil:
 
     void _zmq_version "zmq_version"(int *major, int *minor, int *patch)
     
     ctypedef int fd_t "ZMQ_FD_T"
-    
-    enum: ZMQ_VERSION
-    enum: ZMQ_VERSION_MAJOR
-    enum: ZMQ_VERSION_MINOR
-    enum: ZMQ_VERSION_PATCH
-    enum: ZMQ_NOBLOCK
-    enum: ZMQ_DONTWAIT
-    enum: ZMQ_POLLIN
-    enum: ZMQ_POLLOUT
-    enum: ZMQ_POLLERR
-    enum: ZMQ_SNDMORE
-    enum: ZMQ_STREAMER
-    enum: ZMQ_FORWARDER
-    enum: ZMQ_QUEUE
-    enum: ZMQ_IO_THREADS_DFLT
-    enum: ZMQ_MAX_SOCKETS_DFLT
-    enum: ZMQ_PAIR
-    enum: ZMQ_PUB
-    enum: ZMQ_SUB
-    enum: ZMQ_REQ
-    enum: ZMQ_REP
-    enum: ZMQ_DEALER
-    enum: ZMQ_ROUTER
-    enum: ZMQ_PULL
-    enum: ZMQ_PUSH
-    enum: ZMQ_XPUB
-    enum: ZMQ_XSUB
-    enum: ZMQ_UPSTREAM
-    enum: ZMQ_DOWNSTREAM
-    enum: ZMQ_EVENT_CONNECTED
-    enum: ZMQ_EVENT_CONNECT_DELAYED
-    enum: ZMQ_EVENT_CONNECT_RETRIED
-    enum: ZMQ_EVENT_LISTENING
-    enum: ZMQ_EVENT_BIND_FAILED
-    enum: ZMQ_EVENT_ACCEPTED
-    enum: ZMQ_EVENT_ACCEPT_FAILED
-    enum: ZMQ_EVENT_CLOSED
-    enum: ZMQ_EVENT_CLOSE_FAILED
-    enum: ZMQ_EVENT_DISCONNECTED
-    enum: ZMQ_EVENT_ALL
-    enum: ZMQ_EAGAIN "EAGAIN"
-    enum: ZMQ_EINVAL "EINVAL"
-    enum: ZMQ_EFAULT "EFAULT"
-    enum: ZMQ_ENOMEM "ENOMEM"
-    enum: ZMQ_ENODEV "ENODEV"
-    enum: ZMQ_EMSGSIZE "EMSGSIZE"
-    enum: ZMQ_EAFNOSUPPORT "EAFNOSUPPORT"
-    enum: ZMQ_ENETUNREACH "ENETUNREACH"
-    enum: ZMQ_ECONNABORTED "ECONNABORTED"
-    enum: ZMQ_ECONNRESET "ECONNRESET"
-    enum: ZMQ_ENOTCONN "ENOTCONN"
-    enum: ZMQ_ETIMEDOUT "ETIMEDOUT"
-    enum: ZMQ_EHOSTUNREACH "EHOSTUNREACH"
-    enum: ZMQ_ENETRESET "ENETRESET"
-    enum: ZMQ_HAUSNUMERO
-    enum: ZMQ_ENOTSUP "ENOTSUP"
-    enum: ZMQ_EPROTONOSUPPORT "EPROTONOSUPPORT"
-    enum: ZMQ_ENOBUFS "ENOBUFS"
-    enum: ZMQ_ENETDOWN "ENETDOWN"
-    enum: ZMQ_EADDRINUSE "EADDRINUSE"
-    enum: ZMQ_EADDRNOTAVAIL "EADDRNOTAVAIL"
-    enum: ZMQ_ECONNREFUSED "ECONNREFUSED"
-    enum: ZMQ_EINPROGRESS "EINPROGRESS"
-    enum: ZMQ_ENOTSOCK "ENOTSOCK"
-    enum: ZMQ_EFSM "EFSM"
-    enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
-    enum: ZMQ_ETERM "ETERM"
-    enum: ZMQ_EMTHREAD "EMTHREAD"
-    enum: ZMQ_IO_THREADS
-    enum: ZMQ_MAX_SOCKETS
-    enum: ZMQ_MORE
-    enum: ZMQ_IDENTITY
-    enum: ZMQ_SUBSCRIBE
-    enum: ZMQ_UNSUBSCRIBE
-    enum: ZMQ_LAST_ENDPOINT
-    enum: ZMQ_TCP_ACCEPT_FILTER
-    enum: ZMQ_RECONNECT_IVL_MAX
-    enum: ZMQ_SNDTIMEO
-    enum: ZMQ_RCVTIMEO
-    enum: ZMQ_SNDHWM
-    enum: ZMQ_RCVHWM
-    enum: ZMQ_MULTICAST_HOPS
-    enum: ZMQ_IPV4ONLY
-    enum: ZMQ_ROUTER_BEHAVIOR
-    enum: ZMQ_TCP_KEEPALIVE
-    enum: ZMQ_TCP_KEEPALIVE_CNT
-    enum: ZMQ_TCP_KEEPALIVE_IDLE
-    enum: ZMQ_TCP_KEEPALIVE_INTVL
-    enum: ZMQ_DELAY_ATTACH_ON_CONNECT
-    enum: ZMQ_XPUB_VERBOSE
-    enum: ZMQ_ROUTER_RAW
-    enum: ZMQ_FD
-    enum: ZMQ_EVENTS
-    enum: ZMQ_TYPE
-    enum: ZMQ_LINGER
-    enum: ZMQ_RECONNECT_IVL
-    enum: ZMQ_BACKLOG
-    enum: ZMQ_ROUTER_MANDATORY
-    enum: ZMQ_FAIL_UNROUTABLE
-    enum: ZMQ_AFFINITY
-    enum: ZMQ_MAXMSGSIZE
-    enum: ZMQ_HWM
-    enum: ZMQ_SWAP
-    enum: ZMQ_MCAST_LOOP
-    enum: ZMQ_RECOVERY_IVL_MSEC
-    enum: ZMQ_RATE
-    enum: ZMQ_RECOVERY_IVL
-    enum: ZMQ_SNDBUF
-    enum: ZMQ_RCVBUF
-    enum: ZMQ_RCVMORE
     
     enum: errno
     char *zmq_strerror (int errnum)
