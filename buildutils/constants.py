@@ -23,6 +23,7 @@ Currently generates the following files from templates:
 import os
 import sys
 
+from . import info
 pjoin = os.path.join
 
 root = os.path.abspath(pjoin(os.path.dirname(__file__), os.path.pardir))
@@ -69,10 +70,16 @@ def generate_file(fname, ns_func, dest_dir="."):
     with open(pjoin(root, 'buildutils', 'templates', '%s' % fname), 'r') as f:
         tpl = f.read()
     out = tpl.format(**ns_func())
-    with open(pjoin(dest_dir, fname), 'w') as f:
+    dest = pjoin(dest_dir, fname)
+    info("generating %s from template" % dest)
+    with open(dest, 'w') as f:
         f.write(out)
 
-if __name__ == '__main__':
+def render_constants():
+    """render generated constant files from templates"""
     generate_file("constant_enums.pxi", cython_enums, pjoin(root, 'zmq', 'backend', 'cython'))
     generate_file("constants.pxi", constants_pyx, pjoin(root, 'zmq', 'backend', 'cython'))
     generate_file("zmq_constants.h", ifndefs, pjoin(root, 'zmq', 'utils'))
+
+if __name__ == '__main__':
+    render_constants()
