@@ -74,9 +74,9 @@ removed_in = {
     ]
 }
 
-# collections of socket names based on their role
+# collections of zmq constant names based on their role
 # base names have no specific use
-# plus opt
+# opt names are validated in get/set methods of various objects
 
 base_names = [
     # base
