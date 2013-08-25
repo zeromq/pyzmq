@@ -94,7 +94,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(topic*2, s.recv_unicode(encoding='latin-1'))
     
     def test_int_sockopts(self):
-        "test non-uint64 sockopts"
+        "test integer sockopts"
         v = zmq.zmq_version_info()
         if not v >= (2,1):
             raise SkipTest("only on libzmq >= 2.1")
@@ -128,7 +128,7 @@ class TestSocket(BaseZMQTestCase):
                 backref[value] = name
         for opt in zmq.constants.int_sockopts.union(zmq.constants.int64_sockopts):
             sopt = backref[opt]
-            if sopt.startswith(('ROUTER', 'XPUB', 'TCP')):
+            if sopt.startswith(('ROUTER', 'XPUB', 'TCP', 'FAIL')):
                 # fail_unroutable is write-only
                 continue
             try:

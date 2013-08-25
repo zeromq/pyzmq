@@ -1,23 +1,15 @@
 # coding: utf-8
 """zmq constants"""
 
-from ._cffi import C, constant_names, zmq_version_info
+from ._cffi import C, c_constant_names
+from zmq.utils.constant_names import all_names
 
-names = None
-pynames = []
+g = globals()
+for cname in c_constant_names:
+    if cname.startswith("ZMQ_"):
+        name = cname[4:]
+    else:
+        name = cname
+    g[name] = getattr(C, cname)
 
-_constants = {}
-
-for cname in constant_names:
-    pyname = cname.split('_', 1)[-1]
-    pynames.append(pyname)
-    _constants[pyname] = getattr(C, cname)
-
-globals().update(_constants)
-
-if zmq_version_info()[0] == 2:
-    DONTWAIT = NOBLOCK
-else:
-    NOBLOCK = DONTWAIT
-
-__all__ = pynames
+__all__ = all_names
