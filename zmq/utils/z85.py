@@ -16,7 +16,10 @@ See ZMQ RFC 32 for details.
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+import sys
 import struct
+
+PY3 = sys.version_info[0] >= 3
 # Z85CHARS is the base 85 symbol table
 Z85CHARS = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#"
 # Z85MAP maps integers in [0,84] to the appropriate character in Z85CHARS
@@ -38,7 +41,11 @@ def encode(rawbytes):
         for offset in _85s:
             encoded.append(Z85CHARS[(v // offset) % 85])
     
-    return b''.join(encoded)
+    # In Python 3, encoded is a list of integers (obviously?!)
+    if PY3:
+        return bytes(encoded)
+    else:
+        return b''.join(encoded)
 
 def decode(z85bytes):
     """decode Z85 bytes to raw bytes"""
