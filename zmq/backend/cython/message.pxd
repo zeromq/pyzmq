@@ -32,14 +32,12 @@ from libzmq cimport zmq_msg_t, zmq_msg_data, zmq_msg_size
 #-----------------------------------------------------------------------------
 
 cdef class MessageTracker(object):
-    """A class for tracking if 0MQ is done using one or more messages."""
 
     cdef set events  # Message Event objects to track.
     cdef set peers   # Other Message or MessageTracker objects.
 
 
 cdef class Frame:
-    """A Message Frame class for non-copy send/recvs."""
 
     cdef zmq_msg_t zmq_msg
     cdef object _data      # The actual message data as a Python object.

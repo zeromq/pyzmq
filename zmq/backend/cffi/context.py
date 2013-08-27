@@ -29,10 +29,10 @@ class Context(object):
         if not io_threads >= 0:
             raise ZMQError(EINVAL)
 
-        self._zmq_ctx = C.zmq_init(io_threads)
-        if self._zmq_ctx== ffi.NULL:
+        self._zmq_ctx = C.zmq_ctx_new()
+        if self._zmq_ctx == ffi.NULL:
             raise ZMQError(C.zmq_errno())
-        self._iothreads = io_threads
+        C.zmq_ctx_set(self._zmq_ctx, IO_THREADS, io_threads)
         self._closed = False
         self._sockets = set()
 
@@ -61,7 +61,7 @@ class Context(object):
                 if linger:
                     s.setsockopt(LINGER, linger)
 
-        C.zmq_term(self._zmq_ctx)
+        C.zmq_ctx_destroy(self._zmq_ctx)
 
         self._zmq_ctx = None
         self._closed = True
@@ -83,7 +83,7 @@ class Context(object):
 
     def __del__(self):
         if self._zmq_ctx and not self._closed:
-            C.zmq_term(self._zmq_ctx)
+            C.zmq_ctx_destroy(self._zmq_ctx)
             self._zmq_ctx = None
             self._closed = True
 

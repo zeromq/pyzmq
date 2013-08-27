@@ -31,7 +31,6 @@ from context cimport Context
 
 
 cdef class Socket:
-    """A 0MQ socket."""
 
     cdef object __weakref__     # enable weakref
     cdef void *handle           # The C handle for the underlying zmq object.

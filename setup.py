@@ -821,13 +821,29 @@ class CheckingBuildExt(build_ext):
         build_ext.run(self)
 
 
+class ConstantsCommand(Command):
+    """Rebuild templated files for constants
+    
+    To be run after adding new constants to `utils/constant_names`.
+    """
+    user_options = []
+    def initialize_options(self):
+        return 
+    
+    def finalize_options(self):
+        pass
+    
+    def run(self):
+        from buildutils.constants import render_constants
+        render_constants()
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
             'configure': Configure, 'fetch_libzmq': FetchCommand,
-            'sdist': CheckSDist,
+            'sdist': CheckSDist, 'constants': ConstantsCommand,
         }
 
 def makename(path, ext):

@@ -10,50 +10,27 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+#-----------------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------------
+
+import os
 from cffi import FFI
+
+import zmq.utils
+from zmq.utils.constant_names import all_names, no_prefix
+
+
+#-----------------------------------------------------------------------------
+# Code
+#-----------------------------------------------------------------------------
 
 ffi = FFI()
 
-errnos =  ['EADDRINUSE', 'EADDRNOTAVAIL', 'EAGAIN', 'ECONNREFUSED', 'EFAULT',
-           'EFSM', 'EINPROGRESS', 'EINVAL', 'EMTHREAD', 'ENETDOWN', 'ENOBUFS',
-           'ENOCOMPATPROTO', 'ENODEV', 'ENOMEM', 'ENOTSUP', 'EPROTONOSUPPORT',
-           'ETERM', 'ENOTSOCK', 'EMSGSIZE', 'EAFNOSUPPORT', 'ENETUNREACH',
-           'ECONNABORTED', 'ECONNRESET', 'ENOTCONN', 'ETIMEDOUT',
-           'EHOSTUNREACH', 'ENETRESET']
-
-zmq2_cons = ['ZMQ_MSG_MORE' , 'ZMQ_MSG_SHARED', 'ZMQ_MSG_MASK',
-             'ZMQ_UPSTREAM', 'ZMQ_DOWNSTREAM', 'ZMQ_MCAST_LOOP',
-             'ZMQ_RECOVERY_IVL_MSEC', 'ZMQ_NOBLOCK', 'ZMQ_HWM',
-             'ZMQ_SWAP']
-
-socket_cons = ['ZMQ_PAIR', 'ZMQ_PUB', 'ZMQ_SUB', 'ZMQ_REQ', 'ZMQ_REP',
-               'ZMQ_DEALER', 'ZMQ_ROUTER', 'ZMQ_PULL', 'ZMQ_PUSH', 'ZMQ_XPUB',
-               'ZMQ_XSUB', 'ZMQ_XREQ', 'ZMQ_XREP']
-
-zmq_base_cons = ['ZMQ_VERSION', 'ZMQ_AFFINITY', 'ZMQ_IDENTITY', 'ZMQ_SUBSCRIBE',
-                 'ZMQ_UNSUBSCRIBE', 'ZMQ_RATE', 'ZMQ_RECOVERY_IVL',
-                 'ZMQ_SNDBUF', 'ZMQ_RCVBUF', 'ZMQ_RCVMORE', 'ZMQ_FD',
-                 'ZMQ_EVENTS', 'ZMQ_TYPE', 'ZMQ_LINGER', 'ZMQ_RECONNECT_IVL',
-                 'ZMQ_BACKLOG', 'ZMQ_RECONNECT_IVL_MAX', 'ZMQ_RCVTIMEO',
-                 'ZMQ_SNDTIMEO', 'ZMQ_SNDMORE', 'ZMQ_POLLIN', 'ZMQ_POLLOUT',
-                 'ZMQ_POLLERR', 'ZMQ_STREAMER', 'ZMQ_FORWARDER', 'ZMQ_QUEUE']
-
-zmq3_cons = ['ZMQ_DONTWAIT', 'ZMQ_MORE', 'ZMQ_MAXMSGSIZE', 'ZMQ_SNDHWM',
-             'ZMQ_RCVHWM', 'ZMQ_MULTICAST_HOPS', 'ZMQ_IPV4ONLY',
-             'ZMQ_LAST_ENDPOINT', 'ZMQ_ROUTER_BEHAVIOR', 'ZMQ_TCP_KEEPALIVE',
-             'ZMQ_TCP_KEEPALIVE_CNT', 'ZMQ_TCP_KEEPALIVE_IDLE',
-             'ZMQ_TCP_KEEPALIVE_INTVL', 'ZMQ_TCP_ACCEPT_FILTER',
-             'ZMQ_EVENT_CONNECTED', 'ZMQ_EVENT_CONNECT_DELAYED',
-             'ZMQ_EVENT_CONNECT_RETRIED', 'ZMQ_EVENT_LISTENING',
-             'ZMQ_EVENT_BIND_FAILED', 'ZMQ_EVENT_ACCEPTED',
-             'ZMQ_EVENT_ACCEPT_FAILED', 'ZMQ_EVENT_CLOSED',
-             'ZMQ_EVENT_CLOSE_FAILED']
+base_zmq_version = (3,2,2)
 
 core_functions = \
 '''
-void* zmq_init(int);
-int zmq_term(void *context);
-
 void* zmq_socket(void *context, int type);
 int zmq_close(void *socket);
 
@@ -79,6 +56,7 @@ int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();
 int zmq_ctx_destroy(void *context);
+int zmq_ctx_set(void *context, int opt, int optval);
 int zmq_proxy(const void *frontend, const void *backend, const void *capture);
 '''
 
@@ -105,8 +83,8 @@ size_t zmq_msg_size(zmq_msg_t *msg);
 void *zmq_msg_data(zmq_msg_t *msg);
 int zmq_msg_close(zmq_msg_t *msg);
 
-int zmq_send(void *socket, zmq_msg_t *msg, int flags);
-int zmq_recv(void *socket, zmq_msg_t *msg, int flags);
+int zmq_sendbuf(void *socket, zmq_msg_t *msg, int flags);
+int zmq_recvbuf(void *socket, zmq_msg_t *msg, int flags);
 
 '''
 
@@ -176,8 +154,6 @@ def zmq_version_info():
 
     return (int(major[0]), int(minor[0]), int(patch[0]))
 
-constant_names = errnos + socket_cons + zmq_base_cons + zmq3_cons
-
 def _make_defines(names):
     _names = []
     for name in names:
@@ -186,7 +162,14 @@ def _make_defines(names):
 
     return "\n".join(_names)
 
-constants = _make_defines(constant_names)
+c_constant_names = []
+for name in all_names:
+    if no_prefix(name):
+        c_constant_names.append(name)
+    else:
+        c_constant_names.append("ZMQ_" + name)
+
+constants = _make_defines(c_constant_names)
 
 try:
     _version_info = zmq_version_info()
@@ -195,33 +178,38 @@ except Exception as e:
     "Please check that you have zeromq headers and libraries." % e)
 
 if _version_info >= (3,2,2):
-    functions = ''.join([constants,
+    functions = '\n'.join([constants,
                          core_functions,
                          core32_functions,
                          message32_functions,
                          sockopt_functions,
                          polling_functions,
-                         extra_functions])
+                         extra_functions,
+    ])
 else:
     raise ImportError("PyZMQ CFFI backend requires zeromq >= 3.2.2,"
         " but found %i.%i.%i" % _version_info
     )
 
+
 ffi.cdef(functions)
+zmq_utils = os.path.dirname(zmq.utils.__file__)
 
 C = ffi.verify('''
-    #include <string.h>
-    #include <zmq.h>
-    #include <zmq_utils.h>
     #include <stdio.h>
     #include <sys/un.h>
+    #include <string.h>
+    
+    #include <zmq.h>
+    #include <zmq_utils.h>
+    #include "zmq_compat.h"
 
 int get_ipc_path_max_len(void) {
     struct sockaddr_un *dummy;
     return sizeof(dummy->sun_path) - 1;
 }
 
-''', libraries=['c', 'zmq'])
+''', libraries=['c', 'zmq'], include_dirs=[zmq_utils])
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 

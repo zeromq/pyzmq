@@ -11,7 +11,7 @@ try:
     from zmq.backend.cffi import (
         zmq_version_info,
         PUSH, PULL, IDENTITY,
-        REQ, REP, NOBLOCK, POLLIN, POLLOUT,
+        REQ, REP, POLLIN, POLLOUT,
     )
     from zmq.backend.cffi._cffi import ffi, C
     have_ffi_backend = True

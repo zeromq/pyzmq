@@ -24,7 +24,6 @@
 #-----------------------------------------------------------------------------
 
 cdef class Context:
-    """Manage the lifecycle of a 0MQ context."""
 
     cdef object __weakref__     # enable weakref
     cdef void *handle           # The C handle for the underlying zmq object.

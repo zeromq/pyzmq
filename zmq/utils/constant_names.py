@@ -1,0 +1,245 @@
+"""0MQ Constant names"""
+
+#-----------------------------------------------------------------------------
+#  Copyright (c) 2013 Brian E. Granger & Min Ragan-Kelley
+#
+#  This file is part of pyzmq
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# Python module level constants
+#-----------------------------------------------------------------------------
+
+# dictionaries of constants new or removed in particular versions
+
+new_in = {
+    (2,2,0) : [
+        'RCVTIMEO',
+        'SNDTIMEO',
+    ],
+    (3,2,2) : [
+        # errnos
+        'EMSGSIZE',
+        'EAFNOSUPPORT',
+        'ENETUNREACH',
+        'ECONNABORTED',
+        'ECONNRESET',
+        'ENOTCONN',
+        'ETIMEDOUT',
+        'EHOSTUNREACH',
+        'ENETRESET',
+        
+        'IO_THREADS',
+        'MAX_SOCKETS',
+        'IO_THREADS_DFLT',
+        'MAX_SOCKETS_DFLT',
+        
+        'ROUTER_BEHAVIOR',
+        'ROUTER_MANDATORY',
+        'FAIL_UNROUTABLE',
+        'TCP_KEEPALIVE',
+        'TCP_KEEPALIVE_CNT',
+        'TCP_KEEPALIVE_IDLE',
+        'TCP_KEEPALIVE_INTVL',
+        'DELAY_ATTACH_ON_CONNECT',
+        'XPUB_VERBOSE',
+        
+        'EVENT_CONNECTED',
+        'EVENT_CONNECT_DELAYED',
+        'EVENT_CONNECT_RETRIED',
+        'EVENT_LISTENING',
+        'EVENT_BIND_FAILED',
+        'EVENT_ACCEPTED',
+        'EVENT_ACCEPT_FAILED',
+        'EVENT_CLOSED',
+        'EVENT_CLOSE_FAILED',
+        'EVENT_DISCONNECTED',
+        'EVENT_ALL',
+    ],
+}
+
+
+removed_in = {
+    (3,2,2) : [
+        'UPSTREAM',
+        'DOWNSTREAM',
+        
+        'HWM',
+        'SWAP',
+        'MCAST_LOOP',
+        'RECOVERY_IVL_MSEC',
+    ]
+}
+
+# collections of zmq constant names based on their role
+# base names have no specific use
+# opt names are validated in get/set methods of various objects
+
+base_names = [
+    # base
+    'VERSION',
+    'VERSION_MAJOR',
+    'VERSION_MINOR',
+    'VERSION_PATCH',
+    'NOBLOCK',
+    'DONTWAIT',
+
+    'POLLIN',
+    'POLLOUT',
+    'POLLERR',
+    
+    'SNDMORE',
+
+    'STREAMER',
+    'FORWARDER',
+    'QUEUE',
+
+    'IO_THREADS_DFLT',
+    'MAX_SOCKETS_DFLT',
+
+    # socktypes
+    'PAIR',
+    'PUB',
+    'SUB',
+    'REQ',
+    'REP',
+    'DEALER',
+    'ROUTER',
+    'PULL',
+    'PUSH',
+    'XPUB',
+    'XSUB',
+    'UPSTREAM',
+    'DOWNSTREAM',
+
+    # events
+    'EVENT_CONNECTED',
+    'EVENT_CONNECT_DELAYED',
+    'EVENT_CONNECT_RETRIED',
+    'EVENT_LISTENING',
+    'EVENT_BIND_FAILED',
+    'EVENT_ACCEPTED',
+    'EVENT_ACCEPT_FAILED',
+    'EVENT_CLOSED',
+    'EVENT_CLOSE_FAILED',
+    'EVENT_DISCONNECTED',
+    'EVENT_ALL',
+
+    ## ERRNO
+    # Often used (these are alse in errno.)
+    'EAGAIN',
+    'EINVAL',
+    'EFAULT',
+    'ENOMEM',
+    'ENODEV',
+    'EMSGSIZE',
+    'EAFNOSUPPORT',
+    'ENETUNREACH',
+    'ECONNABORTED',
+    'ECONNRESET',
+    'ENOTCONN',
+    'ETIMEDOUT',
+    'EHOSTUNREACH',
+    'ENETRESET',
+
+    # For Windows compatability
+    'HAUSNUMERO',
+    'ENOTSUP',
+    'EPROTONOSUPPORT',
+    'ENOBUFS',
+    'ENETDOWN',
+    'EADDRINUSE',
+    'EADDRNOTAVAIL',
+    'ECONNREFUSED',
+    'EINPROGRESS',
+    'ENOTSOCK',
+
+    # 0MQ Native
+    'EFSM',
+    'ENOCOMPATPROTO',
+    'ETERM',
+    'EMTHREAD',
+]
+
+int64_sockopt_names = [
+    'AFFINITY',
+    'MAXMSGSIZE',
+
+    # sockopts removed in 3.0.0
+    'HWM',
+    'SWAP',
+    'MCAST_LOOP',
+    'RECOVERY_IVL_MSEC',
+]
+
+bytes_sockopt_names = [
+    'IDENTITY',
+    'SUBSCRIBE',
+    'UNSUBSCRIBE',
+    'LAST_ENDPOINT',
+    'TCP_ACCEPT_FILTER',
+]
+
+int_sockopt_names = [
+    # sockopts
+    'RECONNECT_IVL_MAX',
+
+    # sockopts new in 2.2.0
+    'SNDTIMEO',
+    'RCVTIMEO',
+
+    # new in 3.x
+    'SNDHWM',
+    'RCVHWM',
+    'MULTICAST_HOPS',
+    'IPV4ONLY',
+
+    'ROUTER_BEHAVIOR',
+    'TCP_KEEPALIVE',
+    'TCP_KEEPALIVE_CNT',
+    'TCP_KEEPALIVE_IDLE',
+    'TCP_KEEPALIVE_INTVL',
+    'DELAY_ATTACH_ON_CONNECT',
+    'XPUB_VERBOSE',
+    'ROUTER_RAW',
+
+    'FD',
+    'EVENTS',
+    'TYPE',
+    'LINGER',
+    'RECONNECT_IVL',
+    'BACKLOG',
+    
+    'ROUTER_MANDATORY',
+    'FAIL_UNROUTABLE',
+]
+
+switched_sockopt_names = [
+    'RATE',
+    'RECOVERY_IVL',
+    'SNDBUF',
+    'RCVBUF',
+    'RCVMORE',
+]
+
+ctx_opt_names = [
+    'IO_THREADS',
+    'MAX_SOCKETS',
+]
+
+msg_opt_names = [
+    'MORE',
+]
+
+all_names = (
+    base_names + ctx_opt_names + msg_opt_names +
+    bytes_sockopt_names + int_sockopt_names + int64_sockopt_names + switched_sockopt_names
+)
+
+def no_prefix(name):
+    """does the given constant have a ZMQ_ prefix?"""
+    return name.startswith('E') and not name.startswith('EVENT')
+
