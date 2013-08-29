@@ -222,9 +222,17 @@ class TestSocket(BaseZMQTestCase):
 
         b.bind(iface)
         msg = b.recv_multipart()
+        for i in range(10):
+            if p1.done:
+                break
+            time.sleep(0.1)
         self.assertEqual(p1.done, True)
         self.assertEqual(msg, [b'something'])
         msg = b.recv_multipart()
+        for i in range(10):
+            if p2.done:
+                break
+            time.sleep(0.1)
         self.assertEqual(p2.done, True)
         self.assertEqual(msg, [b'something', b'else'])
         m = zmq.Frame(b"again", track=True)
@@ -244,7 +252,10 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(p2.done, False)
         pm = m.tracker
         del m
-        time.sleep(0.1)
+        for i in range(10):
+            if p1.done:
+                break
+            time.sleep(0.1)
         self.assertEqual(p1.done, True)
         self.assertEqual(p2.done, True)
         m = zmq.Frame(b'something', track=False)

@@ -49,6 +49,18 @@ if grc:
     v = view(x)
     view_rc = grc(x) - rc0
 
+def await_gc(obj, rc):
+    """wait for refcount on an object to drop to an expected value
+    
+    Necessary because of the zero-copy gc thread,
+    which can take some time to receive its DECREF message.
+    """
+    for i in range(50):
+        # rc + 2 because of the refs in this function
+        if grc(obj) <= rc + 2:
+            return
+        time.sleep(0.05)
+    
 class TestFrame(BaseZMQTestCase):
 
     @skip_pypy
@@ -60,6 +72,7 @@ class TestFrame(BaseZMQTestCase):
             m = zmq.Frame(s)
             self.assertEqual(grc(s), 4)
             del m
+            await_gc(s, 2)
             self.assertEqual(grc(s), 2)
             del s
 
@@ -132,6 +145,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(grc(s), rc)
             del m
             rc -= 2
+            await_gc(s, rc)
             self.assertEqual(grc(s), rc)
             self.assertEqual(rc, 2)
             del s
@@ -167,6 +181,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(grc(s), rc)
             del m2
             rc -= 2
+            await_gc(s, rc)
             self.assertEqual(grc(s), rc)
             self.assertEqual(rc, 2)
             del s
@@ -178,6 +193,10 @@ class TestFrame(BaseZMQTestCase):
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
         del m
+        for i in range(10):
+            if pm.done:
+                break
+            time.sleep(0.1)
         self.assertTrue(pm.done)
     
     def test_no_tracker(self):
