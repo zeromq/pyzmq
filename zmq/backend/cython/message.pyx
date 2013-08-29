@@ -36,6 +36,10 @@ cdef extern from "Python.h":
 
 from libzmq cimport *
 
+from libc.stdio cimport printf
+from libc.stdlib cimport malloc, free
+from libc.string cimport memcpy
+
 import time
 
 try:
@@ -54,16 +58,43 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 #-----------------------------------------------------------------------------
 
 
-cdef void free_python_msg(void *data, void *hint) with gil:
-    """A function for DECREF'ing Python based messages."""
-    if hint != NULL:
-        tracker_event = (<tuple>hint)[1]
-        Py_DECREF(<object>hint)
-        if isinstance(tracker_event, Event):
-            # don't assert before DECREF:
-            # assert tracker_queue.empty(), "somebody else wrote to my Queue!"
-            tracker_event.set()
-        tracker_event = None
+cdef void free_python_msg(void *data, void *vhint) nogil:
+    """A pure-C for DECREF'ing Python-owned message data.
+    
+    Sends a message on a PUSH socket
+    
+    The hint is two pointers:
+    
+    0: pointer to the Garbage Collector's context
+    1: pointer to a zmq_msg_t that should be sent on a PUSH socket,
+       signaling the Garbage Collector to remove its reference to the object.
+    
+    - A PUSH socket is created in the context,
+    - it is connected to the garbage collector inproc channel,
+    - it sends the gc message
+    - the PUSH socket is closed
+    
+    When the Garbage Collector's PULL socket receives the message,
+    it deletes its reference to the object,
+    allowing Python to free the memory.
+    
+    """
+    cdef void *ctx
+    cdef void *push
+    cdef zmq_msg_t *hint_msg
+    cdef size_t* hint
+    cdef int rc
+    if vhint != NULL:
+        hint = <size_t *> vhint
+        ctx = <void *> hint[0]
+        hint_msg = <zmq_msg_t *> hint[1]
+        push = zmq_socket(ctx, ZMQ_PUSH)
+        rc = zmq_connect(push, "inproc://pyzmq.gc.01")
+        rc = zmq_msg_send(hint_msg, push, 0)
+        zmq_msg_close(hint_msg)
+        rc = zmq_close(push)
+        free(hint_msg)
+        free(hint)
 
 
 cdef class Frame:
@@ -97,7 +128,8 @@ cdef class Frame:
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
-        cdef object hint
+        cdef size_t *hint = <size_t *> malloc(2 * sizeof(size_t))
+        cdef zmq_msg_t *hint_msg = <zmq_msg_t *> malloc(sizeof(zmq_msg_t))
 
         # init more as False
         self.more = False
@@ -127,17 +159,25 @@ cdef class Frame:
             return
         else:
             asbuffer_r(data, <void **>&data_c, &data_len_c)
-        # We INCREF the *original* Python object (not self) and pass it
-        # as the hint below. This allows other copies of this Frame
-        # object to take over the ref counting of data properly.
-        hint = (data, self.tracker_event)
-        Py_INCREF(hint)
+        
+        # create the hint for zmq_free_fn
+        # two pointers: the gc context and a message to be sent to the gc PULL socket
+        # allows libzmq to signal to Python when it is done with Python-owned memory.
+        from zmq.utils.garbage import gc
+        
+        cdef size_t theid = gc.store(data, self.tracker_event)
+        
+        zmq_msg_init_size(hint_msg, sizeof(size_t))
+        memcpy(zmq_msg_data(hint_msg), &theid, sizeof(size_t))
+        
+        hint[0] = gc.context._handle
+        hint[1] = <size_t> hint_msg
+        
         rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
                 <zmq_free_fn *>free_python_msg, <void *>hint
             )
         if rc != 0:
-            Py_DECREF(hint)
             _check_rc(rc)
         self._failed_init = False
     
