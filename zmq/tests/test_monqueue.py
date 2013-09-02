@@ -23,7 +23,6 @@ from zmq.utils.strtypes import unicode
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
-devices.ThreadMonitoredQueue.context_factory = zmq.Context
 
 class TestMonitoredQueue(BaseZMQTestCase):
     
