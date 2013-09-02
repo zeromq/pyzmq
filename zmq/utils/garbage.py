@@ -13,6 +13,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import atexit
 import struct
 
 from os import getpid
@@ -54,6 +55,7 @@ class GarbageCollector(Thread):
     
     def run(self):
         s = self.context.socket(zmq.PULL)
+        s.linger = 0
         s.bind(self.url)
         
         while True:
@@ -67,16 +69,21 @@ class GarbageCollector(Thread):
                 tup.event.set()
             del tup
         self.refs.clear()
-        s.close(linger=0)
+        s.close()
         self.context.term()
     
     def stop(self):
         """stop the garbage-collection thread"""
+        if not self.is_alive():
+            return
         push = self.context.socket(zmq.PUSH)
         push.connect(self.url)
         push.send(b'DIE')
         push.close()
-        self.context.term()
+    
+    def start(self):
+        atexit.register(self.stop)
+        super(GarbageCollector, self).start()
     
     def store(self, object, event=None):
         """store an object and (optionally) event for zero-copy"""
@@ -88,8 +95,11 @@ class GarbageCollector(Thread):
         return theid
     
     def __del__(self):
-        if getpid() != self.pid:
+        if getpid is None or getpid() != self.pid:
             return
-        self.stop()
+        try:
+            self.stop()
+        except Exception as e:
+            raise (e)
 
 gc = GarbageCollector()
