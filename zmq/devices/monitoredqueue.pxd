@@ -57,23 +57,32 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
     if swap_ids:# both router, must send second identity first
         # recv two ids into msg, id_msg
         rc = zmq_msg_recv(&msg, insocket_, 0)
+        if rc < 0: return rc
+        
         rc = zmq_msg_recv(&id_msg, insocket_, 0)
+        if rc < 0: return rc
 
         # send second id (id_msg) first
         #!!!! always send a copy before the original !!!!
         rc = zmq_msg_copy(&side_msg, &id_msg)
+        if rc < 0: return rc
         rc = zmq_msg_send(&side_msg, outsocket_, ZMQ_SNDMORE)
+        if rc < 0: return rc
         rc = zmq_msg_send(&id_msg, sidesocket_, ZMQ_SNDMORE)
+        if rc < 0: return rc
         # send first id (msg) second
         rc = zmq_msg_copy(&side_msg, &msg)
+        if rc < 0: return rc
         rc = zmq_msg_send(&side_msg, outsocket_, ZMQ_SNDMORE)
+        if rc < 0: return rc
         rc = zmq_msg_send(&msg, sidesocket_, ZMQ_SNDMORE)
-        if rc < 0:
-            return rc
+        if rc < 0: return rc
     while (True):
         rc = zmq_msg_recv(&msg, insocket_, 0)
+        if rc < 0: return rc
         # assert (rc == 0)
         rc = zmq_getsockopt (insocket_, ZMQ_RCVMORE, flag_ptr, &flagsz)
+        if rc < 0: return rc
         flags = 0
         if ZMQ_VERSION_MAJOR < 3:
             if flag_2:
@@ -88,13 +97,18 @@ cdef inline int _relay(void *insocket_, void *outsocket_, void *sidesocket_,
         # assert (rc == 0)
 
         rc = zmq_msg_copy(&side_msg, &msg)
+        if rc < 0: return rc
         if flags:
             rc = zmq_msg_send(&side_msg, outsocket_, flags)
+            if rc < 0: return rc
             # only SNDMORE for side-socket
             rc = zmq_msg_send(&msg, sidesocket_, ZMQ_SNDMORE)
+            if rc < 0: return rc
         else:
             rc = zmq_msg_send(&side_msg, outsocket_, 0)
+            if rc < 0: return rc
             rc = zmq_msg_send(&msg, sidesocket_, 0)
+            if rc < 0: return rc
             break
     return rc
 
@@ -111,10 +125,10 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
     cdef int rc = zmq_msg_init (&msg)
     cdef zmq_msg_t id_msg
     rc = zmq_msg_init (&id_msg)
+    if rc < 0: return rc
     cdef zmq_msg_t side_msg
     rc = zmq_msg_init (&side_msg)
-    # assert (rc == 0)
-    
+    if rc < 0: return rc
     
     cdef zmq_pollitem_t items [2]
     items [0].socket = insocket_
@@ -135,8 +149,7 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
     
         # //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1)
-        if rc < 0:
-            return rc
+        if rc < 0: return rc
         # //  The algorithm below asumes ratio of request and replies processed
         # //  under full load to be 1:1. Although processing requests replies
         # //  first is tempting it is suspectible to DoS attacks (overloading
@@ -146,21 +159,19 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
         if (items [0].revents & ZMQ_POLLIN):
             # send in_prefix to side socket
             rc = zmq_msg_copy(&side_msg, in_msg_ptr)
+            if rc < 0: return rc
             rc = zmq_msg_send(&side_msg, sidesocket_, ZMQ_SNDMORE)
-            if rc < 0:
-                return rc
+            if rc < 0: return rc
             # relay the rest of the message
             rc = _relay(insocket_, outsocket_, sidesocket_, msg, side_msg, id_msg, swap_ids)
-            if rc < 0:
-                return rc
+            if rc < 0: return rc
         if (items [1].revents & ZMQ_POLLIN):
             # send out_prefix to side socket
             rc = zmq_msg_copy(&side_msg, out_msg_ptr)
+            if rc < 0: return rc
             rc = zmq_msg_send(&side_msg, sidesocket_, ZMQ_SNDMORE)
-            if rc < 0:
-                return rc
+            if rc < 0: return rc
             # relay the rest of the message
             rc = _relay(outsocket_, insocket_, sidesocket_, msg, side_msg, id_msg, swap_ids)
-            if rc < 0:
-                return rc
-    return 0
+            if rc < 0: return rc
+    return rc
