@@ -37,11 +37,11 @@ if bundled:
 else:
     try:
         import imp, pkg_resources
-    except ImportError as e:
-        pass
-    else:
         ext = next(ext for ext, _, _type in imp.get_suffixes() if _type == 3)
         imp.load_dynamic('zmq.libzmq', pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext))
+    except ImportError as e:
+        pass
+    finally:
         del imp, pkg_resources
 
 # init Python threads
