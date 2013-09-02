@@ -34,6 +34,15 @@ if bundled:
     else:
         _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
     del ctypes
+else:
+    try:
+        import imp, pkg_resources
+        ext = next(ext for ext, _, _type in imp.get_suffixes() if _type == 3)
+        imp.load_dynamic('zmq.libzmq', pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext))
+    except ImportError as e:
+        pass
+    finally:
+        del imp, pkg_resources
 
 # init Python threads
 
