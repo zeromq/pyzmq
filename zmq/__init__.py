@@ -37,14 +37,19 @@ if bundled:
 else:
     import imp
     pkg_resources = None
+    ext_type = 0
+    ext_path = ''
     try:
         import pkg_resources
-        ext = next(ext for ext, _, _type in imp.get_suffixes() if _type == 3)
-        imp.load_dynamic('zmq.libzmq', pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext))
+        for ext, _, ext_type in imp.get_suffixes():
+            if ext_type == 3:
+                ext_path = pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext)
+                imp.load_dynamic('zmq.libzmq', ext_path)
+                break
     except ImportError as e:
         pass
     finally:
-        del imp, pkg_resources
+        del imp, pkg_resources, ext_type, ext_path
 
 # init Python threads
 
