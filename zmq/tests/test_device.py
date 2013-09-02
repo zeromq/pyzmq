@@ -21,7 +21,6 @@ from zmq.utils.strtypes import (bytes,unicode,basestring)
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
-devices.ThreadDevice.context_factory = zmq.Context
 
 class TestDevice(BaseZMQTestCase):
     

@@ -23,7 +23,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import device, QUEUE, Context
+from zmq import device, QUEUE, Context, ETERM, ZMQError
 
 #-----------------------------------------------------------------------------
 # Classes
@@ -176,16 +176,27 @@ class Device:
         
         return ins,outs
     
-    def run(self):
+    def run_device(self):
         """The runner method.
 
         Do not call me directly, instead call ``self.start()``, just like a
         Thread.
         """
         ins,outs = self._setup_sockets()
-        rc = device(self.device_type, ins, outs)
-        self.done = True
-        return rc
+        device(self.device_type, ins, outs)
+    
+    def run(self):
+        """wrap run_device in try/catch ETERM"""
+        try:
+            self.run_device()
+        except ZMQError as e:
+            if e.errno == ETERM:
+                # silence TERM errors, because this should be a clean shutdown
+                pass
+            else:
+                raise
+        finally:
+            self.done = True
     
     def start(self):
         """Start the device. Override me in subclass for other launchers."""

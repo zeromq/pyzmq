@@ -19,9 +19,6 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
-
-import time
-
 import zmq
 from zmq.devices.basedevice import Device, ThreadDevice, ProcessDevice
 
@@ -79,11 +76,9 @@ class ProxyBase(object):
         
         return ins,outs,mons
     
-    def run(self):
+    def run_device(self):
         ins,outs,mons = self._setup_sockets()
-        rc = zmq.proxy(ins, outs, mons)
-        self.done = True
-        return rc
+        zmq.proxy(ins, outs, mons)
 
 class Proxy(ProxyBase, Device):
     """Threadsafe Proxy object.
