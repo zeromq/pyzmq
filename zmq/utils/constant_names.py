@@ -59,6 +59,35 @@ new_in = {
         'EVENT_DISCONNECTED',
         'EVENT_ALL',
     ],
+    (3,3,0) : [
+        # socket types
+        'STREAM',
+        
+        # socket opts
+        'IMMEDIATE',
+        'ROUTER_RAW',
+        'IPV6',
+        'MECHANISM',
+        'PLAIN_SERVER',
+        'PLAIN_USERNAME',
+        'PLAIN_PASSWORD',
+        'CURVE_SERVER',
+        'CURVE_PUBLICKEY',
+        'CURVE_SECRETKEY',
+        'CURVE_SERVERKEY',
+        'PROBE_ROUTER',
+        'REQ_REQUEST_IDS',
+        'REQ_STRICT',
+        'CONFLATE',
+        
+        # security
+        'NULL',
+        'PLAIN',
+        'CURVE',
+        
+        # events
+        'EVENT_MONITOR_STOPPED',
+    ]
 }
 
 
@@ -114,6 +143,7 @@ base_names = [
     'XSUB',
     'UPSTREAM',
     'DOWNSTREAM',
+    'STREAM',
 
     # events
     'EVENT_CONNECTED',
@@ -127,6 +157,12 @@ base_names = [
     'EVENT_CLOSE_FAILED',
     'EVENT_DISCONNECTED',
     'EVENT_ALL',
+    'EVENT_MONITOR_STOPPED',
+
+    # security
+    'NULL',
+    'PLAIN',
+    'CURVE',
 
     ## ERRNO
     # Often used (these are alse in errno.)
@@ -181,6 +217,13 @@ bytes_sockopt_names = [
     'UNSUBSCRIBE',
     'LAST_ENDPOINT',
     'TCP_ACCEPT_FILTER',
+
+    'PLAIN_USERNAME',
+    'PLAIN_PASSWORD',
+
+    'CURVE_PUBLICKEY',
+    'CURVE_SECRETKEY',
+    'CURVE_SERVERKEY',
 ]
 
 int_sockopt_names = [
@@ -204,7 +247,6 @@ int_sockopt_names = [
     'TCP_KEEPALIVE_INTVL',
     'DELAY_ATTACH_ON_CONNECT',
     'XPUB_VERBOSE',
-    'ROUTER_RAW',
 
     'FD',
     'EVENTS',
@@ -215,6 +257,17 @@ int_sockopt_names = [
     
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
+
+    'ROUTER_RAW',
+    'IMMEDIATE',
+    'IPV6',
+    'MECHANISM',
+    'PLAIN_SERVER',
+    'CURVE_SERVER',
+    'PROBE_ROUTER',
+    'REQ_REQUEST_IDS',
+    'REQ_STRICT',
+    'CONFLATE',
 ]
 
 switched_sockopt_names = [

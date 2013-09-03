@@ -28,6 +28,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_XSUB
     enum: ZMQ_UPSTREAM
     enum: ZMQ_DOWNSTREAM
+    enum: ZMQ_STREAM
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED
@@ -39,6 +40,10 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EVENT_CLOSE_FAILED
     enum: ZMQ_EVENT_DISCONNECTED
     enum: ZMQ_EVENT_ALL
+    enum: ZMQ_EVENT_MONITOR_STOPPED
+    enum: ZMQ_NULL
+    enum: ZMQ_PLAIN
+    enum: ZMQ_CURVE
     enum: ZMQ_EAGAIN "EAGAIN"
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EFAULT "EFAULT"
@@ -75,6 +80,11 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_UNSUBSCRIBE
     enum: ZMQ_LAST_ENDPOINT
     enum: ZMQ_TCP_ACCEPT_FILTER
+    enum: ZMQ_PLAIN_USERNAME
+    enum: ZMQ_PLAIN_PASSWORD
+    enum: ZMQ_CURVE_PUBLICKEY
+    enum: ZMQ_CURVE_SECRETKEY
+    enum: ZMQ_CURVE_SERVERKEY
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
     enum: ZMQ_RCVTIMEO
@@ -89,7 +99,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_TCP_KEEPALIVE_INTVL
     enum: ZMQ_DELAY_ATTACH_ON_CONNECT
     enum: ZMQ_XPUB_VERBOSE
-    enum: ZMQ_ROUTER_RAW
     enum: ZMQ_FD
     enum: ZMQ_EVENTS
     enum: ZMQ_TYPE
@@ -98,6 +107,16 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_BACKLOG
     enum: ZMQ_ROUTER_MANDATORY
     enum: ZMQ_FAIL_UNROUTABLE
+    enum: ZMQ_ROUTER_RAW
+    enum: ZMQ_IMMEDIATE
+    enum: ZMQ_IPV6
+    enum: ZMQ_MECHANISM
+    enum: ZMQ_PLAIN_SERVER
+    enum: ZMQ_CURVE_SERVER
+    enum: ZMQ_PROBE_ROUTER
+    enum: ZMQ_REQ_REQUEST_IDS
+    enum: ZMQ_REQ_STRICT
+    enum: ZMQ_CONFLATE
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM

@@ -85,8 +85,10 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaises(TypeError, s.getsockopt_unicode, zmq.AFFINITY)
         self.assertRaisesErrno(zmq.EINVAL, s.getsockopt_unicode, zmq.SUBSCRIBE)
         
-        st = s.getsockopt(zmq.IDENTITY)
-        self.assertEqual(st.decode('utf16'), s.getsockopt_unicode(zmq.IDENTITY, 'utf16'))
+        identb = s.getsockopt(zmq.IDENTITY)
+        identu = identb.decode('utf16')
+        identu2 = s.getsockopt_unicode(zmq.IDENTITY, 'utf16')
+        self.assertEqual(identu, identu2)
         time.sleep(0.1) # wait for connection/subscription
         p.send_unicode(topic,zmq.SNDMORE)
         p.send_unicode(topic*2, encoding='latin-1')
@@ -128,7 +130,10 @@ class TestSocket(BaseZMQTestCase):
                 backref[value] = name
         for opt in zmq.constants.int_sockopts.union(zmq.constants.int64_sockopts):
             sopt = backref[opt]
-            if sopt.startswith(('ROUTER', 'XPUB', 'TCP', 'FAIL')):
+            if sopt.startswith((
+                'ROUTER', 'XPUB', 'TCP', 'FAIL',
+                'REQ_', 'CURVE_SERVER', 'PROBE_ROUTER',
+                )):
                 # fail_unroutable is write-only
                 continue
             try:
