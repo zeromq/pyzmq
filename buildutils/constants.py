@@ -61,7 +61,11 @@ def constants_pyx():
     all_lines = []
     assign_lines = []
     for name in all_names:
-        assign_lines.append('{0} = ZMQ_{0}'.format(name))
+        if name == "NULL":
+            # avoid conflict with NULL in Cython
+            assign_lines.append("globals()['NULL'] = ZMQ_NULL")
+        else:
+            assign_lines.append('{0} = ZMQ_{0}'.format(name))
         all_lines.append('  "{0}",'.format(name))
     return dict(ASSIGNMENTS='\n'.join(assign_lines), ALL='\n'.join(all_lines))
 
