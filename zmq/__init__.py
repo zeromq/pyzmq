@@ -36,20 +36,23 @@ if bundled:
     del ctypes
 else:
     import imp
+    import zipimport
     pkg_resources = None
     ext_type = 0
     ext_path = ''
     try:
-        import pkg_resources
-        for ext, _, ext_type in imp.get_suffixes():
-            if ext_type == imp.C_EXTENSION:
-                ext_path = pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext)
-                imp.load_dynamic('zmq.libzmq', ext_path)
-                break
-    except ImportError as e:
+        if isinstance(__loader__, zipimport.zipimporter):
+            # a zipped pyzmq egg
+            import pkg_resources
+            for ext, _, ext_type in imp.get_suffixes():
+                if ext_type == imp.C_EXTENSION:
+                    ext_path = pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext)
+                    imp.load_dynamic('zmq.libzmq', ext_path)
+                    break
+    except (NameError, ImportError):
         pass
     finally:
-        del imp, pkg_resources, ext_type, ext_path
+        del imp, zipimport, pkg_resources, ext_type, ext_path
 
 # init Python threads
 
