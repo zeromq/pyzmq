@@ -34,6 +34,16 @@ if bundled:
     else:
         _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
     del ctypes
+else:
+    import zipimport
+    try:
+        if isinstance(__loader__, zipimport.zipimporter):
+            # a zipped pyzmq egg
+            from zmq import libzmq as _libzmq
+    except (NameError, ImportError):
+        pass
+    finally:
+        del zipimport
 
 # init Python threads
 
