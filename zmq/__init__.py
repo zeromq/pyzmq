@@ -42,7 +42,7 @@ else:
     try:
         import pkg_resources
         for ext, _, ext_type in imp.get_suffixes():
-            if ext_type == 3:
+            if ext_type == imp.C_EXTENSION:
                 ext_path = pkg_resources.resource_filename('zmq.libzmq', 'libzmq'+ext)
                 imp.load_dynamic('zmq.libzmq', ext_path)
                 break
