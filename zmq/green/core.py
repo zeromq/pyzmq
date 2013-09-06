@@ -25,6 +25,7 @@ from .poll import _Poller
 
 import gevent
 from gevent.event import AsyncResult
+from gevent.event import Event
 from gevent.hub import get_hub
 
 if hasattr(zmq, 'RCVTIMEO'):
@@ -92,10 +93,10 @@ class _Socket(_original_Socket):
 
     def __setup_events(self):
         self.__readable = AsyncResult()
-        self.__writable = AsyncResult()
+        self.__writable = Event()
         self.__readable.set()
         self.__writable.set()
-        
+
         try:
             self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
             self._state_event.start(self.__state_changed)
@@ -112,7 +113,6 @@ class _Socket(_original_Socket):
             # avoid triggering __state_changed from inside __state_changed
             events = super(_Socket, self).getsockopt(zmq.EVENTS)
         except zmq.ZMQError as exc:
-            self.__writable.set_exception(exc)
             self.__readable.set_exception(exc)
         else:
             if events & zmq.POLLOUT:
@@ -121,8 +121,7 @@ class _Socket(_original_Socket):
                 self.__readable.set()
 
     def _wait_write(self):
-        assert self.__writable.ready(), "Only one greenlet can be waiting on this event"
-        self.__writable = AsyncResult()
+        self.__writable.clear()
         # timeout is because libzmq cannot be trusted to properly signal a new send event:
         # this is effectively a maximum poll interval of 1s
         tic = time.time()
@@ -134,7 +133,7 @@ class _Socket(_original_Socket):
         try:
             if timeout:
                 timeout.start()
-            self.__writable.get(block=True)
+            self.__writable.wait()
         except gevent.Timeout as t:
             if t is not timeout:
                 raise
@@ -147,7 +146,6 @@ class _Socket(_original_Socket):
         finally:
             if timeout:
                 timeout.cancel()
-            self.__writable.set()
 
     def _wait_read(self):
         assert self.__readable.ready(), "Only one greenlet can be waiting on this event"
