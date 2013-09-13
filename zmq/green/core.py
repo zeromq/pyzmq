@@ -92,7 +92,7 @@ class _Socket(_original_Socket):
         self.__readable.set()
 
     def __setup_events(self):
-        self.__readable = AsyncResult()
+        self.__readable = Event()
         self.__writable = Event()
         self.__readable.set()
         self.__writable.set()
@@ -113,7 +113,8 @@ class _Socket(_original_Socket):
             # avoid triggering __state_changed from inside __state_changed
             events = super(_Socket, self).getsockopt(zmq.EVENTS)
         except zmq.ZMQError as exc:
-            self.__readable.set_exception(exc)
+            ## XXX what was here?
+            pass
         else:
             if events & zmq.POLLOUT:
                 self.__writable.set()
@@ -148,8 +149,7 @@ class _Socket(_original_Socket):
                 timeout.cancel()
 
     def _wait_read(self):
-        assert self.__readable.ready(), "Only one greenlet can be waiting on this event"
-        self.__readable = AsyncResult()
+        self.__readable.clear()
         # timeout is because libzmq cannot always be trusted to play nice with libevent.
         # I can only confirm that this actually happens for send, but lets be symmetrical
         # with our dirty hacks.
@@ -163,7 +163,7 @@ class _Socket(_original_Socket):
         try:
             if timeout:
                 timeout.start()
-            self.__readable.get(block=True)
+            self.__readable.wait()
         except gevent.Timeout as t:
             if t is not timeout:
                 raise
@@ -176,7 +176,6 @@ class _Socket(_original_Socket):
         finally:
             if timeout:
                 timeout.cancel()
-            self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False):
         """send, which will only block current greenlet
