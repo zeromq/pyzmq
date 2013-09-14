@@ -100,6 +100,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     with nogil:
         memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
         rc = c_monitored_queue(ins, outs, mons, &in_msg, &out_msg, swap_ids)
+    _check_rc(rc)
     return rc
 
 __all__ = ['monitored_queue']

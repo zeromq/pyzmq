@@ -850,6 +850,7 @@ def makename(path, ext):
     return os.path.abspath(pjoin('zmq', *path)) + ext
 
 pxd = lambda *path: makename(path, '.pxd')
+pxi = lambda *path: makename(path, '.pxi')
 pyx = lambda *path: makename(path, '.pyx')
 dotc = lambda *path: makename(path, '.c')
 
@@ -863,7 +864,7 @@ checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
 submodules = {
-    'backend.cython' : {'constants': [libzmq],
+    'backend.cython' : {'constants': [libzmq, pxi('backend', 'cython', 'constants')],
             'error':[libzmq, checkrc],
             '_poll':[libzmq, socket, context, checkrc],
             'stopwatch':[libzmq, stopwatch, checkrc],

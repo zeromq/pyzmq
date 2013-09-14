@@ -113,6 +113,10 @@
     #define ZMQ_DOWNSTREAM (-1)
 #endif
 
+#ifndef ZMQ_STREAM
+    #define ZMQ_STREAM (-1)
+#endif
+
 #ifndef ZMQ_EVENT_CONNECTED
     #define ZMQ_EVENT_CONNECTED (-1)
 #endif
@@ -155,6 +159,22 @@
 
 #ifndef ZMQ_EVENT_ALL
     #define ZMQ_EVENT_ALL (-1)
+#endif
+
+#ifndef ZMQ_EVENT_MONITOR_STOPPED
+    #define ZMQ_EVENT_MONITOR_STOPPED (-1)
+#endif
+
+#ifndef ZMQ_NULL
+    #define ZMQ_NULL (-1)
+#endif
+
+#ifndef ZMQ_PLAIN
+    #define ZMQ_PLAIN (-1)
+#endif
+
+#ifndef ZMQ_CURVE
+    #define ZMQ_CURVE (-1)
 #endif
 
 #ifndef EAGAIN
@@ -301,6 +321,26 @@
     #define ZMQ_TCP_ACCEPT_FILTER (-1)
 #endif
 
+#ifndef ZMQ_PLAIN_USERNAME
+    #define ZMQ_PLAIN_USERNAME (-1)
+#endif
+
+#ifndef ZMQ_PLAIN_PASSWORD
+    #define ZMQ_PLAIN_PASSWORD (-1)
+#endif
+
+#ifndef ZMQ_CURVE_PUBLICKEY
+    #define ZMQ_CURVE_PUBLICKEY (-1)
+#endif
+
+#ifndef ZMQ_CURVE_SECRETKEY
+    #define ZMQ_CURVE_SECRETKEY (-1)
+#endif
+
+#ifndef ZMQ_CURVE_SERVERKEY
+    #define ZMQ_CURVE_SERVERKEY (-1)
+#endif
+
 #ifndef ZMQ_RECONNECT_IVL_MAX
     #define ZMQ_RECONNECT_IVL_MAX (-1)
 #endif
@@ -357,10 +397,6 @@
     #define ZMQ_XPUB_VERBOSE (-1)
 #endif
 
-#ifndef ZMQ_ROUTER_RAW
-    #define ZMQ_ROUTER_RAW (-1)
-#endif
-
 #ifndef ZMQ_FD
     #define ZMQ_FD (-1)
 #endif
@@ -391,6 +427,46 @@
 
 #ifndef ZMQ_FAIL_UNROUTABLE
     #define ZMQ_FAIL_UNROUTABLE (-1)
+#endif
+
+#ifndef ZMQ_ROUTER_RAW
+    #define ZMQ_ROUTER_RAW (-1)
+#endif
+
+#ifndef ZMQ_IMMEDIATE
+    #define ZMQ_IMMEDIATE (-1)
+#endif
+
+#ifndef ZMQ_IPV6
+    #define ZMQ_IPV6 (-1)
+#endif
+
+#ifndef ZMQ_MECHANISM
+    #define ZMQ_MECHANISM (-1)
+#endif
+
+#ifndef ZMQ_PLAIN_SERVER
+    #define ZMQ_PLAIN_SERVER (-1)
+#endif
+
+#ifndef ZMQ_CURVE_SERVER
+    #define ZMQ_CURVE_SERVER (-1)
+#endif
+
+#ifndef ZMQ_PROBE_ROUTER
+    #define ZMQ_PROBE_ROUTER (-1)
+#endif
+
+#ifndef ZMQ_REQ_REQUEST_IDS
+    #define ZMQ_REQ_REQUEST_IDS (-1)
+#endif
+
+#ifndef ZMQ_REQ_STRICT
+    #define ZMQ_REQ_STRICT (-1)
+#endif
+
+#ifndef ZMQ_CONFLATE
+    #define ZMQ_CONFLATE (-1)
 #endif
 
 #ifndef ZMQ_AFFINITY

@@ -365,6 +365,9 @@ cdef class Socket:
             sz = 255
             rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             _check_rc(rc)
+            # strip null-terminated strings *except* identity
+            if option != ZMQ_IDENTITY and sz > 0 and (<char *>identity_str_c)[sz-1] == b'\0':
+                sz -= 1
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)

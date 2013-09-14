@@ -19,9 +19,6 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
-
-import time
-
 from zmq import ZMQError, PUB
 from zmq.devices.proxydevice import ProxyBase, Proxy, ThreadProxy, ProcessProxy
 from zmq.devices.monitoredqueue import monitored_queue
@@ -44,12 +41,9 @@ class MonitoredQueueBase(ProxyBase):
         self._in_prefix = in_prefix
         self._out_prefix = out_prefix
 
-    def run(self):
+    def run_device(self):
         ins,outs,mons = self._setup_sockets()
-        rc = monitored_queue(ins, outs, mons, 
-            self._in_prefix, self._out_prefix)
-        self.done = True
-        return rc
+        monitored_queue(ins, outs, mons, self._in_prefix, self._out_prefix)
 
 class MonitoredQueue(MonitoredQueueBase, Proxy):
     """Threadsafe MonitoredQueue object.
