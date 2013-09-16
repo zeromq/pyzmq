@@ -15,12 +15,15 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
+from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest, PYPY
 from zmq.utils.strtypes import (bytes,unicode,basestring)
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
+if PYPY:
+    # cleanup of shared Context doesn't work on PyPy
+    devices.Device.context_factory = zmq.Context
 
 class TestDevice(BaseZMQTestCase):
     

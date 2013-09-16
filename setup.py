@@ -962,7 +962,13 @@ for submod, packages in submodules.items():
         extensions.append(ext)
 
 if 'PyPy' in sys.version:
-    extensions = []
+    try:
+        from zmq.backend.cffi import ffi
+    except ImportError:
+        warn("Couldn't get CFFI extension")
+        extensions = []
+    else:
+        extensions = [ffi.verifier.get_extension()]
 
 package_data = {'zmq':['*.pxd'],
                 'zmq.backend.cython':['*.pxd'],
