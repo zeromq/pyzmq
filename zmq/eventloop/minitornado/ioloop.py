@@ -237,6 +237,11 @@ class IOLoop(Configurable):
         be allowed to return before attempting to call `IOLoop.close()`.
         Therefore the call to `close` will usually appear just after
         the call to `start` rather than near the call to `stop`.
+
+        .. versionchanged:: 3.1
+           If the `IOLoop` implementation supports non-integer objects
+           for "file descriptors", those objects will have their
+           ``close`` method when ``all_fds`` is true.
         """
         raise NotImplementedError()
 
@@ -490,6 +495,7 @@ class PollIOLoop(IOLoop):
         self._callbacks = []
         self._callback_lock = threading.Lock()
         self._timeouts = []
+        self._cancellations = 0
         self._running = False
         self._stopped = False
         self._closing = False
@@ -510,7 +516,12 @@ class PollIOLoop(IOLoop):
         if all_fds:
             for fd in self._handlers.keys():
                 try:
-                    os.close(fd)
+                    close_method = getattr(fd, 'close', None)
+                    print (close_method)
+                    if close_method is not None:
+                        close_method()
+                    else:
+                        os.close(fd)
                 except Exception:
                     gen_log.debug("error closing fd %s", fd, exc_info=True)
         self._waker.close()
@@ -607,6 +618,7 @@ class PollIOLoop(IOLoop):
                     if self._timeouts[0].callback is None:
                         # the timeout was cancelled
                         heapq.heappop(self._timeouts)
+                        self._cancellations -= 1
                     elif self._timeouts[0].deadline <= now:
                         timeout = heapq.heappop(self._timeouts)
                         self._run_callback(timeout.callback)
@@ -614,6 +626,14 @@ class PollIOLoop(IOLoop):
                         seconds = self._timeouts[0].deadline - now
                         poll_timeout = min(seconds, poll_timeout)
                         break
+                if (self._cancellations > 512
+                        and self._cancellations > (len(self._timeouts) >> 1)):
+                    # Clean up the timeout queue when it gets large and it's
+                    # more than half cancellations.
+                    self._cancellations = 0
+                    self._timeouts = [x for x in self._timeouts
+                                      if x.callback is not None]
+                    heapq.heapify(self._timeouts)
 
             if self._callbacks:
                 # If any callbacks or timeouts called add_callback,
@@ -694,6 +714,7 @@ class PollIOLoop(IOLoop):
         # If this turns out to be a problem, we could add a garbage
         # collection pass whenever there are too many dead timeouts.
         timeout.callback = None
+        self._cancellations += 1
 
     def add_callback(self, callback, *args, **kwargs):
         with self._callback_lock:
