@@ -144,7 +144,7 @@ class ZMQIOLoop(PollIOLoop):
     @staticmethod
     def instance():
         """Returns a global `IOLoop` instance.
-
+        
         Most applications have a single, global `IOLoop` running on the
         main thread.  Use this method to get this instance from
         another thread.  To get the current thread's `IOLoop`, use `current()`.
@@ -154,30 +154,6 @@ class ZMQIOLoop(PollIOLoop):
         if tornado_version >= (3,):
             PollIOLoop.configure(ZMQIOLoop)
         return PollIOLoop.instance()
-    
-    def close(self, all_fds=False):
-        """override to use *method* to close FDs
-        
-        instead of os.close on everything, which doesn't work on zmq Sockets.
-        
-        Should be fixed in a future tornado release.
-        """
-        with self._callback_lock:
-            self._closing = True
-        self.remove_handler(self._waker.fileno())
-        if all_fds:
-            for fd in self._handlers.keys():
-                try:
-                    # begin patch
-                    try:
-                        fd.close()
-                    except AttributeError:
-                        os.close(fd)
-                    # end patch
-                except Exception:
-                    gen_log.debug("error closing fd %s", fd, exc_info=True)
-        self._waker.close()
-        self._impl.close()
     
     def start(self):
         try:
@@ -189,8 +165,18 @@ class ZMQIOLoop(PollIOLoop):
             else:
                 raise e
 
+
+if tornado_version >= (3,0) and tornado_version < (3,1):
+    def backport_close(self, all_fds=False):
+        """backport IOLoop.close to 3.0 from 3.1 (supports fd.close() method)"""
+        from zmq.eventloop.minitornado.ioloop import PollIOLoop as mini_loop
+        return mini_loop.close.__get__(self)(all_fds)
+    ZMQIOLoop.close = backport_close
+
+
 # public API name
 IOLoop = ZMQIOLoop
+
 
 def install():
     """set the tornado IOLoop instance with the pyzmq IOLoop.
