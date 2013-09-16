@@ -24,5 +24,5 @@ from .context import *
 from .socket import *
 from .devices import *
 from ._poll import *
-from ._cffi import zmq_version_info
+from ._cffi import zmq_version_info, ffi
 from .stopwatch import *
