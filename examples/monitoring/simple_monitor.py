@@ -1,90 +1,90 @@
 # -*- coding: utf-8 -*-
-"""Simple example demonstrating the use of the socket monitoring feature.
-"""
+"""Simple example demonstrating the use of the socket monitoring feature."""
 
-__license__ = '''
-    This file is part of pyzmq.
-
-    Distributed under the terms of the New BSD License. The full
-    license is in the file COPYING.BSD, distributed as part of this
-    software.
-'''
+# This file is part of pyzmq.
+#
+# Distributed under the terms of the New BSD License. The full
+# license is in the file COPYING.BSD, distributed as part of this
+# software.
+from __future__ import print_function
 
 __author__ = 'Guido Goldstein'
 
-import sys
+import json
 import os
-import time
 import struct
+import sys
 import threading
+import time
 
 import zmq
 from zmq.utils.monitor import get_monitor_message
 
+line = lambda : print('-' * 40)
 
-def logger():
-    global s_event
+def logger(monitor):
     done = False
-    time.sleep(1.0)
-    while not done:
-        done = s_event.poll(timeout=5000) == 0
-        if not done:
-            emsg = get_monitor_message(s_event)
-            print emsg['event'], emsg['value'], repr(emsg['endpoint'])
-            if emsg['event'] == 128:
-                done = True
-    print
-    print "Logger done!"
-    return
+    while monitor.poll(timeout=5000):
+        evt = get_monitor_message(monitor)
+        print(json.dumps(evt, indent=1))
+        if evt['event'] == zmq.EVENT_MONITOR_STOPPED:
+            break
+    print()
+    print("Logger done!")
+    monitor.close()
 
-version = zmq.zmq_version_info()
-print repr(version)
-if version < (3,3,0):
+print("libzmq-%s" % zmq.zmq_version())
+if zmq.zmq_version_info() < (3,3,0):
     raise RuntimeError("Libzmq versions < 3.3 are not supported at the moment!")
 
-zmq_ctx = zmq.Context()
+print("Event names:")
+for name in dir(zmq):
+    if name.startswith('EVENT_'):
+        print("%21s : %4i" % (name, getattr(zmq, name)))
 
-s_rep = zmq_ctx.socket(zmq.REP)
-s_rep.linger = 0
 
-s_req = zmq_ctx.socket(zmq.REQ)
-s_req.linger = 0
+ctx = zmq.Context().instance()
+rep = ctx.socket(zmq.REP)
+req = ctx.socket(zmq.REQ)
 
-s_req.monitor("inproc://monitor.req", zmq.EVENT_ALL)
-s_event = s_req.get_monitor_socket()
-s_event.linger = 0
+monitor = req.get_monitor_socket()
 
-t = threading.Thread(target=logger)
+t = threading.Thread(target=logger, args=(monitor,))
 t.start()
 
-print "bind req"
-s_req.bind("tcp://127.0.0.1:6666")
-s_req.bind("tcp://127.0.0.1:6667")
+line()
+print("bind req")
+req.bind("tcp://127.0.0.1:6666")
+req.bind("tcp://127.0.0.1:6667")
 time.sleep(1)
 
-print "connect rep"
-s_rep.connect("tcp://127.0.0.1:6667")
+line()
+print("connect rep")
+rep.connect("tcp://127.0.0.1:6667")
 time.sleep(0.2)
-s_rep.connect("tcp://127.0.0.1:6666")
-time.sleep(2)
+rep.connect("tcp://127.0.0.1:6666")
+time.sleep(1)
 
-print "disconnect rep"
-s_rep.disconnect("tcp://127.0.0.1:6667")
-time.sleep(0.33)
-s_rep.disconnect("tcp://127.0.0.1:6666")
-time.sleep(2)
-print "---"
-print "close rep"
-s_rep.close()
-time.sleep(2)
-print "---"
-print "close req"
-s_req.close()
-time.sleep(2.0)
-print "---"
+line()
+print("disconnect rep")
+rep.disconnect("tcp://127.0.0.1:6667")
+time.sleep(1)
+rep.disconnect("tcp://127.0.0.1:6666")
+time.sleep(1)
 
+line()
+print("close rep")
+rep.close()
+time.sleep(1)
+
+line()
+print("close req")
+req.close()
+time.sleep(1)
+
+line()
+print("joining")
 t.join()
-print "joined"
 
-print "END"
-zmq_ctx.destroy(0)
+print("END")
+ctx.term()
