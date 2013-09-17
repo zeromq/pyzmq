@@ -22,6 +22,7 @@ __license__ = '''
 __author__ = 'Guido Goldstein'
 
 import sys
+import os
 import time
 import struct
 import threading
@@ -53,7 +54,7 @@ if version < (3,3,0):
 zmq_ctx = zmq.Context()
 
 s_rep = zmq_ctx.socket(zmq.REP)
-s_rep.linger =0
+s_rep.linger = 0
 
 s_req = zmq_ctx.socket(zmq.REQ)
 s_req.linger = 0
@@ -65,25 +66,34 @@ s_event.linger = 0
 t = threading.Thread(target=logger)
 t.start()
 
-print "bind"
-s_req.bind("tcp://192.168.1.4:6666")
+print "bind req"
+s_req.bind("tcp://127.0.0.1:6666")
+s_req.bind("tcp://127.0.0.1:6667")
 time.sleep(1)
 
-print "connect"
-s_rep.connect("tcp://192.168.1.4:6666")
-time.sleep(2.0)
+print "connect rep"
+s_rep.connect("tcp://127.0.0.1:6667")
+time.sleep(0.2)
+s_rep.connect("tcp://127.0.0.1:6666")
+time.sleep(2)
 
-print "disconnect"
-s_rep.disconnect("tcp://192.168.1.4:6666")
-## s_rep.close()
-time.sleep(2.0)
+print "disconnect rep"
+s_rep.disconnect("tcp://127.0.0.1:6667")
+time.sleep(0.33)
+s_rep.disconnect("tcp://127.0.0.1:6666")
+time.sleep(2)
 print "---"
+print "close rep"
+s_rep.close()
+time.sleep(2)
+print "---"
+print "close req"
 s_req.close()
 time.sleep(2.0)
 print "---"
 
-time.sleep(5.0)
 t.join()
-del t
+print "joined"
 
 print "END"
+zmq_ctx.destroy(0)
