@@ -55,8 +55,8 @@ class TestIOLoop(BaseZMQTestCase):
     def test_simple(self):
         """simple IOLoop creation test"""
         loop = ioloop.IOLoop()
-        dc = ioloop.DelayedCallback(loop.stop, 200, loop)
-        pc = ioloop.DelayedCallback(lambda : None, 10, loop)
+        dc = ioloop.PeriodicCallback(loop.stop, 200, loop)
+        pc = ioloop.PeriodicCallback(lambda : None, 10, loop)
         pc.start()
         dc.start()
         t = Delay(loop.stop,1)
@@ -97,4 +97,22 @@ class TestIOLoop(BaseZMQTestCase):
         events = dict(poller.poll(1))
         self.assertEqual(events.get(rep), ioloop.IOLoop.READ)
         self.assertEqual(events.get(req), None)
+    
+    def test_instance(self):
+        """Test IOLoop.instance returns the right object"""
+        loop = ioloop.IOLoop.instance()
+        self.assertEqual(loop.__class__, ioloop.IOLoop)
+    
+    def test_close_all(self):
+        """Test close(all_fds=True)"""
+        loop = ioloop.IOLoop.instance()
+        req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        loop.add_handler(req, lambda msg: msg, ioloop.IOLoop.READ)
+        loop.add_handler(rep, lambda msg: msg, ioloop.IOLoop.READ)
+        self.assertEqual(req.closed, False)
+        self.assertEqual(rep.closed, False)
+        loop.close(all_fds=True)
+        self.assertEqual(req.closed, True)
+        self.assertEqual(rep.closed, True)
+        
 
