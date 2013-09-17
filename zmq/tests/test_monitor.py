@@ -22,8 +22,8 @@ import zmq
 from zmq.tests import BaseZMQTestCase, skip_if
 from zmq.utils.monitor import get_monitor_message
 
-skip_version = skip_if(zmq.zmq_version_info()[:2] < (3,2),
-                       "Monitoring test skipped due to ZMQ version < 3.2!")
+skip_version = skip_if(zmq.zmq_version_info()[:2] < (3,3),
+                       "Monitoring test skipped due to ZMQ version < 3.3!")
 
 class TestSocketMonitor(BaseZMQTestCase):
 
