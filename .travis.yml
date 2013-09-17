@@ -9,12 +9,21 @@ python:
 env:
     - ZMQ=
     - ZMQ=bundled
+    - ZMQ=master
 before_install:
   - sudo apt-get install -qq libzmq3-dev
-  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -q --use-mirrors cffi; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then sudo add-apt-repository -y ppa:pypy/ppa || true; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then sudo apt-get -y update && sudo apt-get -y install pypy; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then virtualenv -p /usr/bin/pypy pypy && source pypy/bin/activate; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -q --use-mirrors py cffi; fi
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install -q --use-mirrors cython; fi
 
+  - if [[ $ZMQ == 'master' ]]; then git clone --depth 1 https://github.com/zeromq/libzmq; fi
+  - if [[ $ZMQ == 'master' ]]; then sh -c 'cd libzmq; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig'; fi
+  - pip install -q --use-mirrors nose
+
 install:
+  - if [[ $ZMQ == 'master' ]]; then export ZMQ=/usr/local; fi
   - python setup.py build_ext --inplace --zmq=$ZMQ
 
 matrix:
@@ -22,6 +31,6 @@ matrix:
     - python: pypy
       env: ZMQ=bundled
   allow_failures:
-    - python: pypy
+    - env: ZMQ=master
 
 script: python setup.py test
