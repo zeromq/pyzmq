@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
+#  Copyright (c) 2010 Brian Granger, Min Ragan-Kelley
 #
 #  This file is part of pyzmq
 #
@@ -69,6 +69,13 @@ class TestSocket(BaseZMQTestCase):
         except zmq.ZMQError as e:
             self.assertEqual(e.errno, zmq.EPROTONOSUPPORT)
 
+    def test_identity(self):
+        s = self.context.socket(zmq.PULL)
+        self.sockets.append(s)
+        ident = b'identity\0\0'
+        s.identity = ident
+        self.assertEqual(s.get(zmq.IDENTITY), ident)
+
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
         topic = "tést"
@@ -98,9 +105,7 @@ class TestSocket(BaseZMQTestCase):
     def test_int_sockopts(self):
         "test integer sockopts"
         v = zmq.zmq_version_info()
-        if not v >= (2,1):
-            raise SkipTest("only on libzmq >= 2.1")
-        elif v < (3,0):
+        if v < (3,0):
             default_hwm = 0
         else:
             default_hwm = 1000
@@ -132,7 +137,7 @@ class TestSocket(BaseZMQTestCase):
             sopt = backref[opt]
             if sopt.startswith((
                 'ROUTER', 'XPUB', 'TCP', 'FAIL',
-                'REQ_', 'CURVE_SERVER', 'PROBE_ROUTER',
+                'REQ_', 'CURVE_', 'PROBE_ROUTER',
                 )):
                 # fail_unroutable is write-only
                 continue

@@ -39,7 +39,7 @@ def new_pointer_from_opt(option, length=0):
     elif option in bytes_sockopts:
         return new_binary_data(length)
     else:
-        raise ValueError('Invalid option')
+        raise ZMQError(zmq.EINVAL)
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
     from zmq.sugar.constants import int_sockopts,   \
@@ -52,7 +52,7 @@ def value_from_opt_pointer(option, opt_pointer, length=0):
     elif option in bytes_sockopts:
         return ffi.buffer(opt_pointer, length)[:]
     else:
-        raise ValueError('Invalid option')
+        raise ZMQError(zmq.EINVAL)
 
 def initialize_opt_pointer(option, value, length=0):
     from zmq.sugar.constants import int_sockopts,   \
@@ -65,7 +65,7 @@ def initialize_opt_pointer(option, value, length=0):
     elif option in bytes_sockopts:
         return value_binary_data(value, length)
     else:
-        raise ValueError('Invalid option')
+        raise ZMQError(zmq.EINVAL)
 
 
 class Socket(object):
@@ -129,18 +129,15 @@ class Socket(object):
 
     def set(self, option, value):
         length = None
-        str_value = False
-
-        if isinstance(value, str):
+        if isinstance(value, unicode):
+            raise TypeError("unicode not allowed, use bytes")
+        
+        if isinstance(value, bytes):
+            if option not in zmq.constants.bytes_sockopts:
+                raise TypeError("not a bytes sockopt: %s" % option)
             length = len(value)
-            str_value = True
-
-        try:
-            low_level_data = initialize_opt_pointer(option, value, length)
-        except ValueError:
-            if not str_value:
-                raise ZMQError(EINVAL)
-            raise TypeError("Invalid Option")
+        
+        low_level_data = initialize_opt_pointer(option, value, length)
 
         low_level_value_pointer = low_level_data[0]
         low_level_sizet = low_level_data[1]
@@ -151,15 +148,8 @@ class Socket(object):
                                low_level_sizet)
         _check_rc(rc)
 
-    def get(self, option, length=0):
-        from zmq.sugar.constants import bytes_sockopts
-        if option in bytes_sockopts:
-            length = 255
-
-        try:
-            low_level_data = new_pointer_from_opt(option, length=length)
-        except ValueError:
-            raise ZMQError(EINVAL)
+    def get(self, option):
+        low_level_data = new_pointer_from_opt(option, length=255)
 
         low_level_value_pointer = low_level_data[0]
         low_level_sizet_pointer = low_level_data[1]
@@ -169,8 +159,12 @@ class Socket(object):
                                low_level_value_pointer,
                                low_level_sizet_pointer)
         _check_rc(rc)
-
-        return value_from_opt_pointer(option, low_level_value_pointer)
+        
+        sz = low_level_sizet_pointer[0]
+        v = value_from_opt_pointer(option, low_level_value_pointer, sz)
+        if option != zmq.IDENTITY and option in zmq.constants.bytes_sockopts and v.endswith(b'\0'):
+            v = v[:-1]
+        return v
 
     def send(self, message, flags=0, copy=False, track=False):
         if isinstance(message, unicode):
