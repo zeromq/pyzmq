@@ -525,6 +525,32 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
+    def monitor(self, addr, int events=ZMQ_EVENT_ALL):
+        """s.monitor(addr, flags)
+
+        Starts to collect and publish socket related events.
+        See zmq_start_monitor for details.
+
+        * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.2! *
+        
+        addr     is the inproc endpoint identifier to use for the monitoring.
+        events   denotes the events to notify on.
+        """
+        cdef int rc, c_flags
+        cdef char* c_addr
+        
+        if zmq.zmq_version_info()[:2] < (3,2):
+            raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
+        
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf-8')
+        if not isinstance(addr, bytes):
+            raise TypeError('expected str, got: %r' % addr)
+        c_addr = addr
+        c_flags = events
+        rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
+        _check_rc(rc)
+
     #-------------------------------------------------------------------------
     # Sending and receiving messages
     #-------------------------------------------------------------------------

@@ -42,7 +42,6 @@ bytes_sockopts  = set()
 ctx_opts        = set()
 msg_opts        = set()
 
-
 if constants.VERSION < 30000:
     int64_sockopt_names.extend(switched_sockopt_names)
 else:

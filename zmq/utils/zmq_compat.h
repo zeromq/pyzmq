@@ -61,4 +61,7 @@
     
     #define zmq_sendbuf(s, buf, len, flags) _missing
     #define zmq_recvbuf(s, buf, len, flags) _missing
+
+    #define zmq_socket_monitor(s, addr, flags) _missing
+
 #endif

@@ -393,4 +393,38 @@ class Socket(SocketBase, AttributeSetter):
         # return 0 if no events, otherwise return event bitfield
         return evts.get(self, 0)
 
+    def get_monitor_socket(self, events=None, addr=None):
+        """Return a connected PAIR socket ready to receive the event notifications.
+
+        * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.2! *
+        
+        Parameters
+        ----------
+        events : bitfield (int) [default: ZMQ_EVENTS_ALL]
+            The bitmask defining which events are wanted.
+        addr :  string [default: None]
+            The optional endpoint for the monitoring sockets.
+
+        Returns
+        -------
+        socket :  (PAIR)
+            The socket is already connected and ready to receive messages.
+        """
+        # safe-guard, method only available on libzmq >= 3.2
+        if zmq.zmq_version_info()[:2] < (3,2):
+            raise NotImplementedError("get_monitor_socket requires libzmq >= 3.2, have %s" % zmq.zmq_version())
+        if addr is None:
+            # create endpoint name from internal fd
+            addr = "inproc://monitor.s-%d" % self.FD
+        if events is None:
+            # use all events
+            events = zmq.EVENT_ALL
+        # attach monitoring socket
+        self.monitor(addr, events)
+        # create new PAIR socket and connect it
+        ret = self.context.socket(zmq.PAIR)
+        ret.connect(addr)
+        return ret
+
+        
 __all__ = ['Socket']
