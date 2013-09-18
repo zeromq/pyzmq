@@ -68,26 +68,22 @@ new_in = {
         'ROUTER_RAW',
         'IPV6',
         'MECHANISM',
-        'PLAIN_NODE',
+        'PLAIN_SERVER',
         'PLAIN_USERNAME',
         'PLAIN_PASSWORD',
-        'CURVE_NODE',
-        'CURVE_OUR_PERMA_PUB_KEY',
-        'CURVE_OUR_PERMA_SEC_KEY',
-        'CURVE_PEER_PERMA_PUB_KEY',
-        'CURVE_PEER_PERMA_SEC_KEY',
+        'CURVE_SERVER',
+        'CURVE_PUBLICKEY',
+        'CURVE_SECRETKEY',
+        'CURVE_SERVERKEY',
         'PROBE_ROUTER',
         'REQ_REQUEST_IDS',
         'REQ_STRICT',
         'CONFLATE',
-        'ZAP_DOMAIN',
         
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-        'CLIENT',
-        'SERVER',
         
         # events
         'EVENT_MONITOR_STOPPED',
@@ -167,8 +163,6 @@ base_names = [
     'NULL',
     'PLAIN',
     'CURVE',
-    'SERVER',
-    'CLIENT',
 
     ## ERRNO
     # Often used (these are alse in errno.)
@@ -227,11 +221,9 @@ bytes_sockopt_names = [
     'PLAIN_USERNAME',
     'PLAIN_PASSWORD',
 
-    'CURVE_OUR_PERMA_PUB_KEY',
-    'CURVE_OUR_PERMA_SEC_KEY',
-    'CURVE_PEER_PERMA_PUB_KEY',
-    'CURVE_PEER_PERMA_SEC_KEY',
-    'ZAP_DOMAIN',
+    'CURVE_PUBLICKEY',
+    'CURVE_SECRETKEY',
+    'CURVE_SERVERKEY',
 ]
 
 int_sockopt_names = [
@@ -270,13 +262,12 @@ int_sockopt_names = [
     'IMMEDIATE',
     'IPV6',
     'MECHANISM',
-    'PLAIN_NODE',
-    'CURVE_NODE',
+    'PLAIN_SERVER',
+    'CURVE_SERVER',
     'PROBE_ROUTER',
     'REQ_REQUEST_IDS',
     'REQ_STRICT',
     'CONFLATE',
-    
 ]
 
 switched_sockopt_names = [
