@@ -69,6 +69,13 @@ class TestSocket(BaseZMQTestCase):
         except zmq.ZMQError as e:
             self.assertEqual(e.errno, zmq.EPROTONOSUPPORT)
 
+    def test_identity(self):
+        s = self.context.socket(zmq.PULL)
+        self.sockets.append(s)
+        ident = b'identity\0\0'
+        s.identity = ident
+        self.assertEqual(s.get(zmq.IDENTITY), ident)
+
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
         topic = "tést"
