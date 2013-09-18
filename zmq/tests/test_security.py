@@ -87,6 +87,7 @@ class TestSecurity(BaseZMQTestCase):
         """test NULL (default) security"""
         server = self.context.socket(zmq.DEALER)
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         self.assertEqual(client.MECHANISM, zmq.NULL)
         self.assertEqual(server.mechanism, zmq.NULL)
         self.assertEqual(client.plain_node, zmq.CLIENT)
@@ -101,6 +102,7 @@ class TestSecurity(BaseZMQTestCase):
         server = self.context.socket(zmq.DEALER)
         server.identity = b'IDENT'
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         self.assertEqual(client.plain_username, b'')
         self.assertEqual(client.plain_password, b'')
         client.plain_username = USER
@@ -129,6 +131,7 @@ class TestSecurity(BaseZMQTestCase):
         server = self.context.socket(zmq.DEALER)
         server.identity = b'IDENT'
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         client.plain_username = USER
         client.plain_password = b'incorrect'
         server.plain_node = zmq.SERVER
