@@ -30,7 +30,5 @@ matrix:
   exclude:
     - python: pypy
       env: ZMQ=bundled
-  allow_failures:
-    - env: ZMQ=master
 
 script: python setup.py test
