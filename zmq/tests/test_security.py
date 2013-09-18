@@ -87,10 +87,11 @@ class TestSecurity(BaseZMQTestCase):
         """test NULL (default) security"""
         server = self.context.socket(zmq.DEALER)
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         self.assertEqual(client.MECHANISM, zmq.NULL)
         self.assertEqual(server.mechanism, zmq.NULL)
-        self.assertEqual(client.plain_server, 0)
-        self.assertEqual(server.plain_server, 0)
+        self.assertEqual(client.plain_node, zmq.CLIENT)
+        self.assertEqual(server.plain_node, zmq.CLIENT)
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
@@ -101,20 +102,21 @@ class TestSecurity(BaseZMQTestCase):
         server = self.context.socket(zmq.DEALER)
         server.identity = b'IDENT'
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         self.assertEqual(client.plain_username, b'')
         self.assertEqual(client.plain_password, b'')
         client.plain_username = USER
         client.plain_password = PASS
         self.assertEqual(client.getsockopt(zmq.PLAIN_USERNAME), USER)
         self.assertEqual(client.getsockopt(zmq.PLAIN_PASSWORD), PASS)
-        self.assertEqual(client.plain_server, 0)
-        self.assertEqual(server.plain_server, 0)
-        server.plain_server = True
+        self.assertEqual(client.plain_node, zmq.CLIENT)
+        self.assertEqual(server.plain_node, zmq.CLIENT)
+        server.plain_node = zmq.SERVER
         self.assertEqual(server.mechanism, zmq.PLAIN)
         self.assertEqual(client.mechanism, zmq.PLAIN)
         
-        assert not client.plain_server
-        assert server.plain_server
+        self.assertEqual(client.plain_node, zmq.CLIENT)
+        self.assertEqual(server.plain_node, zmq.SERVER)
         
         self.start_zap()
         
@@ -129,9 +131,10 @@ class TestSecurity(BaseZMQTestCase):
         server = self.context.socket(zmq.DEALER)
         server.identity = b'IDENT'
         client = self.context.socket(zmq.DEALER)
+        self.sockets.extend([server, client])
         client.plain_username = USER
         client.plain_password = b'incorrect'
-        server.plain_server = True
+        server.plain_node = zmq.SERVER
         self.assertEqual(server.mechanism, zmq.PLAIN)
         self.assertEqual(client.mechanism, zmq.PLAIN)
         
@@ -153,22 +156,23 @@ class TestSecurity(BaseZMQTestCase):
         client = self.context.socket(zmq.DEALER)
         self.sockets.extend([server, client])
         try:
-            server.curve_server = True
+            server.curve_node = zmq.SERVER
         except zmq.ZMQError as e:
             # will raise EINVAL if not linked against libsodium
             if e.errno == zmq.EINVAL:
                 raise SkipTest("CURVE unsupported")
         
-        server.curve_secretkey = b"JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6"
-        client.curve_serverkey = b"rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7"
-        client.curve_publickey = b"Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID"
-        client.curve_secretkey = b"D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs"
+        client.curve_node = zmq.CLIENT
+        server.curve_our_perma_sec_key = b"JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6"
+        client.curve_peer_perma_pub_key = b"rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7"
+        client.curve_our_perma_pub_key = b"Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID"
+        client.curve_our_perma_sec_key = b"D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs"
         
         self.assertEqual(server.mechanism, zmq.CURVE)
         self.assertEqual(client.mechanism, zmq.CURVE)
         
-        self.assertEqual(server.get(zmq.CURVE_SERVER), True)
-        self.assertEqual(client.get(zmq.CURVE_SERVER), False)
+        self.assertEqual(server.get(zmq.CURVE_NODE), zmq.SERVER)
+        self.assertEqual(client.get(zmq.CURVE_NODE), zmq.CLIENT)
         
         self.start_zap()
         

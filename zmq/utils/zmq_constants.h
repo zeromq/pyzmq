@@ -177,6 +177,14 @@
     #define ZMQ_CURVE (-1)
 #endif
 
+#ifndef ZMQ_SERVER
+    #define ZMQ_SERVER (-1)
+#endif
+
+#ifndef ZMQ_CLIENT
+    #define ZMQ_CLIENT (-1)
+#endif
+
 #ifndef EAGAIN
     #define EAGAIN (-1)
 #endif
@@ -329,16 +337,24 @@
     #define ZMQ_PLAIN_PASSWORD (-1)
 #endif
 
-#ifndef ZMQ_CURVE_PUBLICKEY
-    #define ZMQ_CURVE_PUBLICKEY (-1)
+#ifndef ZMQ_CURVE_OUR_PERMA_PUB_KEY
+    #define ZMQ_CURVE_OUR_PERMA_PUB_KEY (-1)
 #endif
 
-#ifndef ZMQ_CURVE_SECRETKEY
-    #define ZMQ_CURVE_SECRETKEY (-1)
+#ifndef ZMQ_CURVE_OUR_PERMA_SEC_KEY
+    #define ZMQ_CURVE_OUR_PERMA_SEC_KEY (-1)
 #endif
 
-#ifndef ZMQ_CURVE_SERVERKEY
-    #define ZMQ_CURVE_SERVERKEY (-1)
+#ifndef ZMQ_CURVE_PEER_PERMA_PUB_KEY
+    #define ZMQ_CURVE_PEER_PERMA_PUB_KEY (-1)
+#endif
+
+#ifndef ZMQ_CURVE_PEER_PERMA_SEC_KEY
+    #define ZMQ_CURVE_PEER_PERMA_SEC_KEY (-1)
+#endif
+
+#ifndef ZMQ_ZAP_DOMAIN
+    #define ZMQ_ZAP_DOMAIN (-1)
 #endif
 
 #ifndef ZMQ_RECONNECT_IVL_MAX
@@ -445,12 +461,12 @@
     #define ZMQ_MECHANISM (-1)
 #endif
 
-#ifndef ZMQ_PLAIN_SERVER
-    #define ZMQ_PLAIN_SERVER (-1)
+#ifndef ZMQ_PLAIN_NODE
+    #define ZMQ_PLAIN_NODE (-1)
 #endif
 
-#ifndef ZMQ_CURVE_SERVER
-    #define ZMQ_CURVE_SERVER (-1)
+#ifndef ZMQ_CURVE_NODE
+    #define ZMQ_CURVE_NODE (-1)
 #endif
 
 #ifndef ZMQ_PROBE_ROUTER
