@@ -22,10 +22,12 @@ import zmq
 from zmq.tests import BaseZMQTestCase, skip_if, skip_pypy
 from zmq.utils.monitor import get_monitor_message
 
+skip_lt_33 = skip_if(zmq.zmq_version_info() < (3,3), "requires zmq >= 3.3")
 
 class TestSocketMonitor(BaseZMQTestCase):
 
     @skip_pypy
+    @skip_lt_33
     def test_monitor(self):
         """Test monitoring interface for sockets."""
         s_rep = self.context.socket(zmq.REP)
@@ -33,10 +35,6 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.sockets.extend([s_rep, s_req])
         s_req.bind("tcp://127.0.0.1:6666")
         # try monitoring the REP socket
-        
-        if zmq.zmq_version_info() < (3,2):
-            self.assertRaises(NotImplementedError, s_rep.monitor, "inproc://monitor.rep", zmq.EVENT_ALL)
-            return
         
         s_rep.monitor("inproc://monitor.rep", zmq.EVENT_ALL)
         # create listening socket for monitor
@@ -57,6 +55,7 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
 
     @skip_pypy
+    @skip_lt_33
     def test_monitor_connected(self):
         """Test connected monitoring socket."""
         s_rep = self.context.socket(zmq.REP)
@@ -65,9 +64,6 @@ class TestSocketMonitor(BaseZMQTestCase):
         s_req.bind("tcp://127.0.0.1:6667")
         # try monitoring the REP socket
         # create listening socket for monitor
-        if zmq.zmq_version_info() < (3,2):
-            self.assertRaises(NotImplementedError, s_rep.get_monitor_socket)
-            return
         s_event = s_rep.get_monitor_socket()
         s_event.linger = 0
         self.sockets.append(s_event)
