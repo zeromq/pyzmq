@@ -44,8 +44,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_NULL
     enum: ZMQ_PLAIN
     enum: ZMQ_CURVE
-    enum: ZMQ_SERVER
-    enum: ZMQ_CLIENT
     enum: ZMQ_EAGAIN "EAGAIN"
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EFAULT "EFAULT"
@@ -84,11 +82,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_TCP_ACCEPT_FILTER
     enum: ZMQ_PLAIN_USERNAME
     enum: ZMQ_PLAIN_PASSWORD
-    enum: ZMQ_CURVE_OUR_PERMA_PUB_KEY
-    enum: ZMQ_CURVE_OUR_PERMA_SEC_KEY
-    enum: ZMQ_CURVE_PEER_PERMA_PUB_KEY
-    enum: ZMQ_CURVE_PEER_PERMA_SEC_KEY
-    enum: ZMQ_ZAP_DOMAIN
+    enum: ZMQ_CURVE_PUBLICKEY
+    enum: ZMQ_CURVE_SECRETKEY
+    enum: ZMQ_CURVE_SERVERKEY
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
     enum: ZMQ_RCVTIMEO
@@ -115,8 +111,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_IMMEDIATE
     enum: ZMQ_IPV6
     enum: ZMQ_MECHANISM
-    enum: ZMQ_PLAIN_NODE
-    enum: ZMQ_CURVE_NODE
+    enum: ZMQ_PLAIN_SERVER
+    enum: ZMQ_CURVE_SERVER
     enum: ZMQ_PROBE_ROUTER
     enum: ZMQ_REQ_REQUEST_IDS
     enum: ZMQ_REQ_STRICT
