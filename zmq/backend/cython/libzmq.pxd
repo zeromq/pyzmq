@@ -80,6 +80,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_connect (void *s, char *addr)
     int zmq_unbind (void *s, char *addr)
     int zmq_disconnect (void *s, char *addr)
+
+    int zmq_socket_monitor (void *s, char *addr, int flags)
     
     # send/recv
     int zmq_sendbuf (void *s, const_void_ptr buf, size_t n, int flags)
