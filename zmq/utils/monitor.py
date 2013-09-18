@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Module holding utility and convenience functions for the event monitoring facility.
-"""
+"""Module holding utility and convenience functions for zmq event monitoring."""
 
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Guido Goldstein
+#  Copyright (c) 2013 Guido Goldstein, Min Ragan-Kelley
 #
 #  This file is part of pyzmq
 #
@@ -15,11 +14,10 @@ import struct
 import zmq
 
 # used to determine which version of the event message API is in use
-LIBZMQVERSION = zmq.zmq_version_info()[:2]
-
+LIBZMQVERSION = zmq.zmq_version_info()
 
 def _decode_new_msg(msg):
-    """Helper to decode new style event messages.
+    """decode 3.3-style event messages.
 
     First frame is
       16 bit event id
@@ -27,36 +25,41 @@ def _decode_new_msg(msg):
 
     *NO padding*
 
-    Second frame is endpoint as string
+    Second frame is endpoint as bytestring
     """
-    if (len(msg) != 2) or (len(msg[0]) != 6):
-        raise RuntimeError("Invalid event message format!", msg)
-    ret = {}
-    ret['event'], ret['value'] = struct.unpack("=hi", msg[0])
-    ret['endpoint'] = msg[1]
-    return ret
+    if len(msg) != 2 or len(msg[0]) != 6:
+        raise RuntimeError("Invalid event message format: %s" % msg)
+    event = {}
+    event['event'], event['value'] = struct.unpack("=hi", msg[0])
+    event['endpoint'] = msg[1]
+    return event
 
-def get_monitor_message(socket):
-    """Read and decode the given raw message from the monitoring socket and return a dict.
+def get_monitor_message(socket, flags=0):
+    """Receive and decode the given raw message from the monitoring socket and return a dict.
 
     * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.3! *
-        
-    The function will do a *blocking* read on the given socket!
 
     The returned dict will have the following entries:
       event     : int, the event id as described in libzmq.zmq_socket_monitor
       value     : int, the event value associated with the event, see libzmq.zmq_socket_monitor
       endpoint  : string, the affected endpoint
     
-    Params:
-      socket: the PAIR socket the message is to read from
+    Parameters
+    ----------
+    socket : zmq PAIR socket
+        The PAIR socket (created by other_socket.connect_monitor()) on which to recv the message
+    flags : bitfield (int)
+        standard zmq recv flags
 
-    Returns:
-      event description as dict.
+    Returns
+    -------
+    
+    event : dict
+        event description as dict with the keys `event`, `value`, and `endpoint`.
     """
-    # will always return a list
-    msg = socket.recv_multipart()
     if LIBZMQVERSION < (3,3):
         raise NotImplementedError("libzmq event API needs libzmq version >= 3.3, you have %s!" % zmq.zmq_version())
-    # new style event API
+    # will always return a list
+    msg = socket.recv_multipart(flags)
+    # 3.3-style event API
     return _decode_new_msg(msg)
