@@ -43,6 +43,7 @@ class TestSocketMonitor(BaseZMQTestCase):
         s_event = self.context.socket(zmq.PAIR)
         self.sockets.append(s_event)
         s_event.connect("inproc://monitor.rep")
+        s_event.linger = 0
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6666")
         if zmq.zmq_version_info() < (3,3):
@@ -68,6 +69,7 @@ class TestSocketMonitor(BaseZMQTestCase):
             self.assertRaises(NotImplementedError, s_rep.get_monitor_socket)
             return
         s_event = s_rep.get_monitor_socket()
+        s_event.linger = 0
         self.sockets.append(s_event)
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6667")
