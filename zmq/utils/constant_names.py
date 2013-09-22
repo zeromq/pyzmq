@@ -59,7 +59,7 @@ new_in = {
         'EVENT_DISCONNECTED',
         'EVENT_ALL',
     ],
-    (3,3,0) : [
+    (4,0,0) : [
         # socket types
         'STREAM',
         
