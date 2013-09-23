@@ -26,7 +26,6 @@ skip_lt_4 = skip_if(zmq.zmq_version_info() < (4,), "requires zmq >= 4")
 
 class TestSocketMonitor(BaseZMQTestCase):
 
-    @skip_pypy
     @skip_lt_4
     def test_monitor(self):
         """Test monitoring interface for sockets."""
@@ -44,9 +43,6 @@ class TestSocketMonitor(BaseZMQTestCase):
         s_event.linger = 0
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6666")
-        if zmq.zmq_version_info() < (4,):
-            self.assertRaises(NotImplementedError, get_monitor_message, s_event)
-            return
         m = get_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_CONNECT_DELAYED)
         self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
@@ -54,7 +50,6 @@ class TestSocketMonitor(BaseZMQTestCase):
         m = get_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
 
-    @skip_pypy
     @skip_lt_4
     def test_monitor_connected(self):
         """Test connected monitoring socket."""
