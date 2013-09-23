@@ -28,7 +28,7 @@ class TestCFFIBackend(TestCase):
     def test_zmq_version_info(self):
         version = zmq_version_info()
 
-        assert version[0] in (2, 3)
+        assert version[0] in range(2,11)
 
     def test_zmq_ctx_new_destroy(self):
         ctx = C.zmq_ctx_new()

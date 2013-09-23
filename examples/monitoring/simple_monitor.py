@@ -34,8 +34,8 @@ def logger(monitor):
     monitor.close()
 
 print("libzmq-%s" % zmq.zmq_version())
-if zmq.zmq_version_info() < (3,3,0):
-    raise RuntimeError("Libzmq versions < 3.3 are not supported at the moment!")
+if zmq.zmq_version_info() < (4,0):
+    raise RuntimeError("monitoring in libzmq version < 4.0 is not supported")
 
 print("Event names:")
 for name in dir(zmq):
