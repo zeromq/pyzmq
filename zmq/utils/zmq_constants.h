@@ -341,6 +341,10 @@
     #define ZMQ_CURVE_SERVERKEY (-1)
 #endif
 
+#ifndef ZMQ_ZAP_DOMAIN
+    #define ZMQ_ZAP_DOMAIN (-1)
+#endif
+
 #ifndef ZMQ_RECONNECT_IVL_MAX
     #define ZMQ_RECONNECT_IVL_MAX (-1)
 #endif
@@ -457,12 +461,12 @@
     #define ZMQ_PROBE_ROUTER (-1)
 #endif
 
-#ifndef ZMQ_REQ_REQUEST_IDS
-    #define ZMQ_REQ_REQUEST_IDS (-1)
+#ifndef ZMQ_REQ_RELAXED
+    #define ZMQ_REQ_RELAXED (-1)
 #endif
 
-#ifndef ZMQ_REQ_STRICT
-    #define ZMQ_REQ_STRICT (-1)
+#ifndef ZMQ_REQ_CORRELATE
+    #define ZMQ_REQ_CORRELATE (-1)
 #endif
 
 #ifndef ZMQ_CONFLATE

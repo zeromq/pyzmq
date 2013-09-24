@@ -57,7 +57,7 @@ def get_monitor_message(socket, flags=0):
     event : dict
         event description as dict with the keys `event`, `value`, and `endpoint`.
     """
-    if LIBZMQVERSION < (3,3):
+    if LIBZMQVERSION < (4,):
         raise NotImplementedError("libzmq event API needs libzmq version >= 3.3, you have %s!" % zmq.zmq_version())
     # will always return a list
     msg = socket.recv_multipart(flags)
