@@ -206,6 +206,27 @@ class Socket(object):
             return frame.bytes
         else:
             return frame
+    
+    def monitor(self, addr, events=-1):
+        """s.monitor(addr, flags)
+
+        Start publishing socket events on inproc.
+        See libzmq docs for zmq_monitor for details.
+        
+        Note: requires libzmq >= 3.2
+        
+        Parameters
+        ----------
+        addr : str
+            The inproc url used for monitoring.
+        events : int [default: zmq.EVENT_ALL]
+            The zmq event bitmask for which events will be sent to the monitor.
+        """
+        if zmq.zmq_version_info() < (3,2):
+            raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
+        if events < 0:
+            events = zmq.EVENT_ALL
+        rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']

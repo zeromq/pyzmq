@@ -27,7 +27,7 @@ PASS = b"password"
 class TestSecurity(BaseZMQTestCase):
     
     def setUp(self):
-        if zmq.zmq_version_info() < (3,3,0):
+        if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 3.3")
         super(TestSecurity, self).setUp()
     
