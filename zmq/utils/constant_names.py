@@ -76,9 +76,10 @@ new_in = {
         'CURVE_SECRETKEY',
         'CURVE_SERVERKEY',
         'PROBE_ROUTER',
-        'REQ_REQUEST_IDS',
-        'REQ_STRICT',
+        'REQ_RELAXED',
+        'REQ_CORRELATE',
         'CONFLATE',
+        'ZAP_DOMAIN',
         
         # security
         'NULL',
@@ -224,6 +225,7 @@ bytes_sockopt_names = [
     'CURVE_PUBLICKEY',
     'CURVE_SECRETKEY',
     'CURVE_SERVERKEY',
+    'ZAP_DOMAIN',
 ]
 
 int_sockopt_names = [
@@ -265,8 +267,8 @@ int_sockopt_names = [
     'PLAIN_SERVER',
     'CURVE_SERVER',
     'PROBE_ROUTER',
-    'REQ_REQUEST_IDS',
-    'REQ_STRICT',
+    'REQ_RELAXED',
+    'REQ_CORRELATE',
     'CONFLATE',
 ]
 
