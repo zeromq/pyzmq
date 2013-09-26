@@ -989,10 +989,15 @@ package_data['zmq'].append('libzmq'+lib_ext)
 def extract_version():
     """extract pyzmq version from sugar/version.py, so it's not multiply defined"""
     with open(pjoin('zmq', 'sugar', 'version.py')) as f:
-        line = f.readline()
-        while not line.startswith("__version__"):
+        while True:
             line = f.readline()
-    exec(line, globals())
+            if line.startswith('# Code'):
+                lines = []
+                while line and not line.startswith('def'):
+                    lines.append(line)
+                    line = f.readline()
+                break
+    exec(''.join(lines), globals())
     return __version__
 
 def find_packages():

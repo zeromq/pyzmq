@@ -13,15 +13,24 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import re
-
 from zmq.backend import zmq_version_info
 
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
 
-__version__ = '14.0.dev'
+VERSION_MAJOR = 14
+VERSION_MINOR = 0
+VERSION_PATCH = 0
+VERSION_EXTRA = 'dev'
+__version__ = '%i.%i.%i' % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+
+if VERSION_EXTRA:
+    __version__ = "%s-%s" % (__version__, VERSION_EXTRA)
+    version_info = (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, float('inf'))
+else:
+    version_info = (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+
 __revision__ = ''
 
 def pyzmq_version():
@@ -32,18 +41,11 @@ def pyzmq_version():
         return __version__
 
 def pyzmq_version_info():
-    """return the pyzmq version as a tuple of numbers
+    """return the pyzmq version as a tuple of at least three numbers
     
-    If pyzmq is a dev version, the patch-version will be `inf`.
-    
-    This helps comparison of version tuples in Python 3, where str-int
-    comparison is no longer legal for some reason.
+    If pyzmq is a development version, `inf` will be appended after the third integer.
     """
-    parts = re.findall('[0-9]+', __version__)
-    parts = [ int(p) for p in parts ]
-    if 'dev' in __version__:
-        parts.append(float('inf'))
-    return tuple(parts)
+    return version_info
 
 
 def zmq_version():
