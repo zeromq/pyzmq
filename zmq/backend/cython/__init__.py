@@ -24,11 +24,11 @@
 #-----------------------------------------------------------------------------
 
 from . import (constants, error, message, context,
-                      socket, stopwatch, _poll, _version, _device )
+                      socket, utils, _poll, _version, _device )
 
 __all__ = []
 for submod in (constants, error, message, context,
-               socket, stopwatch, _poll, _version, _device):
+               socket, utils, _poll, _version, _device):
     __all__.extend(submod.__all__)
 
 from .constants import *
@@ -37,7 +37,7 @@ from .message import *
 from .context import *
 from .socket import *
 from ._poll import *
-from .stopwatch import *
+from .utils import *
 from ._device import *
 from ._version import *
 
