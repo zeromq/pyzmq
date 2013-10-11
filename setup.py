@@ -427,14 +427,22 @@ class Configure(build_ext):
             # And things like sockets come from libraries that must be named.
 
             ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
-        elif not sys.platform.startswith(('darwin', 'freebsd')):
+        else:
             ext.include_dirs.append(bundledir)
             
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
-            if not cc.has_function('timer_create'):
-                ext.libraries.append('rt')
+            if not sys.platform.startswith(('darwin', 'freebsd')) \
+                and not cc.has_function('timer_create'):
+                    ext.libraries.append('rt')
+            
+            # check if we *can* link libsodium
+            if cc.has_function('crypto_box_keypair', libraries=ext.libraries + ['sodium']):
+                ext.libraries.append('sodium')
+                ext.define_macros.append(("HAVE_LIBSODIUM", 1))
+            else:
+                warn("libsodium not found, zmq.CURVE security will be unavailable")
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
