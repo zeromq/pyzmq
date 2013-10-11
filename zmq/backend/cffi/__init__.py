@@ -10,11 +10,11 @@
 #-----------------------------------------------------------------------------
 
 from zmq.backend.cffi import (constants, error, message, context, socket,
-                           _poll, devices, stopwatch)
+                           _poll, devices, utils)
 
 __all__ = []
 for submod in (constants, error, message, context, socket,
-               _poll, devices, stopwatch):
+               _poll, devices, utils):
     __all__.extend(submod.__all__)
 
 from .constants import *
@@ -25,4 +25,4 @@ from .socket import *
 from .devices import *
 from ._poll import *
 from ._cffi import zmq_version_info, ffi
-from .stopwatch import *
+from .utils import *

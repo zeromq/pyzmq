@@ -57,6 +57,11 @@ int zmq_proxy(const void *frontend, const void *backend, const void *capture);
 int zmq_socket_monitor(void *socket, const char *addr, int events);
 '''
 
+core40_functions = \
+'''
+int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+'''
+
 message_functions = \
 '''
 typedef struct {
@@ -178,6 +183,7 @@ if _version_info >= (3,2,2):
     functions = '\n'.join([constants,
                          core_functions,
                          core32_functions,
+                         core40_functions,
                          message32_functions,
                          sockopt_functions,
                          polling_functions,

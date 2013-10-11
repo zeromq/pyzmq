@@ -36,7 +36,7 @@
 #if ZMQ_VERSION_MAJOR >= 4
 // nothing to remove
 #else
-    #define zmq_curve_keypair (z85_public_key, z85_secret_key) _missing
+    #define zmq_curve_keypair(z85_public_key, z85_secret_key) _missing
 #endif
 
 #if ZMQ_VERSION_MAJOR >= 3
