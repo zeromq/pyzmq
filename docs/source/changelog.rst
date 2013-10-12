@@ -9,6 +9,19 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.0.0
+======
+
+* Update bundled libzmq to current (3.2.3).
+* Backends are now implemented in ``zmq.backend`` instead of ``zmq.core``.
+  This should have no effect on public APIs.
+* Various build improvements for Cython and CFFI backends (PyPy compiles at build time).
+* Various GIL-related performance improvements - the GIL is no longer touched from a zmq IO thread.
+* Adding a constant should now be a bit easier - only zmq/sugar/constant_names should need updating,
+  all other constant-related files should be automatically updated by ``setup.py constants``.
+* add preliminary support for current state of libzmq 4.0 release candidate
+  (includes ZMQ_CURVE security and socket event monitoring).
+
 13.1.0
 ======
 
