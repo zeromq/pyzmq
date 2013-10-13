@@ -103,4 +103,5 @@ cdef extern from "zmq_utils.h" nogil:
     void *zmq_stopwatch_start ()
     unsigned long zmq_stopwatch_stop (void *watch_)
     void zmq_sleep (int seconds_)
+    int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 

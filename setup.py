@@ -82,8 +82,8 @@ from buildutils import (
 
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
-target_zmq = (3,2,3)
-dev_zmq = (4,0,0)
+target_zmq = (4,0,1)
+dev_zmq = (5,0,0)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
@@ -427,14 +427,22 @@ class Configure(build_ext):
             # And things like sockets come from libraries that must be named.
 
             ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
-        elif not sys.platform.startswith(('darwin', 'freebsd')):
+        else:
             ext.include_dirs.append(bundledir)
             
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
-            if not cc.has_function('timer_create'):
-                ext.libraries.append('rt')
+            if not sys.platform.startswith(('darwin', 'freebsd')) \
+                and not cc.has_function('timer_create'):
+                    ext.libraries.append('rt')
+            
+            # check if we *can* link libsodium
+            if cc.has_function('crypto_box_keypair', libraries=ext.libraries + ['sodium']):
+                ext.libraries.append('sodium')
+                ext.define_macros.append(("HAVE_LIBSODIUM", 1))
+            else:
+                warn("libsodium not found, zmq.CURVE security will be unavailable")
         
         # insert the extension:
         self.distribution.ext_modules.insert(0, ext)
@@ -859,7 +867,7 @@ buffers = pxd('utils', 'buffers')
 message = pxd('backend', 'cython', 'message')
 context = pxd('backend', 'cython', 'context')
 socket = pxd('backend', 'cython', 'socket')
-stopwatch = pxd('backend', 'cython', 'stopwatch')
+utils = pxd('backend', 'cython', 'utils')
 checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
@@ -867,7 +875,7 @@ submodules = {
     'backend.cython' : {'constants': [libzmq, pxi('backend', 'cython', 'constants')],
             'error':[libzmq, checkrc],
             '_poll':[libzmq, socket, context, checkrc],
-            'stopwatch':[libzmq, stopwatch, checkrc],
+            'utils':[libzmq, utils, checkrc],
             'context':[context, libzmq, checkrc],
             'message':[libzmq, buffers, message, checkrc],
             'socket':[context, message, socket, libzmq, buffers, checkrc],
