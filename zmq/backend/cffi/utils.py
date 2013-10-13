@@ -15,9 +15,14 @@ from ._cffi import ffi, C
 from zmq.error import ZMQError, _check_rc
 
 def curve_keypair():
-    """Generate z85 keypair for use with zmq CURVE security
+    """generate a Z85 keypair for use with zmq.CURVE security
     
-    Requires zmq ≥ 4.0 linked against libsodium.
+    Requires libzmq (≥ 4.0) to have been linked with libsodium.
+    
+    Returns
+    -------
+    (public, secret) : two bytestrings
+        The public and private keypair as 40 byte z85-encoded bytestrings.
     """
     public = ffi.new('char[64]')
     private = ffi.new('char[64]')
