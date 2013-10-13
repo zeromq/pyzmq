@@ -94,12 +94,18 @@ class NotDone(ZMQBaseError):
 
 
 class ContextTerminated(ZMQError):
-    """Wrapper for zmq.ETERM"""
+    """Wrapper for zmq.ETERM
+    
+    .. versionadded:: 13.0
+    """
     pass
 
 
 class Again(ZMQError):
-    """Wrapper for zmq.EAGAIN"""
+    """Wrapper for zmq.EAGAIN
+    
+    .. versionadded:: 13.0
+    """
     pass
 
 

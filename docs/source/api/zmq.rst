@@ -16,6 +16,12 @@ Basic Classes
   :members:
   :undoc-members:
   :inherited-members:
+  :exclude-members: sockopts, closed
+  
+  .. attribute:: closed
+  
+      boolean - whether the context has been terminated.
+      If True, you can no longer use this Context.
 
 
 :class:`Socket`
@@ -26,6 +32,13 @@ Basic Classes
   :members:
   :undoc-members:
   :inherited-members:
+  :exclude-members: closed, context, getsockopt_unicode, recv_unicode, setsockopt_unicode, send_unicode
+
+  .. attribute:: closed
+
+      boolean - whether the socket has been closed.
+      If True, you can no longer use this Socket.
+  
 
 
 :class:`Frame`
@@ -34,7 +47,6 @@ Basic Classes
 
 .. autoclass:: Frame
   :members:
-  :undoc-members:
   :inherited-members:
 
 
@@ -44,7 +56,6 @@ Basic Classes
 
 .. autoclass:: MessageTracker
   :members:
-  :undoc-members:
   :inherited-members:
 
 
@@ -56,7 +67,6 @@ Polling
 
 .. autoclass:: Poller
   :members:
-  :undoc-members:
   :inherited-members:
 
 
@@ -71,7 +81,6 @@ Exceptions
 
 .. autoclass:: ZMQError
   :members:
-  :undoc-members:
   :inherited-members:
 
 
@@ -101,7 +110,6 @@ Exceptions
 
 
 .. autoclass:: ZMQBindError
-  :members:
 
 
 
@@ -115,5 +123,11 @@ Functions
 .. autofunction:: zmq.zmq_version_info
 
 .. autofunction:: zmq.pyzmq_version_info
+
+.. autofunction:: zmq.device
+
+.. autofunction:: zmq.proxy
+
+.. autofunction:: zmq.curve_keypair
 
 .. autofunction:: zmq.get_includes

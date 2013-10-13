@@ -23,10 +23,7 @@ from .constants import POLLIN, POLLOUT, POLLERR
 
 
 class Poller(object):
-    """Poller()
-
-    A stateful poll interface that mirrors Python's built-in poll.
-    """
+    """A stateful poll interface that mirrors Python's built-in poll."""
     sockets = None
     _map = {}
 
@@ -69,16 +66,11 @@ class Poller(object):
             pass
 
     def modify(self, socket, flags=POLLIN|POLLOUT):
-        """p.modify(socket, flags=POLLIN|POLLOUT)
-
-        Modify the flags for an already registered 0MQ socket or native fd.
-        """
+        """Modify the flags for an already registered 0MQ socket or native fd."""
         self.register(socket, flags)
 
     def unregister(self, socket):
-        """p.unregister(socket)
-
-        Remove a 0MQ socket or native fd for I/O monitoring.
+        """Remove a 0MQ socket or native fd for I/O monitoring.
 
         Parameters
         ----------
@@ -92,9 +84,7 @@ class Poller(object):
             self._map[socket] -= 1
 
     def poll(self, timeout=None):
-        """p.poll(timeout=None)
-
-        Poll the registered 0MQ or native fds for I/O.
+        """Poll the registered 0MQ or native fds for I/O.
 
         Parameters
         ----------
@@ -103,6 +93,15 @@ class Poller(object):
             is in milliseconds to be compatible with ``select.poll()``. The
             underlying zmq_poll uses microseconds and we convert to that in
             this function.
+        
+        Returns
+        -------
+        events : list of tuples
+            The list of events that are ready to be processed.
+            This is a list of tuples of the form ``(socket, event)``, where the 0MQ Socket
+            or integer fd is the first element, and the poll event mask (POLLIN, POLLOUT) is the second.
+            It is common to call ``events = dict(poller.poll())``,
+            which turns the list of tuples into a mapping of ``socket : event``.
         """
         if timeout is None or timeout < 0:
             timeout = -1
