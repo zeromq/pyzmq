@@ -45,35 +45,37 @@ class MonitoredQueueBase(ProxyBase):
         ins,outs,mons = self._setup_sockets()
         monitored_queue(ins, outs, mons, self._in_prefix, self._out_prefix)
 
+
 class MonitoredQueue(MonitoredQueueBase, Proxy):
-    """Threadsafe MonitoredQueue object.
+    """Class for running monitored_queue in the background.
 
-    *Warning* as with most 'threadsafe' Python objects, this is only
-    threadsafe as long as you do not use private methods or attributes.
-    Private names are prefixed with '_', such as 'self._setup_socket()'.
+    See zmq.devices.Device for most of the spec. MonitoredQueue differs from Proxy,
+    only in that it adds a ``prefix`` to messages sent on the monitor socket,
+    with a different prefix for each direction.
     
-    See zmq.devices.Device for most of the spec. This subclass adds a
-    <method>_mon version of each <method>_{in|out} method, for configuring the
-    monitor socket.
+    MQ also supports ROUTER on both sides, which zmq.proxy does not.
 
-    A MonitoredQueue is a 3-socket ZMQ Device that functions just like a
-    QUEUE, except each message is also sent out on the monitor socket.
+    If a message arrives on `in_sock`, it will be prefixed with `in_prefix` on the monitor socket.
+    If it arrives on out_sock, it will be prefixed with `out_prefix`.
 
-    If a message comes from in_sock, it will be prefixed with 'in'. If it
-    comes from out_sock, it will be prefixed with 'out'
-
-    A PUB socket is perhaps the most logical for the mon_socket, but it is not
-    restricted.
+    A PUB socket is the most logical choice for the mon_socket, but it is not required.
     """
     pass
 
+
 class ThreadMonitoredQueue(MonitoredQueueBase, ThreadProxy):
-    """MonitoredQueue in a Thread. See MonitoredQueue for more."""
+    """Run zmq.monitored_queue in a background thread.
+    
+    See MonitoredQueue and Proxy for details.
+    """
     pass
 
+
 class ProcessMonitoredQueue(MonitoredQueueBase, ProcessProxy):
-    """MonitoredQueue in a Process. See MonitoredQueue for more."""
-    pass
+    """Run zmq.monitored_queue in a background thread.
+    
+    See MonitoredQueue and Proxy for details.
+    """
 
 
 __all__ = [
