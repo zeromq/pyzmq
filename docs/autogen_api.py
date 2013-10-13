@@ -20,9 +20,8 @@ if __name__ == '__main__':
     # You must do make clean if you change this!
     docwriter.package_skip_patterns += [
         r'\.tests$',
-        r'\.core$',
-        r'\.cffi_core$',
-        r'\.eventloop\.platform$',
+        r'\.backend$',
+        r'\.eventloop\.minitornado$',
         r'\.green\.eventloop$',
         r'\.sugar$',
         r'\.devices$',
@@ -33,8 +32,10 @@ if __name__ == '__main__':
         r'\.error$',
         r'\.green\..+$',
         r'\.utils\.initthreads$',
+        r'\.utils\.constant_names$',
+        r'\.utils\.garbage$',
         r'\.utils\.rebuffer$',
-        r'\.utils\.rebuffer$',
+        r'\.utils\.strtypes$',
         ]
     
     # Now, generate the outputs
