@@ -28,7 +28,7 @@ class TestSecurity(BaseZMQTestCase):
     
     def setUp(self):
         if zmq.zmq_version_info() < (4,0):
-            raise SkipTest("security is new in libzmq 3.3")
+            raise SkipTest("security is new in libzmq 4.0")
         super(TestSecurity, self).setUp()
     
     
@@ -148,6 +148,26 @@ class TestSecurity(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EAGAIN, server.recv)
         self.stop_zap()
     
+    def test_keypair(self):
+        """test curve_keypair"""
+        try:
+            secret, public = zmq.curve_keypair()
+        except zmq.ZMQError:
+            raise SkipTest("CURVE unsupported")
+        
+        self.assertEqual(type(secret), bytes)
+        self.assertEqual(type(public), bytes)
+        self.assertEqual(len(secret), 40)
+        self.assertEqual(len(public), 40)
+        
+        # verify that it is indeed Z85
+        bsecret, bpublic = [ z85.decode(key) for key in (public, secret) ]
+        self.assertEqual(type(bsecret), bytes)
+        self.assertEqual(type(bpublic), bytes)
+        self.assertEqual(len(bsecret), 32)
+        self.assertEqual(len(bpublic), 32)
+        
+    
     def test_curve(self):
         """test CURVE encryption"""
         
@@ -162,10 +182,13 @@ class TestSecurity(BaseZMQTestCase):
             if e.errno == zmq.EINVAL:
                 raise SkipTest("CURVE unsupported")
         
-        server.curve_secretkey = b"JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6"
-        client.curve_serverkey = b"rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7"
-        client.curve_publickey = b"Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID"
-        client.curve_secretkey = b"D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs"
+        server_public, server_secret = zmq.curve_keypair()
+        client_public, client_secret = zmq.curve_keypair()
+        
+        server.curve_secretkey = server_secret
+        client.curve_serverkey = server_public
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
         
         self.assertEqual(server.mechanism, zmq.CURVE)
         self.assertEqual(client.mechanism, zmq.CURVE)
