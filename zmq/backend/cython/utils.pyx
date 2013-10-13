@@ -1,4 +1,4 @@
-"""0MQ Stopwatch class."""
+"""0MQ utils."""
 
 #
 #    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
@@ -23,13 +23,31 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep
+from libzmq cimport zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair
 
-from zmq.error import ZMQError
+from zmq.error import ZMQError, _check_rc
 
 #-----------------------------------------------------------------------------
 # Code
 #-----------------------------------------------------------------------------
+
+def curve_keypair():
+    """generate a Z85 keypair for use with zmq.CURVE security
+    
+    Requires libzmq (≥ 4.0) to have been linked with libsodium.
+    
+    Returns
+    -------
+    (public, secret) : two bytestrings
+        The public and private keypair as 40 byte z85-encoded bytestrings.
+    """
+    cdef int rc
+    cdef char[64] public_key
+    cdef char[64] secret_key
+    rc = zmq_curve_keypair (public_key, secret_key)
+    _check_rc(rc)
+    return public_key, secret_key
+
 
 cdef class Stopwatch:
     """Stopwatch()
@@ -85,4 +103,4 @@ cdef class Stopwatch:
             zmq_sleep(seconds)
 
 
-__all__ = ['Stopwatch']
+__all__ = ['curve_keypair', 'Stopwatch']

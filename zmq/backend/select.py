@@ -20,6 +20,7 @@ public_api = [
     'zmq_poll',
     'strerror',
     'zmq_errno',
+    'curve_keypair',
     'constants',
     'zmq_version_info',
     'IPC_PATH_MAX_LEN',

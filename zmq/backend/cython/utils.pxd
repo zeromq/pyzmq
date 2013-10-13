@@ -1,7 +1,7 @@
-"""0MQ Stopwatch class declaration."""
+"""Wrap zmq_utils.h"""
 
 #
-#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
+#    Copyright (c) 2010 Brian E. Granger & Min Ragan-Kelley
 #
 #    This file is part of pyzmq.
 #
