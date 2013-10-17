@@ -80,4 +80,22 @@ for name in ctx_opt_names:
 for name in msg_opt_names:
     _add_constant(name, msg_opts)
 
-
+# ensure some aliases are always defined
+aliases = [
+    ('DONTWAIT', 'NOBLOCK'),
+    ('XREQ', 'DEALER'),
+    ('XREP', 'ROUTER'),
+]
+for group in aliases:
+    undefined = set()
+    found = None
+    for name in group:
+        value = getattr(constants, name, -1)
+        if value != -1:
+            found = value
+        else:
+            undefined.add(name)
+    if found is not None:
+        for name in undefined:
+            globals()[name] = found
+            __all__.append(name)
