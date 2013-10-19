@@ -96,6 +96,7 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
         free(hint_msg)
         free(hint)
 
+gc = None
 
 cdef class Frame:
     """Frame(data=None, track=False)
@@ -163,7 +164,9 @@ cdef class Frame:
         # create the hint for zmq_free_fn
         # two pointers: the gc context and a message to be sent to the gc PULL socket
         # allows libzmq to signal to Python when it is done with Python-owned memory.
-        from zmq.utils.garbage import gc
+        global gc
+        if gc is None:
+            from zmq.utils.garbage import gc
         
         cdef size_t theid = gc.store(data, self.tracker_event)
         
