@@ -90,9 +90,16 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
         hint_msg = <zmq_msg_t *> hint[1]
         push = zmq_socket(ctx, ZMQ_PUSH)
         rc = zmq_connect(push, "inproc://pyzmq.gc.01")
+        if (rc < 0):
+            printf("pyzmq-gc connect failed: %s\n", zmq_strerror(zmq_errno()))
+            return
+        
         rc = zmq_msg_send(hint_msg, push, 0)
+        if (rc < 0):
+            printf("pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
+        
         zmq_msg_close(hint_msg)
-        rc = zmq_close(push)
+        zmq_close(push)
         free(hint_msg)
         free(hint)
 
