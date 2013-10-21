@@ -36,8 +36,8 @@ def device(int device_type, cSocket frontend, cSocket backend=None):
 
     Start a zeromq device.
     
-    WARNING: zmq.device is deprecated as of libzmq-3.2,
-    in favor of zmq.proxy.
+    .. deprecated:: libzmq-3.2
+        Use zmq.proxy
 
     Parameters
     ----------
@@ -59,16 +59,19 @@ def device(int device_type, cSocket frontend, cSocket backend=None):
 
 def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
     """proxy(frontend, backend, capture)
-
+    
     Start a zeromq proxy (replacement for device).
-
+    
+    .. versionadded:: libzmq-3.2
+    .. versionadded:: 13.0
+    
     Parameters
     ----------
     frontend : Socket
         The Socket instance for the incoming traffic.
     backend : Socket
         The Socket instance for the outbound traffic.
-    capture : Socket
+    capture : Socket (optional)
         The Socket instance for capturing traffic.
     """
     cdef int rc = 0

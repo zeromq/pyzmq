@@ -299,14 +299,14 @@ cdef class Frame:
     
     @property
     def buffer(self):
-        """Get a read-only buffer view of the message contents."""
+        """A read-only buffer view of the message contents."""
         if self._buffer is None:
             self._buffer = self._getbuffer()
         return self._buffer
 
     @property
     def bytes(self):
-        """Get the message content as a Python str/bytes object.
+        """The message content as a Python bytes object.
 
         The first time this property is accessed, a copy of the message 
         contents is made. From then on that same copy of the message is
@@ -317,12 +317,30 @@ cdef class Frame:
         return self._bytes
     
     def set(self, int option, int value):
-        """Set a message property"""
+        """Frame.set(option, value)
+        
+        Set a Frame option.
+        
+        See the 0MQ API documentation for zmq_msg_set
+        for details on specific options.
+        
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
+        """
         cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
         _check_rc(rc)
     
     def get(self, int option):
-        """Get a message property"""
+        """Frame.get(option)
+        
+        Get a Frame option.
+        
+        See the 0MQ API documentation for zmq_msg_get
+        for details on specific options.
+        
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
+        """
         cdef int rc = zmq_msg_get(&self.zmq_msg, option)
         _check_rc(rc)
         return rc

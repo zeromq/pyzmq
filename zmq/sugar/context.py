@@ -1,3 +1,4 @@
+# coding: utf-8
 """Python bindings for 0MQ."""
 
 #-----------------------------------------------------------------------------
@@ -17,6 +18,10 @@ from .socket import Socket
 from zmq.error import ZMQError
 
 class Context(ContextBase, AttributeSetter):
+    """Create a zmq Context
+    
+    A zmq Context creates sockets via its ``ctx.socket`` method.
+    """
     sockopts = None
     _instance = None
     
@@ -67,15 +72,13 @@ class Context(ContextBase, AttributeSetter):
         return Socket
     
     def socket(self, socket_type):
-        """ctx.socket(socket_type)
-
-        Create a Socket associated with this Context.
+        """Create a Socket associated with this Context.
 
         Parameters
         ----------
         socket_type : int
-            The socket type, which can be any of the 0MQ socket types: 
-            REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XSUB, XPUB.
+            The socket type, which can be any of the 0MQ socket types:
+            REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
         """
         if self.closed:
             raise ZMQError(ENOTSUP)
@@ -91,11 +94,17 @@ class Context(ContextBase, AttributeSetter):
         return s
     
     def setsockopt(self, opt, value):
-        """set default socket options for new sockets created by this Context"""
+        """set default socket options for new sockets created by this Context
+        
+        .. versionadded: 13.0
+        """
         self.sockopts[opt] = value
     
     def getsockopt(self, opt):
-        """get default socket options for new sockets created by this Context"""
+        """get default socket options for new sockets created by this Context
+        
+        .. versionadded: 13.0
+        """
         return self.sockopts[opt]
     
     def _set_attr_opt(self, name, opt, value):

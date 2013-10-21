@@ -83,10 +83,6 @@ class ProxyBase(object):
 class Proxy(ProxyBase, Device):
     """Threadsafe Proxy object.
 
-    *Warning* as with most 'threadsafe' Python objects, this is only
-    threadsafe as long as you do not use private methods or attributes.
-    Private names are prefixed with '_', such as 'self._setup_socket()'.
-    
     See zmq.devices.Device for most of the spec. This subclass adds a
     <method>_mon version of each <method>_{in|out} method, for configuring the
     monitor socket.
@@ -94,11 +90,7 @@ class Proxy(ProxyBase, Device):
     A Proxy is a 3-socket ZMQ Device that functions just like a
     QUEUE, except each message is also sent out on the monitor socket.
 
-    If a message comes from in_sock, it will be prefixed with 'in'. If it
-    comes from out_sock, it will be prefixed with 'out'
-
-    A PUB socket is perhaps the most logical for the mon_socket, but it is not
-    restricted.
+    A PUB socket is the most logical choice for the mon_socket, but it is not required.
     """
     pass
 

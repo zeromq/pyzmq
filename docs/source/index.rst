@@ -28,16 +28,35 @@ General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC
 Supported LibZMQ
 ================
 
-PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2 ) and active development ( ≥3.3.0 )
-versions of libzmq.  Note that libzmq 3.0-3.1 are not, and will never be supported.
-There never was a stable release of either.
-Building the same pyzmq against various versions of libzmq is supported,
-and should only result in the addition/removal of a few socket types and socket
-options, depending on the active libzmq's support.
+PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2, ≥ 4.0.1 ) and active development ( ≥ 4.1.0 )
+versions of libzmq.  Building the same pyzmq against various versions of libzmq is supported,
+but only the functionality of the linked libzmq will be available.
 
-Binary distributions (eggs or MSIs on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
+.. note::
+
+    libzmq 3.0-3.1 are not, and will never be supported.
+    There never was a stable release of either.
+
+
+Binary distributions (eggs, MSIs, and wheels on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
 the stable version of libzmq at the time of release, built with default configuration.
+For pyzmq-|release|, this is 4.0.1.
+
+Using PyZMQ
+===========
+
+.. toctree::
+    :maxdepth: 2
+    
+    api/index.rst
+    morethanbindings.rst
+    serialization.rst
+    devices.rst
+    eventloop.rst
+    logging.rst
+    ssh.rst
+    
 
 Notes from developing PyZMQ
 ===========================
@@ -47,21 +66,6 @@ Notes from developing PyZMQ
     
     pyversions.rst
     unicode.rst
-
-Using PyZMQ
-===========
-
-.. toctree::
-    :maxdepth: 2
-    
-    morethanbindings.rst
-    serialization.rst
-    devices.rst
-    eventloop.rst
-    logging.rst
-    ssh.rst
-    
-    api/index.rst
 
 Indices and tables
 ==================

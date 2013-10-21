@@ -76,7 +76,11 @@ class TestConstants(TestCase):
             self.assertNotEqual(getattr(zmq, name), -1)
     
     def test_undefined_constants(self):
-        for name in all_set:
+        all_aliases = []
+        for alias_group in sugar_constants.aliases:
+            all_aliases.extend(alias_group)
+        
+        for name in all_set.difference(all_aliases):
             raw = getattr(backend_constants, name)
             if raw == -1:
                 self.assertRaises(AttributeError, getattr, zmq, name)

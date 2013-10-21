@@ -1,4 +1,5 @@
 """0MQ Context class."""
+# coding: utf-8
 
 #
 #    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
@@ -155,12 +156,13 @@ cdef class Context:
     def set(self, int option, optval):
         """ctx.set(option, optval)
 
-        Set context options.
+        Set a context option.
 
         See the 0MQ API documentation for zmq_ctx_set
         for details on specific options.
         
-        New in libzmq-3.2
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
 
         Parameters
         ----------
@@ -194,7 +196,8 @@ cdef class Context:
         See the 0MQ API documentation for zmq_ctx_get
         for details on specific options.
         
-        New in libzmq-3.2
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
 
         Parameters
         ----------
@@ -228,10 +231,10 @@ cdef class Context:
         the context. If linger is specified,
         the LINGER sockopt of the sockets will be set prior to closing.
         
-        WARNING:
+        .. warning::
         
-        destroy involves calling zmq_close(), which is *NOT* threadsafe.
-        If there are active sockets in other threads, this must not be called.
+            destroy involves calling ``zmq_close()``, which is **NOT** threadsafe.
+            If there are active sockets in other threads, this must not be called.
         """
         
         cdef int linger_c

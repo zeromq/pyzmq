@@ -30,14 +30,9 @@ from zmq import device, QUEUE, Context, ETERM, ZMQError
 #-----------------------------------------------------------------------------
 
 class Device:
-    """A Threadsafe 0MQ Device.
+    """A 0MQ Device to be run in the background.
     
-    *Warning* as with most 'threadsafe' Python objects, this is only
-    threadsafe as long as you do not use private methods or attributes.
-    Private names are prefixed with '_', such as ``self._setup_socket()``.
-    
-    For thread safety, you do not pass Sockets to this, but rather Socket
-    types::
+    You do not pass Socket instances to this, but rather Socket types::
 
         Device(device_type, in_socket_type, out_socket_type)
 
@@ -78,7 +73,7 @@ class Device:
         Default is true, because if it is false, the thread will not
         exit unless it is killed
     context_factory : callable (class attribute)
-        Function for creating the Context. This will be Context.intance
+        Function for creating the Context. This will be Context.instance
         in ThreadDevices, and Context in ProcessDevices.  The only reason
         it is not instance() in ProcessDevices is that there may be a stale
         Context instance already initialized, and the forked environment
@@ -86,6 +81,9 @@ class Device:
     """
     
     context_factory = Context.instance
+    """Callable that returns a context. Typically either Context.instance or Context,
+    depending on whether the device should share the global instance or not.
+    """
 
     def __init__(self, device_type=QUEUE, in_type=None, out_type=None):
         self.device_type = device_type
@@ -125,19 +123,19 @@ class Device:
         """
         self._in_sockopts.append((opt, value))
     
-    def bind_out(self, iface):
+    def bind_out(self, addr):
         """Enqueue ZMQ address for binding on out_socket.
 
         See zmq.Socket.bind for details.
         """
-        self._out_binds.append(iface)
+        self._out_binds.append(addr)
     
-    def connect_out(self, iface):
+    def connect_out(self, addr):
         """Enqueue ZMQ address for connecting on out_socket.
 
         See zmq.Socket.connect for details.
         """
-        self._out_connects.append(iface)
+        self._out_connects.append(addr)
     
     def setsockopt_out(self, opt, value):
         """Enqueue setsockopt(opt, value) for out_socket
@@ -179,8 +177,7 @@ class Device:
     def run_device(self):
         """The runner method.
 
-        Do not call me directly, instead call ``self.start()``, just like a
-        Thread.
+        Do not call me directly, instead call ``self.start()``, just like a Thread.
         """
         ins,outs = self._setup_sockets()
         device(self.device_type, ins, outs)
@@ -205,7 +202,7 @@ class Device:
     def join(self,timeout=None):
         """wait for me to finish, like Thread.join.
         
-        Reimplemented appropriately by sublcasses."""
+        Reimplemented appropriately by subclasses."""
         tic = time.time()
         toc = tic
         while not self.done and not (timeout is not None and toc-tic > timeout):
@@ -242,6 +239,9 @@ class ProcessDevice(BackgroundDevice):
     """
     _launch_class=Process
     context_factory = Context
+    """Callable that returns a context. Typically either Context.instance or Context,
+    depending on whether the device should share the global instance or not.
+    """
 
 
 __all__ = ['Device', 'ThreadDevice', 'ProcessDevice']

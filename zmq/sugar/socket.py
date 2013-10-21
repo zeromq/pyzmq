@@ -44,6 +44,17 @@ except:
 #-----------------------------------------------------------------------------
 
 class Socket(SocketBase, AttributeSetter):
+    """The ZMQ socket object
+    
+    To create a Socket, first create a Context::
+    
+        ctx = zmq.Context.instance()
+    
+    then call ``ctx.socket(socket_type)``::
+    
+        s = ctx.socket(zmq.ROUTER)
+    
+    """
 
     #-------------------------------------------------------------------------
     # Hooks for sockopt completion
@@ -71,7 +82,7 @@ class Socket(SocketBase, AttributeSetter):
         This is simply a wrapper for setsockopt to protect from encoding ambiguity.
 
         See the 0MQ documentation for details on specific options.
-
+        
         Parameters
         ----------
         option : int
@@ -96,8 +107,7 @@ class Socket(SocketBase, AttributeSetter):
         Parameters
         ----------
         option : int
-            The option to retrieve. Currently, IDENTITY is the only
-            gettable option that can return a string.
+            The option to retrieve.
 
         Returns
         -------
@@ -149,7 +159,7 @@ class Socket(SocketBase, AttributeSetter):
     def get_hwm(self):
         """get the High Water Mark
         
-        On libzmq ≥ 3.x, this gets SNDHWM if available, otherwise RCVHWM
+        On libzmq ≥ 3, this gets SNDHWM if available, otherwise RCVHWM
         """
         major = zmq.zmq_version_info()[0]
         if major >= 3:
@@ -166,7 +176,7 @@ class Socket(SocketBase, AttributeSetter):
     def set_hwm(self, value):
         """set the High Water Mark
         
-        On libzmq ≥ 3.x, this sets *both* SNDHWM and RCVHWM
+        On libzmq ≥ 3, this sets both SNDHWM and RCVHWM
         """
         major = zmq.zmq_version_info()[0]
         if major >= 3:
@@ -185,7 +195,13 @@ class Socket(SocketBase, AttributeSetter):
         else:
             return self.setsockopt(zmq.HWM, value)
     
-    hwm = property(get_hwm, set_hwm)
+    hwm = property(get_hwm, set_hwm,
+        """property for High Water Mark
+        
+        Setting hwm sets both SNDHWM and RCVHWM as appropriate.
+        It gets SNDHWM if available, otherwise RCVHWM.
+        """
+    )
     
     #-------------------------------------------------------------------------
     # Sending and receiving messages
@@ -193,6 +209,8 @@ class Socket(SocketBase, AttributeSetter):
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False):
         """send a sequence of buffers as a multipart message
+        
+        The zmq.SNDMORE flag is added to all msg parts before the last.
 
         Parameters
         ----------
@@ -236,6 +254,7 @@ class Socket(SocketBase, AttributeSetter):
         track : bool, optional
             Should the message frame(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
+        
         Returns
         -------
         msg_parts : list
@@ -256,7 +275,7 @@ class Socket(SocketBase, AttributeSetter):
     
         0MQ communicates with raw bytes, so you must encode/decode
         text (unicode on py2, str on py3) around 0MQ.
-
+        
         Parameters
         ----------
         u : Python unicode string (unicode on py2, str on py3)
@@ -372,7 +391,7 @@ class Socket(SocketBase, AttributeSetter):
         ----------
         timeout : int [default: None]
             The timeout (in milliseconds) to wait for an event. If unspecified
-            (or secified None), will wait forever for an event.
+            (or specified None), will wait forever for an event.
         flags : bitfield (int) [default: POLLIN]
             The event flags to poll for (any combination of POLLIN|POLLOUT).
             The default is to check for incoming events (POLLIN).
@@ -395,8 +414,9 @@ class Socket(SocketBase, AttributeSetter):
 
     def get_monitor_socket(self, events=None, addr=None):
         """Return a connected PAIR socket ready to receive the event notifications.
-
-        * THIS METHOD IS ONLY USABLE ON libzmq VERSIONS >= 3.2! *
+        
+        .. versionadded:: libzmq-4.0
+        .. versionadded:: 14.0
         
         Parameters
         ----------
@@ -410,9 +430,9 @@ class Socket(SocketBase, AttributeSetter):
         socket :  (PAIR)
             The socket is already connected and ready to receive messages.
         """
-        # safe-guard, method only available on libzmq >= 3.2
-        if zmq.zmq_version_info()[:2] < (3,2):
-            raise NotImplementedError("get_monitor_socket requires libzmq >= 3.2, have %s" % zmq.zmq_version())
+        # safe-guard, method only available on libzmq >= 4
+        if zmq.zmq_version_info() < (4,):
+            raise NotImplementedError("get_monitor_socket requires libzmq >= 4, have %s" % zmq.zmq_version())
         if addr is None:
             # create endpoint name from internal fd
             addr = "inproc://monitor.s-%d" % self.FD
@@ -426,5 +446,5 @@ class Socket(SocketBase, AttributeSetter):
         ret.connect(addr)
         return ret
 
-        
+
 __all__ = ['Socket']

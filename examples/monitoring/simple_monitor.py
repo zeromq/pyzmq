@@ -18,14 +18,14 @@ import threading
 import time
 
 import zmq
-from zmq.utils.monitor import get_monitor_message
+from zmq.utils.monitor import recv_monitor_message
 
 line = lambda : print('-' * 40)
 
 def logger(monitor):
     done = False
     while monitor.poll(timeout=5000):
-        evt = get_monitor_message(monitor)
+        evt = recv_monitor_message(monitor)
         print(json.dumps(evt, indent=1))
         if evt['event'] == zmq.EVENT_MONITOR_STOPPED:
             break

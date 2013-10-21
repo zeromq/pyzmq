@@ -465,7 +465,8 @@ cdef class Socket:
         
         Unbind from an address (undoes a call to bind).
         
-        This feature requires libzmq-3
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
 
         Parameters
         ----------
@@ -498,7 +499,8 @@ cdef class Socket:
 
         Disconnect from a remote 0MQ socket (undoes a call to connect).
         
-        This feature requires libzmq-3
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
 
         Parameters
         ----------
@@ -531,7 +533,8 @@ cdef class Socket:
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
         
-        Note: requires libzmq >= 3.2
+        .. versionadded: libzmq-3.2
+        .. versionadded: 14.0
         
         Parameters
         ----------

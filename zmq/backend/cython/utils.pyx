@@ -36,6 +36,9 @@ def curve_keypair():
     
     Requires libzmq (≥ 4.0) to have been linked with libsodium.
     
+    .. versionadded:: libzmq-4.0
+    .. versionadded:: 14.0
+    
     Returns
     -------
     (public, secret) : two bytestrings

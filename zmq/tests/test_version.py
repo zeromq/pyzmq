@@ -13,6 +13,8 @@
 
 from unittest import TestCase
 import zmq
+from zmq.sugar import version
+
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -28,30 +30,26 @@ class TestVersion(TestCase):
             self.assertEqual(vs, '@'.join(vs2, zmq.__revision__))
         else:
             self.assertEqual(vs, vs2)
+        if version.VERSION_EXTRA:
+            self.assertTrue(version.VERSION_EXTRA in vs)
+            self.assertTrue(version.VERSION_EXTRA in vs2)
 
     def test_pyzmq_version_info(self):
-        version = zmq.sugar.version
-        save = version.__version__
-        try:
-            version.__version__ = '2.10dev'
-            info = zmq.pyzmq_version_info()
-            self.assertTrue(isinstance(info, tuple))
+        info = zmq.pyzmq_version_info()
+        self.assertTrue(isinstance(info, tuple))
+        for n in info[:3]:
+            self.assertTrue(isinstance(n, int))
+        if version.VERSION_EXTRA:
+            self.assertEqual(len(info), 4)
+            self.assertEqual(info[-1], float('inf'))
+        else:
             self.assertEqual(len(info), 3)
-            self.assertTrue(info > (2,10,99))
-            self.assertEqual(info, (2,10,float('inf')))
-            version.__version__ = '2.1.10'
-            info = zmq.pyzmq_version_info()
-            self.assertEqual(info, (2,1,10))
-            self.assertTrue(info > (2,1,9))
-        finally:
-            version.__version__ = save
 
     def test_zmq_version_info(self):
         info = zmq.zmq_version_info()
         self.assertTrue(isinstance(info, tuple))
-        self.assertEqual(len(info), 3)
-        for item in info:
-            self.assertTrue(isinstance(item, int))
+        for n in info[:3]:
+            self.assertTrue(isinstance(n, int))
 
     def test_zmq_version(self):
         v = zmq.zmq_version()

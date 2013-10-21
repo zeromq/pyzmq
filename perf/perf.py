@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 #-----------------------------------------------------------------------------
 #  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
 #
@@ -102,11 +103,12 @@ def latency(url, count, size, poll, copy):
 
     s.send(b'done')
 
-    latency = elapsed / (count * 2)
+    latency = elapsed / (count * 2.)
 
-    print ("message size: %i [B]" % (size, ))
-    print ("roundtrip count: %i" % (count, ))
-    print ("mean latency: %.3f [us]" % (latency, ))
+    print ("message size   : %8i     [B]" % (size, ))
+    print ("roundtrip count: %8i     [msgs]" % (count, ))
+    print ("mean latency   : %12.3f [µs]" % (latency, ))
+    print ("test time      : %12.3f [s]" % (elapsed * 1e-6, ))
 
 def pusher(url, count, size, copy, poll):
     """send a bunch of messages on a PUSH socket"""
@@ -164,21 +166,22 @@ def throughput(url, count, size, poll, copy):
             res = p.poll()
         msg = s.recv(block, copy=copy)
     elapsed = watch.stop()
-
     if elapsed == 0:
         elapsed = 1
     
     throughput = (1e6 * float(count)) / float(elapsed)
     megabits = float(throughput * size * 8) / 1e6
 
-    print ("message size: %i [B]" % (size, ))
-    print ("message count: %i" % (count, ))
-    print ("mean throughput: %.0f [msg/s]" % (throughput, ))
-    print ("mean throughput: %.3f [Mb/s]" % (megabits, ))
+    print ("message size   : %8i     [B]" % (size, ))
+    print ("message count  : %8i     [msgs]" % (count, ))
+    print ("mean throughput: %8.0f     [msg/s]" % (throughput, ))
+    print ("mean throughput: %12.3f [Mb/s]" % (megabits, ))
+    print ("test time      : %12.3f [s]" % (elapsed * 1e-6, ))
 
 
 def main():
     args = parse_args()
+    tic = time.time()
     if args.test == 'lat':
         bg = Process(target=latency_echo, args=(args.url, args.count, args.poll, args.copy))
         bg.start()
@@ -188,6 +191,9 @@ def main():
         bg.start()
         pusher(args.url, args.count, args.size, args.poll, args.copy)
     bg.join()
+    toc = time.time()
+    if (toc - tic) < 3:
+        print ("For best results, tests should take at least a few seconds.")
 
 if __name__ == '__main__':
     main()

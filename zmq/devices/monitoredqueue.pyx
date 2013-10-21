@@ -40,19 +40,17 @@ from zmq import ROUTER, ZMQError
 def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
                     bytes in_prefix=b'in', bytes out_prefix=b'out'):
     """monitored_queue(in_socket, out_socket, mon_socket,
-                       in_prefix='in', out_prefix='out')
-
-    Start a monitored queue device.
-
-    A monitored queue behaves just like a zmq QUEUE device as far as in_socket
-    and out_socket are concerned, except that all messages *also* go out on
-    mon_socket. mon_socket also prefixes the messages coming from each with a
-    prefix, by default 'in' and 'out', so all messages sent by mon_socket are
-    multipart.
+                       in_prefix=b'in', out_prefix=b'out')
     
-    The only difference between this and a QUEUE as far as in/out are
-    concerned is that it works with two ROUTER sockets by swapping the IDENT
-    prefixes.
+    Start a monitored queue device.
+    
+    A monitored queue is very similar to the zmq.proxy device (monitored queue came first).
+    
+    Differences from zmq.proxy:
+    
+    - monitored_queue supports both in and out being ROUTER sockets
+      (via swapping IDENTITY prefixes).
+    - monitor messages are prefixed, making in and out messages distinguishable.
     
     Parameters
     ----------

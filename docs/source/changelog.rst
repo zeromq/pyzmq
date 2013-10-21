@@ -12,15 +12,25 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 14.0.0
 ======
 
-* Update bundled libzmq to current (3.2.3).
+* Update bundled libzmq to current (4.0.1).
 * Backends are now implemented in ``zmq.backend`` instead of ``zmq.core``.
-  This should have no effect on public APIs.
+  This has no effect on public APIs.
 * Various build improvements for Cython and CFFI backends (PyPy compiles at build time).
 * Various GIL-related performance improvements - the GIL is no longer touched from a zmq IO thread.
 * Adding a constant should now be a bit easier - only zmq/sugar/constant_names should need updating,
   all other constant-related files should be automatically updated by ``setup.py constants``.
-* add preliminary support for current state of libzmq 4.0 release candidate
+* add support for latest libzmq-4.0.1
   (includes ZMQ_CURVE security and socket event monitoring).
+
+New stuff
+---------
+
+- :meth:`.Socket.monitor`
+- :meth:`.Socket.get_monitor_socket`
+- :func:`zmq.curve_keypair`
+- :mod:`zmq.utils.monitor`
+- :mod:`zmq.utils.z85`
+
 
 13.1.0
 ======
@@ -78,16 +88,19 @@ New Stuff
 * Support for PyPy via CFFI backend (requires py, ctypes-configure, and cffi).
 * Add support for new APIs in libzmq-3
 
-  - :meth:`socket.disconnect`
-  - :meth:`socket.unbind`
-  - :meth:`context.set`
-  - :meth:`context.get`
-  - :meth:`Frame.set`
-  - :meth:`Frame.get`
+  - :meth:`.Socket.disconnect`
+  - :meth:`.Socket.unbind`
+  - :meth:`.Context.set`
+  - :meth:`.Context.get`
+  - :meth:`.Frame.set`
+  - :meth:`.Frame.get`
   - :func:`zmq.proxy`
+  - :class:`zmq.devices.Proxy`
+  - Exceptions for common zmq errnos: :class:`zmq.Again`, :class:`zmq.ContextTerminated`
+    (subclass :class:`ZMQError`, so fully backward-compatible).
   
 
-* Setting and getting :attr:`socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
+* Setting and getting :attr:`.Socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 * Implementation splits core Cython bindings from pure-Python subclasses
   with sugar methods (send/recv_multipart). This should facilitate
   non-Cython backends and PyPy support [spoiler: it did!].
