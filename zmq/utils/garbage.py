@@ -20,7 +20,7 @@ import struct
 
 from os import getpid
 from collections import namedtuple
-from threading import Thread
+from threading import Thread, Event
 
 import zmq
 
@@ -37,11 +37,13 @@ class GarbageCollectorThread(Thread):
         self.gc = gc
         self.daemon = True
         self.pid = getpid()
+        self.ready = Event()
     
     def run(self):
         s = self.gc.context.socket(zmq.PULL)
         s.linger = 0
         s.bind(self.gc.url)
+        self.ready.set()
         
         while True:
             # detect fork
@@ -53,12 +55,12 @@ class GarbageCollectorThread(Thread):
             fmt = 'L' if len(msg) == 4 else 'Q'
             key = struct.unpack(fmt, msg)[0]
             tup = self.gc.refs.pop(key)
-            if tup.event:
+            if tup and tup.event:
                 tup.event.set()
             del tup
         s.close()
     
-class GarbageCollector(Thread):
+class GarbageCollector(object):
     """PyZMQ Garbage Collector
     
     Used for representing the reference held by libzmq during zero-copy sends.
@@ -104,9 +106,11 @@ class GarbageCollector(Thread):
         Under most circumstances, this will only be called once per process.
         """
         self.context = zmq.Context()
+        self.refs = {}
         atexit.register(self.stop)
         self.thread = GarbageCollectorThread(self)
         self.thread.start()
+        self.thread.ready.wait()
     
     def is_alive(self):
         """Is the garbage collection thread currently running?
