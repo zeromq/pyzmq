@@ -20,6 +20,8 @@ import zmq
 from zmq.tests import (
     BaseZMQTestCase, SkipTest
 )
+from zmq.utils import z85
+
 
 USER = b"admin"
 PASS = b"password"
