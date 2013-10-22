@@ -161,6 +161,16 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             settings['library_dirs'] += [pjoin(prefix, 'lib')]
     else:
+
+        # If prefix is not explicitly set, pull it from pkg-config by default.
+
+        if not prefix:
+            p = Popen('pkg-config --variable=prefix libzmq'.split(), stdout=PIPE, stderr=PIPE)
+            if not p.wait():
+                line()
+                prefix = p.stdout.readline().strip()
+                info("Using zmq-prefix %s (found via pkg-config)." % prefix)
+
         settings['libraries'].append('zmq')
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
