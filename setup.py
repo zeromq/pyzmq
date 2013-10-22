@@ -29,6 +29,7 @@ import re
 import shutil
 import sys
 import time
+import errno
 from traceback import print_exc
 
 if sys.version_info < (2,6):
@@ -161,6 +162,26 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             settings['library_dirs'] += [pjoin(prefix, 'lib')]
     else:
+
+        # If prefix is not explicitly set, pull it from pkg-config by default.
+
+        if not prefix:
+            try:
+                p = Popen('pkg-config --variable=prefix --print-errors libzmq'.split(), stdout=PIPE, stderr=PIPE)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    info("pkg-config not found")
+                else:
+                    warn("Running pkg-config failed - %s." % e)
+                p = None
+            if p is not None:
+                if p.wait():
+                    info("Did not find libzmq via pkg-config:")
+                    info(p.stderr.read().decode())
+                else:
+                    prefix = p.stdout.readline().strip().decode()
+                    info("Using zmq-prefix %s (found via pkg-config)." % prefix)
+
         settings['libraries'].append('zmq')
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
