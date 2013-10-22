@@ -16,7 +16,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then sudo apt-get -y update && sudo apt-get -y install pypy; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then virtualenv -p /usr/bin/pypy pypy && source pypy/bin/activate; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -q --use-mirrors py cffi; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install -q --use-mirrors cython; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then pip install -q --use-mirrors cython --install-option='--no-cython-compile'; fi
 
   - if [[ $ZMQ == 'master' ]]; then git clone --depth 1 https://github.com/zeromq/libzmq; fi
   - if [[ $ZMQ == 'master' ]]; then sh -c 'cd libzmq; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig'; fi
