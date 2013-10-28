@@ -1050,6 +1050,7 @@ setup_args = dict(
     author = "Brian E. Granger, Min Ragan-Kelley",
     author_email = "zeromq-dev@lists.zeromq.org",
     url = 'http://github.com/zeromq/pyzmq',
+    download_url = 'http://github.com/zeromq/pyzmq/releases',
     description = "Python bindings for 0MQ",
     long_description = long_desc, 
     license = "LGPL+BSD",
