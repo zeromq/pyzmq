@@ -27,7 +27,7 @@ try:
 except ImportError:
     paramiko = None
 else:
-    from forward import forward_tunnel
+    from zmq.ssh.forward import forward_tunnel
 
 
 try:
