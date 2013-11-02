@@ -30,7 +30,10 @@ connection to a destination reachable from the SSH server machine.
 import sys
 import logging
 import select
-import SocketServer
+try:
+    import socketserver as SocketServer
+except ImportError:
+    import SocketServer
 
 logger = logging.getLogger('ssh')
 
