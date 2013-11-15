@@ -54,7 +54,7 @@ class GarbageCollectorThread(Thread):
                 break
             fmt = 'L' if len(msg) == 4 else 'Q'
             key = struct.unpack(fmt, msg)[0]
-            tup = self.gc.refs.pop(key)
+            tup = self.gc.refs.pop(key, None)
             if tup and tup.event:
                 tup.event.set()
             del tup
