@@ -105,6 +105,7 @@ class GarbageCollector(object):
         Creates a new zmq Context used for garbage collection.
         Under most circumstances, this will only be called once per process.
         """
+        self.pid = getpid()
         self.context = zmq.Context()
         self.refs = {}
         atexit.register(self.stop)
