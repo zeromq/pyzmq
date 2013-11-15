@@ -20,7 +20,7 @@ import struct
 
 from os import getpid
 from collections import namedtuple
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 
 import zmq
 
@@ -59,7 +59,8 @@ class GarbageCollectorThread(Thread):
                 tup.event.set()
             del tup
         s.close()
-    
+
+
 class GarbageCollector(object):
     """PyZMQ Garbage Collector
     
@@ -78,14 +79,17 @@ class GarbageCollector(object):
     context = None
     refs = None
     _finished = False
+    _lock = None
     url = "inproc://pyzmq.gc.01"
     
     def __init__(self):
         super(GarbageCollector, self).__init__()
         self.refs = {}
-        self.pid = getpid()
+        self.pid = None
         self.thread = None
         self.context = None
+        self._lock = Lock()
+        atexit.register(self.stop)
     
     def stop(self):
         """stop the garbage-collection thread"""
@@ -108,7 +112,6 @@ class GarbageCollector(object):
         self.pid = getpid()
         self.context = zmq.Context()
         self.refs = {}
-        atexit.register(self.stop)
         self.thread = GarbageCollectorThread(self)
         self.thread.start()
         self.thread.ready.wait()
@@ -129,7 +132,12 @@ class GarbageCollector(object):
     def store(self, obj, event=None):
         """store an object and (optionally) event for zero-copy"""
         if not self.is_alive():
-            self.start()
+            # safely start the gc thread
+            # use lock and double check,
+            # so we don't start multiple threads
+            with self._lock:
+                if not self.is_alive():
+                    self.start()
         tup = gcref(obj, event)
         theid = id(tup)
         self.refs[theid] = tup
