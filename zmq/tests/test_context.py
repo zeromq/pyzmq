@@ -204,6 +204,15 @@ class TestContext(BaseZMQTestCase):
         ctx.term()
         t.join(timeout=1)
         self.assertFalse(t.is_alive(), "term should have interrupted s.recv()")
+    
+    def test_destroy_no_sockets(self):
+        ctx = self.Context()
+        s = ctx.socket(zmq.PUB)
+        s.bind_to_random_port('tcp://127.0.0.1')
+        s.close()
+        ctx.destroy()
+        assert s.closed
+        assert ctx.closed
 
 
 if False: # disable green context tests
