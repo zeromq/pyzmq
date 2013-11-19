@@ -243,6 +243,7 @@ cdef class Context:
         if linger is not None:
             linger_c = linger
             setlinger=True
+
         if self.handle != NULL and not self.closed and self._n_sockets:
             while self._n_sockets:
                 if setlinger:
@@ -252,6 +253,6 @@ cdef class Context:
                     raise ZMQError()
                 self._n_sockets -= 1
                 self._sockets[0] = self._sockets[self._n_sockets]
-            self.term()
+        self.term()
     
 __all__ = ['Context']
