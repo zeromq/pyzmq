@@ -83,8 +83,8 @@ from buildutils import (
 
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
-target_zmq = (4,0,1)
-dev_zmq = (5,0,0)
+target_zmq = (4,0,2)
+dev_zmq = (4,1,0)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
