@@ -83,7 +83,7 @@ from buildutils import (
 
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
-target_zmq = (4,0,2)
+target_zmq = bundled_version
 dev_zmq = (4,1,0)
 
 # set dylib ext:
