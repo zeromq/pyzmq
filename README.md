@@ -5,36 +5,34 @@ This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
 PyZMQ should work with any Python ≥ 2.6 (including Python 3), as well as PyPy.
-The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x),
-but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2.
+The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x and 4.x),
+but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2 (including 4.x).
 
 ## Versioning
 
-Current release of pyzmq is 13.1.0, and targets libzmq-3.2.2. For
-libzmq 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x development
-branch.  PyZMQ (on CPython via Cython) continues to support libzmq ≥ 2.1.4.
+Current release of pyzmq is 14.0.1, and targets libzmq-4.0.3.
+For libzmq 2.0.x, use pyzmq release 2.0.10.1 or the 2.0.x maintenance branch.
+PyZMQ (on CPython via Cython) continues to support libzmq ≥ 2.1.4.
 
-pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5, and
-pyzmq ≥ 2.2.0 requires Python ≥ 2.6.
+pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5,
+and pyzmq ≥ 2.2.0 requires Python ≥ 2.6.
 pyzmq-13.0.0 introduces PyPy support via CFFI, which only supports libzmq-3.2.2 and newer.
 
-PyZMQ releases ≤ 2.2.0 matched libzmq versioning, but this will no
-longer be the case. To avoid confusion with the contemporary libzmq-3.2
-major version release, PyZMQ is jumping to 13.0 (it will be the
-thirteenth release, so why not?). PyZMQ ≥ 13.0 will follow semantic
-versioning conventions accounting only for PyZMQ itself.
+PyZMQ releases ≤ 2.2.0 matched libzmq versioning, but this is no longer the case,
+starting with PyZMQ 13.0.0 (it was the thirteenth release, so why not?).
+PyZMQ ≥ 13.0 follows semantic versioning conventions accounting only for PyZMQ itself.
 
 For a summary of changes to pyzmq, see our
 [changelog](http://zeromq.github.com/pyzmq/changelog.html).
 
-### ØMQ 3.x
+### ØMQ 3.x, 4.x
 
-PyZMQ ≥ 2.2.0 fully supports the 3.x API of libzmq,
+PyZMQ ≥ 2.2.0 fully supports the 3.x and 4.x APIs of libzmq,
 developed at [zeromq/libzmq](https://github.com/zeromq/libzmq).
 No code to change, no flags to pass,
-just build pyzmq against libzmq3 and it should work.
+just build pyzmq against the latest and it should work.
 
-PyZMQ on PyPy *only* supports the 3.x API of libzmq.
+PyZMQ on PyPy *only* supports libzmq >= 3.2.2.
 
 ## Documentation
 
@@ -58,11 +56,17 @@ version 0.16 or later.
 
 ## Building and installation
 
-For more detail on building pyzmq, see [our Wiki](https://github.com/zeromq/pyzmq/wiki).
+For more detail on building pyzmq, see [our Wiki](https://github.com/zeromq/pyzmq/wiki/Building-and-Installing-PyZMQ).
 
-We build eggs for OS X and Windows, so we generally recommend that those
-platforms use `easy_install pyzmq`, but `pip install pyzmq` should work on
-most platforms as well.
+We build eggs and wheels for OS X and Windows, so you can get a binary on those platforms with either:
 
-To build pyzmq from the git repo requires Cython.
+    easy_install pyzmq
+
+or
+
+    pip install --use-wheel pyzmq
+
+But compiling from source with `pip install pyzmq` should work in most environments.
+
+To build pyzmq from the git repo (including release tags) requires Cython.
 
