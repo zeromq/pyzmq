@@ -21,8 +21,8 @@ from zmq.backend import zmq_version_info
 
 VERSION_MAJOR = 14
 VERSION_MINOR = 0
-VERSION_PATCH = 1
-VERSION_EXTRA = ''
+VERSION_PATCH = 2
+VERSION_EXTRA = 'dev'
 __version__ = '%i.%i.%i' % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
 if VERSION_EXTRA:
