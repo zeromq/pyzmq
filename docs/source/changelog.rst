@@ -9,6 +9,18 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+
+14.0.1
+======
+
+Bugfix release
+
+- Update bundled libzmq to current (4.0.3).
+- Fix bug in :meth:`.Context.destroy` with no open sockets.
+- Threadsafety fixes in the garbage collector.
+- Python 3 fixes in :mod:`zmq.ssh`.
+
+
 14.0.0
 ======
 

@@ -41,7 +41,7 @@ but only the functionality of the linked libzmq will be available.
 Binary distributions (eggs, MSIs, and wheels on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
 the stable version of libzmq at the time of release, built with default configuration.
-For pyzmq-|release|, this is 4.0.1.
+For pyzmq-|release|, this is 4.0.3.
 
 Using PyZMQ
 ===========
