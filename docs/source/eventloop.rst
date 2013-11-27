@@ -14,7 +14,7 @@ native sockets. We have included a small part of Tornado (specifically its
 :mod:`.ioloop`), and adapted its :class:`IOStream` class into :class:`.ZMQStream` for
 handling poll events on ØMQ sockets. A ZMQStream object works much like a Socket object,
 but instead of calling :meth:`~.Socket.recv` directly, you register a callback with
-:meth:`~.ZMQStream.on_recv`. callbacks can also be registered for send events
+:meth:`~.ZMQStream.on_recv`. Callbacks can also be registered for send events
 with :meth:`~.ZMQStream.on_send`.
 
 
@@ -90,6 +90,15 @@ even if its length is 1. You can easily use this to build things like an echo so
 on_recv can also take a `copy` flag, just like :meth:`.Socket.recv`. If `copy=False`, then
 callbacks registered with on_recv will receive tracked :class:`.Frame` objects instead of
 bytes.
+
+.. note::
+
+    A callback must be registered using either :meth:`.ZMQStream.on_recv` or
+    :meth:`.ZMQStream.on_recv_stream` before any data will be received on the
+    underlying socket.  This allows you to temporarily pause processing on a
+    socket by setting both callbacks to None.  Processing can later be resumed
+    by restoring either callback.
+
 
 :meth:`on_recv_stream`
 ----------------------
