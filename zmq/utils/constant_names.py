@@ -80,6 +80,7 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
+        'TOS',
         
         # security
         'NULL',
@@ -270,6 +271,7 @@ int_sockopt_names = [
     'REQ_RELAXED',
     'REQ_CORRELATE',
     'CONFLATE',
+    'TOS',
 ]
 
 switched_sockopt_names = [
