@@ -80,7 +80,6 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-        'TOS',
         
         # security
         'NULL',
@@ -89,7 +88,12 @@ new_in = {
         
         # events
         'EVENT_MONITOR_STOPPED',
-    ]
+    ],
+    (4,1,0) : [
+        # socket opts
+        'ROUTER_HANDOVER',
+        'TOS',
+    ],
 }
 
 
@@ -271,6 +275,7 @@ int_sockopt_names = [
     'REQ_RELAXED',
     'REQ_CORRELATE',
     'CONFLATE',
+    'ROUTER_HANDOVER',
     'TOS',
 ]
 
