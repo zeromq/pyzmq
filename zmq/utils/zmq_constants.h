@@ -81,8 +81,16 @@
     #define ZMQ_REP (-1)
 #endif
 
+#ifndef ZMQ_XREQ
+    #define ZMQ_XREQ (-1)
+#endif
+
 #ifndef ZMQ_DEALER
     #define ZMQ_DEALER (-1)
+#endif
+
+#ifndef ZMQ_XREP
+    #define ZMQ_XREP (-1)
 #endif
 
 #ifndef ZMQ_ROUTER
@@ -471,6 +479,10 @@
 
 #ifndef ZMQ_CONFLATE
     #define ZMQ_CONFLATE (-1)
+#endif
+
+#ifndef ZMQ_TOS
+    #define ZMQ_TOS (-1)
 #endif
 
 #ifndef ZMQ_AFFINITY
