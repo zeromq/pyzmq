@@ -20,7 +20,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SUB
     enum: ZMQ_REQ
     enum: ZMQ_REP
+    enum: ZMQ_XREQ
     enum: ZMQ_DEALER
+    enum: ZMQ_XREP
     enum: ZMQ_ROUTER
     enum: ZMQ_PULL
     enum: ZMQ_PUSH
@@ -118,6 +120,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REQ_RELAXED
     enum: ZMQ_REQ_CORRELATE
     enum: ZMQ_CONFLATE
+    enum: ZMQ_TOS
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM

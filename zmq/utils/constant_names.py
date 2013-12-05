@@ -31,12 +31,12 @@ new_in = {
         'ETIMEDOUT',
         'EHOSTUNREACH',
         'ENETRESET',
-        
+
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
-        
+
         'ROUTER_BEHAVIOR',
         'ROUTER_MANDATORY',
         'FAIL_UNROUTABLE',
@@ -46,7 +46,7 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
-        
+
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
         'EVENT_CONNECT_RETRIED',
@@ -62,7 +62,7 @@ new_in = {
     (4,0,0) : [
         # socket types
         'STREAM',
-        
+
         # socket opts
         'IMMEDIATE',
         'ROUTER_RAW',
@@ -80,12 +80,13 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-        
+        'TOS',
+
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-        
+
         # events
         'EVENT_MONITOR_STOPPED',
     ]
@@ -96,7 +97,7 @@ removed_in = {
     (3,2,2) : [
         'UPSTREAM',
         'DOWNSTREAM',
-        
+
         'HWM',
         'SWAP',
         'MCAST_LOOP',
@@ -120,7 +121,7 @@ base_names = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
-    
+
     'SNDMORE',
 
     'STREAMER',
@@ -258,7 +259,7 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
-    
+
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
 
@@ -272,6 +273,7 @@ int_sockopt_names = [
     'REQ_RELAXED',
     'REQ_CORRELATE',
     'CONFLATE',
+    'TOS',
 ]
 
 switched_sockopt_names = [
