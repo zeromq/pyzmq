@@ -2,7 +2,7 @@
 """zmq Socket class"""
 
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Felipe Cruz
+#  Copyright (C) 2013-2014 Felipe Cruz, Pawel Jasinski
 #
 #  This file is part of pyzmq
 #
@@ -12,60 +12,17 @@
 
 import random
 import codecs
+import ctypes
 
 import errno as errno_mod
 
-from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
-                    new_int_pointer, new_binary_data, value_uint64_pointer,
-                    value_int64_pointer, value_int_pointer, value_binary_data,
-                    IPC_PATH_MAX_LEN)
-
 from .message import Frame
 from .constants import *
+from ._iron_ctypes import libzmq, zmq_msg_t, EMPTY_STRING
 
 import zmq
 from zmq.error import ZMQError, _check_rc
 from zmq.utils.strtypes import unicode
-
-
-def new_pointer_from_opt(option, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
-    if option in int64_sockopts:
-        return new_int64_pointer()
-    elif option in int_sockopts:
-        return new_int_pointer()
-    elif option in bytes_sockopts:
-        return new_binary_data(length)
-    else:
-        raise ZMQError(zmq.EINVAL)
-
-def value_from_opt_pointer(option, opt_pointer, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
-    if option in int64_sockopts:
-        return int(opt_pointer[0])
-    elif option in int_sockopts:
-        return int(opt_pointer[0])
-    elif option in bytes_sockopts:
-        return ffi.buffer(opt_pointer, length)[:]
-    else:
-        raise ZMQError(zmq.EINVAL)
-
-def initialize_opt_pointer(option, value, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
-    if option in int64_sockopts:
-        return value_int64_pointer(value)
-    elif option in int_sockopts:
-        return value_int_pointer(value)
-    elif option in bytes_sockopts:
-        return value_binary_data(value, length)
-    else:
-        raise ZMQError(zmq.EINVAL)
 
 
 class Socket(object):
@@ -78,8 +35,8 @@ class Socket(object):
     def __init__(self, context, sock_type):
         self.context = context
         self.socket_type = sock_type
-        self._zmq_socket = C.zmq_socket(context._zmq_ctx, sock_type)
-        if self._zmq_socket == ffi.NULL:
+        self._zmq_socket = libzmq.zmq_socket(context._zmq_ctx, sock_type)
+        if self._zmq_socket == 0:
             raise ZMQError()
         self._closed = False
         self._ref = self.context._add_socket(self)
@@ -92,7 +49,7 @@ class Socket(object):
         rc = 0
         if not self._closed and hasattr(self, '_zmq_socket'):
             if self._zmq_socket is not None:
-                rc = C.zmq_close(self._zmq_socket)
+                rc = libzmq.zmq_close(self._zmq_socket)
             self._closed = True
             self.context._rm_socket(self._ref)
         return rc
@@ -101,9 +58,11 @@ class Socket(object):
         self.close()
 
     def bind(self, address):
-        rc = C.zmq_bind(self._zmq_socket, address)
+        if len(address) == 0:
+            address = EMPTY_STRING
+        rc = libzmq.zmq_bind(self._zmq_socket, address)
         if rc < 0:
-            if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
+            if IPC_PATH_MAX_LEN and libzmq.zmq_errno() == errno_mod.ENAMETOOLONG:
                 # py3compat: address is bytes, but msg wants str
                 if str is unicode:
                     address = address.decode('utf-8', 'replace')
@@ -111,57 +70,68 @@ class Socket(object):
                 msg = ('ipc path "{0}" is longer than {1} '
                                 'characters (sizeof(sockaddr_un.sun_path)).'
                                 .format(path, IPC_PATH_MAX_LEN))
-                raise ZMQError(C.zmq_errno(), msg=msg)
+                raise ZMQError(libzmq.zmq_errno(), msg=msg)
             else:
                 _check_rc(rc)
 
     def unbind(self, address):
-        rc = C.zmq_unbind(self._zmq_socket, address)
+        rc = libzmq.zmq_unbind(self._zmq_socket, address)
         _check_rc(rc)
 
     def connect(self, address):
-        rc = C.zmq_connect(self._zmq_socket, address)
+        if len(address) == 0:
+            address = EMPTY_STRING
+        rc = libzmq.zmq_connect(self._zmq_socket, address)
         _check_rc(rc)
 
     def disconnect(self, address):
-        rc = C.zmq_disconnect(self._zmq_socket, address)
+        rc = libzmq.zmq_disconnect(self._zmq_socket, address)
         _check_rc(rc)
 
     def set(self, option, value):
-        length = None
         if isinstance(value, unicode):
             raise TypeError("unicode not allowed, use bytes")
         
         if isinstance(value, bytes):
             if option not in zmq.constants.bytes_sockopts:
                 raise TypeError("not a bytes sockopt: %s" % option)
-            length = len(value)
+
+        if option in zmq.constants.int64_sockopts:
+            value = ctypes.c_longlong(value)
+            size = ctypes.sizeof(value)
+        elif option in zmq.constants.int_sockopts:
+            value = ctypes.c_long(value)
+            size = ctypes.sizeof(value)
+        elif option in zmq.constants.bytes_sockopts:
+            size = len(value)
+            buf = ctypes.create_string_buffer(size)
+            if size != 0:
+                ctypes.memmove(ctypes.addressof(buf), value, size)
+            value = buf
+        else:
+            raise ZMQError(EINVAL)
         
-        c_data = initialize_opt_pointer(option, value, length)
-
-        c_value_pointer = c_data[0]
-        c_sizet = c_data[1]
-
-        rc = C.zmq_setsockopt(self._zmq_socket,
-                               option,
-                               ffi.cast('void*', c_value_pointer),
-                               c_sizet)
+        rc = libzmq.zmq_setsockopt(self._zmq_socket, option, ctypes.byref(value), size) 
         _check_rc(rc)
 
     def get(self, option):
-        c_data = new_pointer_from_opt(option, length=255)
-
-        c_value_pointer = c_data[0]
-        c_sizet_pointer = c_data[1]
-
-        rc = C.zmq_getsockopt(self._zmq_socket,
-                               option,
-                               c_value_pointer,
-                               c_sizet_pointer)
+        if option in zmq.constants.int64_sockopts:
+            value = ctypes.c_longlong()
+        elif option in zmq.constants.int_sockopts:
+            value = ctypes.c_long()
+        elif option in zmq.constants.bytes_sockopts:
+            value = ctypes.create_string_buffer(255)
+        else:
+            raise ZMQError(EINVAL)
+        size = ctypes.c_size_t(ctypes.sizeof(value))
+        rc = libzmq.zmq_getsockopt(self._zmq_socket, option, ctypes.byref(value), ctypes.byref(size))
         _check_rc(rc)
-        
-        sz = c_sizet_pointer[0]
-        v = value_from_opt_pointer(option, c_value_pointer, sz)
+       
+        if option in zmq.constants.bytes_sockopts:
+            v = bytes(size.value)
+            ctypes.memmove(v, value, size)
+        else:
+            v = value.value
         if option != zmq.IDENTITY and option in zmq.constants.bytes_sockopts and v.endswith(b'\0'):
             v = v[:-1]
         return v
@@ -173,33 +143,45 @@ class Socket(object):
         if isinstance(message, Frame):
             message = message.bytes
 
-        zmq_msg = ffi.new('zmq_msg_t*')
-        c_message = ffi.new('char[]', message)
-        rc = C.zmq_msg_init_size(zmq_msg, len(message))
-        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
+        flags = ctypes.c_int(flags)
+        zmq_msg = zmq_msg_t()
+        msg_c_len = len(message)
+        rc = libzmq.zmq_msg_init_size(zmq_msg, msg_c_len)
+        _check_rc(rc)
 
-        rc = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
-        C.zmq_msg_close(zmq_msg)
+        msg_buf = libzmq.zmq_msg_data(zmq_msg)
+        msg_buf_size = libzmq.zmq_msg_size(zmq_msg)
+        if len(message) != 0:
+            ctypes.memmove(msg_buf, message, msg_buf_size)
+
+        rc = libzmq.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
+        libzmq.zmq_msg_close(zmq_msg)
         _check_rc(rc)
 
         if track:
             return zmq.MessageTracker()
 
     def recv(self, flags=0, copy=True, track=False):
-        zmq_msg = ffi.new('zmq_msg_t*')
-        C.zmq_msg_init(zmq_msg)
+        zmq_msg = zmq_msg_t()
+        libzmq.zmq_msg_init(zmq_msg)
+        flags = ctypes.c_int(flags)
 
-        rc = C.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
+        rc = libzmq.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
 
         if rc < 0:
-            C.zmq_msg_close(zmq_msg)
+            libzmq.zmq_msg_close(zmq_msg)
             _check_rc(rc)
+        
+        data = libzmq.zmq_msg_data(zmq_msg)
+        size = libzmq.zmq_msg_size(zmq_msg)
 
-        _buffer = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))
-        value = _buffer[:]
-        C.zmq_msg_close(zmq_msg)
+        ret = bytes(size)
+        if size != 0:
+            ctypes.memmove(ret, data, size)
 
-        frame = Frame(value, track=track)
+        libzmq.zmq_msg_close(zmq_msg)
+
+        frame = Frame(ret, track=track)
         frame.more = self.getsockopt(RCVMORE)
 
         if copy:
@@ -226,8 +208,8 @@ class Socket(object):
             raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
         if events < 0:
             events = zmq.EVENT_ALL
-        rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
-        #? _check_rc(rc)
+        rc = libzmq.zmq_socket_monitor(self._zmq_socket, addr, events)
+        _check_rc(rc)
 
-
+IPC_PATH_MAX_LEN = 1024 # this is not supported under window, how about mono?
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']

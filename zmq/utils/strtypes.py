@@ -16,7 +16,7 @@ Authors
 
 import sys
 
-if sys.version_info[0] >= 3:
+if sys.version_info[0] >= 3 or sys.platform == 'cli':
     bytes = bytes
     unicode = str
     basestring = (bytes, unicode)
@@ -25,14 +25,29 @@ else:
     bytes = str
     basestring = basestring
 
-def cast_bytes(s, encoding='utf8', errors='strict'):
-    """cast unicode or bytes to bytes"""
-    if isinstance(s, bytes):
-        return s
-    elif isinstance(s, unicode):
-        return s.encode(encoding, errors)
-    else:
-        raise TypeError("Expected unicode or bytes, got %r" % s)
+if sys.platform != 'cli':
+    def cast_bytes(s, encoding='utf8', errors='strict'):
+        """cast unicode or bytes to bytes"""
+        if isinstance(s, bytes):
+            return s
+        elif isinstance(s, unicode):
+            return s.encode(encoding, errors)
+        else:
+            raise TypeError("Expected unicode or bytes, got %r" % s)
+
+else:
+    def cast_bytes(s, encoding='utf8', errors='strict'):
+        """cast unicode or bytes to bytes"""
+        if isinstance(s, bytes):
+            return s
+        elif isinstance(s, unicode):
+            if errors == 'strict':
+                return bytes(s, encoding)
+            else:
+                tmp = s.encode(encoding, errors)
+                return bytes(tmp, 'iso-8859-1')
+        else:
+            raise TypeError("Expected unicode or bytes, got %r" % s)
 
 def cast_unicode(s, encoding='utf8', errors='strict'):
     """cast bytes or unicode to unicode"""

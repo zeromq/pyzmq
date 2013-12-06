@@ -53,11 +53,11 @@ def dumps(o, **kwargs):
         kwargs['separators'] = (',', ':')
     
     s = jsonmod.dumps(o, **kwargs)
-    
-    if isinstance(s, unicode):
-        s = s.encode('utf8')
-    
-    return s
+
+    if isinstance(s, bytes):
+        return s
+
+    return s.encode('utf-8')
 
 def loads(s, **kwargs):
     """Load object from JSON bytes (utf-8).

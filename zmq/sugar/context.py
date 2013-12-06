@@ -28,6 +28,13 @@ class Context(ContextBase, AttributeSetter):
     def __init__(self, io_threads=1):
         super(Context, self).__init__(io_threads=io_threads)
         self.sockopts = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.destroy()
+        return False
     
     # static method copied from tornado IOLoop.instance
     @classmethod
@@ -70,7 +77,7 @@ class Context(ContextBase, AttributeSetter):
     @property
     def _socket_class(self):
         return Socket
-    
+
     def socket(self, socket_type):
         """Create a Socket associated with this Context.
 

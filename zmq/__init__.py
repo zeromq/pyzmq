@@ -47,7 +47,7 @@ else:
 
 # init Python threads
 
-if 'PyPy' not in sys.version:
+if 'PyPy' not in sys.version and sys.platform != 'cli':
     try:
         from zmq.utils import initthreads # initialize threads
     except ImportError as e:

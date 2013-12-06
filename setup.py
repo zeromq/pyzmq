@@ -561,7 +561,10 @@ class Configure(build_ext):
         if 'PyPy' in sys.version:
             info("PyPy: Nothing to configure")
             return
-        
+        if 'cli' == sys.platform:
+            info("IronPython: Nothing to configure")
+            return
+
         if cfg['libzmq_extension']:
             self.bundle_libzmq_extension()
             self.finish_run()

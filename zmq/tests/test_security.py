@@ -14,6 +14,7 @@
 #-----------------------------------------------------------------------------
 
 import os
+import sys
 from threading import Thread
 
 import zmq
@@ -77,7 +78,11 @@ class TestSecurity(BaseZMQTestCase):
         self.zap_thread.join()
 
     def bounce(self, server, client):
-        msg = [os.urandom(64), os.urandom(64)]
+        if sys.platform != 'cli':
+            msg = [os.urandom(64), os.urandom(64)]
+        else:
+            msg = [bytes(os.urandom(64), 'iso-8859-1'),
+                   bytes(os.urandom(64), 'iso-8859-1')]
         client.send_multipart(msg)
         recvd = self.recv_multipart(server)
         self.assertEqual(recvd, msg)
@@ -119,6 +124,11 @@ class TestSecurity(BaseZMQTestCase):
         assert server.plain_server
         
         self.start_zap()
+
+        if sys.platform == 'cli':
+            # give zap a chance to start
+            import time
+            time.sleep(0.1)
         
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)

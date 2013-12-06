@@ -24,7 +24,7 @@ from pprint import pprint
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy, PYPY
+from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy, PYPY, skip_iron
 from zmq.utils.strtypes import unicode, bytes, b, u
 try:
     from zmq.utils.rebuffer import array_from_buffer
@@ -64,6 +64,7 @@ def await_gc(obj, rc):
 class TestFrame(BaseZMQTestCase):
 
     @skip_pypy
+    @skip_iron
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -85,6 +86,7 @@ class TestFrame(BaseZMQTestCase):
             m_str_b = b(m_str) # py3compat
             self.assertEqual(s, m_str_b)
 
+    @skip_iron # TODO
     def test_bytes(self):
         """Test the Frame.bytes property."""
         for i in range(1,16):
@@ -104,7 +106,10 @@ class TestFrame(BaseZMQTestCase):
         self.assertRaises(TypeError, zmq.Frame, s)
         for i in range(16):
             s = (2**i)*u('§')
-            m = zmq.Frame(s.encode('utf8'))
+            if sys.platform != 'cli':
+                m = zmq.Frame(s.encode('utf8'))
+            else:
+                m = zmq.Frame(bytes(s.encode('utf8')))
             self.assertEqual(s, unicode(m.bytes,'utf8'))
 
     def test_len(self):
@@ -115,6 +120,7 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(len(s), len(m))
 
     @skip_pypy
+    @skip_iron
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -151,6 +157,7 @@ class TestFrame(BaseZMQTestCase):
             del s
 
     @skip_pypy
+    @skip_iron
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
@@ -187,6 +194,7 @@ class TestFrame(BaseZMQTestCase):
             del s
     
     @skip_pypy
+    @skip_iron # TODO
     def test_tracker(self):
         m = zmq.Frame(b'asdf', track=True)
         self.assertFalse(m.tracker.done)
@@ -207,6 +215,7 @@ class TestFrame(BaseZMQTestCase):
         self.assertRaises(ValueError, zmq.MessageTracker, m)
     
     @skip_pypy
+    @skip_iron # TODO
     def test_multi_tracker(self):
         m = zmq.Frame(b'asdf', track=True)
         m2 = zmq.Frame(b'whoda', track=True)
@@ -360,7 +369,8 @@ class TestFrame(BaseZMQTestCase):
             B = array_from_buffer(msg, A.dtype, A.shape)
             self.assertEqual(A.shape, B.shape)
             self.assertTrue((A==B).all())
-    
+   
+    @skip_iron # TODO
     def test_frame_more(self):
         """test Frame.more attribute"""
         frame = zmq.Frame(b"hello")
