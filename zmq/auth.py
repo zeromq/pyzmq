@@ -1,14 +1,23 @@
+"""0MQ authentication related functions and classes."""
 
-'''
-An authentication module for pyzmq modelled on zauth from czmq.
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
+#
+#  This file is part of pyzmq
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
 
-The functions to read and generate certificates should be interoperable
-with czmq's zcert's - though are not as fully featured.
-'''
+#-----------------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------------
+
 
 import datetime
 import glob
 import json
+import logging
 import os
 from threading import Thread
 import zmq
@@ -85,8 +94,7 @@ def load_certificate(filename):
     public_key = None
     secret_key = None
     if not os.path.exists(filename):
-        print "E: Invalid certificate file: {}".format(filename)
-        return public_key, secret_key
+        raise Exception("Invalid certificate file: {}".format(filename))
 
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -110,9 +118,13 @@ def load_certificates(location):
         glob_string = os.path.join(location, "*.key")
         cert_files = glob.glob(glob_string)
         for cert_file in cert_files:
-            public_key, _ = load_certificate(cert_file)
-            if public_key:
-                certs[public_key] = 'OK'
+            try:
+                public_key, _ = load_certificate(cert_file)
+                if public_key:
+                    certs[public_key] = 'OK'
+            except Exception:
+                logging.error("Certificate load error in {}".format(cert_file))
+
     return certs
 
 
@@ -173,7 +185,7 @@ class AuthAgentThread(Thread):
         uid = b"{}".format(os.getuid()) if status_code == 'OK' else b""
         metadata = b""  # not currently used
         if self.verbose:
-            print "I: ZAP reply code={} text={}".format(status_code, status_text)
+            logging.debug("ZAP reply code={} text={}".format(status_code, status_text))
         reply = [b"1.0", sequence, status_code, status_text, uid, metadata]
         self.zap.send_multipart(reply)
 
@@ -192,7 +204,7 @@ class AuthAgentThread(Thread):
 
         command = msg[0]
         if self.verbose:
-            print "I: auth received API command {}".format(command)
+            logging.debug("auth received API command {}".format(command))
 
         if command == 'ALLOW':
             address = msg[1]
@@ -226,8 +238,7 @@ class AuthAgentThread(Thread):
                 if os.path.isdir(location):
                     self.certs[domain] = load_certificates(location)
                 else:
-                    if self.verbose:
-                        print "E: Invalid CURVE certs location: {}".format(location)
+                    logging.error("Invalid CURVE certs location: {}".format(location))
             self.pipe.send(b'OK')
 
         elif command == 'VERBOSE':
@@ -240,7 +251,7 @@ class AuthAgentThread(Thread):
             self.pipe.send(b'OK')
 
         else:
-            print "E: invalid auth command from API: {}".format(command)
+            logging.error("Invalid auth command from API: {}".format(command))
 
         return terminate
 
@@ -271,15 +282,15 @@ class AuthAgentThread(Thread):
                 status = "DENIED"
                 if allowed:
                     status = "ALLOWED"
-                    print "I: {} (PLAIN) domain={} username={} password={}".format(status,
-                        domain, username, password)
+                    logging.debug("{} (PLAIN) domain={} username={} password={}".format(status,
+                        domain, username, password))
                 else:
-                    print "I: {} {}".format(status, reason)
+                    logging.debug("{} {}".format(status, reason))
 
         else:
             reason = b"No passwords defined"
             if self.verbose:
-                print "I: DENIED (PLAIN) {}".format(reason)
+                logging.debug("DENIED (PLAIN) {}".format(reason))
 
         return allowed, reason
 
@@ -293,7 +304,7 @@ class AuthAgentThread(Thread):
             allowed = True
             reason = b"OK"
             if self.verbose:
-                print "I: ALLOWED (CURVE allow any client)"
+                logging.debug("ALLOWED (CURVE allow any client)")
         else:
             # If no explicit domain is specified then use the default domain
             if not domain:
@@ -312,8 +323,8 @@ class AuthAgentThread(Thread):
                     status = "DENIED"
                     if allowed:
                         status = "ALLOWED"
-                    print "I: {} (CURVE) domain={} client_key={}".format(status,
-                        domain, z85_client_key)
+                    logging.debug("{} (CURVE) domain={} client_key={}".format(status,
+                        domain, z85_client_key))
             else:
                 reason = b"Unknown domain"
 
@@ -333,12 +344,10 @@ class AuthAgentThread(Thread):
             return
 
         if self.verbose:
-            print "version: {}".format(version)
-            print "sequence: {}".format(sequence)
-            print "domain: {}".format(domain)
-            print "address: {}".format(address)
-            print "identity: {}".format(identity)
-            print "mechanism: {}".format(mechanism)
+            logging.debug("version: {}, sequence: {}, domain: {}, " \
+                          "address: {}, identity: {}, mechanism: {}".format(version, 
+                            sequence, domain, address, identity, mechanism))
+
 
         # Check if address is explicitly whitelisted or blacklisted
         allowed = False
@@ -349,23 +358,23 @@ class AuthAgentThread(Thread):
             if address in self.whitelist:
                 allowed = True
                 if self.verbose:
-                    print "I: PASSED (whitelist) address={}".format(address)
+                    logging.debug("PASSED (whitelist) address={}".format(address))
             else:
                 denied = True
                 reason = b"Address not in whitelist"
                 if self.verbose:
-                    print "I: DENIED (not in whitelist) address={}".format(address)
+                    logging.debug("DENIED (not in whitelist) address={}".format(address))
 
         elif self.blacklist:
             if address in self.blacklist:
                 denied = True
                 reason = b"Address is blacklisted"
                 if self.verbose:
-                    print "I: DENIED (blacklist) address={}".format(address)
+                    logging.debug("DENIED (blacklist) address={}".format(address))
             else:
                 allowed = True
                 if self.verbose:
-                    print "I: PASSED (not in blacklist) address={}".format(address)
+                    logging.debug("PASSED (not in blacklist) address={}".format(address))
 
         # Mechanism-specific checks
         if not denied:
@@ -373,7 +382,7 @@ class AuthAgentThread(Thread):
             if mechanism == b'NULL' and not allowed:
                 # For NULL, we allow if the address wasn't blacklisted
                 if self.verbose:
-                    print "I: ALLOWED (NULL)"
+                    logging.debug("ALLOWED (NULL)")
                 allowed = True
 
             elif mechanism == b'PLAIN':
@@ -412,7 +421,7 @@ class Authenticator(object):
 
     def __init__(self, context, verbose=False):
         if zmq.zmq_version_info() < (4,0):
-            raise Exception("Security is only available in libzmq >= 4.0")
+            raise NotImplementedError("Security is only available in libzmq >= 4.0")
         self.context = context
         self.pipe = None
         self.pipe_endpoint = "inproc://{}.inproc".format(id(self))
@@ -510,4 +519,4 @@ class Authenticator(object):
         '''
         status = msg[0]
         if status != b"OK":
-            print "E: status from auth thread indicates error: {}".format(status)
+            logging.error("Status from auth thread indicates agent error: {}".format(status))

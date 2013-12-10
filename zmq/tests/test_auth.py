@@ -13,6 +13,7 @@
 
 import os
 import shutil
+import tempfile
 import zmq
 import zmq.auth
 from zmq.tests import (BaseZMQTestCase, SkipTest)
@@ -142,18 +143,11 @@ class TestAuthentication(BaseZMQTestCase):
         # Create temporary CURVE keypairs for this test run. We create all keys in the
         # .certs directory and then move them into the appropriate private or public
         # directory.
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        keys_dir = os.path.join(base_dir, '.certs')
-        public_keys_dir = os.path.join(base_dir, '.certs_public')
-        secret_keys_dir = os.path.join(base_dir, '.certs_private')
 
-        # Remove artefacts from a previous test run.
-        if os.path.exists(keys_dir):
-            shutil.rmtree(keys_dir)
-        if os.path.exists(public_keys_dir):
-            shutil.rmtree(public_keys_dir)
-        if os.path.exists(secret_keys_dir):
-            shutil.rmtree(secret_keys_dir)
+        base_dir = tempfile.mkdtemp()
+        keys_dir = os.path.join(base_dir, 'certificates')
+        public_keys_dir = os.path.join(base_dir, 'public_keys')
+        secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
         os.mkdir(keys_dir)
         os.mkdir(public_keys_dir)
@@ -232,3 +226,5 @@ class TestAuthentication(BaseZMQTestCase):
         self.assertTrue(self.can_connect(server, client))
         client.close()
         server.close()
+
+        shutil.rmtree(base_dir)
