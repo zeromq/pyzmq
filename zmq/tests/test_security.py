@@ -153,7 +153,7 @@ class TestSecurity(BaseZMQTestCase):
     def test_keypair(self):
         """test curve_keypair"""
         try:
-            secret, public = zmq.curve_keypair()
+            public, secret = zmq.curve_keypair()
         except zmq.ZMQError:
             raise SkipTest("CURVE unsupported")
         
