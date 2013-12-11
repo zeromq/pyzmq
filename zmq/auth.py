@@ -43,44 +43,43 @@ _cert_public_banner = """#   ****  Generated on {0} by pyzmq  ****
 
 """
 
+def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=None):
+    """ Create a certificate file """
+    with open(key_filename, 'w') as f:
+        f.write(banner.format(datetime.datetime.now()))
+
+        f.write('metadata\n')
+        if metadata and isinstance(metadata, dict):
+            for k, v in metadata.items():
+                f.write("    {0} = {1}\n".format(k, v))
+
+        f.write('curve\n')
+        f.write("    public-key = \"{0}\"\n".format(public_key))
+
+        if secret_key:
+            f.write("    secret-key = \"{0}\"\n".format(secret_key))
+
 
 def create_certificates(key_dir, name, metadata=None):
     '''
     Create zcert-esque public and private certificate files.
     Return the file paths to the public and secret certificate files.
     '''
-
-    def write_key_file(key_filename, banner, public_key, secret_key=None, metadata=None):
-        """ Create a certificate file """
-        with open(key_filename, 'w') as f:
-            f.write(banner.format(datetime.datetime.now()))
-
-            f.write('metadata\n')
-            if metadata and isinstance(metadata, dict):
-                for k, v in metadata.items():
-                    f.write("    {0} = {1}\n".format(k, v))
-
-            f.write('curve\n')
-            f.write("    public-key = \"{0}\"\n".format(public_key))
-
-            if secret_key:
-                f.write("    secret-key = \"{0}\"\n".format(secret_key))
-
     public_key, secret_key = zmq.curve_keypair()
     base_filename = os.path.join(key_dir, name)
     secret_key_file = "{0}.key_secret".format(base_filename)
     public_key_file = "{0}.key".format(base_filename)
     now = datetime.datetime.now()
 
-    write_key_file(public_key_file,
-                   _cert_public_banner.format(now),
-                   public_key)
+    _write_key_file(public_key_file,
+                    _cert_public_banner.format(now),
+                    public_key)
 
-    write_key_file(secret_key_file,
-                   _cert_secret_banner.format(now),
-                   public_key,
-                   secret_key=secret_key,
-                   metadata=metadata)
+    _write_key_file(secret_key_file,
+                    _cert_secret_banner.format(now),
+                    public_key,
+                    secret_key=secret_key,
+                    metadata=metadata)
 
     return public_key_file, secret_key_file
 
