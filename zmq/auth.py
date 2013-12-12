@@ -473,7 +473,7 @@ class AuthenticationThread(Thread):
         return terminate
 
 
-class ThreadedAuthenticator(Authenticator):
+class ThreadedAuthenticator(object):
     '''
     A security authenticator that performs authentication from a background thread
 
@@ -485,8 +485,8 @@ class ThreadedAuthenticator(Authenticator):
     This design is modelled on czmq's zauth module.
     '''
 
-    def __init__(self, context, verbose=False):
-        super(ThreadedAuthenticator, self).__init__(context, verbose)
+    def __init__(self, context):
+        self.context = context
         self.pipe = None
         self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
         self.thread = None
