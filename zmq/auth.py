@@ -436,7 +436,7 @@ class AuthenticationThread(Thread):
 
         command = msg[0]
         if self.verbose:
-            logging.debug("auth received API command {}".format(command))
+            logging.debug("auth received API command {0}".format(command))
 
         if command == 'ALLOW':
             address = msg[1]
@@ -468,7 +468,7 @@ class AuthenticationThread(Thread):
             terminate = True
 
         else:
-            logging.error("Invalid auth command from API: {}".format(command))
+            logging.error("Invalid auth command from API: {0}".format(command))
 
         return terminate
 
@@ -488,7 +488,7 @@ class ThreadedAuthenticator(Authenticator):
     def __init__(self, context, verbose=False):
         super(ThreadedAuthenticator, self).__init__(context, verbose)
         self.pipe = None
-        self.pipe_endpoint = "inproc://{}.inproc".format(id(self))
+        self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
         self.thread = None
 
     def allow(self, address):

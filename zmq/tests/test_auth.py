@@ -15,7 +15,7 @@ import os
 import shutil
 import tempfile
 import zmq
-import zmq.auth2
+import zmq.auth
 from zmq.tests import (BaseZMQTestCase, SkipTest)
 
 
@@ -65,7 +65,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
     def test_blacklist_whitelist(self):
         """ test Blacklist and Whitelist authentication """
-        auth = zmq.auth2.ThreadedAuthenticator(self.context)
+        auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Blacklist 127.0.0.1, connection should fail
@@ -94,7 +94,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
     def test_plain(self):
         """test PLAIN authentication """
-        auth = zmq.auth2.ThreadedAuthenticator(self.context)
+        auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Try PLAIN authentication - without configuring server, connection should fail
@@ -140,7 +140,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
     def test_curve(self):
         """test CURVE authentication """
-        auth = zmq.auth2.ThreadedAuthenticator(self.context)
+        auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Create temporary CURVE keypairs for this test run. We create all keys in the
@@ -157,8 +157,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         os.mkdir(secret_keys_dir)
 
         # create new keys in .certs dir
-        server_public_file, server_secret_file = zmq.auth2.create_certificates(keys_dir, "server")
-        client_public_file, client_secret_file = zmq.auth2.create_certificates(keys_dir, "client")
+        server_public_file, server_secret_file = zmq.auth.create_certificates(keys_dir, "server")
+        client_public_file, client_secret_file = zmq.auth.create_certificates(keys_dir, "client")
 
         # move public keys to appropriate directory
         for key_file in os.listdir(keys_dir):
@@ -175,8 +175,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server_secret_file = os.path.join(secret_keys_dir, "server.key_secret")
         client_secret_file = os.path.join(secret_keys_dir, "client.key_secret")
 
-        server_public, server_secret = zmq.auth2.load_certificate(server_secret_file)
-        client_public, client_secret = zmq.auth2.load_certificate(client_secret_file)
+        server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
+        client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
 
         #Try CURVE authentication - without configuring server, connection should fail
         server = self.context.socket(zmq.PUSH)
@@ -192,7 +192,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server.close()
 
         #Try CURVE authentication - with server configured to CURVE_ALLOW_ANY, connection should pass
-        auth.configure_curve(domain='*', location=zmq.auth2.CURVE_ALLOW_ANY)
+        auth.configure_curve(domain='*', location=zmq.auth.CURVE_ALLOW_ANY)
         server = self.context.socket(zmq.PUSH)
         server.curve_publickey = server_public
         server.curve_secretkey = server_secret
