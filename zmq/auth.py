@@ -223,13 +223,10 @@ class Authenticator(object):
             else:
                 logging.error("Invalid CURVE certs location: {0}".format(location))
 
-    def handle_zap_message(self):
+    def handle_zap_message(self, msg):
         '''
         Perform ZAP authentication.
         '''
-        msg = self.zap_socket.recv_multipart()
-        if not msg: return
-
         version, sequence, domain, address, identity, mechanism = msg[:6]
 
         if (version != b"1.0"):
@@ -416,10 +413,18 @@ class AuthenticationThread(Thread):
                     break
 
             if zap in socks and socks[zap] == zmq.POLLIN:
-                self.authenticator.handle_zap_message()
+                self._handle_zap()
 
         self.pipe.close()
         self.authenticator.stop()
+
+    def _handle_zap(self):
+        '''
+        Handle a message from the ZAP socket.
+        '''
+        msg = self.authenticator.zap_socket.recv_multipart()
+        if not msg: return
+        self.authenticator.handle_zap_message(msg)
 
     def _handle_pipe(self):
         '''
