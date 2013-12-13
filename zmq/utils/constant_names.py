@@ -88,7 +88,12 @@ new_in = {
         
         # events
         'EVENT_MONITOR_STOPPED',
-    ]
+    ],
+    (4,1,0) : [
+        # socket opts
+        'ROUTER_HANDOVER',
+        'TOS',
+    ],
 }
 
 
@@ -136,9 +141,7 @@ base_names = [
     'SUB',
     'REQ',
     'REP',
-    'XREQ',
     'DEALER',
-    'XREP',
     'ROUTER',
     'PULL',
     'PUSH',
@@ -272,6 +275,8 @@ int_sockopt_names = [
     'REQ_RELAXED',
     'REQ_CORRELATE',
     'CONFLATE',
+    'ROUTER_HANDOVER',
+    'TOS',
 ]
 
 switched_sockopt_names = [

@@ -473,6 +473,14 @@
     #define ZMQ_CONFLATE (-1)
 #endif
 
+#ifndef ZMQ_ROUTER_HANDOVER
+    #define ZMQ_ROUTER_HANDOVER (-1)
+#endif
+
+#ifndef ZMQ_TOS
+    #define ZMQ_TOS (-1)
+#endif
+
 #ifndef ZMQ_AFFINITY
     #define ZMQ_AFFINITY (-1)
 #endif

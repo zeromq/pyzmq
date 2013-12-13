@@ -11,7 +11,9 @@ env:
     - ZMQ=bundled
     - ZMQ=master
 before_install:
-  - sudo apt-get install -qq libzmq3-dev
+  - sudo add-apt-repository -y ppa:shnatsel/dnscrypt
+  - sudo apt-get update
+  - sudo apt-get install -qq libzmq3-dev libsodium-dev
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then sudo add-apt-repository -y ppa:pypy/ppa || true; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then sudo apt-get -y update && sudo apt-get -y install pypy; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then virtualenv -p /usr/bin/pypy pypy && source pypy/bin/activate; fi
