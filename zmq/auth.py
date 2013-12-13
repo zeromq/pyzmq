@@ -381,8 +381,8 @@ class Authenticator(object):
 
 class AuthenticationThread(Thread):
     '''
-    This class runs an Authenticator in a thread. This class is the 
-    background thread run by the ThreadedAuthenticator. Communication with 
+    This class runs an Authenticator in a thread. This class is the
+    background thread run by the ThreadedAuthenticator. Communication with
     the main thread is over the pipe.
     '''
 
@@ -587,7 +587,7 @@ class IOLoopAuthenticator(Authenticator):
         self.zapstream = zmqstream.ZMQStream(self.zap_socket, ioloop)
         self.zapstream.on_recv(self.handle_zap_message)
 
-    def quit(self):
+    def stop(self):
         ''' Stop performing ZAP authentication '''
         if self.zapstream:
             self.zapstream.on_recv(None)
