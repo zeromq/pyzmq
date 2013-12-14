@@ -22,7 +22,7 @@ import os
 from threading import Thread
 import zmq
 from zmq.utils import z85
-from zmq.eventloop import zmqstream
+from zmq.eventloop import ioloop, zmqstream
 
 
 CURVE_ALLOW_ANY = '*'
@@ -214,6 +214,7 @@ class Authenticator(object):
         '''
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
         # treat location as a directory that holds the certificates.
+        logging.debug("configuring curve")
         if location == CURVE_ALLOW_ANY:
             self.allow_any = True
         else:
@@ -586,10 +587,10 @@ class IOLoopAuthenticator(Authenticator):
         super(IOLoopAuthenticator, self).__init__(context, verbose)
         self.zapstream = None
 
-    def start(self, ioloop):
+    def start(self):
         ''' Run the ZAP authenticator in an event loop '''
         super(IOLoopAuthenticator, self).start()
-        self.zapstream = zmqstream.ZMQStream(self.zap_socket, ioloop)
+        self.zapstream = zmqstream.ZMQStream(self.zap_socket, ioloop.IOLoop.instance())
         self.zapstream.on_recv(self.handle_zap_message)
 
     def stop(self):
