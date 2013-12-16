@@ -8,12 +8,13 @@ attack we know about, except end-point attacks (where an attacker plants
 spyware on a machine to capture data before it's encrypted, or after it's 
 decrypted).
 
-This example demonstrates the IOLoopAuthenticator
+This example demonstrates using the IOLoopAuthenticator.
+
+Author: Chris Laws
 '''
 
 import datetime
 import os
-import sys
 import time
 import zmq
 import zmq.auth
@@ -59,13 +60,17 @@ class IronhouseClient(object):
 
 
 if __name__ == '__main__':
+    import logging
+    import sys
+
+    if zmq.zmq_version_info() < (4,0):
+        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
     verbose = False
     if '-v' in sys.argv:
         verbose = True
 
     if verbose:
-        import logging
         logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', 
                             level=logging.DEBUG)
 

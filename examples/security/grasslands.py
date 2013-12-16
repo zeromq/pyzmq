@@ -5,9 +5,11 @@ No protection at all.
 
 All connections are accepted, there is no authentication, and no privacy. 
 
-This is how ZeroMQ always worked until we build security into the wire 
+This is how ZeroMQ always worked until we built security into the wire 
 protocol in early 2013. Internally, it uses a security mechanism called 
-"NULL", but you don't even see that.
+"NULL".
+
+Author: Chris Laws
 '''
 
 import time

@@ -7,6 +7,8 @@ Strawhouse, which is plain text with filtering on IP addresses. It still
 uses the NULL mechanism, but we install an authentication hook that checks
 the IP address against a whitelist or blacklist and allows or denies it 
 accordingly.
+
+Author: Chris Laws
 '''
 
 import time
@@ -14,75 +16,79 @@ import zmq
 import zmq.auth
 
 
-def run():
-	''' Run stawhouse client '''
-	allow_test_pass = False
-	deny_test_pass = False
+def run(verbose=False):
+    ''' Run stawhouse client '''
 
-	ctx = zmq.Context().instance()
+    allow_test_pass = False
+    deny_test_pass = False
 
-	# Start an authenticator for this context.
-	auth = zmq.auth.ThreadedAuthenticator(ctx)
-	auth.start(verbose=True)
+    ctx = zmq.Context().instance()
 
-	# Part 1 - demonstrate allowing clients based on IP address
-	auth.allow('127.0.0.1')
+    # Start an authenticator for this context.
+    auth = zmq.auth.ThreadedAuthenticator(ctx)
+    auth.start(verbose=verbose)
 
-	server = ctx.socket(zmq.PUSH)
-	server.zap_domain = 'global'  # must come before bind
-	server.bind('tcp://*:9000')
+    # Part 1 - demonstrate allowing clients based on IP address
+    auth.allow('127.0.0.1')
 
-	client_allow = ctx.socket(zmq.PULL)
-	client_allow.connect('tcp://127.0.0.1:9000')
+    server = ctx.socket(zmq.PUSH)
+    server.zap_domain = 'global'  # must come before bind
+    server.bind('tcp://*:9000')
 
-	server.send("Hello")
-	
-	msg = client_allow.recv()
-	if msg == "Hello":
-		allow_test_pass = True
-	else:
-		allow_test_pass = False
+    client_allow = ctx.socket(zmq.PULL)
+    client_allow.connect('tcp://127.0.0.1:9000')
 
-	client_allow.close()
+    server.send("Hello")
+    
+    msg = client_allow.recv()
+    if msg == "Hello":
+        allow_test_pass = True
+    else:
+        allow_test_pass = False
 
-	# Part 2 - demonstrate denying clients based on IP address
-	auth.deny('127.0.0.1')
+    client_allow.close()
 
-	server.send("Hello")
+    # Part 2 - demonstrate denying clients based on IP address
+    auth.deny('127.0.0.1')
 
-	client_deny = ctx.socket(zmq.PULL)
-	client_deny.connect('tcp://127.0.0.1:9000') 
+    server.send("Hello")
 
-	poller = zmq.Poller()
-	poller.register(client_deny, zmq.POLLIN)
-	socks = dict(poller.poll(50))
-	if client_deny in socks and socks[client_deny] == zmq.POLLIN:
-		msg = client_deny.recv()
-		if msg == "Hello":
-			deny_test_pass = False
-	else:
-		deny_test_pass = True
+    client_deny = ctx.socket(zmq.PULL)
+    client_deny.connect('tcp://127.0.0.1:9000') 
 
-	client_deny.close()
+    poller = zmq.Poller()
+    poller.register(client_deny, zmq.POLLIN)
+    socks = dict(poller.poll(50))
+    if client_deny in socks and socks[client_deny] == zmq.POLLIN:
+        msg = client_deny.recv()
+        if msg == "Hello":
+            deny_test_pass = False
+    else:
+        deny_test_pass = True
 
-	auth.stop()  # stop auth thread
+    client_deny.close()
 
-	if allow_test_pass and deny_test_pass:
-		print "Strawhouse test OK"
-	else:
-		print "Strawhouse test FAIL"
+    auth.stop()  # stop auth thread
+
+    if allow_test_pass and deny_test_pass:
+        print "Strawhouse test OK"
+    else:
+        print "Strawhouse test FAIL"
 
 
 if __name__ == '__main__':
-	import sys
+    import logging
+    import sys
 
-	verbose = False
-	if '-v' in sys.argv:
-		verbose = True
+    if zmq.zmq_version_info() < (4,0):
+        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
-	if verbose:
-		import logging
-		logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', 
-			                level=logging.DEBUG)
+    verbose = False
+    if '-v' in sys.argv:
+        verbose = True
 
-	run()
+    if verbose:
+        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', 
+                            level=logging.DEBUG)
+
+    run(verbose)

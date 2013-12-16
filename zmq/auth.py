@@ -214,7 +214,6 @@ class Authenticator(object):
         '''
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
         # treat location as a directory that holds the certificates.
-        logging.debug("configuring curve")
         if location == CURVE_ALLOW_ANY:
             self.allow_any = True
         else:
@@ -583,14 +582,15 @@ class ThreadedAuthenticator(object):
 class IOLoopAuthenticator(Authenticator):
     ''' A security authenticator that is run in an event loop '''
 
-    def __init__(self, context, verbose=False):
-        super(IOLoopAuthenticator, self).__init__(context, verbose)
+    def __init__(self, context, verbose=False, io_loop=None):
+        super(IOLoopAuthenticator, self).__init__(context, verbose=verbose)
         self.zapstream = None
+        self.io_loop = io_loop or ioloop.IOLoop.current()
 
-    def start(self):
+    def start(self, io_loop=None):
         ''' Run the ZAP authenticator in an event loop '''
         super(IOLoopAuthenticator, self).start()
-        self.zapstream = zmqstream.ZMQStream(self.zap_socket, ioloop.IOLoop.instance())
+        self.zapstream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
         self.zapstream.on_recv(self.handle_zap_message)
 
     def stop(self):
