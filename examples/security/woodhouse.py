@@ -3,20 +3,19 @@
 '''
 Woodhouse extends Strawhouse with a name and password check.
 
-This uses the PLAIN mechanism which does plain-text username and password 
-authentication). It's not really not secure, and anyone sniffing the 
-network (trivial with WiFi) can capture passwords and then login as if 
+This uses the PLAIN mechanism which does plain-text username and password
+authentication). It's not really not secure, and anyone sniffing the
+network (trivial with WiFi) can capture passwords and then login as if
 they wanted.
 
 Author: Chris Laws
 '''
 
-import time
 import zmq
 import zmq.auth
 
 
-def run(verbose=False):
+def run():
     ''' Run woodhouse example '''
 
     valid_client_test_pass = False
@@ -26,7 +25,7 @@ def run(verbose=False):
 
     # Start an authenticator for this context.
     auth = zmq.auth.ThreadedAuthenticator(ctx)
-    auth.start(verbose=verbose)
+    auth.start()
     auth.allow('127.0.0.1')
     # Instruct authenticator to handle PLAIN requests
     auth.configure_plain(domain='*', passwords={'admin': 'secret'})
@@ -93,7 +92,7 @@ if __name__ == '__main__':
         verbose = True
 
     if verbose:
-        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', 
+        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s',
                             level=logging.DEBUG)
 
-    run(verbose)
+    run()

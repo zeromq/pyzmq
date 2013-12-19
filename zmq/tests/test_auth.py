@@ -11,6 +11,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import logging
 import os
 import shutil
 import tempfile
@@ -28,6 +29,15 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
         super(TestThreadedAuthentication, self).setUp()
+        # silence auth module debug log output during test runs
+        logger = logging.getLogger()
+        self.original_log_level = logger.getEffectiveLevel()
+        logger.setLevel(logging.ERROR)
+
+    def tearDown(self):
+        # return log level to previous state
+        logger = logging.getLogger()
+        logger.setLevel(self.original_log_level)
 
     def can_connect(self, server, client):
         """ Check if client can connect to server using tcp transport """
@@ -242,6 +252,11 @@ class TestIOLoopAuthentication(TestCase):
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
 
+        # silence auth module debug log output during test runs
+        logger = logging.getLogger()
+        self.original_log_level = logger.getEffectiveLevel()
+        logger.setLevel(logging.ERROR)
+
         self.test_result = True
         self.io_loop = ioloop.IOLoop()
         self.auth = None
@@ -252,13 +267,17 @@ class TestIOLoopAuthentication(TestCase):
         self.client.reconnect_ivl = 1000
         self.pushstream = zmqstream.ZMQStream(self.server, self.io_loop)
         self.pullstream = zmqstream.ZMQStream(self.client, self.io_loop)
-    
+
+
     def tearDown(self):
         if self.auth:
             self.auth.stop()
             self.auth = None
         self.io_loop.close()
         self.context.destroy()
+        # return log level to previous state
+        logger = logging.getLogger()
+        logger.setLevel(self.original_log_level)
 
     def attempt_connection(self):
         """ Check if client can connect to server using tcp transport """
@@ -269,7 +288,7 @@ class TestIOLoopAuthentication(TestCase):
     def send_msg(self):
         ''' Send a message from server to a client '''
         msg = [b"Hello World"]
-        self.server.send_multipart(msg)        
+        self.server.send_multipart(msg)
 
     def on_message_succeed(self, frames):
         ''' A message was received, as expected. '''
@@ -344,13 +363,13 @@ class TestIOLoopAuthentication(TestCase):
         # A default NULL connection should always succeed, and not
         # go through our authentication infrastructure at all.
         self.pullstream.on_recv(self.on_message_succeed)
-        
+
         step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
         step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
         # Timeout the test so the test case can complete even if no message
         # is received.
         timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-        
+
         step1.start()
         step2.start()
         timeout.start()
@@ -367,14 +386,14 @@ class TestIOLoopAuthentication(TestCase):
         # should still be allowed.
         self.server.zap_domain = 'global'
         self.pullstream.on_recv(self.on_message_succeed)
-        
+
         step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
         step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
 
         # Timeout the test so the test case can complete even if no message
         # is received.
         timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-    
+
         step1.start()
         step2.start()
         timeout.start()
@@ -530,7 +549,7 @@ class TestIOLoopAuthentication(TestCase):
         """test ioloop auth - CURVE, unconfigured server"""
         base_dir, public_keys_dir, secret_keys_dir = self.create_certs()
         certs = self.load_certs(secret_keys_dir)
-        server_public, server_secret, client_public, client_secret = certs 
+        server_public, server_secret, client_public, client_secret = certs
 
         auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
@@ -567,7 +586,7 @@ class TestIOLoopAuthentication(TestCase):
         """test ioloop auth - CURVE, CURVE_ALLOW_ANY"""
         base_dir, public_keys_dir, secret_keys_dir = self.create_certs()
         certs = self.load_certs(secret_keys_dir)
-        server_public, server_secret, client_public, client_secret = certs 
+        server_public, server_secret, client_public, client_secret = certs
 
         auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()

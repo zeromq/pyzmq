@@ -138,11 +138,10 @@ class Authenticator(object):
     (classic ZeroMQ behavior), and all PLAIN and CURVE connections are denied.
     '''
 
-    def __init__(self, context, verbose=False):
+    def __init__(self, context):
         if zmq.zmq_version_info() < (4,0):
             raise NotImplementedError("Security is only available in libzmq >= 4.0")
         self.context = context
-        self.verbose = verbose
         self.allow_any = False
         self.zap_socket = None
         self.whitelist = []
@@ -187,12 +186,6 @@ class Authenticator(object):
         if address not in self.blacklist:
             self.blacklist.append(address)
 
-    def verbose(self, enabled):
-        '''
-        Enable verbose tracing of commands and activity.
-        '''
-        self.verbose = enabled
-
     def configure_plain(self, domain='*', passwords=None):
         '''
         Configure PLAIN authentication for a given domain. PLAIN authentication
@@ -233,10 +226,9 @@ class Authenticator(object):
             self._send_zap_reply(sequence, b"400", b"Invalid version")
             return
 
-        if self.verbose:
-            logging.debug("version: {0}, sequence: {1}, domain: {2}, " \
-                          "address: {3}, identity: {4}, mechanism: {5}".format(version,
-                            sequence, domain, address, identity, mechanism))
+        logging.debug("version: {0}, sequence: {1}, domain: {2}, " \
+                      "address: {3}, identity: {4}, mechanism: {5}".format(version,
+                        sequence, domain, address, identity, mechanism))
 
 
         # Is address is explicitly whitelisted or blacklisted?
@@ -247,32 +239,27 @@ class Authenticator(object):
         if self.whitelist:
             if address in self.whitelist:
                 allowed = True
-                if self.verbose:
-                    logging.debug("PASSED (whitelist) address={0}".format(address))
+                logging.debug("PASSED (whitelist) address={0}".format(address))
             else:
                 denied = True
                 reason = b"Address not in whitelist"
-                if self.verbose:
-                    logging.debug("DENIED (not in whitelist) address={0}".format(address))
+                logging.debug("DENIED (not in whitelist) address={0}".format(address))
 
         elif self.blacklist:
             if address in self.blacklist:
                 denied = True
                 reason = b"Address is blacklisted"
-                if self.verbose:
-                    logging.debug("DENIED (blacklist) address={0}".format(address))
+                logging.debug("DENIED (blacklist) address={0}".format(address))
             else:
                 allowed = True
-                if self.verbose:
-                    logging.debug("PASSED (not in blacklist) address={0}".format(address))
+                logging.debug("PASSED (not in blacklist) address={0}".format(address))
 
         # Perform authentication mechanism-specific checks if necessary
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
                 # For NULL, we allow if the address wasn't blacklisted
-                if self.verbose:
-                    logging.debug("ALLOWED (NULL)")
+                logging.debug("ALLOWED (NULL)")
                 allowed = True
 
             elif mechanism == b'PLAIN':
@@ -312,19 +299,15 @@ class Authenticator(object):
             else:
                 reason = b"Invalid domain"
 
-            if self.verbose:
-                status = "DENIED"
-                if allowed:
-                    status = "ALLOWED"
-                    logging.debug("{0} (PLAIN) domain={1} username={2} password={3}".format(status,
-                        domain, username, password))
-                else:
-                    logging.debug("{0} {1}".format(status, reason))
+            if allowed:
+                logging.debug("ALLOWED (PLAIN) domain={0} username={1} password={2}".format(domain,
+                    username, password))
+            else:
+                logging.debug("DENIED {0}".format(reason))
 
         else:
             reason = b"No passwords defined"
-            if self.verbose:
-                logging.debug("DENIED (PLAIN) {0}".format(reason))
+            logging.debug("DENIED (PLAIN) {0}".format(reason))
 
         return allowed, reason
 
@@ -337,8 +320,7 @@ class Authenticator(object):
         if self.allow_any:
             allowed = True
             reason = b"OK"
-            if self.verbose:
-                logging.debug("ALLOWED (CURVE allow any client)")
+            logging.debug("ALLOWED (CURVE allow any client)")
         else:
             # If no explicit domain is specified then use the default domain
             if not domain:
@@ -353,12 +335,11 @@ class Authenticator(object):
                 else:
                     reason = b"Unknown key"
 
-                if self.verbose:
-                    status = "DENIED"
-                    if allowed:
-                        status = "ALLOWED"
-                    logging.debug("{0} (CURVE) domain={1} client_key={2}".format(status,
-                        domain, z85_client_key))
+                status = "DENIED"
+                if allowed:
+                    status = "ALLOWED"
+                logging.debug("{0} (CURVE) domain={1} client_key={2}".format(status,
+                    domain, z85_client_key))
             else:
                 reason = b"Unknown domain"
 
@@ -370,8 +351,7 @@ class Authenticator(object):
         '''
         uid = b"{0}".format(os.getuid()) if status_code == 'OK' else b""
         metadata = b""  # not currently used
-        if self.verbose:
-            logging.debug("ZAP reply code={0} text={1}".format(status_code, status_text))
+        logging.debug("ZAP reply code={0} text={1}".format(status_code, status_text))
         reply = [b"1.0", sequence, status_code, status_text, uid, metadata]
         self.zap_socket.send_multipart(reply)
 
@@ -383,11 +363,10 @@ class AuthenticationThread(Thread):
     the main thread is over the pipe.
     '''
 
-    def __init__(self, context, endpoint, verbose=False):
+    def __init__(self, context, endpoint):
         super(AuthenticationThread, self).__init__()
         self.context = context
-        self.verbose = verbose
-        self.authenticator = Authenticator(context, verbose)
+        self.authenticator = Authenticator(context)
 
         # create a socket to communicate back to main thread.
         self.pipe = context.socket(zmq.PAIR)
@@ -440,8 +419,7 @@ class AuthenticationThread(Thread):
             return terminate
 
         command = msg[0]
-        if self.verbose:
-            logging.debug("auth received API command {0}".format(command))
+        logging.debug("auth received API command {0}".format(command))
 
         if command == 'ALLOW':
             address = msg[1]
@@ -464,10 +442,6 @@ class AuthenticationThread(Thread):
             # treat location as a directory that holds the certificates.
             location = msg[2]
             self.authenticator.configure_curve(domain, location)
-
-        elif command == 'VERBOSE':
-            enabled = msg[1] == '1'
-            self.authenticator.verbose(enabled)
 
         elif command == 'TERMINATE':
             terminate = True
@@ -515,12 +489,6 @@ class ThreadedAuthenticator(object):
         '''
         self.pipe.send_multipart([b'DENY', address])
 
-    def verbose(self, enabled):
-        '''
-        Enable verbose tracing of commands and activity.
-        '''
-        self.pipe.send_multipart([b'VERBOSE', b'1' if enabled else b'0'])
-
     def configure_plain(self, domain='*', passwords=None):
         '''
         Configure PLAIN authentication for a given domain. PLAIN authentication
@@ -544,7 +512,7 @@ class ThreadedAuthenticator(object):
         '''
         self.pipe.send_multipart([b'CURVE', domain, location])
 
-    def start(self, verbose=False):
+    def start(self):
         '''
         Start performing ZAP authentication
         '''
@@ -552,9 +520,7 @@ class ThreadedAuthenticator(object):
         self.pipe = self.context.socket(zmq.PAIR)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
-
-        self.thread = AuthenticationThread(self.context,
-            self.pipe_endpoint, verbose=verbose)
+        self.thread = AuthenticationThread(self.context, self.pipe_endpoint)
         self.thread.start()
 
     def stop(self):
@@ -582,8 +548,8 @@ class ThreadedAuthenticator(object):
 class IOLoopAuthenticator(Authenticator):
     ''' A security authenticator that is run in an event loop '''
 
-    def __init__(self, context, verbose=False, io_loop=None):
-        super(IOLoopAuthenticator, self).__init__(context, verbose=verbose)
+    def __init__(self, context, io_loop=None):
+        super(IOLoopAuthenticator, self).__init__(context)
         self.zapstream = None
         self.io_loop = io_loop or ioloop.IOLoop.current()
 

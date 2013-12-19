@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
-''' 
+'''
 Allow or deny clients based on IP address.
 
-Strawhouse, which is plain text with filtering on IP addresses. It still 
+Strawhouse, which is plain text with filtering on IP addresses. It still
 uses the NULL mechanism, but we install an authentication hook that checks
-the IP address against a whitelist or blacklist and allows or denies it 
+the IP address against a whitelist or blacklist and allows or denies it
 accordingly.
 
 Author: Chris Laws
 '''
 
-import time
 import zmq
 import zmq.auth
 
@@ -26,7 +25,7 @@ def run(verbose=False):
 
     # Start an authenticator for this context.
     auth = zmq.auth.ThreadedAuthenticator(ctx)
-    auth.start(verbose=verbose)
+    auth.start()
 
     # Part 1 - demonstrate allowing clients based on IP address
     auth.allow('127.0.0.1')
@@ -39,7 +38,7 @@ def run(verbose=False):
     client_allow.connect('tcp://127.0.0.1:9000')
 
     server.send("Hello")
-    
+
     msg = client_allow.recv()
     if msg == "Hello":
         allow_test_pass = True
@@ -54,7 +53,7 @@ def run(verbose=False):
     server.send("Hello")
 
     client_deny = ctx.socket(zmq.PULL)
-    client_deny.connect('tcp://127.0.0.1:9000') 
+    client_deny.connect('tcp://127.0.0.1:9000')
 
     poller = zmq.Poller()
     poller.register(client_deny, zmq.POLLIN)
@@ -88,7 +87,7 @@ if __name__ == '__main__':
         verbose = True
 
     if verbose:
-        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', 
+        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s',
                             level=logging.DEBUG)
 
-    run(verbose)
+    run()
