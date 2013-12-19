@@ -517,7 +517,6 @@ class PollIOLoop(IOLoop):
             for fd in self._handlers.keys():
                 try:
                     close_method = getattr(fd, 'close', None)
-                    print (close_method)
                     if close_method is not None:
                         close_method()
                     else:
