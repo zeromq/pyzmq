@@ -364,16 +364,12 @@ class TestIOLoopAuthentication(TestCase):
         # A default NULL connection should always succeed, and not
         # go through our authentication infrastructure at all.
         self.pullstream.on_recv(self.on_message_succeed)
-
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -388,16 +384,12 @@ class TestIOLoopAuthentication(TestCase):
         self.server.zap_domain = b'global'
         self.pullstream.on_recv(self.on_message_succeed)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -417,16 +409,12 @@ class TestIOLoopAuthentication(TestCase):
         # The test should fail if a msg is received
         self.pullstream.on_recv(self.on_message_fail)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_succeed, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -446,16 +434,12 @@ class TestIOLoopAuthentication(TestCase):
         self.server.setsockopt(zmq.ZAP_DOMAIN, b'global')
         self.pullstream.on_recv(self.on_message_succeed)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -474,16 +458,12 @@ class TestIOLoopAuthentication(TestCase):
         # Try PLAIN authentication - without configuring server, connection should fail
         self.server.plain_server = True
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 100, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_succeed, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -502,16 +482,12 @@ class TestIOLoopAuthentication(TestCase):
         # Try PLAIN authentication - with server configured, connection should pass
         self.server.plain_server = True
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -530,16 +506,12 @@ class TestIOLoopAuthentication(TestCase):
         # Try PLAIN authentication - with server configured, connection should pass
         self.server.plain_server = True
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_succeed, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -565,16 +537,12 @@ class TestIOLoopAuthentication(TestCase):
         self.client.curve_serverkey = server_public
         self.pullstream.on_recv(self.on_message_fail)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_succeed, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -603,16 +571,12 @@ class TestIOLoopAuthentication(TestCase):
         self.client.curve_serverkey = server_public
         self.pullstream.on_recv(self.on_message_succeed)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -643,16 +607,12 @@ class TestIOLoopAuthentication(TestCase):
         self.client.curve_serverkey = server_public
         self.pullstream.on_recv(self.on_message_succeed)
 
-        step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
-        step2 = ioloop.DelayedCallback(self.send_msg, 200, self.io_loop)
-
+        t = self.io_loop.time()
+        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = ioloop.DelayedCallback(self.on_test_timeout_fail, 500, self.io_loop)
-
-        step1.start()
-        step2.start()
-        timeout.start()
+        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
