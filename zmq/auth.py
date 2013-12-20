@@ -564,7 +564,7 @@ class IOLoopAuthenticator(Authenticator):
     def __init__(self, context, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
         self.zapstream = None
-        self.io_loop = io_loop or ioloop.IOLoop.current()
+        self.io_loop = io_loop or ioloop.IOLoop.instance()
 
     def start(self, io_loop=None):
         ''' Run the ZAP authenticator in an event loop '''
