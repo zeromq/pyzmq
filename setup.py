@@ -27,6 +27,7 @@ import copy
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 import errno
@@ -669,7 +670,8 @@ class TestCommand(Command):
     
     def run_nose(self):
         """Run the test suite with nose."""
-        return nose.core.TestProgram(argv=["", '-vv', pjoin(self._dir, 'zmq', 'tests')])
+        if subprocess.call([sys.executable, '-m', 'nose', '-vvx', pjoin(self._dir, 'zmq', 'tests')]):
+            sys.exit(1)
     
     def run_unittest(self):
         """Finds all the tests modules in zmq/tests/ and runs them."""
