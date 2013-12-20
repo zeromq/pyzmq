@@ -27,7 +27,7 @@ def run():
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
     if not (os.path.exists(keys_dir) and os.path.exists(keys_dir) and os.path.exists(keys_dir)):
-        print "Certificates are missing - run generate_certificates script first"
+        print("Certificates are missing - run generate_certificates script first")
         sys.exit(1)
 
     ctx = zmq.Context().instance()
@@ -64,17 +64,14 @@ def run():
     client.curve_serverKey = server_public
     client.connect('tcp://127.0.0.1:9000')
 
-    server.send("Hello")
+    server.send(b"Hello")
 
-    poller = zmq.Poller()
-    poller.register(client, zmq.POLLIN)
-    socks = dict(poller.poll(1000))
-    if client in socks and socks[client] == zmq.POLLIN:
+    if client.poll(1000):
         msg = client.recv()
-        if msg == "Hello":
-            print "Ironhouse test OK"
+        if msg == b"Hello":
+            print("Ironhouse test OK")
     else:
-        print "Ironhouse test FAIL"
+        print("Ironhouse test FAIL")
 
     # stop auth thread
     auth.stop()
@@ -86,12 +83,11 @@ if __name__ == '__main__':
     if zmq.zmq_version_info() < (4,0):
         raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
-    verbose = False
     if '-v' in sys.argv:
-        verbose = True
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
 
-    if verbose:
-        logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s',
-                            level=logging.DEBUG)
+    logging.basicConfig(level=level)
 
     run()

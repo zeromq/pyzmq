@@ -12,9 +12,7 @@ protocol in early 2013. Internally, it uses a security mechanism called
 Author: Chris Laws
 '''
 
-import time
 import zmq
-import zmq.auth
 
 
 ctx = zmq.Context().instance()
@@ -25,7 +23,7 @@ server.bind('tcp://*:9000')
 client = ctx.socket(zmq.PULL)
 client.connect('tcp://127.0.0.1:9000')
 
-server.send("Hello")
+server.send(b"Hello")
 msg = client.recv()
-if msg == "Hello":
-	print "Grasslands test OK"
+if msg == b"Hello":
+    print("Grasslands test OK")
