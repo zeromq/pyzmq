@@ -670,7 +670,8 @@ class TestCommand(Command):
     
     def run_nose(self):
         """Run the test suite with nose."""
-        if subprocess.call([sys.executable, '-m', 'nose', '-vvx', pjoin(self._dir, 'zmq', 'tests')]):
+        nose = 'nose.__main__' if sys.version_info < (2,7) else 'nose'
+        if subprocess.call([sys.executable, '-m', nose, '-vvx', pjoin(self._dir, 'zmq', 'tests')]):
             sys.exit(1)
     
     def run_unittest(self):
