@@ -10,6 +10,9 @@ can capture passwords and then login.
 Author: Chris Laws
 '''
 
+import logging
+import sys
+
 import zmq
 import zmq.auth
 
@@ -68,15 +71,12 @@ def run():
     auth.stop()
 
     if valid_client_test_pass and invalid_client_test_pass:
-        print("Woodhouse test OK")
+        logging.info("Woodhouse test OK")
     else:
-        print("Woodhouse test FAIL")
+        logging.error("Woodhouse test FAIL")
 
 
 if __name__ == '__main__':
-    import logging
-    import sys
-
     if zmq.zmq_version_info() < (4,0):
         raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
@@ -85,6 +85,6 @@ if __name__ == '__main__':
     else:
         level = logging.INFO
 
-    logging.basicConfig(level=level)
+    logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
     run()

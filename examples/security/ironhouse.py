@@ -11,8 +11,11 @@ decrypted).
 Author: Chris Laws
 '''
 
+import logging
 import os
+import sys
 import time
+
 import zmq
 import zmq.auth
 
@@ -27,7 +30,7 @@ def run():
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
     if not (os.path.exists(keys_dir) and os.path.exists(keys_dir) and os.path.exists(keys_dir)):
-        print("Certificates are missing - run generate_certificates script first")
+        logging.critical("Certificates are missing - run generate_certificates script first")
         sys.exit(1)
 
     ctx = zmq.Context().instance()
@@ -69,17 +72,14 @@ def run():
     if client.poll(1000):
         msg = client.recv()
         if msg == b"Hello":
-            print("Ironhouse test OK")
+            logging.info("Ironhouse test OK")
     else:
-        print("Ironhouse test FAIL")
+        logging.error("Ironhouse test FAIL")
 
     # stop auth thread
     auth.stop()
 
 if __name__ == '__main__':
-    import logging
-    import sys
-
     if zmq.zmq_version_info() < (4,0):
         raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
@@ -88,6 +88,6 @@ if __name__ == '__main__':
     else:
         level = logging.INFO
 
-    logging.basicConfig(level=level)
+    logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
     run()
