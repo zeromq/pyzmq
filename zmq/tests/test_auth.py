@@ -27,8 +27,6 @@ class TestThreadedAuthentication(BaseZMQTestCase):
     ''' Test authentication running in a thread '''
 
     def setUp(self):
-        if sys.version_info >= (3,):
-            raise SkipTest("auth doesn't work on Python 3 yet")
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
         super(TestThreadedAuthentication, self).setUp()
@@ -48,15 +46,15 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
-        msg = ["Hello World"]
+        msg = [b"Hello World"]
         server.send_multipart(msg)
         poller = zmq.Poller()
         poller.register(client, zmq.POLLIN)
         socks = dict(poller.poll(100))
         if client in socks and socks[client] == zmq.POLLIN:
             rcvd_msg = client.recv_multipart()
-            result = rcvd_msg == msg
-            self.assertTrue(result)
+            self.assertEqual(rcvd_msg, msg)
+            result = True
         return result
 
     def test_null(self):
@@ -73,7 +71,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         # though no policies are configured yet. The client connection
         # should still be allowed.
         server = self.context.socket(zmq.PUSH)
-        server.zap_domain = 'global'
+        server.zap_domain = b'global'
         client = self.context.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
@@ -89,7 +87,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server = self.context.socket(zmq.PUSH)
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet.
-        server.zap_domain = 'global'
+        server.zap_domain = b'global'
         client = self.context.socket(zmq.PULL)
         self.assertFalse(self.can_connect(server, client))
         client.close()
@@ -100,7 +98,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server = self.context.socket(zmq.PUSH)
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet.
-        server.zap_domain = 'global'
+        server.zap_domain = b'global'
         client = self.context.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
@@ -117,8 +115,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server = self.context.socket(zmq.PUSH)
         server.plain_server = True
         client = self.context.socket(zmq.PULL)
-        client.plain_username = 'admin'
-        client.plain_password = 'Password'
+        client.plain_username = b'admin'
+        client.plain_password = b'Password'
         self.assertFalse(self.can_connect(server, client))
         client.close()
         server.close()
@@ -127,8 +125,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server = self.context.socket(zmq.PUSH)
         server.plain_server = True
         client = self.context.socket(zmq.PULL)
-        client.plain_username = 'admin'
-        client.plain_password = 'Password'
+        client.plain_username = b'admin'
+        client.plain_password = b'Password'
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
         self.assertTrue(self.can_connect(server, client))
         client.close()
@@ -138,8 +136,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server = self.context.socket(zmq.PUSH)
         server.plain_server = True
         client = self.context.socket(zmq.PULL)
-        client.plain_username = 'admin'
-        client.plain_password = 'Bogus'
+        client.plain_username = b'admin'
+        client.plain_password = b'Bogus'
         self.assertFalse(self.can_connect(server, client))
         client.close()
         server.close()
@@ -252,8 +250,6 @@ class TestIOLoopAuthentication(TestCase):
     ''' Test authentication running in ioloop '''
 
     def setUp(self):
-        if sys.version_info >= (3,):
-            raise SkipTest("auth doesn't work on Python 3 yet")
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
 
@@ -389,7 +385,7 @@ class TestIOLoopAuthentication(TestCase):
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet. The client connection
         # should still be allowed.
-        self.server.zap_domain = 'global'
+        self.server.zap_domain = b'global'
         self.pullstream.on_recv(self.on_message_succeed)
 
         step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
@@ -417,7 +413,7 @@ class TestIOLoopAuthentication(TestCase):
         # Blacklist 127.0.0.1, connection should fail
         self.auth.deny('127.0.0.1')
 
-        self.server.zap_domain = 'global'
+        self.server.zap_domain = b'global'
         # The test should fail if a msg is received
         self.pullstream.on_recv(self.on_message_fail)
 
@@ -447,7 +443,7 @@ class TestIOLoopAuthentication(TestCase):
         # Whitelist 127.0.0.1, which overrides the blacklist, connection should pass"
         self.auth.allow('127.0.0.1')
 
-        self.server.setsockopt(zmq.ZAP_DOMAIN, 'global')
+        self.server.setsockopt(zmq.ZAP_DOMAIN, b'global')
         self.pullstream.on_recv(self.on_message_succeed)
 
         step1 = ioloop.DelayedCallback(self.attempt_connection, 100, self.io_loop)
@@ -472,8 +468,8 @@ class TestIOLoopAuthentication(TestCase):
         auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
 
-        self.client.plain_username = 'admin'
-        self.client.plain_password = 'Password'
+        self.client.plain_username = b'admin'
+        self.client.plain_password = b'Password'
         self.pullstream.on_recv(self.on_message_fail)
         # Try PLAIN authentication - without configuring server, connection should fail
         self.server.plain_server = True
@@ -500,8 +496,8 @@ class TestIOLoopAuthentication(TestCase):
         auth.start()
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
 
-        self.client.plain_username = 'admin'
-        self.client.plain_password = 'Password'
+        self.client.plain_username = b'admin'
+        self.client.plain_password = b'Password'
         self.pullstream.on_recv(self.on_message_succeed)
         # Try PLAIN authentication - with server configured, connection should pass
         self.server.plain_server = True
@@ -528,8 +524,8 @@ class TestIOLoopAuthentication(TestCase):
         auth.start()
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
 
-        self.client.plain_username = 'admin'
-        self.client.plain_password = 'Bogus'
+        self.client.plain_username = b'admin'
+        self.client.plain_password = b'Bogus'
         self.pullstream.on_recv(self.on_message_fail)
         # Try PLAIN authentication - with server configured, connection should pass
         self.server.plain_server = True
