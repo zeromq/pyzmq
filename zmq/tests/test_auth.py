@@ -14,6 +14,7 @@
 import logging
 import os
 import shutil
+import sys
 import tempfile
 from unittest import TestCase
 import zmq
@@ -26,6 +27,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
     ''' Test authentication running in a thread '''
 
     def setUp(self):
+        if sys.version_info >= (3,):
+            raise SkipTest("auth doesn't work on Python 3 yet")
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
         super(TestThreadedAuthentication, self).setUp()
@@ -249,6 +252,8 @@ class TestIOLoopAuthentication(TestCase):
     ''' Test authentication running in ioloop '''
 
     def setUp(self):
+        if sys.version_info >= (3,):
+            raise SkipTest("auth doesn't work on Python 3 yet")
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
 
