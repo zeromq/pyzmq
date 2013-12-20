@@ -47,4 +47,3 @@ if __name__ == '__main__':
         raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
     generate_certificates(os.path.dirname(__file__))
-)

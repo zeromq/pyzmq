@@ -39,9 +39,9 @@ class IronhouseClient(object):
 
     def start(self):
         self.socket = self.context.socket(zmq.DEALER)
-        self.socket.curve_secretKey = self.secret
-        self.socket.curve_publicKey = self.public
-        self.socket.curve_serverKey = self.server_public
+        self.socket.curve_secretkey = self.secret
+        self.socket.curve_publickey = self.public
+        self.socket.curve_serverkey = self.server_public
         self.stream = zmqstream.ZMQStream(self.socket, ioloop.IOLoop.instance())
         self.stream.on_recv(self.on_message)
         self.socket.connect('tcp://127.0.0.1:9000')
