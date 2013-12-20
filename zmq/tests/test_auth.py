@@ -33,7 +33,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         # silence auth module debug log output during test runs
         logger = logging.getLogger()
         self.original_log_level = logger.getEffectiveLevel()
-        logger.setLevel(logging.ERROR)
+        logger.setLevel(logging.DEBUG)
 
     def tearDown(self):
         # return log level to previous state
@@ -256,7 +256,7 @@ class TestIOLoopAuthentication(TestCase):
         # silence auth module debug log output during test runs
         logger = logging.getLogger()
         self.original_log_level = logger.getEffectiveLevel()
-        logger.setLevel(logging.ERROR)
+        logger.setLevel(logging.DEBUG)
 
         self.test_result = True
         self.io_loop = ioloop.IOLoop()
@@ -311,7 +311,7 @@ class TestIOLoopAuthentication(TestCase):
     def on_test_timeout_fail(self):
         ''' Test timer expired, indicates test failure '''
         self.test_result = 'Test timed out'
-        if hasattr(self, 'loop') and self.io_loop is not None:
+        if self.io_loop is not None:
             self.io_loop.stop()
 
     def create_certs(self):
