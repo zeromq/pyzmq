@@ -16,3 +16,5 @@ docs/gh-pages
 setup.cfg
 MANIFEST
 .tox
+examples/security/public_keys
+examples/security/private_keys
