@@ -25,19 +25,19 @@ else:
     bytes = str
     basestring = basestring
 
-def cast_bytes(s, encoding='utf8'):
+def cast_bytes(s, encoding='utf8', errors='strict'):
     """cast unicode or bytes to bytes"""
     if isinstance(s, bytes):
         return s
     elif isinstance(s, unicode):
-        return s.encode(encoding)
+        return s.encode(encoding, errors)
     else:
         raise TypeError("Expected unicode or bytes, got %r" % s)
 
-def cast_unicode(s, encoding='utf8'):
+def cast_unicode(s, encoding='utf8', errors='strict'):
     """cast bytes or unicode to unicode"""
     if isinstance(s, bytes):
-        return s.decode(encoding)
+        return s.decode(encoding, errors)
     elif isinstance(s, unicode):
         return s
     else:
