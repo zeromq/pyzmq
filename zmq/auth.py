@@ -140,16 +140,16 @@ class Authenticator(object):
     connections in its context.
 
     Note:
-    - libzmq provides four levels of security: default NULL (which zauth does
-      not see), and authenticated NULL, PLAIN, and CURVE, which zauth can see.
+    - libzmq provides four levels of security: default NULL (which the Authenticator does
+      not see), and authenticated NULL, PLAIN, and CURVE, which the Authenticator can see.
     - until you add policies, all incoming NULL connections are allowed
     (classic ZeroMQ behavior), and all PLAIN and CURVE connections are denied.
     '''
 
-    def __init__(self, context, encoding='utf-8'):
+    def __init__(self, context=None, encoding='utf-8'):
         if zmq.zmq_version_info() < (4,0):
             raise NotImplementedError("Security is only available in libzmq >= 4.0")
-        self.context = context
+        self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
         self.zap_socket = None
@@ -377,7 +377,7 @@ class AuthenticationThread(Thread):
 
     def __init__(self, context, endpoint, encoding='utf-8'):
         super(AuthenticationThread, self).__init__()
-        self.context = context
+        self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.authenticator = Authenticator(context, encoding=encoding)
 
@@ -474,11 +474,11 @@ class ThreadedAuthenticator(object):
     background while our application does other things. This is invisible to
     the caller, who sees a classic API.
 
-    This design is modelled on czmq's zauth module.
+    This design is modeled on czmq's zauth module.
     '''
 
-    def __init__(self, context, encoding='utf-8'):
-        self.context = context
+    def __init__(self, context=None, encoding='utf-8'):
+        self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.pipe = None
         self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
@@ -561,7 +561,7 @@ class ThreadedAuthenticator(object):
 class IOLoopAuthenticator(Authenticator):
     ''' A security authenticator that is run in an event loop '''
 
-    def __init__(self, context, io_loop=None):
+    def __init__(self, context=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
         self.zapstream = None
         self.io_loop = io_loop or ioloop.IOLoop.instance()
