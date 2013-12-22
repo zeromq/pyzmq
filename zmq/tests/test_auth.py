@@ -16,7 +16,7 @@ import os
 import shutil
 import sys
 import tempfile
-from unittest import TestCase
+
 import zmq
 import zmq.auth
 from zmq.eventloop import ioloop, zmqstream
@@ -34,11 +34,14 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         logger = logging.getLogger()
         self.original_log_level = logger.getEffectiveLevel()
         logger.setLevel(logging.DEBUG)
+        self.auth = None
 
     def tearDown(self):
         # return log level to previous state
         logger = logging.getLogger()
         logger.setLevel(self.original_log_level)
+        if self.auth:
+            self.auth.stop()
 
     def can_connect(self, server, client):
         """ Check if client can connect to server using tcp transport """
@@ -48,10 +51,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         client.connect("%s:%i" % (iface, port))
         msg = [b"Hello World"]
         server.send_multipart(msg)
-        poller = zmq.Poller()
-        poller.register(client, zmq.POLLIN)
-        socks = dict(poller.poll(100))
-        if client in socks and socks[client] == zmq.POLLIN:
+        if client.poll(1000):
             rcvd_msg = client.recv_multipart()
             self.assertEqual(rcvd_msg, msg)
             result = True
@@ -61,45 +61,45 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         """test threaded auth - NULL"""
         # A default NULL connection should always succeed, and not
         # go through our authentication infrastructure at all.
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
+        server = self.socket(zmq.PUSH)
+        client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
-        client.close()
         server.close()
+        client.close()
 
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet. The client connection
         # should still be allowed.
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
         server.close()
 
     def test_blacklist_whitelist(self):
         """test threaded auth - Blacklist and Whitelist"""
-        auth = zmq.auth.ThreadedAuthenticator(self.context)
+        self.auth = auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Blacklist 127.0.0.1, connection should fail
         auth.deny('127.0.0.1')
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet.
         server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         self.assertFalse(self.can_connect(server, client))
         client.close()
         server.close()
 
         # Whitelist 127.0.0.1, which overrides the blacklist, connection should pass"
         auth.allow('127.0.0.1')
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet.
         server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
         server.close()
@@ -108,13 +108,13 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
     def test_plain(self):
         """test threaded auth - PLAIN"""
-        auth = zmq.auth.ThreadedAuthenticator(self.context)
+        self.auth = auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Try PLAIN authentication - without configuring server, connection should fail
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.plain_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.plain_username = b'admin'
         client.plain_password = b'Password'
         self.assertFalse(self.can_connect(server, client))
@@ -122,9 +122,9 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server.close()
 
         # Try PLAIN authentication - with server configured, connection should pass
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.plain_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.plain_username = b'admin'
         client.plain_password = b'Password'
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
@@ -133,9 +133,9 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         server.close()
 
         # Try PLAIN authentication - with bogus credentials, connection should fail
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.plain_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.plain_username = b'admin'
         client.plain_password = b'Bogus'
         self.assertFalse(self.can_connect(server, client))
@@ -146,15 +146,15 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         auth.stop()
         del auth
 
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
+        server = self.socket(zmq.PUSH)
+        client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
         server.close()
 
     def test_curve(self):
         """test threaded auth - CURVE"""
-        auth = zmq.auth.ThreadedAuthenticator(self.context)
+        self.auth = auth = zmq.auth.ThreadedAuthenticator(self.context)
         auth.start()
 
         # Create temporary CURVE keypairs for this test run. We create all keys in a
@@ -192,11 +192,11 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         auth.allow('127.0.0.1')
 
         #Try CURVE authentication - without configuring server, connection should fail
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.curve_publickey = server_public
         server.curve_secretkey = server_secret
         server.curve_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
@@ -206,11 +206,11 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
         #Try CURVE authentication - with server configured to CURVE_ALLOW_ANY, connection should pass
         auth.configure_curve(domain='*', location=zmq.auth.CURVE_ALLOW_ANY)
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.curve_publickey = server_public
         server.curve_secretkey = server_secret
         server.curve_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
@@ -220,11 +220,11 @@ class TestThreadedAuthentication(BaseZMQTestCase):
 
         # Try CURVE authentication - with server configured, connection should pass
         auth.configure_curve(domain='*', location=public_keys_dir)
-        server = self.context.socket(zmq.PUSH)
+        server = self.socket(zmq.PUSH)
         server.curve_publickey = server_public
         server.curve_secretkey = server_secret
         server.curve_server = True
-        client = self.context.socket(zmq.PULL)
+        client = self.socket(zmq.PULL)
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
@@ -237,8 +237,8 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         del auth
 
         # Try connecting using NULL and no authentication enabled, connection should pass
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
+        server = self.socket(zmq.PUSH)
+        client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
         client.close()
         server.close()
@@ -246,10 +246,11 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         shutil.rmtree(base_dir)
 
 
-class TestIOLoopAuthentication(TestCase):
+class TestIOLoopAuthentication(BaseZMQTestCase):
     ''' Test authentication running in ioloop '''
 
     def setUp(self):
+        super(TestIOLoopAuthentication, self).setUp()
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
 
@@ -262,8 +263,8 @@ class TestIOLoopAuthentication(TestCase):
         self.io_loop = ioloop.IOLoop()
         self.auth = None
         self.context = zmq.Context()
-        self.server = self.context.socket(zmq.PUSH)
-        self.client = self.context.socket(zmq.PULL)
+        self.server = self.socket(zmq.PUSH)
+        self.client = self.socket(zmq.PULL)
         # Only need slow reconnect intervals for testing.
         self.client.reconnect_ivl = 1000
         self.pushstream = zmqstream.ZMQStream(self.server, self.io_loop)
@@ -274,11 +275,11 @@ class TestIOLoopAuthentication(TestCase):
         if self.auth:
             self.auth.stop()
             self.auth = None
-        self.io_loop.close()
-        self.context.destroy()
+        self.io_loop.close(all_fds=True)
         # return log level to previous state
         logger = logging.getLogger()
         logger.setLevel(self.original_log_level)
+        super(TestIOLoopAuthentication, self).tearDown()
 
     def attempt_connection(self):
         """ Check if client can connect to server using tcp transport """
@@ -365,11 +366,11 @@ class TestIOLoopAuthentication(TestCase):
         # go through our authentication infrastructure at all.
         self.pullstream.on_recv(self.on_message_succeed)
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -385,11 +386,11 @@ class TestIOLoopAuthentication(TestCase):
         self.pullstream.on_recv(self.on_message_succeed)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -399,22 +400,22 @@ class TestIOLoopAuthentication(TestCase):
     def test_blacklist(self):
         """ test ioloop auth - Blacklist"""
 
-        self.auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
-        self.auth.start()
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        auth.start()
 
         # Blacklist 127.0.0.1, connection should fail
-        self.auth.deny('127.0.0.1')
+        auth.deny('127.0.0.1')
 
         self.server.zap_domain = b'global'
         # The test should fail if a msg is received
         self.pullstream.on_recv(self.on_message_fail)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -425,8 +426,8 @@ class TestIOLoopAuthentication(TestCase):
     def test_whitelist(self):
         """ test ioloop auth - Whitelist"""
 
-        self.auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
-        self.auth.start()
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        auth.start()
 
         # Whitelist 127.0.0.1, which overrides the blacklist, connection should pass"
         self.auth.allow('127.0.0.1')
@@ -435,11 +436,11 @@ class TestIOLoopAuthentication(TestCase):
         self.pullstream.on_recv(self.on_message_succeed)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -449,7 +450,7 @@ class TestIOLoopAuthentication(TestCase):
 
     def test_plain_unconfigured_server(self):
         """test ioloop auth - PLAIN, unconfigured server"""
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
 
         self.client.plain_username = b'admin'
@@ -459,11 +460,11 @@ class TestIOLoopAuthentication(TestCase):
         self.server.plain_server = True
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -472,7 +473,7 @@ class TestIOLoopAuthentication(TestCase):
 
     def test_plain_configured_server(self):
         """test ioloop auth - PLAIN, configured server"""
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
 
@@ -483,11 +484,11 @@ class TestIOLoopAuthentication(TestCase):
         self.server.plain_server = True
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -496,7 +497,7 @@ class TestIOLoopAuthentication(TestCase):
 
     def test_plain_bogus_credentials(self):
         """test ioloop auth - PLAIN, bogus credentials"""
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
         auth.configure_plain(domain='*', passwords={'admin': 'Password'})
 
@@ -507,11 +508,11 @@ class TestIOLoopAuthentication(TestCase):
         self.server.plain_server = True
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -524,7 +525,7 @@ class TestIOLoopAuthentication(TestCase):
         certs = self.load_certs(secret_keys_dir)
         server_public, server_secret, client_public, client_secret = certs
 
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
         auth.allow('127.0.0.1')
 
@@ -538,11 +539,11 @@ class TestIOLoopAuthentication(TestCase):
         self.pullstream.on_recv(self.on_message_fail)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_succeed)
 
         self.io_loop.start()
 
@@ -557,7 +558,7 @@ class TestIOLoopAuthentication(TestCase):
         certs = self.load_certs(secret_keys_dir)
         server_public, server_secret, client_public, client_secret = certs
 
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
         auth.allow('127.0.0.1')
         auth.configure_curve(domain='*', location=zmq.auth.CURVE_ALLOW_ANY)
@@ -572,11 +573,11 @@ class TestIOLoopAuthentication(TestCase):
         self.pullstream.on_recv(self.on_message_succeed)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
@@ -588,7 +589,7 @@ class TestIOLoopAuthentication(TestCase):
     def test_curve_configured_server(self):
         """test ioloop auth - CURVE, configured server"""
 
-        auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        self.auth = auth = zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
         auth.start()
         auth.allow('127.0.0.1')
 
@@ -608,11 +609,11 @@ class TestIOLoopAuthentication(TestCase):
         self.pullstream.on_recv(self.on_message_succeed)
 
         t = self.io_loop.time()
-        step1 = self.io_loop.add_timeout(t + .1, self.attempt_connection)
-        step2 = self.io_loop.add_timeout(t + .2, self.send_msg)
+        self.io_loop.add_timeout(t + .1, self.attempt_connection)
+        self.io_loop.add_timeout(t + .2, self.send_msg)
         # Timeout the test so the test case can complete even if no message
         # is received.
-        timeout = self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
+        self.io_loop.add_timeout(t + .5, self.on_test_timeout_fail)
 
         self.io_loop.start()
 
