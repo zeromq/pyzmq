@@ -14,9 +14,8 @@ import os
 import shutil
 import zmq.auth
 
-def generate_certificates():
+def generate_certificates(base_dir):
     ''' Generate client and server CURVE certificate files'''
-    base_dir = os.path.dirname(__file__)
     keys_dir = os.path.join(base_dir, 'certificates')
     public_keys_dir = os.path.join(base_dir, 'public_keys')
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
@@ -47,4 +46,4 @@ if __name__ == '__main__':
     if zmq.zmq_version_info() < (4,0):
         raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
 
-    generate_certificates()
+    generate_certificates(os.path.dirname(__file__))

@@ -16,47 +16,54 @@
 
 import datetime
 import glob
-import json
+import io
 import logging
 import os
 from threading import Thread
 import zmq
-from zmq.utils import z85
+from zmq.utils import z85, jsonapi
+from zmq.utils.strtypes import bytes, unicode, b, u
 from zmq.eventloop import ioloop, zmqstream
 
 
 CURVE_ALLOW_ANY = '*'
 
 
-_cert_secret_banner = """#   ****  Generated on {0} by pyzmq  ****
+_cert_secret_banner = u("""#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE **Secret** Certificate
 #   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
 
-"""
+""")
 
-_cert_public_banner = """#   ****  Generated on {0} by pyzmq  ****
+_cert_public_banner = u("""#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE Public Certificate
 #   Exchange securely, or use a secure mechanism to verify the contents
 #   of this file after exchange. Store public certificates in your home
 #   directory, in the .curve subdirectory.
 
-"""
+""")
 
-def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=None):
+def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=None, encoding='utf-8'):
     """ Create a certificate file """
-    with open(key_filename, 'w') as f:
+    if isinstance(public_key, bytes):
+        public_key = public_key.decode(encoding)
+    if isinstance(secret_key, bytes):
+        secret_key = secret_key.decode(encoding)
+    with io.open(key_filename, 'w', encoding='utf8') as f:
         f.write(banner.format(datetime.datetime.now()))
 
-        f.write('metadata\n')
-        if metadata and isinstance(metadata, dict):
+        f.write(u('metadata\n'))
+        if metadata:
             for k, v in metadata.items():
-                f.write("    {0} = {1}\n".format(k, v))
+                if isinstance(v, bytes):
+                    v = v.decode(encoding)
+                f.write(u("    {0} = {1}\n").format(k, v))
 
-        f.write('curve\n')
-        f.write("    public-key = \"{0}\"\n".format(public_key))
+        f.write(u('curve\n'))
+        f.write(u("    public-key = \"{0}\"\n").format(public_key))
 
         if secret_key:
-            f.write("    secret-key = \"{0}\"\n".format(secret_key))
+            f.write(u("    secret-key = \"{0}\"\n").format(secret_key))
 
 
 def create_certificates(key_dir, name, metadata=None):
@@ -94,17 +101,18 @@ def load_certificate(filename):
     if not os.path.exists(filename):
         raise Exception("Invalid certificate file: {0}".format(filename))
 
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        lines = filter(None, lines)
-        lines = filter(lambda x: not x.startswith('#'), lines)
-        lines = [x.strip() for x in lines]
-        for line in lines:
-            if line.startswith('public-key'):
-                public_key = line.split(" = ")[1].strip().replace('"', '')
-            if line.startswith('secret-key'):
-                secret_key = line.split(" = ")[1].strip().replace('"', '')
-
+    with open(filename, 'rb') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith(b'#'):
+                continue
+            if line.startswith(b'public-key'):
+                public_key = line.split(b"=", 1)[1].strip(b' \t\'"')
+            if line.startswith(b'secret-key'):
+                secret_key = line.split(b"=", 1)[1].strip(b' \t\'"')
+            if public_key and secret_key:
+                break
+    
     return public_key, secret_key
 
 
@@ -132,16 +140,17 @@ class Authenticator(object):
     connections in its context.
 
     Note:
-    - libzmq provides four levels of security: default NULL (which zauth does
-      not see), and authenticated NULL, PLAIN, and CURVE, which zauth can see.
+    - libzmq provides four levels of security: default NULL (which the Authenticator does
+      not see), and authenticated NULL, PLAIN, and CURVE, which the Authenticator can see.
     - until you add policies, all incoming NULL connections are allowed
     (classic ZeroMQ behavior), and all PLAIN and CURVE connections are denied.
     '''
 
-    def __init__(self, context):
+    def __init__(self, context=None, encoding='utf-8'):
         if zmq.zmq_version_info() < (4,0):
             raise NotImplementedError("Security is only available in libzmq >= 4.0")
-        self.context = context
+        self.context = context or zmq.Context.instance()
+        self.encoding = encoding
         self.allow_any = False
         self.zap_socket = None
         self.whitelist = []
@@ -152,7 +161,7 @@ class Authenticator(object):
         # certs is dict keyed by domain and contains values
         # of dicts keyed by the public keys from the specified location.
         self.certs = {}
-
+    
     def start(self):
         ''' Start socket responsible for authenticating ZAP requests '''
         self.zap_socket = self.context.socket(zmq.REP)
@@ -192,7 +201,7 @@ class Authenticator(object):
         uses a plain-text password file. To cover all domains, use "*".
         You can modify the password file at any time; it is reloaded automatically.
         '''
-        if passwords and isinstance(passwords, dict):
+        if passwords:
             self.passwords[domain] = passwords
 
     def configure_curve(self, domain='*', location=None):
@@ -221,6 +230,8 @@ class Authenticator(object):
         Perform ZAP authentication.
         '''
         version, sequence, domain, address, identity, mechanism = msg[:6]
+        domain = u(domain, self.encoding, 'replace')
+        address = u(address, self.encoding, 'replace')
 
         if (version != b"1.0"):
             self._send_zap_reply(sequence, b"400", b"Invalid version")
@@ -264,7 +275,8 @@ class Authenticator(object):
 
             elif mechanism == b'PLAIN':
                 # For PLAIN, even a whitelisted address must authenticate
-                username, password = msg[6:]
+                username = u(msg[6], self.encoding, 'replace')
+                password = u(msg[7], self.encoding, 'replace')
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
             elif mechanism == b'CURVE':
@@ -327,7 +339,7 @@ class Authenticator(object):
                 domain = '*'
 
             if domain in self.certs:
-                # The certs dict stores keys in z85 format, convert binary key to z85 text
+                # The certs dict stores keys in z85 format, convert binary key to z85 bytes
                 z85_client_key = z85.encode(client_key)
                 if z85_client_key in self.certs[domain]:
                     allowed = True
@@ -349,7 +361,7 @@ class Authenticator(object):
         '''
         Send a ZAP reply to the handler socket.
         '''
-        uid = b"{0}".format(os.getuid()) if status_code == 'OK' else b""
+        uid = b"user" if status_code == b'OK' else b""
         metadata = b""  # not currently used
         logging.debug("ZAP reply code={0} text={1}".format(status_code, status_text))
         reply = [b"1.0", sequence, status_code, status_text, uid, metadata]
@@ -363,10 +375,11 @@ class AuthenticationThread(Thread):
     the main thread is over the pipe.
     '''
 
-    def __init__(self, context, endpoint):
+    def __init__(self, context, endpoint, encoding='utf-8'):
         super(AuthenticationThread, self).__init__()
-        self.context = context
-        self.authenticator = Authenticator(context)
+        self.context = context or zmq.Context.instance()
+        self.encoding = encoding
+        self.authenticator = Authenticator(context, encoding=encoding)
 
         # create a socket to communicate back to main thread.
         self.pipe = context.socket(zmq.PAIR)
@@ -421,29 +434,29 @@ class AuthenticationThread(Thread):
         command = msg[0]
         logging.debug("auth received API command {0}".format(command))
 
-        if command == 'ALLOW':
-            address = msg[1]
+        if command == b'ALLOW':
+            address = u(msg[1], self.encoding)
             self.authenticator.allow(address)
 
-        elif command == 'DENY':
-            address = msg[1]
+        elif command == b'DENY':
+            address = u(msg[1], self.encoding)
             self.authenticator.deny(address)
 
-        elif command == 'PLAIN':
-            domain = msg[1]
+        elif command == b'PLAIN':
+            domain = u(msg[1], self.encoding)
             json_passwords = msg[2]
-            self.authenticator.configure_plain(domain, json.loads(json_passwords))
+            self.authenticator.configure_plain(domain, jsonapi.loads(json_passwords))
 
-        elif command == 'CURVE':
+        elif command == b'CURVE':
             # For now we don't do anything with domains
-            domain = msg[1]
+            domain = u(msg[1], self.encoding)
 
             # If location is CURVE_ALLOW_ANY, allow all clients. Otherwise
             # treat location as a directory that holds the certificates.
-            location = msg[2]
+            location = u(msg[2], self.encoding)
             self.authenticator.configure_curve(domain, location)
 
-        elif command == 'TERMINATE':
+        elif command == b'TERMINATE':
             terminate = True
 
         else:
@@ -461,11 +474,12 @@ class ThreadedAuthenticator(object):
     background while our application does other things. This is invisible to
     the caller, who sees a classic API.
 
-    This design is modelled on czmq's zauth module.
+    This design is modeled on czmq's zauth module.
     '''
 
-    def __init__(self, context):
-        self.context = context
+    def __init__(self, context=None, encoding='utf-8'):
+        self.context = context or zmq.Context.instance()
+        self.encoding = encoding
         self.pipe = None
         self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
         self.thread = None
@@ -478,7 +492,7 @@ class ThreadedAuthenticator(object):
         to whitelist multiple IP addresses. If you whitelist a single address,
         any non-whitelisted addresses are treated as blacklisted.
         '''
-        self.pipe.send_multipart([b'ALLOW', address])
+        self.pipe.send_multipart([b'ALLOW', b(address, self.encoding)])
 
     def deny(self, address):
         '''
@@ -487,7 +501,7 @@ class ThreadedAuthenticator(object):
         whitelist, or a blacklist, not not both. If you define both a whitelist
         and a blacklist, only the whitelist takes effect.
         '''
-        self.pipe.send_multipart([b'DENY', address])
+        self.pipe.send_multipart([b'DENY', b(address, self.encoding)])
 
     def configure_plain(self, domain='*', passwords=None):
         '''
@@ -495,12 +509,9 @@ class ThreadedAuthenticator(object):
         uses a plain-text password file. To cover all domains, use "*".
         You can modify the password file at any time; it is reloaded automatically.
         '''
-        if passwords:
-            if isinstance(passwords, dict):
-                passwords = json.dumps(passwords)
-                self.pipe.send_multipart([b'PLAIN', domain, passwords])
+        self.pipe.send_multipart([b'PLAIN', b(domain, self.encoding), jsonapi.dumps(passwords or {})])
 
-    def configure_curve(self, domain='*', location=None):
+    def configure_curve(self, domain='*', location=''):
         '''
         Configure CURVE authentication for a given domain. CURVE authentication
         uses a directory that holds all public client certificates, i.e. their
@@ -510,6 +521,8 @@ class ThreadedAuthenticator(object):
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for
         the location.
         '''
+        domain = b(domain, self.encoding)
+        location = b(location, self.encoding)
         self.pipe.send_multipart([b'CURVE', domain, location])
 
     def start(self):
@@ -520,7 +533,7 @@ class ThreadedAuthenticator(object):
         self.pipe = self.context.socket(zmq.PAIR)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
-        self.thread = AuthenticationThread(self.context, self.pipe_endpoint)
+        self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding)
         self.thread.start()
 
     def stop(self):
@@ -548,10 +561,10 @@ class ThreadedAuthenticator(object):
 class IOLoopAuthenticator(Authenticator):
     ''' A security authenticator that is run in an event loop '''
 
-    def __init__(self, context, io_loop=None):
+    def __init__(self, context=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
         self.zapstream = None
-        self.io_loop = io_loop or ioloop.IOLoop.current()
+        self.io_loop = io_loop or ioloop.IOLoop.instance()
 
     def start(self, io_loop=None):
         ''' Run the ZAP authenticator in an event loop '''

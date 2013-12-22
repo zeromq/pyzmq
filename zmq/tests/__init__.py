@@ -85,6 +85,11 @@ class BaseZMQTestCase(TestCase):
         else:
             return zmq.Context
     
+    def socket(self, socket_type):
+        s = self.context.socket(socket_type)
+        self.sockets.append(s)
+        return s
+    
     def setUp(self):
         if self.green and not have_gevent:
                 raise SkipTest("requires gevent")
