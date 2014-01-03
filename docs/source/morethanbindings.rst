@@ -72,7 +72,7 @@ behave just as you would expect:
 Default Options on the Context
 ******************************
 
-.. versionadded:: 2.1.12
+.. versionadded:: 2.1.11
 
 Just like setting socket options as attributes on Sockets, you can do the same on Contexts.
 This affects the default options of any *new* sockets created after the assignment.
