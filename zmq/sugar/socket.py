@@ -270,7 +270,7 @@ class Socket(SocketBase, AttributeSetter):
     
         return parts
 
-    def send_string(self, u, flags=0, copy=False, encoding='utf-8'):
+    def send_string(self, u, flags=0, copy=True, encoding='utf-8'):
         """send a Python unicode string as a message with an encoding
     
         0MQ communicates with raw bytes, so you must encode/decode
