@@ -32,7 +32,8 @@ cdef class Context:
     cdef size_t _max_sockets     # the size of the _sockets array
     cdef int _pid               # the pid of the process which created me (for fork safety)
 
-    cdef public object closed   # bool property for a closed context.
+    cdef public bint closed   # bool property for a closed context.
+    cdef inline int _term(self)
     # helpers for events on _sockets in Socket.__cinit__()/close()
     cdef inline void _add_socket(self, void* handle)
     cdef inline void _remove_socket(self, void* handle)

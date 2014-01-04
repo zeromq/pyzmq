@@ -95,15 +95,9 @@ cdef class Context:
             self._sockets = NULL
             self._n_sockets = 0
 
-        # copy of self.term() we can't call object methods in dealloc as it
+        # we can't call object methods in dealloc as it
         # might already be partially deleted
-        if self.handle != NULL and not self.closed and getpid() == self._pid:
-            with nogil:
-                rc = zmq_ctx_destroy(self.handle)
-            _check_rc(rc)
-            self.handle = NULL
-            self.closed = True
-
+        self._term()
     
     cdef inline void _add_socket(self, void* handle):
         """Add a socket handle to be closed when Context terminates.
@@ -144,6 +138,14 @@ cdef class Context:
     def _handle(self):
         return <Py_ssize_t> self.handle
     
+    cdef inline int _term(self):
+        cdef int rc=0
+        if self.handle != NULL and not self.closed and getpid() == self._pid:
+            with nogil:
+                rc = zmq_ctx_destroy(self.handle)
+        self.handle = NULL
+        return rc
+    
     def term(self):
         """ctx.term()
 
@@ -153,14 +155,8 @@ cdef class Context:
         the context will automatically be closed when it is garbage collected.
         """
         cdef int rc
-        cdef int i=-1
-
-        if self.handle != NULL and not self.closed and getpid() == self._pid:
-            with nogil:
-                rc = zmq_ctx_destroy(self.handle)
-            _check_rc(rc)
-            self.handle = NULL
-            self.closed = True
+        rc = self._cterm()
+        self.closed = True
     
     def set(self, int option, optval):
         """ctx.set(option, optval)

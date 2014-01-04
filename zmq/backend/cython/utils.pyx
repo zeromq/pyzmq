@@ -78,7 +78,7 @@ cdef class Stopwatch:
         if self.watch == NULL:
             self.watch = zmq_stopwatch_start()
         else:
-            raise ZMQError('Stopwatch is already runing.')
+            raise ZMQError('Stopwatch is already running.')
 
     def stop(self):
         """s.stop()
