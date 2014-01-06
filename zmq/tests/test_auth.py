@@ -42,6 +42,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         logger.setLevel(self.original_log_level)
         if self.auth:
             self.auth.stop()
+        super(TestThreadedAuthentication, self).tearDown()
 
     def can_connect(self, server, client):
         """ Check if client can connect to server using tcp transport """
@@ -262,7 +263,6 @@ class TestIOLoopAuthentication(BaseZMQTestCase):
         self.test_result = True
         self.io_loop = ioloop.IOLoop()
         self.auth = None
-        self.context = self.Context()
         self.server = self.socket(zmq.PUSH)
         self.client = self.socket(zmq.PULL)
         # Only need slow reconnect intervals for testing.
