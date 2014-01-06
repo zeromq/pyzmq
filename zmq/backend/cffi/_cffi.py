@@ -43,7 +43,7 @@ const char * zmq_strerror(int errnum);
 void* zmq_stopwatch_start(void);
 unsigned long zmq_stopwatch_stop(void *watch);
 void zmq_sleep(int seconds_);
-int zmq_device(int device, const void *frontend, const void *backend);
+int zmq_device(int device, void *frontend, void *backend);
 '''
 
 core32_functions = \
@@ -53,7 +53,7 @@ int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();
 int zmq_ctx_destroy(void *context);
 int zmq_ctx_set(void *context, int opt, int optval);
-int zmq_proxy(const void *frontend, const void *backend, const void *capture);
+int zmq_proxy(void *frontend, void *backend, void *capture);
 int zmq_socket_monitor(void *socket, const char *addr, int events);
 '''
 
