@@ -213,6 +213,16 @@ class TestContext(BaseZMQTestCase):
         ctx.destroy()
         assert s.closed
         assert ctx.closed
+    
+    def test_ctx_opts(self):
+        if zmq.zmq_version_info() < (3,):
+            raise SkipTest("context options require libzmq 3")
+        ctx = self.Context()
+        ctx.set(zmq.MAX_SOCKETS, 2)
+        self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 2)
+        ctx.max_sockets = 100
+        self.assertEqual(ctx.max_sockets, 100)
+        self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 100)
 
 
 if False: # disable green context tests
