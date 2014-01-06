@@ -155,7 +155,7 @@ cdef class Context:
         the context will automatically be closed when it is garbage collected.
         """
         cdef int rc
-        rc = self._cterm()
+        rc = self._term()
         self.closed = True
     
     def set(self, int option, optval):
