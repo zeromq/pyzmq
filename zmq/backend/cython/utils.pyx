@@ -64,10 +64,11 @@ cdef class Stopwatch:
         self.watch = NULL
 
     def __dealloc__(self):
-        try:
-            self.stop()
-        except ZMQError:
-            pass
+        # copy of self.stop() we can't call object methods in dealloc as it
+        # might already be partially deleted
+        if self.watch:
+            zmq_stopwatch_stop(self.watch)
+            self.watch = NULL
 
     def start(self):
         """s.start()
