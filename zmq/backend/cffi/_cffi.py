@@ -232,7 +232,7 @@ value_int64_pointer = lambda val: (ffi.new('int64_t*', val),
                                    ffi.sizeof('int64_t'))
 value_int_pointer = lambda val: (ffi.new('int*', val),
                                  ffi.sizeof('int'))
-value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length), val),
+value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length + 1), val),
                                          ffi.sizeof('char') * length)
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
