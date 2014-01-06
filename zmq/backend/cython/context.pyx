@@ -94,7 +94,16 @@ cdef class Context:
             free(self._sockets)
             self._sockets = NULL
             self._n_sockets = 0
-        self.term()
+
+        # copy of self.term() we can't call object methods in dealloc as it
+        # might already be partially deleted
+        if self.handle != NULL and not self.closed and getpid() == self._pid:
+            with nogil:
+                rc = zmq_ctx_destroy(self.handle)
+            _check_rc(rc)
+            self.handle = NULL
+            self.closed = True
+
     
     cdef inline void _add_socket(self, void* handle):
         """Add a socket handle to be closed when Context terminates.
