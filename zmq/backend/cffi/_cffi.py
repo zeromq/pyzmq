@@ -52,6 +52,7 @@ int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();
 int zmq_ctx_destroy(void *context);
+int zmq_ctx_get(void *context, int opt);
 int zmq_ctx_set(void *context, int opt, int optval);
 int zmq_proxy(void *frontend, void *backend, void *capture);
 int zmq_socket_monitor(void *socket, const char *addr, int events);

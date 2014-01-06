@@ -17,7 +17,7 @@ from ._cffi import C, ffi
 from .socket import *
 from .constants import *
 
-from zmq.error import ZMQError
+from zmq.error import ZMQError, _check_rc
 
 class Context(object):
     _zmq_ctx = None
@@ -48,6 +48,23 @@ class Context(object):
     def _rm_socket(self, ref):
         if ref in self._sockets:
             self._sockets.remove(ref)
+
+    def set(self, option, value):
+        """set a context option
+        
+        see zmq_ctx_set
+        """
+        rc = C.zmq_ctx_set(self._zmq_ctx, option, value)
+        _check_rc(rc)
+
+    def get(self, option):
+        """get context option
+        
+        see zmq_ctx_get
+        """
+        rc = C.zmq_ctx_get(self._zmq_ctx, option)
+        _check_rc(rc)
+        return rc
 
     def term(self, linger=None):
         if self.closed:
