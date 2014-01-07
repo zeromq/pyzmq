@@ -63,37 +63,9 @@ core40_functions = \
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 '''
 
-message_functions = \
-'''
-typedef struct {
-    void *content;
-    unsigned char flags;
-    unsigned char vsm_size;
-    unsigned char vsm_data [30];
-} zmq_msg_t;
-
-typedef ... zmq_free_fn;
-
-int zmq_msg_init(zmq_msg_t *msg);
-int zmq_msg_init_size(zmq_msg_t *msg, size_t size);
-int zmq_msg_init_data(zmq_msg_t *msg,
-                      void *data,
-                      size_t size,
-                      zmq_free_fn *ffn,
-                      void *hint);
-
-size_t zmq_msg_size(zmq_msg_t *msg);
-void *zmq_msg_data(zmq_msg_t *msg);
-int zmq_msg_close(zmq_msg_t *msg);
-
-int zmq_sendbuf(void *socket, zmq_msg_t *msg, int flags);
-int zmq_recvbuf(void *socket, zmq_msg_t *msg, int flags);
-
-'''
-
 message32_functions = \
 '''
-typedef struct {unsigned char _ [32];} zmq_msg_t;
+typedef struct { ...; } zmq_msg_t;
 typedef ... zmq_free_fn;
 
 int zmq_msg_init(zmq_msg_t *msg);
