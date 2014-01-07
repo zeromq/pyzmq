@@ -11,23 +11,20 @@ class IOLoop(RealIOLoop):
             impl = _poll()
         super(IOLoop, self).__init__(impl=impl)
 
-    # these methods are copied verbatim from the real IOLoop
     @staticmethod
     def instance():
-        if not hasattr(IOLoop, "_instance"):
-            with IOLoop._instance_lock:
-                if not hasattr(IOLoop, "_instance"):
-                    # New instance after double check
-                    IOLoop._instance = IOLoop()
-        return IOLoop._instance
+        """Returns a global `IOLoop` instance.
+        
+        Most applications have a single, global `IOLoop` running on the
+        main thread.  Use this method to get this instance from
+        another thread.  To get the current thread's `IOLoop`, use `current()`.
+        """
+        # install this class as the active IOLoop implementation
+        # when using tornado 3
+        if tornado_version >= (3,):
+            PollIOLoop.configure(IOLoop)
+        return PollIOLoop.instance()
 
-    @staticmethod
-    def initialized():
-        return hasattr(IOLoop, "_instance")
-
-    def install(self):
-        assert not IOLoop.initialized()
-        IOLoop._instance = self
 
 class ZMQPoller(RealZMQPoller):
     """gevent-compatible version of ioloop.ZMQPoller"""
