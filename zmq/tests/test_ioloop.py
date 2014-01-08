@@ -19,6 +19,10 @@ import zmq
 from zmq.tests import BaseZMQTestCase
 from zmq.eventloop import ioloop
 from zmq.eventloop.minitornado.ioloop import _Timeout
+try:
+    from tornado.ioloop import IOLoop as BaseIOLoop
+except ImportError:
+    from zmq.eventloop.minitornado.ioloop import IOLoop as BaseIOLoop
 
 
 #-----------------------------------------------------------------------------
@@ -101,6 +105,8 @@ class TestIOLoop(BaseZMQTestCase):
     def test_instance(self):
         """Test IOLoop.instance returns the right object"""
         loop = ioloop.IOLoop.instance()
+        self.assertEqual(loop.__class__, ioloop.IOLoop)
+        loop = BaseIOLoop.instance()
         self.assertEqual(loop.__class__, ioloop.IOLoop)
     
     def test_close_all(self):
