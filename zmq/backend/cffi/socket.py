@@ -137,31 +137,31 @@ class Socket(object):
                 raise TypeError("not a bytes sockopt: %s" % option)
             length = len(value)
         
-        low_level_data = initialize_opt_pointer(option, value, length)
+        c_data = initialize_opt_pointer(option, value, length)
 
-        low_level_value_pointer = low_level_data[0]
-        low_level_sizet = low_level_data[1]
+        c_value_pointer = c_data[0]
+        c_sizet = c_data[1]
 
         rc = C.zmq_setsockopt(self._zmq_socket,
                                option,
-                               ffi.cast('void*', low_level_value_pointer),
-                               low_level_sizet)
+                               ffi.cast('void*', c_value_pointer),
+                               c_sizet)
         _check_rc(rc)
 
     def get(self, option):
-        low_level_data = new_pointer_from_opt(option, length=255)
+        c_data = new_pointer_from_opt(option, length=255)
 
-        low_level_value_pointer = low_level_data[0]
-        low_level_sizet_pointer = low_level_data[1]
+        c_value_pointer = c_data[0]
+        c_sizet_pointer = c_data[1]
 
         rc = C.zmq_getsockopt(self._zmq_socket,
                                option,
-                               low_level_value_pointer,
-                               low_level_sizet_pointer)
+                               c_value_pointer,
+                               c_sizet_pointer)
         _check_rc(rc)
         
-        sz = low_level_sizet_pointer[0]
-        v = value_from_opt_pointer(option, low_level_value_pointer, sz)
+        sz = c_sizet_pointer[0]
+        v = value_from_opt_pointer(option, c_value_pointer, sz)
         if option != zmq.IDENTITY and option in zmq.constants.bytes_sockopts and v.endswith(b'\0'):
             v = v[:-1]
         return v

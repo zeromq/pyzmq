@@ -52,6 +52,7 @@ int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();
 int zmq_ctx_destroy(void *context);
+int zmq_ctx_get(void *context, int opt);
 int zmq_ctx_set(void *context, int opt, int optval);
 int zmq_proxy(void *frontend, void *backend, void *capture);
 int zmq_socket_monitor(void *socket, const char *addr, int events);
@@ -62,37 +63,9 @@ core40_functions = \
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 '''
 
-message_functions = \
-'''
-typedef struct {
-    void *content;
-    unsigned char flags;
-    unsigned char vsm_size;
-    unsigned char vsm_data [30];
-} zmq_msg_t;
-
-typedef ... zmq_free_fn;
-
-int zmq_msg_init(zmq_msg_t *msg);
-int zmq_msg_init_size(zmq_msg_t *msg, size_t size);
-int zmq_msg_init_data(zmq_msg_t *msg,
-                      void *data,
-                      size_t size,
-                      zmq_free_fn *ffn,
-                      void *hint);
-
-size_t zmq_msg_size(zmq_msg_t *msg);
-void *zmq_msg_data(zmq_msg_t *msg);
-int zmq_msg_close(zmq_msg_t *msg);
-
-int zmq_sendbuf(void *socket, zmq_msg_t *msg, int flags);
-int zmq_recvbuf(void *socket, zmq_msg_t *msg, int flags);
-
-'''
-
 message32_functions = \
 '''
-typedef struct {unsigned char _ [32];} zmq_msg_t;
+typedef struct { ...; } zmq_msg_t;
 typedef ... zmq_free_fn;
 
 int zmq_msg_init(zmq_msg_t *msg);
@@ -231,7 +204,7 @@ value_int64_pointer = lambda val: (ffi.new('int64_t*', val),
                                    ffi.sizeof('int64_t'))
 value_int_pointer = lambda val: (ffi.new('int*', val),
                                  ffi.sizeof('int'))
-value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length), val),
+value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length + 1), val),
                                          ffi.sizeof('char') * length)
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()

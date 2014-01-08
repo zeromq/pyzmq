@@ -39,7 +39,7 @@ class TestSecurity(BaseZMQTestCase):
         socket.bind("inproc://zeromq.zap.01")
         try:
             msg = self.recv_multipart(socket)
-            
+
             version, sequence, domain, address, identity, mechanism = msg[:6]
             if mechanism == b'PLAIN':
                 username, password = msg[6:]
@@ -87,9 +87,8 @@ class TestSecurity(BaseZMQTestCase):
     
     def test_null(self):
         """test NULL (default) security"""
-        server = self.context.socket(zmq.DEALER)
-        client = self.context.socket(zmq.DEALER)
-        self.sockets.extend([server, client])
+        server = self.socket(zmq.DEALER)
+        client = self.socket(zmq.DEALER)
         self.assertEqual(client.MECHANISM, zmq.NULL)
         self.assertEqual(server.mechanism, zmq.NULL)
         self.assertEqual(client.plain_server, 0)
@@ -101,10 +100,9 @@ class TestSecurity(BaseZMQTestCase):
 
     def test_plain(self):
         """test PLAIN authentication"""
-        server = self.context.socket(zmq.DEALER)
+        server = self.socket(zmq.DEALER)
         server.identity = b'IDENT'
-        client = self.context.socket(zmq.DEALER)
-        self.sockets.extend([server, client])
+        client = self.socket(zmq.DEALER)
         self.assertEqual(client.plain_username, b'')
         self.assertEqual(client.plain_password, b'')
         client.plain_username = USER
@@ -130,9 +128,9 @@ class TestSecurity(BaseZMQTestCase):
 
     def skip_plain_inauth(self):
         """test PLAIN failed authentication"""
-        server = self.context.socket(zmq.DEALER)
+        server = self.socket(zmq.DEALER)
         server.identity = b'IDENT'
-        client = self.context.socket(zmq.DEALER)
+        client = self.socket(zmq.DEALER)
         self.sockets.extend([server, client])
         client.plain_username = USER
         client.plain_password = b'incorrect'
@@ -172,10 +170,9 @@ class TestSecurity(BaseZMQTestCase):
     
     def test_curve(self):
         """test CURVE encryption"""
-        
-        server = self.context.socket(zmq.DEALER)
+        server = self.socket(zmq.DEALER)
         server.identity = b'IDENT'
-        client = self.context.socket(zmq.DEALER)
+        client = self.socket(zmq.DEALER)
         self.sockets.extend([server, client])
         try:
             server.curve_server = True
@@ -188,6 +185,7 @@ class TestSecurity(BaseZMQTestCase):
         client_public, client_secret = zmq.curve_keypair()
         
         server.curve_secretkey = server_secret
+        server.curve_publickey = server_public
         client.curve_serverkey = server_public
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
