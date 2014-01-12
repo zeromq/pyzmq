@@ -153,8 +153,8 @@ class Authenticator(object):
         self.encoding = encoding
         self.allow_any = False
         self.zap_socket = None
-        self.whitelist = []
-        self.blacklist = []
+        self.whitelist = set()
+        self.blacklist = set()
         # passwords is a dict keyed by domain and contains values
         # of dicts with username:password pairs.
         self.passwords = {}
@@ -182,8 +182,7 @@ class Authenticator(object):
         to whitelist multiple IP addresses. If you whitelist a single address,
         any non-whitelisted addresses are treated as blacklisted.
         '''
-        if address not in self.whitelist:
-            self.whitelist.append(address)
+        self.whitelist.add(address)
 
     def deny(self, address):
         '''
@@ -192,8 +191,7 @@ class Authenticator(object):
         whitelist, or a blacklist, not not both. If you define both a whitelist
         and a blacklist, only the whitelist takes effect.
         '''
-        if address not in self.blacklist:
-            self.blacklist.append(address)
+        self.blacklist.add(address)
 
     def configure_plain(self, domain='*', passwords=None):
         '''
