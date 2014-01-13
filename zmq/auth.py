@@ -510,13 +510,7 @@ class ThreadedAuthenticator(object):
         uses a plain-text password file. To cover all domains, use "*".
         You can modify the password file at any time; it is reloaded automatically.
         '''
-        if sys.platform != 'cli':
-            self.pipe.send_multipart([b'PLAIN', b(domain, self.encoding),
-                jsonapi.dumps(passwords or {})])
-        else:
-            self.pipe.send_multipart([b'PLAIN', b(domain, self.encoding),
-                bytes(jsonapi.dumps(passwords or {}), 'iso-8859-1')])
-
+        self.pipe.send_multipart([b'PLAIN', b(domain, self.encoding), jsonapi.dumps(passwords or {})])
 
     def configure_curve(self, domain='*', location=''):
         '''

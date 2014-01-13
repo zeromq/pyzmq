@@ -379,10 +379,7 @@ class Socket(SocketBase, AttributeSetter):
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = jsonapi.dumps(obj)
-            if sys.platform != 'cli':
-                return self.send(msg, flags)
-            else:
-                return self.send(bytes(msg, "iso-8859-1"), flags)
+            return self.send(msg, flags)
 
     def recv_json(self, flags=0):
         """receive a Python object as a message using json to serialize
