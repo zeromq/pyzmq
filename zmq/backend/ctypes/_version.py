@@ -26,9 +26,9 @@ __zmq_version__ = tuple((x.value for x in (_major, _minor, _patch)))
 def zmq_version_info():
     return __zmq_version__
 
-if __zmq_version__ < (4,0,0):
-    raise ImportError("PyZMQ IronPython backend requires zeromq >= 4.0.0,"
-        " but found %i.%i.%i" % _version_info
+if __zmq_version__ < (3,2,2):
+    raise ImportError("PyZMQ IronPython backend requires zeromq >= 3.2.2,"
+        " but found %i.%i.%i" % __zmq_version__
     )
 
 __all__ = ['zmq_version_info']

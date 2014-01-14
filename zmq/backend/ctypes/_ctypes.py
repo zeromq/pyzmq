@@ -39,8 +39,12 @@ libzmq.zmq_close.restype = c_int
 libzmq.zmq_close.argtypes = [c_void_p]
 libzmq.zmq_connect.restype = c_int
 libzmq.zmq_connect.argtypes = [c_void_p, c_char_p]
-libzmq.zmq_curve_keypair.restype = c_int
-libzmq.zmq_curve_keypair.argtypes = [c_void_p, c_char_p]
+try:
+    libzmq.zmq_curve_keypair.restype = c_int
+    libzmq.zmq_curve_keypair.argtypes = [c_void_p, c_char_p]
+except AttributeError:
+    # new in 4.x
+    pass
 
 libzmq.zmq_ctx_destroy.restype = c_int
 libzmq.zmq_ctx_destroy.argtypes = [c_void_p]
@@ -50,8 +54,12 @@ libzmq.zmq_ctx_new.restype = c_void_p
 libzmq.zmq_ctx_new.argtypes = None
 libzmq.zmq_ctx_set.restype = c_int
 libzmq.zmq_ctx_set.argtypes = [c_void_p, c_int, c_int]
-libzmq.zmq_ctx_term.restype = c_int
-libzmq.zmq_ctx_term.argtypes = [c_void_p ]
+try:
+    libzmq.zmq_ctx_term.restype = c_int
+    libzmq.zmq_ctx_term.argtypes = [c_void_p ]
+except AttributeError:
+    # new in 4.x
+    pass
 
 libzmq.zmq_disconnect.restype = c_int
 libzmq.zmq_disconnect.argtypes = [c_void_p, c_char_p]
