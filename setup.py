@@ -88,7 +88,7 @@ target_zmq = bundled_version
 dev_zmq = (4,1,0)
 
 # set dylib ext:
-if sys.platform.startswith('win'):
+if sys.platform.startswith('win') or sys.platform == 'cli':
     lib_ext = '.dll'
 elif sys.platform == 'darwin':
     lib_ext = '.dylib'
@@ -561,6 +561,7 @@ class Configure(build_ext):
         if 'PyPy' in sys.version:
             info("PyPy: Nothing to configure")
             return
+
         if 'cli' == sys.platform:
             info("IronPython: Nothing to configure")
             return
@@ -853,7 +854,10 @@ class CheckingBuildExt(build_ext):
     def run(self):
         # check version, to prevent confusing undefined constant errors
         self.distribution.run_command('configure')
-        build_ext.run(self)
+        if sys.platform == 'cli':
+            info("Ironpython, does not support building of extensions")
+        else:
+            build_ext.run(self)
 
 
 class ConstantsCommand(Command):
@@ -872,13 +876,128 @@ class ConstantsCommand(Command):
         from buildutils.constants import render_constants
         render_constants()
 
+
+from distutils.command.build_py import build_py
+class BuildPy(build_py):
+
+    user_options = build_py.user_options + [
+        ('bin-only-zmq=', None, "location of the binary only libzmq"),
+        ('vs-version', None, "desired version of visual studio, default(2012)"),
+    ]
+
+    def __init__(self, dist):
+        build_py.__init__(self, dist)
+
+    def initialize_options(self):
+        build_py.initialize_options(self)
+        self.bin_only_zmq = None
+        self.vs_version = 'v110'
+
+    def finalize_options(self):
+        build_py.finalize_options(self)
+        self.vs_version = BuildPy.validate_and_map_vs_version(self.vs_version)
+
+    def run(self):
+        if sys.platform == 'cli':
+            self.generate_sources()
+        build_py.run(self)
+
+    def generate_sources(self):
+        if self.bin_only_zmq:
+            zmq_path = self.bin_only_zmq
+            if not os.path.exists(zmq_path):
+                fatal('\n    Sected zmq location does not exist: %s' % self.bin_only_zmq)
+                sys.exit(1)
+        else:
+            zmq_path = BuildPy.locate_installed_zmq_win()
+            if zmq_path == None:
+                fatal('\n    '.join(["Could not find installed zmq!"]))
+                sys.exit(1)
+
+        # copy selected dll to zmq
+        dll = self.pick_dll(pjoin(zmq_path, 'bin'), self.vs_version)
+        info('Using zmqlib found at: %s' % dll)
+        shutil.copy(dll, pjoin('zmq', 'libzmq.dll'))
+        # library is only picked up when already present
+        # add to the list of the data file, watch out for duplicate
+        for package in self.data_files:
+            if package[0] != 'zmq':
+                continue
+            if 'libzmq.dll' not in package[3]:
+                package[3].append('libzmq.dll')
+
+        # generate ZMQ.h
+        from buildutils.h2py import main
+        from StringIO import StringIO
+        log = StringIO()
+        header_file = pjoin(zmq_path, 'include', 'zmq.h')
+        main(["-o", "zmq/backend/iron_ctypes", header_file], log=log)
+        info(log.getvalue())
+        log.close()
+        # generated file is picked up without intervention
+
+    def pick_dll(self, path, vs_version):
+        pattern = pjoin(path, 'libzmq-%s*.dll' % vs_version)
+        candidates = glob(pattern)
+        for candidate in list(candidates):
+            if -1 != candidate.find('gd'):
+                candidates.remove(candidate)
+
+        if len(candidates) == 1:
+            return candidates[0]
+        if len(candidates) == 0:
+            fatal('\n    Unable to locate library %s' % pattern)
+            sys.exit(1)
+
+        # assume not xp, ironpython platform.win32_ver is broken
+        for candidate in list(candidates):
+            if -1 != candidate.find('xp'):
+                candidates.remove(candidate)
+        if len(candidates) == 1:
+            return candidates[0]
+
+        # more than one
+        fatal('\n    '.join(['Unable to narrow down to one library candidates are:'] + candidates ))
+        sys.exit(1)
+
+    @staticmethod
+    def validate_and_map_vs_version(vs_version):
+        vs_version_map = { '2008':'v90', '2010':'v100', '2012':'v110', '2013':'v120',
+                           'v90' :'v90', 'v100':'v100', 'v110':'v110', 'v120':'v120' }
+        version = vs_version_map.get(vs_version, None)
+        if version == None:
+            fatal('\n    Unable to recognize visual studio version: %s' % vs_version)
+            sys.exit(1)
+        return version
+
+    @staticmethod
+    def locate_installed_zmq_win():
+        from Microsoft.Win32 import Registry
+
+        installed = None
+        miru = Registry.LocalMachine.OpenSubKey(r"SOFTWARE\Miru")
+        for name in miru.GetSubKeyNames():
+            versions = []
+            if name.lower().startswith('zeromq'):
+                versions.append(name)
+
+            versions.sort()
+            selected = versions[-1]
+            product = miru.OpenSubKey(selected)
+            path = product.GetValue(None)
+            product.Close()
+        miru.Close()
+        return path
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
 
+
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
             'configure': Configure, 'fetch_libzmq': FetchCommand,
             'sdist': CheckSDist, 'constants': ConstantsCommand,
+            'build_py' : BuildPy,
         }
 
 def makename(path, ext):
