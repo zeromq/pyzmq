@@ -11,13 +11,18 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 from ctypes import *
 
 size_t = c_size_t
 
-libzmq = windll.libzmq
+try:
+    libzmq = windll.libzmq
+except OSError:
+    import sys
+    print("Failed to load libzmq.dll")
+    sys.exit(1)
 
 class zmq_msg_t(Structure):
      _fields_ = [ ('x', c_ubyte*32) ]
