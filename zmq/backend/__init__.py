@@ -22,7 +22,7 @@ if sys.platform != 'cli':
     except ImportError:
         _ns = select_backend('zmq.backend.cffi')
 else:
-    _ns = select_backend('zmq.backend.iron_ctypes')
+    _ns = select_backend('zmq.backend.ctypes')
 del sys
 globals().update(_ns)
 

@@ -931,7 +931,7 @@ class BuildPy(build_py):
         from StringIO import StringIO
         log = StringIO()
         header_file = pjoin(zmq_path, 'include', 'zmq.h')
-        main(["-o", "zmq/backend/iron_ctypes", header_file], log=log)
+        main(["-o", "zmq/backend/ctypes", header_file], log=log)
         info(log.getvalue())
         log.close()
         # generated file is picked up without intervention

@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------------
 
 import zmq
-from _iron_ctypes import libzmq
+from _ctypes import libzmq
 
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 

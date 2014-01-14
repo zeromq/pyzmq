@@ -12,7 +12,7 @@
 
 import weakref
 
-from ._iron_ctypes import libzmq
+from ._ctypes import libzmq
 
 from .socket import *
 from .constants import *

@@ -11,6 +11,8 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+from __future__ import absolute_import
+
 from ctypes import *
 
 size_t = c_size_t

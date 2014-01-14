@@ -18,7 +18,7 @@ import errno as errno_mod
 
 from .message import Frame
 from .constants import *
-from ._iron_ctypes import libzmq, zmq_msg_t, EMPTY_STRING
+from ._ctypes import libzmq, zmq_msg_t, EMPTY_STRING
 
 import zmq
 from zmq.error import ZMQError, _check_rc

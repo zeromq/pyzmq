@@ -9,8 +9,8 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from zmq.backend.iron_ctypes import (constants, error, message, context, socket,
-                              _poll, devices, utils)
+from zmq.backend.ctypes import (constants, error, message, context, socket,
+                                _poll, devices, utils)
 
 __all__ = []
 for submod in (constants, error, message, context, socket,

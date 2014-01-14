@@ -10,7 +10,7 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from ._iron_ctypes import libzmq
+from ._ctypes import libzmq
 
 def strerror(errno):
     return libzmq.zmq_strerror(errno)

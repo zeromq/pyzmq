@@ -10,7 +10,7 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-from _iron_ctypes import libzmq
+from _ctypes import libzmq
 from .socket import Socket
 from zmq.error import ZMQError, _check_rc
 

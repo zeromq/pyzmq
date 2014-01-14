@@ -13,7 +13,7 @@
 import ctypes
 from System import Int64
 
-from ._iron_ctypes import libzmq, zmq_pollitem_t
+from ._ctypes import libzmq, zmq_pollitem_t
 from .constants import *
 from zmq.error import _check_rc
 

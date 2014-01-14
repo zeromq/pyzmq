@@ -10,9 +10,11 @@
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
+from __future__ import absolute_import
 
-from ._iron_ctypes import libzmq
+from ._ctypes import libzmq
 from ctypes import c_int, byref
+
 _major = c_int()
 _minor = c_int()
 _patch = c_int()
