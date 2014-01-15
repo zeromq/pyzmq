@@ -914,8 +914,10 @@ class BuildPy(build_py):
                 fatal('\n    '.join(["Could not find installed zmq!"]))
                 sys.exit(1)
 
-        # copy selected dll to zmq
+        # TODO: allow to pick dll out of development version of pyzmq
+        # (bin/Win32 or bin/x64)
         dll = self.pick_dll(pjoin(zmq_path, 'bin'), self.vs_version)
+        # copy selected dll to zmq
         info('Using zmqlib found at: %s' % dll)
         shutil.copy(dll, pjoin('zmq', 'libzmq.dll'))
         # library is only picked up when already present
@@ -972,6 +974,10 @@ class BuildPy(build_py):
 
     @staticmethod
     def locate_installed_zmq_win():
+        # TODO: scan, install and select on launch both 32 and 64 bit version of library
+        #
+        # The selected version of libzmq matches ipy version (ipy.exe or ipy64.exe)
+        # run during setup.
         from Microsoft.Win32 import Registry
 
         installed = None
