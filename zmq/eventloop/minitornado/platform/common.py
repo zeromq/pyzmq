@@ -72,14 +72,14 @@ class Waker(interface.Waker):
     def write_fileno(self):
         return self.writer.fileno()
 
-    if sys.platform != 'cli':
-        _X = b'x'
-    else:
-        _X = 'x'
+    #if sys.platform != 'cli':
+    #    _X = b'x'
+    #else:
+    #    _X = 'x'
 
     def wake(self):
         try:
-            self.writer.send(_X)
+            self.writer.send(b'x')
         except (IOError, socket.error):
             pass
 
