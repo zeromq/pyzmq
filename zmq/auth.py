@@ -19,7 +19,6 @@ import glob
 import io
 import logging
 import os
-import sys
 from threading import Thread
 import zmq
 from zmq.utils import z85, jsonapi
