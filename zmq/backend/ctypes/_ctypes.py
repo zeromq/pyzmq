@@ -25,7 +25,10 @@ except OSError:
     sys.exit(1)
 
 class zmq_msg_t(Structure):
-     _fields_ = [ ('x', c_ubyte*32) ]
+    # The fields of the structure are never accessed directly
+    # and the structure is never allocated on python side.
+    # This could be changed to void *
+    _fields_ = [ ('x', c_ubyte*32) ]
 
 class zmq_pollitem_t(Structure):
     _fields_ = [
@@ -35,6 +38,8 @@ class zmq_pollitem_t(Structure):
             ('revents', c_short)
             ]
 
+# this is required as a work around for memmove not being
+# able to cope with copy of size 0
 EMPTY_STRING = create_string_buffer('')
 
 libzmq.zmq_bind.restype = c_int
