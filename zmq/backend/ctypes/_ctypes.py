@@ -20,9 +20,8 @@ size_t = c_size_t
 try:
     libzmq = windll.libzmq
 except OSError:
-    import sys
     print("Failed to load libzmq.dll")
-    sys.exit(1)
+    raise
 
 class zmq_msg_t(Structure):
     # The fields of the structure are never accessed directly

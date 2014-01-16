@@ -128,7 +128,7 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
     
     This command is necessary prior to running a bdist on Linux or OS X.
     """
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith('win') or sys.platform == 'cli':
         return
     # copy libzmq into zmq for bdist
     local = localpath('zmq',libzmq)
@@ -160,4 +160,4 @@ def copy_and_patch_libzmq(ZMQ, libzmq):
         out,err = p.communicate()
         if p.returncode:
             fatal("Could not patch bundled libzmq install_name: %s"%err, p.returncode)
-        
+

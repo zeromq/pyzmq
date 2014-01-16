@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2012 Brian Granger, Min Ragan-Kelley
+#  Copyright (c) 2012-2014 Brian Granger, Min Ragan-Kelley, Pawel Jasinski
 #
 #  This file is part of pyzmq
 #
@@ -70,12 +70,13 @@ except ImportError:
 
 # local script imports:
 from buildutils import (
-    discover_settings, v_str, save_config, load_config, detect_zmq, merge,
-    config_from_prefix,
+    discover_settings, v_str, save_config, load_config,
+    detect_zmq_compile, detect_zmq_import, merge, config_from_prefix,
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
-    test_compilation, compile_and_run,
+    test_compilation, compile_and_run, is_win, generate_const_values,
+    locate_installed_zmq_win, validate_and_map_vs_version
     )
 
 #-----------------------------------------------------------------------------
@@ -88,7 +89,7 @@ target_zmq = bundled_version
 dev_zmq = (4,1,0)
 
 # set dylib ext:
-if sys.platform.startswith('win') or sys.platform == 'cli':
+if is_win():
     lib_ext = '.dll'
 elif sys.platform == 'darwin':
     lib_ext = '.dylib'
@@ -97,6 +98,9 @@ else:
 
 # whether any kind of bdist is happening
 doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
+
+# verbose anywhere
+verbose = any(arg == '--verbose' or arg == '-v' for arg in sys.argv[1:])
 
 # allow `--zmq=foo` to be passed at any point,
 # but always assign it to configure
@@ -121,6 +125,15 @@ for idx, arg in enumerate(list(sys.argv)):
         sys.argv.insert(configure_idx + 1, arg)
         break
 
+# in case if Ironpython configure is obligatory if build is present, regardless of --zmq
+need_config = any(arg.startswith('build') or arg == 'install' for arg in sys.argv[1:])
+if need_config and sys.platform == 'cli':
+    if configure_idx < 0:
+        sys.argv.insert(1, 'configure')
+
+if verbose:
+    info("effective invocation: %s" % " ".join(sys.argv))
+
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
@@ -144,7 +157,9 @@ def bundled_settings():
         temp = 'temp.%s-%s' % (plat, sys.version[0:3])
         settings['libraries'].append('libzmq')
         settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
-    
+    elif sys.platform == 'cli':
+        # not sure for now
+        pass
     return settings
 
 
@@ -162,6 +177,15 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             settings['library_dirs'] += [pjoin(prefix, 'lib')]
+    elif sys.platform == 'cli':
+
+        if prefix:
+            settings['libraries'].append('libzmq')
+            settings['include_dirs'] += [pjoin(prefix, 'include')]
+            settings['library_dirs'] += [pjoin(prefix, 'lib')]
+            # this is where msi puts dlls
+            settings['runtime_library_dirs' ] += [pjoin(prefix, 'bin')]
+
     else:
 
         # If prefix is not explicitly set, pull it from pkg-config by default.
@@ -232,12 +256,28 @@ class Configure(build_ext):
     user_options = build_ext.user_options + [
         ('zmq=', None, "libzmq install prefix"),
         ('build-base=', 'b', "base directory for build library"), # build_base from build
-        
+        ('visual-studio-version=', None, "select library build with specific version of VS")
     ]
+
+    def __init__(self, dist):
+        build_ext.__init__(self, dist)
+        self.is_win = is_win()
+
+
     def initialize_options(self):
         build_ext.initialize_options(self)
         self.zmq = None
         self.build_base = 'build'
+        self.visual_studio_version = None
+
+    def find_default_prefix(self):
+        if sys.platform != 'cli':
+            raise NotImplementedError()
+        # Check for windows default installation location
+        prefix = locate_installed_zmq_win()
+        if prefix:
+            info("Found zmq at: %s" % prefix)
+            self.zmq = prefix
 
     # DON'T REMOVE: distutils demands these be here even if they do nothing.
     def finalize_options(self):
@@ -245,9 +285,13 @@ class Configure(build_ext):
         self.tempdir = pjoin(self.build_temp, 'scratch')
         self.has_run = False
         self.config = discover_settings(self.build_base)
+        if not self.zmq and sys.platform == 'cli':
+            self.find_default_prefix()
         if self.zmq is not None:
             merge(self.config, config_from_prefix(self.zmq))
         self.init_settings_from_config()
+        if self.visual_studio_version:
+            self.config['visual_studio_version'] = validate_and_map_vs_version(self.visual_studio_version)
     
     def save_config(self, name, cfg):
         """write config to JSON"""
@@ -352,7 +396,7 @@ class Configure(build_ext):
         """
         if 'bundle_libzmq_dylib' in self.config:
             return self.config['bundle_libzmq_dylib']
-        elif (sys.platform.startswith('win') or self.cross_compiling) \
+        elif (sys.platform.startswith('win') or sys.platform == 'cli' or self.cross_compiling) \
                 and not self.config['libzmq_extension']:
             # always bundle libzmq on Windows and cross-compilation
             return True
@@ -388,13 +432,18 @@ class Configure(build_ext):
             warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental." % vs)
             line()
 
-        if sys.platform.startswith('win'):
+        if self.is_win:
             # fetch libzmq.dll into local dir
             local_dll = localpath('zmq','libzmq.dll')
+            try:
+                # if dll is found in non trivial location or the name is not just libzmq.dll
+                dll_name = detected['dll_name']
+            except KeyError:
+                dll_name = pjoin(zmq_prefix, 'lib', 'libzmq.dll')
             if not zmq_prefix and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
             try:
-                shutil.copy(pjoin(zmq_prefix, 'lib', 'libzmq.dll'), local_dll)
+                shutil.copy(dll_name, local_dll)
             except Exception:
                 if not os.path.exists(local_dll):
                     warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
@@ -526,10 +575,10 @@ class Configure(build_ext):
         
     
     def test_build(self, prefix, settings):
-        """do a test build ob libzmq"""
+        """do a test build of libzmq"""
         self.create_tempdir()
         settings = settings.copy()
-        if self.bundle_libzmq_dylib and not sys.platform.startswith('win'):
+        if self.bundle_libzmq_dylib and not self.is_win:
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
             if sys.platform == 'darwin':
@@ -543,7 +592,10 @@ class Configure(build_ext):
         info("Configure: Autodetecting ZMQ settings...")
         info("    Custom ZMQ dir:       %s" % prefix)
         try:
-            detected = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
+            if sys.platform != 'cli':
+                detected = detect_zmq_compile(self.tempdir, compiler=self.compiler_type, **settings)
+            else:
+                detected = detect_zmq_import(self.config['visual_studio_version'], prefix)
         finally:
             self.erase_tempdir()
         
@@ -560,10 +612,6 @@ class Configure(build_ext):
         cfg = self.config
         if 'PyPy' in sys.version:
             info("PyPy: Nothing to configure")
-            return
-
-        if 'cli' == sys.platform:
-            info("IronPython: Nothing to configure")
             return
 
         if cfg['libzmq_extension']:
@@ -588,12 +636,16 @@ class Configure(build_ext):
             self.finish_run()
             return
         
-        if zmq_prefix and self.bundle_libzmq_dylib and not sys.platform.startswith('win'):
+        if zmq_prefix and self.bundle_libzmq_dylib and \
+                not self.is_win:
             copy_and_patch_libzmq(zmq_prefix, 'libzmq'+lib_ext)
+
         
         # first try with given config or defaults
         try:
             self.check_zmq_version()
+            if zmq_prefix and sys.platform == 'cli':
+                generate_const_values(zmq_prefix, verbose)
         except Exception:
             etype, evalue, tb = sys.exc_info()
             # print the error as distutils would if we let it raise:
@@ -603,7 +655,7 @@ class Configure(build_ext):
             return
         
         # try fallback on /usr/local on *ix if no prefix is given
-        if not zmq_prefix and not sys.platform.startswith('win'):
+        if not zmq_prefix and not self.is_win:
             info("Failed with default libzmq, trying again with /usr/local")
             time.sleep(1)
             zmq_prefix = cfg['zmq_prefix'] = '/usr/local'
@@ -619,7 +671,7 @@ class Configure(build_ext):
                 # settings for the extensions with /usr/local prefix
                 self.finish_run()
                 return
-        
+
         # finally, fallback on bundled
         
         if cfg['no_libzmq_extension']:
@@ -794,6 +846,7 @@ class CleanCommand(Command):
 
         bundled = glob(pjoin('zmq', 'libzmq*'))
         self._clean_me.extend(bundled)
+        self._clean_me.append('zmq/backend/ctypes/ZMQ.py')
         for clean_me in self._clean_me:
             try:
                 os.unlink(clean_me)
@@ -876,125 +929,6 @@ class ConstantsCommand(Command):
         from buildutils.constants import render_constants
         render_constants()
 
-
-from distutils.command.build_py import build_py
-class BuildPy(build_py):
-
-    user_options = build_py.user_options + [
-        ('bin-only-zmq=', None, "location of the binary only libzmq"),
-        ('vs-version', None, "desired version of visual studio, default(2012)"),
-    ]
-
-    def __init__(self, dist):
-        build_py.__init__(self, dist)
-
-    def initialize_options(self):
-        build_py.initialize_options(self)
-        self.bin_only_zmq = None
-        self.vs_version = 'v110'
-
-    def finalize_options(self):
-        build_py.finalize_options(self)
-        self.vs_version = BuildPy.validate_and_map_vs_version(self.vs_version)
-
-    def run(self):
-        if sys.platform == 'cli':
-            self.generate_sources()
-        build_py.run(self)
-
-    def generate_sources(self):
-        if self.bin_only_zmq:
-            zmq_path = self.bin_only_zmq
-            if not os.path.exists(zmq_path):
-                fatal('\n    Sected zmq location does not exist: %s' % self.bin_only_zmq)
-                sys.exit(1)
-        else:
-            zmq_path = BuildPy.locate_installed_zmq_win()
-            if zmq_path == None:
-                fatal('\n    '.join(["Could not find installed zmq!"]))
-                sys.exit(1)
-
-        # TODO: allow to pick dll out of development version of pyzmq
-        # (bin/Win32 or bin/x64)
-        dll = self.pick_dll(pjoin(zmq_path, 'bin'), self.vs_version)
-        # copy selected dll to zmq
-        info('Using zmqlib found at: %s' % dll)
-        shutil.copy(dll, pjoin('zmq', 'libzmq.dll'))
-        # library is only picked up when already present
-        # add to the list of the data file, watch out for duplicate
-        for package in self.data_files:
-            if package[0] != 'zmq':
-                continue
-            if 'libzmq.dll' not in package[3]:
-                package[3].append('libzmq.dll')
-
-        # generate ZMQ.h
-        from buildutils.h2py import main
-        from StringIO import StringIO
-        log = StringIO()
-        header_file = pjoin(zmq_path, 'include', 'zmq.h')
-        main(["-o", "zmq/backend/ctypes", header_file], log=log)
-        info(log.getvalue())
-        log.close()
-        # generated file is picked up without intervention
-
-    def pick_dll(self, path, vs_version):
-        pattern = pjoin(path, 'libzmq-%s*.dll' % vs_version)
-        candidates = glob(pattern)
-        for candidate in list(candidates):
-            if -1 != candidate.find('gd'):
-                candidates.remove(candidate)
-
-        if len(candidates) == 1:
-            return candidates[0]
-        if len(candidates) == 0:
-            fatal('\n    Unable to locate library %s' % pattern)
-            sys.exit(1)
-
-        # assume not xp, ironpython platform.win32_ver is broken
-        for candidate in list(candidates):
-            if -1 != candidate.find('xp'):
-                candidates.remove(candidate)
-        if len(candidates) == 1:
-            return candidates[0]
-
-        # more than one
-        fatal('\n    '.join(['Unable to narrow down to one library candidates are:'] + candidates ))
-        sys.exit(1)
-
-    @staticmethod
-    def validate_and_map_vs_version(vs_version):
-        vs_version_map = { '2008':'v90', '2010':'v100', '2012':'v110', '2013':'v120',
-                           'v90' :'v90', 'v100':'v100', 'v110':'v110', 'v120':'v120' }
-        version = vs_version_map.get(vs_version, None)
-        if version == None:
-            fatal('\n    Unable to recognize visual studio version: %s' % vs_version)
-            sys.exit(1)
-        return version
-
-    @staticmethod
-    def locate_installed_zmq_win():
-        # TODO: scan, install and select on launch both 32 and 64 bit version of library
-        #
-        # The selected version of libzmq matches ipy version (ipy.exe or ipy64.exe)
-        # run during setup.
-        from Microsoft.Win32 import Registry
-
-        installed = None
-        miru = Registry.LocalMachine.OpenSubKey(r"SOFTWARE\Miru")
-        for name in miru.GetSubKeyNames():
-            versions = []
-            if name.lower().startswith('zeromq'):
-                versions.append(name)
-
-            versions.sort()
-            selected = versions[-1]
-            product = miru.OpenSubKey(selected)
-            path = product.GetValue(None)
-            product.Close()
-        miru.Close()
-        return path
-
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
@@ -1003,7 +937,6 @@ class BuildPy(build_py):
 cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
             'configure': Configure, 'fetch_libzmq': FetchCommand,
             'sdist': CheckSDist, 'constants': ConstantsCommand,
-            'build_py' : BuildPy,
         }
 
 def makename(path, ext):
