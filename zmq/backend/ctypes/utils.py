@@ -2,7 +2,7 @@
 """miscellaneous zmq_utils wrapping"""
 
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2013-2014 Felipe Cruz, Min Ragan-Kelley, Pawel Jasinski
+#  Copyright (C) 2013 Felipe Cruz, Min Ragan-Kelley, Pawel Jasinski
 #
 #  This file is part of pyzmq
 #

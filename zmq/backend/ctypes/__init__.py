@@ -1,7 +1,7 @@
 """ctypes based IronPython backend"""
 
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2013-2014 Felipe Cruz, Pawel Jasinski
+#  Copyright (C) 2013 Felipe Cruz, Pawel Jasinski
 #
 #  This file is part of pyzmq
 #
