@@ -18,7 +18,7 @@ import errno as errno_mod
 
 from .message import Frame
 from .constants import *
-from ._ctypes import libzmq, zmq_msg_t, EMPTY_STRING
+from ._ctypes import libzmq, zmq_msg_t
 
 import zmq
 from zmq.error import ZMQError, _check_rc
@@ -58,8 +58,6 @@ class Socket(object):
         self.close()
 
     def bind(self, address):
-        if len(address) == 0:
-            address = EMPTY_STRING
         rc = libzmq.zmq_bind(self._zmq_socket, address)
         if rc < 0:
             if IPC_PATH_MAX_LEN and libzmq.zmq_errno() == errno_mod.ENAMETOOLONG:
@@ -79,8 +77,6 @@ class Socket(object):
         _check_rc(rc)
 
     def connect(self, address):
-        if len(address) == 0:
-            address = EMPTY_STRING
         rc = libzmq.zmq_connect(self._zmq_socket, address)
         _check_rc(rc)
 
@@ -105,8 +101,7 @@ class Socket(object):
         elif option in zmq.constants.bytes_sockopts:
             size = len(value)
             buf = ctypes.create_string_buffer(size)
-            if size != 0:
-                ctypes.memmove(ctypes.addressof(buf), value, size)
+            ctypes.memmove(ctypes.addressof(buf), value, size)
             value = buf
         else:
             raise ZMQError(EINVAL)
@@ -151,8 +146,7 @@ class Socket(object):
 
         msg_buf = libzmq.zmq_msg_data(zmq_msg)
         msg_buf_size = libzmq.zmq_msg_size(zmq_msg)
-        if len(message) != 0:
-            ctypes.memmove(msg_buf, message, msg_buf_size)
+        ctypes.memmove(msg_buf, message, msg_buf_size)
 
         rc = libzmq.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
         libzmq.zmq_msg_close(zmq_msg)

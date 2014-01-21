@@ -37,10 +37,6 @@ class zmq_pollitem_t(Structure):
             ('revents', c_short)
             ]
 
-# this is required as a work around for memmove not being
-# able to cope with copy of size 0
-EMPTY_STRING = create_string_buffer('')
-
 libzmq.zmq_bind.restype = c_int
 libzmq.zmq_bind.argtypes = [c_void_p, c_char_p]
 
@@ -132,4 +128,4 @@ libzmq.zmq_term.argtypes = [c_void_p]
 libzmq.zmq_unbind.restype = c_int
 libzmq.zmq_unbind.argtypes = [c_void_p, c_char_p]
 
-__all__ = [ 'libzmq', 'zmq_msg_t', 'zmq_pollitem_t', 'EMPTY_STRING' ]
+__all__ = [ 'libzmq', 'zmq_msg_t', 'zmq_pollitem_t' ]

@@ -14,13 +14,11 @@
 #
 # Ironpython ctypes implementation is not 100% cpython equivalent.
 # There are bugs or things which are not implemented.
+# This implementation may work with cpython.
 #
-# In particular this implementation contains workarounds for
-# the following issues.
+# This implementation contains workaround for the following issue.
 #
-# 1. memmove has problem with size=0
-#    https://ironpython.codeplex.com/workitem/34892
-# 2. byref does not work well with parameter checking
+# 1. byref does not work well with parameter checking
 #    https://ironpython.codeplex.com/workitem/32048
 #    https://ironpython.codeplex.com/workitem/32657
 #
