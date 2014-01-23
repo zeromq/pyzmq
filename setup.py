@@ -31,6 +31,7 @@ import subprocess
 import sys
 import time
 import errno
+import platform
 from traceback import print_exc
 
 if sys.version_info < (2,6):
@@ -155,6 +156,7 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     settings['include_dirs'] = []
     settings['library_dirs'] = []
     settings['runtime_library_dirs'] = []
+    settings['extra_link_args'] = [] 
     
     if sys.platform.startswith('win'):
         settings['libraries'].append('libzmq')
@@ -191,7 +193,14 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             if not bundle_libzmq_dylib:
-                settings['library_dirs'] += [pjoin(prefix, 'lib')]
+                if sys.platform == 'sunos5':
+                  if platform.architecture()[0] == '32bit':
+                    settings['library_dirs'] += [pjoin(prefix, 'lib')]
+                  else:
+                    settings['library_dirs'] += [pjoin(prefix, 'lib/amd64')]
+                    settings['extra_link_args'] += ['-m64']
+                else: 
+                   settings['library_dirs'] += [pjoin(prefix, 'lib')]  
         else:
             if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
                 # allow macports default
