@@ -15,12 +15,15 @@
 
 from .select import public_api, select_backend
 
-
-try:
-    _ns = select_backend('zmq.backend.cython')
-except ImportError:
-    _ns = select_backend('zmq.backend.cffi')
-
+import sys
+if sys.platform != 'cli':
+    try:
+        _ns = select_backend('zmq.backend.cython')
+    except ImportError:
+        _ns = select_backend('zmq.backend.cffi')
+else:
+    _ns = select_backend('zmq.backend.ctypes')
+del sys
 globals().update(_ns)
 
 __all__ = public_api

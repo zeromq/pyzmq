@@ -93,6 +93,7 @@ def get_cfg_args():
                 'no_libzmq_extension',
                 'have_sys_un_h',
                 'skip_check_zmq',
+                'visual_studio_version',
                 ]:
         if key in g:
             g[key] = eval(g[key])
@@ -144,8 +145,9 @@ def discover_settings(conf_base=None):
         'skip_check_zmq': False,
         'build_ext': {},
         'bdist_egg': {},
+        'visual_studio_version' : 'v110'
     }
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith('win') or sys.platform == 'cli':
         settings['have_sys_un_h'] = False
     
     if conf_base:

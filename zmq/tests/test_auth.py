@@ -20,7 +20,7 @@ import tempfile
 import zmq
 import zmq.auth
 from zmq.eventloop import ioloop, zmqstream
-from zmq.tests import (BaseZMQTestCase, SkipTest)
+from zmq.tests import (BaseZMQTestCase, SkipTest, skip_iron)
 
 
 class TestThreadedAuthentication(BaseZMQTestCase):
@@ -153,6 +153,7 @@ class TestThreadedAuthentication(BaseZMQTestCase):
         client.close()
         server.close()
 
+    @skip_iron
     def test_curve(self):
         """test threaded auth - CURVE"""
         self.auth = auth = zmq.auth.ThreadedAuthenticator(self.context)
@@ -519,6 +520,7 @@ class TestIOLoopAuthentication(BaseZMQTestCase):
         if not (self.test_result == True):
             self.fail(self.test_result)
 
+    @skip_iron
     def test_curve_unconfigured_server(self):
         """test ioloop auth - CURVE, unconfigured server"""
         base_dir, public_keys_dir, secret_keys_dir = self.create_certs()
@@ -552,6 +554,7 @@ class TestIOLoopAuthentication(BaseZMQTestCase):
 
         self.remove_certs(base_dir)
 
+    @skip_iron
     def test_curve_allow_any(self):
         """test ioloop auth - CURVE, CURVE_ALLOW_ANY"""
         base_dir, public_keys_dir, secret_keys_dir = self.create_certs()
@@ -586,6 +589,7 @@ class TestIOLoopAuthentication(BaseZMQTestCase):
 
         self.remove_certs(base_dir)
 
+    @skip_iron
     def test_curve_configured_server(self):
         """test ioloop auth - CURVE, configured server"""
 

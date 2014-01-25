@@ -31,6 +31,8 @@ Authors
 #-----------------------------------------------------------------------------
 
 from zmq.utils.strtypes import bytes, unicode
+import sys
+
 
 jsonmod = None
 
@@ -43,6 +45,19 @@ for mod in priority:
     else:
         break
 
+if sys.platform != 'cli' or sys.version_info[0] >= 3:
+
+    def _squash_unicode(s):
+        if isinstance(s, unicode):
+            s = s.encode('utf8')
+        return s
+else:
+
+    def _squash_unicode(s):
+        # ironpython 2.7
+        # just repackage as bytes
+        return bytes(s, 'iso-8859-1')
+
 def dumps(o, **kwargs):
     """Serialize object to JSON bytes (utf-8).
     
@@ -52,12 +67,7 @@ def dumps(o, **kwargs):
     if 'separators' not in kwargs:
         kwargs['separators'] = (',', ':')
     
-    s = jsonmod.dumps(o, **kwargs)
-    
-    if isinstance(s, unicode):
-        s = s.encode('utf8')
-    
-    return s
+    return _squash_unicode(jsonmod.dumps(o, **kwargs))
 
 def loads(s, **kwargs):
     """Load object from JSON bytes (utf-8).

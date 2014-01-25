@@ -17,15 +17,16 @@ from unittest import TestCase
 import zmq
 from zmq import devices
 
-from zmq.tests import BaseZMQTestCase, SkipTest, PYPY
+from zmq.tests import BaseZMQTestCase, SkipTest, PYPY, Iron
 from zmq.utils.strtypes import unicode
 
 #-----------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------
-if PYPY:
+if PYPY or Iron:
     # cleanup of shared Context doesn't work on PyPy
     devices.Device.context_factory = zmq.Context
+
 
 class TestMonitoredQueue(BaseZMQTestCase):
     
@@ -198,7 +199,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         b.connect('tcp://127.0.0.1:%i'%portb)
         dev.bind_out('tcp://127.0.0.1:%i'%portb)
         dev.start()
-        time.sleep(0.2)
+        time.sleep(0.3)
         if zmq.zmq_version_info() >= (3,1,0):
             # flush erroneous poll state, due to LIBZMQ-280
             ping_msg = [ b'ping', b'pong' ]
@@ -210,7 +211,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
                     pass
         msg = [ b'hello', b'there' ]
         a.send_multipart([b'b']+msg)
-        bmsg = self.recv_multipart(b)
+        bmsg = self.recv_multipart(b) # sometimes iron fails here
         self.assertEqual(bmsg, [b'a']+msg)
         b.send_multipart(bmsg)
         amsg = self.recv_multipart(a)

@@ -1,6 +1,6 @@
 """Detect zmq version"""
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2011 Brian Granger, Min Ragan-Kelley
+#  Copyright (C) 2011-2014 Brian Granger, Min Ragan-Kelley, Pawel Jasinski
 #
 #  This file is part of pyzmq, copied and adapted from h5py.
 #  h5py source used under the New BSD license
@@ -11,16 +11,20 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+from __future__ import print_function
+
 import shutil
 import sys
 import os
 import logging
 import platform
+from glob import glob
 from distutils import ccompiler
 from distutils.sysconfig import customize_compiler
 from subprocess import Popen, PIPE
 
 from .misc import customize_mingw
+from .msg import info, fatal
 
 pjoin = os.path.join
 
@@ -83,9 +87,9 @@ def compile_and_run(basedir, src, compiler=None, **compiler_attrs):
         shutil.rmtree(basedir)
     
     return result.returncode, so, se
-    
-    
-def detect_zmq(basedir, compiler=None, **compiler_attrs):
+
+
+def detect_zmq_compile(basedir, compiler=None, **compiler_attrs):
     """Compile, link & execute a test program, in empty directory `basedir`.
     
     The C compiler will be updated with any keywords given via setattr.
@@ -143,3 +147,85 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
 
     return props
 
+def is64bit():
+    """
+    returns true if running as ipy64.exe
+    """
+    if sys.platform == 'cli':
+        import System
+        return System.IntPtr.Size == 8
+    else:
+        raise NotImplementedError()
+
+def pick_dll(path, visual_studio_version):
+    """
+    scans zmqlib location for libzmq.dll
+    take into account libzmq-*.dll naming convention as described on:
+    http://zeromq.org/distro:microsoft-windows
+    returns: path to selected dll
+    """
+    # try to scan bin folder as it was installed with .msi
+    pattern = pjoin(path, 'libzmq-%s*.dll' % visual_studio_version)
+    candidates = glob(pattern)
+    # get rid of debug versions
+    for candidate in list(candidates):
+        if -1 != candidate.find('gd'):
+            candidates.remove(candidate)
+
+    if len(candidates) > 0:
+        if len(candidates) == 1:
+            return candidates[0]
+        # assume *not* xp, ironpython platform.win32_ver is broken
+        for candidate in list(candidates):
+            if -1 != candidate.find('xp'):
+                candidates.remove(candidate)
+        if len(candidates) == 1:
+            return candidates[0]
+        # more than one
+        fatal('\n    '.join(['Unable to narrow down to one library, candidates are:'] + candidates ))
+
+    # try to scan bin folder as it was build using visual studio
+    # zmqlib/bin/Win32
+    # zmqlib/bin/x64
+    dll_name = pjoin(path, 'x64' if is64bit() else 'Win32', 'libzmq.dll')
+    if os.path.exists(dll_name):
+        return dll_name
+    # last resort - zmqlib/bin
+    dll_name = pjoin(path, 'libzmq.dll')
+    if os.path.exists(dll_name):
+        return dll_name
+
+    fatal('\n    '.join(['Unable to locate any form of libzmq in specified location:', path]))
+
+def detect_zmq_import(visual_studio_version, location):
+    """
+    based on location and visual studio versio, load library and read out version number
+
+    Parameters
+    ----------
+
+    visual_studio_version : string
+        version code as defined by: http://zeromq.org/distro:microsoft-windows
+    location : string
+        path to zmq location where libzmq can be found
+
+    Returns
+    -------
+
+    A dict of properties with the following two keys:
+
+    vers : tuple
+        The ZMQ version as a tuple of ints, e.g. (2,2,0)
+    dll_name : string
+        The name of the selected library file.
+    """
+    dll_name = pick_dll(pjoin(location, 'bin'), visual_studio_version)
+    import ctypes
+    libzmq = ctypes.CDLL(dll_name, mode=ctypes.RTLD_GLOBAL)
+    major = ctypes.c_int()
+    minor = ctypes.c_int()
+    patch = ctypes.c_int()
+    libzmq.zmq_version(ctypes.byref(major), ctypes.byref(minor), ctypes.byref(patch))
+
+    return { 'vers' : (major.value, minor.value, patch.value),
+             'dll_name' : dll_name  }

@@ -19,7 +19,7 @@ import struct
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase, skip_if, skip_pypy
+from zmq.tests import BaseZMQTestCase, skip_if, skip_pypy, skip_iron
 from zmq.utils.monitor import recv_monitor_message
 
 skip_lt_4 = skip_if(zmq.zmq_version_info() < (4,), "requires zmq >= 4")
@@ -51,6 +51,7 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
 
     @skip_lt_4
+    @skip_iron # TODO: sometimes breaks testing
     def test_monitor_connected(self):
         """Test connected monitoring socket."""
         s_rep = self.context.socket(zmq.REP)

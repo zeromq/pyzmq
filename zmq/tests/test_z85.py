@@ -24,7 +24,7 @@ from zmq.utils import z85
 #-----------------------------------------------------------------------------
 
 class TestZ85(TestCase):
-    
+
     def test_client_public(self):
         client_public = \
             b"\xBB\x88\x47\x1D\x65\xE2\x65\x9B" \

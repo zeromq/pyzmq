@@ -19,7 +19,7 @@ import warnings
 
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy, skip_if
+    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy, skip_if, skip_iron, Iron
 )
 from zmq.utils.strtypes import bytes, unicode
 
@@ -209,6 +209,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(s,u)
     
     @skip_pypy
+    @skip_iron
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
         addr = 'tcp://127.0.0.1'
@@ -292,7 +293,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(linger, s.linger)
         self.assertEqual(linger, s.getsockopt(zmq.LINGER))
         self.assertEqual(s.fd, s.getsockopt(zmq.FD))
-    
+   
     def test_bad_attr(self):
         s = self.context.socket(zmq.DEALER)
         self.sockets.append(s)
@@ -378,7 +379,10 @@ class TestSocket(BaseZMQTestCase):
         try:
             s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
-            self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
+            if Iron:
+                self.assertTrue("protocol not supported" in e.strerror.lower())
+            else:
+                self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
     
     def test_hwm(self):
         zmq3 = zmq.zmq_version_info()[0] >= 3
@@ -396,6 +400,16 @@ class TestSocket(BaseZMQTestCase):
                 except AttributeError:
                     pass
             s.close()
+
+    def test_with(self):
+        with self.Context() as ctx:
+            with ctx.socket(zmq.PUB) as socket:
+                self.assertNotEqual(ctx, None)
+                self.assertNotEqual(socket, None)
+                socket.bind_to_random_port('tcp://127.0.0.1')
+            assert socket.closed
+        assert ctx.closed
+
 
 
 if have_gevent:
