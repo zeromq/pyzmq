@@ -563,18 +563,18 @@ class IOLoopAuthenticator(Authenticator):
 
     def __init__(self, context=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
-        self.zapstream = None
+        self.zap_stream = None
         self.io_loop = io_loop or ioloop.IOLoop.instance()
 
     def start(self):
         ''' Run the ZAP authenticator in an event loop '''
         super(IOLoopAuthenticator, self).start()
-        self.zapstream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
-        self.zapstream.on_recv(self.handle_zap_message)
+        self.zap_stream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
+        self.zap_stream.on_recv(self.handle_zap_message)
 
     def stop(self):
         ''' Stop performing ZAP authentication '''
-        if self.zapstream:
-            self.zapstream.on_recv(None)
-        self.zapstream = None
+        if self.zap_stream:
+            self.zap_stream.close()
+            self.zap_stream = None
         super(IOLoopAuthenticator, self).stop()
