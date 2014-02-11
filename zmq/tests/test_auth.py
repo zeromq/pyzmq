@@ -104,7 +104,7 @@ class TestThreadedAuthentication(BaseAuthTestCase):
         client.connect("%s:%i" % (iface, port))
         msg = [b"Hello World"]
         server.send_multipart(msg)
-        if client.poll(500):
+        if client.poll(1000):
             rcvd_msg = client.recv_multipart()
             self.assertEqual(rcvd_msg, msg)
             result = True
@@ -253,9 +253,9 @@ def with_ioloop(method, expect_success=True):
         loop.add_timeout(t + .1, self.attempt_connection)
         loop.add_timeout(t + .2, self.send_msg)
         if expect_success:
-            loop.add_timeout(t + .5, self.on_test_timeout_fail)
+            loop.add_timeout(t + 1, self.on_test_timeout_fail)
         else:
-            loop.add_timeout(t + .5, self.on_test_timeout_succeed)
+            loop.add_timeout(t + 1, self.on_test_timeout_succeed)
         
         loop.start()
         if self.fail_msg:
