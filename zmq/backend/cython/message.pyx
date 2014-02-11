@@ -36,7 +36,7 @@ cdef extern from "Python.h":
 
 from libzmq cimport *
 
-from libc.stdio cimport printf
+from libc.stdio cimport fprintf, stderr as cstderr
 from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy
 
@@ -91,12 +91,12 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
         push = zmq_socket(ctx, ZMQ_PUSH)
         rc = zmq_connect(push, "inproc://pyzmq.gc.01")
         if (rc < 0):
-            printf("pyzmq-gc connect failed: %s\n", zmq_strerror(zmq_errno()))
+            fprintf(cstderr, "pyzmq-gc connect failed: %s\n", zmq_strerror(zmq_errno()))
             return
         
         rc = zmq_msg_send(hint_msg, push, 0)
         if (rc < 0):
-            printf("pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
+            fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
         
         zmq_msg_close(hint_msg)
         zmq_close(push)
@@ -180,7 +180,7 @@ cdef class Frame:
         zmq_msg_init_size(hint_msg, sizeof(size_t))
         memcpy(zmq_msg_data(hint_msg), &theid, sizeof(size_t))
         
-        hint[0] = gc.context._handle
+        hint[0] = gc._context._handle
         hint[1] = <size_t> hint_msg
         
         rc = zmq_msg_init_data(
