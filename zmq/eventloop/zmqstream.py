@@ -381,7 +381,7 @@ class ZMQStream(object):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            self.io_loop.add_timeout(100, self.socket.close)
+            self.io_loop.add_timeout(self.io_loop.time() + .1, self.socket.close)
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
