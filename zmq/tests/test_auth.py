@@ -265,8 +265,6 @@ class TestIOLoopAuthentication(BaseZMQTestCase):
         self.auth = None
         self.server = self.socket(zmq.PUSH)
         self.client = self.socket(zmq.PULL)
-        # Only need slow reconnect intervals for testing.
-        self.client.reconnect_ivl = 1000
         self.pushstream = zmqstream.ZMQStream(self.server, self.io_loop)
         self.pullstream = zmqstream.ZMQStream(self.client, self.io_loop)
 
