@@ -99,7 +99,7 @@ def load_certificate(filename):
     public_key = None
     secret_key = None
     if not os.path.exists(filename):
-        raise Exception("Invalid certificate file: {0}".format(filename))
+        raise IOError("Invalid certificate file: {0}".format(filename))
 
     with open(filename, 'rb') as f:
         for line in f:
@@ -119,18 +119,16 @@ def load_certificate(filename):
 def load_certificates(location):
     ''' Load public keys from all certificates stored at location directory '''
     certs = {}
-    if os.path.isdir(location):
-        # Follow czmq pattern of public keys stored in *.key files.
-        glob_string = os.path.join(location, "*.key")
-        cert_files = glob.glob(glob_string)
-        for cert_file in cert_files:
-            try:
-                public_key, _ = load_certificate(cert_file)
-                if public_key:
-                    certs[public_key] = 'OK'
-            except Exception:
-                logging.error("Certificate load error in {0}".format(cert_file))
-
+    if not os.path.isdir(location):
+        raise IOError("Invalid certificate directory: {0}".format(location))
+    # Follow czmq pattern of public keys stored in *.key files.
+    glob_string = os.path.join(location, "*.key")
+    
+    cert_files = glob.glob(glob_string)
+    for cert_file in cert_files:
+        public_key, _ = load_certificate(cert_file)
+        if public_key:
+            certs[public_key] = 'OK'
     return certs
 
 
@@ -146,21 +144,22 @@ class Authenticator(object):
     (classic ZeroMQ behavior), and all PLAIN and CURVE connections are denied.
     '''
 
-    def __init__(self, context=None, encoding='utf-8'):
+    def __init__(self, context=None, encoding='utf-8', log=None):
         if zmq.zmq_version_info() < (4,0):
             raise NotImplementedError("Security is only available in libzmq >= 4.0")
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
         self.zap_socket = None
-        self.whitelist = []
-        self.blacklist = []
+        self.whitelist = set()
+        self.blacklist = set()
         # passwords is a dict keyed by domain and contains values
         # of dicts with username:password pairs.
         self.passwords = {}
         # certs is dict keyed by domain and contains values
         # of dicts keyed by the public keys from the specified location.
         self.certs = {}
+        self.log = log or logging.getLogger('zmq.auth')
     
     def start(self):
         ''' Start socket responsible for authenticating ZAP requests '''
@@ -182,8 +181,7 @@ class Authenticator(object):
         to whitelist multiple IP addresses. If you whitelist a single address,
         any non-whitelisted addresses are treated as blacklisted.
         '''
-        if address not in self.whitelist:
-            self.whitelist.append(address)
+        self.whitelist.add(address)
 
     def deny(self, address):
         '''
@@ -192,8 +190,7 @@ class Authenticator(object):
         whitelist, or a blacklist, not not both. If you define both a whitelist
         and a blacklist, only the whitelist takes effect.
         '''
-        if address not in self.blacklist:
-            self.blacklist.append(address)
+        self.blacklist.add(address)
 
     def configure_plain(self, domain='*', passwords=None):
         '''
@@ -220,10 +217,10 @@ class Authenticator(object):
             self.allow_any = True
         else:
             self.allow_any = False
-            if os.path.isdir(location):
+            try:
                 self.certs[domain] = load_certificates(location)
-            else:
-                logging.error("Invalid CURVE certs location: {0}".format(location))
+            except Exception as e:
+                self.log.error("Failed to load CURVE certs from %s: %s", location, e)
 
     def handle_zap_message(self, msg):
         '''
@@ -237,9 +234,11 @@ class Authenticator(object):
             self._send_zap_reply(sequence, b"400", b"Invalid version")
             return
 
-        logging.debug("version: {0}, sequence: {1}, domain: {2}, " \
-                      "address: {3}, identity: {4}, mechanism: {5}".format(version,
-                        sequence, domain, address, identity, mechanism))
+        self.log.debug("version: %s, sequence: %s, domain: %s,"
+                      " address: %s, identity: %s, mechanism: %s",
+                      version, sequence, domain,
+                      address, identity, mechanism,
+        )
 
 
         # Is address is explicitly whitelisted or blacklisted?
@@ -250,27 +249,27 @@ class Authenticator(object):
         if self.whitelist:
             if address in self.whitelist:
                 allowed = True
-                logging.debug("PASSED (whitelist) address={0}".format(address))
+                self.log.debug("PASSED (whitelist) address=%s", address)
             else:
                 denied = True
                 reason = b"Address not in whitelist"
-                logging.debug("DENIED (not in whitelist) address={0}".format(address))
+                self.log.debug("DENIED (not in whitelist) address=%s", address)
 
         elif self.blacklist:
             if address in self.blacklist:
                 denied = True
                 reason = b"Address is blacklisted"
-                logging.debug("DENIED (blacklist) address={0}".format(address))
+                self.log.debug("DENIED (blacklist) address=%s", address)
             else:
                 allowed = True
-                logging.debug("PASSED (not in blacklist) address={0}".format(address))
+                self.log.debug("PASSED (not in blacklist) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
                 # For NULL, we allow if the address wasn't blacklisted
-                logging.debug("ALLOWED (NULL)")
+                self.log.debug("ALLOWED (NULL)")
                 allowed = True
 
             elif mechanism == b'PLAIN':
@@ -312,14 +311,15 @@ class Authenticator(object):
                 reason = b"Invalid domain"
 
             if allowed:
-                logging.debug("ALLOWED (PLAIN) domain={0} username={1} password={2}".format(domain,
-                    username, password))
+                self.log.debug("ALLOWED (PLAIN) domain=%s username=%s password=%s",
+                    domain, username, password,
+                )
             else:
-                logging.debug("DENIED {0}".format(reason))
+                self.log.debug("DENIED %s", reason)
 
         else:
             reason = b"No passwords defined"
-            logging.debug("DENIED (PLAIN) {0}".format(reason))
+            self.log.debug("DENIED (PLAIN) %s", reason)
 
         return allowed, reason
 
@@ -332,7 +332,7 @@ class Authenticator(object):
         if self.allow_any:
             allowed = True
             reason = b"OK"
-            logging.debug("ALLOWED (CURVE allow any client)")
+            self.log.debug("ALLOWED (CURVE allow any client)")
         else:
             # If no explicit domain is specified then use the default domain
             if not domain:
@@ -341,17 +341,16 @@ class Authenticator(object):
             if domain in self.certs:
                 # The certs dict stores keys in z85 format, convert binary key to z85 bytes
                 z85_client_key = z85.encode(client_key)
-                if z85_client_key in self.certs[domain]:
+                if z85_client_key in self.certs[domain] or self.certs[domain] == b'OK':
                     allowed = True
                     reason = b"OK"
                 else:
                     reason = b"Unknown key"
 
-                status = "DENIED"
-                if allowed:
-                    status = "ALLOWED"
-                logging.debug("{0} (CURVE) domain={1} client_key={2}".format(status,
-                    domain, z85_client_key))
+                status = "ALLOWED" if allowed else "DENIED"
+                self.log.debug("%s (CURVE) domain=%s client_key=%s",
+                    status, domain, z85_client_key,
+                )
             else:
                 reason = b"Unknown domain"
 
@@ -363,7 +362,7 @@ class Authenticator(object):
         '''
         uid = b"user" if status_code == b'OK' else b""
         metadata = b""  # not currently used
-        logging.debug("ZAP reply code={0} text={1}".format(status_code, status_text))
+        self.log.debug("ZAP reply code=%s text=%s", status_code, status_text)
         reply = [b"1.0", sequence, status_code, status_text, uid, metadata]
         self.zap_socket.send_multipart(reply)
 
@@ -375,11 +374,12 @@ class AuthenticationThread(Thread):
     the main thread is over the pipe.
     '''
 
-    def __init__(self, context, endpoint, encoding='utf-8'):
+    def __init__(self, context, endpoint, encoding='utf-8', log=None):
         super(AuthenticationThread, self).__init__()
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
-        self.authenticator = Authenticator(context, encoding=encoding)
+        self.log = log = log or logging.getLogger('zmq.auth')
+        self.authenticator = Authenticator(context, encoding=encoding, log=log)
 
         # create a socket to communicate back to main thread.
         self.pipe = context.socket(zmq.PAIR)
@@ -432,7 +432,7 @@ class AuthenticationThread(Thread):
             return terminate
 
         command = msg[0]
-        logging.debug("auth received API command {0}".format(command))
+        self.log.debug("auth received API command %r", command)
 
         if command == b'ALLOW':
             address = u(msg[1], self.encoding)
@@ -460,7 +460,7 @@ class AuthenticationThread(Thread):
             terminate = True
 
         else:
-            logging.error("Invalid auth command from API: {0}".format(command))
+            self.log.error("Invalid auth command from API: %r", command)
 
         return terminate
 
@@ -563,18 +563,18 @@ class IOLoopAuthenticator(Authenticator):
 
     def __init__(self, context=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
-        self.zapstream = None
+        self.zap_stream = None
         self.io_loop = io_loop or ioloop.IOLoop.instance()
 
     def start(self):
         ''' Run the ZAP authenticator in an event loop '''
         super(IOLoopAuthenticator, self).start()
-        self.zapstream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
-        self.zapstream.on_recv(self.handle_zap_message)
+        self.zap_stream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
+        self.zap_stream.on_recv(self.handle_zap_message)
 
     def stop(self):
         ''' Stop performing ZAP authentication '''
-        if self.zapstream:
-            self.zapstream.on_recv(None)
-        self.zapstream = None
+        if self.zap_stream:
+            self.zap_stream.close()
+            self.zap_stream = None
         super(IOLoopAuthenticator, self).stop()
