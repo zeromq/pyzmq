@@ -21,6 +21,7 @@ import struct
 from os import getpid
 from collections import namedtuple
 from threading import Thread, Event, Lock
+import warnings
 
 import zmq
 
@@ -76,20 +77,33 @@ class GarbageCollector(object):
     and any tracker events that should be signaled fire.
     """
     
-    context = None
     refs = None
-    _finished = False
+    _context = None
     _lock = None
     url = "inproc://pyzmq.gc.01"
     
-    def __init__(self):
+    def __init__(self, context=None):
         super(GarbageCollector, self).__init__()
         self.refs = {}
         self.pid = None
         self.thread = None
-        self.context = None
+        self._context = context
         self._lock = Lock()
         atexit.register(self.stop)
+    
+    @property
+    def context(self):
+        if self._context is None:
+            self._context = zmq.Context()
+        return self._context
+    
+    @context.setter
+    def context(self, ctx):
+        if self.is_alive():
+            if self.refs:
+                warnings.warn("Replacing gc context while gc is running", RuntimeWarning)
+            self.stop()
+        self._context = ctx
     
     def stop(self):
         """stop the garbage-collection thread"""
@@ -110,7 +124,6 @@ class GarbageCollector(object):
         Under most circumstances, this will only be called once per process.
         """
         self.pid = getpid()
-        self.context = zmq.Context()
         self.refs = {}
         self.thread = GarbageCollectorThread(self)
         self.thread.start()
