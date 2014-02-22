@@ -1,0 +1,37 @@
+"""0MQ authenticator integrated with the tornado IOLoop."""
+
+#-----------------------------------------------------------------------------
+#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
+#
+#  This file is part of pyzmq
+#
+#  Distributed under the terms of the New BSD License.  The full license is in
+#  the file COPYING.BSD, distributed as part of this software.
+#-----------------------------------------------------------------------------
+
+from zmq.eventloop import ioloop, zmqstream
+from .base import Authenticator
+
+
+class IOLoopAuthenticator(Authenticator):
+    """ZAP authentication for use in the tornado IOLoop"""
+
+    def __init__(self, context=None, io_loop=None):
+        super(IOLoopAuthenticator, self).__init__(context)
+        self.zap_stream = None
+        self.io_loop = io_loop or ioloop.IOLoop.instance()
+
+    def start(self):
+        """Start ZAP authentication"""
+        super(IOLoopAuthenticator, self).start()
+        self.zap_stream = zmqstream.ZMQStream(self.zap_socket, self.io_loop)
+        self.zap_stream.on_recv(self.handle_zap_message)
+
+    def stop(self):
+        """Stop ZAP authentication"""
+        if self.zap_stream:
+            self.zap_stream.close()
+            self.zap_stream = None
+        super(IOLoopAuthenticator, self).stop()
+
+__all__ = ['IOLoopAuthenticator']
