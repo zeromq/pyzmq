@@ -15,7 +15,7 @@ import sys
 
 import zmq
 import zmq.auth
-
+from zmq.auth.thread import ThreadAuthenticator
 
 def run():
     '''Run woodhouse example'''
@@ -26,7 +26,7 @@ def run():
     ctx = zmq.Context().instance()
 
     # Start an authenticator for this context.
-    auth = zmq.auth.ThreadedAuthenticator(ctx)
+    auth = ThreadAuthenticator(ctx)
     auth.start()
     auth.allow('127.0.0.1')
     # Instruct authenticator to handle PLAIN requests

@@ -14,10 +14,10 @@ Author: Chris Laws
 import logging
 import os
 import sys
-import time
 
 import zmq
 import zmq.auth
+from zmq.auth.thread import ThreadAuthenticator
 
 
 def run():
@@ -36,7 +36,7 @@ def run():
     ctx = zmq.Context().instance()
 
     # Start an authenticator for this context.
-    auth = zmq.auth.ThreadedAuthenticator(ctx)
+    auth = ThreadAuthenticator(ctx)
     auth.start()
     auth.allow('127.0.0.1')
     # Tell authenticator to use the certificate in a directory
