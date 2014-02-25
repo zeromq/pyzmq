@@ -74,7 +74,7 @@ from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq, merge,
     config_from_prefix,
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
-    fetch_libsodium, fetch_libzmq, stage_platform_hpp,
+    fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
     test_compilation, compile_and_run,
     )
@@ -428,6 +428,9 @@ class Configure(build_ext):
         # fetch sources for libsodium
         fetch_libsodium(bundledir)
         
+        # stage headers
+        stage_libsodium_headers(pjoin(bundledir, 'libsodium'))
+        
         # construct the Extension
         libsodium_src = pjoin(bundledir, 'libsodium', 'src', 'libsodium')
         exclude = pjoin(libsodium_src, 'crypto_stream', 'salsa20', 'amd64_xmm6') # or ref?
@@ -446,8 +449,6 @@ class Configure(build_ext):
             'zmq.libsodium',
             sources = libsodium_sources,
             include_dirs = [
-                pjoin('buildutils', 'include_libsodium'),
-                pjoin('buildutils', 'include_libsodium', 'sodium'),
                 pjoin(libsodium_src, 'include'),
                 pjoin(libsodium_src, 'include', 'sodium'),
             ],
