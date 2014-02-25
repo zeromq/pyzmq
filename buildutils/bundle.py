@@ -41,6 +41,10 @@ bundled_version = (4,0,3)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 
+libsodium_version = (0,4,5)
+libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
+libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
+
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
 
@@ -78,6 +82,20 @@ def fetch_libzmq(savedir):
         info("already have %s" % dest)
         return
     fname = fetch_archive(savedir, libzmq_url, libzmq)
+    tf = tarfile.open(fname)
+    with_version = pjoin(savedir, tf.firstmember.path)
+    tf.extractall(savedir)
+    tf.close()
+    # remove version suffix:
+    shutil.move(with_version, dest)
+
+def fetch_libsodium(savedir):
+    """download and extract libsodium"""
+    dest = pjoin(savedir, 'libsodium')
+    if os.path.exists(dest):
+        info("already have %s" % dest)
+        return
+    fname = fetch_archive(savedir, libsodium_url, libsodium)
     tf = tarfile.open(fname)
     with_version = pjoin(savedir, tf.firstmember.path)
     tf.extractall(savedir)
