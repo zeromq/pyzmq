@@ -16,10 +16,11 @@ import sys
 
 import zmq
 import zmq.auth
+from zmq.auth.thread import ThreadAuthenticator
 
 
 def run():
-    '''Run stawhouse client'''
+    '''Run strawhouse client'''
 
     allow_test_pass = False
     deny_test_pass = False
@@ -27,7 +28,7 @@ def run():
     ctx = zmq.Context().instance()
 
     # Start an authenticator for this context.
-    auth = zmq.auth.ThreadedAuthenticator(ctx)
+    auth = ThreadAuthenticator(ctx)
     auth.start()
 
     # Part 1 - demonstrate allowing clients based on IP address

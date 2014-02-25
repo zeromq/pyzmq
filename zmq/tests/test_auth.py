@@ -17,8 +17,10 @@ import shutil
 import sys
 import tempfile
 
-import zmq
 import zmq.auth
+from zmq.auth.ioloop import IOLoopAuthenticator
+from zmq.auth.thread import ThreadAuthenticator
+
 from zmq.eventloop import ioloop, zmqstream
 from zmq.tests import (BaseZMQTestCase, SkipTest)
 
@@ -90,11 +92,11 @@ class BaseAuthTestCase(BaseZMQTestCase):
 
 
 
-class TestThreadedAuthentication(BaseAuthTestCase):
+class TestThreadAuthentication(BaseAuthTestCase):
     """Test authentication running in a thread"""
 
     def make_auth(self):
-        return zmq.auth.ThreadedAuthenticator(self.context)
+        return ThreadAuthenticator(self.context)
 
     def can_connect(self, server, client):
         """Check if client can connect to server using tcp transport"""
@@ -129,8 +131,8 @@ class TestThreadedAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
 
-    def test_blacklist_whitelist(self):
-        """threaded auth - Blacklist and Whitelist"""
+    def test_blacklis(self):
+        """threaded auth - Blacklist"""
         # Blacklist 127.0.0.1, connection should fail
         self.auth.deny('127.0.0.1')
         server = self.socket(zmq.PUSH)
@@ -140,7 +142,9 @@ class TestThreadedAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         self.assertFalse(self.can_connect(server, client))
 
-        # Whitelist 127.0.0.1, which overrides the blacklist, connection should pass"
+    def test_whitelist(self):
+        """threaded auth - Whitelist"""
+        # Whitelist 127.0.0.1, connection should pass"
         self.auth.allow('127.0.0.1')
         server = self.socket(zmq.PUSH)
         # By setting a domain we switch on authentication for NULL sockets,
@@ -283,7 +287,7 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
         self.pullstream = zmqstream.ZMQStream(self.client, self.io_loop)
     
     def make_auth(self):
-        return zmq.auth.IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        return IOLoopAuthenticator(self.context, io_loop=self.io_loop)
 
     def tearDown(self):
         if self.auth:
