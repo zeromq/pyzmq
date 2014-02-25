@@ -28,6 +28,10 @@ class BaseAuthTestCase(BaseZMQTestCase):
     def setUp(self):
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
+        try:
+            zmq.curve_keypair()
+        except zmq.ZMQError:
+            raise SkipTest("security requires libzmq to be linked against libsodium")
         super(BaseAuthTestCase, self).setUp()
         # enable debug logging while we run tests
         logging.getLogger('zmq.auth').setLevel(logging.DEBUG)
