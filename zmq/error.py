@@ -114,12 +114,11 @@ def _check_rc(rc, errno=None):
     
     and raising the appropriate Exception class
     """
-    from zmq.backend import zmq_errno
-    from errno import EINTR
-    from zmq import EAGAIN, ETERM
     if rc < 0:
+        from zmq.backend import zmq_errno
         if errno is None:
             errno = zmq_errno()
+        from zmq import EAGAIN, ETERM
         if errno == EAGAIN:
             raise Again(errno)
         elif errno == ETERM:
