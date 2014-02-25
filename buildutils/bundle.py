@@ -20,6 +20,7 @@ import shutil
 import stat
 import sys
 import tarfile
+from glob import glob
 from subprocess import Popen, PIPE
 
 try:
@@ -41,11 +42,15 @@ bundled_version = (4,0,3)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 
+libsodium_version = (0,4,5)
+libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
+libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
+
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
 
 #-----------------------------------------------------------------------------
-# functions
+# Utilities
 #-----------------------------------------------------------------------------
 
 
@@ -70,6 +75,41 @@ def fetch_archive(savedir, url, fname, force=False):
     with open(dest, 'wb') as f:
         f.write(req.read())
     return dest
+
+#-----------------------------------------------------------------------------
+# libsodium
+#-----------------------------------------------------------------------------
+
+def fetch_libsodium(savedir):
+    """download and extract libsodium"""
+    dest = pjoin(savedir, 'libsodium')
+    if os.path.exists(dest):
+        info("already have %s" % dest)
+        return
+    fname = fetch_archive(savedir, libsodium_url, libsodium)
+    tf = tarfile.open(fname)
+    with_version = pjoin(savedir, tf.firstmember.path)
+    tf.extractall(savedir)
+    tf.close()
+    # remove version suffix:
+    shutil.move(with_version, dest)
+
+def stage_libsodium_headers(libsodium_root):
+    """stage configure headers for libsodium"""
+    src_dir = pjoin(HERE, 'include_sodium')
+    dest_dir = pjoin(libsodium_root, 'src', 'libsodium', 'include', 'sodium')
+    for src in glob(pjoin(src_dir, '*.h')):
+        base = os.path.basename(src)
+        dest = pjoin(dest_dir, base)
+        if os.path.exists(dest):
+            info("already have %s" % base)
+            continue
+        info("staging %s to %s" % (src, dest))
+        shutil.copy(src, dest)
+
+#-----------------------------------------------------------------------------
+# libzmq
+#-----------------------------------------------------------------------------
 
 def fetch_libzmq(savedir):
     """download and extract libzmq"""

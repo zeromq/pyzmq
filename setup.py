@@ -74,7 +74,7 @@ from buildutils import (
     discover_settings, v_str, save_config, load_config, detect_zmq, merge,
     config_from_prefix,
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
-    fetch_libzmq, stage_platform_hpp,
+    fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
     test_compilation, compile_and_run,
     )
@@ -307,7 +307,7 @@ class Configure(build_ext):
         )]
         
         for ext in self.distribution.ext_modules:
-            if ext.name == 'zmq.libzmq':
+            if ext.name.startswith('zmq.lib'):
                 continue
             for attr, value in settings.items():
                 setattr(ext, attr, value)
@@ -409,14 +409,70 @@ class Configure(build_ext):
                     warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
                     "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
                     "libzmq into zmq/ manually.")
-
+    
+    def bundle_libsodium_extension(self, libzmq):
+        bundledir = "bundled"
+        if "PyPy" in sys.version:
+            fatal("Can't bundle libsodium as an Extension in PyPy (yet!)")
+        ext_modules = self.distribution.ext_modules
+        if ext_modules and any(m.name == 'zmq.libsodium' for m in ext_modules):
+            # I've already been run
+            return
+        
+        if not os.path.exists(bundledir):
+            os.makedirs(bundledir)
+        
+        line()
+        info("Using bundled libsodium")
+        
+        # fetch sources for libsodium
+        fetch_libsodium(bundledir)
+        
+        # stage headers
+        stage_libsodium_headers(pjoin(bundledir, 'libsodium'))
+        
+        # construct the Extension
+        libsodium_src = pjoin(bundledir, 'libsodium', 'src', 'libsodium')
+        exclude = pjoin(libsodium_src, 'crypto_stream', 'salsa20', 'amd64_xmm6') # or ref?
+        exclude = pjoin(libsodium_src, 'crypto_scalarmult', 'curve25519', 'donna_c64') # or ref?
+        
+        libsodium_sources = [pjoin('buildutils', 'initlibsodium.c')]
+        
+        for dir,subdirs,files in os.walk(libsodium_src):
+            if dir.startswith(exclude):
+                continue
+            for f in files:
+                if f.endswith('.c'):
+                    libsodium_sources.append(pjoin(dir, f))
+        
+        libsodium = Extension(
+            'zmq.libsodium',
+            sources = libsodium_sources,
+            include_dirs = [
+                pjoin(libsodium_src, 'include'),
+                pjoin(libsodium_src, 'include', 'sodium'),
+            ],
+        )
+        # register the Extension
+        self.distribution.ext_modules.insert(0, libsodium)
+        
+        if sys.byteorder == 'little':
+            libsodium.define_macros.append(("NATIVE_LITTLE_ENDIAN", 1))
+        else:
+            libsodium.define_macros.append(("NATIVE_BIG_ENDIAN", 1))
+        
+        # tell libzmq about libsodium
+        libzmq.define_macros.append(("HAVE_LIBSODIUM", 1))
+        libzmq.include_dirs.extend(libsodium.include_dirs)
+        
+        
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
         if "PyPy" in sys.version:
             fatal("Can't bundle libzmq as an Extension in PyPy (yet!)")
         ext_modules = self.distribution.ext_modules
-        if ext_modules and ext_modules[0].name == 'zmq.libzmq':
+        if ext_modules and any(m.name == 'zmq.libzmq' for m in ext_modules):
             # I've already been run
             return
         
@@ -431,9 +487,8 @@ class Configure(build_ext):
         
         stage_platform_hpp(pjoin(bundledir, 'zeromq'))
         
-        # construct the Extension:
-        
-        ext = Extension(
+        # construct the Extensions:
+        libzmq = Extension(
             'zmq.libzmq',
             sources = [pjoin('buildutils', 'initlibzmq.c')] + 
                         glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')),
@@ -442,41 +497,37 @@ class Configure(build_ext):
             ],
         )
         
+        # register the extension:
+        self.distribution.ext_modules.insert(0, libzmq)
+        
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:
-            ext.define_macros.append(('FD_SETSIZE', 1024))
-            ext.define_macros.append(('DLL_EXPORT', 1))
+            libzmq.define_macros.append(('FD_SETSIZE', 1024))
+            libzmq.define_macros.append(('DLL_EXPORT', 1))
             
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
             if self.compiler_type == 'msvc':
-                ext.extra_compile_args.append('/EHsc')
+                libzmq.extra_compile_args.append('/EHsc')
             elif self.compiler_type == 'mingw32':
-                ext.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
+                libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
 
-            ext.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
+            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
         else:
-            ext.include_dirs.append(bundledir)
+            libzmq.include_dirs.append(bundledir)
             
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
             if not sys.platform.startswith(('darwin', 'freebsd')) \
                 and not cc.has_function('timer_create'):
-                    ext.libraries.append('rt')
-            
-            # check if we *can* link libsodium
-            if cc.has_function('crypto_box_keypair', libraries=ext.libraries + ['sodium']):
-                ext.libraries.append('sodium')
-                ext.define_macros.append(("HAVE_LIBSODIUM", 1))
-            else:
-                warn("libsodium not found, zmq.CURVE security will be unavailable")
+                    libzmq.libraries.append('rt')
         
-        # insert the extension:
-        self.distribution.ext_modules.insert(0, ext)
+            # On non-Windows, also bundle libsodium:
+            self.bundle_libsodium_extension(libzmq)
         
         # update other extensions, with bundled settings
         self.config['libzmq_extension'] = True
@@ -658,6 +709,7 @@ class FetchCommand(Command):
             shutil.rmtree(bundledir)
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
+        fetch_libsodium(bundledir)
         fetch_libzmq(bundledir)
         for tarball in glob(pjoin(bundledir, '*.tar.gz')):
             os.remove(tarball)

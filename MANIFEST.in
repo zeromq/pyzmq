@@ -16,14 +16,15 @@ graft docs
 prune docs/build
 prune docs/gh-pages
 
-graft bundled/uuid
-exclude bundled/uuid/Makefile*
 include bundled/zeromq/COPYING
 graft bundled/zeromq/include
 graft bundled/zeromq/src
 include bundled/zeromq/builds/msvc/platform.hpp
 exclude bundled/zeromq/src/Makefile*
 exclude bundled/zeromq/src/platform.hpp
+
+include bundled/libsodium/LICENSE
+graft bundled/libsodium/src
 
 graft buildutils
 graft examples
@@ -43,4 +44,6 @@ global-exclude *.pyc
 global-exclude .git*
 global-exclude .DS_Store
 global-exclude .mailmap
+global-exclude Makefile.am
+global-exclude Makefile.in
 
