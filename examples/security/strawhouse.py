@@ -46,23 +46,27 @@ def run():
     msg = client_allow.recv()
     if msg == b"Hello":
         allow_test_pass = True
-    else:
-        allow_test_pass = False
 
     client_allow.close()
 
     # Part 2 - demonstrate denying clients based on IP address
+    auth.stop()
+    
+    auth = ThreadAuthenticator(ctx)
+    auth.start()
+    
     auth.deny('127.0.0.1')
-
-    server.send(b"Hello")
 
     client_deny = ctx.socket(zmq.PULL)
     client_deny.connect('tcp://127.0.0.1:9000')
+    
+    if server.poll(50, zmq.POLLOUT):
+        server.send(b"Hello")
 
-    if client_deny.poll(50):
-        msg = client_deny.recv()
-        if msg == b"Hello":
-            deny_test_pass = False
+        if client_deny.poll(50):
+            msg = client_deny.recv()
+        else:
+            deny_test_pass = True
     else:
         deny_test_pass = True
 
