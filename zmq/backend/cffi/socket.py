@@ -101,6 +101,8 @@ class Socket(object):
         self.close()
 
     def bind(self, address):
+        if isinstance(address, unicode):
+            address = address.encode('utf8')
         rc = C.zmq_bind(self._zmq_socket, address)
         if rc < 0:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
@@ -116,14 +118,20 @@ class Socket(object):
                 _check_rc(rc)
 
     def unbind(self, address):
+        if isinstance(address, unicode):
+            address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
         _check_rc(rc)
 
     def connect(self, address):
+        if isinstance(address, unicode):
+            address = address.encode('utf8')
         rc = C.zmq_connect(self._zmq_socket, address)
         _check_rc(rc)
 
     def disconnect(self, address):
+        if isinstance(address, unicode):
+            address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
         _check_rc(rc)
 
