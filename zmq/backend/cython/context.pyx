@@ -54,17 +54,20 @@ cdef class Context:
     def __cinit__(self, int io_threads = 1, **kwargs):
         self.handle = NULL
         self._sockets = NULL
-        
-        if ZMQ_VERSION_MAJOR >= 3:
-            self.handle = zmq_ctx_new()
+        if 'handle' in kwargs:
+            self.handle = <void *>kwargs['handle']
+            pass
         else:
-            self.handle = zmq_init(io_threads)
+            if ZMQ_VERSION_MAJOR >= 3:
+                self.handle = zmq_ctx_new()
+            else:
+                self.handle = zmq_init(io_threads)
         
         if self.handle == NULL:
             raise ZMQError()
         
         cdef int rc = 0
-        if ZMQ_VERSION_MAJOR >= 3:
+        if ZMQ_VERSION_MAJOR >= 3 and 'handle' not in kwargs:
             rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
             _check_rc(rc)
         
@@ -78,7 +81,7 @@ cdef class Context:
         
         self._pid = getpid()
     
-    def __init__(self, io_threads=1):
+    def __init__(self, io_threads=1, handle=None):
         # no-op
         pass
     

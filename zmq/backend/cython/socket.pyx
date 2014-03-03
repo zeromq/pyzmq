@@ -204,14 +204,17 @@ cdef class Socket:
     .Context.socket : method for creating a socket bound to a Context.
     """
 
-    def __cinit__(self, Context context, int socket_type, *args, **kwrags):
+    def __cinit__(self, Context context, int socket_type, *args, **kwargs):
         cdef Py_ssize_t c_handle
         c_handle = context._handle
 
         self.handle = NULL
         self.context = context
-        self.socket_type = socket_type
-        self.handle = zmq_socket(<void *>c_handle, socket_type)
+        if 'handle' in kwargs:
+            self.handle = <void *>kwargs['handle']
+            pass
+        else:
+            self.handle = zmq_socket(<void *>c_handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
@@ -232,9 +235,17 @@ cdef class Socket:
             if self.context:
                 self.context._remove_socket(self.handle)
     
-    def __init__(self, context, socket_type):
+    def __init__(self, context, socket_type, handle=None):
         pass
-
+    
+    @property
+    def _handle(self):
+        return <Py_ssize_t> self.handle
+    
+    @property
+    def socket_type(self):
+        return self.type
+    
     @property
     def closed(self):
         return _check_closed_deep(self)
