@@ -1,6 +1,6 @@
-"""Interoperability with other libraries.
+"""Utils for interoperability with other libraries.
 
-Just pyczmq, for now.
+Just CFFI pointer casting for now.
 """
 
 #-----------------------------------------------------------------------------
@@ -12,37 +12,11 @@ Just pyczmq, for now.
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-
-import zmq
 
 try:
     long
 except NameError:
     long = int # Python 3
-
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
-
-def socket_from_pyczmq(void_p):
-    """Create a zmq.Socket from pyczmq
-    
-    void_p is a CFFI `void *`
-    """
-    return zmq.Socket.from_address(void_p)
-
-
-def context_from_pyczmq(zctx_p):
-    """Create a zmq.Context from pyczmq
-    
-    zctx_p is a CFFI `zctx_t *`
-    """
-    from pyczmq import zctx
-    ptr = zctx.underlying(ctx)
-    return zmq.Context.from_address(ptr)
 
 
 def cast_int_addr(n):
@@ -63,4 +37,3 @@ def cast_int_addr(n):
             return int(ffi.cast("size_t", n))
     
     raise ValueError("Cannot cast %r to int" % n)
-

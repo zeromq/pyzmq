@@ -17,6 +17,9 @@ from .constants import ENOTSUP, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
+from zmq.utils.interop import cast_int_addr
+
+
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
     
@@ -36,10 +39,21 @@ class Context(ContextBase, AttributeSetter):
         address is the integer address of the libzmq context
         or an FFI pointer to it.
         """
-        from zmq.utils.interop import cast_int_addr
         address = cast_int_addr(address)
         return cls(shadow=address)
     
+    @classmethod
+    def shadow_pyczmq(cls, ctx):
+        """Shadow an existing pyczmq context
+        
+        ctx is the FFI `zctx_t *` pointer
+        """
+        from pyczmq import zctx
+        
+        underlying = zctx.underlying(ctx)
+        address = cast_int_addr(underlying)
+        return cls(shadow=address)
+
     # static method copied from tornado IOLoop.instance
     @classmethod
     def instance(cls, io_threads=1):

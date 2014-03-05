@@ -25,6 +25,7 @@ from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes,unicode,basestring
+from zmq.utils.interop import cast_int_addr
 
 from .constants import (
     SNDMORE, ENOTSUP, POLLIN,
@@ -67,7 +68,6 @@ class Socket(SocketBase, AttributeSetter):
         address is the integer address of the libzmq socket
         or an FFI pointer to it.
         """
-        from zmq.utils.interop import cast_int_addr
         address = cast_int_addr(address)
         return cls(shadow=address)
     
