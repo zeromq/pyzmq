@@ -51,20 +51,28 @@ cdef class Context:
         The number of IO threads.
     """
     
-    def __cinit__(self, int io_threads = 1, **kwargs):
+    # no-op for the signature
+    def __init__(self, io_threads=1, shadow=0):
+        pass
+    
+    def __cinit__(self, int io_threads=1, Py_ssize_t shadow=0, **kwargs):
         self.handle = NULL
         self._sockets = NULL
-        
-        if ZMQ_VERSION_MAJOR >= 3:
-            self.handle = zmq_ctx_new()
+        if shadow:
+            self.handle = <void *>shadow
+            self._shadow = True
         else:
-            self.handle = zmq_init(io_threads)
+            self._shadow = False
+            if ZMQ_VERSION_MAJOR >= 3:
+                self.handle = zmq_ctx_new()
+            else:
+                self.handle = zmq_init(io_threads)
         
         if self.handle == NULL:
             raise ZMQError()
         
         cdef int rc = 0
-        if ZMQ_VERSION_MAJOR >= 3:
+        if ZMQ_VERSION_MAJOR >= 3 and not self._shadow:
             rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
             _check_rc(rc)
         
@@ -78,14 +86,10 @@ cdef class Context:
         
         self._pid = getpid()
     
-    def __init__(self, io_threads=1):
-        # no-op
-        pass
-    
-
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
-        self.term()
+        if not self._shadow:
+            self.term()
     
     def __dealloc__(self):
         """don't touch members in dealloc, just cleanup allocations"""
@@ -97,14 +101,14 @@ cdef class Context:
 
         # we can't call object methods in dealloc as it
         # might already be partially deleted
-        self._term()
+        if not self._shadow:
+            self._term()
     
     cdef inline void _add_socket(self, void* handle):
         """Add a socket handle to be closed when Context terminates.
         
         This is to be called in the Socket constructor.
         """
-        # print self._n_sockets, self._max_sockets
         if self._n_sockets >= self._max_sockets:
             self._max_sockets *= 2
             self._sockets = <void **>realloc(self._sockets, self._max_sockets*sizeof(void *))
@@ -113,7 +117,6 @@ cdef class Context:
         
         self._sockets[self._n_sockets] = handle
         self._n_sockets += 1
-        # print self._n_sockets, self._max_sockets
 
     cdef inline void _remove_socket(self, void* handle):
         """Remove a socket from the collected handles.
@@ -134,9 +137,14 @@ cdef class Context:
                 # move last handle to closed socket's index
                 self._sockets[idx] = self._sockets[self._n_sockets]
     
+    
     @property
-    def _handle(self):
+    def underlying(self):
+        """The address of the underlying libzmq context"""
         return <Py_ssize_t> self.handle
+    
+    # backward-compat, though nobody is using it
+    _handle = underlying
     
     cdef inline int _term(self):
         cdef int rc=0

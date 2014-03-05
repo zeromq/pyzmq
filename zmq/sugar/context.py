@@ -17,6 +17,9 @@ from .constants import ENOTSUP, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
+from zmq.utils.interop import cast_int_addr
+
+
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
     
@@ -25,10 +28,32 @@ class Context(ContextBase, AttributeSetter):
     sockopts = None
     _instance = None
     
-    def __init__(self, io_threads=1):
-        super(Context, self).__init__(io_threads=io_threads)
+    def __init__(self, io_threads=1, **kwargs):
+        super(Context, self).__init__(io_threads=io_threads, **kwargs)
         self.sockopts = {}
     
+    @classmethod
+    def shadow(cls, address):
+        """Shadow an existing libzmq context
+        
+        address is the integer address of the libzmq context
+        or an FFI pointer to it.
+        """
+        address = cast_int_addr(address)
+        return cls(shadow=address)
+    
+    @classmethod
+    def shadow_pyczmq(cls, ctx):
+        """Shadow an existing pyczmq context
+        
+        ctx is the FFI `zctx_t *` pointer
+        """
+        from pyczmq import zctx
+        
+        underlying = zctx.underlying(ctx)
+        address = cast_int_addr(underlying)
+        return cls(shadow=address)
+
     # static method copied from tornado IOLoop.instance
     @classmethod
     def instance(cls, io_threads=1):
@@ -49,7 +74,7 @@ class Context(ContextBase, AttributeSetter):
         if cls._instance is None or cls._instance.closed:
             cls._instance = cls(io_threads=io_threads)
         return cls._instance
-
+    
     #-------------------------------------------------------------------------
     # Hooks for ctxopt completion
     #-------------------------------------------------------------------------

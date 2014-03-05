@@ -203,27 +203,39 @@ cdef class Socket:
     --------
     .Context.socket : method for creating a socket bound to a Context.
     """
-
-    def __cinit__(self, Context context, int socket_type, *args, **kwrags):
+    
+    # no-op for the signature
+    def __init__(self, context=None, socket_type=-1, shadow=0):
+        pass
+    
+    def __cinit__(self, Context context=None, int socket_type=-1, Py_ssize_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
-        c_handle = context._handle
 
         self.handle = NULL
         self.context = context
-        self.socket_type = socket_type
-        self.handle = zmq_socket(<void *>c_handle, socket_type)
+        if shadow:
+            self._shadow = True
+            self.handle = <void *>shadow
+        else:
+            if context is None:
+                raise TypeError("context must be specified")
+            if socket_type < 0:
+                raise TypeError("socket_type must be specified")
+            self._shadow = False
+            self.handle = zmq_socket(context.handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
         self._pid = getpid()
-        context._add_socket(self.handle)
+        if context:
+            context._add_socket(self.handle)
 
     def __dealloc__(self):
         """close *and* remove from context's list
         
         But be careful that context might not exist if called during gc
         """
-        if self.handle != NULL and getpid() == self._pid:
+        if self.handle != NULL and not self._shadow and getpid() == self._pid:
             rc = zmq_close(self.handle)
             if rc != 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
@@ -232,9 +244,11 @@ cdef class Socket:
             if self.context:
                 self.context._remove_socket(self.handle)
     
-    def __init__(self, context, socket_type):
-        pass
-
+    @property
+    def underlying(self):
+        """The address of the underlying libzmq socket"""
+        return <Py_ssize_t> self.handle
+    
     @property
     def closed(self):
         return _check_closed_deep(self)

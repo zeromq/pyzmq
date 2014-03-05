@@ -180,7 +180,7 @@ cdef class Frame:
         zmq_msg_init_size(hint_msg, sizeof(size_t))
         memcpy(zmq_msg_data(hint_msg), &theid, sizeof(size_t))
         
-        hint[0] = gc._context._handle
+        hint[0] = gc._context.underlying
         hint[1] = <size_t> hint_msg
         
         rc = zmq_msg_init_data(

@@ -404,6 +404,38 @@ class TestSocket(BaseZMQTestCase):
                 except AttributeError:
                     pass
             s.close()
+    
+    def test_shadow(self):
+        p = self.socket(zmq.PUSH)
+        p.bind("tcp://127.0.0.1:5555")
+        p2 = zmq.Socket.shadow(p.underlying)
+        self.assertEqual(p.underlying, p2.underlying)
+        s = self.socket(zmq.PULL)
+        s2 = zmq.Socket.shadow(s.underlying)
+        self.assertNotEqual(s.underlying, p.underlying)
+        self.assertEqual(s.underlying, s2.underlying)
+        s2.connect("tcp://127.0.0.1:5555")
+        sent = b'hi'
+        p2.send(sent)
+        rcvd = self.recv(s2)
+        self.assertEqual(rcvd, sent)
+    
+    def test_shadow_pyczmq(self):
+        try:
+            from pyczmq import zctx, zsocket, zstr
+        except Exception:
+            raise SkipTest("Requires pyczmq")
+        
+        ctx = zctx.new()
+        ca = zsocket.new(ctx, zmq.PUSH)
+        cb = zsocket.new(ctx, zmq.PULL)
+        a = zmq.Socket.shadow(ca)
+        b = zmq.Socket.shadow(cb)
+        a.bind("inproc://a")
+        b.connect("inproc://a")
+        a.send(b'hi')
+        rcvd = self.recv(b)
+        self.assertEqual(rcvd, b'hi')
 
 
 if have_gevent:
@@ -439,5 +471,3 @@ if have_gevent:
             s.close()
             self.assertEqual(len(w), 1)
             self.assertEqual(w[0].category, UserWarning)
-
-

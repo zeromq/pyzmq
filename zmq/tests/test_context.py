@@ -47,7 +47,6 @@ class TestContext(BaseZMQTestCase):
             self.assertTrue('IO_THREADS' in dir(ctx))
         ctx.term()
 
-
     def test_term(self):
         c = self.Context()
         c.term()
@@ -223,6 +222,40 @@ class TestContext(BaseZMQTestCase):
         ctx.max_sockets = 100
         self.assertEqual(ctx.max_sockets, 100)
         self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 100)
+    
+    def test_shadow(self):
+        ctx = self.Context()
+        ctx2 = self.Context.shadow(ctx.underlying)
+        self.assertEqual(ctx.underlying, ctx2.underlying)
+        s = ctx.socket(zmq.PUB)
+        s.close()
+        del ctx2
+        self.assertFalse(ctx.closed)
+        s = ctx.socket(zmq.PUB)
+        ctx2 = self.Context.shadow(ctx.underlying)
+        s2 = ctx2.socket(zmq.PUB)
+        s.close()
+        s2.close()
+        ctx.term()
+        self.assertRaisesErrno(zmq.EFAULT, ctx2.socket, zmq.PUB)
+        del ctx2
+    
+    def test_shadow_pyczmq(self):
+        try:
+            from pyczmq import zctx, zsocket, zstr
+        except Exception:
+            raise SkipTest("Requires pyczmq")
+        
+        ctx = zctx.new()
+        a = zsocket.new(ctx, zmq.PUSH)
+        zsocket.bind(a, "inproc://a")
+        ctx2 = self.Context.shadow_pyczmq(ctx)
+        b = ctx2.socket(zmq.PULL)
+        b.connect("inproc://a")
+        zstr.send(a, b'hi')
+        rcvd = self.recv(b)
+        self.assertEqual(rcvd, b'hi')
+        b.close()
 
 
 if False: # disable green context tests
