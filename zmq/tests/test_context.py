@@ -239,6 +239,23 @@ class TestContext(BaseZMQTestCase):
         ctx.term()
         self.assertRaisesErrno(zmq.EFAULT, ctx2.socket, zmq.PUB)
         del ctx2
+    
+    def test_shadow_pyczmq(self):
+        try:
+            from pyczmq import zctx, zsocket, zstr
+        except Exception:
+            raise SkipTest("Requires pyczmq")
+        
+        ctx = zctx.new()
+        a = zsocket.new(ctx, zmq.PUSH)
+        zsocket.bind(a, "inproc://a")
+        ctx2 = self.Context.shadow_pyczmq(ctx)
+        b = ctx2.socket(zmq.PULL)
+        b.connect("inproc://a")
+        zstr.send(a, b'hi')
+        rcvd = self.recv(b)
+        self.assertEqual(rcvd, b'hi')
+        b.close()
 
 
 if False: # disable green context tests

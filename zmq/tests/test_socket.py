@@ -419,6 +419,23 @@ class TestSocket(BaseZMQTestCase):
         p2.send(sent)
         rcvd = self.recv(s2)
         self.assertEqual(rcvd, sent)
+    
+    def test_shadow_pyczmq(self):
+        try:
+            from pyczmq import zctx, zsocket, zstr
+        except Exception:
+            raise SkipTest("Requires pyczmq")
+        
+        ctx = zctx.new()
+        ca = zsocket.new(ctx, zmq.PUSH)
+        cb = zsocket.new(ctx, zmq.PULL)
+        a = zmq.Socket.shadow(ca)
+        b = zmq.Socket.shadow(cb)
+        a.bind("inproc://a")
+        b.connect("inproc://a")
+        a.send(b'hi')
+        rcvd = self.recv(b)
+        self.assertEqual(rcvd, b'hi')
 
 
 if have_gevent:
@@ -454,5 +471,3 @@ if have_gevent:
             s.close()
             self.assertEqual(len(w), 1)
             self.assertEqual(w[0].category, UserWarning)
-
-
