@@ -404,6 +404,21 @@ class TestSocket(BaseZMQTestCase):
                 except AttributeError:
                     pass
             s.close()
+    
+    def test_shadow(self):
+        p = self.socket(zmq.PUSH)
+        p.bind("tcp://127.0.0.1:5555")
+        p2 = zmq.Socket.shadow(p.underlying)
+        self.assertEqual(p.underlying, p2.underlying)
+        s = self.socket(zmq.PULL)
+        s2 = zmq.Socket.shadow(s.underlying)
+        self.assertNotEqual(s.underlying, p.underlying)
+        self.assertEqual(s.underlying, s2.underlying)
+        s2.connect("tcp://127.0.0.1:5555")
+        sent = b'hi'
+        p2.send(sent)
+        rcvd = self.recv(s2)
+        self.assertEqual(rcvd, sent)
 
 
 if have_gevent:

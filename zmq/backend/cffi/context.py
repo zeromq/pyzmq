@@ -24,18 +24,37 @@ class Context(object):
     _iothreads = None
     _closed = None
     _sockets = None
+    _shadow = False
 
-    def __init__(self, io_threads=1):
-        if not io_threads >= 0:
-            raise ZMQError(EINVAL)
-
-        self._zmq_ctx = C.zmq_ctx_new()
+    def __init__(self, io_threads=1, shadow=None):
+        
+        if shadow:
+            self._zmq_ctx = ffi.cast("void *", shadow)
+            self._shadow = True
+        else:
+            self._shadow = False
+            if not io_threads >= 0:
+                raise ZMQError(EINVAL)
+        
+            self._zmq_ctx = C.zmq_ctx_new()
         if self._zmq_ctx == ffi.NULL:
             raise ZMQError(C.zmq_errno())
-        C.zmq_ctx_set(self._zmq_ctx, IO_THREADS, io_threads)
+        if not shadow:
+            C.zmq_ctx_set(self._zmq_ctx, IO_THREADS, io_threads)
         self._closed = False
         self._sockets = set()
-
+    
+    def __del__(self):
+        if self._zmq_ctx and not self._closed and not self._shadow:
+            C.zmq_ctx_destroy(self._zmq_ctx)
+            self._zmq_ctx = None
+            self._closed = True
+    
+    @property
+    def underlying(self):
+        """The address of the underlying libzmq context"""
+        return int(ffi.cast('size_t', self._zmq_ctx))
+    
     @property
     def closed(self):
         return self._closed
@@ -97,11 +116,5 @@ class Context(object):
                 s.close()
         
         self.term()
-
-    def __del__(self):
-        if self._zmq_ctx and not self._closed:
-            C.zmq_ctx_destroy(self._zmq_ctx)
-            self._zmq_ctx = None
-            self._closed = True
 
 __all__ = ['Context']

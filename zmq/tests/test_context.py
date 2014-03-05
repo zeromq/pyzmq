@@ -47,7 +47,6 @@ class TestContext(BaseZMQTestCase):
             self.assertTrue('IO_THREADS' in dir(ctx))
         ctx.term()
 
-
     def test_term(self):
         c = self.Context()
         c.term()
@@ -223,6 +222,23 @@ class TestContext(BaseZMQTestCase):
         ctx.max_sockets = 100
         self.assertEqual(ctx.max_sockets, 100)
         self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 100)
+    
+    def test_shadow(self):
+        ctx = self.Context()
+        ctx2 = self.Context.shadow(ctx.underlying)
+        self.assertEqual(ctx.underlying, ctx2.underlying)
+        s = ctx.socket(zmq.PUB)
+        s.close()
+        del ctx2
+        self.assertFalse(ctx.closed)
+        s = ctx.socket(zmq.PUB)
+        ctx2 = self.Context.shadow(ctx.underlying)
+        s2 = ctx2.socket(zmq.PUB)
+        s.close()
+        s2.close()
+        ctx.term()
+        self.assertRaisesErrno(zmq.EFAULT, ctx2.socket, zmq.PUB)
+        del ctx2
 
 
 if False: # disable green context tests

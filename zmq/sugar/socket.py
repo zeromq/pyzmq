@@ -55,7 +55,30 @@ class Socket(SocketBase, AttributeSetter):
         s = ctx.socket(zmq.ROUTER)
     
     """
-
+    
+    #-------------------------------------------------------------------------
+    # Socket creation
+    #-------------------------------------------------------------------------
+    
+    @classmethod
+    def shadow(cls, address):
+        """Shadow an existing libzmq socket
+        
+        address is the integer address of the libzmq socket
+        or an FFI pointer to it.
+        """
+        from zmq.utils.interop import cast_int_addr
+        address = cast_int_addr(address)
+        return cls(shadow=address)
+    
+    #-------------------------------------------------------------------------
+    # Deprecated aliases
+    #-------------------------------------------------------------------------
+    
+    @property
+    def socket_type(self):
+        return self.type
+    
     #-------------------------------------------------------------------------
     # Hooks for sockopt completion
     #-------------------------------------------------------------------------
@@ -69,7 +92,7 @@ class Socket(SocketBase, AttributeSetter):
         ):
             keys.extend(collection)
         return keys
-
+    
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------

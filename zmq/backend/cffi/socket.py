@@ -74,16 +74,27 @@ class Socket(object):
     _zmq_socket = None
     _closed = None
     _ref = None
+    _shadow = False
 
-    def __init__(self, context, sock_type):
+    def __init__(self, context=None, socket_type=None, shadow=None):
         self.context = context
-        self.socket_type = sock_type
-        self._zmq_socket = C.zmq_socket(context._zmq_ctx, sock_type)
+        if shadow is not None:
+            self._zmq_socket = ffi.cast("void *", shadow)
+            self._shadow = True
+        else:
+            self._shadow = False
+            self._zmq_socket = C.zmq_socket(context._zmq_ctx, socket_type)
         if self._zmq_socket == ffi.NULL:
             raise ZMQError()
         self._closed = False
-        self._ref = self.context._add_socket(self)
-
+        if context:
+            self._ref = context._add_socket(self)
+    
+    @property
+    def underlying(self):
+        """The address of the underlying libzmq socket"""
+        return int(ffi.cast('size_t', self._zmq_socket))
+    
     @property
     def closed(self):
         return self._closed
@@ -94,11 +105,13 @@ class Socket(object):
             if self._zmq_socket is not None:
                 rc = C.zmq_close(self._zmq_socket)
             self._closed = True
-            self.context._rm_socket(self._ref)
+            if self.context:
+                self.context._rm_socket(self._ref)
         return rc
 
     def __del__(self):
-        self.close()
+        if not self._shadow:
+            self.close()
 
     def bind(self, address):
         if isinstance(address, unicode):
