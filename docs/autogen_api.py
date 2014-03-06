@@ -21,6 +21,7 @@ if __name__ == '__main__':
     docwriter.package_skip_patterns += [
         r'\.tests$',
         r'\.backend$',
+        r'\.auth$',
         r'\.eventloop\.minitornado$',
         r'\.green\.eventloop$',
         r'\.sugar$',
