@@ -86,7 +86,7 @@ from buildutils import (
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
 target_zmq = bundled_version
-dev_zmq = (4,1,0)
+dev_zmq = (target_zmq[0], target_zmq[1] + 1, 0)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
@@ -383,7 +383,7 @@ class Configure(build_ext):
         vers = tuple(detected['vers'])
         vs = v_str(vers)
         if vers < min_zmq:
-            fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
+            fatal("Detected ZMQ version: %s, but depend on ZMQ >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s' % (zmq_prefix or 'unspecified'))
         
@@ -394,7 +394,7 @@ class Configure(build_ext):
             warn("libzmq features and fixes introduced after %s will be unavailable." % vs)
             line()
         elif vers >= dev_zmq:
-            warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental." % vs)
+            warn("Detected ZMQ version: %s. Some new features in libzmq may not be exposed by pyzmq." % vs)
             line()
 
         if sys.platform.startswith('win'):
