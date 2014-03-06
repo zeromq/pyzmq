@@ -14,8 +14,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import random
 import codecs
+import random
+import warnings
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -77,6 +78,9 @@ class Socket(SocketBase, AttributeSetter):
     
     @property
     def socket_type(self):
+        warnings.warn("Socket.socket_type is deprecated, use Socket.type",
+            DeprecationWarning
+        )
         return self.type
     
     #-------------------------------------------------------------------------
