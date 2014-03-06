@@ -9,10 +9,44 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-14.1.0 (dev)
-============
+14.1.0
+======
 
-- New :mod:`zmq.auth` for zeromq's ZAP authentication.
+Security
+--------
+
+The headline features for 14.1 are adding better support for libzmq's
+security features.
+
+- When libzmq is bundled as a Python extension (e.g. bdists),
+  libsodium is also bundled (excluding Windows),
+  ensuring that libzmq security is available to users who install from wheels
+- New :mod:`zmq.auth`, implementing zeromq's ZAP authentication,
+  modeled on czmq zauth.
+  For more information, see the `examples <https://github.com/zeromq/pyzmq/tree/master/examples/>`_.
+
+
+Other New Stuff
+---------------
+
+- Add PYZMQ_BACKEND for enabling use of backends outside the pyzmq codebase.
+- Add :attr:`~.Context.underlying` property and :meth:`~.Context.shadow`
+  method to Context and Socket, for handing off sockets and contexts.
+  between pyzmq and other bindings (mainly pyczmq_).
+- Add TOS, ROUTER_HANDOVER, and IPC_FILTER constants from libzmq-4.1-dev.
+- Add Context option support in the CFFI backend.
+- Various small unicode and build fixes, as always.
+
+
+.. _pyczmq: https://github.com/zeromq/pyczmq
+
+
+Deprecations
+------------
+
+- ``Socket.socket_type`` is deprecated, in favor of ``Socket.type``,
+  which has been available since 2.1.
+
 
 14.0.1
 ======
