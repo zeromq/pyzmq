@@ -34,12 +34,6 @@ import errno
 import platform
 from traceback import print_exc
 
-if sys.version_info < (2,6):
-    print("ERROR: PyZMQ >= 2.2.0 requires Python 2.6 or later.  \n" +
-          "       PyZMQ 2.1.11 was the last release to support Python 2.5."
-    )
-    sys.exit(1)
-
 
 import distutils
 from distutils.core import setup, Command
@@ -650,10 +644,9 @@ class Configure(build_ext):
         # first try with given config or defaults
         try:
             self.check_zmq_version()
-        except Exception:
-            etype, evalue, tb = sys.exc_info()
+        except Exception as e:
             # print the error as distutils would if we let it raise:
-            info("\nerror: %s\n" % evalue)
+            info("\nerror: %s\n" % e)
         else:
             self.finish_run()
             return
@@ -666,10 +659,9 @@ class Configure(build_ext):
             self.init_settings_from_config()
             try:
                 self.check_zmq_version()
-            except Exception:
-                etype, evalue, tb = sys.exc_info()
+            except Exception as e:
                 # print the error as distutils would if we let it raise:
-                info("\nerror: %s\n" % evalue)
+                info("\nerror: %s\n" % e)
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix
