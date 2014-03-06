@@ -93,6 +93,10 @@ new_in = {
         # socket opts
         'ROUTER_HANDOVER',
         'TOS',
+        'IPC_FILTER_PID',
+        'IPC_FILTER_UID',
+        'IPC_FILTER_GID',
+        'CONNECT_RID',
     ],
 }
 
@@ -231,6 +235,7 @@ bytes_sockopt_names = [
     'CURVE_SECRETKEY',
     'CURVE_SERVERKEY',
     'ZAP_DOMAIN',
+    'CONNECT_RID',
 ]
 
 int_sockopt_names = [
@@ -277,6 +282,9 @@ int_sockopt_names = [
     'CONFLATE',
     'ROUTER_HANDOVER',
     'TOS',
+    'IPC_FILTER_PID',
+    'IPC_FILTER_UID',
+    'IPC_FILTER_GID',
 ]
 
 switched_sockopt_names = [

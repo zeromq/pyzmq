@@ -146,8 +146,9 @@ class TestSocket(BaseZMQTestCase):
             if sopt.startswith((
                 'ROUTER', 'XPUB', 'TCP', 'FAIL',
                 'REQ_', 'CURVE_', 'PROBE_ROUTER',
+                'IPC_FILTER',
                 )):
-                # fail_unroutable is write-only
+                # some sockopts are write-only
                 continue
             try:
                 n = p.getsockopt(opt)
