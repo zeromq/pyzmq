@@ -68,6 +68,8 @@ class Socket(SocketBase, AttributeSetter):
         
         address is the integer address of the libzmq socket
         or an FFI pointer to it.
+        
+        .. versionadded:: 14.1
         """
         address = cast_int_addr(address)
         return cls(shadow=address)
