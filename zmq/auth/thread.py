@@ -137,7 +137,7 @@ def _inherit_docstrings(cls):
 class ThreadAuthenticator(object):
     """Run ZAP authentication in a background thread"""
 
-    def __init__(self, context=None, log=None, encoding='utf-8'):
+    def __init__(self, context=None, encoding='utf-8', log=None):
         self.context = context or zmq.Context.instance()
         self.log = log
         self.encoding = encoding
