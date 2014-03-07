@@ -14,10 +14,11 @@
 # Imports
 #-----------------------------------------------------------------------------
 
+import json
 import os
+from os.path import dirname, join
 from cffi import FFI
 
-import zmq.utils
 from zmq.utils.constant_names import all_names, no_prefix
 
 
@@ -116,11 +117,47 @@ void * memcpy(void *restrict s1, const void *restrict s2, size_t n);
 int get_ipc_path_max_len(void);
 '''
 
+def load_compiler_config():
+    import zmq
+    zmq_dir = dirname(zmq.__file__)
+    zmq_parent = dirname(zmq_dir)
+    
+    fname = join(zmq_dir, 'utils', 'compiler.json')
+    if os.path.exists(fname):
+        with open(fname) as f:
+            cfg = json.load(f)
+    else:
+        cfg = {}
+    
+    cfg.setdefault("include_dirs", [])
+    cfg.setdefault("library_dirs", [])
+    cfg.setdefault("runtime_library_dirs", [])
+    cfg.setdefault("libraries", ["zmq"])
+    
+    # cast to str, because cffi can't handle unicode paths (?!)
+    cfg['libraries'] = [str(lib) for lib in cfg['libraries']]
+    for key in ("include_dirs", "library_dirs", "runtime_library_dirs"):
+        # interpret paths relative to parent of zmq (like source tree)
+        abs_paths = []
+        for p in cfg[key]:
+            if p.startswith('zmq'):
+                p = join(zmq_parent, p)
+            abs_paths.append(str(p))
+        cfg[key] = abs_paths
+    return cfg
+
+cfg = load_compiler_config()
+
 def zmq_version_info():
     ffi_check = FFI()
     ffi_check.cdef('void zmq_version(int *major, int *minor, int *patch);')
+    cfg = load_compiler_config()
     C_check_version = ffi_check.verify('#include <zmq.h>',
-                                            libraries=['c', 'zmq'])
+        libraries=cfg['libraries'],
+        include_dirs=cfg['include_dirs'],
+        library_dirs=cfg['library_dirs'],
+        runtime_library_dirs=cfg['runtime_library_dirs'],
+    )
     major = ffi.new('int*')
     minor = ffi.new('int*')
     patch = ffi.new('int*')
@@ -169,7 +206,6 @@ else:
 
 
 ffi.cdef(functions)
-zmq_utils = os.path.dirname(zmq.utils.__file__)
 
 C = ffi.verify('''
     #include <stdio.h>
@@ -185,7 +221,12 @@ int get_ipc_path_max_len(void) {
     return sizeof(dummy->sun_path) - 1;
 }
 
-''', libraries=['c', 'zmq'], include_dirs=[zmq_utils])
+''',
+    libraries=cfg['libraries'],
+    include_dirs=cfg['include_dirs'],
+    library_dirs=cfg['library_dirs'],
+    runtime_library_dirs=cfg['runtime_library_dirs'],
+)
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 
