@@ -30,8 +30,6 @@ install:
 
 matrix:
   exclude:
-    - python: pypy
-      env: ZMQ=bundled
     - python: 2.6
       env: ZMQ=bundled
     - python: 2.6
