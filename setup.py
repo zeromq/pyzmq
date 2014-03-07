@@ -77,6 +77,8 @@ from buildutils import (
 # Flags
 #-----------------------------------------------------------------------------
 
+pypy = 'PyPy' in sys.version
+
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
 target_zmq = bundled_version
@@ -255,11 +257,10 @@ class Configure(build_ext):
     def save_config(self, name, cfg):
         """write config to JSON"""
         save_config(name, cfg, self.build_base)
+        save_config(name, cfg, os.path.join('zmq', 'utils'))
     
     def init_settings_from_config(self):
         """set up compiler settings, based on config"""
-        if 'PyPy' in sys.version:
-            self.compiler_settings = {}
         cfg = self.config
         
         if cfg['libzmq_extension']:
@@ -406,8 +407,6 @@ class Configure(build_ext):
     
     def bundle_libsodium_extension(self, libzmq):
         bundledir = "bundled"
-        if "PyPy" in sys.version:
-            fatal("Can't bundle libsodium as an Extension in PyPy (yet!)")
         ext_modules = self.distribution.ext_modules
         if ext_modules and any(m.name == 'zmq.libsodium' for m in ext_modules):
             # I've already been run
@@ -463,8 +462,6 @@ class Configure(build_ext):
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
-        if "PyPy" in sys.version:
-            fatal("Can't bundle libzmq as an Extension in PyPy (yet!)")
         ext_modules = self.distribution.ext_modules
         if ext_modules and any(m.name == 'zmq.libzmq' for m in ext_modules):
             # I've already been run
@@ -605,16 +602,13 @@ class Configure(build_ext):
         
         return detected
     
-    
+
     def finish_run(self):
         self.save_config('config', self.config)
         line()
     
     def run(self):
         cfg = self.config
-        if 'PyPy' in sys.version:
-            info("PyPy: Nothing to configure")
-            return
         
         if cfg['libzmq_extension']:
             self.bundle_libzmq_extension()
@@ -1046,19 +1040,44 @@ for submod, packages in submodules.items():
             ext.sources = sources
         extensions.append(ext)
 
-if 'PyPy' in sys.version:
-    try:
-        from zmq.backend.cffi import ffi
-    except ImportError:
-        warn("Couldn't get CFFI extension")
-        extensions = []
-    else:
-        extensions = [ffi.verifier.get_extension()]
+if pypy:
+    # add dummy extension, to ensure build_ext runs
+    dummy_ext = Extension('dummy', sources=[])
+    extensions = [dummy_ext]
+    
+    bld_ext = cmdclass['build_ext']
+    class pypy_build_ext(bld_ext):
+        """hack to build pypy extension only after building bundled libzmq
+        
+        otherwise it will fail when libzmq is bundled.
+        """
+        def build_extensions(self):
+            self.extensions.remove(dummy_ext)
+            bld_ext.build_extensions(self)
+            # build ffi extension after bundled libzmq,
+            # because it may depend on linking it
+            here = os.getcwd()
+            sys.path.insert(0, self.build_lib)
+            try:
+                from zmq.backend.cffi import ffi
+            except ImportError as e:
+                warn("Couldn't get CFFI extension: %s" % e)
+            else:
+                ext = ffi.verifier.get_extension()
+                self.extensions.append(ext)
+                self.build_extension(ext)
+            finally:
+                sys.path.pop(0)
 
-package_data = {'zmq':['*.pxd'],
-                'zmq.backend.cython':['*.pxd'],
-                'zmq.devices':['*.pxd'],
-                'zmq.utils':['*.pxd', '*.h'],
+    
+    # How many build_ext subclasses is this? 5? Gross.
+    cmdclass['build_ext'] = pypy_build_ext
+
+
+package_data = {'zmq': ['*.pxd'],
+                'zmq.backend.cython': ['*.pxd'],
+                'zmq.devices': ['*.pxd'],
+                'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
 
 package_data['zmq'].append('libzmq'+lib_ext)
@@ -1130,7 +1149,7 @@ setup_args = dict(
         'Programming Language :: Python :: 3.3',
     ],
 )
-if 'setuptools' in sys.modules and 'PyPy' in sys.version:
+if 'setuptools' in sys.modules and pypy:
     setup_args['install_requires'] = [
         'py',
         'cffi',
