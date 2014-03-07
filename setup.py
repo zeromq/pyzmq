@@ -513,9 +513,19 @@ class Configure(build_ext):
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
-            if not sys.platform.startswith(('darwin', 'freebsd')) \
-                and not cc.has_function('timer_create'):
+            if not sys.platform.startswith(('darwin', 'freebsd')):
+                line()
+                info("checking for timer_create")
+                if not cc.has_function('timer_create'):
+                    info("no timer_create, linking librt")
                     libzmq.libraries.append('rt')
+                else:
+                    info("ok")
+                
+                if pypy:
+                    # seem to need explicit libstdc++ on linux + pypy
+                    # not sure why
+                    libzmq.libraries.append("stdc++")
         
             # On non-Windows, also bundle libsodium:
             self.bundle_libsodium_extension(libzmq)
