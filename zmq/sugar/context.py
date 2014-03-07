@@ -38,6 +38,8 @@ class Context(ContextBase, AttributeSetter):
         
         address is the integer address of the libzmq context
         or an FFI pointer to it.
+        
+        .. versionadded:: 14.1
         """
         address = cast_int_addr(address)
         return cls(shadow=address)
@@ -47,6 +49,8 @@ class Context(ContextBase, AttributeSetter):
         """Shadow an existing pyczmq context
         
         ctx is the FFI `zctx_t *` pointer
+        
+        .. versionadded:: 14.1
         """
         from pyczmq import zctx
         
@@ -121,14 +125,14 @@ class Context(ContextBase, AttributeSetter):
     def setsockopt(self, opt, value):
         """set default socket options for new sockets created by this Context
         
-        .. versionadded: 13.0
+        .. versionadded:: 13.0
         """
         self.sockopts[opt] = value
     
     def getsockopt(self, opt):
         """get default socket options for new sockets created by this Context
         
-        .. versionadded: 13.0
+        .. versionadded:: 13.0
         """
         return self.sockopts[opt]
     

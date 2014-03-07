@@ -1,4 +1,7 @@
-"""0MQ authenticator integrated with the tornado IOLoop."""
+"""ZAP Authenticator integrated with the tornado IOLoop.
+
+.. versionadded:: 14.1
+"""
 
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
@@ -16,7 +19,7 @@ from .base import Authenticator
 class IOLoopAuthenticator(Authenticator):
     """ZAP authentication for use in the tornado IOLoop"""
 
-    def __init__(self, context=None, io_loop=None):
+    def __init__(self, context=None, encoding='utf-8', log=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context)
         self.zap_stream = None
         self.io_loop = io_loop or ioloop.IOLoop.instance()

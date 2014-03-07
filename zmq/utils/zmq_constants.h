@@ -345,6 +345,10 @@
     #define ZMQ_ZAP_DOMAIN (-1)
 #endif
 
+#ifndef ZMQ_CONNECT_RID
+    #define ZMQ_CONNECT_RID (-1)
+#endif
+
 #ifndef ZMQ_RECONNECT_IVL_MAX
     #define ZMQ_RECONNECT_IVL_MAX (-1)
 #endif
@@ -479,6 +483,18 @@
 
 #ifndef ZMQ_TOS
     #define ZMQ_TOS (-1)
+#endif
+
+#ifndef ZMQ_IPC_FILTER_PID
+    #define ZMQ_IPC_FILTER_PID (-1)
+#endif
+
+#ifndef ZMQ_IPC_FILTER_UID
+    #define ZMQ_IPC_FILTER_UID (-1)
+#endif
+
+#ifndef ZMQ_IPC_FILTER_GID
+    #define ZMQ_IPC_FILTER_GID (-1)
 #endif
 
 #ifndef ZMQ_AFFINITY

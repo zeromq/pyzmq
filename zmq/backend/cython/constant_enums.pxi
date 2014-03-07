@@ -86,6 +86,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_CURVE_SECRETKEY
     enum: ZMQ_CURVE_SERVERKEY
     enum: ZMQ_ZAP_DOMAIN
+    enum: ZMQ_CONNECT_RID
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
     enum: ZMQ_RCVTIMEO
@@ -120,6 +121,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_CONFLATE
     enum: ZMQ_ROUTER_HANDOVER
     enum: ZMQ_TOS
+    enum: ZMQ_IPC_FILTER_PID
+    enum: ZMQ_IPC_FILTER_UID
+    enum: ZMQ_IPC_FILTER_GID
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM

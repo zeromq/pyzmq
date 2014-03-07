@@ -34,12 +34,6 @@ import errno
 import platform
 from traceback import print_exc
 
-if sys.version_info < (2,6):
-    print("ERROR: PyZMQ >= 2.2.0 requires Python 2.6 or later.  \n" +
-          "       PyZMQ 2.1.11 was the last release to support Python 2.5."
-    )
-    sys.exit(1)
-
 
 import distutils
 from distutils.core import setup, Command
@@ -86,7 +80,7 @@ from buildutils import (
 # reference points for zmq compatibility
 min_zmq = (2,1,4)
 target_zmq = bundled_version
-dev_zmq = (4,1,0)
+dev_zmq = (target_zmq[0], target_zmq[1] + 1, 0)
 
 # set dylib ext:
 if sys.platform.startswith('win'):
@@ -383,7 +377,7 @@ class Configure(build_ext):
         vers = tuple(detected['vers'])
         vs = v_str(vers)
         if vers < min_zmq:
-            fatal("Detected ZMQ version: %s, but depend on zmq >= %s"%(
+            fatal("Detected ZMQ version: %s, but depend on ZMQ >= %s"%(
                     vs, v_str(min_zmq))
                     +'\n       Using ZMQ=%s' % (zmq_prefix or 'unspecified'))
         
@@ -394,7 +388,7 @@ class Configure(build_ext):
             warn("libzmq features and fixes introduced after %s will be unavailable." % vs)
             line()
         elif vers >= dev_zmq:
-            warn("Detected ZMQ version: %s. pyzmq's support for libzmq-dev is experimental." % vs)
+            warn("Detected ZMQ version: %s. Some new features in libzmq may not be exposed by pyzmq." % vs)
             line()
 
         if sys.platform.startswith('win'):
@@ -650,10 +644,9 @@ class Configure(build_ext):
         # first try with given config or defaults
         try:
             self.check_zmq_version()
-        except Exception:
-            etype, evalue, tb = sys.exc_info()
+        except Exception as e:
             # print the error as distutils would if we let it raise:
-            info("\nerror: %s\n" % evalue)
+            info("\nerror: %s\n" % e)
         else:
             self.finish_run()
             return
@@ -666,10 +659,9 @@ class Configure(build_ext):
             self.init_settings_from_config()
             try:
                 self.check_zmq_version()
-            except Exception:
-                etype, evalue, tb = sys.exc_info()
+            except Exception as e:
                 # print the error as distutils would if we let it raise:
-                info("\nerror: %s\n" % evalue)
+                info("\nerror: %s\n" % e)
             else:
                 # if we get here the second run succeeded, so we need to update compiler
                 # settings for the extensions with /usr/local prefix

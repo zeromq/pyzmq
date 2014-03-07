@@ -14,8 +14,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-import random
 import codecs
+import random
+import warnings
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -67,6 +68,8 @@ class Socket(SocketBase, AttributeSetter):
         
         address is the integer address of the libzmq socket
         or an FFI pointer to it.
+        
+        .. versionadded:: 14.1
         """
         address = cast_int_addr(address)
         return cls(shadow=address)
@@ -77,6 +80,9 @@ class Socket(SocketBase, AttributeSetter):
     
     @property
     def socket_type(self):
+        warnings.warn("Socket.socket_type is deprecated, use Socket.type",
+            DeprecationWarning
+        )
         return self.type
     
     #-------------------------------------------------------------------------

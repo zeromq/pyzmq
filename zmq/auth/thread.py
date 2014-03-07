@@ -1,4 +1,7 @@
-"""0MQ authenticator in a Python Thread."""
+"""ZAP Authenticator in a Python Thread.
+
+.. versionadded:: 14.1
+"""
 
 #-----------------------------------------------------------------------------
 #  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
@@ -134,8 +137,9 @@ def _inherit_docstrings(cls):
 class ThreadAuthenticator(object):
     """Run ZAP authentication in a background thread"""
 
-    def __init__(self, context=None, encoding='utf-8'):
+    def __init__(self, context=None, log=None, encoding='utf-8'):
         self.context = context or zmq.Context.instance()
+        self.log = log
         self.encoding = encoding
         self.pipe = None
         self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
@@ -161,7 +165,7 @@ class ThreadAuthenticator(object):
         self.pipe = self.context.socket(zmq.PAIR)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
-        self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding)
+        self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log)
         self.thread.start()
 
     def stop(self):
