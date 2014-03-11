@@ -16,6 +16,9 @@
 /* Define to 1 if you have the <errno.h> header file. */
 #define HAVE_ERRNO_H 1
 
+/* Define to 1 if you have the `fork' function. */
+#define HAVE_FORK 1
+
 /* Define to 1 if you have the `freeifaddrs' function. */
 #define HAVE_FREEIFADDRS 1
 
@@ -51,6 +54,9 @@
 
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
+
+/* Define to 1 if you have the `sodium' library (-lsodium). */
+/* #undef HAVE_LIBSODIUM */
 
 /* Define to 1 if you have the `ws2_32' library (-lws2_32). */
 /* #undef HAVE_LIBWS2_32 */
@@ -141,7 +147,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 3.3.0"
+#define PACKAGE_STRING "zeromq 4.0.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -150,7 +156,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.3.0"
+#define PACKAGE_VERSION "4.0.4"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -162,7 +168,7 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "3.3.0"
+#define VERSION "4.0.4"
 
 /* Force to use mutexes */
 /* #undef ZMQ_FORCE_MUTEXES */
@@ -210,7 +216,7 @@
 /* #undef ZMQ_HAVE_QNXNTO */
 
 /* Whether SOCK_CLOEXEC is defined and functioning. */
-/* #undef ZMQ_HAVE_SOCK_CLOEXEC */
+#define ZMQ_HAVE_SOCK_CLOEXEC 1
 
 /* Have Solaris OS */
 /* #undef ZMQ_HAVE_SOLARIS */
