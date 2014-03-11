@@ -373,25 +373,26 @@ class Socket(SocketBase, AttributeSetter):
         s = self.recv(flags)
         return pickle.loads(s)
 
-    def send_json(self, obj, flags=0):
+    def send_json(self, obj, flags=0, **kwargs):
         """send a Python object as a message using json to serialize
-
+        
+        Keyword arguments are passed on to json.loads
+        
         Parameters
         ----------
         obj : Python object
-            The Python object to send.
+            The Python object to send
         flags : int
-            Any valid send flag.
+            Any valid send flag
         """
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = jsonapi.dumps(obj)
-            return self.send(msg, flags)
+        msg = jsonapi.dumps(obj, **kwargs)
+        return self.send(msg, flags)
 
-    def recv_json(self, flags=0):
+    def recv_json(self, flags=0, **kwargs):
         """receive a Python object as a message using json to serialize
 
+        Keyword arguments are passed on to json.loads
+        
         Parameters
         ----------
         flags : int
@@ -402,11 +403,8 @@ class Socket(SocketBase, AttributeSetter):
         obj : Python object
             The Python object that arrives as a message.
         """
-        if jsonapi.jsonmod is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = self.recv(flags)
-            return jsonapi.loads(msg)
+        msg = self.recv(flags)
+        return jsonapi.loads(msg, **kwargs)
     
     _poller_class = Poller
 
