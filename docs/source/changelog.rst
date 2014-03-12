@@ -18,7 +18,7 @@ Security
 The headline features for 14.1 are adding better support for libzmq's
 security features.
 
-- When libzmq is bundled as a Python extension (e.g. bdists),
+- When libzmq is bundled as a Python extension (e.g. wheels, eggs),
   libsodium is also bundled (excluding Windows),
   ensuring that libzmq security is available to users who install from wheels
 - New :mod:`zmq.auth`, implementing zeromq's ZAP authentication,
@@ -36,6 +36,7 @@ Other New Stuff
 - Add TOS, ROUTER_HANDOVER, and IPC_FILTER constants from libzmq-4.1-dev.
 - Add Context option support in the CFFI backend.
 - Various small unicode and build fixes, as always.
+- :meth:`~.Socket.send_json` and :meth:`~.Socket.recv_json` pass any extra kwargs to ``json.dumps/loads``.
 
 
 .. _pyczmq: https://github.com/zeromq/pyczmq
