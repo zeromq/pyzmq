@@ -556,15 +556,6 @@ class Configure(build_ext):
         "",
         ]))
         
-        # ultra-lazy pip detection:
-        if 'pip' in ' '.join(sys.argv):
-            info('\n'.join([
-        "If you expected to get a binary install (egg), we have those for",
-        "current Pythons on OS X and Windows. These can be installed with",
-        "easy_install, but PIP DOES NOT SUPPORT EGGS.",
-        "",
-        ]))
-        
         info('\n'.join([
             "You can skip all this detection/waiting nonsense if you know",
             "you want pyzmq to bundle libzmq as an extension by passing:",
