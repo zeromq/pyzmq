@@ -257,7 +257,13 @@ class Configure(build_ext):
     def save_config(self, name, cfg):
         """write config to JSON"""
         save_config(name, cfg, self.build_base)
+        # write to zmq.utils.[name].json
         save_config(name, cfg, os.path.join('zmq', 'utils'))
+        # also write to build_lib, because we might be run after copying to
+        # build_lib has already happened.
+        build_lib_utils = os.path.join(self.build_lib, 'zmq', 'utils')
+        if os.path.exists(build_lib_utils):
+            save_config(name, cfg, build_lib_utils)
     
     def init_settings_from_config(self):
         """set up compiler settings, based on config"""
@@ -822,7 +828,7 @@ class CleanCommand(Command):
 
         for root, dirs, files in list(os.walk('zmq')):
             for f in files:
-                if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd'):
+                if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd', '.json'):
                     self._clean_me.append(pjoin(root, f))
                 # remove generated cython files
                 if self.all and os.path.splitext(f)[-1] == '.c':
