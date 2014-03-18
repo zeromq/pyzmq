@@ -51,7 +51,12 @@ class TestContext(BaseZMQTestCase):
         c = self.Context()
         c.term()
         self.assert_(c.closed)
-
+    
+    def test_context_manager(self):
+        with self.Context() as c:
+            pass
+        self.assert_(c.closed)
+    
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
     
