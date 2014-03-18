@@ -22,38 +22,44 @@ from zmq.utils.interop import cast_int_addr
 
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
-    
+
     A zmq Context creates sockets via its ``ctx.socket`` method.
     """
     sockopts = None
     _instance = None
-    
+
     def __init__(self, io_threads=1, **kwargs):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
         self.sockopts = {}
-    
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.term()
+
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq context
-        
+
         address is the integer address of the libzmq context
         or an FFI pointer to it.
-        
+
         .. versionadded:: 14.1
         """
         address = cast_int_addr(address)
         return cls(shadow=address)
-    
+
     @classmethod
     def shadow_pyczmq(cls, ctx):
         """Shadow an existing pyczmq context
-        
+
         ctx is the FFI `zctx_t *` pointer
-        
+
         .. versionadded:: 14.1
         """
         from pyczmq import zctx
-        
+
         underlying = zctx.underlying(ctx)
         address = cast_int_addr(underlying)
         return cls(shadow=address)
@@ -78,11 +84,11 @@ class Context(ContextBase, AttributeSetter):
         if cls._instance is None or cls._instance.closed:
             cls._instance = cls(io_threads=io_threads)
         return cls._instance
-    
+
     #-------------------------------------------------------------------------
     # Hooks for ctxopt completion
     #-------------------------------------------------------------------------
-    
+
     def __dir__(self):
         keys = dir(self.__class__)
 
@@ -99,7 +105,7 @@ class Context(ContextBase, AttributeSetter):
     @property
     def _socket_class(self):
         return Socket
-    
+
     def socket(self, socket_type):
         """Create a Socket associated with this Context.
 
@@ -121,28 +127,28 @@ class Context(ContextBase, AttributeSetter):
                 # SUBSCRIBE for non-SUB sockets.
                 pass
         return s
-    
+
     def setsockopt(self, opt, value):
         """set default socket options for new sockets created by this Context
-        
+
         .. versionadded:: 13.0
         """
         self.sockopts[opt] = value
-    
+
     def getsockopt(self, opt):
         """get default socket options for new sockets created by this Context
-        
+
         .. versionadded:: 13.0
         """
         return self.sockopts[opt]
-    
+
     def _set_attr_opt(self, name, opt, value):
         """set default sockopts as attributes"""
         if name in constants.ctx_opt_names:
             return self.set(opt, value)
         else:
             self.sockopts[opt] = value
-    
+
     def _get_attr_opt(self, name, opt):
         """get default sockopts as attributes"""
         if name in constants.ctx_opt_names:
@@ -152,7 +158,7 @@ class Context(ContextBase, AttributeSetter):
                 raise AttributeError(name)
             else:
                 return self.sockopts[opt]
-    
+
     def __delattr__(self, key):
         """delete default sockopts as attributes"""
         key = key.upper()
