@@ -9,6 +9,11 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.1.1
+======
+
+- Fix a bug in 14.1.0 causing installation to fail on PyPy.
+
 14.1.0
 ======
 
