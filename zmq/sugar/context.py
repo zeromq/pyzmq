@@ -32,6 +32,12 @@ class Context(ContextBase, AttributeSetter):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
         self.sockopts = {}
     
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, *args, **kwargs):
+        self.term()
+    
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq context
