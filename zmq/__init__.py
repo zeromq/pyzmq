@@ -53,16 +53,6 @@ else:
     finally:
         del zipimport
 
-# init Python threads
-
-if 'PyPy' not in sys.version:
-    try:
-        from zmq.utils import initthreads # initialize threads
-    except ImportError as e:
-        raise ImportError("%s\nAre you trying to `import zmq` from the pyzmq source dir?" % e)
-    else:
-        initthreads.init_threads()
-
 del os, sys, glob, here, bundled, bundled_sodium, ext
 
 # zmq top-level imports
