@@ -963,9 +963,6 @@ submodules = {
     'devices' : {
             'monitoredqueue':[buffers, libzmq, monqueue, socket, context, checkrc],
     },
-    'utils' : {
-            'rebuffer':[buffers],
-    },
 }
 
 try:
