@@ -26,10 +26,6 @@ from unittest import TestCase
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy, PYPY
 from zmq.utils.strtypes import unicode, bytes, b, u
-try:
-    from zmq.utils.rebuffer import array_from_buffer
-except:
-    array_from_buffer = None
 
 #-----------------------------------------------------------------------------
 # Tests
@@ -340,24 +336,24 @@ class TestFrame(BaseZMQTestCase):
         for i in range(1,len(shapes)+1):
             shape = shapes[:i]
             for dt in dtypes:
-                A = numpy.ndarray(shape, dtype=dt)
+                A = numpy.empty(shape, dtype=dt)
                 while numpy.isnan(A).any():
                     # don't let nan sneak in
                     A = numpy.ndarray(shape, dtype=dt)
                 a.send(A, copy=False)
                 msg = b.recv(copy=False)
                 
-                B = array_from_buffer(msg, A.dtype, A.shape)
+                B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
                 self.assertEqual(A.shape, B.shape)
                 self.assertTrue((A==B).all())
-            A = numpy.ndarray(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
+            A = numpy.empty(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
             A['a'] = 1024
             A['b'] = 1e9
             A['c'] = 'hello there'
             a.send(A, copy=False)
             msg = b.recv(copy=False)
             
-            B = array_from_buffer(msg, A.dtype, A.shape)
+            B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
             self.assertEqual(A.shape, B.shape)
             self.assertTrue((A==B).all())
     
