@@ -35,7 +35,7 @@ class AuthenticationThread(Thread):
         self.authenticator = Authenticator(context, encoding=encoding, log=log)
 
         # create a socket to communicate back to main thread.
-        self.pipe = context.socket(zmq.PAIR)
+        self.pipe = context.socket(zmq.PULL)
         self.pipe.linger = 1
         self.pipe.connect(endpoint)
 
@@ -162,7 +162,7 @@ class ThreadAuthenticator(object):
     def start(self):
         """Start the authentication thread"""
         # create a socket to communicate with auth thread.
-        self.pipe = self.context.socket(zmq.PAIR)
+        self.pipe = self.context.socket(zmq.PUSH)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
         self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log)
