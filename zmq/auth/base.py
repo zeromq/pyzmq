@@ -19,7 +19,7 @@ from .certs import load_certificates
 
 
 CURVE_ALLOW_ANY = '*'
-
+VERSION = b'1.0'
 
 class Authenticator(object):
     """Implementation of ZAP authentication for zmq connections.
@@ -120,17 +120,28 @@ class Authenticator(object):
 
     def handle_zap_message(self, msg):
         """Perform ZAP authentication"""
-        version, sequence, domain, address, identity, mechanism = msg[:6]
+        if len(msg) < 6:
+            self.log.error("Invalid ZAP message, not enough frames: %r", msg)
+            if len(msg) < 2:
+                self.log.error("Not enough information to reply")
+            else:
+                self._send_zap_reply(msg[1], b"400", b"Not enough frames")
+            return
+        
+        version, request_id, domain, address, identity, mechanism = msg[:6]
+        credentials = msg[6:]
+        
         domain = u(domain, self.encoding, 'replace')
         address = u(address, self.encoding, 'replace')
 
-        if (version != b"1.0"):
-            self._send_zap_reply(sequence, b"400", b"Invalid version")
+        if (version != VERSION):
+            self.log.error("Invalid ZAP version: %r", msg)
+            self._send_zap_reply(request_id, b"400", b"Invalid version")
             return
 
-        self.log.debug("version: %s, sequence: %s, domain: %s,"
-                      " address: %s, identity: %s, mechanism: %s",
-                      version, sequence, domain,
+        self.log.debug("version: %r, request_id: %r, domain: %r,"
+                      " address: %r, identity: %r, mechanism: %r",
+                      version, request_id, domain,
                       address, identity, mechanism,
         )
 
@@ -159,6 +170,7 @@ class Authenticator(object):
                 self.log.debug("PASSED (not in blacklist) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
+        username = u("user")
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
@@ -168,19 +180,26 @@ class Authenticator(object):
 
             elif mechanism == b'PLAIN':
                 # For PLAIN, even a whitelisted address must authenticate
-                username = u(msg[6], self.encoding, 'replace')
-                password = u(msg[7], self.encoding, 'replace')
+                if len(credentials) != 2:
+                    self.log.error("Invalid PLAIN credentials: %r", credentials)
+                    self._send_zap_reply(request_id, b"400", b"Invalid credentials")
+                    return
+                username, password = [ u(c, self.encoding, 'replace') for c in credentials ]
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
             elif mechanism == b'CURVE':
                 # For CURVE, even a whitelisted address must authenticate
-                key = msg[6]
+                if len(credentials) != 1:
+                    self.log.error("Invalid CURVE credentials: %r", credentials)
+                    self._send_zap_reply(request_id, b"400", b"Invalid credentials")
+                    return
+                key = credentials[0]
                 allowed, reason = self._authenticate_curve(domain, key)
 
         if allowed:
-            self._send_zap_reply(sequence, b"200", b"OK")
+            self._send_zap_reply(request_id, b"200", b"OK", username)
         else:
-            self._send_zap_reply(sequence, b"400", reason)
+            self._send_zap_reply(request_id, b"400", reason)
 
     def _authenticate_plain(self, domain, username, password):
         """PLAIN ZAP authentication"""
@@ -246,12 +265,14 @@ class Authenticator(object):
 
         return allowed, reason
 
-    def _send_zap_reply(self, sequence, status_code, status_text):
+    def _send_zap_reply(self, request_id, status_code, status_text, user_id='user'):
         """Send a ZAP reply to finish the authentication."""
-        uid = b"user" if status_code == b'OK' else b""
-        metadata = b""  # not currently used
+        user_id = user_id if status_code == b'200' else b''
+        if isinstance(user_id, unicode):
+            user_id = user_id.encode(self.encoding, 'replace')
+        metadata = b''  # not currently used
         self.log.debug("ZAP reply code=%s text=%s", status_code, status_text)
-        reply = [b"1.0", sequence, status_code, status_text, uid, metadata]
+        reply = [VERSION, request_id, status_code, status_text, user_id, metadata]
         self.zap_socket.send_multipart(reply)
 
 __all__ = ['Authenticator', 'CURVE_ALLOW_ANY']
