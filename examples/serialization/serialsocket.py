@@ -1,7 +1,7 @@
 """A Socket subclass that adds some serialization methods."""
 
 import zlib
-import cPickle as pickle
+import pickle
 
 import numpy
 
@@ -21,7 +21,7 @@ class SerializingSocket(zmq.Socket):
         """pack and compress an object with pickle and zlib."""
         pobj = pickle.dumps(obj, protocol)
         zobj = zlib.compress(pobj)
-        print 'zipped pickle is %i bytes'%len(zobj)
+        print('zipped pickle is %i bytes' % len(zobj))
         return self.send(zobj, flags=flags)
     
     def recv_zipped_pickle(self, flags=0):
@@ -43,20 +43,21 @@ class SerializingSocket(zmq.Socket):
         """recv a numpy array"""
         md = self.recv_json(flags=flags)
         msg = self.recv(flags=flags, copy=copy, track=track)
-        buf = buffer(msg)
-        A = numpy.frombuffer(buf, dtype=md['dtype'])
+        A = numpy.frombuffer(msg, dtype=md['dtype'])
         return A.reshape(md['shape'])
-    
 
-if __name__ == '__main__':
-    ctx = zmq.Context.instance()
-    req = SerializingSocket(ctx, zmq.REQ)
-    rep = SerializingSocket(ctx, zmq.REP)
+class SerializingContext(zmq.Context):
+    _socket_class = SerializingSocket
+
+def main():
+    ctx = SerializingContext()
+    req = ctx.socket(zmq.REQ)
+    rep = ctx.socket(zmq.REP)
     
     rep.bind('inproc://a')
     req.connect('inproc://a')
     A = numpy.ones((1024,1024))
-    print "Array is %i bytes"%len(buffer(A))
+    print ("Array is %i bytes" % (len(A) * 8))
     
     # send/recv with pickle+zip
     req.send_zipped_pickle(A)
@@ -68,3 +69,6 @@ if __name__ == '__main__':
     print ("Okay" if (A==B).all() else "Failed")
     print ("Checking send_array...")
     print ("Okay" if (C==B).all() else "Failed")
+
+if __name__ == '__main__':
+    main()
