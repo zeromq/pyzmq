@@ -1,5 +1,6 @@
 # PyZMQ: Python bindings for ØMQ
 
+[![Build Status](https://travis-ci.org/zeromq/pyzmq.svg?branch=master)](https://travis-ci.org/zeromq/pyzmq)
 
 This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
