@@ -89,7 +89,8 @@ class GarbageCollector(object):
         self.thread = None
         self._context = context
         self._lock = Lock()
-        atexit.register(self.stop)
+        self._stay_down = False
+        atexit.register(self._atexit)
     
     @property
     def context(self):
@@ -104,6 +105,14 @@ class GarbageCollector(object):
                 warnings.warn("Replacing gc context while gc is running", RuntimeWarning)
             self.stop()
         self._context = ctx
+    
+    def _atexit(self):
+        """atexit callback
+        
+        sets _stay_down flag so that gc doesn't try to start up again in other atexit handlers
+        """
+        self._stay_down = True
+        self.stop()
     
     def stop(self):
         """stop the garbage-collection thread"""
@@ -145,6 +154,8 @@ class GarbageCollector(object):
     def store(self, obj, event=None):
         """store an object and (optionally) event for zero-copy"""
         if not self.is_alive():
+            if self._stay_down:
+                return 0
             # safely start the gc thread
             # use lock and double check,
             # so we don't start multiple threads
