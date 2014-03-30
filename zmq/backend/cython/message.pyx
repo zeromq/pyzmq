@@ -57,16 +57,19 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 # Code
 #-----------------------------------------------------------------------------
 
+ctypedef struct zhint:
+    void *ctx
+    size_t id
 
 cdef void free_python_msg(void *data, void *vhint) nogil:
-    """A pure-C for DECREF'ing Python-owned message data.
+    """A pure-C function for DECREF'ing Python-owned message data.
     
     Sends a message on a PUSH socket
     
-    The hint is two pointers:
+    The hint is a `zhint` struct with two values:
     
-    0: pointer to the Garbage Collector's context
-    1: pointer to a zmq_msg_t that should be sent on a PUSH socket,
+    ctx (void *): pointer to the Garbage Collector's context
+    id (size_t): the id to be used to construct a zmq_msg_t that should be sent on a PUSH socket,
        signaling the Garbage Collector to remove its reference to the object.
     
     - A PUSH socket is created in the context,
@@ -77,18 +80,15 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
     When the Garbage Collector's PULL socket receives the message,
     it deletes its reference to the object,
     allowing Python to free the memory.
-    
     """
-    cdef void *ctx
     cdef void *push
-    cdef zmq_msg_t *hint_msg
-    cdef size_t* hint
-    cdef int rc
-    if vhint != NULL:
-        hint = <size_t *> vhint
-        ctx = <void *> hint[0]
-        hint_msg = <zmq_msg_t *> hint[1]
-        push = zmq_socket(ctx, ZMQ_PUSH)
+    cdef zmq_msg_t msg
+    cdef zhint *hint = <zhint *> vhint
+    if hint != NULL:
+        zmq_msg_init_size(&msg, sizeof(size_t))
+        memcpy(zmq_msg_data(&msg), &hint.id, sizeof(size_t))
+        
+        push = zmq_socket(hint.ctx, ZMQ_PUSH)
         if push == NULL:
             # this will happen if the context has been terminated
             return
@@ -97,13 +97,12 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
             fprintf(cstderr, "pyzmq-gc connect failed: %s\n", zmq_strerror(zmq_errno()))
             return
         
-        rc = zmq_msg_send(hint_msg, push, 0)
+        rc = zmq_msg_send(&msg, push, 0)
         if rc < 0:
             fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
         
-        zmq_msg_close(hint_msg)
+        zmq_msg_close(&msg)
         zmq_close(push)
-        free(hint_msg)
         free(hint)
 
 gc = None
@@ -139,8 +138,7 @@ cdef class Frame:
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
-        cdef size_t *hint = <size_t *> malloc(2 * sizeof(size_t))
-        cdef zmq_msg_t *hint_msg = <zmq_msg_t *> malloc(sizeof(zmq_msg_t))
+        cdef zhint *hint
 
         # init more as False
         self.more = False
@@ -178,19 +176,16 @@ cdef class Frame:
         if gc is None:
             from zmq.utils.garbage import gc
         
-        cdef size_t theid = gc.store(data, self.tracker_event)
-        
-        zmq_msg_init_size(hint_msg, sizeof(size_t))
-        memcpy(zmq_msg_data(hint_msg), &theid, sizeof(size_t))
-        
-        hint[0] = gc._context.underlying
-        hint[1] = <size_t> hint_msg
+        hint = <zhint *> malloc(sizeof(zhint))
+        hint.id = gc.store(data, self.tracker_event)
+        hint.ctx = <void *> <size_t> gc._context.underlying
         
         rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
                 <zmq_free_fn *>free_python_msg, <void *>hint
             )
         if rc != 0:
+            free(hint)
             _check_rc(rc)
         self._failed_init = False
     
