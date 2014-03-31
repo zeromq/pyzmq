@@ -25,7 +25,7 @@
 
 from libzmq cimport zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair
 
-from zmq.error import ZMQError, _check_rc
+from zmq.error import ZMQError, _check_rc, _check_version
 
 #-----------------------------------------------------------------------------
 # Code
@@ -47,6 +47,7 @@ def curve_keypair():
     cdef int rc
     cdef char[64] public_key
     cdef char[64] secret_key
+    _check_version((4,0), "curve_keypair")
     rc = zmq_curve_keypair (public_key, secret_key)
     _check_rc(rc)
     return public_key, secret_key
