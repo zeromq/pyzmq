@@ -12,7 +12,7 @@
 
 from ._cffi import ffi, C
 
-from zmq.error import ZMQError, _check_rc
+from zmq.error import ZMQError, _check_rc, _check_version
 
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
@@ -24,6 +24,7 @@ def curve_keypair():
     (public, secret) : two bytestrings
         The public and private keypair as 40 byte z85-encoded bytestrings.
     """
+    _check_version((3,2), "monitor")
     public = ffi.new('char[64]')
     private = ffi.new('char[64]')
     rc = C.zmq_curve_keypair(public, private)
