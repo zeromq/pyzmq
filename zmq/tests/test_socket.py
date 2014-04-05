@@ -285,11 +285,11 @@ class TestSocket(BaseZMQTestCase):
         ctx = self.Context()
         s = ctx.socket(zmq.PUB)
         s.close()
-        self.assertRaises(zmq.ZMQError, s.bind, b'')
-        self.assertRaises(zmq.ZMQError, s.connect, b'')
-        self.assertRaises(zmq.ZMQError, s.setsockopt, zmq.SUBSCRIBE, b'')
-        self.assertRaises(zmq.ZMQError, s.send, b'asdf')
-        self.assertRaises(zmq.ZMQError, s.recv)
+        self.assertRaisesErrno(zmq.ENOTSOCK, s.bind, b'')
+        self.assertRaisesErrno(zmq.ENOTSOCK, s.connect, b'')
+        self.assertRaisesErrno(zmq.ENOTSOCK, s.setsockopt, zmq.SUBSCRIBE, b'')
+        self.assertRaisesErrno(zmq.ENOTSOCK, s.send, b'asdf')
+        self.assertRaisesErrno(zmq.ENOTSOCK, s.recv)
         del ctx
     
     def test_attr(self):
