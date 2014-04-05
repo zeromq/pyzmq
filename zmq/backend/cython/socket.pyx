@@ -93,7 +93,7 @@ cdef inline _check_closed(Socket s):
     Does not do a deep check
     """
     if s._closed:
-        raise ZMQError(ENOTSUP)
+        raise ZMQError(ENOTSOCK)
 
 cdef inline _check_closed_deep(Socket s):
     """thorough check of whether the socket has been closed,
