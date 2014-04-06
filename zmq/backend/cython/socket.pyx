@@ -75,7 +75,7 @@ import zmq
 from zmq.backend.cython import constants
 from zmq.backend.cython.constants import *
 from zmq.backend.cython.checkrc cimport _check_rc
-from zmq.error import ZMQError, ZMQBindError
+from zmq.error import ZMQError, ZMQBindError, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
@@ -492,11 +492,8 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
-        
-        if ZMQ_VERSION_MAJOR < 3:
-            raise NotImplementedError("unbind requires libzmq >= 3.0, have %s" % zmq.zmq_version())
-        
 
+        _check_version((3,2), "unbind")
         _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
@@ -527,9 +524,7 @@ cdef class Socket:
         cdef int rc
         cdef char* c_addr
         
-        if ZMQ_VERSION_MAJOR < 3:
-            raise NotImplementedError("disconnect requires libzmq >= 3.0, have %s" % zmq.zmq_version())
-
+        _check_version((3,2), "disconnect")
         _check_closed(self)
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
@@ -547,6 +542,9 @@ cdef class Socket:
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
         
+        While this function is available from libzmq 3.2,
+        pyzmq cannot parse monitor messages from libzmq prior to 4.0.
+        
         .. versionadded: libzmq-3.2
         .. versionadded: 14.0
         
@@ -560,9 +558,7 @@ cdef class Socket:
         cdef int rc, c_flags
         cdef char* c_addr
         
-        if zmq.zmq_version_info() < (3,2):
-            raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
-        
+        _check_version((3,2), "monitor")
         if isinstance(addr, unicode):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):

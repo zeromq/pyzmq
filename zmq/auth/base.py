@@ -14,6 +14,7 @@ import logging
 import zmq
 from zmq.utils import z85
 from zmq.utils.strtypes import bytes, unicode, b, u
+from zmq.error import _check_version
 
 from .certs import load_certificates
 
@@ -32,8 +33,7 @@ class Authenticator(object):
     """
 
     def __init__(self, context=None, encoding='utf-8', log=None):
-        if zmq.zmq_version_info() < (4,0):
-            raise NotImplementedError("Security is only available in libzmq >= 4.0")
+        _check_version((4,0), "security")
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False

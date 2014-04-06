@@ -24,7 +24,7 @@ from .message import Frame
 from .constants import *
 
 import zmq
-from zmq.error import ZMQError, _check_rc
+from zmq.error import ZMQError, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
 
 
@@ -131,6 +131,7 @@ class Socket(object):
                 _check_rc(rc)
 
     def unbind(self, address):
+        _check_version((3,2), "unbind")
         if isinstance(address, unicode):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
@@ -143,6 +144,7 @@ class Socket(object):
         _check_rc(rc)
 
     def disconnect(self, address):
+        _check_version((3,2), "disconnect")
         if isinstance(address, unicode):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
@@ -243,8 +245,8 @@ class Socket(object):
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
-        if zmq.zmq_version_info() < (3,2):
-            raise NotImplementedError("monitor requires libzmq >= 3.2, have %s" % zmq.zmq_version())
+        
+        _check_version((3,2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)

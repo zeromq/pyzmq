@@ -12,9 +12,7 @@
 
 import struct
 import zmq
-
-# used to determine which version of the event message API is in use
-LIBZMQVERSION = zmq.zmq_version_info()
+from zmq.error import _check_version
 
 def parse_monitor_message(msg):
     """decode zmq_monitor event messages.
@@ -67,8 +65,7 @@ def recv_monitor_message(socket, flags=0):
     event : dict
         event description as dict with the keys `event`, `value`, and `endpoint`.
     """
-    if LIBZMQVERSION < (4,):
-        raise NotImplementedError("libzmq event API needs libzmq version >= 4.0, you have %s!" % zmq.zmq_version())
+    _check_version((4,0), 'libzmq event API')
     # will always return a list
     msg = socket.recv_multipart(flags)
     # 4.0-style event API
