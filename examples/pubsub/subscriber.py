@@ -1,8 +1,6 @@
 """A test that subscribes to NumPy arrays.
 
-Currently the timing of this example is not accurate as it depends on the
-subscriber and publisher being started at exactly the same moment. We should
-use a REQ/REP side channel to synchronize the two processes at the beginning.
+Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 """
 
 #-----------------------------------------------------------------------------
@@ -19,6 +17,17 @@ import time
 import zmq
 import numpy
 
+def sync(connect_to):
+    # use connect socket + 1
+    sync_with = ':'.join(connect_to.split(':')[:-1] +
+                         [str(int(connect_to.split(':')[-1]) + 1)]
+                        )
+    ctx = zmq.Context.instance()
+    s = ctx.socket(zmq.REQ)
+    s.connect(sync_with)
+    s.send('READY')
+    s.recv()
+
 def main():
     if len (sys.argv) != 3:
         print 'usage: subscriber <connect_to> <array-count>'
@@ -34,8 +43,9 @@ def main():
     ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
-    print "   Done."
     s.setsockopt(zmq.SUBSCRIBE,'')
+
+    sync(connect_to)
 
     start = time.clock()
 

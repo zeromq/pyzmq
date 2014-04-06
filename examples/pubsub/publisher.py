@@ -1,8 +1,6 @@
 """A test that publishes NumPy arrays.
 
-Currently the timing of this example is not accurate as it depends on the
-subscriber and publisher being started at exactly the same moment. We should
-use a REQ/REP side channel to synchronize the two processes at the beginning.
+Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 """
 
 #-----------------------------------------------------------------------------
@@ -17,6 +15,18 @@ import time
 
 import zmq
 import numpy
+
+def sync(bind_to):
+    # use bind socket + 1
+    sync_with = ':'.join(bind_to.split(':')[:-1] +
+                         [str(int(bind_to.split(':')[-1]) + 1)])
+    ctx = zmq.Context.instance()
+    s = ctx.socket(zmq.REP)
+    s.bind(sync_with)
+    print "Waiting for subscriber to connect..."
+    s.recv()
+    print "   Done."
+    s.send('GO')
 
 def main():
     if len (sys.argv) != 4:
@@ -35,19 +45,12 @@ def main():
     s = ctx.socket(zmq.PUB)
     s.bind(bind_to)
 
-    print "Waiting for subscriber to connect..."
-    # We need to sleep to allow the subscriber time to connect
-    time.sleep(1.0)
-    print "   Done."
+    sync(bind_to)
 
     print "Sending arrays..."
     for i in range(array_count):
         a = numpy.random.rand(array_size, array_size)
         s.send_pyobj(a)
-    print "   Done."
-    print "Waiting for arrays to finish being sent..."
-
-    time.sleep(1.0)
     print "   Done."
 
 if __name__ == "__main__":
