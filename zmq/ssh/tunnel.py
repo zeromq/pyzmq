@@ -1,13 +1,11 @@
 """Basic ssh tunnel utilities, and convenience functions for tunneling
 zeromq connections.
-
-Authors
--------
-* Min RK
 """
 
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2010-2011  IPython Development Team, Min Ragan-Kelley
+#  Copyright (C) 2010-2011  IPython Development Team
+#  Copyright (C) 2011- Min Ragan-Kelley
+#  This file is part of pyzmq.
 #
 #  Redistributed from IPython under the terms of the BSD License.
 #-----------------------------------------------------------------------------
@@ -18,16 +16,23 @@ Authors
 #-----------------------------------------------------------------------------
 from __future__ import print_function
 
-import os,sys,atexit
+import atexit
+import os
+import signal
 import socket
+import sys
+import warnings
 from getpass import getpass, getuser
+from multiprocessing import Process
 
 try:
-    import paramiko
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', DeprecationWarning)
+        import paramiko
 except ImportError:
     paramiko = None
 else:
-    from zmq.ssh.forward import forward_tunnel
+    from .forward import forward_tunnel
 
 
 try:
@@ -202,9 +207,13 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
     ssh="ssh "
     if keyfile:
         ssh += "-i " + keyfile
-    username, server, port = _split_server(server)
-    server = username + "@" + server 
-    cmd = ssh + " -f -p %i -L 127.0.0.1:%i:%s:%i %s sleep %i"%(port, lport, remoteip, rport, server, timeout)
+    
+    if ':' in server:
+        server, port = server.split(':')
+        ssh += " -p %s" % port
+    
+    cmd = "%s -f -S none -L 127.0.0.1:%i:%s:%i %s sleep %i" % (
+        ssh, lport, remoteip, rport, server, timeout)
     tunnel = pexpect.spawn(cmd)
     failed = False
     while True:
@@ -281,10 +290,6 @@ def paramiko_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pa
         closing.  This prevents orphaned tunnels from running forever.
     
     """
-    try:
-        from multiprocessing import Process
-    except ImportError:
-        raise ImportError("multiprocessing module required for backgrounding Paramiko tunnnels")
     if paramiko is None:
         raise ImportError("Paramiko not available")
     
@@ -326,7 +331,8 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
         print('*** Failed to connect to %s:%d: %r' % (server, port, e))
         sys.exit(1)
 
-    # print('Now forwarding port %d to %s:%d ...' % (lport, server, rport))
+    # Don't let SIGINT kill the tunnel subprocess
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     try:
         forward_tunnel(lport, remoteip, rport, client.get_transport())
