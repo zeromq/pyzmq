@@ -85,17 +85,9 @@ class Context(object):
         _check_rc(rc)
         return rc
 
-    def term(self, linger=None):
+    def term(self):
         if self.closed:
             return
-
-        sockets = self._sockets
-        self._sockets = set()
-        for s in sockets:
-            s = s()
-            if s and not s.closed:
-                if linger:
-                    s.setsockopt(LINGER, linger)
 
         C.zmq_ctx_destroy(self._zmq_ctx)
 
