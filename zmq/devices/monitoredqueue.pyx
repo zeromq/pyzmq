@@ -80,8 +80,7 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     cdef int rc
 
     # force swap_ids if both ROUTERs
-    swap_ids = (in_socket.socket_type == ROUTER and 
-                out_socket.socket_type == ROUTER)
+    swap_ids = (in_socket.type == ROUTER and out_socket.type == ROUTER)
     
     # build zmq_msg objects from str prefixes
     asbuffer_r(in_prefix, <void **>&msg_c, &msg_c_len)
