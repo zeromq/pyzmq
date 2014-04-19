@@ -335,8 +335,8 @@ class Socket(SocketBase, AttributeSetter):
         s : unicode string (unicode on py2, str on py3)
             The Python unicode string that arrives as encoded bytes.
         """
-        msg = self.recv(flags=flags, copy=False)
-        return codecs.decode(msg.bytes, encoding)
+        b = self.recv(flags=flags)
+        return b.decode(encoding)
     
     recv_unicode = recv_string
     
