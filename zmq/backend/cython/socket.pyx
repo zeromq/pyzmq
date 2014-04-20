@@ -247,7 +247,7 @@ cdef class Socket:
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
-        return <Py_ssize_t> self.handle
+        return <size_t> self.handle
     
     @property
     def closed(self):
