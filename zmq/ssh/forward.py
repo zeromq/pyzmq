@@ -1,4 +1,3 @@
-#------------------------------------------------------------------------------
 #
 # This file is adapted from a paramiko demo, and thus licensed under LGPL 2.1.
 # Original Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
@@ -17,7 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Paramiko; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA.
-#------------------------------------------------------------------------------
 
 """
 Sample script showing how to do local port forwarding over paramiko.
@@ -27,22 +25,23 @@ forwarding (the openssh -L option) from a local port through a tunneled
 connection to a destination reachable from the SSH server machine.
 """
 
-import sys
+from __future__ import print_function
+
 import logging
 import select
-try:
-    import socketserver as SocketServer
-except ImportError:
-    import SocketServer
+try:  # Python 3
+    import socketserver
+except ImportError:  # Python 2
+    import SocketServer as socketserver
 
 logger = logging.getLogger('ssh')
 
-class ForwardServer (SocketServer.ThreadingTCPServer):
+class ForwardServer (socketserver.ThreadingTCPServer):
     daemon_threads = True
     allow_reuse_address = True
     
 
-class Handler (SocketServer.BaseRequestHandler):
+class Handler (socketserver.BaseRequestHandler):
 
     def handle(self):
         try:
