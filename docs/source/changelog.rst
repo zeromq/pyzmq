@@ -9,6 +9,23 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.2.0
+======
+
+New Stuff
+---------
+
+- Raise new ZMQVersionError when a requested method is not supported by the linked libzmq.
+  For backward compatibility, this subclasses NotImplementedError.
+
+
+Bugs Fixed
+----------
+
+- Memory leak introduced in pyzmq-14.0 in zero copy.
+- OverflowError on 32 bit systems in zero copy.
+
+
 14.1.0
 ======
 
