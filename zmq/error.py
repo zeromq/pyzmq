@@ -130,6 +130,11 @@ _zmq_version_info = None
 _zmq_version = None
 
 class ZMQVersionError(NotImplementedError):
+    """Raised when a feature is not provided by the linked version of libzmq.
+    
+    .. versionadded:: 14.2
+    """
+    min_version = None
     def __init__(self, min_version, msg='Feature'):
         global _zmq_version
         if _zmq_version is None:
