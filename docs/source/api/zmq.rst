@@ -84,6 +84,13 @@ Exceptions
   :inherited-members:
 
 
+:class:`ZMQVersionError`
+*****************
+
+.. autoclass:: ZMQVersionError
+  :members:
+  :inherited-members:
+
 :class:`Again`
 **************
 
