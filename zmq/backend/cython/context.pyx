@@ -55,7 +55,7 @@ cdef class Context:
     def __init__(self, io_threads=1, shadow=0):
         pass
     
-    def __cinit__(self, int io_threads=1, Py_ssize_t shadow=0, **kwargs):
+    def __cinit__(self, int io_threads=1, size_t shadow=0, **kwargs):
         self.handle = NULL
         self._sockets = NULL
         if shadow:
@@ -141,7 +141,7 @@ cdef class Context:
     @property
     def underlying(self):
         """The address of the underlying libzmq context"""
-        return <Py_ssize_t> self.handle
+        return <size_t> self.handle
     
     # backward-compat, though nobody is using it
     _handle = underlying

@@ -92,7 +92,7 @@ def print_view_info(obj):
 
     if mode == 3:
         PyObject_GetBuffer(obj, &view, flags)
-        print <Py_ssize_t>view.buf, view.len, view.format, view.ndim,
+        print <size_t>view.buf, view.len, view.format, view.ndim,
         if view.ndim:
             if view.shape:
                 print view.shape[0],
