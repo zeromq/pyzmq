@@ -4,7 +4,7 @@
 Woodhouse extends Strawhouse with a name and password check.
 
 This uses the PLAIN mechanism which does plain-text username and password authentication).
-It's not really not secure, and anyone sniffing the network (trivial with WiFi)
+It's not really secure, and anyone sniffing the network (trivial with WiFi)
 can capture passwords and then login.
 
 Author: Chris Laws
