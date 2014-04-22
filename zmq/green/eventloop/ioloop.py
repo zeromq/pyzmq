@@ -6,10 +6,9 @@ RealZMQPoller = ZMQPoller
 
 class IOLoop(RealIOLoop):
     
-    def __init__(self, impl=None):
-        if impl is None:
-            impl = _poll()
-        super(IOLoop, self).__init__(impl=impl)
+    def initialize(self, impl=None):
+        impl = _poll() if impl is None else impl
+        super(IOLoop, self).initialize(impl)
 
     @staticmethod
     def instance():

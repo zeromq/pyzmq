@@ -138,8 +138,9 @@ class ZMQPoller(object):
 
 class ZMQIOLoop(PollIOLoop):
     """ZMQ subclass of tornado's IOLoop"""
-    def initialize(self, **kwargs):
-        super(ZMQIOLoop, self).initialize(impl=ZMQPoller(), **kwargs)
+    def initialize(self, impl=None, **kwargs):
+        impl = ZMQPoller() if impl is None else impl
+        super(ZMQIOLoop, self).initialize(impl=impl, **kwargs)
     
     @staticmethod
     def instance():
