@@ -208,7 +208,7 @@ cdef class Socket:
     def __init__(self, context=None, socket_type=-1, shadow=0):
         pass
     
-    def __cinit__(self, Context context=None, int socket_type=-1, Py_ssize_t shadow=0, *args, **kwargs):
+    def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
 
         self.handle = NULL
