@@ -57,7 +57,12 @@ class Socket(SocketBase, AttributeSetter):
         s = ctx.socket(zmq.ROUTER)
     
     """
+    _shadow = False
     
+    def __del__(self):
+        if not self._shadow:
+            self.close()
+
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------

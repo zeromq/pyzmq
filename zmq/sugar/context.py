@@ -10,6 +10,9 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+import atexit
+import weakref
+
 from zmq.backend import Context as ContextBase
 from . import constants
 from .attrsettr import AttributeSetter
@@ -27,10 +30,30 @@ class Context(ContextBase, AttributeSetter):
     """
     sockopts = None
     _instance = None
+    _shadow = False
+    _exiting = False
     
     def __init__(self, io_threads=1, **kwargs):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
+        if kwargs.get('shadow', False):
+            self._shadow = True
+        else:
+            self._shadow = False
         self.sockopts = {}
+        
+        self._exiting = False
+        if not self._shadow:
+            ctx_ref = weakref.ref(self)
+            def _notify_atexit():
+                ctx = ctx_ref()
+                if ctx is not None:
+                    ctx._exiting = True
+            atexit.register(_notify_atexit)
+    
+    def __del__(self):
+        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
+        if not self._shadow and not self._exiting:
+            self.term()
     
     def __enter__(self):
         return self

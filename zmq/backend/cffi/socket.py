@@ -109,10 +109,6 @@ class Socket(object):
                 self.context._rm_socket(self._ref)
         return rc
 
-    def __del__(self):
-        if not self._shadow:
-            self.close()
-
     def bind(self, address):
         if isinstance(address, unicode):
             address = address.encode('utf8')
