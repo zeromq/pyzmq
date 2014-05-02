@@ -377,11 +377,11 @@ class ZMQStream(object):
         """Call the given callback when the stream is closed."""
         self._close_callback = stack_context.wrap(callback)
     
-    def close(self):
+    def close(self, linger=None):
         """Close this stream."""
         if self.socket is not None:
             self.io_loop.remove_handler(self.socket)
-            self.io_loop.add_timeout(self.io_loop.time() + .1, self.socket.close)
+            self.socket.close(linger)
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
