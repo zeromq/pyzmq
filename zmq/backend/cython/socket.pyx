@@ -208,7 +208,7 @@ cdef class Socket:
     def __init__(self, context=None, socket_type=-1, shadow=0):
         pass
     
-    def __cinit__(self, Context context=None, int socket_type=-1, Py_ssize_t shadow=0, *args, **kwargs):
+    def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
 
         self.handle = NULL
@@ -231,15 +231,11 @@ cdef class Socket:
             context._add_socket(self.handle)
 
     def __dealloc__(self):
-        """close *and* remove from context's list
+        """remove from context's list
         
         But be careful that context might not exist if called during gc
         """
         if self.handle != NULL and not self._shadow and getpid() == self._pid:
-            rc = zmq_close(self.handle)
-            if rc != 0 and zmq_errno() != ENOTSOCK:
-                # ignore ENOTSOCK (closed by Context)
-                _check_rc(rc)
             # during gc, self.context might be NULL
             if self.context:
                 self.context._remove_socket(self.handle)

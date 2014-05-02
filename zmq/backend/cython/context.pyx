@@ -86,11 +86,6 @@ cdef class Context:
         
         self._pid = getpid()
     
-    def __del__(self):
-        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
-        if not self._shadow:
-            self.term()
-    
     def __dealloc__(self):
         """don't touch members in dealloc, just cleanup allocations"""
         cdef int rc

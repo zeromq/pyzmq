@@ -44,12 +44,6 @@ class Context(object):
         self._closed = False
         self._sockets = set()
     
-    def __del__(self):
-        if self._zmq_ctx and not self._closed and not self._shadow:
-            C.zmq_ctx_destroy(self._zmq_ctx)
-            self._zmq_ctx = None
-            self._closed = True
-    
     @property
     def underlying(self):
         """The address of the underlying libzmq context"""
