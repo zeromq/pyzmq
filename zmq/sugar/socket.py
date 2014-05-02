@@ -376,7 +376,7 @@ class Socket(SocketBase, AttributeSetter):
     def send_json(self, obj, flags=0, **kwargs):
         """send a Python object as a message using json to serialize
         
-        Keyword arguments are passed on to json.loads
+        Keyword arguments are passed on to json.dumps
         
         Parameters
         ----------
