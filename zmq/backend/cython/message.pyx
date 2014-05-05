@@ -350,6 +350,27 @@ cdef class Frame:
         _check_rc(rc)
         return rc
 
+    def gets(self, object property):
+        """Frame.gets(property)
+
+        Get a Frame property.
+
+        See the 0MQ API documentation for zmq_msg_gets
+        for details on specific options.
+
+        .. versionadded:: libzmq-4.1
+        .. versionadded:: 14.3
+        """
+        cdef char *property_c = NULL
+        cdef Py_ssize_t property_len_c = 0
+
+        if isinstance(property, unicode):
+            raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
+
+        asbuffer_r(property, <void **>&property_c, &property_len_c)
+        cdef const char *result = zmq_msg_gets(&self.zmq_msg, property_c)
+        return result if result != NULL else bytes()
+
 # legacy Message name
 Message = Frame
 
