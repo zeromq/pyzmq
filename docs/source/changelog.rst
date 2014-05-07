@@ -9,6 +9,20 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.3.0
+======
+
+- PyZMQ no longer calls :meth:`Socket.close` or :meth:`Context.term` during process cleanup.
+  Changes to garbage collection in Python 3.4 make this impossible to do sensibly.
+- :meth:`ZMQStream.close` closes its socket immediately, rather than scheduling a timeout.
+- Raise the original ImportError when importing zmq fails.
+  Should be more informative than `no module cffi...`.
+
+.. warning::
+
+    Users of Python 3.4 should not use pyzmq < 14.3, due to changes in garbage collection.
+
+
 14.2.0
 ======
 
