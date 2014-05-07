@@ -34,8 +34,9 @@ def select_backend(name):
         raise
     except Exception as e:
         import sys
+        from zmq.utils.sixcerpt import reraise
         exc_info = sys.exc_info()
-        raise ImportError, ImportError("Importing %s failed with %s" % (name, e)), exc_info[2]
+        reraise(ImportError, ImportError("Importing %s failed with %s" % (name, e)), exc_info[2])
     
     ns = {}
     for key in public_api:

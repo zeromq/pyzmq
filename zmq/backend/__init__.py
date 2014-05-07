@@ -17,6 +17,8 @@ import os
 import platform
 import sys
 
+from zmq.utils.sixcerpt import reraise
+
 from .select import public_api, select_backend
 
 if 'PYZMQ_BACKEND' in os.environ:
@@ -40,7 +42,7 @@ else:
             _ns = select_backend(second)
         except ImportError:
             # raise the *first* error, not the fallback
-            raise exc_info[0], exc_info[1], exc_info[2]
+            reraise(*exc_info)
 
 globals().update(_ns)
 
