@@ -14,6 +14,11 @@
 #-----------------------------------------------------------------------------
 
 import os
+import platform
+import sys
+
+from zmq.utils.sixcerpt import reraise
+
 from .select import public_api, select_backend
 
 if 'PYZMQ_BACKEND' in os.environ:
@@ -23,10 +28,21 @@ if 'PYZMQ_BACKEND' in os.environ:
     _ns = select_backend(backend)
 else:
     # default to cython, fallback to cffi
+    # (reverse on PyPy)
+    if platform.python_implementation() == 'PyPy':
+        first, second = ('zmq.backend.cffi', 'zmq.backend.cython')
+    else:
+        first, second = ('zmq.backend.cython', 'zmq.backend.cffi')
+
     try:
-        _ns = select_backend('zmq.backend.cython')
-    except ImportError:
-        _ns = select_backend('zmq.backend.cffi')
+        _ns = select_backend(first)
+    except Exception:
+        exc_info = sys.exc_info()
+        try:
+            _ns = select_backend(second)
+        except ImportError:
+            # raise the *first* error, not the fallback
+            reraise(*exc_info)
 
 globals().update(_ns)
 
