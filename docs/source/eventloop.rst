@@ -117,7 +117,7 @@ it easier to use a single callback with multiple streams.
     s2.bind('tcp://localhost:54321')
     stream2 = ZMQStream(s2)
     
-    def echo(msg, stream):
+    def echo(stream, msg):
         stream.send_multipart(msg)
     
     stream1.on_recv_stream(echo)
