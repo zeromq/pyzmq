@@ -28,7 +28,15 @@ public_api = [
 
 def select_backend(name):
     """Select the pyzmq backend"""
-    mod = __import__(name, fromlist=public_api)
+    try:
+        mod = __import__(name, fromlist=public_api)
+    except ImportError:
+        raise
+    except Exception as e:
+        import sys
+        exc_info = sys.exc_info()
+        raise ImportError, ImportError("Importing %s failed with %s" % (name, e)), exc_info[2]
+    
     ns = {}
     for key in public_api:
         ns[key] = getattr(mod, key)
