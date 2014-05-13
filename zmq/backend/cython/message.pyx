@@ -369,7 +369,7 @@ cdef class Frame:
 
         asbuffer_r(property, <void **>&property_c, &property_len_c)
         cdef const char *result = zmq_msg_gets(&self.zmq_msg, property_c)
-        return result if result != NULL else bytes()
+        return result if result != NULL else None
 
 # legacy Message name
 Message = Frame
