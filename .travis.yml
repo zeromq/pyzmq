@@ -38,6 +38,10 @@ matrix:
       env: ZMQ=bundled
     - python: 3.2
       env: ZMQ=master
+    - python: 3.3
+      env: ZMQ=bundled
+    - python: 3.3
+      env: ZMQ=master
   allow_failures:
     - env: ZMQ=master
 
