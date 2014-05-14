@@ -38,9 +38,14 @@ else:
         _ns = select_backend(first)
     except Exception:
         exc_info = sys.exc_info()
+        exc = exc_info[1]
         try:
             _ns = select_backend(second)
         except ImportError:
+            # prevent 'During handling of the above exception...' on py3
+            # can't use `raise ... from` on Python 2
+            if hasattr(exc, '__cause__'):
+                exc.__cause__ = None
             # raise the *first* error, not the fallback
             reraise(*exc_info)
 
