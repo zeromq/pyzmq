@@ -135,7 +135,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
 
-    def test_blacklis(self):
+    def test_blacklist(self):
         """threaded auth - Blacklist"""
         # Blacklist 127.0.0.1, connection should fail
         self.auth.deny('127.0.0.1')
@@ -258,8 +258,8 @@ def with_ioloop(method, expect_success=True):
             self.pullstream.on_recv(self.on_message_fail)
         
         t = loop.time()
-        loop.add_timeout(t + .1, self.attempt_connection)
-        loop.add_timeout(t + .2, self.send_msg)
+        loop.add_callback(self.attempt_connection)
+        loop.add_callback(self.send_msg)
         if expect_success:
             loop.add_timeout(t + 1, self.on_test_timeout_fail)
         else:
@@ -309,7 +309,7 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
     def send_msg(self):
         """Send a message from server to a client"""
         msg = [b"Hello World"]
-        self.server.send_multipart(msg)
+        self.pushstream.send_multipart(msg)
     
     def on_message_succeed(self, frames):
         """A message was received, as expected."""
