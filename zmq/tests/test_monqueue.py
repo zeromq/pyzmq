@@ -7,10 +7,6 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-
 import time
 from unittest import TestCase
 
@@ -20,12 +16,12 @@ from zmq import devices
 from zmq.tests import BaseZMQTestCase, SkipTest, PYPY
 from zmq.utils.strtypes import unicode
 
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
-if PYPY:
+
+if PYPY or zmq.zmq_version_info() >= (4,1):
     # cleanup of shared Context doesn't work on PyPy
+    # there also seems to be a bug in cleanup in libzmq-4.1 (zeromq/libzmq#1052)
     devices.Device.context_factory = zmq.Context
+
 
 class TestMonitoredQueue(BaseZMQTestCase):
     
