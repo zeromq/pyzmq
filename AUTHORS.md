@@ -74,6 +74,7 @@ The following people have contributed to the project:
 - spez (steve AT hipmunk DOT com)
 - stu (stuart DOT axon AT jpcreative DOT co DOT uk)
 - xantares (xantares AT fujitsu-l64 DOT (none))
+- Andre Caron (andre.l.caron AT gmail DOT com)
 
 as reported by:
 
