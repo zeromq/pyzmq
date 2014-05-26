@@ -43,21 +43,61 @@ but it is less convenient. First, you must instruct the tornado IOLoop to use th
 
 .. sourcecode:: python
 
-    from tornado.ioloop import IOLoop
-    from zmq.eventloop.ioloop import ZMQPoller
+    from zmq.eventloop.ioloop import ZMQIOLoop
     
-    loop = IOLoop(ZMQPoller())
+    loop = ZMQIOLoop()
 
 Then, when you instantiate tornado and ZMQStream objects, you must pass the `io_loop`
-argument to ensure that they use this loop, instead of the global instance.  You can
-install this IOLoop as the global tornado instance, with:
+argument to ensure that they use this loop, instead of the global instance.
+
+This is especially useful for writing tests, such as this:
 
 .. sourcecode:: python
 
+    from tornado.httpserver import HTTPServer
+    from tornado.testing import AsyncTestCase
+    from tornado.web import Application, RequestHandler
+    from zmq.eventloop.ioloop import ZMQIOLoop
+    from zmq.eventloop.zmqstream import ZMQStream
+
+    class TestZMQBridge(AsyncTestCase):
+
+         # This is the important bit: it tells Tornado's `AsyncTestCase`
+         # to use a ZMQ-compatible I/O loop so that we can use `ZMQStream`
+         # objects to forward the HTTP request to a ZMQ-based service.
+         def get_new_ioloop(self):
+             return ZMQIOLoop()
+
+         def test_zmq_bridge(self):
+             # Prepare a ZMQ client to talk to a ZMQ back-end.
+             context = zmq.Context()
+             socket = context.socket(zmq.REP)
+             stream = ZMQStream(socket, self.io_loop)
+
+             class MyHandler(RequestHandler):
+                 def get(self):
+                     # Forward request over ZMQ socket using `stream`!
+                     # ...
+
+             # Define a Tornado application that uses `stream`.
+             application = Application([
+                 (r'/', MyHandler),
+             ])
+             server = HTTPServer(application, io_loop=self.io_loop)
+
+             # Use Tornado HTTP client to test this.
+             # ...
+
+You can also manually install this IOLoop as the global tornado instance, with:
+
+.. sourcecode:: python
+
+    from zmq.eventloop.ioloop import ZMQIOLoop
+    loop = ZMQIOLoop()
     loop.install()
 
-but it will **NOT** be the global *pyzmq* IOLoop instance, so it must still be passed to
-your ZMQStream constructors.
+but it will **NOT** be the global *pyzmq* IOLoop instance, so it must still be
+passed to your ZMQStream constructors.
 
 
 :meth:`send`
