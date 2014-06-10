@@ -9,6 +9,16 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.3.1
+======
+
+Minor bugfixes to pyzmq 14.3:
+
+- Fixes to building bundled libzmq on OS X < 10.9
+- Fixes to import-failure warnings on Python 3.4
+- Fixes to tests
+- Pull upstream fixes to zmq.ssh for ssh multiplexing
+
 14.3.0
 ======
 
