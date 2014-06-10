@@ -7,20 +7,10 @@ otherwise we ship a minimal subset of tornado in zmq.eventloop.minitornado.
 The minimal shipped version of tornado's IOLoop does not include
 support for concurrent futures - this will only be available if you
 have tornado ≥ 3.0.
-
-Authors
--------
-* MinRK
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 from __future__ import absolute_import, division, with_statement
 

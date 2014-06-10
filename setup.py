@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2012 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
+#  Copyright (C) PyZMQ Developers
+#  Distributed under the terms of the Modified BSD License.
 #
 #  The `configure` subcommand is copied and adaped from h5py
 #  h5py source used under the New BSD license
@@ -18,9 +14,6 @@
 #  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 from __future__ import with_statement
 
 import copy
@@ -1090,7 +1083,7 @@ def extract_version():
     with open(pjoin('zmq', 'sugar', 'version.py')) as f:
         while True:
             line = f.readline()
-            if line.startswith('# Code'):
+            if line.startswith('VERSION'):
                 lines = []
                 while line and not line.startswith('def'):
                     lines.append(line)

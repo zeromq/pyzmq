@@ -2,18 +2,9 @@
 used in zero-copy sends.
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian E. Granger & Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import atexit
 import struct
@@ -25,9 +16,6 @@ import warnings
 
 import zmq
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 gcref = namedtuple('gcref', ['obj', 'event'])
 

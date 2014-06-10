@@ -1,17 +1,7 @@
 """0MQ Constants."""
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian E. Granger & Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (c) IPython Development Team.
+# Distributed under the terms of the Modified BSD License.
 
 from zmq.backend import constants
 from zmq.utils.constant_names import (
