@@ -18,24 +18,11 @@ PUB socket.
 Code adapted from StarCluster:
 
     http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py
-
-Authors
--------
-* Min RK
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2010 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import logging
 from logging import INFO, DEBUG, WARN, ERROR, FATAL
@@ -43,9 +30,6 @@ from logging import INFO, DEBUG, WARN, ERROR, FATAL
 import zmq
 from zmq.utils.strtypes import bytes, unicode, cast_bytes
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 TOPIC_DELIM="::" # delimiter for splitting topics on the receiving end.
 

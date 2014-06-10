@@ -1,15 +1,5 @@
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import json
 from unittest import TestCase
@@ -21,9 +11,6 @@ from zmq.sugar import constants as sugar_constants
 from zmq.backend import constants as backend_constants
 
 all_set = set(constant_names.all_names)
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
 
 class TestConstants(TestCase):
     

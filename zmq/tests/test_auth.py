@@ -1,15 +1,7 @@
 # -*- coding: utf8 -*-
-#-----------------------------------------------------------------------------
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import logging
 import os
@@ -93,7 +85,6 @@ class BaseAuthTestCase(BaseZMQTestCase):
         client_public, client_secret = zmq.auth.load_certificate(client_secret_file)
 
         return server_public, server_secret, client_public, client_secret
-
 
 
 class TestThreadAuthentication(BaseAuthTestCase):

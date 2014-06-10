@@ -1,18 +1,9 @@
 # coding: utf-8
 """0MQ Socket pure Python methods."""
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import codecs
 import random
@@ -41,9 +32,6 @@ except:
     cPickle = None
     import pickle
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object

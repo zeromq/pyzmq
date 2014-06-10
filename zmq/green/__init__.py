@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2011-2012 Travis Cline
+#  Copyright (C) 2011-2012 Travis Cline
 #
 #  This file is part of pyzmq
 #  It is adapted from upstream project zeromq_gevent under the New BSD License

@@ -2,18 +2,12 @@
 zeromq connections.
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2010-2011  IPython Development Team
-#  Copyright (C) 2011- Min Ragan-Kelley
-#  This file is part of pyzmq.
+# Copyright (C) 2010-2011  IPython Development Team
+# Copyright (C) 2011- PyZMQ Developers
 #
-#  Redistributed from IPython under the terms of the BSD License.
-#-----------------------------------------------------------------------------
+# Redistributed from IPython under the terms of the BSD License.
 
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 from __future__ import print_function
 
 import atexit
@@ -40,9 +34,6 @@ try:
 except ImportError:
     pexpect = None
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 _random_ports = set()
 

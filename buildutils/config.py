@@ -1,6 +1,6 @@
 """Config functions"""
 #-----------------------------------------------------------------------------
-#  Copyright (C) 2011 Brian Granger, Min Ragan-Kelley
+#  Copyright (C) PyZMQ Developers
 #
 #  This file is part of pyzmq, copied and adapted from h5py.
 #  h5py source used under the New BSD license

@@ -1,15 +1,5 @@
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import time
 import os
@@ -25,13 +15,11 @@ except ImportError:
     from zmq.eventloop.minitornado.ioloop import IOLoop as BaseIOLoop
 
 
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
 def printer():
     os.system("say hello")
     raise Exception
     print (time.time())
+
 
 class Delay(threading.Thread):
     def __init__(self, f, delay=1):
@@ -53,6 +41,7 @@ class Delay(threading.Thread):
         self.cond.acquire()
         self.cond.notify()
         self.cond.release()
+
 
 class TestIOLoop(BaseZMQTestCase):
 
