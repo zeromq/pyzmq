@@ -220,7 +220,7 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
             ssh, lport, remoteip, rport, server)
         (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
         if not exitstatus:
-            atexit.register(_stop_tunnel, cmd.replace("forward", "cancel", 1))
+            atexit.register(_stop_tunnel, cmd.replace("-O forward", "-O cancel", 1))
             return pid
     cmd = "%s -f -S none -L 127.0.0.1:%i:%s:%i %s sleep %i" % (
         ssh, lport, remoteip, rport, server, timeout)
