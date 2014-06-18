@@ -1,7 +1,10 @@
+from __future__ import print_function
+
 import os
+
 from functools import wraps
 from zmq.tests import BaseZMQTestCase
-from zmq.utils import patch_win32_ctrlc
+from zmq.utils import allow_interrupt
 
 
 def count_calls(f):
@@ -20,7 +23,7 @@ class TestWindowsConsoleControlHandler(BaseZMQTestCase):
     def test_handler(self):
         @count_calls
         def interrupt_polling():
-            print 'Caught CTRL-C!'
+            print('Caught CTRL-C!')
 
         if os.name == 'nt':
             from ctypes import windll
@@ -35,7 +38,7 @@ class TestWindowsConsoleControlHandler(BaseZMQTestCase):
 
             try:
                 # Simulate CTRL-C event while handler is active.
-                with patch_win32_ctrlc(interrupt_polling):
+                with allow_interrupt(interrupt_polling):
                     result = GenerateConsoleCtrlEvent(0, 0)
                     if result == 0:
                         raise WindowsError
@@ -48,6 +51,6 @@ class TestWindowsConsoleControlHandler(BaseZMQTestCase):
             self.assertEqual(interrupt_polling.__calls__, 1)
         else:
             # On non-Windows systems, this utility is just a no-op!
-            with patch_win32_ctrlc(interrupt_polling):
+            with allow_interrupt(interrupt_polling):
                 pass
             self.assertEqual(interrupt_polling.__calls__, 0)

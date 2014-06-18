@@ -4,7 +4,7 @@
 
 
 import zmq
-from zmq.utils import patch_win32_ctrlc
+from zmq.utils.win32 import allow_interrupt
 
 
 def main(addrs):
@@ -22,7 +22,7 @@ def main(addrs):
         """Fix CTRL-C on Windows using "self pipe trick"."""
         control.send_multipart(['', 'quit'])
 
-    with patch_win32_ctrlc(interrupt_polling):
+    with allow_interrupt(interrupt_polling):
         message = ''
         while message != 'quit':
             message = updates.recv_multipart()
