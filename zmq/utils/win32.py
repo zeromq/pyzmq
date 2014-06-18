@@ -115,4 +115,4 @@ else:
     from contextlib import contextmanager
     @contextmanager
     def allow_interrupt(_):
-        pass
+        yield
