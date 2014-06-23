@@ -135,4 +135,3 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SNDBUF
     enum: ZMQ_RCVBUF
     enum: ZMQ_RCVMORE
-    enum: ZMQ_SOCKS_PROXY
