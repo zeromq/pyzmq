@@ -91,6 +91,7 @@ new_in = {
         'IPC_FILTER_UID',
         'IPC_FILTER_GID',
         'CONNECT_RID',
+        'SOCKS_PROXY',
     ],
 }
 
@@ -230,6 +231,7 @@ bytes_sockopt_names = [
     'CURVE_SERVERKEY',
     'ZAP_DOMAIN',
     'CONNECT_RID',
+    'SOCKS_PROXY',
 ]
 
 int_sockopt_names = [
