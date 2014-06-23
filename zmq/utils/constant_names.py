@@ -25,12 +25,12 @@ new_in = {
         'ETIMEDOUT',
         'EHOSTUNREACH',
         'ENETRESET',
-        
+
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
-        
+
         'ROUTER_BEHAVIOR',
         'ROUTER_MANDATORY',
         'FAIL_UNROUTABLE',
@@ -40,7 +40,7 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
-        
+
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
         'EVENT_CONNECT_RETRIED',
@@ -56,7 +56,7 @@ new_in = {
     (4,0,0) : [
         # socket types
         'STREAM',
-        
+
         # socket opts
         'IMMEDIATE',
         'ROUTER_RAW',
@@ -74,12 +74,12 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-        
+
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-        
+
         # events
         'EVENT_MONITOR_STOPPED',
     ],
@@ -91,6 +91,7 @@ new_in = {
         'IPC_FILTER_UID',
         'IPC_FILTER_GID',
         'CONNECT_RID',
+        'SOCKS_PROXY',
     ],
 }
 
@@ -99,7 +100,7 @@ removed_in = {
     (3,2,2) : [
         'UPSTREAM',
         'DOWNSTREAM',
-        
+
         'HWM',
         'SWAP',
         'MCAST_LOOP',
@@ -123,7 +124,7 @@ base_names = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
-    
+
     'SNDMORE',
 
     'STREAMER',
@@ -230,6 +231,7 @@ bytes_sockopt_names = [
     'CURVE_SERVERKEY',
     'ZAP_DOMAIN',
     'CONNECT_RID',
+    'SOCKS_PROXY',
 ]
 
 int_sockopt_names = [
@@ -260,7 +262,7 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
-    
+
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
 
@@ -306,4 +308,3 @@ all_names = (
 def no_prefix(name):
     """does the given constant have a ZMQ_ prefix?"""
     return name.startswith('E') and not name.startswith('EVENT')
-

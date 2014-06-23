@@ -137,6 +137,7 @@ RECOVERY_IVL = ZMQ_RECOVERY_IVL
 SNDBUF = ZMQ_SNDBUF
 RCVBUF = ZMQ_RCVBUF
 RCVMORE = ZMQ_RCVMORE
+SOCKS_PROXY = ZMQ_SOCKS_PROXY
 
 #-----------------------------------------------------------------------------
 # Symbols to export
@@ -277,4 +278,5 @@ __all__ = [
   "SNDBUF",
   "RCVBUF",
   "RCVMORE",
+  "SOCKS_PROXY",
 ]
