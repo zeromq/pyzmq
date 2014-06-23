@@ -349,6 +349,10 @@
     #define ZMQ_CONNECT_RID (-1)
 #endif
 
+#ifndef ZMQ_SOCKS_PROXY
+    #define ZMQ_SOCKS_PROXY (-1)
+#endif
+
 #ifndef ZMQ_RECONNECT_IVL_MAX
     #define ZMQ_RECONNECT_IVL_MAX (-1)
 #endif
