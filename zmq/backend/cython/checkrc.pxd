@@ -11,13 +11,22 @@ cdef inline int _check_rc(int rc) except -1:
     PyErr_CheckSignals()
     if rc < 0:
         if errno == EAGAIN:
-            from zmq.error import Again
+            try:
+                from zmq.error import Again
+            except TypeError:
+                return 0
             raise Again(errno)
         elif errno == ZMQ_ETERM:
-            from zmq.error import ContextTerminated
+            try:
+                from zmq.error import ContextTerminated
+            except TypeError:
+                return 0
             raise ContextTerminated(errno)
         else:
-            from zmq.error import ZMQError
+            try:
+                from zmq.error import ZMQError
+            except TypeError:
+                return 0
             raise ZMQError(errno)
         # return -1
     return 0
