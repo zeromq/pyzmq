@@ -237,7 +237,7 @@ cdef class Socket:
         """
         if self.handle != NULL and not self._shadow and getpid() == self._pid:
             # during gc, self.context might be NULL
-            if self.context:
+            if self.context and not self.context.closed:
                 self.context._remove_socket(self.handle)
     
     @property
