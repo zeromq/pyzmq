@@ -8,7 +8,9 @@ Authors
 -------
 * MinRK
 """
+from __future__ import print_function
 
+import sys
 import time
 import numpy
 import zmq
@@ -25,10 +27,10 @@ while True:
     time.sleep(numpy.random.random())
     for i in range(4):
         n+=1
-        msg = 'ping %i'%n
+        msg = 'ping %i' % n
         tic = time.time()
-        req.send(msg)
-        resp = req.recv()
-        print "%s: %.2f ms" % (msg, 1000*(time.time()-tic))
+        req.send_string(msg)
+        resp = req.recv_string()
+        print("%s: %.2f ms" % (msg, 1000*(time.time()-tic)))
         assert msg == resp
-
+    break
