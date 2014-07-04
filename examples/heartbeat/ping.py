@@ -33,4 +33,3 @@ while True:
         resp = req.recv_string()
         print("%s: %.2f ms" % (msg, 1000*(time.time()-tic)))
         assert msg == resp
-    break
