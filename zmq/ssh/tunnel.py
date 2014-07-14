@@ -83,7 +83,9 @@ def _try_passwordless_openssh(server, keyfile):
     if keyfile:
         cmd += ' -i ' + keyfile
     cmd += ' exit'
-    p = pexpect.spawn(cmd)
+    p = pexpect.spawn(cmd,
+            env={v:os.environ[v] if v!='SSH_ASKPASS'
+                else False for v in os.environ})
     while True:
         try:
             p.expect('[Pp]assword:', timeout=.1)
@@ -215,7 +217,9 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
             return pid
     cmd = "%s -f -S none -L 127.0.0.1:%i:%s:%i %s sleep %i" % (
         ssh, lport, remoteip, rport, server, timeout)
-    tunnel = pexpect.spawn(cmd)
+    tunnel = pexpect.spawn(cmd,
+            env={v:os.environ[v] if v!='SSH_ASKPASS'
+                else False for v in os.environ})
     failed = False
     while True:
         try:
