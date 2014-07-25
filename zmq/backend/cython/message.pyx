@@ -50,6 +50,7 @@ except (ImportError, AttributeError):
     from threading import Event
 
 import zmq
+from zmq.error import _check_version
 from zmq.backend.cython.checkrc cimport _check_rc
 from zmq.utils.strtypes import bytes,unicode,basestring
 
@@ -363,6 +364,8 @@ cdef class Frame:
         """
         cdef char *property_c = NULL
         cdef Py_ssize_t property_len_c = 0
+
+        _check_version((4,1), "gets")
 
         if isinstance(property, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")

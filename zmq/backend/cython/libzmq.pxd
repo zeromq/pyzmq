@@ -71,7 +71,6 @@ cdef extern from "zmq.h" nogil:
     size_t zmq_msg_size (zmq_msg_t *msg)
     int zmq_msg_more (zmq_msg_t *msg)
     int zmq_msg_get (zmq_msg_t *msg, int option)
-    const_char_ptr zmq_msg_gets (zmq_msg_t *msg, const_char_ptr property)
     int zmq_msg_set (zmq_msg_t *msg, int option, int optval)
 
     void *zmq_socket (void *context, int type)
@@ -99,6 +98,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_device (int device_, void *insocket_, void *outsocket_)
     int zmq_proxy (void *frontend, void *backend, void *capture)
+
+cdef extern from "zmq_compat.h" nogil:
+    const_char_ptr zmq_msg_gets (zmq_msg_t *msg, const_char_ptr property)
 
 cdef extern from "zmq_utils.h" nogil:
 
