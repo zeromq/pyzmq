@@ -77,11 +77,14 @@ class TestSecurity(BaseZMQTestCase):
         frames = self.recv_multipart(server, copy=False)
         recvd = list(map(lambda x: x.bytes, frames))
 
-        if test_metadata:
-            for frame in frames:
-                self.assertEqual(frame.gets(b'User-Id'), b'anonymous')
-                self.assertEqual(frame.gets(b'Hello'), b'World')
-                self.assertEqual(frame.gets(b'Socket-Type'), b'DEALER')
+        try:
+            if test_metadata:
+                for frame in frames:
+                    self.assertEqual(frame.gets(b'User-Id'), b'anonymous')
+                    self.assertEqual(frame.gets(b'Hello'), b'World')
+                    self.assertEqual(frame.gets(b'Socket-Type'), b'DEALER')
+        except zmq.ZMQVersionError:
+            pass
 
         self.assertEqual(recvd, msg)
         server.send_multipart(recvd)
