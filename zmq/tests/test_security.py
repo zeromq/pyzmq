@@ -80,9 +80,9 @@ class TestSecurity(BaseZMQTestCase):
         try:
             if test_metadata:
                 for frame in frames:
-                    self.assertEqual(frame.gets(b'User-Id'), b'anonymous')
-                    self.assertEqual(frame.gets(b'Hello'), b'World')
-                    self.assertEqual(frame.gets(b'Socket-Type'), b'DEALER')
+                    self.assertEqual(frame.get(b'User-Id'), b'anonymous')
+                    self.assertEqual(frame.get(b'Hello'), b'World')
+                    self.assertEqual(frame.get(b'Socket-Type'), b'DEALER')
         except zmq.ZMQVersionError:
             pass
 
