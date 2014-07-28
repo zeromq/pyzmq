@@ -29,6 +29,7 @@
 
 cdef extern from *:
     ctypedef void* const_void_ptr "const void *"
+    ctypedef char* const_char_ptr "const char *"
 
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
@@ -97,6 +98,9 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_device (int device_, void *insocket_, void *outsocket_)
     int zmq_proxy (void *frontend, void *backend, void *capture)
+
+cdef extern from "zmq_compat.h" nogil:
+    const_char_ptr zmq_msg_gets (zmq_msg_t *msg, const_char_ptr property)
 
 cdef extern from "zmq_utils.h" nogil:
 

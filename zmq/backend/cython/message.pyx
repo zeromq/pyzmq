@@ -50,6 +50,7 @@ except (ImportError, AttributeError):
     from threading import Event
 
 import zmq
+from zmq.error import _check_version
 from zmq.backend.cython.checkrc cimport _check_rc
 from zmq.utils.strtypes import bytes,unicode,basestring
 
@@ -334,21 +335,36 @@ cdef class Frame:
         """
         cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
         _check_rc(rc)
-    
-    def get(self, int option):
+
+    def get(self, option):
         """Frame.get(option)
-        
-        Get a Frame option.
-        
-        See the 0MQ API documentation for zmq_msg_get
+
+        Get a Frame option or property.
+
+        See the 0MQ API documentation for zmq_msg_get and zmq_msg_gets
         for details on specific options.
-        
+
         .. versionadded:: libzmq-3.2
-        .. versionadded:: 13.0
+        .. versionadded:: 14.3
         """
-        cdef int rc = zmq_msg_get(&self.zmq_msg, option)
-        _check_rc(rc)
-        return rc
+        cdef int rc = 0
+        cdef char *property_c = NULL
+        cdef Py_ssize_t property_len_c = 0
+
+        # zmq_msg_get
+        if isinstance(option, int):
+            rc = zmq_msg_get(&self.zmq_msg, option)
+            _check_rc(rc)
+            return rc
+
+        # zmq_msg_gets
+        _check_version((4,1), "get")
+        if not isinstance(option, bytes):
+            raise TypeError("expected bytes, got: %r" % option)
+
+        asbuffer_r(option, <void **>&property_c, &property_len_c)
+        cdef const char *result = <char *>zmq_msg_gets(&self.zmq_msg, property_c)
+        return result if result != NULL else None
 
 # legacy Message name
 Message = Frame
