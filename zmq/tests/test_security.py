@@ -9,7 +9,7 @@ from threading import Thread
 
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest
+    BaseZMQTestCase, SkipTest, PYPY
 )
 from zmq.utils import z85
 
@@ -78,7 +78,7 @@ class TestSecurity(BaseZMQTestCase):
         recvd = list(map(lambda x: x.bytes, frames))
 
         try:
-            if test_metadata:
+            if test_metadata and not PYPY:
                 for frame in frames:
                     self.assertEqual(frame.get(b'User-Id'), b'anonymous')
                     self.assertEqual(frame.get(b'Hello'), b'World')
