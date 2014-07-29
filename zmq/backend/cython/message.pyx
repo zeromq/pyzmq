@@ -345,7 +345,10 @@ cdef class Frame:
         for details on specific options.
 
         .. versionadded:: libzmq-3.2
-        .. versionadded:: 14.3
+        .. versionadded:: 13.0
+        
+        .. versionchanged:: 14.3
+            add support for zmq_msg_gets (requires libzmq-4.1)
         """
         cdef int rc = 0
         cdef char *property_c = NULL
@@ -358,13 +361,19 @@ cdef class Frame:
             return rc
 
         # zmq_msg_gets
-        _check_version((4,1), "get")
+        _check_version((4,1), "get string properties")
+        if isinstance(option, unicode):
+            option = option.encode('utf8')
+        
         if not isinstance(option, bytes):
-            raise TypeError("expected bytes, got: %r" % option)
-
-        asbuffer_r(option, <void **>&property_c, &property_len_c)
+            raise TypeError("expected str, got: %r" % option)
+        
+        property_c = option
+        
         cdef const char *result = <char *>zmq_msg_gets(&self.zmq_msg, property_c)
-        return result if result != NULL else None
+        if result == NULL:
+            _check_rc(-1)
+        return result.decode('utf8')
 
 # legacy Message name
 Message = Frame

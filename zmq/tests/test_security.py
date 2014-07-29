@@ -80,9 +80,9 @@ class TestSecurity(BaseZMQTestCase):
         try:
             if test_metadata and not PYPY:
                 for frame in frames:
-                    self.assertEqual(frame.get(b'User-Id'), b'anonymous')
-                    self.assertEqual(frame.get(b'Hello'), b'World')
-                    self.assertEqual(frame.get(b'Socket-Type'), b'DEALER')
+                    self.assertEqual(frame.get('User-Id'), 'anonymous')
+                    self.assertEqual(frame.get('Hello'), 'World')
+                    self.assertEqual(frame['Socket-Type'], 'DEALER')
         except zmq.ZMQVersionError:
             pass
 
