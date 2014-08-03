@@ -83,12 +83,12 @@ class Socket(object):
         self._closed = False
         if context:
             self._ref = context._add_socket(self)
-    
+
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
         return int(ffi.cast('size_t', self._zmq_socket))
-    
+
     @property
     def closed(self):
         return self._closed
@@ -144,12 +144,12 @@ class Socket(object):
         length = None
         if isinstance(value, unicode):
             raise TypeError("unicode not allowed, use bytes")
-        
+
         if isinstance(value, bytes):
             if option not in zmq.constants.bytes_sockopts:
                 raise TypeError("not a bytes sockopt: %s" % option)
             length = len(value)
-        
+
         c_data = initialize_opt_pointer(option, value, length)
 
         c_value_pointer = c_data[0]
@@ -172,7 +172,7 @@ class Socket(object):
                                c_value_pointer,
                                c_sizet_pointer)
         _check_rc(rc)
-        
+
         sz = c_sizet_pointer[0]
         v = value_from_opt_pointer(option, c_value_pointer, sz)
         if option != zmq.IDENTITY and option in zmq.constants.bytes_sockopts and v.endswith(b'\0'):
@@ -219,15 +219,15 @@ class Socket(object):
             return frame.bytes
         else:
             return frame
-    
+
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)
 
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
-        
+
         Note: requires libzmq >= 3.2
-        
+
         Parameters
         ----------
         addr : str
@@ -235,11 +235,16 @@ class Socket(object):
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
-        
+
         _check_version((3,2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
+    def disable_monitor(self):
+        """ Shutdown the PAIR socket serving socket events.
+        """
+        rc = C.zmq_socket_monitor(self._zmq_socket, ffi.NULL, 0)
+        _check_rc(rc)
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']
