@@ -231,7 +231,9 @@ class Socket(object):
         Parameters
         ----------
         addr : str
-            The inproc url used for monitoring.
+            The inproc url used for monitoring. Passing None as
+            the addr will cause an existing socket monitor to be
+            deregistered.
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
@@ -239,6 +241,8 @@ class Socket(object):
         _check_version((3,2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
+        if addr is None:
+            addr = ffi.NULL
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
 

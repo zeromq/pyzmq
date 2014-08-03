@@ -547,19 +547,22 @@ cdef class Socket:
         Parameters
         ----------
         addr : str
-            The inproc url used for monitoring.
+            The inproc url used for monitoring. Passing None as
+            the addr will cause an existing socket monitor to be
+            deregistered.
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
         cdef int rc, c_flags
-        cdef char* c_addr
+        cdef char* c_addr = NULL
         
         _check_version((3,2), "monitor")
-        if isinstance(addr, unicode):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError('expected str, got: %r' % addr)
-        c_addr = addr
+        if addr is not None:
+            if isinstance(addr, unicode):
+                addr = addr.encode('utf-8')
+            if not isinstance(addr, bytes):
+                raise TypeError('expected str, got: %r' % addr)
+            c_addr = addr
         c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
         _check_rc(rc)
