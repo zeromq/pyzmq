@@ -39,6 +39,12 @@
     #define zmq_curve_keypair(z85_public_key, z85_secret_key) _missing
 #endif
 
+#if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 1
+// nothing to remove
+#else
+    #define zmq_msg_gets(msg, prop) _missing
+#endif
+
 #if ZMQ_VERSION_MAJOR >= 3
     #define zmq_sendbuf zmq_send
     #define zmq_recvbuf zmq_recv

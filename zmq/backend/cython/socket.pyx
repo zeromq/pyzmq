@@ -121,11 +121,11 @@ cdef inline _check_closed_deep(Socket s):
 cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
-    cdef Frame msg
-    msg = Frame(track=track)
+    msg = zmq.Frame(track=track)
+    cdef Frame cmsg = msg
 
     with nogil:
-        rc = zmq_msg_recv(&msg.zmq_msg, handle, flags)
+        rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
     
     _check_rc(rc)
     return msg
