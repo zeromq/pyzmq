@@ -10,7 +10,9 @@ from zmq.backend import Frame as FrameBase
 
 
 class Frame(FrameBase, AttributeSetter):
-    pass
+    def __getitem__(self, key):
+        # map Frame['User-Id'] to Frame.get('User-Id')
+        return self.get(key)
 
 # keep deprecated alias
 Message = Frame

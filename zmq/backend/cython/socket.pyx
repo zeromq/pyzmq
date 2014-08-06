@@ -89,7 +89,7 @@ IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 
 cdef inline _check_closed(Socket s):
     """raise ENOTSUP if socket is closed
-
+    
     Does not do a deep check
     """
     if s._closed:
@@ -98,9 +98,9 @@ cdef inline _check_closed(Socket s):
 cdef inline _check_closed_deep(Socket s):
     """thorough check of whether the socket has been closed,
     even if by another entity (e.g. ctx.destroy).
-
+    
     Only used by the `closed` property.
-
+    
     returns True if closed, False otherwise
     """
     cdef int rc
@@ -121,12 +121,12 @@ cdef inline _check_closed_deep(Socket s):
 cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
-    cdef Frame msg
-    msg = Frame(track=track)
+    msg = zmq.Frame(track=track)
+    cdef Frame cmsg = msg
 
     with nogil:
-        rc = zmq_msg_recv(&msg.zmq_msg, handle, flags)
-
+        rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
+    
     _check_rc(rc)
     return msg
 
@@ -188,26 +188,26 @@ cdef class Socket:
     A 0MQ socket.
 
     These objects will generally be constructed via the socket() method of a Context object.
-
+    
     Note: 0MQ Sockets are *not* threadsafe. **DO NOT** share them across threads.
-
+    
     Parameters
     ----------
     context : Context
         The 0MQ Context this Socket belongs to.
     socket_type : int
-        The socket type, which can be any of the 0MQ socket types:
+        The socket type, which can be any of the 0MQ socket types: 
         REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XPUB, XSUB.
-
+    
     See Also
     --------
     .Context.socket : method for creating a socket bound to a Context.
     """
-
+    
     # no-op for the signature
     def __init__(self, context=None, socket_type=-1, shadow=0):
         pass
-
+    
     def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
 
@@ -232,28 +232,28 @@ cdef class Socket:
 
     def __dealloc__(self):
         """remove from context's list
-
+        
         But be careful that context might not exist if called during gc
         """
         if self.handle != NULL and not self._shadow and getpid() == self._pid:
             # during gc, self.context might be NULL
             if self.context and not self.context.closed:
                 self.context._remove_socket(self.handle)
-
+    
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
         return <size_t> self.handle
-
+    
     @property
     def closed(self):
         return _check_closed_deep(self)
-
+    
     def close(self, linger=None):
         """s.close(linger=None)
 
         Close the socket.
-
+        
         If linger is specified, LINGER sockopt will be set prior to closing.
 
         This can be called to close the socket by hand. If this is not
@@ -263,11 +263,11 @@ cdef class Socket:
         cdef int rc=0
         cdef int linger_c
         cdef bint setlinger=False
-
+        
         if linger is not None:
             linger_c = linger
             setlinger=True
-
+        
         if self.handle != NULL and not self._closed and getpid() == self._pid:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
@@ -293,9 +293,9 @@ cdef class Socket:
         option : int
             The option to set.  Available values will depend on your
             version of libzmq.  Examples include::
-
+            
                 zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
-
+        
         optval : int or bytes
             The value of the option to set.
         """
@@ -354,7 +354,7 @@ cdef class Socket:
         option : int
             The option to get.  Available values will depend on your
             version of libzmq.  Examples include::
-
+            
                 zmq.IDENTITY, HWM, LINGER, FD, EVENTS
 
         Returns
@@ -401,7 +401,7 @@ cdef class Socket:
             result = optval_int_c
 
         return result
-
+    
     def bind(self, addr):
         """s.bind(addr)
 
@@ -465,16 +465,16 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-
+        
         rc = zmq_connect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
     def unbind(self, addr):
         """s.unbind(addr)
-
+        
         Unbind from an address (undoes a call to bind).
-
+        
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -496,7 +496,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-
+        
         rc = zmq_unbind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
@@ -505,7 +505,7 @@ cdef class Socket:
         """s.disconnect(addr)
 
         Disconnect from a remote 0MQ socket (undoes a call to connect).
-
+        
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -519,7 +519,7 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
-
+        
         _check_version((3,2), "disconnect")
         _check_closed(self)
         if isinstance(addr, unicode):
@@ -527,7 +527,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-
+        
         rc = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
@@ -537,13 +537,13 @@ cdef class Socket:
 
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
-
+        
         While this function is available from libzmq 3.2,
         pyzmq cannot parse monitor messages from libzmq prior to 4.0.
-
+        
         .. versionadded: libzmq-3.2
         .. versionadded: 14.0
-
+        
         Parameters
         ----------
         addr : str
@@ -555,7 +555,7 @@ cdef class Socket:
         """
         cdef int rc, c_flags
         cdef char* c_addr = NULL
-
+        
         _check_version((3,2), "monitor")
         if addr is not None:
             if isinstance(addr, unicode):
@@ -597,7 +597,7 @@ cdef class Socket:
         MessageTracker : if track and not copy
             a MessageTracker object, whose `pending` property will
             be True until the send is completed.
-
+        
         Raises
         ------
         TypeError
@@ -606,13 +606,13 @@ cdef class Socket:
             If `track=True`, but an untracked Frame is passed.
         ZMQError
             If the send does not succeed for any reason.
-
+        
         """
         _check_closed(self)
-
+        
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_string")
-
+        
         if copy:
             # msg.bytes never returns the input data object
             # it is always a copy, but always the same copy
@@ -653,20 +653,20 @@ cdef class Socket:
         msg : bytes, Frame
             The received message frame.  If `copy` is False, then it will be a Frame,
             otherwise it will be bytes.
-
+            
         Raises
         ------
         ZMQError
             for any of the reasons zmq_msg_recv might fail.
         """
         _check_closed(self)
-
+        
         if copy:
             return _recv_copy(self.handle, flags)
         else:
             frame = _recv_frame(self.handle, flags, track)
             frame.more = self.getsockopt(zmq.RCVMORE)
             return frame
-
+    
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']

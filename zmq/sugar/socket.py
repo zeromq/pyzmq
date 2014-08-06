@@ -35,18 +35,18 @@ except:
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
-
+    
     To create a Socket, first create a Context::
-
+    
         ctx = zmq.Context.instance()
-
+    
     then call ``ctx.socket(socket_type)``::
-
+    
         s = ctx.socket(zmq.ROUTER)
-
+    
     """
     _shadow = False
-
+    
     def __del__(self):
         if not self._shadow:
             self.close()
@@ -54,34 +54,34 @@ class Socket(SocketBase, AttributeSetter):
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------
-
+    
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq socket
-
+        
         address is the integer address of the libzmq socket
         or an FFI pointer to it.
-
+        
         .. versionadded:: 14.1
         """
         address = cast_int_addr(address)
         return cls(shadow=address)
-
+    
     #-------------------------------------------------------------------------
     # Deprecated aliases
     #-------------------------------------------------------------------------
-
+    
     @property
     def socket_type(self):
         warnings.warn("Socket.socket_type is deprecated, use Socket.type",
             DeprecationWarning
         )
         return self.type
-
+    
     #-------------------------------------------------------------------------
     # Hooks for sockopt completion
     #-------------------------------------------------------------------------
-
+    
     def __dir__(self):
         keys = dir(self.__class__)
         for collection in (
@@ -91,24 +91,24 @@ class Socket(SocketBase, AttributeSetter):
         ):
             keys.extend(collection)
         return keys
-
+    
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
-
+    
     def set_string(self, option, optval, encoding='utf-8'):
         """set socket options with a unicode object
-
+        
         This is simply a wrapper for setsockopt to protect from encoding ambiguity.
 
         See the 0MQ documentation for details on specific options.
-
+        
         Parameters
         ----------
         option : int
-            The name of the option to set. Can be any of: SUBSCRIBE,
+            The name of the option to set. Can be any of: SUBSCRIBE, 
             UNSUBSCRIBE, IDENTITY
         optval : unicode string (unicode on py2, str on py3)
             The value of the option to set.
@@ -118,9 +118,9 @@ class Socket(SocketBase, AttributeSetter):
         if not isinstance(optval, unicode):
             raise TypeError("unicode strings only")
         return self.set(option, optval.encode(encoding))
-
+    
     setsockopt_unicode = setsockopt_string = set_string
-
+    
     def get_string(self, option, encoding='utf-8'):
         """get the value of a socket option
 
@@ -136,13 +136,13 @@ class Socket(SocketBase, AttributeSetter):
         optval : unicode string (unicode on py2, str on py3)
             The value of the option as a unicode string.
         """
-
+    
         if option not in constants.bytes_sockopts:
             raise TypeError("option %i will not return a string to be decoded"%option)
         return self.getsockopt(option).decode(encoding)
-
+    
     getsockopt_unicode = getsockopt_string = get_string
-
+    
     def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
         """bind this socket to a random port in a range
 
@@ -161,7 +161,7 @@ class Socket(SocketBase, AttributeSetter):
         -------
         port : int
             The port the socket was bound to.
-
+    
         Raises
         ------
         ZMQBindError
@@ -177,10 +177,10 @@ class Socket(SocketBase, AttributeSetter):
             else:
                 return port
         raise ZMQBindError("Could not bind socket to random port.")
-
+    
     def get_hwm(self):
         """get the High Water Mark
-
+        
         On libzmq ≥ 3, this gets SNDHWM if available, otherwise RCVHWM
         """
         major = zmq.zmq_version_info()[0]
@@ -190,14 +190,14 @@ class Socket(SocketBase, AttributeSetter):
                 return self.getsockopt(zmq.SNDHWM)
             except zmq.ZMQError as e:
                 pass
-
+            
             return self.getsockopt(zmq.RCVHWM)
         else:
             return self.getsockopt(zmq.HWM)
-
+    
     def set_hwm(self, value):
         """set the High Water Mark
-
+        
         On libzmq ≥ 3, this sets both SNDHWM and RCVHWM
         """
         major = zmq.zmq_version_info()[0]
@@ -211,27 +211,27 @@ class Socket(SocketBase, AttributeSetter):
                 self.rcvhwm = value
             except Exception:
                 raised = e
-
+            
             if raised:
                 raise raised
         else:
             return self.setsockopt(zmq.HWM, value)
-
+    
     hwm = property(get_hwm, set_hwm,
         """property for High Water Mark
-
+        
         Setting hwm sets both SNDHWM and RCVHWM as appropriate.
         It gets SNDHWM if available, otherwise RCVHWM.
         """
     )
-
+    
     #-------------------------------------------------------------------------
     # Sending and receiving messages
     #-------------------------------------------------------------------------
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False):
         """send a sequence of buffers as a multipart message
-
+        
         The zmq.SNDMORE flag is added to all msg parts before the last.
 
         Parameters
@@ -246,7 +246,7 @@ class Socket(SocketBase, AttributeSetter):
         track : bool, optional
             Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
-
+    
         Returns
         -------
         None : if copy or not track
@@ -276,28 +276,28 @@ class Socket(SocketBase, AttributeSetter):
         track : bool, optional
             Should the message frame(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
-
+        
         Returns
         -------
         msg_parts : list
             A list of frames in the multipart message; either Frames or bytes,
             depending on `copy`.
-
+    
         """
         parts = [self.recv(flags, copy=copy, track=track)]
         # have first part already, only loop while more to receive
         while self.getsockopt(zmq.RCVMORE):
             part = self.recv(flags, copy=copy, track=track)
             parts.append(part)
-
+    
         return parts
 
     def send_string(self, u, flags=0, copy=True, encoding='utf-8'):
         """send a Python unicode string as a message with an encoding
-
+    
         0MQ communicates with raw bytes, so you must encode/decode
         text (unicode on py2, str on py3) around 0MQ.
-
+        
         Parameters
         ----------
         u : Python unicode string (unicode on py2, str on py3)
@@ -310,12 +310,12 @@ class Socket(SocketBase, AttributeSetter):
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy)
-
+    
     send_unicode = send_string
-
+    
     def recv_string(self, flags=0, encoding='utf-8'):
         """receive a unicode string, as sent by send_string
-
+    
         Parameters
         ----------
         flags : int
@@ -330,9 +330,9 @@ class Socket(SocketBase, AttributeSetter):
         """
         b = self.recv(flags=flags)
         return b.decode(encoding)
-
+    
     recv_unicode = recv_string
-
+    
     def send_pyobj(self, obj, flags=0, protocol=-1):
         """send a Python object as a message using pickle to serialize
 
@@ -368,9 +368,9 @@ class Socket(SocketBase, AttributeSetter):
 
     def send_json(self, obj, flags=0, **kwargs):
         """send a Python object as a message using json to serialize
-
+        
         Keyword arguments are passed on to json.dumps
-
+        
         Parameters
         ----------
         obj : Python object
@@ -385,7 +385,7 @@ class Socket(SocketBase, AttributeSetter):
         """receive a Python object as a message using json to serialize
 
         Keyword arguments are passed on to json.loads
-
+        
         Parameters
         ----------
         flags : int
@@ -398,12 +398,12 @@ class Socket(SocketBase, AttributeSetter):
         """
         msg = self.recv(flags)
         return jsonapi.loads(msg, **kwargs)
-
+    
     _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):
         """poll the socket for events
-
+        
         The default is to poll forever for incoming
         events.  Timeout is in milliseconds, if specified.
 
@@ -434,10 +434,10 @@ class Socket(SocketBase, AttributeSetter):
 
     def get_monitor_socket(self, events=None, addr=None):
         """Return a connected PAIR socket ready to receive the event notifications.
-
+        
         .. versionadded:: libzmq-4.0
         .. versionadded:: 14.0
-
+        
         Parameters
         ----------
         events : bitfield (int) [default: ZMQ_EVENTS_ALL]
@@ -471,5 +471,6 @@ class Socket(SocketBase, AttributeSetter):
         that is serving socket events.
         """
         self.monitor(None, 0)
+
 
 __all__ = ['Socket']
