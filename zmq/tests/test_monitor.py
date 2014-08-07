@@ -25,7 +25,7 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.sockets.extend([s_rep, s_req])
         s_req.bind("tcp://127.0.0.1:6666")
         # try monitoring the REP socket
-        
+
         s_rep.monitor("inproc://monitor.rep", zmq.EVENT_ALL)
         # create listening socket for monitor
         s_event = self.context.socket(zmq.PAIR)
@@ -41,6 +41,11 @@ class TestSocketMonitor(BaseZMQTestCase):
             m = recv_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
         self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
+
+        # test monitor can be disabled.
+        s_rep.disable_monitor()
+        m = recv_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_MONITOR_STOPPED)
 
 
     @skip_lt_4
