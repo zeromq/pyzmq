@@ -242,7 +242,7 @@ class Socket(object):
         if events < 0:
             events = zmq.EVENT_ALL
         if addr is None:
-            addr = ff.NULL
+            addr = ffi.NULL
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
     def disable_monitor(self):
