@@ -42,6 +42,11 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
         self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
 
+        # test monitor can be disabled.
+        s_rep.disable_monitor()
+        m = recv_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_MONITOR_STOPPED)
+
 
     @skip_lt_4
     def test_monitor_connected(self):

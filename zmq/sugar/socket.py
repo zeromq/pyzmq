@@ -466,5 +466,13 @@ class Socket(SocketBase, AttributeSetter):
         ret.connect(addr)
         return ret
 
+    def disable_monitor(self):
+        """Shutdown the PAIR socket (created using get_monitor_socket)
+        that is serving socket events.
+        
+        .. versionadded:: 14.4
+        """
+        self.monitor(None, 0)
+
 
 __all__ = ['Socket']
