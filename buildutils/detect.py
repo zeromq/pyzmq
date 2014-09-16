@@ -17,10 +17,10 @@ import os
 import logging
 import platform
 from distutils import ccompiler
-from distutils.sysconfig import customize_compiler
 from subprocess import Popen, PIPE
 
-from .misc import customize_mingw
+from .misc import get_compiler, get_output_error
+from .patch import patch_lib_paths
 
 pjoin = os.path.join
 
@@ -30,16 +30,7 @@ pjoin = os.path.join
 
 def test_compilation(cfile, compiler=None, **compiler_attrs):
     """Test simple compilation with given settings"""
-    if compiler is None or isinstance(compiler, str):
-        cc = ccompiler.new_compiler(compiler=compiler)
-        customize_compiler(cc)
-        if cc.compiler_type == 'mingw32':
-            customize_mingw(cc)
-    else:
-        cc = compiler
-    
-    for name, val in compiler_attrs.items():
-        setattr(cc, name, val)
+    cc = get_compiler(compiler, **compiler_attrs)
     
     efile, ext = os.path.splitext(cfile)
 
@@ -63,7 +54,7 @@ def test_compilation(cfile, compiler=None, **compiler_attrs):
             lpreargs = ['-m64']
     extra = compiler_attrs.get('extra_compile_args', None)
 
-    objs = cc.compile([cfile],extra_preargs=cpreargs, extra_postargs=extra)
+    objs = cc.compile([cfile], extra_preargs=cpreargs, extra_postargs=extra)
     cc.link_executable(objs, efile, extra_preargs=lpreargs)
     return efile
 
@@ -73,7 +64,9 @@ def compile_and_run(basedir, src, compiler=None, **compiler_attrs):
     cfile = pjoin(basedir, os.path.basename(src))
     shutil.copy(src, cfile)
     try:
-        efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
+        cc = get_compiler(compiler, **compiler_attrs)
+        efile = test_compilation(cfile, compiler=cc)
+        patch_lib_paths(efile, cc.library_dirs)
         result = Popen(efile, stdout=PIPE, stderr=PIPE)
         so, se = result.communicate()
         # for py3k:
@@ -121,15 +114,13 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
         cc.output_dir = basedir
         if not cc.has_function('timer_create'):
             compiler_attrs['libraries'].append('rt')
-            
-    efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
     
-    result = Popen(efile, stdout=PIPE, stderr=PIPE)
-    so, se = result.communicate()
-    # for py3k:
-    so = so.decode()
-    se = se.decode()
-    if result.returncode:
+    cc = get_compiler(compiler=compiler, **compiler_attrs)
+    efile = test_compilation(cfile, compiler=cc)
+    patch_lib_paths(efile, cc.library_dirs)
+    
+    rc, so, se = get_output_error([efile])
+    if rc:
         msg = "Error running version detection script:\n%s\n%s" % (so,se)
         logging.error(msg)
         raise IOError(msg)

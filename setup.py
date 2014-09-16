@@ -64,6 +64,7 @@ from buildutils import (
     fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
     test_compilation, compile_and_run,
+    patch_lib_paths,
     )
 
 #-----------------------------------------------------------------------------
@@ -891,8 +892,12 @@ class CheckingBuildExt(build_ext):
             customize_mingw(self.compiler)
         
         for ext in self.extensions:
-            
             self.build_extension(ext)
+    
+    def build_extension(self, ext):
+        build_ext.build_extension(self, ext)
+        ext_path = self.get_ext_fullpath(ext.name)
+        patch_lib_paths(ext_path, self.compiler.library_dirs)
     
     def run(self):
         # check version, to prevent confusing undefined constant errors
@@ -1053,9 +1058,15 @@ else:
                 customize_mingw(self.compiler)
             return build_ext_c.build_extensions(self)
         
+        def build_extension(self, ext):
+            build_ext_c.build_extension(self, ext)
+            ext_path = self.get_ext_fullpath(ext.name)
+            patch_lib_paths(ext_path, self.compiler.library_dirs)
+        
         def run(self):
             self.distribution.run_command('configure')
-            return build_ext.run(self)
+            
+            return build_ext_c.run(self)
     
     cmdclass['cython'] = CythonCommand
     cmdclass['build_ext'] =  zbuild_ext
