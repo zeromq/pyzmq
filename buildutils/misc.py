@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import os
+import sys
 import logging
 from distutils import ccompiler
 from distutils.sysconfig import customize_compiler
@@ -11,6 +12,12 @@ from pipes import quote
 from subprocess import Popen, PIPE
 
 pjoin = os.path.join
+
+
+if sys.version_info[0] >= 3:
+    u = lambda x: x
+else:
+    u = lambda x: x.decode('utf8', 'replace')
 
 
 def customize_mingw(cc):
@@ -48,7 +55,7 @@ def get_output_error(cmd):
     try:
         result = Popen(cmd, stdout=PIPE, stderr=PIPE)
     except IOError as e:
-        return -1, u'', u'Failed to run %r: %r' % (cmd, e)
+        return -1, u(''), u('Failed to run %r: %r' % (cmd, e))
     so, se = result.communicate()
     # unicode:
     so = so.decode('utf8', 'replace')
