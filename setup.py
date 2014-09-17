@@ -180,17 +180,17 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         if sys.platform.startswith('freebsd'):
             settings['libraries'].append('pthread')
     
+        if sys.platform == 'sunos5':
+          if platform.architecture()[0] == '32bit':
+            settings['extra_link_args'] += ['-m32']
+          else:
+            settings['extra_link_args'] += ['-m64']
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             if not bundle_libzmq_dylib:
-                if sys.platform == 'sunos5':
-                  if platform.architecture()[0] == '32bit':
-                    settings['library_dirs'] += [pjoin(prefix, 'lib')]
-                  else:
+                if sys.platform == 'sunos5' and platform.architecture()[0] == '64bit':
                     settings['library_dirs'] += [pjoin(prefix, 'lib/amd64')]
-                    settings['extra_link_args'] += ['-m64']
-                else: 
-                   settings['library_dirs'] += [pjoin(prefix, 'lib')]  
+                settings['library_dirs'] += [pjoin(prefix, 'lib')]
         else:
             if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
                 # allow macports default
