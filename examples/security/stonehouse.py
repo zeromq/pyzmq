@@ -30,7 +30,9 @@ def run():
     public_keys_dir = os.path.join(base_dir, 'public_keys')
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
-    if not (os.path.exists(keys_dir) and os.path.exists(keys_dir) and os.path.exists(keys_dir)):
+    if not (os.path.exists(keys_dir) and
+            os.path.exists(public_keys_dir) and
+            os.path.exists(secret_keys_dir)):
         logging.critical("Certificates are missing: run generate_certificates.py script first")
         sys.exit(1)
 
