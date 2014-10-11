@@ -304,6 +304,8 @@ class Configure(build_ext):
             pjoin('backend', 'cython'),
             'devices',
         )]
+        if sys.platform.startswith('win'):
+            settings['include_dirs'].insert(0, 'patch')
         
         for ext in self.distribution.ext_modules:
             if ext.name.startswith('zmq.lib'):
@@ -450,6 +452,19 @@ class Configure(build_ext):
                 pjoin(libsodium_src, 'include', 'sodium'),
             ],
         )
+        # There are a few extra things we need to do to build libsodium on
+        # Windows:
+        # 1) tell libsodium to export its symbols;
+        # 2) prevent libsodium from defining C99 `static inline` functions
+        #    which aren't parsed correctly by VS2008;
+        # 3) provide an implementation of <stdint.h> which is not provided in
+        #    VS2008's "standard" library;
+        # 4) link against Microsoft's s crypto API.
+        if sys.platform.startswith('win'):
+            libsodium.define_macros.append(('SODIUM_DLL_EXPORT', 1))
+            libsodium.define_macros.append(('inline', ''))
+            libsodium.include_dirs.append('patch')
+            libsodium.libraries.append('advapi32')
         # register the Extension
         self.distribution.ext_modules.insert(0, libsodium)
         
@@ -461,8 +476,6 @@ class Configure(build_ext):
         # tell libzmq about libsodium
         libzmq.define_macros.append(("HAVE_LIBSODIUM", 1))
         libzmq.include_dirs.extend(libsodium.include_dirs)
-        
-        
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
@@ -499,6 +512,8 @@ class Configure(build_ext):
             # include defines from zeromq msvc project:
             libzmq.define_macros.append(('FD_SETSIZE', 1024))
             libzmq.define_macros.append(('DLL_EXPORT', 1))
+            libzmq.define_macros.append(('_CRT_SECURE_NO_WARNINGS', 1))
+            libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
             
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
@@ -510,7 +525,8 @@ class Configure(build_ext):
 
             # And things like sockets come from libraries that must be named.
 
-            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
+            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32', 'libsodium'])
+            libzmq.library_dirs.append('build/temp.win32-2.7/Release/buildutils')
         else:
             libzmq.include_dirs.append(bundledir)
             
@@ -531,8 +547,8 @@ class Configure(build_ext):
                     # not sure why
                     libzmq.libraries.append("stdc++")
         
-            # On non-Windows, also bundle libsodium:
-            self.bundle_libsodium_extension(libzmq)
+        # Also bundle libsodium, even on Windows.
+        self.bundle_libsodium_extension(libzmq)
         
         # update other extensions, with bundled settings
         self.config['libzmq_extension'] = True
