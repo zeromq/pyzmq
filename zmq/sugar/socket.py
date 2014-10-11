@@ -50,7 +50,18 @@ class Socket(SocketBase, AttributeSetter):
     def __del__(self):
         if not self._shadow:
             self.close()
-
+    
+    # socket as context manager:
+    def __enter__(self):
+        """Sockets are context managers
+        
+        .. versionadded:: 14.4
+        """
+        return self
+    
+    def __exit__(self, *args, **kwargs):
+        self.close()
+    
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------

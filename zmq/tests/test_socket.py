@@ -24,6 +24,21 @@ class TestSocket(BaseZMQTestCase):
         s.close()
         del ctx
     
+    def test_context_manager(self):
+        url = 'inproc://a'
+        with self.Context() as ctx:
+            with ctx.socket(zmq.PUSH) as a:
+                a.bind(url)
+                with ctx.socket(zmq.PULL) as b:
+                    b.connect(url)
+                    msg = b'hi'
+                    a.send(msg)
+                    rcvd = self.recv(b)
+                    self.assertEqual(rcvd, msg)
+                self.assertEqual(b.closed, True)
+            self.assertEqual(a.closed, True)
+        self.assertEqual(ctx.closed, True)
+    
     def test_dir(self):
         ctx = self.Context()
         s = ctx.socket(zmq.PUB)
