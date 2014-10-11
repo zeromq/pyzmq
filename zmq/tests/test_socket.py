@@ -2,9 +2,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import sys
 import time
-import errno
 import warnings
 
 import zmq
@@ -12,11 +10,6 @@ from zmq.tests import (
     BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy, skip_if
 )
 from zmq.utils.strtypes import bytes, unicode
-
-try:
-    from queue import Queue
-except:
-    from Queue import Queue
 
 
 class TestSocket(BaseZMQTestCase):
@@ -168,24 +161,6 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEqual(p.getsockopt(zmq.LINGER), 11)
-    
-    def test_poll(self):
-        """test Socket.poll()"""
-        req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
-        # default flag is POLLIN, nobody has anything to recv:
-        self.assertEqual(req.poll(0), 0)
-        self.assertEqual(rep.poll(0), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT), zmq.POLLOUT)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT|zmq.POLLIN), zmq.POLLOUT)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        req.send('hi')
-        self.assertEqual(req.poll(0), 0)
-        self.assertEqual(rep.poll(1), zmq.POLLIN)
-        self.assertEqual(req.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT|zmq.POLLIN), 0)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), zmq.POLLIN)
     
     def test_send_unicode(self):
         "test sending unicode objects"
@@ -410,7 +385,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_shadow_pyczmq(self):
         try:
-            from pyczmq import zctx, zsocket, zstr
+            from pyczmq import zctx, zsocket
         except Exception:
             raise SkipTest("Requires pyczmq")
         
