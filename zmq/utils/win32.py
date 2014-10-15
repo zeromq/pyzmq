@@ -5,10 +5,6 @@
 # Distributed under the terms of the Modified BSD License.
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-
 import os
 
 if os.name == 'nt':
@@ -70,17 +66,20 @@ if os.name == 'nt':
         send message to a ``PAIR`` socket in order to interrupt your blocking
         socket polling operation.
 
-        In a Tornado event loop, you can use the ``ZMQIOLoop.stop`` method to
+        In a Tornado event loop, you can use the ``IOLoop.stop`` method to
         unblock your I/O loop.
         """
 
-        def __init__(self, action):
+        def __init__(self, action=None):
             """Translate ``action`` into a CTRL-C handler.
 
             ``action`` is a callable that takes no arguments and returns no
             value (returned value is ignored).  It must *NEVER* raise an
-            exception."""
-            self.action = action
+            exception.
+            
+            If unspecified, a no-op will be used.
+            """
+            self.action = action or lambda : None
             @PHANDLER_ROUTINE
             def handle(event):
                 if event == 0:  # CTRL_C_EVENT
@@ -114,5 +113,5 @@ else:
     # No-op implementation for other platforms.
     from contextlib import contextmanager
     @contextmanager
-    def allow_interrupt(action):
+    def allow_interrupt(action=None):
         yield
