@@ -23,43 +23,38 @@ from zmq.utils.strtypes import unicode
 
 
 def new_pointer_from_opt(option, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
         return new_int64_pointer()
-    elif option in int_sockopts:
-        return new_int_pointer()
     elif option in bytes_sockopts:
         return new_binary_data(length)
     else:
-        raise ZMQError(zmq.EINVAL)
+        # default
+        return new_int_pointer()
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
-        return int(opt_pointer[0])
-    elif option in int_sockopts:
         return int(opt_pointer[0])
     elif option in bytes_sockopts:
         return ffi.buffer(opt_pointer, length)[:]
     else:
-        raise ZMQError(zmq.EINVAL)
+        return int(opt_pointer[0])
 
 def initialize_opt_pointer(option, value, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
         return value_int64_pointer(value)
-    elif option in int_sockopts:
-        return value_int_pointer(value)
     elif option in bytes_sockopts:
         return value_binary_data(value, length)
     else:
-        raise ZMQError(zmq.EINVAL)
+        return value_int_pointer(value)
 
 
 class Socket(object):

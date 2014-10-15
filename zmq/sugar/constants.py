@@ -1,6 +1,6 @@
 """0MQ Constants."""
 
-# Copyright (c) IPython Development Team.
+# Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
 from zmq.backend import constants
@@ -10,6 +10,7 @@ from zmq.utils.constant_names import (
     int_sockopt_names,
     int64_sockopt_names,
     bytes_sockopt_names,
+    fd_sockopt_names,
     ctx_opt_names,
     msg_opt_names,
 )
@@ -29,6 +30,7 @@ __all__ = [
 int_sockopts    = set()
 int64_sockopts  = set()
 bytes_sockopts  = set()
+fd_sockopts     = set()
 ctx_opts        = set()
 msg_opts        = set()
 
@@ -63,6 +65,9 @@ for name in int64_sockopt_names:
 
 for name in bytes_sockopt_names:
     _add_constant(name, bytes_sockopts)
+
+for name in fd_sockopt_names:
+    _add_constant(name, fd_sockopts)
 
 for name in ctx_opt_names:
     _add_constant(name, ctx_opts)

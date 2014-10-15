@@ -61,6 +61,18 @@
     #define ZMQ_MAX_SOCKETS_DFLT (-1)
 #endif
 
+#ifndef ZMQ_POLLITEMS_DFLT
+    #define ZMQ_POLLITEMS_DFLT (-1)
+#endif
+
+#ifndef ZMQ_THREAD_PRIORITY_DFLT
+    #define ZMQ_THREAD_PRIORITY_DFLT (-1)
+#endif
+
+#ifndef ZMQ_THREAD_SCHED_POLICY_DFLT
+    #define ZMQ_THREAD_SCHED_POLICY_DFLT (-1)
+#endif
+
 #ifndef ZMQ_PAIR
     #define ZMQ_PAIR (-1)
 #endif
@@ -87,6 +99,14 @@
 
 #ifndef ZMQ_ROUTER
     #define ZMQ_ROUTER (-1)
+#endif
+
+#ifndef ZMQ_XREQ
+    #define ZMQ_XREQ (-1)
+#endif
+
+#ifndef ZMQ_XREP
+    #define ZMQ_XREP (-1)
 #endif
 
 #ifndef ZMQ_PULL
@@ -175,6 +195,10 @@
 
 #ifndef ZMQ_CURVE
     #define ZMQ_CURVE (-1)
+#endif
+
+#ifndef ZMQ_GSSAPI
+    #define ZMQ_GSSAPI (-1)
 #endif
 
 #ifndef EAGAIN
@@ -297,8 +321,16 @@
     #define ZMQ_MAX_SOCKETS (-1)
 #endif
 
-#ifndef ZMQ_MORE
-    #define ZMQ_MORE (-1)
+#ifndef ZMQ_SOCKET_LIMIT
+    #define ZMQ_SOCKET_LIMIT (-1)
+#endif
+
+#ifndef ZMQ_THREAD_PRIORITY
+    #define ZMQ_THREAD_PRIORITY (-1)
+#endif
+
+#ifndef ZMQ_THREAD_SCHED_POLICY
+    #define ZMQ_THREAD_SCHED_POLICY (-1)
 #endif
 
 #ifndef ZMQ_IDENTITY
@@ -349,8 +381,24 @@
     #define ZMQ_CONNECT_RID (-1)
 #endif
 
+#ifndef ZMQ_GSSAPI_PRINCIPAL
+    #define ZMQ_GSSAPI_PRINCIPAL (-1)
+#endif
+
+#ifndef ZMQ_GSSAPI_SERVICE_PRINCIPAL
+    #define ZMQ_GSSAPI_SERVICE_PRINCIPAL (-1)
+#endif
+
 #ifndef ZMQ_SOCKS_PROXY
     #define ZMQ_SOCKS_PROXY (-1)
+#endif
+
+#ifndef ZMQ_FD
+    #define ZMQ_FD (-1)
+#endif
+
+#ifndef ZMQ_IDENTITY_FD
+    #define ZMQ_IDENTITY_FD (-1)
 #endif
 
 #ifndef ZMQ_RECONNECT_IVL_MAX
@@ -407,10 +455,6 @@
 
 #ifndef ZMQ_XPUB_VERBOSE
     #define ZMQ_XPUB_VERBOSE (-1)
-#endif
-
-#ifndef ZMQ_FD
-    #define ZMQ_FD (-1)
 #endif
 
 #ifndef ZMQ_EVENTS
@@ -501,6 +545,22 @@
     #define ZMQ_IPC_FILTER_GID (-1)
 #endif
 
+#ifndef ZMQ_GSSAPI_SERVER
+    #define ZMQ_GSSAPI_SERVER (-1)
+#endif
+
+#ifndef ZMQ_GSSAPI_PLAINTEXT
+    #define ZMQ_GSSAPI_PLAINTEXT (-1)
+#endif
+
+#ifndef ZMQ_HANDSHAKE_IVL
+    #define ZMQ_HANDSHAKE_IVL (-1)
+#endif
+
+#ifndef ZMQ_XPUB_NODROP
+    #define ZMQ_XPUB_NODROP (-1)
+#endif
+
 #ifndef ZMQ_AFFINITY
     #define ZMQ_AFFINITY (-1)
 #endif
@@ -543,6 +603,18 @@
 
 #ifndef ZMQ_RCVMORE
     #define ZMQ_RCVMORE (-1)
+#endif
+
+#ifndef ZMQ_MORE
+    #define ZMQ_MORE (-1)
+#endif
+
+#ifndef ZMQ_SRCFD
+    #define ZMQ_SRCFD (-1)
+#endif
+
+#ifndef ZMQ_SHARED
+    #define ZMQ_SHARED (-1)
 #endif
 
 

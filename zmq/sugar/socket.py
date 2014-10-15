@@ -24,6 +24,7 @@ from .constants import (
     int64_sockopt_names,
     int_sockopt_names,
     bytes_sockopt_names,
+    fd_sockopt_names,
 )
 try:
     import cPickle
@@ -99,6 +100,7 @@ class Socket(SocketBase, AttributeSetter):
             bytes_sockopt_names,
             int_sockopt_names,
             int64_sockopt_names,
+            fd_sockopt_names,
         ):
             keys.extend(collection)
         return keys

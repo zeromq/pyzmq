@@ -3,10 +3,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Python module level constants
-#-----------------------------------------------------------------------------
-
 # dictionaries of constants new or removed in particular versions
 
 new_in = {
@@ -26,11 +22,13 @@ new_in = {
         'EHOSTUNREACH',
         'ENETRESET',
         
+        # ctx opts
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
         
+        # socket opts
         'ROUTER_BEHAVIOR',
         'ROUTER_MANDATORY',
         'FAIL_UNROUTABLE',
@@ -40,6 +38,9 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
+        
+        # msg opts
+        'MORE',
         
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
@@ -84,6 +85,13 @@ new_in = {
         'EVENT_MONITOR_STOPPED',
     ],
     (4,1,0) : [
+        # ctx opts
+        'SOCKET_LIMIT',
+        'THREAD_PRIORITY',
+        'THREAD_PRIORITY_DFLT',
+        'THREAD_SCHED_POLICY',
+        'THREAD_SCHED_POLICY_DFLT',
+        
         # socket opts
         'ROUTER_HANDOVER',
         'TOS',
@@ -91,7 +99,22 @@ new_in = {
         'IPC_FILTER_UID',
         'IPC_FILTER_GID',
         'CONNECT_RID',
+        'GSSAPI_SERVER',
+        'GSSAPI_PRINCIPAL',
+        'GSSAPI_SERVICE_PRINCIPAL',
+        'GSSAPI_PLAINTEXT',
+        'HANDSHAKE_IVL',
+        'IDENTITY_FD',
+        'XPUB_NODROP',
         'SOCKS_PROXY',
+        
+        # msg opts
+        'SRCFD',
+        'SHARED',
+        
+        # security
+        'GSSAPI',
+        
     ],
 }
 
@@ -133,6 +156,9 @@ base_names = [
 
     'IO_THREADS_DFLT',
     'MAX_SOCKETS_DFLT',
+    'POLLITEMS_DFLT',
+    'THREAD_PRIORITY_DFLT',
+    'THREAD_SCHED_POLICY_DFLT',
 
     # socktypes
     'PAIR',
@@ -142,6 +168,8 @@ base_names = [
     'REP',
     'DEALER',
     'ROUTER',
+    'XREQ',
+    'XREP',
     'PULL',
     'PUSH',
     'XPUB',
@@ -168,6 +196,7 @@ base_names = [
     'NULL',
     'PLAIN',
     'CURVE',
+    'GSSAPI',
 
     ## ERRNO
     # Often used (these are alse in errno.)
@@ -231,7 +260,14 @@ bytes_sockopt_names = [
     'CURVE_SERVERKEY',
     'ZAP_DOMAIN',
     'CONNECT_RID',
+    'GSSAPI_PRINCIPAL',
+    'GSSAPI_SERVICE_PRINCIPAL',
     'SOCKS_PROXY',
+]
+
+fd_sockopt_names = [
+    'FD',
+    'IDENTITY_FD',
 ]
 
 int_sockopt_names = [
@@ -256,7 +292,6 @@ int_sockopt_names = [
     'DELAY_ATTACH_ON_CONNECT',
     'XPUB_VERBOSE',
 
-    'FD',
     'EVENTS',
     'TYPE',
     'LINGER',
@@ -281,6 +316,10 @@ int_sockopt_names = [
     'IPC_FILTER_PID',
     'IPC_FILTER_UID',
     'IPC_FILTER_GID',
+    'GSSAPI_SERVER',
+    'GSSAPI_PLAINTEXT',
+    'HANDSHAKE_IVL',
+    'XPUB_NODROP',
 ]
 
 switched_sockopt_names = [
@@ -294,16 +333,31 @@ switched_sockopt_names = [
 ctx_opt_names = [
     'IO_THREADS',
     'MAX_SOCKETS',
+    'SOCKET_LIMIT',
+    'THREAD_PRIORITY',
+    'THREAD_SCHED_POLICY',
 ]
 
 msg_opt_names = [
     'MORE',
+    'SRCFD',
+    'SHARED',
 ]
 
-all_names = (
-    base_names + ctx_opt_names + msg_opt_names +
-    bytes_sockopt_names + int_sockopt_names + int64_sockopt_names + switched_sockopt_names
-)
+from itertools import chain
+
+all_names = list(chain(
+    base_names,
+    ctx_opt_names,
+    bytes_sockopt_names,
+    fd_sockopt_names,
+    int_sockopt_names,
+    int64_sockopt_names,
+    switched_sockopt_names,
+    msg_opt_names,
+))
+
+del chain
 
 def no_prefix(name):
     """does the given constant have a ZMQ_ prefix?"""
