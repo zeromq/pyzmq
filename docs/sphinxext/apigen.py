@@ -17,11 +17,11 @@ NOTE: this is a modified version of a script originally shipped with the
 PyMVPA project, which we've adapted for NIPY use.  PyMVPA is an MIT-licensed
 project."""
 
-# Stdlib imports
+from __future__ import print_function
+
 import os
 import re
 
-# Functions and classes
 class ApiDocWriter(object):
     ''' Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format'''
@@ -220,7 +220,7 @@ class ApiDocWriter(object):
         # get the names of all classes and functions
         functions, classes = self._parse_module(uri)
         if not len(functions) and not len(classes):
-            print 'WARNING: Empty -',uri  # dbg
+            print('WARNING: Empty -', uri)
             return ''
 
         # Make a shorter version of the uri that omits the package name for
