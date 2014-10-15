@@ -9,6 +9,19 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.4.0
+======
+
+New features:
+
+- update bundled libzmq to 4.0.5
+- update bundled libsodium to 1.0.0
+- Gixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels
+- More build/link/load fixes on OS X and Solaris
+- Get Frame metadata via dict access (libzmq 4)
+- Contexts and Sockets are context managers (term/close on ``__exit__``)
+- Add :class:`zmq.utils.win32.allow_interrupt` context manager for catching SIGINT on Windows
+
 14.3.1
 ======
 
