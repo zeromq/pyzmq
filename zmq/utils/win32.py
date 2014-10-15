@@ -92,6 +92,7 @@ if os.name == 'nt':
     SetConsoleCtrlHandler.restype = BOOL
 
     class allow_interrupt(_allow_interrupt):
+        __doc__ = _allow_interrupt.__doc__
 
         def init_action(self, action):
             if action is None:
@@ -127,5 +128,5 @@ if os.name == 'nt':
                 raise WindowsError()
 else:
     class allow_interrupt(_allow_interrupt):
+        __doc__ = _allow_interrupt.__doc__
         pass
-allow_interrupt.__doc__ = _allow_interrupt.__doc__
