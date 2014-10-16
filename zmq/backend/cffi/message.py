@@ -6,6 +6,7 @@
 from ._cffi import ffi, C
 
 import zmq
+from zmq.utils.strtypes import unicode
 
 try:
     view = memoryview
