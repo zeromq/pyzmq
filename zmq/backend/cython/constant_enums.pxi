@@ -15,6 +15,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_QUEUE
     enum: ZMQ_IO_THREADS_DFLT
     enum: ZMQ_MAX_SOCKETS_DFLT
+    enum: ZMQ_POLLITEMS_DFLT
+    enum: ZMQ_THREAD_PRIORITY_DFLT
+    enum: ZMQ_THREAD_SCHED_POLICY_DFLT
     enum: ZMQ_PAIR
     enum: ZMQ_PUB
     enum: ZMQ_SUB
@@ -22,6 +25,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_REP
     enum: ZMQ_DEALER
     enum: ZMQ_ROUTER
+    enum: ZMQ_XREQ
+    enum: ZMQ_XREP
     enum: ZMQ_PULL
     enum: ZMQ_PUSH
     enum: ZMQ_XPUB
@@ -44,6 +49,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_NULL
     enum: ZMQ_PLAIN
     enum: ZMQ_CURVE
+    enum: ZMQ_GSSAPI
     enum: ZMQ_EAGAIN "EAGAIN"
     enum: ZMQ_EINVAL "EINVAL"
     enum: ZMQ_EFAULT "EFAULT"
@@ -74,7 +80,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_EMTHREAD "EMTHREAD"
     enum: ZMQ_IO_THREADS
     enum: ZMQ_MAX_SOCKETS
-    enum: ZMQ_MORE
+    enum: ZMQ_SOCKET_LIMIT
+    enum: ZMQ_THREAD_PRIORITY
+    enum: ZMQ_THREAD_SCHED_POLICY
     enum: ZMQ_IDENTITY
     enum: ZMQ_SUBSCRIBE
     enum: ZMQ_UNSUBSCRIBE
@@ -87,7 +95,11 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_CURVE_SERVERKEY
     enum: ZMQ_ZAP_DOMAIN
     enum: ZMQ_CONNECT_RID
+    enum: ZMQ_GSSAPI_PRINCIPAL
+    enum: ZMQ_GSSAPI_SERVICE_PRINCIPAL
     enum: ZMQ_SOCKS_PROXY
+    enum: ZMQ_FD
+    enum: ZMQ_IDENTITY_FD
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
     enum: ZMQ_RCVTIMEO
@@ -102,7 +114,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_TCP_KEEPALIVE_INTVL
     enum: ZMQ_DELAY_ATTACH_ON_CONNECT
     enum: ZMQ_XPUB_VERBOSE
-    enum: ZMQ_FD
     enum: ZMQ_EVENTS
     enum: ZMQ_TYPE
     enum: ZMQ_LINGER
@@ -125,6 +136,10 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_IPC_FILTER_PID
     enum: ZMQ_IPC_FILTER_UID
     enum: ZMQ_IPC_FILTER_GID
+    enum: ZMQ_GSSAPI_SERVER
+    enum: ZMQ_GSSAPI_PLAINTEXT
+    enum: ZMQ_HANDSHAKE_IVL
+    enum: ZMQ_XPUB_NODROP
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
@@ -136,3 +151,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SNDBUF
     enum: ZMQ_RCVBUF
     enum: ZMQ_RCVMORE
+    enum: ZMQ_MORE
+    enum: ZMQ_SRCFD
+    enum: ZMQ_SHARED

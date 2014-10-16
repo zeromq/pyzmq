@@ -14,6 +14,7 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 
 New features:
 
+- experimental support for libzmq-4.1.0 rc (new constants, plus :func:`zmq.has`).
 - update bundled libzmq to 4.0.5
 - update bundled libsodium to 1.0.0
 - Fixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels

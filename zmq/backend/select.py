@@ -14,6 +14,7 @@ public_api = [
     'zmq_poll',
     'strerror',
     'zmq_errno',
+    'has',
     'curve_keypair',
     'constants',
     'zmq_version_info',

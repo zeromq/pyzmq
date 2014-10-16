@@ -384,7 +384,7 @@ cdef class Socket:
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             _check_rc(rc)
             result = optval_int64_c
-        elif option == ZMQ_FD:
+        elif option in zmq.constants.fd_sockopts:
             sz = sizeof(fd_t)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             _check_rc(rc)

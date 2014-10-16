@@ -43,6 +43,7 @@
 // nothing to remove
 #else
     #define zmq_msg_gets(msg, prop) _missing
+    #define zmq_has(capability) _missing
 #endif
 
 #if ZMQ_VERSION_MAJOR >= 3

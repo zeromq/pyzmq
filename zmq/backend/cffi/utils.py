@@ -7,7 +7,19 @@
 from ._cffi import ffi, C
 
 from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.utils.strtypes import unicode
 
+def has(capability):
+    """Check for zmq capability by name (e.g. 'ipc', 'curve')
+    
+    .. versionadded:: libzmq-4.1
+    .. versionadded:: 14.1
+    """
+    _check_version((4,1), 'zmq.has')
+    if isinstance(capability, unicode):
+        capability = capability.encode('utf8')
+    return bool(C.zmq_has(capability))
+    
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
     
@@ -47,4 +59,4 @@ class Stopwatch(object):
     def sleep(self, seconds):
         C.zmq_sleep(seconds)
 
-__all__ = ['curve_keypair', 'Stopwatch']
+__all__ = ['has', 'curve_keypair', 'Stopwatch']
