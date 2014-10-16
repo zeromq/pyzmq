@@ -131,6 +131,8 @@ Functions
 
 .. autofunction:: zmq.pyzmq_version_info
 
+.. autofunction:: zmq.has
+
 .. autofunction:: zmq.device
 
 .. autofunction:: zmq.proxy

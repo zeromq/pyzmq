@@ -1,4 +1,4 @@
-# Copyright (c) IPython Development Team.
+# Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
 import functools

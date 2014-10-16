@@ -19,17 +19,25 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-
-from libzmq cimport zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair
-
+from libzmq cimport (
+    zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair,
+    zmq_has, const_char_ptr
+)
 from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.utils.strtypes import unicode
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
+def has(capability):
+    """Check for zmq capability by name (e.g. 'ipc', 'curve')
+    
+    .. versionadded:: libzmq-4.1
+    .. versionadded:: 14.1
+    """
+    _check_version((4,1), 'zmq.has')
+    cdef bytes ccap
+    if isinstance(capability, unicode):
+        capability = capability.encode('utf8')
+    ccap = capability
+    return bool(zmq_has(ccap))
 
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
@@ -108,4 +116,4 @@ cdef class Stopwatch:
             zmq_sleep(seconds)
 
 
-__all__ = ['curve_keypair', 'Stopwatch']
+__all__ = ['has', 'curve_keypair', 'Stopwatch']

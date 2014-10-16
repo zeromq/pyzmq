@@ -73,6 +73,7 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_get (zmq_msg_t *msg, int option)
     int zmq_msg_set (zmq_msg_t *msg, int option, int optval)
     const_char_ptr zmq_msg_gets (zmq_msg_t *msg, const_char_ptr property)
+    int zmq_has (const_char_ptr capability)
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
