@@ -60,7 +60,7 @@ class TestConstants(TestCase):
     
     def test_no_negative_constants(self):
         for name in sugar_constants.__all__:
-            self.assertNotEqual(getattr(zmq, name), -1)
+            self.assertNotEqual(getattr(zmq, name), sugar_constants._UNDEFINED)
     
     def test_undefined_constants(self):
         all_aliases = []
@@ -69,7 +69,7 @@ class TestConstants(TestCase):
         
         for name in all_set.difference(all_aliases):
             raw = getattr(backend_constants, name)
-            if raw == -1:
+            if raw == sugar_constants._UNDEFINED:
                 self.assertRaises(AttributeError, getattr, zmq, name)
             else:
                 self.assertEqual(getattr(zmq, name), raw)

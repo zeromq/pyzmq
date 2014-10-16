@@ -39,14 +39,16 @@ if constants.VERSION < 30000:
     int64_sockopt_names.extend(switched_sockopt_names)
 else:
     int_sockopt_names.extend(switched_sockopt_names)
+    
+_UNDEFINED = -9999
 
 def _add_constant(name, container=None):
     """add a constant to be defined
     
     optionally add it to one of the sets for use in get/setopt checkers
     """
-    c = getattr(constants, name, -1)
-    if c == -1:
+    c = getattr(constants, name, _UNDEFINED)
+    if c == _UNDEFINED:
         return
     globals()[name] = c
     __all__.append(name)

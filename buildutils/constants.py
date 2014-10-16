@@ -26,7 +26,7 @@ sys.path.insert(0, pjoin(root, 'zmq', 'utils'))
 from constant_names import all_names, no_prefix
 
 ifndef_t = """#ifndef {0}
-    #define {0} (-1)
+    #define {0} (_PYZMQ_UNDEFINED)
 #endif
 """
 
@@ -43,7 +43,7 @@ def cython_enums():
 
 def ifndefs():
     """generate `#ifndef ZMQ_CONST` block for zmq_constants.h"""
-    lines = []
+    lines = ['#define _PYZMQ_UNDEFINED (-9999)']
     for name in all_names:
         if not no_prefix(name):
             name = 'ZMQ_%s' % name
