@@ -16,7 +16,7 @@ New features:
 
 - update bundled libzmq to 4.0.5
 - update bundled libsodium to 1.0.0
-- Gixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels
+- Fixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels
 - More build/link/load fixes on OS X and Solaris
 - Get Frame metadata via dict access (libzmq 4)
 - Contexts and Sockets are context managers (term/close on ``__exit__``)
