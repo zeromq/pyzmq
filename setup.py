@@ -14,7 +14,7 @@
 #  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 #-----------------------------------------------------------------------------
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import copy
 import os
@@ -815,39 +815,54 @@ class CleanCommand(Command):
     def run(self):
         self._clean_me = []
         self._clean_trees = []
-        for root, dirs, files in list(os.walk('buildutils')):
+        
+        for d in ('build', 'dist', 'conf'):
+            if os.path.exists(d):
+                self._clean_trees.append(d)
+        
+        for root, dirs, files in os.walk('buildutils'):
+            if any(root.startswith(pre) for pre in self._clean_trees):
+                continue
             for f in files:
                 if os.path.splitext(f)[-1] == '.pyc':
                     self._clean_me.append(pjoin(root, f))
+            
+            if '__pycache__' in dirs:
+                self._clean_trees.append(pjoin(root, '__pycache__'))
 
-        for root, dirs, files in list(os.walk('zmq')):
+        for root, dirs, files in os.walk('zmq'):
+            if any(root.startswith(pre) for pre in self._clean_trees):
+                continue
+            
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd', '.json'):
-                    self._clean_me.append(pjoin(root, f))
-                # remove generated cython files
-                if self.all and os.path.splitext(f)[-1] == '.c':
                     self._clean_me.append(pjoin(root, f))
 
             for d in dirs:
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
         
-        for d in ('build', 'conf'):
-            if os.path.exists(d):
-                self._clean_trees.append(d)
-
+        # remove generated cython files
+        if self.all:
+            for root, dirs, files in os.walk(pjoin('zmq', 'backend', 'cython')):
+                 if os.path.splitext(f)[-1] == '.c':
+                     self._clean_me.append(pjoin(root, f))
+        
         bundled = glob(pjoin('zmq', 'libzmq*'))
-        self._clean_me.extend(bundled)
+        self._clean_me.extend([ b for b in bundled if b not in _clean_me ])
+        
         for clean_me in self._clean_me:
+            print("removing %s" % clean_me)
             try:
                 os.unlink(clean_me)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e, file=sys.stderr)
         for clean_tree in self._clean_trees:
+            print("removing %s/" % clean_tree)
             try:
                 shutil.rmtree(clean_tree)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e, file=sys.stderr)
 
 
 class CheckSDist(sdist):
