@@ -213,8 +213,10 @@ def release(vs, upload=False):
 
 @task
 def gh_pages():
-    py = make_env('2.7', 'cython', 'sphinx')
+    py = make_env('2.7', 'cython', 'sphinx', 'numpydoc', 'gevent')
+    bin = os.path.dirname(py)
     with cd(repo_root):
-        run([py, 'setup.py', 'install'])
+        run([py, 'setup.py', 'install', '--zmq=bundled'])
     with cd(pjoin(repo_root, 'docs')):
+        os.environ['PATH'] = '%s:%s' % (bin, os.environ['PATH'])
         run('make gh-pages')
