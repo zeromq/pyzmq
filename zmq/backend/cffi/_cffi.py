@@ -13,99 +13,10 @@ from cffi import FFI
 from zmq.utils.constant_names import all_names, no_prefix
 
 
-ffi = FFI()
-
 base_zmq_version = (3,2,2)
 
-core_functions = \
-'''
-void* zmq_socket(void *context, int type);
-int zmq_close(void *socket);
-
-int zmq_bind(void *socket, const char *endpoint);
-int zmq_connect(void *socket, const char *endpoint);
-
-int zmq_errno(void);
-const char * zmq_strerror(int errnum);
-
-void* zmq_stopwatch_start(void);
-unsigned long zmq_stopwatch_stop(void *watch);
-void zmq_sleep(int seconds_);
-int zmq_device(int device, void *frontend, void *backend);
-'''
-
-core32_functions = \
-'''
-int zmq_unbind(void *socket, const char *endpoint);
-int zmq_disconnect(void *socket, const char *endpoint);
-void* zmq_ctx_new();
-int zmq_ctx_destroy(void *context);
-int zmq_ctx_get(void *context, int opt);
-int zmq_ctx_set(void *context, int opt, int optval);
-int zmq_proxy(void *frontend, void *backend, void *capture);
-int zmq_socket_monitor(void *socket, const char *addr, int events);
-'''
-
-core40_functions = \
-'''
-int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
-int zmq_has (const char *capability);
-'''
-
-message32_functions = \
-'''
-typedef struct { ...; } zmq_msg_t;
-typedef ... zmq_free_fn;
-
-int zmq_msg_init(zmq_msg_t *msg);
-int zmq_msg_init_size(zmq_msg_t *msg, size_t size);
-int zmq_msg_init_data(zmq_msg_t *msg,
-                      void *data,
-                      size_t size,
-                      zmq_free_fn *ffn,
-                      void *hint);
-
-size_t zmq_msg_size(zmq_msg_t *msg);
-void *zmq_msg_data(zmq_msg_t *msg);
-int zmq_msg_close(zmq_msg_t *msg);
-
-int zmq_msg_send(zmq_msg_t *msg, void *socket, int flags);
-int zmq_msg_recv(zmq_msg_t *msg, void *socket, int flags);
-'''
-
-sockopt_functions = \
-'''
-int zmq_getsockopt(void *socket,
-                   int option_name,
-                   void *option_value,
-                   size_t *option_len);
-
-int zmq_setsockopt(void *socket,
-                   int option_name,
-                   const void *option_value,
-                   size_t option_len);
-'''
-
-polling_functions = \
-'''
-typedef struct
-{
-    void *socket;
-    int fd;
-    short events;
-    short revents;
-} zmq_pollitem_t;
-
-int zmq_poll(zmq_pollitem_t *items, int nitems, long timeout);
-'''
-
-extra_functions = \
-'''
-void * memcpy(void *restrict s1, const void *restrict s2, size_t n);
-int get_ipc_path_max_len(void);
-'''
-
 def load_compiler_config():
+    """load pyzmq compiler arguments"""
     import zmq
     zmq_dir = dirname(zmq.__file__)
     zmq_parent = dirname(zmq_dir)
@@ -134,25 +45,20 @@ def load_compiler_config():
         cfg[key] = abs_paths
     return cfg
 
-cfg = load_compiler_config()
 
 def zmq_version_info():
-    ffi_check = FFI()
-    ffi_check.cdef('void zmq_version(int *major, int *minor, int *patch);')
-    cfg = load_compiler_config()
-    C_check_version = ffi_check.verify('#include <zmq.h>',
-        libraries=cfg['libraries'],
-        include_dirs=cfg['include_dirs'],
-        library_dirs=cfg['library_dirs'],
-        runtime_library_dirs=cfg['runtime_library_dirs'],
-    )
+    """Get libzmq version as tuple of ints"""
     major = ffi.new('int*')
     minor = ffi.new('int*')
     patch = ffi.new('int*')
 
-    C_check_version.zmq_version(major, minor, patch)
+    C.zmq_version(major, minor, patch)
 
     return (int(major[0]), int(minor[0]), int(patch[0]))
+
+
+cfg = load_compiler_config()
+ffi = FFI()
 
 def _make_defines(names):
     _names = []
@@ -169,52 +75,34 @@ for name in all_names:
     else:
         c_constant_names.append("ZMQ_" + name)
 
-constants = _make_defines(c_constant_names)
+# load ffi definitions
+here = os.path.dirname(__file__)
+with open(os.path.join(here, '_cdefs.h')) as f:
+    _cdefs = f.read()
+
+with open(os.path.join(here, '_verify.c')) as f:
+    _verify = f.read()
+
+ffi.cdef(_cdefs)
+ffi.cdef(_make_defines(c_constant_names))
 
 try:
+    C = ffi.verify(_verify,
+        modulename='_cffi_ext',
+        libraries=cfg['libraries'],
+        include_dirs=cfg['include_dirs'],
+        library_dirs=cfg['library_dirs'],
+        runtime_library_dirs=cfg['runtime_library_dirs'],
+    )
     _version_info = zmq_version_info()
 except Exception as e:
     raise ImportError("PyZMQ CFFI backend couldn't find zeromq: %s\n"
     "Please check that you have zeromq headers and libraries." % e)
 
-if _version_info >= (3,2,2):
-    functions = '\n'.join([constants,
-                         core_functions,
-                         core32_functions,
-                         core40_functions,
-                         message32_functions,
-                         sockopt_functions,
-                         polling_functions,
-                         extra_functions,
-    ])
-else:
+if _version_info < (3,2,2):
     raise ImportError("PyZMQ CFFI backend requires zeromq >= 3.2.2,"
         " but found %i.%i.%i" % _version_info
     )
-
-
-ffi.cdef(functions)
-
-C = ffi.verify('''
-    #include <stdio.h>
-    #include <sys/un.h>
-    #include <string.h>
-    
-    #include <zmq.h>
-    #include <zmq_utils.h>
-    #include "zmq_compat.h"
-
-int get_ipc_path_max_len(void) {
-    struct sockaddr_un *dummy;
-    return sizeof(dummy->sun_path) - 1;
-}
-
-''',
-    libraries=cfg['libraries'],
-    include_dirs=cfg['include_dirs'],
-    library_dirs=cfg['library_dirs'],
-    runtime_library_dirs=cfg['runtime_library_dirs'],
-)
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 

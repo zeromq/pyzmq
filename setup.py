@@ -1104,13 +1104,18 @@ if pypy:
             # build ffi extension after bundled libzmq,
             # because it may depend on linking it
             here = os.getcwd()
-            sys.path.insert(0, self.build_lib)
+            if self.inplace:
+                sys.path.insert(0, '')
+            else:
+                sys.path.insert(0, self.build_lib)
             try:
                 from zmq.backend.cffi import ffi
             except ImportError as e:
                 warn("Couldn't get CFFI extension: %s" % e)
             else:
                 ext = ffi.verifier.get_extension()
+                if not ext.name.startswith('zmq.'):
+                    ext.name = 'zmq.backend.cffi.' + ext.name
                 self.extensions.append(ext)
                 self.build_extension(ext)
             finally:
@@ -1123,6 +1128,7 @@ if pypy:
 
 package_data = {'zmq': ['*.pxd'],
                 'zmq.backend.cython': ['*.pxd'],
+                'zmq.backend.cffi': ['*.h', '*.c'],
                 'zmq.devices': ['*.pxd'],
                 'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
