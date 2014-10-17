@@ -39,6 +39,7 @@ The following people have contributed to the project:
 - Greg Banks (gbanks AT mybasis DOT com)
 - Greg Ward (greg AT gerg DOT ca)
 - Guido Goldstein (github AT a-nugget DOT de)
+- Ian Lee (ianlee1521 AT gmail DOT com)
 - Ivo Danihelka (ivo AT danihelka DOT net)
 - Iyed (iyed DOT bennour AT gmail DOT com)
 - Jim Garrison (jim AT garrison DOT cc)

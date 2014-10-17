@@ -56,8 +56,15 @@ or
 
 but compiling from source with `pip install pyzmq` should work in most environments.
 
-When compiling pyzmq (e.g. installing with pip on Linux),
-it is generally recommended that zeromq be installed separately, via homebrew, apt, yum, etc.
+When compiling pyzmq (e.g. installing with pip on Linux), it is generally
+recommended that zeromq be installed separately, via homebrew, apt, yum, etc:
+
+    # Debian-based
+    sudo apt-get install libzmq3-dev
+
+    # RHEL-based
+    sudo yum install libzmq3-devel
+
 If this is not available, pyzmq will *try* to build libzmq as a Python Extension,
 though this is not guaranteed to work.
 
