@@ -14,14 +14,18 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 
 New features:
 
-- experimental support for libzmq-4.1.0 rc (new constants, plus :func:`zmq.has`).
-- update bundled libzmq to 4.0.5
-- update bundled libsodium to 1.0.0
+- Experimental support for libzmq-4.1.0 rc (new constants, plus :func:`zmq.has`).
+- Update bundled libzmq to 4.0.5
+- Update bundled libsodium to 1.0.0
 - Fixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels
 - More build/link/load fixes on OS X and Solaris
 - Get Frame metadata via dict access (libzmq 4)
 - Contexts and Sockets are context managers (term/close on ``__exit__``)
 - Add :class:`zmq.utils.win32.allow_interrupt` context manager for catching SIGINT on Windows
+
+Bugs fixed:
+
+- Bundled libzmq should not trigger recompilation after install on PyPy
 
 14.3.1
 ======
