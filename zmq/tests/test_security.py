@@ -84,7 +84,7 @@ class TestSecurity(BaseZMQTestCase):
                     self.assertEqual(frame.get('Hello'), 'World')
                     self.assertEqual(frame['Socket-Type'], 'DEALER')
         except zmq.ZMQVersionError as e:
-            print('error %s' % e
+            print('error %s' % e)
             pass
 
         self.assertEqual(recvd, msg)
