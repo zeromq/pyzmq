@@ -54,5 +54,9 @@ class TestImports(TestCase):
         from zmq.utils import strtypes
         from zmq.utils import jsonapi
     
+    def test_ssh(self):
+        """test ssh imports"""
+        from zmq.ssh import tunnel
+    
 
 
