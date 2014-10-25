@@ -29,24 +29,11 @@ class GarbageCollectorThread(Thread):
         self.ready = Event()
     
     def run(self):
-        while True:
-            if getpid is None or getpid() != self.pid:
-                return
-            try:
-                s = self.gc.context.socket(zmq.PULL)
-                s.linger = 0
-                s.bind(self.gc.url)
-            except zmq.ZMQError:
-                # failed to bind, try again.
-                # no matter a fork or master
-                continue
-            if getpid is None or getpid() != self.pid:
-                # if i am a fork, and I got the socket,
-                # close the socket and die
-                s.close()
-                return
-            else:
-                break
+        s = self.gc.context.socket(zmq.PULL)
+        s.linger = 0
+        if getpid is None or getpid() != self.pid:
+            return
+        s.bind(self.gc.url)
 
         self.ready.set()
         
