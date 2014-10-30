@@ -29,9 +29,13 @@ class GarbageCollectorThread(Thread):
         self.ready = Event()
     
     def run(self):
+        # detect fork at begining of the thread
+        if getpid is None or getpid() != self.pid:
+            return
         s = self.gc.context.socket(zmq.PULL)
         s.linger = 0
         s.bind(self.gc.url)
+
         self.ready.set()
         
         while True:
