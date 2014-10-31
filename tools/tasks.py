@@ -32,11 +32,10 @@ repo = "git@github.com:zeromq/pyzmq"
 
 py_exes = {
     '2.7' : "/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7",
-    '3.3' : "/Library/Frameworks/Python.framework/Versions/3.3/bin/python3.3",
     '3.4' : "/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4",
     'pypy': "/usr/local/bin/pypy",
 }
-egg_pys = {'2.7', '3.3'}
+egg_pys = {'2.7'}
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')

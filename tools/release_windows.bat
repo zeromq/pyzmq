@@ -1,11 +1,11 @@
 @echo off
 REM build a pyzmq release on Windows
-REM 32+64b eggs on Python 27, 33, and wheels on 27, 33, 34
-REM that's 10 bdists
-REM requires Windows SDK 7.0 and 7.1
+REM 32+64b eggs on Python 27, and wheels on 27, 34
+REM that's 6 bdists
+REM requires Windows SDK 7.0 (for py2) and 7.1 (for py3)
 REM and Python installed in the locations: C:\Python34 (32b) and C:\Python34_64 (64b)
 
-REM run with cmd.exe /k tools/release_windows.bat
+REM run with cmd /k tools/release_windows.bat
 
 setlocal EnableDelayedExpansion
 
@@ -13,9 +13,10 @@ set SDKS=C:\Program Files\Microsoft SDKs\Windows
 set SDK7=%SDKS%\v7.0
 set SDK71=%SDKS%\v7.1
 set DISTUTILS_USE_SDK=1
-set UPLOAD=upload
+set UPLOAD=%~1
+set PYROOT=C:\
 
-for %%p in (34, 33, 27) do (
+for %%p in (34, 27) do (
   if "%%p"=="27" (
     set SDK=%SDK7%
   ) else (
@@ -35,8 +36,7 @@ for %%p in (34, 33, 27) do (
       set SUFFIX=
       set ARCH=/x86
     )
-    set PY=C:\Python%%p!SUFFIX!\Python
-    if not "%%p"=="27" set PY=!PY!
+    set PY=%PYROOT%\Python%%p!SUFFIX!\Python
     echo !PY! !SDK!
     !PY! -m pip install --upgrade setuptools pip wheel
     
