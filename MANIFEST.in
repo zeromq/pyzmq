@@ -10,10 +10,10 @@ include setup.py
 include setupegg.py
 include zmqversion.py
 include tox.ini
-include tools
 include .travis.yml
 
 graft docs
+graft tools
 prune docs/build
 prune docs/gh-pages
 
