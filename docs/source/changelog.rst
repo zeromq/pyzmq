@@ -9,6 +9,16 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+
+14.4.1
+======
+
+Bugfixes for 14.4
+
+- SyntaxError on Python 2.6 in zmq.ssh
+- Handle possible bug in garbage collection after fork
+
+
 14.4.0
 ======
 
@@ -29,6 +39,10 @@ Bugs fixed:
 
 14.3.1
 ======
+
+.. note::
+
+    pyzmq-14.3.1 is the last version to include bdists for Python 3.3
 
 Minor bugfixes to pyzmq 14.3:
 
