@@ -33,6 +33,11 @@ except:
     cPickle = None
     import pickle
 
+try:
+    DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
+except AttributeError:
+    DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
@@ -346,7 +351,7 @@ class Socket(SocketBase, AttributeSetter):
     
     recv_unicode = recv_string
     
-    def send_pyobj(self, obj, flags=0, protocol=-1):
+    def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL):
         """send a Python object as a message using pickle to serialize
 
         Parameters
@@ -356,9 +361,8 @@ class Socket(SocketBase, AttributeSetter):
         flags : int
             Any valid send flag.
         protocol : int
-            The pickle protocol number to use. Default of -1 will select
-            the highest supported number. Use 0 for multiple platform
-            support.
+            The pickle protocol number to use. The default is pickle.DEFAULT_PROTOCOl
+            where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
         """
         msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags)
