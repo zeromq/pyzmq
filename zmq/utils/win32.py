@@ -94,7 +94,7 @@ if os.name == 'nt':
     class allow_interrupt(_allow_interrupt):
         __doc__ = _allow_interrupt.__doc__
 
-        def init_action(self, action):
+        def _init_action(self, action):
             if action is None:
                 action = lambda: None
             self.action = action
