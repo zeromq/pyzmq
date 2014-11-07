@@ -87,11 +87,15 @@ def _try_passwordless_openssh(server, keyfile):
     # pop SSH_ASKPASS from env
     env = os.environ.copy()
     env.pop('SSH_ASKPASS', None)
-    
+
+    ssh_newkey = 'Are you sure you want to continue connecting'
     p = pexpect.spawn(cmd, env=env)
     while True:
         try:
-            p.expect('[Pp]assword:', timeout=.1)
+            i = p.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            if i==0:
+                p.sendline('yes')
+                continue
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
@@ -225,11 +229,15 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
     env = os.environ.copy()
     env.pop('SSH_ASKPASS', None)
     
+    ssh_newkey = 'Are you sure you want to continue connecting'
     tunnel = pexpect.spawn(cmd, env=env)
     failed = False
     while True:
         try:
-            tunnel.expect('[Pp]assword:', timeout=.1)
+            i = tunnel.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            if i==0:
+                tunnel.sendline('yes')
+                continue
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
