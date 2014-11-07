@@ -23,11 +23,13 @@ try:
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', DeprecationWarning)
         import paramiko
+        SSHException = paramiko.ssh_exception.SSHException
 except ImportError:
     paramiko = None
+    class SSHException(Exception):
+        pass
 else:
     from .forward import forward_tunnel
-
 
 try:
     import pexpect
@@ -94,8 +96,7 @@ def _try_passwordless_openssh(server, keyfile):
         try:
             i = p.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
             if i==0:
-                p.sendline('yes')
-                continue
+                raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
@@ -236,8 +237,7 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
         try:
             i = tunnel.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
             if i==0:
-                tunnel.sendline('yes')
-                continue
+                raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
