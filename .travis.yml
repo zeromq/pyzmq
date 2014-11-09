@@ -22,7 +22,7 @@ before_install:
 
   - if [[ $ZMQ == 'master' ]]; then curl https://github.com/zeromq/libzmq/archive/master.zip -L > libzmq-master.zip && unzip libzmq-master.zip; fi
   - if [[ $ZMQ == 'master' ]]; then sh -c 'cd libzmq-master; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig'; fi
-  - pip install -q --use-mirrors nose
+  - pip install -q nose
 
 install:
   - if [[ $ZMQ == 'master' ]]; then export ZMQ=/usr/local; fi
