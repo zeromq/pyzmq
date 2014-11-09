@@ -173,7 +173,6 @@ class TestSocket(BaseZMQTestCase):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)
         self.sockets.append(p)
-        self.assertEqual(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEqual(p.getsockopt(zmq.LINGER), 11)
     
