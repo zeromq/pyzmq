@@ -118,7 +118,7 @@ for idx, arg in enumerate(list(sys.argv)):
 
 # --- compiler settings -------------------------------------------------
 
-def bundled_settings():
+def bundled_settings(debug):
     """settings for linking extensions against bundled libzmq"""
     settings = {}
     settings['libraries'] = []
@@ -133,8 +133,12 @@ def bundled_settings():
         # link against libzmq in build dir:
         plat = distutils.util.get_platform()
         temp = 'temp.%s-%s' % (plat, sys.version[0:3])
-        settings['libraries'].append('libzmq')
-        settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
+        if debug:
+            settings['libraries'].append('libzmq_d')
+            settings['library_dirs'].append(pjoin('build', temp, 'Debug', 'buildutils'))
+        else:
+            settings['libraries'].append('libzmq')
+            settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
     
     return settings
 
@@ -264,7 +268,7 @@ class Configure(build_ext):
         cfg = self.config
         
         if cfg['libzmq_extension']:
-            settings = bundled_settings()
+            settings = bundled_settings(self.debug)
         else:
             settings = settings_from_prefix(cfg['zmq_prefix'], self.bundle_libzmq_dylib)
     
