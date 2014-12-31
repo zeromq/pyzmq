@@ -949,46 +949,7 @@ cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionComm
             'sdist': CheckSDist, 'constants': ConstantsCommand,
         }
 
-if 'bdist_wheel' in sys.argv and sys.platform == 'darwin':
-    from wheel.bdist_wheel import bdist_wheel
-    
-    class bdist_wheel_mac_tag(bdist_wheel):
-        """add 'current' platform tags to wheels
-        
-        A 10.6-intel wheel works on all 10.X >= 10.6 and arch in 32,64,intel.
-        
-        Since that would produce a ludicrous filename, just add the two most common:
-        
-        - current-intel
-        - current-x86_64
-        
-        partial workaround for pypa/pip#1465
-        """
-        def get_tag(self):
-            import platform
-            impl, abi, plat = bdist_wheel.get_tag(self)
-            plat_tag_re = re.compile(r'macosx_(\d+)_(\d+)_(.+)')
-            m = plat_tag_re.match(plat)
-            if m:
-                plat_tags = [plat]
-                major, minor, arch = m.groups()
-                arches = [arch]
-                if arch == 'intel':
-                    arches.append('x86_64')
-                host_list = re.findall('\d+', platform.mac_ver()[0])
-                host = (int(host_list[0]), int(host_list[1]))
-                host_s = '%s_%s' % tuple(host_list[:2])
-                target = (int(major), int(minor))
-                if host > target or len(arches) > 1:
-                    for arch in arches:
-                        plat_tags.append('macosx_%s_%s' % (host_s, arch))
-                
-                plat = '.'.join(sorted(set(plat_tags)))
-            return (impl, abi, plat)
-    
-    cmdclass['bdist_wheel'] = bdist_wheel_mac_tag
-    
-    
+
 def makename(path, ext):
     return os.path.abspath(pjoin('zmq', *path)) + ext
 
