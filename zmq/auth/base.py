@@ -244,7 +244,7 @@ class Authenticator(object):
             if domain in self.certs:
                 # The certs dict stores keys in z85 format, convert binary key to z85 bytes
                 z85_client_key = z85.encode(client_key)
-                if z85_client_key in self.certs[domain] or self.certs[domain] == b'OK':
+                if z85_client_key in self.certs[domain] and self.certs[domain][z85_client_key] == b'OK':
                     allowed = True
                     reason = b"OK"
                 else:
