@@ -46,6 +46,7 @@ del os, sys, glob, here, bundled, bundled_sodium, ext
 
 # zmq top-level imports
 
+from zmq import backend
 from zmq.backend import *
 from zmq import sugar
 from zmq.sugar import *
