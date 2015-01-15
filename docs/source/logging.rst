@@ -14,7 +14,7 @@ Asynchronous Logging via PyZMQ
 Python provides extensible logging facilities through its :py:mod:`logging` module. This
 module allows for easily extensible logging functionality through the use of
 :py:class:`~logging.Handler` objects. The most obvious case for hooking up pyzmq to
-logging would be to broadcast log messages over a PUB socket, so we have provides a
+logging would be to broadcast log messages over a PUB socket, so we have provided a
 :class:`.PUBHandler` class for doing just that.
 
 PUB/SUB and Topics
