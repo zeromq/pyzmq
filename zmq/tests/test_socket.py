@@ -1,20 +1,8 @@
 # -*- coding: utf8 -*-
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2010 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-
-import sys
 import time
-import errno
 import warnings
 
 import zmq
@@ -23,14 +11,6 @@ from zmq.tests import (
 )
 from zmq.utils.strtypes import bytes, unicode
 
-try:
-    from queue import Queue
-except:
-    from Queue import Queue
-
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
 
 class TestSocket(BaseZMQTestCase):
 
@@ -43,6 +23,21 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
         s.close()
         del ctx
+    
+    def test_context_manager(self):
+        url = 'inproc://a'
+        with self.Context() as ctx:
+            with ctx.socket(zmq.PUSH) as a:
+                a.bind(url)
+                with ctx.socket(zmq.PULL) as b:
+                    b.connect(url)
+                    msg = b'hi'
+                    a.send(msg)
+                    rcvd = self.recv(b)
+                    self.assertEqual(rcvd, msg)
+                self.assertEqual(b.closed, True)
+            self.assertEqual(a.closed, True)
+        self.assertEqual(ctx.closed, True)
     
     def test_dir(self):
         ctx = self.Context()
@@ -146,7 +141,7 @@ class TestSocket(BaseZMQTestCase):
             if sopt.startswith((
                 'ROUTER', 'XPUB', 'TCP', 'FAIL',
                 'REQ_', 'CURVE_', 'PROBE_ROUTER',
-                'IPC_FILTER',
+                'IPC_FILTER', 'GSSAPI',
                 )):
                 # some sockopts are write-only
                 continue
@@ -178,27 +173,8 @@ class TestSocket(BaseZMQTestCase):
         "test set/getsockopt roundtrip."
         p = self.context.socket(zmq.PUB)
         self.sockets.append(p)
-        self.assertEqual(p.getsockopt(zmq.LINGER), -1)
         p.setsockopt(zmq.LINGER, 11)
         self.assertEqual(p.getsockopt(zmq.LINGER), 11)
-    
-    def test_poll(self):
-        """test Socket.poll()"""
-        req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
-        # default flag is POLLIN, nobody has anything to recv:
-        self.assertEqual(req.poll(0), 0)
-        self.assertEqual(rep.poll(0), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT), zmq.POLLOUT)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT|zmq.POLLIN), zmq.POLLOUT)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        req.send('hi')
-        self.assertEqual(req.poll(0), 0)
-        self.assertEqual(rep.poll(1), zmq.POLLIN)
-        self.assertEqual(req.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), 0)
-        self.assertEqual(req.poll(0, zmq.POLLOUT|zmq.POLLIN), 0)
-        self.assertEqual(rep.poll(0, zmq.POLLOUT), zmq.POLLIN)
     
     def test_send_unicode(self):
         "test sending unicode objects"
@@ -423,7 +399,7 @@ class TestSocket(BaseZMQTestCase):
     
     def test_shadow_pyczmq(self):
         try:
-            from pyczmq import zctx, zsocket, zstr
+            from pyczmq import zctx, zsocket
         except Exception:
             raise SkipTest("Requires pyczmq")
         

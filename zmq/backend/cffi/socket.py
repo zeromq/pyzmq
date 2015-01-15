@@ -1,14 +1,8 @@
 # coding: utf-8
 """zmq Socket class"""
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Felipe Cruz
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import random
 import codecs
@@ -29,43 +23,38 @@ from zmq.utils.strtypes import unicode
 
 
 def new_pointer_from_opt(option, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
         return new_int64_pointer()
-    elif option in int_sockopts:
-        return new_int_pointer()
     elif option in bytes_sockopts:
         return new_binary_data(length)
     else:
-        raise ZMQError(zmq.EINVAL)
+        # default
+        return new_int_pointer()
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
-        return int(opt_pointer[0])
-    elif option in int_sockopts:
         return int(opt_pointer[0])
     elif option in bytes_sockopts:
         return ffi.buffer(opt_pointer, length)[:]
     else:
-        raise ZMQError(zmq.EINVAL)
+        return int(opt_pointer[0])
 
 def initialize_opt_pointer(option, value, length=0):
-    from zmq.sugar.constants import int_sockopts,   \
-                                    int64_sockopts, \
-                                    bytes_sockopts
+    from zmq.sugar.constants import (
+        int64_sockopts, bytes_sockopts,
+    )
     if option in int64_sockopts:
         return value_int64_pointer(value)
-    elif option in int_sockopts:
-        return value_int_pointer(value)
     elif option in bytes_sockopts:
         return value_binary_data(value, length)
     else:
-        raise ZMQError(zmq.EINVAL)
+        return value_int_pointer(value)
 
 
 class Socket(object):
@@ -237,7 +226,9 @@ class Socket(object):
         Parameters
         ----------
         addr : str
-            The inproc url used for monitoring.
+            The inproc url used for monitoring. Passing None as
+            the addr will cause an existing socket monitor to be
+            deregistered.
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
@@ -245,6 +236,8 @@ class Socket(object):
         _check_version((3,2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
+        if addr is None:
+            addr = ffi.NULL
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
 

@@ -22,4 +22,5 @@
     generated/zmq.utils.jsonapi
     generated/zmq.utils.monitor
     generated/zmq.utils.z85
+    zmq.utils.win32
 

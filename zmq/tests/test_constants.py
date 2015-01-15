@@ -1,15 +1,5 @@
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import json
 from unittest import TestCase
@@ -21,9 +11,6 @@ from zmq.sugar import constants as sugar_constants
 from zmq.backend import constants as backend_constants
 
 all_set = set(constant_names.all_names)
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
 
 class TestConstants(TestCase):
     
@@ -73,7 +60,7 @@ class TestConstants(TestCase):
     
     def test_no_negative_constants(self):
         for name in sugar_constants.__all__:
-            self.assertNotEqual(getattr(zmq, name), -1)
+            self.assertNotEqual(getattr(zmq, name), sugar_constants._UNDEFINED)
     
     def test_undefined_constants(self):
         all_aliases = []
@@ -82,7 +69,7 @@ class TestConstants(TestCase):
         
         for name in all_set.difference(all_aliases):
             raw = getattr(backend_constants, name)
-            if raw == -1:
+            if raw == sugar_constants._UNDEFINED:
                 self.assertRaises(AttributeError, getattr, zmq, name)
             else:
                 self.assertEqual(getattr(zmq, name), raw)

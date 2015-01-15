@@ -9,6 +9,62 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+
+14.4.1
+======
+
+Bugfixes for 14.4
+
+- SyntaxError on Python 2.6 in zmq.ssh
+- Handle possible bug in garbage collection after fork
+
+
+14.4.0
+======
+
+New features:
+
+- Experimental support for libzmq-4.1.0 rc (new constants, plus :func:`zmq.has`).
+- Update bundled libzmq to 4.0.5
+- Update bundled libsodium to 1.0.0
+- Fixes for SSH dialogs when using :mod:`zmq.ssh` to create tunnels
+- More build/link/load fixes on OS X and Solaris
+- Get Frame metadata via dict access (libzmq 4)
+- Contexts and Sockets are context managers (term/close on ``__exit__``)
+- Add :class:`zmq.utils.win32.allow_interrupt` context manager for catching SIGINT on Windows
+
+Bugs fixed:
+
+- Bundled libzmq should not trigger recompilation after install on PyPy
+
+14.3.1
+======
+
+.. note::
+
+    pyzmq-14.3.1 is the last version to include bdists for Python 3.3
+
+Minor bugfixes to pyzmq 14.3:
+
+- Fixes to building bundled libzmq on OS X < 10.9
+- Fixes to import-failure warnings on Python 3.4
+- Fixes to tests
+- Pull upstream fixes to zmq.ssh for ssh multiplexing
+
+14.3.0
+======
+
+- PyZMQ no longer calls :meth:`.Socket.close` or :meth:`.Context.term` during process cleanup.
+  Changes to garbage collection in Python 3.4 make this impossible to do sensibly.
+- :meth:`ZMQStream.close` closes its socket immediately, rather than scheduling a timeout.
+- Raise the original ImportError when importing zmq fails.
+  Should be more informative than `no module cffi...`.
+
+.. warning::
+
+    Users of Python 3.4 should not use pyzmq < 14.3, due to changes in garbage collection.
+
+
 14.2.0
 ======
 

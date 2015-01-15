@@ -1,15 +1,5 @@
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2010-2012 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import time
 
@@ -18,9 +8,6 @@ from zmq import devices
 from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest, PYPY
 from zmq.utils.strtypes import (bytes,unicode,basestring)
 
-#-----------------------------------------------------------------------------
-# Tests
-#-----------------------------------------------------------------------------
 if PYPY:
     # cleanup of shared Context doesn't work on PyPy
     devices.Device.context_factory = zmq.Context

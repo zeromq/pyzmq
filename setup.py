@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2012 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
+#  Copyright (C) PyZMQ Developers
+#  Distributed under the terms of the Modified BSD License.
 #
 #  The `configure` subcommand is copied and adaped from h5py
 #  h5py source used under the New BSD license
@@ -18,10 +14,7 @@
 #  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import copy
 import os
@@ -71,6 +64,7 @@ from buildutils import (
     fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
     test_compilation, compile_and_run,
+    patch_lib_paths,
     )
 
 #-----------------------------------------------------------------------------
@@ -124,7 +118,7 @@ for idx, arg in enumerate(list(sys.argv)):
 
 # --- compiler settings -------------------------------------------------
 
-def bundled_settings():
+def bundled_settings(debug):
     """settings for linking extensions against bundled libzmq"""
     settings = {}
     settings['libraries'] = []
@@ -139,8 +133,12 @@ def bundled_settings():
         # link against libzmq in build dir:
         plat = distutils.util.get_platform()
         temp = 'temp.%s-%s' % (plat, sys.version[0:3])
-        settings['libraries'].append('libzmq')
-        settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
+        if debug:
+            settings['libraries'].append('libzmq_d')
+            settings['library_dirs'].append(pjoin('build', temp, 'Debug', 'buildutils'))
+        else:
+            settings['libraries'].append('libzmq')
+            settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
     
     return settings
 
@@ -186,17 +184,17 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         if sys.platform.startswith('freebsd'):
             settings['libraries'].append('pthread')
     
+        if sys.platform == 'sunos5':
+          if platform.architecture()[0] == '32bit':
+            settings['extra_link_args'] += ['-m32']
+          else:
+            settings['extra_link_args'] += ['-m64']
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             if not bundle_libzmq_dylib:
-                if sys.platform == 'sunos5':
-                  if platform.architecture()[0] == '32bit':
-                    settings['library_dirs'] += [pjoin(prefix, 'lib')]
-                  else:
+                if sys.platform == 'sunos5' and platform.architecture()[0] == '64bit':
                     settings['library_dirs'] += [pjoin(prefix, 'lib/amd64')]
-                    settings['extra_link_args'] += ['-m64']
-                else: 
-                   settings['library_dirs'] += [pjoin(prefix, 'lib')]  
+                settings['library_dirs'] += [pjoin(prefix, 'lib')]
         else:
             if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
                 # allow macports default
@@ -270,7 +268,7 @@ class Configure(build_ext):
         cfg = self.config
         
         if cfg['libzmq_extension']:
-            settings = bundled_settings()
+            settings = bundled_settings(self.debug)
         else:
             settings = settings_from_prefix(cfg['zmq_prefix'], self.bundle_libzmq_dylib)
     
@@ -821,39 +819,54 @@ class CleanCommand(Command):
     def run(self):
         self._clean_me = []
         self._clean_trees = []
-        for root, dirs, files in list(os.walk('buildutils')):
+        
+        for d in ('build', 'dist', 'conf'):
+            if os.path.exists(d):
+                self._clean_trees.append(d)
+        
+        for root, dirs, files in os.walk('buildutils'):
+            if any(root.startswith(pre) for pre in self._clean_trees):
+                continue
             for f in files:
                 if os.path.splitext(f)[-1] == '.pyc':
                     self._clean_me.append(pjoin(root, f))
+            
+            if '__pycache__' in dirs:
+                self._clean_trees.append(pjoin(root, '__pycache__'))
 
-        for root, dirs, files in list(os.walk('zmq')):
+        for root, dirs, files in os.walk('zmq'):
+            if any(root.startswith(pre) for pre in self._clean_trees):
+                continue
+            
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd', '.json'):
-                    self._clean_me.append(pjoin(root, f))
-                # remove generated cython files
-                if self.all and os.path.splitext(f)[-1] == '.c':
                     self._clean_me.append(pjoin(root, f))
 
             for d in dirs:
                 if d == '__pycache__':
                     self._clean_trees.append(pjoin(root, d))
         
-        for d in ('build', 'conf'):
-            if os.path.exists(d):
-                self._clean_trees.append(d)
-
+        # remove generated cython files
+        if self.all:
+            for root, dirs, files in os.walk(pjoin('zmq', 'backend', 'cython')):
+                 if os.path.splitext(f)[-1] == '.c':
+                     self._clean_me.append(pjoin(root, f))
+        
         bundled = glob(pjoin('zmq', 'libzmq*'))
-        self._clean_me.extend(bundled)
+        self._clean_me.extend([ b for b in bundled if b not in _clean_me ])
+        
         for clean_me in self._clean_me:
+            print("removing %s" % clean_me)
             try:
                 os.unlink(clean_me)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e, file=sys.stderr)
         for clean_tree in self._clean_trees:
+            print("removing %s/" % clean_tree)
             try:
                 shutil.rmtree(clean_tree)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e, file=sys.stderr)
 
 
 class CheckSDist(sdist):
@@ -898,8 +911,12 @@ class CheckingBuildExt(build_ext):
             customize_mingw(self.compiler)
         
         for ext in self.extensions:
-            
             self.build_extension(ext)
+    
+    def build_extension(self, ext):
+        build_ext.build_extension(self, ext)
+        ext_path = self.get_ext_fullpath(ext.name)
+        patch_lib_paths(ext_path, self.compiler.library_dirs)
     
     def run(self):
         # check version, to prevent confusing undefined constant errors
@@ -931,6 +948,7 @@ cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionComm
             'configure': Configure, 'fetch_libzmq': FetchCommand,
             'sdist': CheckSDist, 'constants': ConstantsCommand,
         }
+
 
 def makename(path, ext):
     return os.path.abspath(pjoin('zmq', *path)) + ext
@@ -1020,9 +1038,15 @@ else:
                 customize_mingw(self.compiler)
             return build_ext_c.build_extensions(self)
         
+        def build_extension(self, ext):
+            build_ext_c.build_extension(self, ext)
+            ext_path = self.get_ext_fullpath(ext.name)
+            patch_lib_paths(ext_path, self.compiler.library_dirs)
+        
         def run(self):
             self.distribution.run_command('configure')
-            return build_ext.run(self)
+            
+            return build_ext_c.run(self)
     
     cmdclass['cython'] = CythonCommand
     cmdclass['build_ext'] =  zbuild_ext
@@ -1060,13 +1084,18 @@ if pypy:
             # build ffi extension after bundled libzmq,
             # because it may depend on linking it
             here = os.getcwd()
-            sys.path.insert(0, self.build_lib)
+            if self.inplace:
+                sys.path.insert(0, '')
+            else:
+                sys.path.insert(0, self.build_lib)
             try:
                 from zmq.backend.cffi import ffi
             except ImportError as e:
                 warn("Couldn't get CFFI extension: %s" % e)
             else:
                 ext = ffi.verifier.get_extension()
+                if not ext.name.startswith('zmq.'):
+                    ext.name = 'zmq.backend.cffi.' + ext.name
                 self.extensions.append(ext)
                 self.build_extension(ext)
             finally:
@@ -1079,6 +1108,7 @@ if pypy:
 
 package_data = {'zmq': ['*.pxd'],
                 'zmq.backend.cython': ['*.pxd'],
+                'zmq.backend.cffi': ['*.h', '*.c'],
                 'zmq.devices': ['*.pxd'],
                 'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
@@ -1090,7 +1120,7 @@ def extract_version():
     with open(pjoin('zmq', 'sugar', 'version.py')) as f:
         while True:
             line = f.readline()
-            if line.startswith('# Code'):
+            if line.startswith('VERSION'):
                 lines = []
                 while line and not line.startswith('def'):
                     lines.append(line)

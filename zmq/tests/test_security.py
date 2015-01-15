@@ -1,24 +1,15 @@
 """Test libzmq security (libzmq >= 3.3.0)"""
 # -*- coding: utf8 -*-
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import os
 from threading import Thread
 
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest
+    BaseZMQTestCase, SkipTest, PYPY
 )
 from zmq.utils import z85
 
@@ -60,7 +51,7 @@ class TestSecurity(BaseZMQTestCase):
                     b"200",
                     b"OK",
                     b"anonymous",
-                    b"",
+                    b"\5Hello\0\0\0\5World",
                 ])
             else:
                 reply.extend([
@@ -80,10 +71,21 @@ class TestSecurity(BaseZMQTestCase):
     def stop_zap(self):
         self.zap_thread.join()
 
-    def bounce(self, server, client):
+    def bounce(self, server, client, test_metadata=True):
         msg = [os.urandom(64), os.urandom(64)]
         client.send_multipart(msg)
-        recvd = self.recv_multipart(server)
+        frames = self.recv_multipart(server, copy=False)
+        recvd = list(map(lambda x: x.bytes, frames))
+
+        try:
+            if test_metadata and not PYPY:
+                for frame in frames:
+                    self.assertEqual(frame.get('User-Id'), 'anonymous')
+                    self.assertEqual(frame.get('Hello'), 'World')
+                    self.assertEqual(frame['Socket-Type'], 'DEALER')
+        except zmq.ZMQVersionError:
+            pass
+
         self.assertEqual(recvd, msg)
         server.send_multipart(recvd)
         msg2 = self.recv_multipart(client)
@@ -100,7 +102,7 @@ class TestSecurity(BaseZMQTestCase):
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
-        self.bounce(server, client)
+        self.bounce(server, client, False)
 
     def test_plain(self):
         """test PLAIN authentication"""

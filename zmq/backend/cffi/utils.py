@@ -1,19 +1,25 @@
 # coding: utf-8
 """miscellaneous zmq_utils wrapping"""
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Felipe Cruz, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 from ._cffi import ffi, C
 
 from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.utils.strtypes import unicode
 
+def has(capability):
+    """Check for zmq capability by name (e.g. 'ipc', 'curve')
+    
+    .. versionadded:: libzmq-4.1
+    .. versionadded:: 14.1
+    """
+    _check_version((4,1), 'zmq.has')
+    if isinstance(capability, unicode):
+        capability = capability.encode('utf8')
+    return bool(C.zmq_has(capability))
+    
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
     
@@ -53,4 +59,4 @@ class Stopwatch(object):
     def sleep(self, seconds):
         C.zmq_sleep(seconds)
 
-__all__ = ['curve_keypair', 'Stopwatch']
+__all__ = ['has', 'curve_keypair', 'Stopwatch']

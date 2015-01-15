@@ -1,16 +1,7 @@
 # -*- coding: utf-8 -*-
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Guido Goldstein, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import sys
 import time
@@ -44,11 +35,18 @@ class TestSocketMonitor(BaseZMQTestCase):
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6666")
         m = recv_monitor_message(s_event)
-        self.assertEqual(m['event'], zmq.EVENT_CONNECT_DELAYED)
-        self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
-        # test receive event for connected event
-        m = recv_monitor_message(s_event)
+        if m['event'] == zmq.EVENT_CONNECT_DELAYED:
+            self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
+            # test receive event for connected event
+            m = recv_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
+        self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6666")
+
+        # test monitor can be disabled.
+        s_rep.disable_monitor()
+        m = recv_monitor_message(s_event)
+        self.assertEqual(m['event'], zmq.EVENT_MONITOR_STOPPED)
+
 
     @skip_lt_4
     def test_monitor_connected(self):
@@ -65,8 +63,9 @@ class TestSocketMonitor(BaseZMQTestCase):
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6667")
         m = recv_monitor_message(s_event)
-        self.assertEqual(m['event'], zmq.EVENT_CONNECT_DELAYED)
-        self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6667")
-        # test receive event for connected event
-        m = recv_monitor_message(s_event)
+        if m['event'] == zmq.EVENT_CONNECT_DELAYED:
+            self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6667")
+            # test receive event for connected event
+            m = recv_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_CONNECTED)
+        self.assertEqual(m['endpoint'], b"tcp://127.0.0.1:6667")

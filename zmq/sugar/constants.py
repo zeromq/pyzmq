@@ -1,17 +1,7 @@
 """0MQ Constants."""
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian E. Granger & Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (c) PyZMQ Developers.
+# Distributed under the terms of the Modified BSD License.
 
 from zmq.backend import constants
 from zmq.utils.constant_names import (
@@ -20,6 +10,7 @@ from zmq.utils.constant_names import (
     int_sockopt_names,
     int64_sockopt_names,
     bytes_sockopt_names,
+    fd_sockopt_names,
     ctx_opt_names,
     msg_opt_names,
 )
@@ -39,6 +30,7 @@ __all__ = [
 int_sockopts    = set()
 int64_sockopts  = set()
 bytes_sockopts  = set()
+fd_sockopts     = set()
 ctx_opts        = set()
 msg_opts        = set()
 
@@ -47,14 +39,16 @@ if constants.VERSION < 30000:
     int64_sockopt_names.extend(switched_sockopt_names)
 else:
     int_sockopt_names.extend(switched_sockopt_names)
+    
+_UNDEFINED = -9999
 
 def _add_constant(name, container=None):
     """add a constant to be defined
     
     optionally add it to one of the sets for use in get/setopt checkers
     """
-    c = getattr(constants, name, -1)
-    if c == -1:
+    c = getattr(constants, name, _UNDEFINED)
+    if c == _UNDEFINED:
         return
     globals()[name] = c
     __all__.append(name)
@@ -73,6 +67,9 @@ for name in int64_sockopt_names:
 
 for name in bytes_sockopt_names:
     _add_constant(name, bytes_sockopts)
+
+for name in fd_sockopt_names:
+    _add_constant(name, fd_sockopts)
 
 for name in ctx_opt_names:
     _add_constant(name, ctx_opts)

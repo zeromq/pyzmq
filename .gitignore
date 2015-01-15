@@ -1,6 +1,7 @@
 *.pyc
-zmq/*/*.c
-zmq/*/*/*.c
+zmq/backend/cython/*.c
+zmq/devices/*.c
+zmq/utils/*.json
 __pycache__
 build
 dist

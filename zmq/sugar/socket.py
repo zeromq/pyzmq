@@ -1,18 +1,9 @@
 # coding: utf-8
 """0MQ Socket pure Python methods."""
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import codecs
 import random
@@ -33,6 +24,7 @@ from .constants import (
     int64_sockopt_names,
     int_sockopt_names,
     bytes_sockopt_names,
+    fd_sockopt_names,
 )
 try:
     import cPickle
@@ -41,9 +33,11 @@ except:
     cPickle = None
     import pickle
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
+try:
+    DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
+except AttributeError:
+    DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
@@ -62,7 +56,18 @@ class Socket(SocketBase, AttributeSetter):
     def __del__(self):
         if not self._shadow:
             self.close()
-
+    
+    # socket as context manager:
+    def __enter__(self):
+        """Sockets are context managers
+        
+        .. versionadded:: 14.4
+        """
+        return self
+    
+    def __exit__(self, *args, **kwargs):
+        self.close()
+    
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------
@@ -100,6 +105,7 @@ class Socket(SocketBase, AttributeSetter):
             bytes_sockopt_names,
             int_sockopt_names,
             int64_sockopt_names,
+            fd_sockopt_names,
         ):
             keys.extend(collection)
         return keys
@@ -345,7 +351,7 @@ class Socket(SocketBase, AttributeSetter):
     
     recv_unicode = recv_string
     
-    def send_pyobj(self, obj, flags=0, protocol=-1):
+    def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL):
         """send a Python object as a message using pickle to serialize
 
         Parameters
@@ -355,9 +361,8 @@ class Socket(SocketBase, AttributeSetter):
         flags : int
             Any valid send flag.
         protocol : int
-            The pickle protocol number to use. Default of -1 will select
-            the highest supported number. Use 0 for multiple platform
-            support.
+            The pickle protocol number to use. The default is pickle.DEFAULT_PROTOCOl
+            where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
         """
         msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags)
@@ -477,6 +482,14 @@ class Socket(SocketBase, AttributeSetter):
         ret = self.context.socket(zmq.PAIR)
         ret.connect(addr)
         return ret
+
+    def disable_monitor(self):
+        """Shutdown the PAIR socket (created using get_monitor_socket)
+        that is serving socket events.
+        
+        .. versionadded:: 14.4
+        """
+        self.monitor(None, 0)
 
 
 __all__ = ['Socket']

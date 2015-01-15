@@ -121,11 +121,11 @@ cdef inline _check_closed_deep(Socket s):
 cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     """Receive a message in a non-copying manner and return a Frame."""
     cdef int rc
-    cdef Frame msg
-    msg = Frame(track=track)
+    msg = zmq.Frame(track=track)
+    cdef Frame cmsg = msg
 
     with nogil:
-        rc = zmq_msg_recv(&msg.zmq_msg, handle, flags)
+        rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
     
     _check_rc(rc)
     return msg
@@ -237,7 +237,7 @@ cdef class Socket:
         """
         if self.handle != NULL and not self._shadow and getpid() == self._pid:
             # during gc, self.context might be NULL
-            if self.context:
+            if self.context and not self.context.closed:
                 self.context._remove_socket(self.handle)
     
     @property
@@ -384,7 +384,7 @@ cdef class Socket:
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             _check_rc(rc)
             result = optval_int64_c
-        elif option == ZMQ_FD:
+        elif option in zmq.constants.fd_sockopts:
             sz = sizeof(fd_t)
             rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             _check_rc(rc)
@@ -547,19 +547,22 @@ cdef class Socket:
         Parameters
         ----------
         addr : str
-            The inproc url used for monitoring.
+            The inproc url used for monitoring. Passing None as
+            the addr will cause an existing socket monitor to be
+            deregistered.
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
         cdef int rc, c_flags
-        cdef char* c_addr
+        cdef char* c_addr = NULL
         
         _check_version((3,2), "monitor")
-        if isinstance(addr, unicode):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError('expected str, got: %r' % addr)
-        c_addr = addr
+        if addr is not None:
+            if isinstance(addr, unicode):
+                addr = addr.encode('utf-8')
+            if not isinstance(addr, bytes):
+                raise TypeError('expected str, got: %r' % addr)
+            c_addr = addr
         c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
         _check_rc(rc)

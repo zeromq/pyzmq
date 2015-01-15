@@ -2,18 +2,9 @@
 used in zero-copy sends.
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian E. Granger & Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import atexit
 import struct
@@ -25,9 +16,6 @@ import warnings
 
 import zmq
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 gcref = namedtuple('gcref', ['obj', 'event'])
 
@@ -41,10 +29,16 @@ class GarbageCollectorThread(Thread):
         self.ready = Event()
     
     def run(self):
-        s = self.gc.context.socket(zmq.PULL)
-        s.linger = 0
-        s.bind(self.gc.url)
-        self.ready.set()
+        # detect fork at begining of the thread
+        if getpid is None or getpid() != self.pid:
+            self.ready.set()
+            return
+        try:
+            s = self.gc.context.socket(zmq.PULL)
+            s.linger = 0
+            s.bind(self.gc.url)
+        finally:
+            self.ready.set()
         
         while True:
             # detect fork
@@ -118,6 +112,9 @@ class GarbageCollector(object):
         """stop the garbage-collection thread"""
         if not self.is_alive():
             return
+        self._stop()
+    
+    def _stop(self):
         push = self.context.socket(zmq.PUSH)
         push.connect(self.url)
         push.send(b'DIE')
@@ -125,6 +122,7 @@ class GarbageCollector(object):
         self.thread.join()
         self.context.term()
         self.refs.clear()
+        self.context = None
     
     def start(self):
         """Start a new garbage collection thread.
@@ -132,6 +130,10 @@ class GarbageCollector(object):
         Creates a new zmq Context used for garbage collection.
         Under most circumstances, this will only be called once per process.
         """
+        if self.thread is not None and self.pid != getpid():
+            # It's re-starting, must free earlier thread's context
+            # since a fork probably broke it
+            self._stop()
         self.pid = getpid()
         self.refs = {}
         self.thread = GarbageCollectorThread(self)

@@ -1,30 +1,10 @@
-"""Proxy classes and functions.
+"""Proxy classes and functions."""
 
-Authors
--------
-* MinRK
-* Brian Granger
-"""
-
-#-----------------------------------------------------------------------------
-#  Copyright (c) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 import zmq
 from zmq.devices.basedevice import Device, ThreadDevice, ProcessDevice
-
-#-----------------------------------------------------------------------------
-# Classes
-#-----------------------------------------------------------------------------
 
 
 class ProxyBase(object):

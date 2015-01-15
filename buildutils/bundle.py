@@ -1,19 +1,13 @@
 """utilities for fetching build dependencies."""
+
 #-----------------------------------------------------------------------------
-#  Copyright (c) 2012 Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
+#  Copyright (C) PyZMQ Developers
+#  Distributed under the terms of the Modified BSD License.
 #
 #  This bundling code is largely adapted from pyzmq-static's get.sh by
 #  Brandon Craig-Rhodes, which is itself BSD licensed.
 #-----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 
 import os
 import shutil
@@ -38,11 +32,11 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4,0,4)
+bundled_version = (4,0,5)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 
-libsodium_version = (0,4,5)
+libsodium_version = (1,0,0)
 libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
 libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
 

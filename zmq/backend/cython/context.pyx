@@ -1,28 +1,8 @@
 """0MQ Context class."""
 # coding: utf-8
 
-#
-#    Copyright (c) 2010-2011 Brian E. Granger & Min Ragan-Kelley
-#
-#    This file is part of pyzmq.
-#
-#    pyzmq is free software; you can redistribute it and/or modify it under
-#    the terms of the Lesser GNU General Public License as published by
-#    the Free Software Foundation; either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    pyzmq is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    Lesser GNU General Public License for more details.
-#
-#    You should have received a copy of the Lesser GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
+# Copyright (c) PyZMQ Developers.
+# Distributed under the terms of the Lesser GNU Public License (LGPL).
 
 from libc.stdlib cimport free, malloc, realloc
 
@@ -34,9 +14,6 @@ cdef extern from "getpid_compat.h":
 from zmq.error import ZMQError
 from zmq.backend.cython.checkrc cimport _check_rc
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 _instance = None
 

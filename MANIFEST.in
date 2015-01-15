@@ -13,6 +13,7 @@ include tox.ini
 include .travis.yml
 
 graft docs
+graft tools
 prune docs/build
 prune docs/gh-pages
 

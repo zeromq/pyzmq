@@ -1,13 +1,7 @@
 """Import basic exposure of libzmq C API as a backend"""
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2013 Brian Granger, Min Ragan-Kelley
-#
-#  This file is part of pyzmq
-#
-#  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# Copyright (C) PyZMQ Developers
+# Distributed under the terms of the Modified BSD License.
 
 public_api = [
     'Context',
@@ -20,6 +14,7 @@ public_api = [
     'zmq_poll',
     'strerror',
     'zmq_errno',
+    'has',
     'curve_keypair',
     'constants',
     'zmq_version_info',
@@ -28,7 +23,16 @@ public_api = [
 
 def select_backend(name):
     """Select the pyzmq backend"""
-    mod = __import__(name, fromlist=public_api)
+    try:
+        mod = __import__(name, fromlist=public_api)
+    except ImportError:
+        raise
+    except Exception as e:
+        import sys
+        from zmq.utils.sixcerpt import reraise
+        exc_info = sys.exc_info()
+        reraise(ImportError, ImportError("Importing %s failed with %s" % (name, e)), exc_info[2])
+    
     ns = {}
     for key in public_api:
         ns[key] = getattr(mod, key)

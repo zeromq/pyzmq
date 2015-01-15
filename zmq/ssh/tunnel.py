@@ -2,18 +2,12 @@
 zeromq connections.
 """
 
-#-----------------------------------------------------------------------------
-#  Copyright (C) 2010-2011  IPython Development Team
-#  Copyright (C) 2011- Min Ragan-Kelley
-#  This file is part of pyzmq.
+# Copyright (C) 2010-2011  IPython Development Team
+# Copyright (C) 2011- PyZMQ Developers
 #
-#  Redistributed from IPython under the terms of the BSD License.
-#-----------------------------------------------------------------------------
+# Redistributed from IPython under the terms of the BSD License.
 
 
-#-----------------------------------------------------------------------------
-# Imports
-#-----------------------------------------------------------------------------
 from __future__ import print_function
 
 import atexit
@@ -29,20 +23,19 @@ try:
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', DeprecationWarning)
         import paramiko
+        SSHException = paramiko.ssh_exception.SSHException
 except ImportError:
     paramiko = None
+    class SSHException(Exception):
+        pass
 else:
     from .forward import forward_tunnel
-
 
 try:
     import pexpect
 except ImportError:
     pexpect = None
 
-#-----------------------------------------------------------------------------
-# Code
-#-----------------------------------------------------------------------------
 
 _random_ports = set()
 
@@ -92,10 +85,18 @@ def _try_passwordless_openssh(server, keyfile):
     if keyfile:
         cmd += ' -i ' + keyfile
     cmd += ' exit'
-    p = pexpect.spawn(cmd)
+    
+    # pop SSH_ASKPASS from env
+    env = os.environ.copy()
+    env.pop('SSH_ASKPASS', None)
+
+    ssh_newkey = 'Are you sure you want to continue connecting'
+    p = pexpect.spawn(cmd, env=env)
     while True:
         try:
-            p.expect('[Pp]assword:', timeout=.1)
+            i = p.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            if i==0:
+                raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
@@ -212,13 +213,31 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
         server, port = server.split(':')
         ssh += " -p %s" % port
     
+    cmd = "%s -O check %s" % (ssh, server)
+    (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
+    if not exitstatus:
+        pid = int(output[output.find("(pid=")+5:output.find(")")]) 
+        cmd = "%s -O forward -L 127.0.0.1:%i:%s:%i %s" % (
+            ssh, lport, remoteip, rport, server)
+        (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
+        if not exitstatus:
+            atexit.register(_stop_tunnel, cmd.replace("-O forward", "-O cancel", 1))
+            return pid
     cmd = "%s -f -S none -L 127.0.0.1:%i:%s:%i %s sleep %i" % (
         ssh, lport, remoteip, rport, server, timeout)
-    tunnel = pexpect.spawn(cmd)
+    
+    # pop SSH_ASKPASS from env
+    env = os.environ.copy()
+    env.pop('SSH_ASKPASS', None)
+    
+    ssh_newkey = 'Are you sure you want to continue connecting'
+    tunnel = pexpect.spawn(cmd, env=env)
     failed = False
     while True:
         try:
-            tunnel.expect('[Pp]assword:', timeout=.1)
+            i = tunnel.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            if i==0:
+                raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
             continue
         except pexpect.EOF:
@@ -238,6 +257,9 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
             tunnel.sendline(password)
             failed = True
     
+def _stop_tunnel(cmd):
+    pexpect.run(cmd)
+
 def _split_server(server):
     if '@' in server:
         username,server = server.split('@', 1)
