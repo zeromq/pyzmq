@@ -52,7 +52,7 @@ The following will send *compressed* pickles over the wire:
     def recv_zipped_pickle(socket, flags=0, protocol=-1):
         """inverse of send_zipped_pickle"""
         z = socket.recv(flags)
-        p = zlib.uncompress(z)
+        p = zlib.decompress(z)
         return pickle.loads(p)
 
 A common data structure in Python is the numpy array.  PyZMQ supports sending
