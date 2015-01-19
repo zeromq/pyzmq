@@ -10,6 +10,23 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
 
+14.5.0
+======
+
+Changes:
+
+- use pickle.DEFAULT_PROTOCOL by default in send_pickle
+- with the release of pip-6, OS X wheels are only marked as 10.6-intel,
+  indicating that they should be installable on any newer or single-arch Python.
+- raise SSHException on failed check of host key
+
+Bugfixes:
+
+- fix method name in utils.wi32.allow_interrupt
+- fork-related fixes in garbage collection thread
+- add missing import in ``zmq.__init__``, causing failure to import in some circumstances
+
+
 14.4.1
 ======
 
