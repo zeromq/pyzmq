@@ -361,7 +361,7 @@ class Socket(SocketBase, AttributeSetter):
         flags : int
             Any valid send flag.
         protocol : int
-            The pickle protocol number to use. The default is pickle.DEFAULT_PROTOCOl
+            The pickle protocol number to use. The default is pickle.DEFAULT_PROTOCOL
             where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
         """
         msg = pickle.dumps(obj, protocol)
