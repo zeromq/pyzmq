@@ -398,10 +398,6 @@
     #define ZMQ_FD (_PYZMQ_UNDEFINED)
 #endif
 
-#ifndef ZMQ_IDENTITY_FD
-    #define ZMQ_IDENTITY_FD (_PYZMQ_UNDEFINED)
-#endif
-
 #ifndef ZMQ_RECONNECT_IVL_MAX
     #define ZMQ_RECONNECT_IVL_MAX (_PYZMQ_UNDEFINED)
 #endif

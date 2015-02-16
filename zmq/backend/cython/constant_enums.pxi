@@ -99,7 +99,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_GSSAPI_SERVICE_PRINCIPAL
     enum: ZMQ_SOCKS_PROXY
     enum: ZMQ_FD
-    enum: ZMQ_IDENTITY_FD
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
     enum: ZMQ_RCVTIMEO
