@@ -223,6 +223,7 @@ cdef inline object frombuffer_3(void *ptr, Py_ssize_t s, int readonly):
     PyBuffer_FillInfo(&pybuf, astr, ptr, s, readonly, PyBUF_SIMPLE)
     pybuf.format = "B"
     pybuf.shape = shape
+    pybuf.ndim = 1
     return PyMemoryView_FromBuffer(&pybuf)
 
 

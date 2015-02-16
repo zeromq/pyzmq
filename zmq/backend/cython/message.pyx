@@ -213,8 +213,8 @@ cdef class Frame:
         buffer.obj = self
         buffer.readonly = 1
         buffer.format = "B"
-        buffer.ndim = 0
-        buffer.shape = NULL
+        buffer.ndim = 1
+        buffer.shape = &(buffer.len)
         buffer.strides = NULL
         buffer.suboffsets = NULL
         buffer.itemsize = 1
