@@ -226,6 +226,22 @@ class TestFrame(BaseZMQTestCase):
         self.assert_(outb is m.buffer)
         self.assert_(m.buffer is m.buffer)
     
+    def test_memoryview_shape(self):
+        """memoryview shape info"""
+        if sys.version_info < (3,):
+            raise SkipTest("only test memoryviews on Python 3")
+        data = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
+        n = len(data)
+        f = zmq.Frame(data)
+        view1 = f.buffer
+        self.assertEqual(view1.ndim, 1)
+        self.assertEqual(view1.shape, (n,))
+        self.assertEqual(view1.tobytes(), data)
+        view2 = memoryview(f)
+        self.assertEqual(view2.ndim, 1)
+        self.assertEqual(view2.shape, (n,))
+        self.assertEqual(view2.tobytes(), data)
+    
     def test_multisend(self):
         """ensure that a message remains intact after multiple sends"""
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
