@@ -104,7 +104,6 @@ new_in = {
         'GSSAPI_SERVICE_PRINCIPAL',
         'GSSAPI_PLAINTEXT',
         'HANDSHAKE_IVL',
-        'IDENTITY_FD',
         'XPUB_NODROP',
         'SOCKS_PROXY',
         
@@ -267,7 +266,6 @@ bytes_sockopt_names = [
 
 fd_sockopt_names = [
     'FD',
-    'IDENTITY_FD',
 ]
 
 int_sockopt_names = [
