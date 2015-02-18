@@ -113,7 +113,7 @@ def load_certificates(directory='.'):
     for cert_file in cert_files:
         public_key, _ = load_certificate(cert_file)
         if public_key:
-            certs[public_key] = 'OK'
+            certs[public_key] = True
     return certs
 
 __all__ = ['create_certificates', 'load_certificate', 'load_certificates']
