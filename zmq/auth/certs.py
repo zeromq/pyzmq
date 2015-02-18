@@ -80,6 +80,8 @@ def load_certificate(filename):
     
     If the certificate file only contains the public key,
     secret_key will be None.
+
+    If there is no public key found in the file, ValueError will be raised.
     """
     public_key = None
     secret_key = None
@@ -98,6 +100,9 @@ def load_certificate(filename):
             if public_key and secret_key:
                 break
     
+    if public_key is None:
+        raise ValueError("No public key found in %s" % filename)
+
     return public_key, secret_key
 
 
