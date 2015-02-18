@@ -38,6 +38,8 @@ def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=
         f.write(u('metadata\n'))
         if metadata:
             for k, v in metadata.items():
+                if isinstance(k, bytes):
+                    k = k.decode(encoding)
                 if isinstance(v, bytes):
                     v = v.decode(encoding)
                 f.write(u("    {0} = {1}\n").format(k, v))
@@ -80,7 +82,7 @@ def load_certificate(filename):
     
     If the certificate file only contains the public key,
     secret_key will be None.
-
+    
     If there is no public key found in the file, ValueError will be raised.
     """
     public_key = None
@@ -102,7 +104,7 @@ def load_certificate(filename):
     
     if public_key is None:
         raise ValueError("No public key found in %s" % filename)
-
+    
     return public_key, secret_key
 
 
