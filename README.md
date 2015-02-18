@@ -34,7 +34,7 @@ Python version of every example. We also have some information on our
 ## Downloading
 
 Unless you specifically want to develop PyZMQ, we recommend downloading
-the PyZMQ source code, eggs, or wheels from
+the PyZMQ source code or wheels from
 [PyPI](http://pypi.python.org/pypi/pyzmq). On Windows, you can get `.exe` installers
 from [Christoph Gohlke](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyzmq).
 
@@ -46,11 +46,13 @@ version 0.16 or later.
 
 For more detail on building pyzmq, see [our Wiki](https://github.com/zeromq/pyzmq/wiki/Building-and-Installing-PyZMQ).
 
-We build wheels for OS X and Windows, so you can get a binary installer on those platforms with:
+We build wheels for OS X and Windows, so you can get a binary on those platforms with:
 
     pip install pyzmq
 
 but compiling from source with `pip install pyzmq` should work in most environments.
+Especially on OS X, make sure you are using the latest pip (≥ 6), or it may not find the right wheels.
+
 If the wheel doesn't work for some reason, or you want to force pyzmq to be compiled
 (this is often preferable if you already have libzmq installed and configured the way you want it),
 you can force installation with:
