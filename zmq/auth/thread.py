@@ -21,12 +21,12 @@ class AuthenticationThread(Thread):
     This is run in the background by ThreadedAuthenticator
     """
 
-    def __init__(self, context, endpoint, encoding='utf-8', log=None):
+    def __init__(self, context, endpoint, encoding='utf-8', log=None, authenticator=None):
         super(AuthenticationThread, self).__init__()
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.log = log = log or logging.getLogger('zmq.auth')
-        self.authenticator = Authenticator(context, encoding=encoding, log=log)
+        self.authenticator = authenticator or Authenticator(context, encoding=encoding, log=log)
 
         # create a socket to communicate back to main thread.
         self.pipe = context.socket(zmq.PAIR)
