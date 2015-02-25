@@ -5,8 +5,9 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-import codecs
+import errno
 import random
+import sys
 import warnings
 
 import zmq
@@ -198,7 +199,12 @@ class Socket(SocketBase, AttributeSetter):
                 port = random.randrange(min_port, max_port)
                 self.bind('%s:%s' % (addr, port))
             except ZMQError as exception:
-                if not exception.errno == zmq.EADDRINUSE:
+                en = exception.errno
+                if en == zmq.EADDRINUSE:
+                    continue
+                elif sys.platform == 'win32' and en == errno.EACCES:
+                    continue
+                else:
                     raise
             else:
                 return port
