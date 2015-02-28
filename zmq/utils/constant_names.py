@@ -29,6 +29,8 @@ new_in = {
         'MAX_SOCKETS_DFLT',
         
         # socket opts
+        'IPV4ONLY',
+        'LAST_ENDPOINT',
         'ROUTER_BEHAVIOR',
         'ROUTER_MANDATORY',
         'FAIL_UNROUTABLE',
