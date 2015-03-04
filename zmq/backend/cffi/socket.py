@@ -187,8 +187,9 @@ class Socket(object):
         C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
 
         rc = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
-        C.zmq_msg_close(zmq_msg)
+        rc2 = C.zmq_msg_close(zmq_msg)
         _check_rc(rc)
+        _check_rc(rc2)
 
         if track:
             return zmq.MessageTracker()
@@ -205,7 +206,8 @@ class Socket(object):
 
         _buffer = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))
         value = _buffer[:]
-        C.zmq_msg_close(zmq_msg)
+        rc = C.zmq_msg_close(zmq_msg)
+        _check_rc(rc)
 
         frame = Frame(value, track=track)
         frame.more = self.getsockopt(RCVMORE)
