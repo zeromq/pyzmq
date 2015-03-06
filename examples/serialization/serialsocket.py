@@ -57,7 +57,7 @@ def main():
     rep.bind('inproc://a')
     req.connect('inproc://a')
     A = numpy.ones((1024,1024))
-    print ("Array is %i bytes" % (len(A) * 8))
+    print ("Array is %i bytes" % (A.size * A.itemsize))
     
     # send/recv with pickle+zip
     req.send_zipped_pickle(A)
