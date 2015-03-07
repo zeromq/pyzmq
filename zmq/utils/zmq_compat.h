@@ -22,7 +22,7 @@
 
 // define fd type (from libzmq's fd.hpp)
 #ifdef _WIN32
-  #ifdef _MSC_VER && _MSC_VER <= 1400
+  #if defined(_MSC_VER) && _MSC_VER <= 1400
     #define ZMQ_FD_T UINT_PTR
   #else
     #define ZMQ_FD_T SOCKET
