@@ -1,7 +1,7 @@
 #ifndef _stdint_h__
 #define _stdint_h__
 
-#include "../bundled/zeromq/src/stdint.hpp"
+#include "../../bundled/zeromq/src/stdint.hpp"
 
 #define UINT8_MAX 0xff
 #define UINT16_MAX 0xffff

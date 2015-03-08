@@ -304,8 +304,8 @@ class Configure(build_ext):
             pjoin('backend', 'cython'),
             'devices',
         )]
-        if sys.platform.startswith('win'):
-            settings['include_dirs'].insert(0, 'patch')
+        if sys.platform.startswith('win') and sys.version_info < (3, 3):
+            settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
         
         for ext in self.distribution.ext_modules:
             if ext.name.startswith('zmq.lib'):
@@ -456,14 +456,15 @@ class Configure(build_ext):
         # Windows:
         # 1) tell libsodium to export its symbols;
         # 2) prevent libsodium from defining C99 `static inline` functions
-        #    which aren't parsed correctly by VS2008;
+        #    which aren't parsed correctly by VS2008 nor VS2010;
         # 3) provide an implementation of <stdint.h> which is not provided in
         #    VS2008's "standard" library;
         # 4) link against Microsoft's s crypto API.
         if sys.platform.startswith('win'):
             libsodium.define_macros.append(('SODIUM_DLL_EXPORT', 1))
             libsodium.define_macros.append(('inline', ''))
-            libsodium.include_dirs.append('patch')
+            if sys.version_info < (3, 3):
+                libsodium.include_dirs.append(pjoin('buildutils', 'include_win32'))
             libsodium.libraries.append('advapi32')
         # register the Extension
         self.distribution.ext_modules.insert(0, libsodium)
@@ -524,12 +525,20 @@ class Configure(build_ext):
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
+            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
 
-            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32', 'libsodium'])
-            libzmq.library_dirs.append('build/temp.win32-2.7/Release/buildutils')
+            # link against libsodium in build dir:
+            plat = distutils.util.get_platform()
+            temp = 'temp.%s-%s' % (plat, sys.version[0:3])
+            if self.debug:
+                libzmq.libraries.append('libsodium_d')
+                libzmq.library_dirs.append(pjoin('build', temp, 'Debug', 'buildutils'))
+            else:
+                libzmq.libraries.append('libsodium')
+                libzmq.library_dirs.append(pjoin('build', temp, 'Release', 'buildutils'))
         else:
             libzmq.include_dirs.append(bundledir)
-            
+
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
