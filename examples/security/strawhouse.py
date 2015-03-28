@@ -25,7 +25,7 @@ def run():
     allow_test_pass = False
     deny_test_pass = False
 
-    ctx = zmq.Context().instance()
+    ctx = zmq.Context.instance()
 
     # Start an authenticator for this context.
     auth = ThreadAuthenticator(ctx)
