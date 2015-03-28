@@ -35,7 +35,7 @@ def run():
         logging.critical("Certificates are missing - run generate_certificates.py script first")
         sys.exit(1)
 
-    ctx = zmq.Context().instance()
+    ctx = zmq.Context.instance()
 
     # Start an authenticator for this context.
     auth = ThreadAuthenticator(ctx)
