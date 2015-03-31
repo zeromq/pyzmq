@@ -1,6 +1,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import copy
 import gc
 import sys
 import time
@@ -212,6 +213,20 @@ class TestContext(BaseZMQTestCase):
         ctx.max_sockets = 100
         self.assertEqual(ctx.max_sockets, 100)
         self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 100)
+    
+    def test_copy(self):
+        c1 = self.Context()
+        c2 = copy.copy(c1)
+        c2b = copy.deepcopy(c1)
+        c3 = copy.deepcopy(c2)
+        self.assert_(c2._shadow)
+        self.assert_(c3._shadow)
+        self.assertEqual(c1.underlying, c2.underlying)
+        self.assertEqual(c1.underlying, c3.underlying)
+        self.assertEqual(c1.underlying, c2b.underlying)
+        s = c3.socket(zmq.PUB)
+        s.close()
+        c1.term()
     
     def test_shadow(self):
         ctx = self.Context()

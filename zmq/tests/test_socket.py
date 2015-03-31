@@ -2,6 +2,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import copy
 import time
 import warnings
 
@@ -381,6 +382,16 @@ class TestSocket(BaseZMQTestCase):
                 except AttributeError:
                     pass
             s.close()
+    
+    def test_copy(self):
+        s = self.socket(zmq.PUB)
+        scopy = copy.copy(s)
+        sdcopy = copy.deepcopy(s)
+        self.assert_(scopy._shadow)
+        self.assert_(sdcopy._shadow)
+        self.assertEqual(s.underlying, scopy.underlying)
+        self.assertEqual(s.underlying, sdcopy.underlying)
+        s.close()
     
     def test_shadow(self):
         p = self.socket(zmq.PUSH)

@@ -55,6 +55,12 @@ class Context(ContextBase, AttributeSetter):
     def __exit__(self, *args, **kwargs):
         self.term()
     
+    def __copy__(self, memo=None):
+        """Copying a Context creates a shadow copy"""
+        return self.__class__.shadow(self.underlying)
+    
+    __deepcopy__ = __copy__
+    
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq context

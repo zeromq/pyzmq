@@ -54,6 +54,13 @@ class Socket(SocketBase, AttributeSetter):
     """
     _shadow = False
     
+    def __init__(self, *a, **kw):
+        super(Socket, self).__init__(*a, **kw)
+        if 'shadow' in kw:
+            self._shadow = True
+        else:
+            self._shadow = False
+    
     def __del__(self):
         if not self._shadow:
             self.close()
@@ -72,6 +79,12 @@ class Socket(SocketBase, AttributeSetter):
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------
+    
+    def __copy__(self, memo=None):
+        """Copying a Socket creates a shadow copy"""
+        return self.__class__.shadow(self.underlying)
+    
+    __deepcopy__ = __copy__
     
     @classmethod
     def shadow(cls, address):
