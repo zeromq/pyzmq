@@ -304,6 +304,8 @@ class Configure(build_ext):
             pjoin('backend', 'cython'),
             'devices',
         )]
+        if sys.platform.startswith('win') and sys.version_info < (3, 3):
+            settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
         
         for ext in self.distribution.ext_modules:
             if ext.name.startswith('zmq.lib'):
@@ -450,6 +452,20 @@ class Configure(build_ext):
                 pjoin(libsodium_src, 'include', 'sodium'),
             ],
         )
+        # There are a few extra things we need to do to build libsodium on
+        # Windows:
+        # 1) tell libsodium to export its symbols;
+        # 2) prevent libsodium from defining C99 `static inline` functions
+        #    which aren't parsed correctly by VS2008 nor VS2010;
+        # 3) provide an implementation of <stdint.h> which is not provided in
+        #    VS2008's "standard" library;
+        # 4) link against Microsoft's s crypto API.
+        if sys.platform.startswith('win'):
+            libsodium.define_macros.append(('SODIUM_DLL_EXPORT', 1))
+            libsodium.define_macros.append(('inline', ''))
+            if sys.version_info < (3, 3):
+                libsodium.include_dirs.append(pjoin('buildutils', 'include_win32'))
+            libsodium.libraries.append('advapi32')
         # register the Extension
         self.distribution.ext_modules.insert(0, libsodium)
         
@@ -461,8 +477,6 @@ class Configure(build_ext):
         # tell libzmq about libsodium
         libzmq.define_macros.append(("HAVE_LIBSODIUM", 1))
         libzmq.include_dirs.extend(libsodium.include_dirs)
-        
-        
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
@@ -499,6 +513,8 @@ class Configure(build_ext):
             # include defines from zeromq msvc project:
             libzmq.define_macros.append(('FD_SETSIZE', 1024))
             libzmq.define_macros.append(('DLL_EXPORT', 1))
+            libzmq.define_macros.append(('_CRT_SECURE_NO_WARNINGS', 1))
+            libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
             
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
@@ -509,11 +525,20 @@ class Configure(build_ext):
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
-
             libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
+
+            # link against libsodium in build dir:
+            plat = distutils.util.get_platform()
+            temp = 'temp.%s-%s' % (plat, sys.version[0:3])
+            if self.debug:
+                libzmq.libraries.append('libsodium_d')
+                libzmq.library_dirs.append(pjoin('build', temp, 'Debug', 'buildutils'))
+            else:
+                libzmq.libraries.append('libsodium')
+                libzmq.library_dirs.append(pjoin('build', temp, 'Release', 'buildutils'))
         else:
             libzmq.include_dirs.append(bundledir)
-            
+
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
             cc.output_dir = self.build_temp
@@ -531,8 +556,8 @@ class Configure(build_ext):
                     # not sure why
                     libzmq.libraries.append("stdc++")
         
-            # On non-Windows, also bundle libsodium:
-            self.bundle_libsodium_extension(libzmq)
+        # Also bundle libsodium, even on Windows.
+        self.bundle_libsodium_extension(libzmq)
         
         # update other extensions, with bundled settings
         self.config['libzmq_extension'] = True

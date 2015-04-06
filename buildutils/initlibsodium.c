@@ -5,7 +5,7 @@ and used under the BSD license
 py3compat from http://wiki.python.org/moin/PortingExtensionModulesToPy3k
 
 Provide the init function that Python expects
-when we compile libzmq by pretending it is a Python extension.
+when we compile libsodium by pretending it is a Python extension.
 */
 #include "Python.h"
 
@@ -28,7 +28,7 @@ static struct PyModuleDef moduledef = {
 };
 
 PyMODINIT_FUNC
-PyInit_libzmq(void)
+PyInit_libsodium(void)
 {
     PyObject *module = PyModule_Create(&moduledef);
     return module;
@@ -37,7 +37,7 @@ PyInit_libzmq(void)
 #else // py2
 
 PyMODINIT_FUNC
-initlibzmq(void)
+initlibsodium(void)
 {
     (void) Py_InitModule("libsodium", Methods);
 }
