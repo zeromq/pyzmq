@@ -298,6 +298,13 @@ cdef class Socket:
         
         optval : int or bytes
             The value of the option to set.
+
+        Notes
+        -----
+        .. warning::
+
+            All options other than zmq.SUBSCRIBE, zmq.UNSUBSCRIBE and
+            zmq.LINGER only take effect for subsequent socket bind/connects.
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c

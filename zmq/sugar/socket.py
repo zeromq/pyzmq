@@ -244,6 +244,12 @@ class Socket(SocketBase, AttributeSetter):
         """set the High Water Mark
         
         On libzmq ≥ 3, this sets both SNDHWM and RCVHWM
+
+
+        .. warning::
+
+            New values only take effect for subsequent socket
+            bind/connects.
         """
         major = zmq.zmq_version_info()[0]
         if major >= 3:
