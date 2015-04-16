@@ -363,9 +363,6 @@ class Configure(build_ext):
                 and not self.config['libzmq_extension']:
             # always bundle libzmq on Windows and cross-compilation
             return True
-        elif self.config['zmq_prefix'] and not self.config['libzmq_extension']:
-            # only bundle for bdists in sane environments
-            return doing_bdist
         else:
             return False
 
