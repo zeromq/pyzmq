@@ -18,7 +18,6 @@ from __future__ import with_statement, print_function
 
 import copy
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -33,8 +32,6 @@ from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
-from distutils.errors import CompileError, LinkError
-from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
 from distutils.version import LooseVersion as V
@@ -44,12 +41,6 @@ from glob import glob
 from os.path import splitext, basename, join as pjoin
 
 from subprocess import Popen, PIPE
-import logging
-
-try:
-    from configparser import ConfigParser
-except:
-    from ConfigParser import ConfigParser
 
 try:
     import nose
@@ -58,12 +49,12 @@ except ImportError:
 
 # local script imports:
 from buildutils import (
-    discover_settings, v_str, save_config, load_config, detect_zmq, merge,
+    discover_settings, v_str, save_config, detect_zmq, merge,
     config_from_prefix,
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
-    test_compilation, compile_and_run,
+    compile_and_run,
     patch_lib_paths,
     )
 
@@ -88,6 +79,12 @@ else:
 
 # whether any kind of bdist is happening
 doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
+
+if doing_bdist:
+    try:
+        import setuptools
+    except Exception:
+        warn("doing a bdist, but setuptools is unavailable")
 
 # allow `--zmq=foo` to be passed at any point,
 # but always assign it to configure
@@ -366,9 +363,6 @@ class Configure(build_ext):
                 and not self.config['libzmq_extension']:
             # always bundle libzmq on Windows and cross-compilation
             return True
-        elif self.config['zmq_prefix'] and not self.config['libzmq_extension']:
-            # only bundle for bdists in sane environments
-            return doing_bdist
         else:
             return False
 
@@ -842,51 +836,51 @@ class CleanCommand(Command):
         pass
 
     def run(self):
-        self._clean_me = []
-        self._clean_trees = []
+        _clean_me = []
+        _clean_trees = []
         
         for d in ('build', 'dist', 'conf'):
             if os.path.exists(d):
-                self._clean_trees.append(d)
+                _clean_trees.append(d)
         
         for root, dirs, files in os.walk('buildutils'):
-            if any(root.startswith(pre) for pre in self._clean_trees):
+            if any(root.startswith(pre) for pre in _clean_trees):
                 continue
             for f in files:
                 if os.path.splitext(f)[-1] == '.pyc':
-                    self._clean_me.append(pjoin(root, f))
+                    _clean_me.append(pjoin(root, f))
             
             if '__pycache__' in dirs:
-                self._clean_trees.append(pjoin(root, '__pycache__'))
+                _clean_trees.append(pjoin(root, '__pycache__'))
 
         for root, dirs, files in os.walk('zmq'):
-            if any(root.startswith(pre) for pre in self._clean_trees):
+            if any(root.startswith(pre) for pre in _clean_trees):
                 continue
             
             for f in files:
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd', '.json'):
-                    self._clean_me.append(pjoin(root, f))
+                    _clean_me.append(pjoin(root, f))
 
             for d in dirs:
                 if d == '__pycache__':
-                    self._clean_trees.append(pjoin(root, d))
+                    _clean_trees.append(pjoin(root, d))
         
         # remove generated cython files
         if self.all:
             for root, dirs, files in os.walk(pjoin('zmq', 'backend', 'cython')):
                  if os.path.splitext(f)[-1] == '.c':
-                     self._clean_me.append(pjoin(root, f))
+                     _clean_me.append(pjoin(root, f))
         
         bundled = glob(pjoin('zmq', 'libzmq*'))
-        self._clean_me.extend([ b for b in bundled if b not in _clean_me ])
+        _clean_me.extend([ b for b in bundled if b not in _clean_me ])
         
-        for clean_me in self._clean_me:
+        for clean_me in _clean_me:
             print("removing %s" % clean_me)
             try:
                 os.unlink(clean_me)
             except Exception as e:
                 print(e, file=sys.stderr)
-        for clean_tree in self._clean_trees:
+        for clean_tree in _clean_trees:
             print("removing %s/" % clean_tree)
             try:
                 shutil.rmtree(clean_tree)
@@ -1151,8 +1145,9 @@ def extract_version():
                     lines.append(line)
                     line = f.readline()
                 break
-    exec(''.join(lines), globals())
-    return __version__
+    ns = {}
+    exec(''.join(lines), ns)
+    return ns['__version__']
 
 def find_packages():
     """adapted from IPython's setupbase.find_packages()"""
