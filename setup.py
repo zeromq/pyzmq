@@ -18,7 +18,6 @@ from __future__ import with_statement, print_function
 
 import copy
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -33,8 +32,6 @@ from distutils.core import setup, Command
 from distutils.ccompiler import get_default_compiler
 from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
-from distutils.errors import CompileError, LinkError
-from distutils.command.build import build
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
 from distutils.version import LooseVersion as V
@@ -44,12 +41,6 @@ from glob import glob
 from os.path import splitext, basename, join as pjoin
 
 from subprocess import Popen, PIPE
-import logging
-
-try:
-    from configparser import ConfigParser
-except:
-    from ConfigParser import ConfigParser
 
 try:
     import nose
@@ -58,12 +49,12 @@ except ImportError:
 
 # local script imports:
 from buildutils import (
-    discover_settings, v_str, save_config, load_config, detect_zmq, merge,
+    discover_settings, v_str, save_config, detect_zmq, merge,
     config_from_prefix,
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libsodium, stage_libsodium_headers, fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
-    test_compilation, compile_and_run,
+    compile_and_run,
     patch_lib_paths,
     )
 
