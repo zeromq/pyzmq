@@ -80,6 +80,12 @@ else:
 # whether any kind of bdist is happening
 doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 
+if doing_bdist:
+    try:
+        import setuptools
+    except Exception:
+        warn("doing a bdist, but setuptools is unavailable")
+
 # allow `--zmq=foo` to be passed at any point,
 # but always assign it to configure
 
