@@ -9,6 +9,21 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.6.0
+======
+
+Changes:
+
+- include libsodium when building bundled libzmq on Windows (includes bdists)
+- improvements in :meth:`zmq.Socket.bind_to_random_port`:
+   - use system to allocate ports by default
+   - catch EACCES on Windows
+
+Bugfixes:
+
+- add missing :attr:`ndim` on memoryviews of Frames
+- allow :func:`copy.copy` and :func:`copy.deepcopy` on Sockets, Contexts
+
 
 14.5.0
 ======
