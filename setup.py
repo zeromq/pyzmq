@@ -1142,8 +1142,9 @@ def extract_version():
                     lines.append(line)
                     line = f.readline()
                 break
-    exec(''.join(lines), globals())
-    return __version__
+    ns = {}
+    exec(''.join(lines), ns)
+    return ns['__version__']
 
 def find_packages():
     """adapted from IPython's setupbase.find_packages()"""
