@@ -14,10 +14,12 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 
 Changes:
 
-- include libsodium when building bundled libzmq on Windows (includes bdists)
 - improvements in :meth:`zmq.Socket.bind_to_random_port`:
    - use system to allocate ports by default
    - catch EACCES on Windows
+- include libsodium when building bundled libzmq on Windows (includes wheels on PyPI)
+- pyzmq no longer bundles external libzmq when making a bdist.
+  You can use `delocate <https://pypi.python.org/pypi/delocate>`_ to do this.
 
 Bugfixes:
 
