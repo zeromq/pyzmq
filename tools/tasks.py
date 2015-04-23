@@ -182,7 +182,7 @@ def untar(tarball):
 
 def bdist(py, upload=False, wheel=True, egg=False):
     py = make_env(py, 'wheel')
-    cmd = [py, 'setupegg.py']
+    cmd = [py, 'setup.py']
     if wheel:
         cmd.append('bdist_wheel')
     if egg:
