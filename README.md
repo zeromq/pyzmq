@@ -10,7 +10,7 @@ The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x an
 but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2 (including 4.x).
 
 For a summary of changes to pyzmq, see our
-[changelog](http://zeromq.github.io/pyzmq/changelog.html).
+[changelog](https://pyzmq.readthedocs.org/en/latest/changelog.html).
 
 ### ØMQ 3.x, 4.x
 
