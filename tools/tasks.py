@@ -206,16 +206,4 @@ def release(vs, upload=False):
     with cd(path):
         for v in py_exes:
             bdist(v, upload=upload, wheel=True, egg=(v in egg_pys))
-    
-    if upload:
-        gh_pages()
 
-@task
-def gh_pages():
-    py = make_env('2.7', 'cython', 'sphinx', 'numpydoc', 'gevent')
-    bin = os.path.dirname(py)
-    with cd(repo_root):
-        run([py, 'setup.py', 'install', '--zmq=bundled'])
-    with cd(pjoin(repo_root, 'docs')):
-        os.environ['PATH'] = '%s:%s' % (bin, os.environ['PATH'])
-        run('make gh-pages')
