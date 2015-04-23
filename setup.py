@@ -26,6 +26,15 @@ import errno
 import platform
 from traceback import print_exc
 
+# whether any kind of bdist is happening
+# do this before importing anything from distutils
+doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
+
+if doing_bdist:
+    try:
+        import setuptools
+    except Exception:
+        warn("doing a bdist, but setuptools is unavailable")
 
 import distutils
 from distutils.core import setup, Command
@@ -76,15 +85,6 @@ elif sys.platform == 'darwin':
     lib_ext = '.dylib'
 else:
     lib_ext = '.so'
-
-# whether any kind of bdist is happening
-doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
-
-if doing_bdist:
-    try:
-        import setuptools
-    except Exception:
-        warn("doing a bdist, but setuptools is unavailable")
 
 # allow `--zmq=foo` to be passed at any point,
 # but always assign it to configure
