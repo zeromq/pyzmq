@@ -178,6 +178,8 @@ class Socket(SocketBase, AttributeSetter):
     def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
         """bind this socket to a random port in a range
 
+        If the port range is unspecified, the system will choose the port.
+
         Parameters
         ----------
         addr : str
