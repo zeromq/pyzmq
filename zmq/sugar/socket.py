@@ -262,7 +262,7 @@ class Socket(SocketBase, AttributeSetter):
                 raised = e
             try:
                 self.rcvhwm = value
-            except Exception:
+            except Exception as e:
                 raised = e
             
             if raised:
