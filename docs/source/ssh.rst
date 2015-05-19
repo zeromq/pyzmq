@@ -15,11 +15,6 @@ pyzmq as :mod:`zmq.ssh` under IPython's BSD license.
 PyZMQ will use the shell ssh command via pexpect_ by default, but it also supports
 using paramiko_ for tunnels, so it should work on Windows.
 
-.. note::
-
-    pexpect has no Python3 support at this time, so Python 3 users should get Thomas
-    Kluyver's `pexpect-u`_ fork.
-
 An SSH tunnel has five basic components:
 
 * server : the SSH server through which the tunnel will be created
