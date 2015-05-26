@@ -4,6 +4,7 @@ cache:
     apt
     pip
 python:
+  - nightly
   - 2.6
   - 2.7
   - 3.2
@@ -42,7 +43,10 @@ matrix:
       env: ZMQ=bundled
     - python: 3.3
       env: ZMQ=master
+    - python: nightly
+      env: ZMQ=master
   allow_failures:
     - env: ZMQ=master
+    - python: nightly
 
 script: python setup.py test
