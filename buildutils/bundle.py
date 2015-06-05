@@ -33,10 +33,10 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4,0,5)
+bundled_version = (4,1,1)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
-libzmq_checksum = "sha256:3bc93c5f67370341428364ce007d448f4bb58a0eaabd0a60697d8086bc43342b"
+libzmq_checksum = "sha256:43d61e5706b43946aad4a661400627bcde9c63cc25816d4749c67b64c3dab8db"
 
 libsodium_version = (1,0,2)
 libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
