@@ -4,17 +4,12 @@ cache:
     apt
     pip
 python:
-  - nightly
-  - 2.6
   - 2.7
-  - 3.2
-  - 3.3
   - 3.4
   - pypy
 env:
     - ZMQ=
     - ZMQ=bundled
-    - ZMQ=master
 before_install:
   - sudo add-apt-repository -y ppa:shnatsel/dnscrypt
   - sudo apt-get update
@@ -30,21 +25,19 @@ install:
   - python setup.py build_ext --inplace --zmq=$ZMQ
 
 matrix:
-  exclude:
+  include:
+    - python: 3.4
+      env: ZMQ=master
     - python: 2.6
-      env: ZMQ=bundled
-    - python: 2.6
-      env: ZMQ=master
+      env: ZMQ=
     - python: 3.2
-      env: ZMQ=bundled
-    - python: 3.2
-      env: ZMQ=master
+      env: ZMQ=
     - python: 3.3
-      env: ZMQ=bundled
-    - python: 3.3
-      env: ZMQ=master
+      env: ZMQ=
     - python: nightly
-      env: ZMQ=master
+      env: ZMQ=
+    - python: nightly
+      env: ZMQ=bundled
   allow_failures:
     - env: ZMQ=master
     - python: nightly
