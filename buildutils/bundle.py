@@ -15,6 +15,7 @@ import stat
 import sys
 import tarfile
 from glob import glob
+import hashlib
 from subprocess import Popen, PIPE
 
 try:
@@ -35,10 +36,12 @@ pjoin = os.path.join
 bundled_version = (4,0,5)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
+libzmq_checksum = "sha256:3bc93c5f67370341428364ce007d448f4bb58a0eaabd0a60697d8086bc43342b"
 
 libsodium_version = (1,0,2)
 libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
 libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
+libsodium_checksum = "sha256:961d8f10047f545ae658bcc73b8ab0bf2c312ac945968dd579d87c768e5baa19"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -56,18 +59,41 @@ def localpath(*args):
     plist = [ROOT] + list(args)
     return os.path.abspath(pjoin(*plist))
 
-def fetch_archive(savedir, url, fname, force=False):
+def checksum_file(scheme, path):
+    """Return the checksum (hex digest) of a file"""
+    h = getattr(hashlib, scheme)()
+    
+    with open(path, 'rb') as f:
+        chunk = f.read(65535)
+        while chunk:
+            h.update(chunk)
+            chunk = f.read(65535)
+    return h.hexdigest()
+
+def fetch_archive(savedir, url, fname, checksum, force=False):
     """download an archive to a specific location"""
     dest = pjoin(savedir, fname)
+    scheme, digest_ref = checksum.split(':')
+    
     if os.path.exists(dest) and not force:
-        info("already have %s" % fname)
-        return dest
+        info("already have %s" % dest)
+        digest = checksum_file(scheme, fname)
+        if digest == digest_ref:
+            return dest
+        else:
+            warn("but checksum %s != %s, redownloading." % (digest, digest_ref))
+            os.remove(fname)
+    
     info("fetching %s into %s" % (url, savedir))
     if not os.path.exists(savedir):
         os.makedirs(savedir)
     req = urlopen(url)
     with open(dest, 'wb') as f:
         f.write(req.read())
+    digest = checksum_file(scheme, dest)
+    if digest != digest_ref:
+        fatal("%s %s mismatch:\nExpected: %s\nActual  : %s" % (
+            dest, scheme, digest_ref, digest))
     return dest
 
 #-----------------------------------------------------------------------------
@@ -80,8 +106,8 @@ def fetch_libsodium(savedir):
     if os.path.exists(dest):
         info("already have %s" % dest)
         return
-    fname = fetch_archive(savedir, libsodium_url, libsodium)
-    tf = tarfile.open(fname)
+    path = fetch_archive(savedir, libsodium_url, fname=libsodium, checksum=libsodium_checksum)
+    tf = tarfile.open(path)
     with_version = pjoin(savedir, tf.firstmember.path)
     tf.extractall(savedir)
     tf.close()
@@ -111,8 +137,8 @@ def fetch_libzmq(savedir):
     if os.path.exists(dest):
         info("already have %s" % dest)
         return
-    fname = fetch_archive(savedir, libzmq_url, libzmq)
-    tf = tarfile.open(fname)
+    path = fetch_archive(savedir, libzmq_url, fname=libzmq, checksum=libzmq_checksum)
+    tf = tarfile.open(path)
     with_version = pjoin(savedir, tf.firstmember.path)
     tf.extractall(savedir)
     tf.close()
