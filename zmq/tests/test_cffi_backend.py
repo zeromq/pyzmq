@@ -22,8 +22,8 @@ except ImportError:
 class TestCFFIBackend(TestCase):
     
     def setUp(self):
-        if not have_ffi_backend or not 'PyPy' in sys.version:
-            raise SkipTest('PyPy Tests Only')
+        if not have_ffi_backend:
+            raise SkipTest('CFFI not available')
 
     def test_zmq_version_info(self):
         version = zmq_version_info()
@@ -49,7 +49,7 @@ class TestCFFIBackend(TestCase):
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, PUSH)
 
-        identity = ffi.new('char[3]', 'zmq')
+        identity = ffi.new('char[3]', b'zmq')
         ret = C.zmq_setsockopt(socket, IDENTITY, ffi.cast('void*', identity), 3)
 
         assert ret == 0
@@ -62,7 +62,7 @@ class TestCFFIBackend(TestCase):
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, PUSH)
 
-        identity = ffi.new('char[]', 'zmq')
+        identity = ffi.new('char[]', b'zmq')
         ret = C.zmq_setsockopt(socket, IDENTITY, ffi.cast('void*', identity), 3)
         assert ret == 0
 
@@ -74,9 +74,9 @@ class TestCFFIBackend(TestCase):
                             option_len)
 
         assert ret == 0
-        assert ffi.string(ffi.cast('char*', option))[0] == "z"
-        assert ffi.string(ffi.cast('char*', option))[1] == "m"
-        assert ffi.string(ffi.cast('char*', option))[2] == "q"
+        assert ffi.string(ffi.cast('char*', option))[0:1] == b"z"
+        assert ffi.string(ffi.cast('char*', option))[1:2] == b"m"
+        assert ffi.string(ffi.cast('char*', option))[2:3] == b"q"
         assert ctx != ffi.NULL
         assert ffi.NULL != socket
         assert 0 == C.zmq_close(socket)
@@ -86,7 +86,7 @@ class TestCFFIBackend(TestCase):
         ctx = C.zmq_ctx_new()
         socket = C.zmq_socket(ctx, 8)
 
-        assert 0 == C.zmq_bind(socket, 'tcp://*:4444')
+        assert 0 == C.zmq_bind(socket, b'tcp://*:4444')
         assert ctx != ffi.NULL
         assert ffi.NULL != socket
         assert 0 == C.zmq_close(socket)
@@ -98,8 +98,8 @@ class TestCFFIBackend(TestCase):
         socket1 = C.zmq_socket(ctx, PUSH)
         socket2 = C.zmq_socket(ctx, PULL)
 
-        assert 0 == C.zmq_bind(socket1, 'tcp://*:4444')
-        assert 0 == C.zmq_connect(socket2, 'tcp://127.0.0.1:4444')
+        assert 0 == C.zmq_bind(socket1, b'tcp://*:4444')
+        assert 0 == C.zmq_connect(socket2, b'tcp://127.0.0.1:4444')
         assert ctx != ffi.NULL
         assert ffi.NULL != socket1
         assert ffi.NULL != socket2
@@ -123,7 +123,7 @@ class TestCFFIBackend(TestCase):
 
     def test_zmq_msg_init_data(self):
         zmq_msg = ffi.new('zmq_msg_t*')
-        message = ffi.new('char[5]', 'Hello')
+        message = ffi.new('char[5]', b'Hello')
 
         assert 0 == C.zmq_msg_init_data(zmq_msg,
                                         ffi.cast('void*', message),
@@ -136,7 +136,7 @@ class TestCFFIBackend(TestCase):
 
     def test_zmq_msg_data(self):
         zmq_msg = ffi.new('zmq_msg_t*')
-        message = ffi.new('char[]', 'Hello')
+        message = ffi.new('char[]', b'Hello')
         assert 0 == C.zmq_msg_init_data(zmq_msg,
                                         ffi.cast('void*', message),
                                         5,
@@ -146,7 +146,7 @@ class TestCFFIBackend(TestCase):
         data = C.zmq_msg_data(zmq_msg)
 
         assert ffi.NULL != zmq_msg
-        assert ffi.string(ffi.cast("char*", data)) == 'Hello'
+        assert ffi.string(ffi.cast("char*", data)) == b'Hello'
         assert 0 == C.zmq_msg_close(zmq_msg)
 
 
@@ -156,13 +156,13 @@ class TestCFFIBackend(TestCase):
         sender = C.zmq_socket(ctx, REQ)
         receiver = C.zmq_socket(ctx, REP)
 
-        assert 0 == C.zmq_bind(receiver, 'tcp://*:7777')
-        assert 0 == C.zmq_connect(sender, 'tcp://127.0.0.1:7777')
+        assert 0 == C.zmq_bind(receiver, b'tcp://*:7777')
+        assert 0 == C.zmq_connect(sender, b'tcp://127.0.0.1:7777')
 
         time.sleep(0.1)
 
         zmq_msg = ffi.new('zmq_msg_t*')
-        message = ffi.new('char[5]', 'Hello')
+        message = ffi.new('char[5]', b'Hello')
 
         C.zmq_msg_init_data(zmq_msg,
                             ffi.cast('void*', message),
@@ -182,13 +182,13 @@ class TestCFFIBackend(TestCase):
         sender = C.zmq_socket(ctx, REQ)
         receiver = C.zmq_socket(ctx, REP)
 
-        assert 0 == C.zmq_bind(receiver, 'tcp://*:2222')
-        assert 0 == C.zmq_connect(sender, 'tcp://127.0.0.1:2222')
+        assert 0 == C.zmq_bind(receiver, b'tcp://*:2222')
+        assert 0 == C.zmq_connect(sender, b'tcp://127.0.0.1:2222')
 
         time.sleep(0.1)
 
         zmq_msg = ffi.new('zmq_msg_t*')
-        message = ffi.new('char[5]', 'Hello')
+        message = ffi.new('char[5]', b'Hello')
 
         C.zmq_msg_init_data(zmq_msg,
                             ffi.cast('void*', message),
@@ -214,11 +214,11 @@ class TestCFFIBackend(TestCase):
         sender = C.zmq_socket(ctx, REQ)
         receiver = C.zmq_socket(ctx, REP)
 
-        r1 = C.zmq_bind(receiver, 'tcp://*:3333')
-        r2 = C.zmq_connect(sender, 'tcp://127.0.0.1:3333')
+        r1 = C.zmq_bind(receiver, b'tcp://*:3333')
+        r2 = C.zmq_connect(sender, b'tcp://127.0.0.1:3333')
 
         zmq_msg = ffi.new('zmq_msg_t*')
-        message = ffi.new('char[5]', 'Hello')
+        message = ffi.new('char[5]', b'Hello')
 
         C.zmq_msg_init_data(zmq_msg,
                             ffi.cast('void*', message),
@@ -270,7 +270,7 @@ class TestCFFIBackend(TestCase):
         assert ret == 0
 
         zmq_msg_again = ffi.new('zmq_msg_t*')
-        message_again = ffi.new('char[11]', 'Hello Again')
+        message_again = ffi.new('char[11]', b'Hello Again')
 
         C.zmq_msg_init_data(zmq_msg_again,
                             ffi.cast('void*', message_again),
