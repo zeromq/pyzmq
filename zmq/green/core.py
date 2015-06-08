@@ -67,8 +67,8 @@ class _Socket(_original_Socket):
     _debug_gevent = False # turn on if you think gevent is missing events
     _poller_class = _Poller
     
-    def __init__(self, context, socket_type):
-        _original_Socket.__init__(self, context, socket_type)
+    def __init__(self, *a, **kw):
+        super(_Socket, self).__init__(*a, **kw)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
