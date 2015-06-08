@@ -226,6 +226,7 @@ class TestFrame(BaseZMQTestCase):
         self.assert_(outb is m.buffer)
         self.assert_(m.buffer is m.buffer)
     
+    @skip_pypy
     def test_memoryview_shape(self):
         """memoryview shape info"""
         if sys.version_info < (3,):

@@ -240,6 +240,8 @@ class Socket(object):
             events = zmq.EVENT_ALL
         if addr is None:
             addr = ffi.NULL
+        if isinstance(addr, unicode):
+            addr = addr.encode('utf8')
         rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
 
