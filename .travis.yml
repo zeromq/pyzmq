@@ -23,6 +23,7 @@ before_install:
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy ]]; then pip install -q -f travis-wheels-master/wheelhouse cython; fi'
   - 'if [[ $ZMQ == master ]]; then wget https://github.com/zeromq/libzmq/archive/master.zip -O libzmq-master.zip && unzip libzmq-master.zip; fi'
   - 'if [[ $ZMQ == master ]]; then sh -c "cd libzmq-master; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig"; fi'
+  - 'if [[ $TRAVIS_PYTHON_VERSION = 2.7 ]]; then pip install gevent; fi'
   - pip install -q nose
 
 install:
