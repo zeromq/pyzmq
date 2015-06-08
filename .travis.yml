@@ -16,19 +16,25 @@ before_install:
   - 'if [[ $ZMQ != bundled ]]; then sudo apt-get install -qq libzmq3-dev libsodium-dev; fi'
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy ]]; then wget https://github.com/minrk/travis-wheels/archive/master.zip -O wheels.zip && unzip wheels.zip; fi'
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy ]]; then pip install -q -f travis-wheels-master/wheelhouse cython; fi'
-  - 'if [[ $ZMQ == master ]]; then wget https://github.com/zeromq/libzmq/archive/master.zip -O libzmq-master.zip && unzip libzmq-master.zip; fi'
-  - 'if [[ $ZMQ == master ]]; then sh -c "cd libzmq-master; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig"; fi'
+  - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then wget https://github.com/zeromq/$ZMQ/archive/master.zip -O libzmq.zip && unzip libzmq.zip; fi'
+  - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then sh -c "set -x; cd $ZMQ-master; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig"; fi'
   - 'if [[ $TRAVIS_PYTHON_VERSION = 2.7 ]]; then pip install gevent; fi'
   - pip install -q nose
 
 install:
-  - 'if [[ $ZMQ == master ]]; then export ZMQ=/usr/local; fi'
+  - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then export ZMQ=/usr/local; fi'
   - python setup.py build_ext --inplace --zmq=$ZMQ
 
 matrix:
   include:
     - python: 3.4
-      env: ZMQ=master
+      env: ZMQ=libzmq
+    - python: 3.4
+      env: ZMQ=zeromq4-x
+    - python: 3.4
+      env: ZMQ=zeromq4-1
+    - python: 3.4
+      env: ZMQ=zeromq3-x
     - python: 2.6
       env: ZMQ=
     - python: 3.2
@@ -40,7 +46,7 @@ matrix:
     - python: nightly
       env: ZMQ=bundled
   allow_failures:
-    - env: ZMQ=master
+    - env: ZMQ=libzmq
     - python: nightly
 
 script: python setup.py test
