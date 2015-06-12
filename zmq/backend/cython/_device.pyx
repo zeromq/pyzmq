@@ -25,7 +25,7 @@
 
 from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
 from zmq.backend.cython.socket cimport Socket as cSocket
-from zmq.backend.cython.checkrc cimport _check_rc
+from zmq.backend.cython.checkrc cimport _check_rc, RETRY_SYS_CALL
 
 #-----------------------------------------------------------------------------
 # Basic device API
@@ -52,9 +52,11 @@ def device(int device_type, cSocket frontend, cSocket backend=None):
         return proxy(frontend, backend)
 
     cdef int rc = 0
-    with nogil:
-        rc = zmq_device(device_type, frontend.handle, backend.handle)
-    _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_device(device_type, frontend.handle, backend.handle)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
     return rc
 
 def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
@@ -80,9 +82,11 @@ def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
         capture_handle = capture.handle
     else:
         capture_handle = NULL
-    with nogil:
-        rc = zmq_proxy(frontend.handle, backend.handle, capture_handle)
-    _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_proxy(frontend.handle, backend.handle, capture_handle)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
     return rc
 
 __all__ = ['device', 'proxy']

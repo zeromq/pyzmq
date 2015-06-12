@@ -74,7 +74,7 @@ except:
 import zmq
 from zmq.backend.cython import constants
 from zmq.backend.cython.constants import *
-from zmq.backend.cython.checkrc cimport _check_rc
+from zmq.backend.cython.checkrc cimport _check_rc, RETRY_SYS_CALL
 from zmq.error import ZMQError, ZMQBindError, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
 
@@ -123,20 +123,24 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     cdef int rc
     msg = zmq.Frame(track=track)
     cdef Frame cmsg = msg
-
-    with nogil:
-        rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
     
-    _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
     return msg
 
 cdef inline object _recv_copy(void *handle, int flags=0):
     """Receive a message and return a copy"""
     cdef zmq_msg_t zmq_msg
-    with nogil:
-        zmq_msg_init (&zmq_msg)
-        rc = zmq_msg_recv(&zmq_msg, handle, flags)
+    rc = zmq_msg_init (&zmq_msg)
     _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_msg_recv(&zmq_msg, handle, flags)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     zmq_msg_close(&zmq_msg)
     return msg_bytes
@@ -149,11 +153,13 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     # Always copy so the original message isn't garbage collected.
     # This doesn't do a real copy, just a reference.
     msg_copy = msg.fast_copy()
+    
+    while True:
+        with nogil:
+            rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
 
-    with nogil:
-        rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
-
-    _check_rc(rc)
     return msg.tracker
 
 
@@ -171,14 +177,16 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
     # the GIL, etc.
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
     rc = zmq_msg_init_size(&data, msg_c_len)
-
     _check_rc(rc)
-
-    with nogil:
-        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
-        rc = zmq_msg_send(&data, handle, flags)
-        rc2 = zmq_msg_close(&data)
-    _check_rc(rc)
+    
+    while True:
+        with nogil:
+            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+            rc = zmq_msg_send(&data, handle, flags)
+            if not rc < 0:
+                rc2 = zmq_msg_close(&data)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
     _check_rc(rc2)
 
 
