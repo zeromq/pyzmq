@@ -17,6 +17,23 @@ for ext in ('pyd', 'so', 'dll', 'dylib'):
     bundled_sodium.extend(glob.glob(os.path.join(here, 'libsodium*.%s*' % ext)))
     bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
 
+# If we are running in a debug interpreter, load libzmq_d.pyd instead of libzmq.pyd
+# hasattr(sys, 'gettotalrefcount') is used to detect whether we are running in a debug interpreter
+# Taken from http://stackoverflow.com/questions/646518/python-how-to-detect-debug-interpreter
+if os.name == 'nt':
+    def is_debug_filename(name):
+        # Note this fails for filenames like foo.bar_d.so.x.y.z,
+        # but such names should not appear on Windows.
+        root, ext = os.path.splitext(name)
+        return root.endswith('_d')
+
+    if hasattr(sys, 'gettotalrefcount'):
+        bundled_sodium = [x for x in bundled_sodium if is_debug_filename(x)]
+        bundled = [x for x in bundled if is_debug_filename(x)]
+    else:
+        bundled_sodium = [x for x in bundled_sodium if not is_debug_filename(x)]
+        bundled = [x for x in bundled if not is_debug_filename(x)]
+
 if bundled:
     import ctypes
     if bundled_sodium:
