@@ -74,6 +74,17 @@ class TestEINTRSysCall(BaseZMQTestCase):
         assert self.timer_fired
         x.recv()
     
+    def test_retry_term(self):
+        push = self.socket(zmq.PUSH)
+        push.linger = self.timeout_ms
+        push.connect('tcp://127.0.0.1:5555')
+        push.send(b('ping'))
+        time.sleep(0.1)
+        self.alarm()
+        self.context.destroy()
+        assert self.timer_fired
+        assert self.context.closed
+    
     def test_retry_getsockopt(self):
         raise SkipTest("TODO: find a way to interrupt getsockopt")
     
