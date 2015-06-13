@@ -47,8 +47,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         pull = self.socket(zmq.PULL)
         pull.rcvtimeo = self.timeout_ms
         self.alarm()
-        with self.assertRaises(zmq.Again):
-            pull.recv()
+        self.assertRaises(zmq.Again, pull.recv)
         assert self.timer_fired
 
     @skip_if(not hasattr(zmq, 'SNDTIMEO'))
@@ -56,8 +55,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         push = self.socket(zmq.PUSH)
         push.sndtimeo = self.timeout_ms
         self.alarm()
-        with self.assertRaises(zmq.Again):
-            push.send(b('buf'))
+        self.assertRaises(zmq.Again, push.send, b('buf'))
         assert self.timer_fired
     
     def test_retry_poll(self):
