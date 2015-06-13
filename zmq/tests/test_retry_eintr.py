@@ -25,7 +25,6 @@ class TestEINTRSysCall(BaseZMQTestCase):
     timeout_ms = int(timeout * 1e3)
 
     @skip_if(not hasattr(signal, 'setitimer'), 'EINTR tests require setitimer')
-    @skip_pypy
     def alarm(self, t=None):
         """start a timer to fire only once
         

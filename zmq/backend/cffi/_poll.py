@@ -4,11 +4,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from ._cffi import C, ffi, zmq_version_info
-
-from .constants import *
-
-from zmq.error import _check_rc
+from ._cffi import C, ffi
+from .utils import _retry_sys_call
 
 
 def _make_zmq_pollitem(socket, flags):
@@ -41,8 +38,7 @@ def zmq_poll(sockets, timeout):
     items = ffi.new('zmq_pollitem_t[]', cffi_pollitem_list)
     list_length = ffi.cast('int', len(cffi_pollitem_list))
     c_timeout = ffi.cast('long', timeout)
-    rc = C.zmq_poll(items, list_length, c_timeout)
-    _check_rc(rc)
+    _retry_sys_call(C.zmq_poll, items, list_length, c_timeout)
     result = []
     for index in range(len(items)):
         if not items[index].socket == ffi.NULL:

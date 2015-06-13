@@ -4,9 +4,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import random
-import codecs
-
 import errno as errno_mod
 
 from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
@@ -15,7 +12,8 @@ from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
                     IPC_PATH_MAX_LEN)
 
 from .message import Frame
-from .constants import *
+from .constants import RCVMORE
+from .utils import _retry_sys_call
 
 import zmq
 from zmq.error import ZMQError, _check_rc, _check_version
@@ -150,11 +148,11 @@ class Socket(object):
         c_value_pointer = c_data[0]
         c_sizet = c_data[1]
 
-        rc = C.zmq_setsockopt(self._zmq_socket,
-                               option,
-                               ffi.cast('void*', c_value_pointer),
-                               c_sizet)
-        _check_rc(rc)
+        _retry_sys_call(C.zmq_setsockopt,
+                        self._zmq_socket,
+                        option,
+                        ffi.cast('void*', c_value_pointer),
+                        c_sizet)
 
     def get(self, option):
         c_data = new_pointer_from_opt(option, length=255)
@@ -162,11 +160,11 @@ class Socket(object):
         c_value_pointer = c_data[0]
         c_sizet_pointer = c_data[1]
 
-        rc = C.zmq_getsockopt(self._zmq_socket,
-                               option,
-                               c_value_pointer,
-                               c_sizet_pointer)
-        _check_rc(rc)
+        _retry_sys_call(C.zmq_getsockopt,
+                        self._zmq_socket,
+                        option,
+                        c_value_pointer,
+                        c_sizet_pointer)
         
         sz = c_sizet_pointer[0]
         v = value_from_opt_pointer(option, c_value_pointer, sz)
@@ -184,11 +182,10 @@ class Socket(object):
         zmq_msg = ffi.new('zmq_msg_t*')
         c_message = ffi.new('char[]', message)
         rc = C.zmq_msg_init_size(zmq_msg, len(message))
-        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
-
-        rc = C.zmq_msg_send(zmq_msg, self._zmq_socket, flags)
-        rc2 = C.zmq_msg_close(zmq_msg)
         _check_rc(rc)
+        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
+        _retry_sys_call(C.zmq_msg_send, zmq_msg, self._zmq_socket, flags)
+        rc2 = C.zmq_msg_close(zmq_msg)
         _check_rc(rc2)
 
         if track:
@@ -197,12 +194,12 @@ class Socket(object):
     def recv(self, flags=0, copy=True, track=False):
         zmq_msg = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg)
-
-        rc = C.zmq_msg_recv(zmq_msg, self._zmq_socket, flags)
-
-        if rc < 0:
+        
+        try:
+            _retry_sys_call(C.zmq_msg_recv, zmq_msg, self._zmq_socket, flags)
+        except Exception:
             C.zmq_msg_close(zmq_msg)
-            _check_rc(rc)
+            raise
 
         _buffer = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))
         value = _buffer[:]

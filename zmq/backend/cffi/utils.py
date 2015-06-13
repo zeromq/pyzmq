@@ -4,6 +4,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from errno import EINTR
+
 from ._cffi import ffi, C
 
 from zmq.error import ZMQError, _check_rc, _check_version
@@ -58,5 +60,19 @@ class Stopwatch(object):
 
     def sleep(self, seconds):
         C.zmq_sleep(seconds)
+
+def _retry_sys_call(f, *args):
+    """make a call, retrying if interrupted with EINTR"""
+    while True:
+        rc = f(*args)
+        if rc < 0:
+            en = C.zmq_errno()
+            if en == EINTR:
+                continue
+            else:
+                _check_rc(rc)
+                break
+        else:
+            break
 
 __all__ = ['has', 'curve_keypair', 'Stopwatch']
