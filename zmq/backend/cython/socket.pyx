@@ -74,8 +74,8 @@ except:
 import zmq
 from zmq.backend.cython import constants
 from zmq.backend.cython.constants import *
-from zmq.backend.cython.checkrc cimport _check_rc, RETRY_SYS_CALL
-from zmq.error import ZMQError, ZMQBindError, _check_version
+from zmq.backend.cython.checkrc cimport _check_rc
+from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
@@ -127,7 +127,11 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     while True:
         with nogil:
             rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
     return msg
 
@@ -139,7 +143,11 @@ cdef inline object _recv_copy(void *handle, int flags=0):
     while True:
         with nogil:
             rc = zmq_msg_recv(&zmq_msg, handle, flags)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     zmq_msg_close(&zmq_msg)
@@ -157,7 +165,11 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     while True:
         with nogil:
             rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
 
     return msg.tracker
@@ -185,7 +197,11 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
             rc = zmq_msg_send(&data, handle, flags)
             if not rc < 0:
                 rc2 = zmq_msg_close(&data)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
     _check_rc(rc2)
 
@@ -197,7 +213,11 @@ cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *s
     cdef int rc=0
     while True:
         rc = zmq_getsockopt(handle, option, optval, sz)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
 
 cdef inline object _setsockopt(void *handle, int option, void *optval, size_t sz):
@@ -208,7 +228,11 @@ cdef inline object _setsockopt(void *handle, int option, void *optval, size_t sz
     cdef int rc=0
     while True:
         rc = zmq_setsockopt(handle, option, optval, sz)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
 
 

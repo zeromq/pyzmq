@@ -25,7 +25,9 @@
 
 from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
 from zmq.backend.cython.socket cimport Socket as cSocket
-from zmq.backend.cython.checkrc cimport _check_rc, RETRY_SYS_CALL
+from zmq.backend.cython.checkrc cimport _check_rc
+
+from zmq.error import InterruptedSystemCall
 
 #-----------------------------------------------------------------------------
 # Basic device API
@@ -55,7 +57,11 @@ def device(int device_type, cSocket frontend, cSocket backend=None):
     while True:
         with nogil:
             rc = zmq_device(device_type, frontend.handle, backend.handle)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
     return rc
 
@@ -85,7 +91,11 @@ def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
     while True:
         with nogil:
             rc = zmq_proxy(frontend.handle, backend.handle, capture_handle)
-        if _check_rc(rc) != RETRY_SYS_CALL:
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
             break
     return rc
 
