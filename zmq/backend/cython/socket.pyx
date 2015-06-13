@@ -189,6 +189,28 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
             break
     _check_rc(rc2)
 
+cdef inline void _getsockopt(void *handle, int option, void *optval, size_t *sz):
+    """getsockopt, retrying interrupted calls
+    
+    checks rc, raising ZMQError on failure.
+    """
+    cdef int rc=0
+    while True:
+        rc = zmq_getsockopt(handle, option, optval, sz)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
+
+cdef inline void _setsockopt(void *handle, int option, void *optval, size_t sz):
+    """setsockopt, retrying interrupted calls
+    
+    checks rc, raising ZMQError on failure.
+    """
+    cdef int rc=0
+    while True:
+        rc = zmq_setsockopt(handle, option, optval, sz)
+        if _check_rc(rc) != RETRY_SYS_CALL:
+            break
+
 
 cdef class Socket:
     """Socket(context, socket_type)
@@ -280,7 +302,7 @@ cdef class Socket:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
             rc = zmq_close(self.handle)
-            if rc != 0 and zmq_errno() != ENOTSOCK:
+            if rc < 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 _check_rc(rc)
             self._closed = True
@@ -316,7 +338,6 @@ cdef class Socket:
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c
-        cdef int rc
         cdef char* optval_c
         cdef Py_ssize_t sz
 
@@ -329,18 +350,12 @@ cdef class Socket:
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    optval_c, sz
-                )
+            _setsockopt(self.handle, option, optval_c, sz)
         elif option in zmq.constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    &optval_int64_c, sizeof(int64_t)
-                )
+            _setsockopt(self.handle, option, &optval_int64_c, sizeof(int64_t))
         else:
             # default is to assume int, which is what most new sockopts will be
             # this lets pyzmq work with newer libzmq which may add constants
@@ -350,12 +365,7 @@ cdef class Socket:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    &optval_int_c, sizeof(int)
-                )
-
-        _check_rc(rc)
+            _setsockopt(self.handle, option, &optval_int_c, sizeof(int))
 
     def get(self, int option):
         """s.get(option)
@@ -388,21 +398,18 @@ cdef class Socket:
 
         if option in zmq.constants.bytes_sockopts:
             sz = 255
-            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             # strip null-terminated strings *except* identity
             if option != ZMQ_IDENTITY and sz > 0 and (<char *>identity_str_c)[sz-1] == b'\0':
                 sz -= 1
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             result = optval_int64_c
         elif option in zmq.constants.fd_sockopts:
             sz = sizeof(fd_t)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             result = optval_fd_c
         else:
             # default is to assume int, which is what most new sockopts will be
@@ -411,8 +418,7 @@ cdef class Socket:
             # sockopts will still raise just the same, but it will be libzmq doing
             # the raising.
             sz = sizeof(int)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             result = optval_int_c
 
         return result
