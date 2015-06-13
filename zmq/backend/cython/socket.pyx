@@ -189,7 +189,7 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
             break
     _check_rc(rc2)
 
-cdef inline void _getsockopt(void *handle, int option, void *optval, size_t *sz):
+cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *sz):
     """getsockopt, retrying interrupted calls
     
     checks rc, raising ZMQError on failure.
@@ -200,7 +200,7 @@ cdef inline void _getsockopt(void *handle, int option, void *optval, size_t *sz)
         if _check_rc(rc) != RETRY_SYS_CALL:
             break
 
-cdef inline void _setsockopt(void *handle, int option, void *optval, size_t sz):
+cdef inline object _setsockopt(void *handle, int option, void *optval, size_t sz):
     """setsockopt, retrying interrupted calls
     
     checks rc, raising ZMQError on failure.
