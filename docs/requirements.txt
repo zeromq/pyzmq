@@ -1,4 +1,3 @@
 cython>=0.20
-numpydoc
-sphinx>=1.2
+sphinx>=1.3
 gevent
