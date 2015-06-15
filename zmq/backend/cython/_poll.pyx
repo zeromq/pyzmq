@@ -32,6 +32,7 @@ from socket cimport Socket
 import sys
 
 from zmq.backend.cython.checkrc cimport _check_rc
+from zmq.error import InterruptedSystemCall
 
 #-----------------------------------------------------------------------------
 # Polling related methods
@@ -106,13 +107,19 @@ def zmq_poll(sockets, long timeout=-1):
                 "a fileno() method: %r" % s
             )
     
-
-    with nogil:
-        rc = zmq_poll_c(pollitems, nsockets, timeout)
-    
-    if rc < 0:
+    try:
+        while True:
+            with nogil:
+                rc = zmq_poll_c(pollitems, nsockets, timeout)
+            try:
+                _check_rc(rc)
+            except InterruptedSystemCall:
+                continue
+            else:
+                break
+    except Exception:
         free(pollitems)
-        _check_rc(rc)
+        raise
     
     results = []
     for i in range(nsockets):

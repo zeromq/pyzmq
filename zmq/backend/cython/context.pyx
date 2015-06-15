@@ -11,7 +11,7 @@ from libzmq cimport *
 cdef extern from "getpid_compat.h":
     int getpid()
 
-from zmq.error import ZMQError
+from zmq.error import ZMQError, InterruptedSystemCall
 from zmq.backend.cython.checkrc cimport _check_rc
 
 
@@ -134,8 +134,15 @@ cdef class Context:
         This can be called to close the context by hand. If this is not called,
         the context will automatically be closed when it is garbage collected.
         """
-        cdef int rc
+        cdef int rc=0
         rc = self._term()
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            # ignore interrupted term
+            # see PEP 475 notes about close & EINTR for why
+            pass
+        
         self.closed = True
     
     def set(self, int option, optval):

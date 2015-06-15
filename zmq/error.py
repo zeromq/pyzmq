@@ -3,6 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from errno import EINTR
+
 
 class ZMQBaseError(Exception):
     """Base exception class for 0MQ errors in Python."""
@@ -56,7 +58,7 @@ class ZMQError(ZMQBaseError):
         return self.strerror
     
     def __repr__(self):
-        return "ZMQError('%s')"%self.strerror
+        return "%s('%s')" % (self.__class__.__name__, str(self))
 
 
 class ZMQBindError(ZMQBaseError):
@@ -94,6 +96,24 @@ class Again(ZMQError):
     """
     pass
 
+try:
+    InterruptedError
+except NameError:
+    InterruptedError = OSError
+
+class InterruptedSystemCall(ZMQError, InterruptedError):
+    """Wrapper for EINTR
+    
+    This exception should be caught internally in pyzmq
+    to retry system calls, and not propagate to the user.
+    
+    .. versionadded:: 14.7
+    """
+    
+    def __str__(self):
+        s = super(InterruptedSystemCall, self).__str__()
+        return s + ": This call should have been retried. Please report this to pyzmq."
+
 
 def _check_rc(rc, errno=None):
     """internal utility for checking zmq return condition
@@ -101,11 +121,13 @@ def _check_rc(rc, errno=None):
     and raising the appropriate Exception class
     """
     if rc < 0:
-        from zmq.backend import zmq_errno
         if errno is None:
+            from zmq.backend import zmq_errno
             errno = zmq_errno()
         from zmq import EAGAIN, ETERM
-        if errno == EAGAIN:
+        if errno == EINTR:
+            raise InterruptedSystemCall(errno)
+        elif errno == EAGAIN:
             raise Again(errno)
         elif errno == ETERM:
             raise ContextTerminated(errno)
@@ -159,6 +181,7 @@ __all__ = [
     'ZMQError',
     'NotDone',
     'ContextTerminated',
+    'InterruptedSystemCall',
     'Again',
     'ZMQVersionError',
 ]

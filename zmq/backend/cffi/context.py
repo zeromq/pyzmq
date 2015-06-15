@@ -8,10 +8,9 @@ import weakref
 
 from ._cffi import C, ffi
 
-from .socket import *
-from .constants import *
+from .constants import EINVAL, IO_THREADS, LINGER
 
-from zmq.error import ZMQError, _check_rc
+from zmq.error import ZMQError, InterruptedSystemCall, _check_rc
 
 class Context(object):
     _zmq_ctx = None
@@ -76,8 +75,14 @@ class Context(object):
     def term(self):
         if self.closed:
             return
-
-        C.zmq_ctx_destroy(self._zmq_ctx)
+        
+        rc = C.zmq_ctx_destroy(self._zmq_ctx)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            # ignore interrupted term
+            # see PEP 475 notes about close & EINTR for why
+            pass
 
         self._zmq_ctx = None
         self._closed = True

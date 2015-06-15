@@ -75,7 +75,7 @@ import zmq
 from zmq.backend.cython import constants
 from zmq.backend.cython.constants import *
 from zmq.backend.cython.checkrc cimport _check_rc
-from zmq.error import ZMQError, ZMQBindError, _check_version
+from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
@@ -123,20 +123,32 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     cdef int rc
     msg = zmq.Frame(track=track)
     cdef Frame cmsg = msg
-
-    with nogil:
-        rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
     
-    _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
     return msg
 
 cdef inline object _recv_copy(void *handle, int flags=0):
     """Receive a message and return a copy"""
     cdef zmq_msg_t zmq_msg
-    with nogil:
-        zmq_msg_init (&zmq_msg)
-        rc = zmq_msg_recv(&zmq_msg, handle, flags)
+    rc = zmq_msg_init (&zmq_msg)
     _check_rc(rc)
+    while True:
+        with nogil:
+            rc = zmq_msg_recv(&zmq_msg, handle, flags)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     zmq_msg_close(&zmq_msg)
     return msg_bytes
@@ -149,11 +161,17 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     # Always copy so the original message isn't garbage collected.
     # This doesn't do a real copy, just a reference.
     msg_copy = msg.fast_copy()
+    
+    while True:
+        with nogil:
+            rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
 
-    with nogil:
-        rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
-
-    _check_rc(rc)
     return msg.tracker
 
 
@@ -171,15 +189,51 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
     # the GIL, etc.
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
     rc = zmq_msg_init_size(&data, msg_c_len)
-
     _check_rc(rc)
-
-    with nogil:
-        memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
-        rc = zmq_msg_send(&data, handle, flags)
-        rc2 = zmq_msg_close(&data)
-    _check_rc(rc)
+    
+    while True:
+        with nogil:
+            memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
+            rc = zmq_msg_send(&data, handle, flags)
+            if not rc < 0:
+                rc2 = zmq_msg_close(&data)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
     _check_rc(rc2)
+
+cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *sz):
+    """getsockopt, retrying interrupted calls
+    
+    checks rc, raising ZMQError on failure.
+    """
+    cdef int rc=0
+    while True:
+        rc = zmq_getsockopt(handle, option, optval, sz)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
+
+cdef inline object _setsockopt(void *handle, int option, void *optval, size_t sz):
+    """setsockopt, retrying interrupted calls
+    
+    checks rc, raising ZMQError on failure.
+    """
+    cdef int rc=0
+    while True:
+        rc = zmq_setsockopt(handle, option, optval, sz)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
 
 
 cdef class Socket:
@@ -272,7 +326,7 @@ cdef class Socket:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
             rc = zmq_close(self.handle)
-            if rc != 0 and zmq_errno() != ENOTSOCK:
+            if rc < 0 and zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 _check_rc(rc)
             self._closed = True
@@ -308,7 +362,6 @@ cdef class Socket:
         """
         cdef int64_t optval_int64_c
         cdef int optval_int_c
-        cdef int rc
         cdef char* optval_c
         cdef Py_ssize_t sz
 
@@ -321,18 +374,12 @@ cdef class Socket:
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    optval_c, sz
-                )
+            _setsockopt(self.handle, option, optval_c, sz)
         elif option in zmq.constants.int64_sockopts:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    &optval_int64_c, sizeof(int64_t)
-                )
+            _setsockopt(self.handle, option, &optval_int64_c, sizeof(int64_t))
         else:
             # default is to assume int, which is what most new sockopts will be
             # this lets pyzmq work with newer libzmq which may add constants
@@ -342,12 +389,7 @@ cdef class Socket:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int_c = optval
-            rc = zmq_setsockopt(
-                    self.handle, option,
-                    &optval_int_c, sizeof(int)
-                )
-
-        _check_rc(rc)
+            _setsockopt(self.handle, option, &optval_int_c, sizeof(int))
 
     def get(self, int option):
         """s.get(option)
@@ -380,21 +422,18 @@ cdef class Socket:
 
         if option in zmq.constants.bytes_sockopts:
             sz = 255
-            rc = zmq_getsockopt(self.handle, option, <void *>identity_str_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             # strip null-terminated strings *except* identity
             if option != ZMQ_IDENTITY and sz > 0 and (<char *>identity_str_c)[sz-1] == b'\0':
                 sz -= 1
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
         elif option in zmq.constants.int64_sockopts:
             sz = sizeof(int64_t)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             result = optval_int64_c
         elif option in zmq.constants.fd_sockopts:
             sz = sizeof(fd_t)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             result = optval_fd_c
         else:
             # default is to assume int, which is what most new sockopts will be
@@ -403,8 +442,7 @@ cdef class Socket:
             # sockopts will still raise just the same, but it will be libzmq doing
             # the raising.
             sz = sizeof(int)
-            rc = zmq_getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
-            _check_rc(rc)
+            _getsockopt(self.handle, option, <void *>&optval_int_c, &sz)
             result = optval_int_c
 
         return result

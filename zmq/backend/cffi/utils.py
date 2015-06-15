@@ -4,9 +4,11 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from errno import EINTR
+
 from ._cffi import ffi, C
 
-from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.error import ZMQError, InterruptedSystemCall, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
 
 def has(capability):
@@ -58,5 +60,16 @@ class Stopwatch(object):
 
     def sleep(self, seconds):
         C.zmq_sleep(seconds)
+
+def _retry_sys_call(f, *args, **kwargs):
+    """make a call, retrying if interrupted with EINTR"""
+    while True:
+        rc = f(*args)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
 
 __all__ = ['has', 'curve_keypair', 'Stopwatch']

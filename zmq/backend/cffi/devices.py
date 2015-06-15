@@ -4,13 +4,13 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from ._cffi import C, ffi, zmq_version_info
+from ._cffi import C, ffi
 from .socket import Socket
-from zmq.error import ZMQError, _check_rc
+from .utils import _retry_sys_call
+
 
 def device(device_type, frontend, backend):
-    rc = C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, ffi.NULL)
-    _check_rc(rc)
+    return proxy(frontend, backend)
 
 def proxy(frontend, backend, capture=None):
     if isinstance(capture, Socket):
@@ -18,7 +18,6 @@ def proxy(frontend, backend, capture=None):
     else:
         capture = ffi.NULL
 
-    rc = C.zmq_proxy(frontend._zmq_socket, backend._zmq_socket, capture)
-    _check_rc(rc)
+    _retry_sys_call(C.zmq_proxy, frontend._zmq_socket, backend._zmq_socket, capture)
 
 __all__ = ['device', 'proxy']

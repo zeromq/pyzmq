@@ -9,6 +9,13 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+14.7.0
+======
+
+- Following the `lead <https://www.python.org/dev/peps/pep-0475/>`_ of Python 3.5,
+  interrupted system calls will be retried.
+- Fixes for CFFI backend on Python 3 + support for PyPy 3.
+
 14.6.0
 ======
 
