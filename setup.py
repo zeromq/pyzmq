@@ -180,16 +180,17 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
             settings['libraries'].append('pthread')
-    
-        if sys.platform == 'sunos5':
+        
+        if sys.platform.startswith('sunos'):
           if platform.architecture()[0] == '32bit':
             settings['extra_link_args'] += ['-m32']
           else:
             settings['extra_link_args'] += ['-m64']
+        
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             if not bundle_libzmq_dylib:
-                if sys.platform == 'sunos5' and platform.architecture()[0] == '64bit':
+                if sys.platform.startswith('sunos') and platform.architecture()[0] == '64bit':
                     settings['library_dirs'] += [pjoin(prefix, 'lib/amd64')]
                 settings['library_dirs'] += [pjoin(prefix, 'lib')]
         else:
@@ -503,12 +504,22 @@ class Configure(build_ext):
         # register the extension:
         self.distribution.ext_modules.insert(0, libzmq)
         
+        # select polling subsystem based on platform
+        if sys.platform  == 'darwin' or 'bsd' in sys.platform:
+            libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
+        elif 'linux' in sys.platform:
+            libzmq.define_macros.append(('ZMQ_USE_EPOLL', 1))
+        elif sys.platform.startswith('win'):
+            libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
+        else:
+            # this may not be sufficiently precise
+            libzmq.define_macros.append(('ZMQ_USE_POLL', 1))
+        
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:
             libzmq.define_macros.append(('FD_SETSIZE', 1024))
             libzmq.define_macros.append(('DLL_EXPORT', 1))
             libzmq.define_macros.append(('_CRT_SECURE_NO_WARNINGS', 1))
-            libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
             
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind

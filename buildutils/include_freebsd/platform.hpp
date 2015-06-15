@@ -10,6 +10,14 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #define HAVE_CLOCK_GETTIME 1
 
+/* Define to 1 if you have the declaration of `LOCAL_PEERCRED', and to 0 if
+   you don't. */
+#define HAVE_DECL_LOCAL_PEERCRED 0
+
+/* Define to 1 if you have the declaration of `SO_PEERCRED', and to 0 if you
+   don't. */
+#define HAVE_DECL_SO_PEERCRED 0
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
@@ -37,6 +45,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Define to 1 if you have the `gssapi_krb5' library (-lgssapi_krb5). */
+/* #undef HAVE_LIBGSSAPI_KRB5 */
+
 /* Define to 1 if you have the `iphlpapi' library (-liphlpapi). */
 /* #undef HAVE_LIBIPHLPAPI */
 
@@ -55,8 +66,8 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
 
-/* Define to 1 if you have the `sodium' library (-lsodium). */
-/* #undef HAVE_LIBSODIUM */
+/* The libsodium library is to be used. */
+#define HAVE_LIBSODIUM 1
 
 /* Define to 1 if you have the `ws2_32' library (-lws2_32). */
 /* #undef HAVE_LIBWS2_32 */
@@ -134,9 +145,6 @@
    */
 #define LT_OBJDIR ".libs/"
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-/* #undef NO_MINUS_C_MINUS_O */
-
 /* Name of package */
 #define PACKAGE "zeromq"
 
@@ -147,7 +155,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 4.0.4"
+#define PACKAGE_STRING "zeromq 4.1.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -156,7 +164,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.4"
+#define PACKAGE_VERSION "4.1.1"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -168,7 +176,10 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "4.0.4"
+#define VERSION "4.1.1"
+
+/* Enable militant API assertions */
+/* #undef ZMQ_ACT_MILITANT */
 
 /* Force to use mutexes */
 /* #undef ZMQ_FORCE_MUTEXES */
@@ -197,11 +208,17 @@
 /* Have Linux OS */
 /* #undef ZMQ_HAVE_LINUX */
 
+/* Have LOCAL_PEERCRED socket option */
+/* #undef ZMQ_HAVE_LOCAL_PEERCRED */
+
 /* Have MinGW32 */
 /* #undef ZMQ_HAVE_MINGW32 */
 
 /* Have NetBSD OS */
 /* #undef ZMQ_HAVE_NETBSD */
+
+/* Have NORM protocol extension */
+/* #undef ZMQ_HAVE_NORM */
 
 /* Have OpenBSD OS */
 /* #undef ZMQ_HAVE_OPENBSD */
@@ -224,6 +241,9 @@
 /* Whether SO_KEEPALIVE is supported. */
 #define ZMQ_HAVE_SO_KEEPALIVE 1
 
+/* Have SO_PEERCRED socket option */
+/* #undef ZMQ_HAVE_SO_PEERCRED */
+
 /* Whether TCP_KEEPALIVE is supported. */
 /* #undef ZMQ_HAVE_TCP_KEEPALIVE */
 
@@ -235,6 +255,9 @@
 
 /* Whether TCP_KEEPINTVL is supported. */
 #define ZMQ_HAVE_TCP_KEEPINTVL 1
+
+/* Have TIPC support */
+/* #undef ZMQ_HAVE_TIPC */
 
 /* Have uio.h header. */
 #define ZMQ_HAVE_UIO 1

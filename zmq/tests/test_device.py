@@ -28,16 +28,9 @@ class TestDevice(BaseZMQTestCase):
         self.assertEqual(dev.daemon, True)
         del dev
     
-    def test_tsdevice_attributes(self):
-        dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
-        self.assertEqual(dev.in_type, zmq.SUB)
-        self.assertEqual(dev.out_type, zmq.PUB)
-        self.assertEqual(dev.device_type, zmq.QUEUE)
-        self.assertEqual(dev.daemon, True)
-        del dev
-        
-    
     def test_single_socket_forwarder_connect(self):
+        if zmq.zmq_version() in ('4.1.1', '4.0.6'):
+            raise SkipTest("libzmq-%s broke single-socket devices" % zmq.zmq_version())
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
@@ -62,6 +55,8 @@ class TestDevice(BaseZMQTestCase):
         req.close()
         
     def test_single_socket_forwarder_bind(self):
+        if zmq.zmq_version() in ('4.1.1', '4.0.6'):
+            raise SkipTest("libzmq-%s broke single-socket devices" % zmq.zmq_version())
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         # select random port:
         binder = self.context.socket(zmq.REQ)
