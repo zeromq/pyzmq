@@ -39,6 +39,10 @@ try:
 except AttributeError:
     DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
 
+try:
+    _buffer_type = memoryview
+except NameError:
+    _buffer_type = buffer
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
@@ -307,6 +311,20 @@ class Socket(SocketBase, AttributeSetter):
             a MessageTracker object, whose `pending` property will
             be True until the last send is completed.
         """
+        # typecheck parts before sending:
+        for i,msg in enumerate(msg_parts):
+            if isinstance(msg, (zmq.Frame, bytes, _buffer_type)):
+                continue
+            try:
+                _buffer_type(msg)
+            except Exception as e:
+                rmsg = repr(msg)
+                if len(rmsg) > 32:
+                    rmsg = rmsg[:32] + '...'
+                raise TypeError(
+                    "Frame %i (%s) does not support the buffer interface." % (
+                    i, rmsg,
+                ))
         for msg in msg_parts[:-1]:
             self.send(msg, SNDMORE|flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.

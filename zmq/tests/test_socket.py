@@ -194,6 +194,15 @@ class TestSocket(BaseZMQTestCase):
         s = b.recv_unicode(encoding='utf16')
         self.assertEqual(s,u)
     
+    def test_send_multipart_check_type(self):
+        "check type on all frames in send_multipart"
+        a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        self.sockets.extend([a,b])
+        self.assertRaises(TypeError, a.send_multipart, [b'a', 5])
+        a.send_multipart([b'b'])
+        rcvd = b.recv_multipart()
+        self.assertEqual(rcvd, [b'b'])
+    
     @skip_pypy
     def test_tracker(self):
         "test the MessageTracker object for tracking when zmq is done with a buffer"
