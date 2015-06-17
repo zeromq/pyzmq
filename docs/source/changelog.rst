@@ -12,9 +12,18 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 14.7.0
 ======
 
-- Following the `lead <https://www.python.org/dev/peps/pep-0475/>`_ of Python 3.5,
+Changes:
+
+- Update bundled libzmq to 4.1.2.
+- Following the `lead of Python 3.5 <https://www.python.org/dev/peps/pep-0475/>`_,
   interrupted system calls will be retried.
+
+Fixes:
+
 - Fixes for CFFI backend on Python 3 + support for PyPy 3.
+- Verify types of all frames in :meth:`~zmq.Socket.send_multipart` before sending,
+  to avoid partial messages.
+- Fix build on Windows when both debug and release versions of libzmq are found.
 
 14.6.0
 ======
