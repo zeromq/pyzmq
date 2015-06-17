@@ -129,14 +129,23 @@ def bundled_settings(debug):
     elif sys.platform.startswith('win'):
         # link against libzmq in build dir:
         plat = distutils.util.get_platform()
-        temp = 'temp.%s-%s' % (plat, sys.version[0:3])
+        temp = 'temp.%s-%i.%i' % (plat, sys.version_info[0], sys.version_info[1])
+        suffix = ''
+        if sys.version_info >= (3,5):
+            # Python 3.5 adds EXT_SUFFIX to libs
+            ext_suffix = distutils.sysconfig.get_config_var('EXT_SUFFIX')
+            suffix = os.path.splitext(ext_suffix)[0]
+
+
         if debug:
-            settings['libraries'].append('libzmq_d')
-            settings['library_dirs'].append(pjoin('build', temp, 'Debug', 'buildutils'))
+            suffix = '_d' + suffix
+            release = 'Debug'
         else:
-            settings['libraries'].append('libzmq')
-            settings['library_dirs'].append(pjoin('build', temp, 'Release', 'buildutils'))
-    
+            release = 'Release'
+
+        settings['libraries'].append('libzmq' + suffix)
+        settings['library_dirs'].append(pjoin('build', temp, release, 'buildutils'))
+
     return settings
 
 
@@ -533,14 +542,16 @@ class Configure(build_ext):
             libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
 
             # link against libsodium in build dir:
-            plat = distutils.util.get_platform()
-            temp = 'temp.%s-%s' % (plat, sys.version[0:3])
+            suffix = ''
+            if sys.version_info >= (3,5):
+                # Python 3.5 adds EXT_SUFFIX to libs
+                ext_suffix = distutils.sysconfig.get_config_var('EXT_SUFFIX')
+                suffix = os.path.splitext(ext_suffix)[0]
             if self.debug:
-                libzmq.libraries.append('libsodium_d')
-                libzmq.library_dirs.append(pjoin('build', temp, 'Debug', 'buildutils'))
-            else:
-                libzmq.libraries.append('libsodium')
-                libzmq.library_dirs.append(pjoin('build', temp, 'Release', 'buildutils'))
+                suffix = '_d' + suffix
+            libzmq.libraries.append('libsodium' + suffix)
+            libzmq.library_dirs.append(pjoin(self.build_temp, 'buildutils'))
+
         else:
             libzmq.include_dirs.append(bundledir)
 
