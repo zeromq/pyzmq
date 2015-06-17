@@ -30,10 +30,13 @@ pjoin = os.path.join
 
 repo = "git@github.com:zeromq/pyzmq"
 
+_framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
-    '2.7' : "/Library/Frameworks/Python.framework/Versions/2.7/bin/python2.7",
-    '3.4' : "/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4",
+    '2.7' : _framework_py('2.7'),
+    '3.4' : _framework_py('3.4'),
+    '3.5' : _framework_py('3.5'),
     'pypy': "/usr/local/bin/pypy",
+    'pypy3': "/usr/local/bin/pypy3",
 }
 egg_pys = {'2.7'}
 
@@ -153,7 +156,6 @@ def build_sdist(py, upload=False):
 @task
 def sdist(vs, upload=False):
     clone_repo()
-    patch_version(vs)
     tag(vs, push=upload)
     py = make_env('2.7', 'cython')
     tarball = build_sdist(py, upload=upload)
@@ -196,6 +198,11 @@ def bdist(py, upload=False, wheel=True, egg=False):
 @task
 def release(vs, upload=False):
     """Release pyzmq"""
+    # Ensure all our Pythons exist before we start:
+    for v, path in py_exes.items():
+        if not os.path.exists(path):
+            raise ValueError("Need %s at %s" % (v, path))
+    
     # start from scrach with clone and envs
     clone_repo(reset=True)
     if os.path.exists(env_root):
