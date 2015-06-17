@@ -1192,7 +1192,6 @@ setup_args = dict(
     download_url = 'http://github.com/zeromq/pyzmq/releases',
     description = "Python bindings for 0MQ",
     long_description = long_desc,
-    zip_safe=False,
     license = "LGPL+BSD",
     cmdclass = cmdclass,
     classifiers = [
@@ -1215,11 +1214,13 @@ setup_args = dict(
         'Programming Language :: Python :: 3.4',
     ],
 )
-if 'setuptools' in sys.modules and pypy:
-    setup_args['install_requires'] = [
-        'py',
-        'cffi',
-    ]
+if 'setuptools' in sys.modules:
+    setup_args['zip_safe'] = False
+    if pypy:
+        setup_args['install_requires'] = [
+            'py',
+            'cffi',
+        ]
 
 setup(**setup_args)
 
