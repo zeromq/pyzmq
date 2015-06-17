@@ -31,6 +31,7 @@ from zmq.backend.cython.socket cimport Socket
 from zmq.backend.cython.checkrc cimport _check_rc
 
 from zmq import ROUTER, ZMQError
+from zmq.error import InterruptedSystemCall
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue functions
@@ -94,10 +95,16 @@ def monitored_queue(Socket in_socket, Socket out_socket, Socket mon_socket,
     rc = zmq_msg_init_size(&out_msg, msg_c_len)
     _check_rc(rc)
     
-    with nogil:
-        memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
-        rc = c_monitored_queue(ins, outs, mons, &in_msg, &out_msg, swap_ids)
-    _check_rc(rc)
+    while True:
+        with nogil:
+            memcpy(zmq_msg_data(&out_msg), msg_c, zmq_msg_size(&out_msg))
+            rc = c_monitored_queue(ins, outs, mons, &in_msg, &out_msg, swap_ids)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
     return rc
 
 __all__ = ['monitored_queue']
