@@ -17,7 +17,16 @@ import string
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0,os.path.abspath('../sphinxext'))
+sys.path.insert(0, os.path.abspath('../sphinxext'))
+sys.path.insert(0, os.path.abspath('../..'))
+
+# set target libzmq version
+from buildutils.bundle import bundled_version
+target_libzmq = '%i.%i.%i' % bundled_version
+
+rst_epilog = """
+.. |target_libzmq| replace:: {target_libzmq}
+""".format(**locals())
 
 # patch autodoc to work with Cython Sources
 import sphinx_cython
@@ -46,11 +55,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyZMQ'
-copyright = u"""2013, Brian E. Granger & Min Ragan-Kelley.  
+copyright = u"""Brian E. Granger & Min Ragan-Kelley.  
 ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
-intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
+intersphinx_mapping = {'python': ('http://docs.python.org/3', None)}
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.

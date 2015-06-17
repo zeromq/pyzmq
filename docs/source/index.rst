@@ -28,7 +28,7 @@ General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC
 Supported LibZMQ
 ================
 
-PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2, ≥ 4.0.1 ) and active development ( ≥ 4.1.0 )
+PyZMQ aims to support all stable ( ≥2.1.4, ≥ 3.2.2, ≥ 4.0.1 ) and active development ( ≥ 4.2.0 )
 versions of libzmq.  Building the same pyzmq against various versions of libzmq is supported,
 but only the functionality of the linked libzmq will be available.
 
@@ -40,8 +40,9 @@ but only the functionality of the linked libzmq will be available.
 
 Binary distributions (wheels on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
-the stable version of libzmq at the time of release, built with default configuration.
-For pyzmq-|release|, this is 4.0.5.
+the stable version of libzmq at the time of release, built with default configuration,
+and include libsodium for security.
+For pyzmq-|release|, this is |target_libzmq|.
 
 Using PyZMQ
 ===========
