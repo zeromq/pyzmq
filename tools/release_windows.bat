@@ -43,7 +43,7 @@ for %%p in (34, 27) do (
     @call "!SDK!\Bin\SetEnv.cmd" /release !ARCH!
     if !errorlevel! neq 0 exit /b !errorlevel!
     @echo on
-    !PY! setupegg.py !cmd!
+    !PY! setup.py !cmd!
     @echo off
     if !errorlevel! neq 0 exit !errorlevel!
   )
