@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import atexit
 import os
+import re
 import signal
 import socket
 import sys
@@ -61,6 +62,7 @@ def select_random_ports(n):
 #-----------------------------------------------------------------------------
 # Check for passwordless login
 #-----------------------------------------------------------------------------
+_password_pat = re.compile(r'pass(word|phrase):', re.IGNORECASE)
 
 def try_passwordless_ssh(server, keyfile, paramiko=None):
     """Attempt to make an ssh connection without a password.
@@ -94,7 +96,7 @@ def _try_passwordless_openssh(server, keyfile):
     p = pexpect.spawn(cmd, env=env)
     while True:
         try:
-            i = p.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            i = p.expect([ssh_newkey, _password_pat], timeout=.1)
             if i==0:
                 raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
@@ -235,7 +237,7 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
     failed = False
     while True:
         try:
-            i = tunnel.expect([ssh_newkey, '[Pp]assword:'], timeout=.1)
+            i = tunnel.expect([ssh_newkey, _password_pat], timeout=.1)
             if i==0:
                 raise SSHException('The authenticity of the host can\'t be established.')
         except pexpect.TIMEOUT:
