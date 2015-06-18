@@ -5,7 +5,7 @@ REM that's 6 bdists
 REM requires Windows SDK 7.0 (for py2) and 7.1 (for py3)
 REM and Python installed in the locations: C:\Python34 (32b) and C:\Python34_64 (64b)
 
-REM run with cmd /k tools/release_windows.bat
+REM run with cmd /k $PWD/tools/release_windows.bat
 
 setlocal EnableDelayedExpansion
 
@@ -16,18 +16,15 @@ set DISTUTILS_USE_SDK=1
 set UPLOAD=%~1
 set PYROOT=C:\
 
-for %%p in (34, 27) do (
+for %%p in (35, 34, 27) do (
   if "%%p"=="27" (
     set SDK=%SDK7%
+    set cmd=build bdist_egg bdist_wheel --zmq=bundled %UPLOAD%
   ) else (
     set SDK=%SDK71%
+    set cmd=build bdist_wheel --zmq=bundled %UPLOAD%
   )
   
-  if "%%p"=="34" (
-    set cmd=build bdist_wheel --zmq=bundled %UPLOAD%
-  ) else (
-    set cmd=build bdist_egg bdist_wheel --zmq=bundled %UPLOAD%
-  )
   for %%b in (64, 32) do (
     if "%%b"=="64" (
       set SUFFIX=_64
