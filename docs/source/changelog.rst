@@ -24,6 +24,7 @@ Fixes:
 - Verify types of all frames in :meth:`~zmq.Socket.send_multipart` before sending,
   to avoid partial messages.
 - Fix build on Windows when both debug and release versions of libzmq are found.
+- Windows build fixes for Python 3.5.
 
 14.6.0
 ======
