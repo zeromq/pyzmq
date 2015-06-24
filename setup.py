@@ -49,7 +49,7 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_call, CalledProcessError
 
 try:
     import nose
@@ -148,6 +148,38 @@ def bundled_settings(debug):
 
     return settings
 
+def check_pkgconfig():
+    """ pull compile / link flags from pkg-config if present. """
+    pcfg = None
+    zmq_config = None
+    try:
+        check_call(['pkg-config', '--exists', 'libzmq'])
+        # this would arguably be better with --variable=libdir /
+        # --variable=includedir, but would require multiple calls
+        pcfg = Popen(['pkg-config', '--libs', '--cflags', 'libzmq'],
+                     stdout=subprocess.PIPE)
+    except OSError as osexception:
+        if osexception.errno == errno.ENOENT:
+            info('pkg-config not found')
+        else:
+            warn("Running pkg-config failed - %s." % osexception)
+    except CalledProcessError:
+        info("Did not find libzmq via pkg-config.")
+
+    if pcfg is not None:
+        output, _ = pcfg.communicate()
+        bits = output.strip().split()
+        zmq_config = {'library_dirs':[], 'include_dirs':[], 'libraries':[]}
+        for tok in bits:
+            if tok.startswith("-L"):
+                zmq_config['library_dirs'].append(tok[2:])
+            if tok.startswith("-I"):
+                zmq_config['include_dirs'].append(tok[2:])
+            if tok.startswith("-l"):
+                zmq_config['libraries'].append(tok[2:])
+        info(zmq_config)
+
+    return zmq_config
 
 def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     """load appropriate library/include settings from ZMQ prefix"""
@@ -165,54 +197,49 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             settings['library_dirs'] += [pjoin(prefix, 'lib')]
     else:
-
-        # If prefix is not explicitly set, pull it from pkg-config by default.
-
-        if not prefix:
-            try:
-                p = Popen('pkg-config --variable=prefix --print-errors libzmq'.split(), stdout=PIPE, stderr=PIPE)
-            except OSError as e:
-                if e.errno == errno.ENOENT:
-                    info("pkg-config not found")
-                else:
-                    warn("Running pkg-config failed - %s." % e)
-                p = None
-            if p is not None:
-                if p.wait():
-                    info("Did not find libzmq via pkg-config:")
-                    info(p.stderr.read().decode())
-                else:
-                    prefix = p.stdout.readline().strip().decode()
-                    info("Using zmq-prefix %s (found via pkg-config)." % prefix)
-
-        settings['libraries'].append('zmq')
         # add pthread on freebsd
         if sys.platform.startswith('freebsd'):
             settings['libraries'].append('pthread')
-        
+
         if sys.platform.startswith('sunos'):
           if platform.architecture()[0] == '32bit':
             settings['extra_link_args'] += ['-m32']
           else:
             settings['extra_link_args'] += ['-m64']
-        
+
         if prefix:
+            settings['libraries'].append('zmq')
+
             settings['include_dirs'] += [pjoin(prefix, 'include')]
             if not bundle_libzmq_dylib:
                 if sys.platform.startswith('sunos') and platform.architecture()[0] == '64bit':
                     settings['library_dirs'] += [pjoin(prefix, 'lib/amd64')]
                 settings['library_dirs'] += [pjoin(prefix, 'lib')]
         else:
-            if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
-                # allow macports default
-                settings['include_dirs'] += ['/opt/local/include']
-                settings['library_dirs'] += ['/opt/local/lib']
-            if os.environ.get('VIRTUAL_ENV', None):
-                # find libzmq installed in virtualenv
-                env = os.environ['VIRTUAL_ENV']
-                settings['include_dirs'] += [pjoin(env, 'include')]
-                settings['library_dirs'] += [pjoin(env, 'lib')]
+            # If prefix is not explicitly set, pull it from pkg-config by default.
+            # this is probably applicable across platforms, but i don't have
+            # sufficient test environments to confirm
+            pkgcfginfo = check_pkgconfig()
+            if pkgcfginfo is not None:
+                # we can get all the zmq-specific values from pkgconfg
+                for key, value in pkgcfginfo.items():
+                    settings[key].extend(value)
+            else:
+                settings['libraries'].append('zmq')
+
+                if sys.platform == 'darwin' and os.path.isdir('/opt/local/lib'):
+                    # allow macports default
+                    settings['include_dirs'] += ['/opt/local/include']
+                    settings['library_dirs'] += ['/opt/local/lib']
+                if os.environ.get('VIRTUAL_ENV', None):
+                    # find libzmq installed in virtualenv
+                    env = os.environ['VIRTUAL_ENV']
+                    settings['include_dirs'] += [pjoin(env, 'include')]
+                    settings['library_dirs'] += [pjoin(env, 'lib')]
     
+
+
+
         if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
             settings['library_dirs'].append('zmq')
@@ -223,6 +250,7 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
             else:
                 settings['runtime_library_dirs'] += ['$ORIGIN/..']
         elif sys.platform != 'darwin':
+            info("%r" % settings)
             settings['runtime_library_dirs'] += [
                 os.path.abspath(x) for x in settings['library_dirs']
             ]
@@ -635,7 +663,6 @@ class Configure(build_ext):
                 # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
             else:
                 settings['runtime_library_dirs'] = [ os.path.abspath(pjoin('.', 'zmq')) ]
-        
         line()
         info("Configure: Autodetecting ZMQ settings...")
         info("    Custom ZMQ dir:       %s" % prefix)
