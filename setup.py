@@ -168,6 +168,7 @@ def check_pkgconfig():
 
     if pcfg is not None:
         output, _ = pcfg.communicate()
+        output = output.decode('utf8', 'replace')
         bits = output.strip().split()
         zmq_config = {'library_dirs':[], 'include_dirs':[], 'libraries':[]}
         for tok in bits:
