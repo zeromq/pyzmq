@@ -177,7 +177,7 @@ def check_pkgconfig():
                 zmq_config['include_dirs'].append(tok[2:])
             if tok.startswith("-l"):
                 zmq_config['libraries'].append(tok[2:])
-        info(zmq_config)
+        info("Settings obtained from pkg-config: %r" % zmq_config)
 
     return zmq_config
 
