@@ -30,11 +30,8 @@ from traceback import print_exc
 # do this before importing anything from distutils
 doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
 
-if doing_bdist:
-    try:
-        import setuptools
-    except Exception:
-        warn("doing a bdist, but setuptools is unavailable")
+if any(bdist in sys.argv for bdist in ['bdist_wheel', 'bdist_egg']):
+    import setuptools
 
 import distutils
 from distutils.core import setup, Command
