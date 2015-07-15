@@ -81,10 +81,8 @@ class Poller(object):
         ----------
         timeout : float, int
             The timeout in milliseconds. If None, no `timeout` (infinite). This
-            is in milliseconds to be compatible with ``select.poll()``. The
-            underlying zmq_poll uses microseconds and we convert to that in
-            this function.
-        
+            is in milliseconds to be compatible with ``select.poll()``.
+
         Returns
         -------
         events : list of tuples
@@ -112,8 +110,7 @@ def select(rlist, wlist, xlist, timeout=None):
     ----------
     timeout : float, int, optional
         The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
-        compatible with ``select.select()``. The underlying zmq_poll uses microseconds
-        and we convert to that in this function.
+        compatible with ``select.select()``.
     rlist : list of sockets/FDs
         sockets/FDs to be polled for read events
     wlist : list of sockets/FDs
