@@ -90,6 +90,6 @@ class _Poller(_original_Poller):
                 raise
             return []
         finally:
-           if timeout > 0:
-               tout.cancel()
+            if timeout > 0:
+                tout.cancel()
 
