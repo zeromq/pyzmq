@@ -64,6 +64,8 @@ class _Poller(_original_Poller):
 
         if timeout > 0:
             tout = gevent.Timeout.start_new(timeout/1000.0)
+        else:
+            tout = None
 
         try:
             # Loop until timeout or events available
