@@ -62,8 +62,6 @@ import random
 import struct
 import codecs
 
-from zmq.utils import jsonapi
-
 try:
     import cPickle
     pickle = cPickle

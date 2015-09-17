@@ -8,8 +8,6 @@ import os
 import platform
 import sys
 
-from zmq.utils.sixcerpt import reraise
-
 from .select import public_api, select_backend
 
 if 'PYZMQ_BACKEND' in os.environ:
@@ -38,6 +36,7 @@ else:
             if hasattr(exc, '__cause__'):
                 exc.__cause__ = None
             # raise the *first* error, not the fallback
+            from zmq.utils.sixcerpt import reraise
             reraise(*exc_info)
 
 globals().update(_ns)

@@ -16,9 +16,8 @@ from .poll import Poller
 from . import constants
 from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
-from zmq.utils import jsonapi
-from zmq.utils.strtypes import bytes,unicode,basestring
-from zmq.utils.interop import cast_int_addr
+from zmq.utils.strtypes import bytes, unicode, basestring
+
 
 from .constants import (
     SNDMORE, ENOTSUP, POLLIN,
@@ -99,6 +98,7 @@ class Socket(SocketBase, AttributeSetter):
         
         .. versionadded:: 14.1
         """
+        from zmq.utils.interop import cast_int_addr
         address = cast_int_addr(address)
         return cls(shadow=address)
     
@@ -448,6 +448,7 @@ class Socket(SocketBase, AttributeSetter):
         flags : int
             Any valid send flag
         """
+        from zmq.utils import jsonapi
         msg = jsonapi.dumps(obj, **kwargs)
         return self.send(msg, flags)
 
@@ -466,6 +467,7 @@ class Socket(SocketBase, AttributeSetter):
         obj : Python object
             The Python object that arrives as a message.
         """
+        from zmq.utils import jsonapi
         msg = self.recv(flags)
         return jsonapi.loads(msg, **kwargs)
     

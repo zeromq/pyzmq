@@ -67,7 +67,6 @@ from zmq import backend
 from zmq.backend import *
 from zmq import sugar
 from zmq.sugar import *
-from zmq import devices
 
 def get_includes():
     """Return a list of directories to include for linking against pyzmq with cython."""
