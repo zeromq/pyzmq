@@ -1224,8 +1224,7 @@ setup_args = dict(
     package_data = package_data,
     author = "Brian E. Granger, Min Ragan-Kelley",
     author_email = "zeromq-dev@lists.zeromq.org",
-    url = 'http://github.com/zeromq/pyzmq',
-    download_url = 'http://github.com/zeromq/pyzmq/releases',
+    url = 'https://pyzmq.readthedocs.org',
     description = "Python bindings for 0MQ",
     long_description = long_desc,
     license = "LGPL+BSD",
@@ -1248,6 +1247,7 @@ setup_args = dict(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
 )
 if 'setuptools' in sys.modules:
