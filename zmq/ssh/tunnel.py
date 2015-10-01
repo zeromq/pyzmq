@@ -322,14 +322,10 @@ def paramiko_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pa
     p = Process(target=_paramiko_tunnel, 
             args=(lport, rport, server, remoteip), 
             kwargs=dict(keyfile=keyfile, password=password))
-    p.daemon=False
+    p.daemon = True
     p.start()
-    atexit.register(_shutdown_process, p)
     return p
-    
-def _shutdown_process(p):
-    if p.is_alive():
-        p.terminate()
+
 
 def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None):
     """Function for actually starting a paramiko tunnel, to be passed
