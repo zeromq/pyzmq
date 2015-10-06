@@ -33,15 +33,15 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4,1,2)
+bundled_version = (4,1,3)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
-libzmq_checksum = "sha256:f9162ead6d68521e5154d871bac304f88857308bb02366b81bb588497a345927"
+libzmq_checksum = "sha256:61b31c830db377777e417235a24d3660a4bcc3f40d303ee58df082fcd68bf411"
 
-libsodium_version = (1,0,2)
+libsodium_version = (1,0,3)
 libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
 libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
-libsodium_checksum = "sha256:961d8f10047f545ae658bcc73b8ab0bf2c312ac945968dd579d87c768e5baa19"
+libsodium_checksum = "sha256:cbcfc63cc90c05d18a20f229a62c7e7054a73731d0aa858c0517152c549b1288"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
