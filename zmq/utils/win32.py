@@ -13,7 +13,7 @@ class _allow_interrupt(object):
 
     On Windows, the Python interpreter intercepts CTRL-C events in order to
     translate them into ``KeyboardInterrupt`` exceptions.  It (presumably)
-    does this by setting a flag in its "control control handler" and
+    does this by setting a flag in its "console control handler" and
     checking it later at a convenient location in the interpreter.
 
     However, when the Python interpreter is blocked waiting for the ZMQ
