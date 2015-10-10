@@ -344,8 +344,8 @@ class Configure(build_ext):
                 settings['include_dirs'].insert(0,
                                  pjoin('buildutils', 'include_win32'))
             else:
-                warn("<stdint.h> is not provided by VS2008, which is a must"
-                     "for building pyzmq, you can find a solution on"
+                warn("<stdint.h> is needed for building pyzmq, however it is "
+            "not provided by VS2008, you can find a solution on"
             "http://stackoverflow.com/questions/126279/c99-stdint-h-header-and-ms-visual-studio"
                     )
         
