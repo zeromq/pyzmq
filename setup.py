@@ -48,11 +48,6 @@ from os.path import splitext, basename, join as pjoin
 
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 
-try:
-    import nose
-except ImportError:
-    nose = None
-
 # local script imports:
 from buildutils import (
     discover_settings, v_str, save_config, detect_zmq, merge,
@@ -819,7 +814,9 @@ class TestCommand(Command):
         
         info("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
         
-        if nose is None:
+        try:
+            import nose
+        except ImportError:
             warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
             return self.run_unittest()
         else:
