@@ -55,7 +55,7 @@ def v_str(v_tuple):
     """turn (2,0,1) into '2.0.1'."""
     return ".".join(str(x) for x in v_tuple)
 
-def get_eargs():
+def get_env_args():
     """ Look for options in environment vars """
 
     settings = {}
@@ -116,6 +116,7 @@ def config_from_prefix(prefix):
         settings['zmq_prefix'] = prefix
         settings['libzmq_extension'] = False
         settings['no_libzmq_extension'] = True
+        settings['allow_legacy_libzmq'] = True # explicit zmq prefix allows legacy
     return settings
 
 def merge(into, d):
@@ -142,6 +143,7 @@ def discover_settings(conf_base=None):
         'libzmq_extension': False,
         'no_libzmq_extension': False,
         'skip_check_zmq': False,
+        'allow_legacy_libzmq': False,
         'build_ext': {},
         'bdist_egg': {},
     }
@@ -152,6 +154,6 @@ def discover_settings(conf_base=None):
         # lowest priority
         merge(settings, load_config('config', conf_base))
     merge(settings, get_cfg_args())
-    merge(settings, get_eargs())
+    merge(settings, get_env_args())
     
     return settings

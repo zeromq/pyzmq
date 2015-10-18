@@ -48,11 +48,6 @@ from os.path import splitext, basename, join as pjoin
 
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 
-try:
-    import nose
-except ImportError:
-    nose = None
-
 # local script imports:
 from buildutils import (
     discover_settings, v_str, save_config, detect_zmq, merge,
@@ -71,7 +66,9 @@ from buildutils import (
 pypy = 'PyPy' in sys.version
 
 # reference points for zmq compatibility
-min_zmq = (2,1,4)
+
+min_legacy_zmq = (2,1,4)
+min_good_zmq = (3,2)
 target_zmq = bundled_version
 dev_zmq = (target_zmq[0], target_zmq[1] + 1, 0)
 
@@ -255,6 +252,8 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     
     return settings
 
+class LibZMQVersionError(Exception):
+    pass
 
 #-----------------------------------------------------------------------------
 # Extra commands
@@ -405,20 +404,36 @@ class Configure(build_ext):
     def check_zmq_version(self):
         """check the zmq version"""
         cfg = self.config
-        
         # build test program
-        zmq_prefix = self.config['zmq_prefix']
+        zmq_prefix = cfg['zmq_prefix']
         detected = self.test_build(zmq_prefix, self.compiler_settings)
         # now check the libzmq version
         
         vers = tuple(detected['vers'])
         vs = v_str(vers)
+        if cfg['allow_legacy_libzmq']:
+            min_zmq = min_legacy_zmq
+        else:
+            min_zmq = min_good_zmq
         if vers < min_zmq:
-            fatal("Detected ZMQ version: %s, but depend on ZMQ >= %s"%(
-                    vs, v_str(min_zmq))
-                    +'\n       Using ZMQ=%s' % (zmq_prefix or 'unspecified'))
-        
-        if vers < target_zmq:
+            msg = [
+                "Detected ZMQ version: %s, but require ZMQ >= %s" % (vs, v_str(min_zmq)),
+            ]
+            if zmq_prefix:
+                msg.append("    ZMQ_PREFIX=%s" % zmq_prefix)
+            if vers >= min_legacy_zmq:
+                
+                msg.append("    Explicitly allow legacy zmq by specifying `--zmq=/zmq/prefix`")
+            
+            raise LibZMQVersionError('\n'.join(msg))
+        if vers < min_good_zmq:
+            msg = [
+                "Detected legacy ZMQ version: %s. It is STRONGLY recommended to use ZMQ >= %s" % (vs, v_str(min_good_zmq)),
+            ]
+            if zmq_prefix:
+                msg.append("    ZMQ_PREFIX=%s" % zmq_prefix)
+            warn('\n'.join(msg))
+        elif vers < target_zmq:
             warn("Detected ZMQ version: %s, but pyzmq targets ZMQ %s." % (
                     vs, v_str(target_zmq))
             )
@@ -613,13 +628,13 @@ class Configure(build_ext):
         line()
         
         warn('\n'.join([
-        "Failed to build or run libzmq detection test.",
+        "Couldn't find an acceptable libzmq on the system.",
         "",
         "If you expected pyzmq to link against an installed libzmq, please check to make sure:",
         "",
         "    * You have a C compiler installed",
         "    * A development version of Python is installed (including headers)",
-        "    * A development version of ZMQ >= %s is installed (including headers)" % v_str(min_zmq),
+        "    * A development version of ZMQ >= %s is installed (including headers)" % v_str(min_good_zmq),
         "    * If ZMQ is not in a default location, supply the argument --zmq=<path>",
         "    * If you did recently install ZMQ to a default location,",
         "      try rebuilding the ld cache with `sudo ldconfig`",
@@ -709,6 +724,8 @@ class Configure(build_ext):
         # first try with given config or defaults
         try:
             self.check_zmq_version()
+        except LibZMQVersionError as e:
+            info("\nBad libzmq version: %s\n" % e)
         except Exception as e:
             # print the error as distutils would if we let it raise:
             info("\nerror: %s\n" % e)
@@ -724,6 +741,8 @@ class Configure(build_ext):
             self.init_settings_from_config()
             try:
                 self.check_zmq_version()
+            except LibZMQVersionError as e:
+                info("\nBad libzmq version: %s\n" % e)
             except Exception as e:
                 # print the error as distutils would if we let it raise:
                 info("\nerror: %s\n" % e)
@@ -737,7 +756,7 @@ class Configure(build_ext):
         
         if cfg['no_libzmq_extension']:
             fatal("Falling back on bundled libzmq,"
-            " but setup.cfg has explicitly prohibited building the libzmq extension."
+            " but config has explicitly prohibited building the libzmq extension."
             )
         
         self.fallback_on_bundled()
@@ -819,7 +838,9 @@ class TestCommand(Command):
         
         info("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
         
-        if nose is None:
+        try:
+            import nose
+        except ImportError:
             warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
             return self.run_unittest()
         else:
