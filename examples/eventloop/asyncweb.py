@@ -52,9 +52,6 @@ def dot():
     sys.stdout.write('.')
     sys.stdout.flush()
 
-def printer(msg):
-    print (msg)
-
 class TestHandler(web.RequestHandler):
     
     @web.asynchronous
@@ -64,7 +61,6 @@ class TestHandler(web.RequestHandler):
         s.connect('tcp://127.0.0.1:5555')
         # send request to worker
         s.send('hello')
-        loop = ioloop.IOLoop.instance()
         self.stream = zmqstream.ZMQStream(s)
         self.stream.on_recv(self.handle_reply)
     
