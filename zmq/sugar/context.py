@@ -14,8 +14,6 @@ from .constants import ENOTSUP, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
-from zmq.utils.interop import cast_int_addr
-
 
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
@@ -70,6 +68,7 @@ class Context(ContextBase, AttributeSetter):
         
         .. versionadded:: 14.1
         """
+        from zmq.utils.interop import cast_int_addr
         address = cast_int_addr(address)
         return cls(shadow=address)
     
