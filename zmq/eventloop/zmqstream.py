@@ -90,6 +90,13 @@ class ZMQStream(object):
     socket = None
     io_loop = None
     poller = None
+    _send_queue = None
+    _recv_callback = None
+    _send_callback = None
+    _close_callback = None
+    _state = 0
+    _flushed = False
+    _recv_copy = False
     
     def __init__(self, socket, io_loop=None):
         self.socket = socket
