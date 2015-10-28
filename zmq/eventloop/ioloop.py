@@ -133,7 +133,7 @@ class ZMQIOLoop(PollIOLoop):
         super(ZMQIOLoop, self).initialize(impl=impl, **kwargs)
     
     @staticmethod
-    def instance():
+    def instance(*args, **kwargs):
         """Returns a global `IOLoop` instance.
         
         Most applications have a single, global `IOLoop` running on the
@@ -144,7 +144,18 @@ class ZMQIOLoop(PollIOLoop):
         # when using tornado 3
         if tornado_version >= (3,):
             PollIOLoop.configure(ZMQIOLoop)
-        return PollIOLoop.instance()
+        return PollIOLoop.instance(*args, **kwargs)
+    
+    
+    @staticmethod
+    def current(*args, **kwargs):
+        """Returns the current thread’s IOLoop.
+        """
+        # install ZMQIOLoop as the active IOLoop implementation
+        # when using tornado 3
+        if tornado_version >= (3,):
+            PollIOLoop.configure(ZMQIOLoop)
+        return PollIOLoop.current(*args, **kwargs)
     
     def start(self):
         try:
