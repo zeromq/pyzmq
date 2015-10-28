@@ -1,4 +1,4 @@
-"""Future-returning Socket for zmq"""
+"""Future-returning APIs for coroutines."""
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
@@ -28,7 +28,7 @@ class Socket(_zmq.Socket):
         self._init_io_state()
     
     def recv_multipart(self, flags=0, copy=True, track=False):
-        """Recv a multipart message
+        """Receive a complete multipart zmq message.
         
         Returns a Future whose result will be a multipart message.
         """
@@ -40,6 +40,12 @@ class Socket(_zmq.Socket):
         return f
     
     def recv(self, flags=0, copy=True, track=False):
+        """Receive a single zmq frame.
+        
+        Returns a Future, whose result will be the received frame.
+        
+        Recommend using recv_multipart instead.
+        """
         f = Future()
         self._recv_futures.append(
             (f, False, dict(flags=flags, copy=copy, track=track))
