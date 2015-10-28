@@ -21,13 +21,13 @@ new_in = {
         'ETIMEDOUT',
         'EHOSTUNREACH',
         'ENETRESET',
-        
+
         # ctx opts
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
-        
+
         # socket opts
         'IPV4ONLY',
         'LAST_ENDPOINT',
@@ -40,10 +40,10 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
-        
+
         # msg opts
         'MORE',
-        
+
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
         'EVENT_CONNECT_RETRIED',
@@ -59,7 +59,7 @@ new_in = {
     (4,0,0) : [
         # socket types
         'STREAM',
-        
+
         # socket opts
         'IMMEDIATE',
         'ROUTER_RAW',
@@ -77,12 +77,12 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-        
+
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-        
+
         # events
         'EVENT_MONITOR_STOPPED',
     ],
@@ -93,7 +93,7 @@ new_in = {
         'THREAD_PRIORITY_DFLT',
         'THREAD_SCHED_POLICY',
         'THREAD_SCHED_POLICY_DFLT',
-        
+
         # socket opts
         'ROUTER_HANDOVER',
         'TOS',
@@ -108,14 +108,14 @@ new_in = {
         'HANDSHAKE_IVL',
         'XPUB_NODROP',
         'SOCKS_PROXY',
-        
+
         # msg opts
         'SRCFD',
         'SHARED',
-        
+
         # security
         'GSSAPI',
-        
+
     ],
 }
 
@@ -124,7 +124,7 @@ removed_in = {
     (3,2,2) : [
         'UPSTREAM',
         'DOWNSTREAM',
-        
+
         'HWM',
         'SWAP',
         'MCAST_LOOP',
@@ -148,7 +148,7 @@ base_names = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
-    
+
     'SNDMORE',
 
     'STREAMER',
@@ -200,7 +200,7 @@ base_names = [
     'GSSAPI',
 
     ## ERRNO
-    # Often used (these are alse in errno.)
+    # Often used (these are else in errno.)
     'EAGAIN',
     'EINVAL',
     'EFAULT',
@@ -216,7 +216,7 @@ base_names = [
     'EHOSTUNREACH',
     'ENETRESET',
 
-    # For Windows compatability
+    # For Windows compatibility
     'HAUSNUMERO',
     'ENOTSUP',
     'EPROTONOSUPPORT',
@@ -297,7 +297,7 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
-    
+
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
 
@@ -362,4 +362,3 @@ del chain
 def no_prefix(name):
     """does the given constant have a ZMQ_ prefix?"""
     return name.startswith('E') and not name.startswith('EVENT')
-

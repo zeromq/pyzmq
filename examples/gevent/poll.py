@@ -22,12 +22,12 @@ receiver2.bind('inproc://polltest2')
 
 gevent.spawn(sender)
 
-# Create poller and register both reciever sockets
+# Create poller and register both receiver sockets
 poller = zmq.Poller()
 poller.register(receiver1, zmq.POLLIN)
 poller.register(receiver2, zmq.POLLIN)
 
-# Read 10 messages from both reciever sockets
+# Read 10 messages from both receiver sockets
 msgcnt = 0
 while msgcnt < 10:
     socks = dict(poller.poll())

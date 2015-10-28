@@ -21,8 +21,8 @@ class MongoZMQ(object):
     def __init__(self, db_name, table_name, bind_addr="tcp://127.0.0.1:5000"):
         """
         bind_addr: address to bind zmq socket on
-        db_name: name of database to write to (created if doesnt exist)
-        table_name: name of mongodb 'table' in the db to write to (created if doesnt exist)
+        db_name: name of database to write to (created if doesn't exist)
+        table_name: name of mongodb 'table' in the db to write to (created if doesn't exist)
         """
         self._bind_addr = bind_addr
         self._db_name = db_name
