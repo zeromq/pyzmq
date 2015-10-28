@@ -13,7 +13,7 @@ import re
 
 # Third party
 from pygments.lexer import Lexer, do_insertions
-from pygments.lexers.agile import (PythonConsoleLexer, PythonLexer, 
+from pygments.lexers.agile import (PythonConsoleLexer, PythonLexer,
                                    PythonTracebackLexer)
 from pygments.token import Comment, Generic
 
@@ -48,7 +48,7 @@ class IPythonConsoleLexer(Lexer):
 
       - It assumes the default IPython prompts, not customized ones.
     """
-    
+
     name = 'IPython console session'
     aliases = ['ipython']
     mimetypes = ['text/x-ipython-console']
@@ -81,7 +81,7 @@ class IPythonConsoleLexer(Lexer):
                 curcode += line[continue_prompt.end():]
             elif output_prompt is not None:
                 # Use the 'error' token for output.  We should probably make
-                # our own token, but error is typicaly in a bright color like
+                # our own token, but error is typically in a bright color like
                 # red, so it works fine for our output prompts.
                 insertions.append((len(curcode),
                                    [(0, Generic.Error, output_prompt.group())]))
