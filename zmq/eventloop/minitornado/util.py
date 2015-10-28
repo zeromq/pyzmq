@@ -121,7 +121,7 @@ class Configurable(object):
             impl = cls
         args.update(kwargs)
         instance = super(Configurable, cls).__new__(impl)
-        # initialize vs __init__ chosen for compatiblity with AsyncHTTPClient
+        # initialize vs __init__ chosen for compatibility with AsyncHTTPClient
         # singleton magic.  If we get rid of that we can switch to __init__
         # here too.
         instance.initialize(**args)

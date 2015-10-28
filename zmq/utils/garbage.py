@@ -29,7 +29,7 @@ class GarbageCollectorThread(Thread):
         self.ready = Event()
     
     def run(self):
-        # detect fork at begining of the thread
+        # detect fork at beginning of the thread
         if getpid is None or getpid() != self.pid:
             self.ready.set()
             return

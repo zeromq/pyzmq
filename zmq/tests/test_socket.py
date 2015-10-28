@@ -59,7 +59,7 @@ class TestSocket(BaseZMQTestCase):
         s.connect(unicode("tcp://127.0.0.1:5555"))
 
     def test_bind_to_random_port(self):
-        # Check that bind_to_random_port do not hide usefull exception
+        # Check that bind_to_random_port do not hide useful exception
         ctx = self.Context()
         c = ctx.socket(zmq.PUB)
         # Invalid format
