@@ -48,7 +48,7 @@ class Stopwatch(object):
         if self.watch == ffi.NULL:
             self.watch = C.zmq_stopwatch_start()
         else:
-            raise ZMQError('Stopwatch is already runing.')
+            raise ZMQError('Stopwatch is already running.')
 
     def stop(self):
         if self.watch == ffi.NULL:

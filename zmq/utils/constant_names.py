@@ -200,7 +200,7 @@ base_names = [
     'GSSAPI',
 
     ## ERRNO
-    # Often used (these are alse in errno.)
+    # Often used (these are else in errno.)
     'EAGAIN',
     'EINVAL',
     'EFAULT',
@@ -216,7 +216,7 @@ base_names = [
     'EHOSTUNREACH',
     'ENETRESET',
 
-    # For Windows compatability
+    # For Windows compatibility
     'HAUSNUMERO',
     'ENOTSUP',
     'EPROTONOSUPPORT',
