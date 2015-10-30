@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
     docwriter.module_skip_patterns += [
         r'\.eventloop\.stack_context$',
+        r'\.eventloop\.future$',
         r'\.error$',
         r'\.green\..+$',
         r'\.utils\.initthreads$',
@@ -37,6 +38,7 @@ if __name__ == '__main__':
         r'\.utils\.garbage$',
         r'\.utils\.rebuffer$',
         r'\.utils\.strtypes$',
+        r'\.zmq$',
         ]
     
     # Now, generate the outputs

@@ -13,6 +13,7 @@
     zmq.devices
     zmq.green
     generated/zmq.eventloop.ioloop
+    zmq.eventloop.future
     generated/zmq.eventloop.zmqstream
     zmq.auth
     zmq.auth.thread
