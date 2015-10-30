@@ -81,6 +81,7 @@ class BaseZMQTestCase(TestCase):
         return s
     
     def setUp(self):
+        super(BaseZMQTestCase, self).setUp()
         if self.green and not have_gevent:
                 raise SkipTest("requires gevent")
         self.context = self.Context.instance()
@@ -101,6 +102,7 @@ class BaseZMQTestCase(TestCase):
                 # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
                 zmq.sugar.context.Context._instance = None
                 raise RuntimeError("context could not terminate, open sockets likely remain in test")
+        super(BaseZMQTestCase, self).tearDown()
 
     def create_bound_pair(self, type1=zmq.PAIR, type2=zmq.PAIR, interface='tcp://127.0.0.1'):
         """Create a bound socket pair using a random port."""
