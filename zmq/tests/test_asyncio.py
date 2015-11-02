@@ -3,11 +3,6 @@
 # Distributed under the terms of the Modified BSD License.
 
 import zmq
-import zmq.asyncio as zaio
-try:
-    import asyncio
-except ImportError:
-    asyncio = None
 
 from zmq.tests import BaseZMQTestCase, SkipTest
 
