@@ -5,24 +5,21 @@
 
 from collections import namedtuple
 
-try:
-    from concurrent.futures import Future
-except:
-    from tornado.concurrent import Future as TFuture
+import tornado.concurrent
+
+class CancelledError(Exception):
+    pass
+
+class _TornadoFuture(tornado.concurrent.Future):
+    """Subclass Tornado Future, reinstating cancellation."""
+    def cancel(self):
+        if self.done():
+            return False
+        self.set_exception(CancelledError())
+        return True
     
-    class CancelledError(Exception):
-        pass
-    
-    class Future(TFuture):
-        """Subclass Tornado Future, reinstating cancellation."""
-        def cancel(self):
-            if self.done():
-                return False
-            self.set_exception(CancelledError())
-            return True
-        
-        def cancelled(self):
-            return self.done() and isinstance(self.exception(), CancelledError)
+    def cancelled(self):
+        return self.done() and isinstance(self.exception(), CancelledError)
 
 import zmq as _zmq
 from zmq.eventloop.ioloop import IOLoop
@@ -30,26 +27,35 @@ from zmq.eventloop.ioloop import IOLoop
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'args', 'msg'))
 
+# mixins for tornado/asyncio compatibility
 
-class Poller(_zmq.Poller):
+class _AsyncTornado(object):
+    _Future = _TornadoFuture
+    _READ = IOLoop.READ
+    _WRITE = IOLoop.WRITE
+    def _default_loop(self):
+        return IOLoop.current()
+
+
+class _AsyncPoller(_zmq.Poller):
     """Poller that returns a Future on poll, instead of blocking."""
     def poll(self, timeout=-1):
         """Return a Future for a poll event"""
-        future = Future()
+        future = self._Future()
         if timeout == 0:
             try:
-                result = super(Poller, self).poll(0)
+                result = super(_AsyncPoller, self).poll(0)
             except Exception as e:
                 future.set_exception(e)
             else:
                 future.set_result(result)
             return future
         
-        loop = IOLoop.current()
+        loop = self._default_loop()
         
         # register Future to be called as soon as any event is available on any socket
         # only support polling on zmq sockets, for now
-        watcher = Future()
+        watcher = self._Future()
         for socket, mask in self.sockets:
             if mask & _zmq.POLLIN:
                 socket._add_recv_event('poll', future=watcher)
@@ -63,7 +69,7 @@ class Poller(_zmq.Poller):
                 future.set_exception(watcher.exception())
             else:
                 try:
-                    result = super(Poller, self).poll(0)
+                    result = super(_AsyncPoller, self).poll(0)
                 except Exception as e:
                     future.set_exception(e)
                 else:
@@ -81,7 +87,10 @@ class Poller(_zmq.Poller):
                 trigger_timeout
             )
             def cancel_timeout(f):
-                loop.remove_timeout(timeout_handle)
+                if hasattr(timeout_handle, 'cancel'):
+                    timeout_handle.cancel()
+                else:
+                    loop.remove_timeout(timeout_handle)
             future.add_done_callback(cancel_timeout)
         
         def cancel_watcher(f):
@@ -91,8 +100,10 @@ class Poller(_zmq.Poller):
             
         return future
 
+class Poller(_AsyncTornado, _AsyncPoller):
+    pass
 
-class Socket(_zmq.Socket):
+class _AsyncSocket(_zmq.Socket):
     
     _recv_futures = None
     _send_futures = None
@@ -102,8 +113,8 @@ class Socket(_zmq.Socket):
     io_loop = None
     
     def __init__(self, context, socket_type, io_loop=None):
-        super(Socket, self).__init__(context, socket_type)
-        self.io_loop = io_loop or IOLoop.current()
+        super(_AsyncSocket, self).__init__(context, socket_type)
+        self.io_loop = io_loop or self._default_loop()
         self._recv_futures = []
         self._send_futures = []
         self._state = 0
@@ -163,7 +174,7 @@ class Socket(_zmq.Socket):
         p.register(self, flags)
         f = p.poll(timeout)
         
-        future = Future()
+        future = self._Future()
         def unwrap_result(f):
             if future.done():
                 return
@@ -178,20 +189,20 @@ class Socket(_zmq.Socket):
 
     def _add_recv_event(self, kind, args=None, future=None):
         """Add a recv event, returning the corresponding Future"""
-        f = future or Future()
+        f = future or self._Future()
         self._recv_futures.append(
             _FutureEvent(f, kind, args, msg=None)
         )
-        self._add_io_state(self.io_loop.READ)
+        self._add_io_state(self._READ)
         return f
     
     def _add_send_event(self, kind, msg=None, args=None, future=None):
         """Add a recv event, returning the corresponding Future"""
-        f = future or Future()
+        f = future or self._Future()
         self._send_futures.append(
             _FutureEvent(f, kind, args=args, msg=msg)
         )
-        self._add_io_state(self.io_loop.WRITE)
+        self._add_io_state(self._WRITE)
         return f
     
     def _handle_recv(self):
@@ -204,6 +215,9 @@ class Socket(_zmq.Socket):
                 f = None
             else:
                 break
+        
+        if not self._recv_futures:
+            self._drop_io_state(self._READ)
         
         if f is None:
             return
@@ -237,6 +251,9 @@ class Socket(_zmq.Socket):
             else:
                 break
         
+        if not self._send_futures:
+            self._drop_io_state(self._WRITE)
+
         if f is None:
             return
         
@@ -262,16 +279,10 @@ class Socket(_zmq.Socket):
     # event masking from ZMQStream
     def _handle_events(self, fd, events):
         """Dispatch IO events to _handle_recv, etc."""
-        try:
-            if events & self.io_loop.READ:
-                self._handle_recv()
-            if events & self.io_loop.WRITE:
-                self._handle_send()
-        finally:
-            if not self._recv_futures:
-                self._drop_io_state(self.io_loop.READ)
-            if not self._send_futures:
-                self._drop_io_state(self.io_loop.WRITE)
+        if events & self._READ:
+            self._handle_recv()
+        if events & self._WRITE:
+            self._handle_send()
     
     def _add_io_state(self, state):
         """Add io_state to poller."""
@@ -294,6 +305,8 @@ class Socket(_zmq.Socket):
         """initialize the ioloop event handler"""
         self.io_loop.add_handler(self, self._handle_events, self._state)
 
+class Socket(_AsyncTornado, _AsyncSocket):
+    pass
 
 class Context(_zmq.Context):
     
