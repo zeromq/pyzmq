@@ -25,6 +25,7 @@ import time
 import errno
 import platform
 from traceback import print_exc
+import setuptools
 
 # whether any kind of bdist is happening
 # do this before importing anything from distutils
