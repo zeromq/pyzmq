@@ -1,3 +1,3 @@
 cython>=0.20
 sphinx>=1.3
---pre gevent
+https://pypi.python.org/packages/source/g/gevent/gevent-1.1b6.tar.gz
