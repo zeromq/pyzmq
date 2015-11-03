@@ -104,7 +104,7 @@ def latency(url, count, size, poll, copy):
     print ("mean latency   : %12.3f [µs]" % (latency, ))
     print ("test time      : %12.3f [s]" % (elapsed * 1e-6, ))
 
-def pusher(url, count, size, copy, poll):
+def pusher(url, count, size, poll, copy):
     """send a bunch of messages on a PUSH socket"""
     ctx = zmq.Context()
     s = ctx.socket(zmq.PUSH)
