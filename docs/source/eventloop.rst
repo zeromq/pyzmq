@@ -74,33 +74,13 @@ You can also manually install this IOLoop as the global tornado instance, with:
     loop = ZMQIOLoop()
     loop.install()
 
+.. _futures:
+
 Futures and coroutines
 ----------------------
 
-As of pyzmq 15, there is a new Socket subclass that returns Futures for recv methods,
-which can be found at :class:`zmq.eventloop.future.Socket`.
-You can create these sockets by instantiating a :class:`~zmq.eventloop.future.Context`
-from the same module.
-These sockets let you easily use zmq with tornado's coroutines.
-
-.. seealso::
-
-    :mod:`tornado:tornado.gen`
-
-.. sourcecode:: python
-
-    from tornado import gen
-    from zmq.eventloop.future import Context
-    
-    ctx = Context()
-    
-    @gen.coroutine
-    def recv_and_process():
-        sock = ctx.socket(zmq.PULL)
-        sock.bind(url)
-        msg = yield sock.recv_multipart() # waits for msg to be ready
-        reply = yield async_process(msg)
-        sock.send_multipart(reply)
+PyZMQ 15 adds :mod:`zmq.eventloop.future`, containing a Socket subclass
+that returns :class:`~.tornado.concurrent.Future` objects for use in :mod:`tornado` coroutines.
 
 
 :class:`ZMQStream`
@@ -186,6 +166,13 @@ any events, and you can specify a limit for how many events to flush in order to
 starvation.
 
 .. _Tornado: https://github.com/facebook/tornado
+
+.. _asyncio:
+
+AsyncIO
+=======
+
+PyZMQ 15 adds support for :mod:`asyncio` via :mod:`zmq.asyncio`.
 
 .. _zmq_green:
 

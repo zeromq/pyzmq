@@ -9,6 +9,17 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+15.0.0
+======
+
+PyZMQ 15 adds Future-returning sockets and pollers for both :mod:`asyncio` and :mod:`tornado`.
+
+- add :mod:`asyncio` support via :mod:`zmq.asyncio`
+- add :mod:`tornado` future support via :mod:`zmq.eventloop.future`
+- trigger bundled libzmq if system libzmq is found to be < 3.
+  System libzmq 2 can be forced by explicitly requesting ``--zmq=/prefix/``.
+
+
 14.7.0
 ======
 

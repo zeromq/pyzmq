@@ -14,6 +14,7 @@
     zmq.green
     generated/zmq.eventloop.ioloop
     zmq.eventloop.future
+    zmq.asyncio
     generated/zmq.eventloop.zmqstream
     zmq.auth
     zmq.auth.thread
