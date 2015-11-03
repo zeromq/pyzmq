@@ -5,7 +5,7 @@ cache:
     pip
 python:
   - 2.7
-  - 3.4
+  - 3.5
   - pypy
 env:
     - ZMQ=
@@ -27,7 +27,7 @@ install:
 
 matrix:
   include:
-    - python: 3.4
+    - python: 3.5
       env: ZMQ=libzmq
     - python: 3.4
       env: ZMQ=zeromq4-x
