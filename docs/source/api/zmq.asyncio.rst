@@ -18,10 +18,6 @@ and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future`s.
 
 It also provides a :class:`zmq.asyncio.ZMQEventLoop`.
 
-On Python 2, `Trollius`_ can be used.
-
-.. _trollius: https://trollius.readthedocs.org
-
 .. sourcecode:: python
 
     import asyncio

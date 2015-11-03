@@ -5,20 +5,16 @@
 import sys
 import zmq
 try:
+    import asyncio
     import zmq.asyncio as zaio
 except ImportError:
     asyncio = None
-else:
-    asyncio = zaio.asyncio
-try:
-    from trollius import From
-except ImportError:
-    pass
 
 from zmq.tests import BaseZMQTestCase, SkipTest
 
 class TestAsyncIOSocket(BaseZMQTestCase):
-    Context = zaio.Context
+    if asyncio is not None:
+        Context = zaio.Context
     
     def setUp(self):
         if asyncio is None:

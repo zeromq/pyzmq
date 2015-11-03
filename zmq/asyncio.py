@@ -1,6 +1,6 @@
 """AsyncIO support for zmq
 
-Requires asyncio on Python 3, trollius on Python 2.
+Requires asyncio and Python 3.
 """
 
 # Copyright (c) PyZMQ Developers.
@@ -14,17 +14,12 @@ from zmq.eventloop import future as _future
 # TODO: support trollius for Legacy Python? (probably not)
 import sys
     
-if sys.version_info >= (3,):
-    import asyncio
-    from asyncio import SelectorEventLoop, Future
-    try:
-        import selectors
-    except ImportError:
-        from asyncio import selectors # py33
-else:
-    # py2
-    import trollius as asyncio
-    from trollius import selectors, SelectorEventLoop, Future
+import asyncio
+from asyncio import SelectorEventLoop, Future
+try:
+    import selectors
+except ImportError:
+    from asyncio import selectors # py33
 
 
 _aio2zmq = {
