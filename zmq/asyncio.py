@@ -1,6 +1,6 @@
 """AsyncIO support for zmq
 
-Requires asyncio, Python 3.
+Requires asyncio on Python 3, trollius on Python 2.
 """
 
 # Copyright (c) PyZMQ Developers.
