@@ -5,12 +5,15 @@
 
 from collections import namedtuple
 
-import tornado.concurrent
+try:
+    from tornado.concurrent import Future
+except ImportError:
+    from zmq.minitornado.concurrent import Future
 
 class CancelledError(Exception):
     pass
 
-class _TornadoFuture(tornado.concurrent.Future):
+class _TornadoFuture(Future):
     """Subclass Tornado Future, reinstating cancellation."""
     def cancel(self):
         if self.done():
