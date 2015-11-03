@@ -27,7 +27,7 @@ On Python 2, `Trollius`_ can be used.
     import asyncio
     import zmq
     import zmq.asyncio
-    
+
     ctx = zmq.asyncio.Context()
     loop = zmq.asyncio.ZMQEventLoop()
     asyncio.set_event_loop(loop)
@@ -45,6 +45,14 @@ On Python 2, `Trollius`_ can be used.
 
 Classes
 -------
+
+:class:`ZMQEventLoop`
+~~~~~~~~~~~~~~~~~~~~~
+
+An asyncio event loop using zmq_poll for zmq socket support.
+
+.. autoclass:: ZMQEventLoop
+
 
 :class:`Context`
 ~~~~~~~~~~~~~~~~
