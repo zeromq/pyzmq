@@ -33,15 +33,12 @@ On Python 2, `Trollius`_ can be used.
     asyncio.set_event_loop(loop)
 
     @asyncio.coroutine
-    def process_msg
-    
-    @asyncio.coroutine
     def recv_and_process():
-    sock = ctx.socket(zmq.PULL)
-    sock.bind(url)
-    msg = yield from sock.recv_multipart() # waits for msg to be ready
-    reply = yield from async_process(msg)
-    yield from sock.send_multipart(reply)
+        sock = ctx.socket(zmq.PULL)
+        sock.bind(url)
+        msg = yield from sock.recv_multipart() # waits for msg to be ready
+        reply = yield from async_process(msg)
+        yield from sock.send_multipart(reply)
 
     loop.run_until_complete(recv_and_process())
 
