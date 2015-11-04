@@ -46,7 +46,7 @@ repo_root = pjoin(tmp, 'pyzmq-release')
 sdist_root = pjoin(tmp, 'pyzmq-sdist')
 
 def _py(py):
-    return py_exes.get(py, py)
+    return py_exes[py]
 
 def run(cmd, **kwargs):
     """wrapper around invoke.run that accepts a Popen list"""
@@ -129,7 +129,7 @@ def make_env(py_exe, *packages):
     py = pjoin(env, 'bin', 'python')
     # new env
     if not os.path.exists(py):
-        run('python -m virtualenv {} -p {}'.format(
+        run('virtualenv {} -p {}'.format(
             pipes.quote(env),
             pipes.quote(py_exe),
         ))
