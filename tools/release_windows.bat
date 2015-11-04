@@ -12,7 +12,6 @@ setlocal EnableDelayedExpansion
 set SDKS=C:\Program Files\Microsoft SDKs\Windows
 set SDK7=%SDKS%\v7.0
 set SDK71=%SDKS%\v7.1
-set DISTUTILS_USE_SDK=1
 set UPLOAD=%~1
 set PYROOT=C:\
 
@@ -24,7 +23,12 @@ for %%p in (35, 34, 27) do (
     set SDK=%SDK71%
     set cmd=build bdist_wheel --zmq=bundled %UPLOAD%
   )
-  
+  if "%%p"=="35" (
+    set DISTUTILS_USE_SDK=
+  ) else (
+    set DISTUTILS_USE_SDK=1
+  )
+
   for %%b in (64, 32) do (
     if "%%b"=="64" (
       set SUFFIX=_64
@@ -35,10 +39,14 @@ for %%p in (35, 34, 27) do (
     )
     set PY=%PYROOT%\Python%%p!SUFFIX!\Python
     echo !PY! !SDK!
+    !PY! -m ensurepip
     !PY! -m pip install --upgrade setuptools pip wheel
-    
-    @call "!SDK!\Bin\SetEnv.cmd" /release !ARCH!
     if !errorlevel! neq 0 exit /b !errorlevel!
+
+    if "!DISTUTILS_USE_SDK!"=="1" (
+      @call "!SDK!\Bin\SetEnv.cmd" /release !ARCH!
+      if !errorlevel! neq 0 exit /b !errorlevel!
+    )
     @echo on
     !PY! setup.py !cmd!
     @echo off
