@@ -14,7 +14,7 @@ Module: :mod:`zmq.asyncio`
 As of 15.0, pyzmq now supports :mod:`asyncio`, via :mod:`zmq.asyncio`.
 When imported from this module, blocking methods such as
 :meth:`zmq.asyncio.Socket.recv_multipart`, :meth:`zmq.asyncio.Socket.poll`,
-and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future`s.
+and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future` s.
 
 It also provides a :class:`zmq.asyncio.ZMQEventLoop`.
 
