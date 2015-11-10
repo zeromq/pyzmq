@@ -32,9 +32,9 @@ def parse_monitor_message(msg):
     
     if len(msg) != 2 or len(msg[0]) != 6:
         raise RuntimeError("Invalid event message format: %s" % msg)
-    event = {}
-    event['event'], event['value'] = struct.unpack("=hi", msg[0])
-    event['endpoint'] = msg[1]
+    event = {'event': struct.unpack("=hi", msg[0])[0],
+             'value': struct.unpack("=hi", msg[0])[1],
+             'endpoint': msg[1]}
     return event
 
 def recv_monitor_message(socket, flags=0):
