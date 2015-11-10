@@ -168,7 +168,7 @@ class ZMQIOLoop(PollIOLoop):
                 raise e
 
 
-if tornado_version >= (3,0) and tornado_version < (3,1):
+if (3, 0) <= tornado_version < (3, 1):
     def backport_close(self, all_fds=False):
         """backport IOLoop.close to 3.0 from 3.1 (supports fd.close() method)"""
         from zmq.eventloop.minitornado.ioloop import PollIOLoop as mini_loop
