@@ -434,6 +434,11 @@ class TestSocket(BaseZMQTestCase):
         rcvd = self.recv(b)
         self.assertEqual(rcvd, b'hi')
 
+    def test_socket_fileno(self):
+        p = self.socket(zmq.PUSH)
+        self.assertTrue(isinstance(p.fileno(), int))
+
+
 
 if have_gevent:
     import gevent
