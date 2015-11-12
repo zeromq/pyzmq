@@ -13,7 +13,7 @@ env:
 before_install:
   - sudo add-apt-repository -y ppa:shnatsel/dnscrypt
   - sudo apt-get update
-  - 'if [[ $ZMQ != bundled ]]; then sudo apt-get install -qq libzmq3-dev libsodium-dev; fi'
+  - 'if [[ $ZMQ != bundled ]]; then sudo apt-get install -y -qq libzmq3-dev libsodium-dev; fi'
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then wget https://github.com/minrk/travis-wheels/archive/master.zip -O wheels.zip && unzip wheels.zip; fi'
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then pip install -q -f travis-wheels-master/wheelhouse cython; fi'
   - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then wget https://github.com/zeromq/$ZMQ/archive/master.zip -O libzmq.zip && unzip libzmq.zip; fi'

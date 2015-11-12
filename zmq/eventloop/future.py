@@ -8,7 +8,7 @@ from collections import namedtuple
 try:
     from tornado.concurrent import Future
 except ImportError:
-    from zmq.minitornado.concurrent import Future
+    from .minitornado.concurrent import Future
 
 class CancelledError(Exception):
     pass
