@@ -28,8 +28,8 @@ class MessageTracker(object):
 
     Parameters
     ----------
-    *towatch : tuple of Event, MessageTracker, Message instances.
-        This list of objects to track. This class can track the low-level
+    towatch : Event, MessageTracker, Message instances.
+        This objects to track. This class can track the low-level
         Events used by the Message class, other MessageTrackers or
         actual Messages.
     """

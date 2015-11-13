@@ -5,8 +5,10 @@ Functions
 ---------
 
 .. autofunction:: zmq.device
+    :noindex:
 
 .. autofunction:: zmq.proxy
+    :noindex:
 
 Module: :mod:`zmq.devices`
 --------------------------

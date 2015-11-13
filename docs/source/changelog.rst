@@ -9,8 +9,15 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
-15.0.0
-======
+15.1
+====
+
+- Add GSSAPI support to Authenticators
+- Remove tornado dependency when using :mod:`zmq.asyncio`
+- Support new constants defined in libzmq-4.2.dev
+
+15.0
+====
 
 PyZMQ 15 adds Future-returning sockets and pollers for both :mod:`asyncio` and :mod:`tornado`.
 

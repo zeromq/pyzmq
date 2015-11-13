@@ -45,6 +45,7 @@ Classes
 Context class that creates Future-returning sockets. See :class:`zmq.Context` for more info.
 
 .. autoclass:: Context
+  :noindex:
 
 
 :class:`Socket`
@@ -58,12 +59,18 @@ for use in coroutines and async applications.
     :class:`zmq.Socket` for the inherited API.
 
 .. autoclass:: Socket
+  :noindex:
   
   .. automethod:: recv
+      :noindex:
   .. automethod:: recv_multipart
+      :noindex:
   .. automethod:: send
+      :noindex:
   .. automethod:: send_multipart
+      :noindex:
   .. automethod:: poll
+      :noindex:
 
 
 :class:`Poller`
@@ -77,5 +84,7 @@ for use in coroutines and async applications.
     :class:`zmq.Poller` for the inherited API.
 
 .. autoclass:: Poller
+  :noindex:
   
   .. automethod:: poll
+      :noindex:

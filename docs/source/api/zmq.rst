@@ -14,9 +14,8 @@ Basic Classes
 
 .. autoclass:: Context
   :members:
-  :undoc-members:
   :inherited-members:
-  :exclude-members: sockopts, closed
+  :exclude-members: sockopts, closed, __del__, __enter__, __exit__, __copy__, __deepcopy__, __delattr__, __getattr__, __setattr__,
   
   .. attribute:: closed
   
@@ -30,9 +29,8 @@ Basic Classes
 
 .. autoclass:: Socket
   :members:
-  :undoc-members:
   :inherited-members:
-  :exclude-members: closed, context, getsockopt_unicode, recv_unicode, setsockopt_unicode, send_unicode
+  :exclude-members: closed, context, getsockopt_unicode, recv_unicode, setsockopt_unicode, send_unicode, __del__, __enter__, __exit__, __copy__, __deepcopy__, __delattr__, __getattr__, __setattr__,
 
   .. attribute:: closed
 
@@ -85,7 +83,7 @@ Exceptions
 
 
 :class:`ZMQVersionError`
-*****************
+************************
 
 .. autoclass:: ZMQVersionError
   :members:

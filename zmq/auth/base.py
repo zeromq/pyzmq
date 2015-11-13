@@ -20,6 +20,7 @@ class Authenticator(object):
     """Implementation of ZAP authentication for zmq connections.
 
     Note:
+    
     - libzmq provides four levels of security: default NULL (which the Authenticator does
       not see), and authenticated NULL, PLAIN, CURVE, and GSSAPI, which the Authenticator can see.
     - until you add policies, all incoming NULL connections are allowed.

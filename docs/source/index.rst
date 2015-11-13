@@ -22,7 +22,7 @@ as well as PyPy (at least 2.0 beta), thanks to a new CFFI backend.
 Please don't hesitate to report pyzmq-specific issues to our tracker_ on GitHub.
 General questions about ØMQ are better sent to the ØMQ `mailing list`_ or `IRC Channel`_.
 
-:ref:`Summary of Changes in PyZMQ <changelog>`
+:doc:`changelog`
 
 
 Supported LibZMQ
@@ -51,6 +51,7 @@ Using PyZMQ
     :maxdepth: 2
     
     api/index.rst
+    changelog.rst
     morethanbindings.rst
     serialization.rst
     devices.rst
