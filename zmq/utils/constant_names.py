@@ -115,8 +115,33 @@ new_in = {
         
         # security
         'GSSAPI',
-        
     ],
+    (4,2,0) : [
+        # socket types
+        'CLIENT',
+        'SERVER',
+        
+        # ctx options
+        'BLOCKY',
+        
+        # socket options
+        'XPUB_MANUAL',
+        'XPUB_WELCOME_MSG',
+        'STREAM_NOTIFY',
+        'INVERT_MATCHING',
+        'HEARTBEAT_IVL',
+        'HEARTBEAT_TTL',
+        'HEARTBEAT_TIMEOUT',
+        'XPUB_VERBOSE_UNSUBSCRIBE',
+        'CONNECT_TIMEOUT',
+        'TCP_RETRANSMIT_TIMEOUT',
+        'THREAD_SAFE',
+        'TCP_RECV_BUFFER',
+        'TCP_SEND_BUFFER',
+        
+        # polling
+        'POLLPRI',
+    ]
 }
 
 
@@ -148,6 +173,7 @@ base_names = [
     'POLLIN',
     'POLLOUT',
     'POLLERR',
+    'POLLPRI',
     
     'SNDMORE',
 
@@ -178,6 +204,8 @@ base_names = [
     'UPSTREAM',
     'DOWNSTREAM',
     'STREAM',
+    'CLIENT',
+    'SERVER',
 
     # events
     'EVENT_CONNECTED',
@@ -264,6 +292,8 @@ bytes_sockopt_names = [
     'GSSAPI_PRINCIPAL',
     'GSSAPI_SERVICE_PRINCIPAL',
     'SOCKS_PROXY',
+    
+    'XPUB_WELCOME_MSG',
 ]
 
 fd_sockopt_names = [
@@ -320,6 +350,20 @@ int_sockopt_names = [
     'GSSAPI_PLAINTEXT',
     'HANDSHAKE_IVL',
     'XPUB_NODROP',
+    
+    # new in 4.2
+    'XPUB_MANUAL',
+    'STREAM_NOTIFY',
+    'INVERT_MATCHING',
+    'XPUB_VERBOSE_UNSUBSCRIBE',
+    'HEARTBEAT_IVL',
+    'HEARTBEAT_TTL',
+    'HEARTBEAT_TIMEOUT',
+    'CONNECT_TIMEOUT',
+    'TCP_RETRANSMIT_TIMEOUT',
+    'THREAD_SAFE',
+    'TCP_RECV_BUFFER',
+    'TCP_SEND_BUFFER',
 ]
 
 switched_sockopt_names = [
@@ -336,6 +380,7 @@ ctx_opt_names = [
     'SOCKET_LIMIT',
     'THREAD_PRIORITY',
     'THREAD_SCHED_POLICY',
+    'BLOCKY',
 ]
 
 msg_opt_names = [
