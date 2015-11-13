@@ -12,17 +12,17 @@
     zmq
     zmq.devices
     zmq.green
-    generated/zmq.eventloop.ioloop
+    zmq.eventloop.ioloop
     zmq.eventloop.future
     zmq.asyncio
-    generated/zmq.eventloop.zmqstream
+    zmq.eventloop.zmqstream
     zmq.auth
     zmq.auth.thread
     zmq.auth.ioloop
-    generated/zmq.log.handlers
-    generated/zmq.ssh.tunnel
-    generated/zmq.utils.jsonapi
-    generated/zmq.utils.monitor
-    generated/zmq.utils.z85
+    zmq.log.handlers
+    zmq.ssh.tunnel
+    zmq.utils.jsonapi
+    zmq.utils.monitor
+    zmq.utils.z85
     zmq.utils.win32
 
