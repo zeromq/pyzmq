@@ -142,7 +142,7 @@ class TestSocket(BaseZMQTestCase):
             if sopt.startswith((
                 'ROUTER', 'XPUB', 'TCP', 'FAIL',
                 'REQ_', 'CURVE_', 'PROBE_ROUTER',
-                'IPC_FILTER', 'GSSAPI',
+                'IPC_FILTER', 'GSSAPI', 'STREAM_',
                 )):
                 # some sockopts are write-only
                 continue

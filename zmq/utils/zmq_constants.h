@@ -38,6 +38,10 @@
     #define ZMQ_POLLERR (_PYZMQ_UNDEFINED)
 #endif
 
+#ifndef ZMQ_POLLPRI
+    #define ZMQ_POLLPRI (_PYZMQ_UNDEFINED)
+#endif
+
 #ifndef ZMQ_SNDMORE
     #define ZMQ_SNDMORE (_PYZMQ_UNDEFINED)
 #endif
@@ -136,6 +140,14 @@
 
 #ifndef ZMQ_STREAM
     #define ZMQ_STREAM (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_CLIENT
+    #define ZMQ_CLIENT (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_SERVER
+    #define ZMQ_SERVER (_PYZMQ_UNDEFINED)
 #endif
 
 #ifndef ZMQ_EVENT_CONNECTED
@@ -334,6 +346,10 @@
     #define ZMQ_THREAD_SCHED_POLICY (_PYZMQ_UNDEFINED)
 #endif
 
+#ifndef ZMQ_BLOCKY
+    #define ZMQ_BLOCKY (_PYZMQ_UNDEFINED)
+#endif
+
 #ifndef ZMQ_IDENTITY
     #define ZMQ_IDENTITY (_PYZMQ_UNDEFINED)
 #endif
@@ -392,6 +408,10 @@
 
 #ifndef ZMQ_SOCKS_PROXY
     #define ZMQ_SOCKS_PROXY (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XPUB_WELCOME_MSG
+    #define ZMQ_XPUB_WELCOME_MSG (_PYZMQ_UNDEFINED)
 #endif
 
 #ifndef ZMQ_FD
@@ -556,6 +576,54 @@
 
 #ifndef ZMQ_XPUB_NODROP
     #define ZMQ_XPUB_NODROP (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XPUB_MANUAL
+    #define ZMQ_XPUB_MANUAL (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_STREAM_NOTIFY
+    #define ZMQ_STREAM_NOTIFY (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_INVERT_MATCHING
+    #define ZMQ_INVERT_MATCHING (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XPUB_VERBOSE_UNSUBSCRIBE
+    #define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_HEARTBEAT_IVL
+    #define ZMQ_HEARTBEAT_IVL (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_HEARTBEAT_TTL
+    #define ZMQ_HEARTBEAT_TTL (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_HEARTBEAT_TIMEOUT
+    #define ZMQ_HEARTBEAT_TIMEOUT (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_CONNECT_TIMEOUT
+    #define ZMQ_CONNECT_TIMEOUT (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_TCP_RETRANSMIT_TIMEOUT
+    #define ZMQ_TCP_RETRANSMIT_TIMEOUT (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_THREAD_SAFE
+    #define ZMQ_THREAD_SAFE (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_TCP_RECV_BUFFER
+    #define ZMQ_TCP_RECV_BUFFER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_TCP_SEND_BUFFER
+    #define ZMQ_TCP_SEND_BUFFER (_PYZMQ_UNDEFINED)
 #endif
 
 #ifndef ZMQ_AFFINITY

@@ -9,6 +9,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_POLLIN
     enum: ZMQ_POLLOUT
     enum: ZMQ_POLLERR
+    enum: ZMQ_POLLPRI
     enum: ZMQ_SNDMORE
     enum: ZMQ_STREAMER
     enum: ZMQ_FORWARDER
@@ -34,6 +35,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_UPSTREAM
     enum: ZMQ_DOWNSTREAM
     enum: ZMQ_STREAM
+    enum: ZMQ_CLIENT
+    enum: ZMQ_SERVER
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED
@@ -83,6 +86,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SOCKET_LIMIT
     enum: ZMQ_THREAD_PRIORITY
     enum: ZMQ_THREAD_SCHED_POLICY
+    enum: ZMQ_BLOCKY
     enum: ZMQ_IDENTITY
     enum: ZMQ_SUBSCRIBE
     enum: ZMQ_UNSUBSCRIBE
@@ -98,6 +102,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_GSSAPI_PRINCIPAL
     enum: ZMQ_GSSAPI_SERVICE_PRINCIPAL
     enum: ZMQ_SOCKS_PROXY
+    enum: ZMQ_XPUB_WELCOME_MSG
     enum: ZMQ_FD
     enum: ZMQ_RECONNECT_IVL_MAX
     enum: ZMQ_SNDTIMEO
@@ -139,6 +144,18 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_GSSAPI_PLAINTEXT
     enum: ZMQ_HANDSHAKE_IVL
     enum: ZMQ_XPUB_NODROP
+    enum: ZMQ_XPUB_MANUAL
+    enum: ZMQ_STREAM_NOTIFY
+    enum: ZMQ_INVERT_MATCHING
+    enum: ZMQ_XPUB_VERBOSE_UNSUBSCRIBE
+    enum: ZMQ_HEARTBEAT_IVL
+    enum: ZMQ_HEARTBEAT_TTL
+    enum: ZMQ_HEARTBEAT_TIMEOUT
+    enum: ZMQ_CONNECT_TIMEOUT
+    enum: ZMQ_TCP_RETRANSMIT_TIMEOUT
+    enum: ZMQ_THREAD_SAFE
+    enum: ZMQ_TCP_RECV_BUFFER
+    enum: ZMQ_TCP_SEND_BUFFER
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
