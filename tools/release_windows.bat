@@ -14,6 +14,7 @@ set SDK7=%SDKS%\v7.0
 set SDK71=%SDKS%\v7.1
 set UPLOAD=%~1
 set PYROOT=C:\
+set DISTUTILS_USE_SDK=1
 
 for %%p in (35, 34, 27) do (
   if "%%p"=="27" (
@@ -23,19 +24,16 @@ for %%p in (35, 34, 27) do (
     set SDK=%SDK71%
     set cmd=build bdist_wheel --zmq=bundled %UPLOAD%
   )
-  if "%%p"=="35" (
-    set DISTUTILS_USE_SDK=
-  ) else (
-    set DISTUTILS_USE_SDK=1
-  )
 
   for %%b in (64, 32) do (
     if "%%b"=="64" (
       set SUFFIX=_64
       set ARCH=/x64
+      set VCARCH=amd64
     ) else (
       set SUFFIX=
       set ARCH=/x86
+      set VCARCH=
     )
     set PY=%PYROOT%\Python%%p!SUFFIX!\Python
     echo !PY! !SDK!
@@ -43,7 +41,11 @@ for %%p in (35, 34, 27) do (
     !PY! -m pip install --upgrade setuptools pip wheel
     if !errorlevel! neq 0 exit /b !errorlevel!
 
-    if "!DISTUTILS_USE_SDK!"=="1" (
+    if "%%p"=="35" (
+      rem no SDK for 3.5, but force static-linking with DISTUTILS_USE_SDK=1 anyway
+      rem to avoid missing MSVCP140.dll
+      @call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" !VCARCH!
+    ) else (
       @call "!SDK!\Bin\SetEnv.cmd" /release !ARCH!
       if !errorlevel! neq 0 exit /b !errorlevel!
     )
