@@ -12,9 +12,10 @@ This is a coarse summary of changes in pyzmq versions.  For a real changelog, co
 15.1
 ====
 
+- FIX: Remove inadvertant tornado dependency when using :mod:`zmq.asyncio`
+- FIX: 15.0 Python 3.5 wheels didn't work on Windows
 - Add GSSAPI support to Authenticators
-- Remove tornado dependency when using :mod:`zmq.asyncio`
-- Support new constants defined in libzmq-4.2.dev
+- Support new constants defined in upcoming libzmq-4.2.dev
 
 15.0
 ====
