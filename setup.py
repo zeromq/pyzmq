@@ -1121,7 +1121,7 @@ else:
     class zbuild_ext(build_ext_c):
         
         def finalize_options(self):
-            super(zbuild_ext, self).finalize_options()
+            build_ext_c.finalize_options(self)
             # set binding so that compiled methods can be inspected
             self.cython_directives['binding'] = True
         
