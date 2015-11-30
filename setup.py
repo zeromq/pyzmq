@@ -1120,6 +1120,11 @@ else:
     
     class zbuild_ext(build_ext_c):
         
+        def finalize_options(self):
+            super(zbuild_ext, self).finalize_options()
+            # set binding so that compiled methods can be inspected
+            self.cython_directives['binding'] = True
+        
         def build_extensions(self):
             if self.compiler.compiler_type == 'mingw32':
                 customize_mingw(self.compiler)
