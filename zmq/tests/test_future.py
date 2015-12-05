@@ -17,6 +17,10 @@ class TestFutureSocket(BaseZMQTestCase):
         self.loop.make_current()
         super(TestFutureSocket, self).setUp()
     
+    def tearDown(self):
+        super(TestFutureSocket, self).tearDown()
+        self.loop.close(all_fds=True)
+    
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, future.Socket)
