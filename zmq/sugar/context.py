@@ -5,7 +5,6 @@
 # Distributed under the terms of the Modified BSD License.
 
 import atexit
-import weakref
 
 from zmq.backend import Context as ContextBase
 from . import constants
@@ -14,6 +13,12 @@ from .constants import ENOTSUP, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
+# notice when exiting, to avoid triggering term on exit
+_exiting = False
+def _notice_atexit():
+    global _exiting
+    _exiting = True
+atexit.register(_notice_atexit)
 
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
@@ -23,7 +28,6 @@ class Context(ContextBase, AttributeSetter):
     sockopts = None
     _instance = None
     _shadow = False
-    _exiting = False
     
     def __init__(self, io_threads=1, **kwargs):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
@@ -33,18 +37,10 @@ class Context(ContextBase, AttributeSetter):
             self._shadow = False
         self.sockopts = {}
         
-        self._exiting = False
-        if not self._shadow:
-            ctx_ref = weakref.ref(self)
-            def _notify_atexit():
-                ctx = ctx_ref()
-                if ctx is not None:
-                    ctx._exiting = True
-            atexit.register(_notify_atexit)
     
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
-        if not self._shadow and not self._exiting:
+        if not self._shadow and not _exiting:
             self.term()
     
     def __enter__(self):
