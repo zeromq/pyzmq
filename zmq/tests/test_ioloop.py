@@ -60,15 +60,6 @@ class TestIOLoop(BaseZMQTestCase):
         else:
             self.fail("IOLoop failed to exit")
     
-    def test_timeout_compare(self):
-        """test timeout comparisons"""
-        loop = ioloop.IOLoop()
-        t = _Timeout(1, 2, loop)
-        t2 = _Timeout(1, 3, loop)
-        self.assertEqual(t < t2, id(t) < id(t2))
-        t2 = _Timeout(2,1, loop)
-        self.assertTrue(t < t2)
-
     def test_poller_events(self):
         """Tornado poller implementation maps events correctly"""
         req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
