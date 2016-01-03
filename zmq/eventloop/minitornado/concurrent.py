@@ -9,3 +9,6 @@ class NotImplementedFuture(object):
         )
 
 Future = TracebackFuture = NotImplementedFuture
+
+def is_future(x):
+    return isinstance(x, Future)
