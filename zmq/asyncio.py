@@ -24,6 +24,10 @@ _aio2zmq_map = {
     selectors.EVENT_WRITE: _zmq.POLLOUT,
 }
 
+_AIO_EVENTS = 0
+for aio_evt in _aio2zmq_map:
+    _AIO_EVENTS |= aio_evt
+
 def _aio2zmq(aio_evt):
     """Turn AsyncIO event mask into ZMQ event mask"""
     z_evt = 0
@@ -79,7 +83,7 @@ class ZMQSelector(selectors.BaseSelector):
         """
         if fileobj in self.poller:
             raise KeyError(fileobj)
-        if not isinstance(events, int) or events not in _aio2zmq_map:
+        if not isinstance(events, int) or events & ~_AIO_EVENTS:
             raise ValueError("Invalid events: %r" % events)
         
         self.poller.register(fileobj, _aio2zmq(events))
