@@ -1,0 +1,4 @@
+gevent; python_version == '2.7' and platform_python_implementation != "PyPy"
+nose
+tornado
+aiohttp; python_version >= '3.4'

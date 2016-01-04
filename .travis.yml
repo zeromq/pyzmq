@@ -18,8 +18,7 @@ before_install:
   - 'if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then pip install -q -f travis-wheels-master/wheelhouse cython; fi'
   - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then wget https://github.com/zeromq/$ZMQ/archive/master.zip -O libzmq.zip && unzip libzmq.zip; fi'
   - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then sh -c "set -x; cd $ZMQ-master; sh autogen.sh; ./configure; make -j; sudo make install; sudo ldconfig"; fi'
-  - 'if [[ $TRAVIS_PYTHON_VERSION = 2.7 ]]; then pip install -q -f travis-wheels-master/wheelhouse gevent; fi'
-  - pip install -q -f file://travis-wheels-master/wheelhouse nose tornado
+  - pip install -q -f file://travis-wheels-master/wheelhouse -r test-requirements.txt
 
 install:
   - 'if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then export ZMQ=/usr/local; fi'

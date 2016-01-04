@@ -6,14 +6,11 @@ Requires asyncio and Python 3.
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-from functools import partial
-
 import zmq as _zmq
 from zmq.eventloop import future as _future
 
 # TODO: support trollius for Legacy Python? (probably not)
-import sys
-    
+
 import asyncio
 from asyncio import SelectorEventLoop, Future
 try:
@@ -22,12 +19,31 @@ except ImportError:
     from asyncio import selectors # py33
 
 
-_aio2zmq = {
+_aio2zmq_map = {
     selectors.EVENT_READ: _zmq.POLLIN,
     selectors.EVENT_WRITE: _zmq.POLLOUT,
 }
 
-_zmq2aio = { z:a for a,z in _aio2zmq.items() }
+_AIO_EVENTS = 0
+for aio_evt in _aio2zmq_map:
+    _AIO_EVENTS |= aio_evt
+
+def _aio2zmq(aio_evt):
+    """Turn AsyncIO event mask into ZMQ event mask"""
+    z_evt = 0
+    for aio_mask, z_mask in _aio2zmq_map.items():
+        if aio_mask & aio_evt:
+            z_evt |= z_mask
+    return z_evt
+
+def _zmq2aio(z_evt):
+    """Turn ZMQ event mask into AsyncIO event mask"""
+    aio_evt = 0
+    for aio_mask, z_mask in _aio2zmq_map.items():
+        if z_mask & z_evt:
+            aio_evt |= aio_mask
+    return aio_evt
+
 
 class _AsyncIO(object):
     _Future = Future
@@ -67,10 +83,10 @@ class ZMQSelector(selectors.BaseSelector):
         """
         if fileobj in self.poller:
             raise KeyError(fileobj)
-        if not isinstance(events, int) or events not in _aio2zmq:
+        if not isinstance(events, int) or events & ~_AIO_EVENTS:
             raise ValueError("Invalid events: %r" % events)
         
-        self.poller.register(fileobj, _aio2zmq[events])
+        self.poller.register(fileobj, _aio2zmq(events))
         key = selectors.SelectorKey(fileobj=fileobj, fd=fileobj if isinstance(fileobj, int) else None, events=events, data=data)
         self._mapping[fileobj] = key
         return key
@@ -120,7 +136,7 @@ class ZMQSelector(selectors.BaseSelector):
                 timeout = 1e3 * timeout
         
         events = self.poller.poll(timeout)
-        return [ (self.get_key(fd), _zmq2aio[evt]) for fd, evt in events ]
+        return [ (self.get_key(fd), _zmq2aio(evt)) for fd, evt in events ]
 
     def close(self):
         """Close the selector.
