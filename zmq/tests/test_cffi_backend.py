@@ -67,7 +67,7 @@ class TestCFFIBackend(TestCase):
         assert ret == 0
 
         option_len = ffi.new('size_t*', 3)
-        option = ffi.new('char*')
+        option = ffi.new('char[3]')
         ret = C.zmq_getsockopt(socket,
                             IDENTITY,
                             ffi.cast('void*', option),
