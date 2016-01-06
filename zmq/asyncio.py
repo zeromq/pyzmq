@@ -49,23 +49,35 @@ class _AsyncIO(object):
     _Future = Future
     _WRITE = selectors.EVENT_WRITE
     _READ = selectors.EVENT_READ
-    
+
     def _default_loop(self):
         return asyncio.get_event_loop()
 
 
-class ZMQSelector(selectors.BaseSelector):
+class ZMQSelector(selectors._BaseSelectorImpl):
     """zmq_poll-based selector for asyncio"""
-    
+
     def __init__(self):
-        self.poller = _zmq.Poller()
-        self._mapping = {}
-    
+        super().__init__()
+        self._zmq_poller = _zmq.Poller()
+
+    def _fileobj_lookup(self, fileobj):
+        """Return a zmq socket or a file descriptor from a file object.
+
+        Copied from selectors._BaseSelectorImpl and adapted to also handle
+        zmq sockets. This allows us to use the rest of selectors._BaseSelectorImpl
+        without further changes.
+        """
+        if isinstance(fileobj, _zmq.Socket):
+            return fileobj
+        else:
+            return super()._fileobj_lookup(fileobj)
+
     def register(self, fileobj, events, data=None):
         """Register a file object.
 
         Parameters:
-        fileobj -- file object or file descriptor
+        fileobj -- zmq socket, file object or file descriptor
         events  -- events to monitor (bitwise mask of EVENT_READ|EVENT_WRITE)
         data    -- attached data
 
@@ -81,21 +93,15 @@ class ZMQSelector(selectors.BaseSelector):
         Note:
         OSError may or may not be raised
         """
-        if fileobj in self.poller:
-            raise KeyError(fileobj)
-        if not isinstance(events, int) or events & ~_AIO_EVENTS:
-            raise ValueError("Invalid events: %r" % events)
-        
-        self.poller.register(fileobj, _aio2zmq(events))
-        key = selectors.SelectorKey(fileobj=fileobj, fd=fileobj if isinstance(fileobj, int) else None, events=events, data=data)
-        self._mapping[fileobj] = key
+        key = super().register(fileobj, events, data=data)
+        self._zmq_poller.register(key.fd, _aio2zmq(events))
         return key
 
     def unregister(self, fileobj):
         """Unregister a file object.
 
         Parameters:
-        fileobj -- file object or file descriptor
+        fileobj -- zmq socket, file object or file descriptor
 
         Returns:
         SelectorKey instance
@@ -107,11 +113,9 @@ class ZMQSelector(selectors.BaseSelector):
         If fileobj is registered but has since been closed this does
         *not* raise OSError (even if the wrapped syscall does)
         """
-        if fileobj not in self.poller:
-            raise KeyError(fileobj)
-        
-        self.poller.unregister(fileobj)
-        return self._mapping.pop(fileobj)
+        key = super().unregister(fileobj)
+        self._zmq_poller.unregister(key.fd)
+        return key
 
     def select(self, timeout=None):
         """Perform the actual selection, until some monitored file objects are
@@ -134,29 +138,33 @@ class ZMQSelector(selectors.BaseSelector):
                 timeout = 0
             else:
                 timeout = 1e3 * timeout
-        
-        events = self.poller.poll(timeout)
-        return [ (self.get_key(fd), _zmq2aio(evt)) for fd, evt in events ]
+
+        fd_event_list = self._zmq_poller.poll(timeout)
+        ready = []
+        for fd, event in fd_event_list:
+            key = self._key_from_fd(fd)
+            if key:
+                events = _zmq2aio(event)
+                ready.append((key, events))
+        return ready
 
     def close(self):
         """Close the selector.
 
         This must be called to make sure that any underlying resource is freed.
         """
-        self._mapping = None
-        self._poller = None
+        super().close()
+        self._zmq_poller = None
 
-    def get_map(self):
-        """Return a mapping of file objects to selector keys."""
-        return self._mapping
 
 class Poller(_AsyncIO, _future._AsyncPoller):
     """Poller returning asyncio.Future for poll results."""
     pass
 
+
 class Socket(_AsyncIO, _future._AsyncSocket):
     """Socket returning asyncio Futures for send/recv/poll methods."""
-    
+
     _poller_class = Poller
 
     def _add_io_state(self, state):
@@ -167,7 +175,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
                 self.io_loop.add_reader(self, self._handle_recv)
             if state & self._WRITE:
                 self.io_loop.add_writer(self, self._handle_send)
-    
+
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
@@ -176,7 +184,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
                 self.io_loop.remove_reader(self)
             if state & self._WRITE:
                 self.io_loop.remove_writer(self)
-    
+
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         pass
@@ -193,11 +201,12 @@ class ZMQEventLoop(SelectorEventLoop):
             selector = ZMQSelector()
         return super(ZMQEventLoop, self).__init__(selector)
 
+
 _loop = None
 
 def install():
     """Install and return the global ZMQEventLoop
-    
+
     registers the loop with asyncio.set_event_loop
     """
     global _loop
@@ -205,7 +214,7 @@ def install():
         _loop = ZMQEventLoop()
         asyncio.set_event_loop(_loop)
     return _loop
-    
+
 
 __all__ = [
     'Context',
