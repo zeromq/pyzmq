@@ -433,6 +433,16 @@ class TestSocket(BaseZMQTestCase):
         a.send(b'hi')
         rcvd = self.recv(b)
         self.assertEqual(rcvd, b'hi')
+    
+    def test_large_send(self):
+        try:
+            buf = b'\1' * (2**31+1)
+        except MemoryError:
+            raise SkipTest()
+        a, b = self.create_bound_pair()
+        a.send(buf, copy=False)
+        rcvd = b.recv()
+        assert rcvd == buf
 
 
 if have_gevent:
