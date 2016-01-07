@@ -6,10 +6,13 @@ import zmq
 try:
     import asyncio
     import zmq.asyncio as zaio
+    from zmq.auth.asyncio import AsyncioAuthenticator
 except ImportError:
     asyncio = None
 
 from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq.tests.test_auth import TestThreadAuthentication
+
 
 class TestAsyncIOSocket(BaseZMQTestCase):
     if asyncio is not None:
@@ -134,3 +137,52 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         loop.run_until_complete(server(loop))
         print("servered")
         loop.run_until_complete(client())
+
+
+class TestAsyncioAuthentication(TestThreadAuthentication):
+    """Test authentication running in a asyncio task"""
+
+    if asyncio is not None:
+        Context = zaio.Context
+
+    def shortDescription(self):
+        """Rewrite doc strings from TestThreadAuthentication from
+        'threaded' to 'asyncio'.
+        """
+        doc = self._testMethodDoc
+        if doc:
+            doc = doc.split("\n")[0].strip()
+            if doc.startswith('threaded auth'):
+                doc = doc.replace('threaded auth', 'asyncio auth')
+        return doc
+
+    def setUp(self):
+        if asyncio is None:
+            raise SkipTest()
+        self.loop = zaio.ZMQEventLoop()
+        asyncio.set_event_loop(self.loop)
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.loop.close()
+
+    def make_auth(self):
+        return AsyncioAuthenticator(self.context)
+
+    def can_connect(self, server, client):
+        """Check if client can connect to server using tcp transport"""
+        @asyncio.coroutine
+        def go():
+            result = False
+            iface = 'tcp://127.0.0.1'
+            port = server.bind_to_random_port(iface)
+            client.connect("%s:%i" % (iface, port))
+            msg = [b"Hello World"]
+            yield from server.send_multipart(msg)
+            if (yield from client.poll(1000)):
+                rcvd_msg = yield from client.recv_multipart()
+                self.assertEqual(rcvd_msg, msg)
+                result = True
+            return result
+        return self.loop.run_until_complete(go())
