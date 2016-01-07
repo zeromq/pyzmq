@@ -16,6 +16,7 @@ from zmq.auth.thread import ThreadAuthenticator
 from zmq.eventloop import ioloop, zmqstream
 from zmq.tests import (BaseZMQTestCase, SkipTest)
 
+
 class BaseAuthTestCase(BaseZMQTestCase):
     def setUp(self):
         if zmq.zmq_version_info() < (4,0):
