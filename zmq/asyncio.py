@@ -5,6 +5,7 @@ Requires asyncio and Python 3.
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
+# Derived from Python 3.5.1 selectors._BaseSelectorImpl, used under PSF License
 
 from collections import Mapping
 
