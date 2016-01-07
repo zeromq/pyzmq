@@ -6,6 +6,8 @@ Requires asyncio and Python 3.
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+from collections import Mapping
+
 import zmq as _zmq
 from zmq.eventloop import future as _future
 
@@ -54,24 +56,83 @@ class _AsyncIO(object):
         return asyncio.get_event_loop()
 
 
-class ZMQSelector(selectors._BaseSelectorImpl):
+def _fileobj_to_fd(fileobj):
+    """Return a file descriptor from a file object.
+
+    Parameters:
+    fileobj -- file object or file descriptor
+
+    Returns:
+    corresponding file descriptor
+
+    Raises:
+    ValueError if the object is invalid
+    """
+    if isinstance(fileobj, int):
+        fd = fileobj
+    else:
+        try:
+            fd = int(fileobj.fileno())
+        except (AttributeError, TypeError, ValueError):
+            raise ValueError("Invalid file object: "
+                             "{!r}".format(fileobj)) from None
+    if fd < 0:
+        raise ValueError("Invalid file descriptor: {}".format(fd))
+    return fd
+
+
+class _SelectorMapping(Mapping):
+    """Mapping of file objects to selector keys."""
+
+    def __init__(self, selector):
+        self._selector = selector
+
+    def __len__(self):
+        return len(self._selector._fd_to_key)
+
+    def __getitem__(self, fileobj):
+        try:
+            fd = self._selector._fileobj_lookup(fileobj)
+            return self._selector._fd_to_key[fd]
+        except KeyError:
+            raise KeyError("{!r} is not registered".format(fileobj)) from None
+
+    def __iter__(self):
+        return iter(self._selector._fd_to_key)
+
+
+class ZMQSelector(selectors.BaseSelector):
     """zmq_poll-based selector for asyncio"""
 
     def __init__(self):
         super().__init__()
+        # this maps file descriptors to keys
+        self._fd_to_key = {}
+        # read-only mapping returned by get_map()
+        self._map = _SelectorMapping(self)
         self._zmq_poller = _zmq.Poller()
 
     def _fileobj_lookup(self, fileobj):
         """Return a zmq socket or a file descriptor from a file object.
 
-        Copied from selectors._BaseSelectorImpl and adapted to also handle
-        zmq sockets. This allows us to use the rest of selectors._BaseSelectorImpl
-        without further changes.
+        This wraps _fileobj_to_fd() to do an exhaustive search in case
+        the object is invalid but we still have it in our map.  This
+        is used by unregister() so we can unregister an object that
+        was previously registered even if it is closed.  It is also
+        used by _SelectorMapping.
         """
         if isinstance(fileobj, _zmq.Socket):
             return fileobj
         else:
-            return super()._fileobj_lookup(fileobj)
+            try:
+                return _fileobj_to_fd(fileobj)
+            except ValueError:
+                # Do an exhaustive search.
+                for key in self._fd_to_key.values():
+                    if key.fileobj is fileobj:
+                        return key.fd
+                # Raise ValueError after all.
+                raise
 
     def register(self, fileobj, events, data=None):
         """Register a file object.
@@ -93,7 +154,17 @@ class ZMQSelector(selectors._BaseSelectorImpl):
         Note:
         OSError may or may not be raised
         """
-        key = super().register(fileobj, events, data=data)
+        if (not events) or (events & ~(selectors.EVENT_READ | selectors.EVENT_WRITE)):
+            raise ValueError("Invalid events: {!r}".format(events))
+
+        key = selectors.SelectorKey(fileobj, self._fileobj_lookup(fileobj), events, data)
+
+        if key.fd in self._fd_to_key:
+            raise KeyError("{!r} (FD {}) is already registered"
+                           .format(fileobj, key.fd))
+
+        self._fd_to_key[key.fd] = key
+
         self._zmq_poller.register(key.fd, _aio2zmq(events))
         return key
 
@@ -113,8 +184,26 @@ class ZMQSelector(selectors._BaseSelectorImpl):
         If fileobj is registered but has since been closed this does
         *not* raise OSError (even if the wrapped syscall does)
         """
-        key = super().unregister(fileobj)
+        try:
+            key = self._fd_to_key.pop(self._fileobj_lookup(fileobj))
+        except KeyError:
+            raise KeyError("{!r} is not registered".format(fileobj)) from None
+
         self._zmq_poller.unregister(key.fd)
+        return key
+
+    def modify(self, fileobj, events, data=None):
+        try:
+            key = self._fd_to_key[self._fileobj_lookup(fileobj)]
+        except KeyError:
+            raise KeyError("{!r} is not registered".format(fileobj)) from None
+        if events != key.events:
+            self.unregister(fileobj)
+            key = self.register(fileobj, events, data)
+        elif data != key.data:
+            # Use a shortcut to update the data.
+            key = key._replace(data=data)
+            self._fd_to_key[key.fd] = key
         return key
 
     def select(self, timeout=None):
@@ -153,8 +242,26 @@ class ZMQSelector(selectors._BaseSelectorImpl):
 
         This must be called to make sure that any underlying resource is freed.
         """
-        super().close()
+        self._fd_to_key.clear()
+        self._map = None
         self._zmq_poller = None
+
+    def get_map(self):
+        return self._map
+
+    def _key_from_fd(self, fd):
+        """Return the key associated to a given file descriptor.
+
+        Parameters:
+        fd -- file descriptor
+
+        Returns:
+        corresponding key, or None if not found
+        """
+        try:
+            return self._fd_to_key[fd]
+        except KeyError:
+            return None
 
 
 class Poller(_AsyncIO, _future._AsyncPoller):
