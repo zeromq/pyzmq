@@ -10,7 +10,7 @@ cdef inline int _check_rc(int rc) except -1:
     """
     cdef int errno = zmq_errno()
     PyErr_CheckSignals()
-    if rc < 0:
+    if rc == -1: # if rc < -1, it's a bug in libzmq. Should we warn?
         if errno == EINTR:
             from zmq.error import InterruptedSystemCall
             raise InterruptedSystemCall(errno)
