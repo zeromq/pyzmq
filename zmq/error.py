@@ -120,7 +120,7 @@ def _check_rc(rc, errno=None):
     
     and raising the appropriate Exception class
     """
-    if rc < 0:
+    if rc == -1:
         if errno is None:
             from zmq.backend import zmq_errno
             errno = zmq_errno()

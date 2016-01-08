@@ -3,6 +3,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 import copy
+import os
+import platform
 import time
 import warnings
 
@@ -433,6 +435,18 @@ class TestSocket(BaseZMQTestCase):
         a.send(b'hi')
         rcvd = self.recv(b)
         self.assertEqual(rcvd, b'hi')
+    
+    # Travis can't handle how much memory PyPy uses on this test
+    @skip_if(platform.python_implementation() and os.environ.get('TRAVIS_PYTHON_VERSION'))
+    def test_large_send(self):
+        try:
+            buf = b'\1' * (2**31+1)
+        except MemoryError:
+            raise SkipTest()
+        a, b = self.create_bound_pair()
+        a.send(buf, copy=False)
+        rcvd = b.recv()
+        assert rcvd == buf
 
 
 if have_gevent:
