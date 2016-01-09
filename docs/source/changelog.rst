@@ -9,6 +9,17 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+15.2
+====
+
+- FIX: handle multiple events in a single register call in :mod:`zmq.asyncio`
+- FIX: unicode/bytes bug in password prompt in :mod:`zmq.ssh` on Python 3
+- FIX: workaround gevent monkeypatches in garbage collection thread
+- update bundled libraries: libzmq-4.1.4, libsodium-1.0.7, minitornado from tornado-4.3.
+- improved inspection by setting ``binding=True`` in cython compile options
+- add asyncio Authenticator implementation in :mod:`zmq.auth.asyncio`
+- workaround overflow bug in libzmq preventing receiving messages larger than ``MAX_INT``
+
 15.1
 ====
 
