@@ -38,10 +38,10 @@ libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 libzmq_checksum = "sha256:f9162ead6d68521e5154d871bac304f88857308bb02366b81bb588497a345927"
 
-libsodium_version = (1,0,7)
+libsodium_version = (1,0,3)
 libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
 libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
-libsodium_checksum = "sha256:7ad1e78763510c163ca48f05133057726a825cf97386c581bf12b01d7654204a"
+libsodium_checksum = "sha256:cbcfc63cc90c05d18a20f229a62c7e7054a73731d0aa858c0517152c549b1288"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
