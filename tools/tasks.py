@@ -144,12 +144,11 @@ def build_sdist(py, upload=False):
     
     Returns the path to the tarball
     """
-    install(py, 'cython')
     with cd(repo_root):
         cmd = [py, 'setup.py', 'sdist', '--formats=zip,gztar']
-        if upload:
-            cmd.append('upload')
         run(cmd)
+        if upload:
+            run(['twine', 'upload', 'dist/*'])
     
     return glob.glob(pjoin(repo_root, 'dist', '*.tar.gz'))[0]
 
@@ -157,7 +156,7 @@ def build_sdist(py, upload=False):
 def sdist(vs, upload=False):
     clone_repo()
     tag(vs, push=upload)
-    py = make_env('2.7', 'cython')
+    py = make_env('3.5', 'cython', 'twine')
     tarball = build_sdist(py, upload=upload)
     return untar(tarball)
 
@@ -182,15 +181,13 @@ def untar(tarball):
     
     return glob.glob(pjoin(sdist_root, '*'))[0]
 
-def bdist(py, upload=False, wheel=True, egg=False):
+def bdist(py, wheel=True, egg=False):
     py = make_env(py, 'wheel')
     cmd = [py, 'setup.py']
     if wheel:
         cmd.append('bdist_wheel')
     if egg:
         cmd.append('bdist_egg')
-    if upload:
-        cmd.append('upload')
     cmd.append('--zmq=bundled')
     
     run(cmd)
@@ -212,5 +209,8 @@ def release(vs, upload=False):
     
     with cd(path):
         for v in py_exes:
-            bdist(v, upload=upload, wheel=True, egg=(v in egg_pys))
+            bdist(v, wheel=True, egg=(v in egg_pys))
+        if upload:
+            py = make_env('3.5', 'twine')
+            run(['twine', 'upload', 'dist/*'])
 
