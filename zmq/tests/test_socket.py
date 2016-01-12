@@ -440,7 +440,7 @@ class TestSocket(BaseZMQTestCase):
     @skip_if(platform.python_implementation() and os.environ.get('TRAVIS_PYTHON_VERSION'))
     def test_large_send(self):
         try:
-            buf = b'\1' * (2**31+1)
+            buf = os.urandom(1) * (2**31 + 1)
         except MemoryError:
             raise SkipTest()
         a, b = self.create_bound_pair()
