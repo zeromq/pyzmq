@@ -77,6 +77,7 @@ class Context(ContextBase, AttributeSetter):
         .. versionadded:: 14.1
         """
         from pyczmq import zctx
+        from zmq.utils.interop import cast_int_addr
         
         underlying = zctx.underlying(ctx)
         address = cast_int_addr(underlying)
