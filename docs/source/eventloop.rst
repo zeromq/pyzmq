@@ -6,6 +6,26 @@
 Eventloops and PyZMQ
 ====================
 
+Integrating zmq with eventloops is *almost* really easy,
+since most eventloops happily support sockets.
+What gets messy is that zmq sockets aren't regular sockets,
+so they need special handling.
+libzmq provides a :func:`zmq_poll` function that is the same as regular polling,
+but **also** support zmq sockets. PyZMQ wrapps this in a :class:`~.Poller` class.
+Most of pyzmq's eventloop support involves setting up existing eventloops (tornado, asyncio)
+to use :func:`zmq_poll` as the inner poller, rather than the default select/poll/etc.
+Once that's done, zmq sockets can be happily treated like regular sockets,
+and regular sockets should continue to work as before.
+
+.. note::
+
+    It *is* possible to integrate zmq sockets into existing eventloops without modifying the poller
+    by using the ``socket.FD`` attribute.
+    The incredibly unfortunate aspect of this is that it was implemented as an edge-triggered fd,
+    which is highly error prone, and I wouldn't recommend using unless absolutely necessary.
+    This is used in :mod:`zmq.green`, and has been the source of many problems.
+
+
 Tornado IOLoop
 ==============
 
