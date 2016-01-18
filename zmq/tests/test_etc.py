@@ -13,3 +13,8 @@ def test_has():
     has_ipc = zmq.has('ipc')
     not_windows = not sys.platform.startswith('win')
     assert has_ipc == not_windows
+
+@skip_if(not hasattr(zmq, '_libzmq'), "bundled libzmq")
+def test_has_curve():
+    """bundled libzmq has curve support"""
+    assert zmq.has('curve')
