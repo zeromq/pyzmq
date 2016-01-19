@@ -41,7 +41,7 @@ but only the functionality of the linked libzmq will be available.
 Binary distributions (wheels on `PyPI <http://pypi.python.org/pypi/pyzmq>`__
 or `GitHub <https://www.github.com/zeromq/pyzmq/downloads>`__) of PyZMQ ship with
 the stable version of libzmq at the time of release, built with default configuration,
-and include libsodium for security.
+and include CURVE support provided by tweetnacl.
 For pyzmq-|release|, this is |target_libzmq|.
 
 Using PyZMQ

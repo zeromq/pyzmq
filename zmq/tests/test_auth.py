@@ -24,7 +24,7 @@ class BaseAuthTestCase(BaseZMQTestCase):
         try:
             zmq.curve_keypair()
         except zmq.ZMQError:
-            raise SkipTest("security requires libzmq to be linked against libsodium")
+            raise SkipTest("security requires libzmq to have curve support")
         super(BaseAuthTestCase, self).setUp()
         # enable debug logging while we run tests
         logging.getLogger('zmq.auth').setLevel(logging.DEBUG)

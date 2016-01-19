@@ -25,7 +25,7 @@ class TestSecurity(BaseZMQTestCase):
         try:
             zmq.curve_keypair()
         except zmq.ZMQError:
-            raise SkipTest("security requires libzmq to be linked against libsodium")
+            raise SkipTest("security requires libzmq to be built with CURVE support")
         super(TestSecurity, self).setUp()
     
     
@@ -183,7 +183,7 @@ class TestSecurity(BaseZMQTestCase):
         try:
             server.curve_server = True
         except zmq.ZMQError as e:
-            # will raise EINVAL if not linked against libsodium
+            # will raise EINVAL if no CURVE support
             if e.errno == zmq.EINVAL:
                 raise SkipTest("CURVE unsupported")
         

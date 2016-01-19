@@ -25,7 +25,7 @@ def has(capability):
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
     
-    Requires libzmq (≥ 4.0) to have been linked with libsodium.
+    Requires libzmq (≥ 4.0) to have been built with CURVE support.
     
     Returns
     -------

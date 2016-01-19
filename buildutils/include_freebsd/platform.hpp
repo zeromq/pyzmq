@@ -67,7 +67,7 @@
 /* #undef HAVE_LIBSOCKET */
 
 /* The libsodium library is to be used. */
-#define HAVE_LIBSODIUM 1
+/* #undef HAVE_LIBSODIUM */
 
 /* Define to 1 if you have the `ws2_32' library (-lws2_32). */
 /* #undef HAVE_LIBWS2_32 */

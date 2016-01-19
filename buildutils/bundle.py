@@ -14,7 +14,6 @@ import shutil
 import stat
 import sys
 import tarfile
-from glob import glob
 import hashlib
 from subprocess import Popen, PIPE
 
@@ -33,15 +32,13 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4,1,2)
+bundled_version = (4,1,5)
 libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
-libzmq_checksum = "sha256:f9162ead6d68521e5154d871bac304f88857308bb02366b81bb588497a345927"
-
-libsodium_version = (1,0,3)
-libsodium = "libsodium-%i.%i.%i.tar.gz" % (libsodium_version)
-libsodium_url = "https://github.com/jedisct1/libsodium/releases/download/%i.%i.%i/" % libsodium_version + libsodium
-libsodium_checksum = "sha256:cbcfc63cc90c05d18a20f229a62c7e7054a73731d0aa858c0517152c549b1288"
+# FIXME: temporarily use GitHub download while waiting for 4.1.5 release
+# use codeload URL because SSL fails on github.com/archive URLs on Windows for some reason
+libzmq_url = "https://codeload.github.com/zeromq/zeromq4-1/tar.gz/b7a30978cae343d061983e00e8b2c713b66fc5a9"
+libzmq_checksum = "sha256:2b1b318677133e3816e51ab6d0a5769e01504095b32064b6b90feeef3f2eec1a"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -49,7 +46,6 @@ ROOT = os.path.dirname(HERE)
 #-----------------------------------------------------------------------------
 # Utilities
 #-----------------------------------------------------------------------------
-
 
 def untgz(archive):
     return archive.replace('.tar.gz', '')
@@ -95,37 +91,6 @@ def fetch_archive(savedir, url, fname, checksum, force=False):
         fatal("%s %s mismatch:\nExpected: %s\nActual  : %s" % (
             dest, scheme, digest_ref, digest))
     return dest
-
-#-----------------------------------------------------------------------------
-# libsodium
-#-----------------------------------------------------------------------------
-
-def fetch_libsodium(savedir):
-    """download and extract libsodium"""
-    dest = pjoin(savedir, 'libsodium')
-    if os.path.exists(dest):
-        info("already have %s" % dest)
-        return
-    path = fetch_archive(savedir, libsodium_url, fname=libsodium, checksum=libsodium_checksum)
-    tf = tarfile.open(path)
-    with_version = pjoin(savedir, tf.firstmember.path)
-    tf.extractall(savedir)
-    tf.close()
-    # remove version suffix:
-    shutil.move(with_version, dest)
-
-def stage_libsodium_headers(libsodium_root):
-    """stage configure headers for libsodium"""
-    src_dir = pjoin(HERE, 'include_sodium')
-    dest_dir = pjoin(libsodium_root, 'src', 'libsodium', 'include', 'sodium')
-    for src in glob(pjoin(src_dir, '*.h')):
-        base = os.path.basename(src)
-        dest = pjoin(dest_dir, base)
-        if os.path.exists(dest):
-            info("already have %s" % base)
-            continue
-        info("staging %s to %s" % (src, dest))
-        shutil.copy(src, dest)
 
 #-----------------------------------------------------------------------------
 # libzmq
