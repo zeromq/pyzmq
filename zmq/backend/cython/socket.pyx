@@ -145,8 +145,12 @@ cdef inline object _recv_copy(void *handle, int flags=0):
             _check_rc(rc)
         except InterruptedSystemCall:
             continue
+        except Exception:
+            zmq_msg_close(&zmq_msg) # ensure msg is closed on failure
+            raise
         else:
             break
+    
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     zmq_msg_close(&zmq_msg)
     return msg_bytes
@@ -175,7 +179,7 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
 
 cdef inline object _send_copy(void *handle, object msg, int flags=0):
     """Send a message on this socket by copying its content."""
-    cdef int rc, rc2
+    cdef int rc
     cdef zmq_msg_t data
     cdef char *msg_c
     cdef Py_ssize_t msg_c_len=0
@@ -193,15 +197,17 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
         with nogil:
             memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
             rc = zmq_msg_send(&data, handle, flags)
-            if not rc < 0:
-                rc2 = zmq_msg_close(&data)
         try:
             _check_rc(rc)
         except InterruptedSystemCall:
             continue
+        except Exception:
+            zmq_msg_close(&data) # close the unused msg
+            raise # raise original exception
         else:
+            rc = zmq_msg_close(&data)
+            _check_rc(rc)
             break
-    _check_rc(rc2)
 
 cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *sz):
     """getsockopt, retrying interrupted calls
