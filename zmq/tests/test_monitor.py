@@ -3,6 +3,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 
+import errno
 import sys
 import time
 import struct
@@ -47,6 +48,19 @@ class TestSocketMonitor(BaseZMQTestCase):
         m = recv_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_MONITOR_STOPPED)
 
+
+    @skip_lt_4
+    def test_monitor_repeat(self):
+        s = self.socket(zmq.PULL)
+        m = s.get_monitor_socket()
+        self.sockets.append(m)
+        m2 = s.get_monitor_socket()
+        self.assertIs(m, m2)
+        s.disable_monitor()
+        evt = recv_monitor_message(m)
+        self.assertEqual(evt['event'], zmq.EVENT_MONITOR_STOPPED)
+        m.close()
+        s.close()
 
     @skip_lt_4
     def test_monitor_connected(self):
