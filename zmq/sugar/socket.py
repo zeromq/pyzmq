@@ -56,6 +56,7 @@ class Socket(SocketBase, AttributeSetter):
     
     """
     _shadow = False
+    _monitor_socket = None
     
     def __init__(self, *a, **kw):
         super(Socket, self).__init__(*a, **kw)
@@ -525,6 +526,14 @@ class Socket(SocketBase, AttributeSetter):
         # safe-guard, method only available on libzmq >= 4
         if zmq.zmq_version_info() < (4,):
             raise NotImplementedError("get_monitor_socket requires libzmq >= 4, have %s" % zmq.zmq_version())
+
+        # if already monitoring, return existing socket
+        if self._monitor_socket:
+            if self._monitor_socket.closed:
+                self._monitor_socket = None
+            else:
+                return self._monitor_socket
+
         if addr is None:
             # create endpoint name from internal fd
             addr = "inproc://monitor.s-%d" % self.FD
@@ -534,9 +543,9 @@ class Socket(SocketBase, AttributeSetter):
         # attach monitoring socket
         self.monitor(addr, events)
         # create new PAIR socket and connect it
-        ret = self.context.socket(zmq.PAIR)
-        ret.connect(addr)
-        return ret
+        self._monitor_socket = self.context.socket(zmq.PAIR)
+        self._monitor_socket.connect(addr)
+        return self._monitor_socket
 
     def disable_monitor(self):
         """Shutdown the PAIR socket (created using get_monitor_socket)
@@ -544,6 +553,7 @@ class Socket(SocketBase, AttributeSetter):
         
         .. versionadded:: 14.4
         """
+        self._monitor_socket = None
         self.monitor(None, 0)
 
 
