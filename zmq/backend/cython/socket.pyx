@@ -490,7 +490,14 @@ cdef class Socket:
                                 'to check addr length (if it is defined).'
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(msg=msg)
-        _check_rc(rc)
+        while True:
+            try:
+                _check_rc(rc)
+            except InterruptedSystemCall:
+                rc = zmq_bind(self.handle, c_addr)
+                continue
+            else:
+                break
 
     def connect(self, addr):
         """s.connect(addr)
@@ -515,9 +522,15 @@ cdef class Socket:
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
         
-        rc = zmq_connect(self.handle, c_addr)
-        if rc != 0:
-            raise ZMQError()
+        while True:
+            try:
+                rc = zmq_connect(self.handle, c_addr)
+                _check_rc(rc)
+            except InterruptedSystemCall:
+                # retry syscall
+                continue
+            else:
+                break
 
     def unbind(self, addr):
         """s.unbind(addr)
