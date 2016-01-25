@@ -7,6 +7,7 @@ import os
 import platform
 import time
 import warnings
+import sys
 
 import zmq
 from zmq.tests import (
@@ -437,7 +438,14 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(rcvd, b'hi')
     
     # Travis can't handle how much memory PyPy uses on this test
-    @skip_if(platform.python_implementation() and os.environ.get('TRAVIS_PYTHON_VERSION'))
+    @skip_if(
+        (
+            platform.python_implementation().lower() == 'pypy'
+            and os.environ.get('TRAVIS_PYTHON_VERSION')
+        ) or (
+            sys.maxsize < 2**32
+        )
+    )
     def test_large_send(self):
         try:
             buf = os.urandom(1) * (2**31 + 1)
