@@ -89,10 +89,11 @@ def test_ctx_skt(ctx, skt):
     assert skt.type == zmq.PUB
 
 
-@raises(TypeError)
 @socket(zmq.PUB)
-def test_ctx_miss(skt):
-    pass  # context not found
+def test_skt_default_ctx(skt):
+    assert isinstance(skt, zmq.Socket), skt
+    assert skt.context is zmq.Context.instance()
+    assert skt.type == zmq.PUB
 
 
 @raises(TypeError)

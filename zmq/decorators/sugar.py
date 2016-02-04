@@ -50,7 +50,7 @@ class _SocketDecorator(ZDecoratorBase):
         Second, we check all the ``wrap_args``, take the first ``zmq.Context``
         instance.
 
-        :raises TypeError: if any context instance can not be found
+        Finally, we will provide default Context -- ``zmq.Context.instance``
         '''
         if self.context_name in self.wrap_kwargs:
             ctx = self.wrap_kwargs[self.context_name]
@@ -63,4 +63,4 @@ class _SocketDecorator(ZDecoratorBase):
                 continue
             return arg
 
-        raise TypeError('zmq.Context instance not found')
+        return zmq.Context.instance()
