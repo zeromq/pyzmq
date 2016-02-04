@@ -11,6 +11,7 @@
 
     zmq
     zmq.devices
+    zmq.decorators
     zmq.green
     zmq.eventloop.ioloop
     zmq.eventloop.future

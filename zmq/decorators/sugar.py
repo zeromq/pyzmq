@@ -15,7 +15,7 @@ from zmq.decorators.base import ZDecoratorBase
 
 def context(*args, **kwargs):
     '''
-    .. versionadded:: 15.3.0
+    .. versionadded:: 15.3
 
     :param str name: the keyword argument passed to decorated function
     '''
@@ -24,9 +24,11 @@ def context(*args, **kwargs):
 
 def socket(*args, **kwargs):
     '''
-    .. versionadded:: 15.3.0
+    .. versionadded:: 15.3
 
     :param str name: the keyword argument passed to decorated function
+    :param str context_name: the keyword only argument to identify context
+                             object
     '''
     return _SocketDecorator(zmq.Socket)(*args, **kwargs)
 
