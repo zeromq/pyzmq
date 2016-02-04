@@ -50,7 +50,7 @@ def test_ctx_keyword_miss(other_name):
 
 
 @raises(TypeError)
-def test_mulit_assign():
+def test_multi_assign():
     @context(name='ctx')
     def f(ctx):
         pass  # explosion
@@ -101,3 +101,56 @@ def test_skt_default_ctx(skt):
 @socket('myskt')
 def test_skt_type_miss(ctx, myskt):
     pass  # the socket type is missing
+
+
+@socket(zmq.PUSH)  # baz
+@socket(zmq.SUB)   # bar
+@socket(zmq.PUB)   # foo
+def test_multi_skts(foo, bar, baz):
+    assert isinstance(foo, zmq.Socket), foo
+    assert isinstance(bar, zmq.Socket), bar
+    assert isinstance(baz, zmq.Socket), baz
+
+    assert foo.context is zmq.Context.instance()
+    assert bar.context is zmq.Context.instance()
+    assert baz.context is zmq.Context.instance()
+
+    assert foo.type == zmq.PUB
+    assert bar.type == zmq.SUB
+    assert baz.type == zmq.PUSH
+
+
+@context()
+@socket(zmq.PUSH)  # baz
+@socket(zmq.SUB)   # bar
+@socket(zmq.PUB)   # foo
+def test_multi_skts_single_ctx(foo, bar, baz, ctx):
+    assert isinstance(foo, zmq.Socket), foo
+    assert isinstance(bar, zmq.Socket), bar
+    assert isinstance(baz, zmq.Socket), baz
+    assert isinstance(ctx, zmq.Context), ctx
+
+    assert foo.context is ctx
+    assert bar.context is ctx
+    assert baz.context is ctx
+
+    assert foo.type == zmq.PUB
+    assert bar.type == zmq.SUB
+    assert baz.type == zmq.PUSH
+
+
+@socket('foo', zmq.PUSH)
+@socket('bar', zmq.SUB)
+@socket('baz', zmq.PUB)
+def test_multi_skts_with_name(foo, bar, baz):
+    assert isinstance(foo, zmq.Socket), foo
+    assert isinstance(bar, zmq.Socket), bar
+    assert isinstance(baz, zmq.Socket), baz
+
+    assert foo.context is zmq.Context.instance()
+    assert bar.context is zmq.Context.instance()
+    assert baz.context is zmq.Context.instance()
+
+    assert foo.type == zmq.PUSH
+    assert bar.type == zmq.SUB
+    assert baz.type == zmq.PUB
