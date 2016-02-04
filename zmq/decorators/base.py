@@ -4,11 +4,38 @@ from zmq.utils.strtypes import basestring
 
 
 class ZDecoratorBase(object):
+    '''
+    The mini decorator factory
+    '''
 
     def __init__(self, target):
         self.target = target
 
     def __call__(self, *dec_args, **dec_kwargs):
+        '''
+        The main logic of decorator
+
+        Here is how those arguments works::
+
+            @out_decorator(*dec_args, *dec_kwargs)
+            def func(*wrap_args, **wrap_kwargs):
+                ...
+
+        And in the ``wrapper``, we simply create ``self.target`` instance via
+        ``with``::
+
+            with self.target(*dec_args, **dec_kwargs) as obj:
+                ...
+
+        Hooks
+            We also have hook functions for us to provide more custom logic.
+            Just inherit this class and define the following function.
+            - ``self.preinit``
+            - ``self.postinit``
+            - ``self.preexec``
+            - ``self.postexec``
+            - ``self.cleanup``
+        '''
         self.kwname = None
         self.dec_args = dec_args
         self.dec_kwargs = dec_kwargs
