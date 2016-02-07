@@ -65,8 +65,9 @@ class ZDecoratorBase(object):
                             self.wrap_args += (obj,)
 
                         self.hook('preexec')
-                        func(*self.wrap_args, **self.wrap_kwargs)
+                        ret = func(*self.wrap_args, **self.wrap_kwargs)
                         self.hook('postexec')
+                        return ret
                 except:
                     raise  # re-raise the exception
                 finally:

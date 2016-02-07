@@ -248,6 +248,15 @@ def test_multi_skts_with_name(foo, bar, baz):
     assert baz.type == zmq.PUB
 
 
+def test_func_return():
+    @context()
+    def f(ctx):
+        assert isinstance(ctx, zmq.Context), ctx
+        return 'something'
+
+    assert f() == 'something'
+
+
 class TestMethodDecorators():
     @context()
     @socket(zmq.PUB)
