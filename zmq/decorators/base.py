@@ -45,8 +45,9 @@ class ZDecoratorBase(object):
         def decorator(func):
             @wraps(func)
             def wrapper(*wrap_args, **wrap_kwargs):
-                self.wrap_args = wrap_args
-                self.wrap_kwargs = wrap_kwargs
+                self.wrap_args = wrap_args  # read-only
+                self.wrap_kwargs = wrap_kwargs.copy()  # read-only
+                extra_arg = tuple()
 
                 self.hook('preinit')
 
@@ -54,18 +55,18 @@ class ZDecoratorBase(object):
                     with self.target(*self.dec_args, **self.dec_kwargs) as obj:
                         self.hook('postinit')
 
-                        if self.kwname and self.kwname not in self.wrap_kwargs:
-                            self.wrap_kwargs[self.kwname] = obj
-                        elif self.kwname and self.kwname in self.wrap_kwargs:
+                        if self.kwname and self.kwname not in wrap_kwargs:
+                            wrap_kwargs[self.kwname] = obj
+                        elif self.kwname and self.kwname in wrap_kwargs:
                             raise TypeError(
                                 "{0}() got multiple values for"
                                 " argument '{1}'".format(
                                     func.__name__, self.kwname))
                         else:
-                            self.wrap_args += (obj,)
+                            extra_arg = (obj,)
 
                         self.hook('preexec')
-                        ret = func(*self.wrap_args, **self.wrap_kwargs)
+                        ret = func(*(wrap_args + extra_arg), **wrap_kwargs)
                         self.hook('postexec')
                         return ret
                 except:
