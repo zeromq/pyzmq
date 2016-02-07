@@ -50,24 +50,27 @@ class ZDecoratorBase(object):
 
                 self.hook('preinit')
 
-                with self.target(*self.dec_args, **self.dec_kwargs) as obj:
-                    self.hook('postinit')
+                try:
+                    with self.target(*self.dec_args, **self.dec_kwargs) as obj:
+                        self.hook('postinit')
 
-                    if self.kwname and self.kwname not in self.wrap_kwargs:
-                        self.wrap_kwargs[self.kwname] = obj
-                    elif self.kwname and self.kwname in self.wrap_kwargs:
-                        raise TypeError(
-                            "{0}() got multiple values for"
-                            " argument '{1}'".format(
-                                func.__name__, self.kwname))
-                    else:
-                        self.wrap_args += (obj,)
+                        if self.kwname and self.kwname not in self.wrap_kwargs:
+                            self.wrap_kwargs[self.kwname] = obj
+                        elif self.kwname and self.kwname in self.wrap_kwargs:
+                            raise TypeError(
+                                "{0}() got multiple values for"
+                                " argument '{1}'".format(
+                                    func.__name__, self.kwname))
+                        else:
+                            self.wrap_args += (obj,)
 
-                    self.hook('preexec')
-                    func(*self.wrap_args, **self.wrap_kwargs)
-                    self.hook('postexec')
-
-                self.hook('cleanup')
+                        self.hook('preexec')
+                        func(*self.wrap_args, **self.wrap_kwargs)
+                        self.hook('postexec')
+                except:
+                    raise  # re-raise the exception
+                finally:
+                    self.hook('cleanup')
 
             return wrapper
 
