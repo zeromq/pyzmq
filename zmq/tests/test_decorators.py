@@ -89,9 +89,9 @@ def test_ctx_reinit():
     foo_t.join()
     bar_t.join()
 
-    assert result['foo'] is not None
-    assert result['bar'] is not None
-    assert result['foo'] != result['bar']
+    assert result['foo'] is not None, result
+    assert result['bar'] is not None, result
+    assert result['foo'] != result['bar'], result
 
 
 @context()
@@ -152,9 +152,9 @@ def test_skt_reinit():
     foo_t.join()
     bar_t.join()
 
-    assert result['foo'] is not None
-    assert result['bar'] is not None
-    assert result['foo'] != result['bar']
+    assert result['foo'] is not None, result
+    assert result['bar'] is not None, resule
+    assert result['foo'] != result['bar'], result
 
 
 def test_ctx_skt_reinit():
@@ -180,12 +180,12 @@ def test_ctx_skt_reinit():
     foo_t.join()
     bar_t.join()
 
-    assert result['foo']['ctx'] is not None
-    assert result['foo']['skt'] is not None
-    assert result['bar']['ctx'] is not None
-    assert result['bar']['skt'] is not None
-    assert result['foo']['ctx'] != result['bar']['ctx']
-    assert result['foo']['skt'] != result['bar']['skt']
+    assert result['foo']['ctx'] is not None, result
+    assert result['foo']['skt'] is not None, result
+    assert result['bar']['ctx'] is not None, result
+    assert result['bar']['skt'] is not None, result
+    assert result['foo']['ctx'] != result['bar']['ctx'], result
+    assert result['foo']['skt'] != result['bar']['skt'], result
 
 
 @raises(TypeError)
