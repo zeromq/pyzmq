@@ -1,7 +1,7 @@
+import threading
 import zmq
 
 from nose.tools import raises
-from threading import Thread
 from time import sleep
 from zmq.decorators import context, socket
 
@@ -74,14 +74,16 @@ def test_ctx_reinit():
     result = {'foo': None, 'bar': None}
 
     @context()
-    def f(key, ctx):
+    def f(key, lock, ctx):
         assert isinstance(ctx, zmq.Context), ctx
 
         sleep(0.5)
-        result[key] = id(ctx)
+        with lock:
+            result[key] = id(ctx)
 
-    foo_t = Thread(target=f, args=('foo',))
-    bar_t = Thread(target=f, args=('bar',))
+    lock = threading.Lock()
+    foo_t = threading.Thread(target=f, args=('foo', lock))
+    bar_t = threading.Thread(target=f, args=('bar', lock))
 
     foo_t.start()
     bar_t.start()
@@ -137,14 +139,16 @@ def test_skt_reinit():
     result = {'foo': None, 'bar': None}
 
     @socket(zmq.PUB)
-    def f(key, skt):
+    def f(key, lock, skt):
         assert isinstance(skt, zmq.Socket), skt
 
         sleep(0.5)
-        result[key] = id(skt)
+        with lock:
+            result[key] = id(skt)
 
-    foo_t = Thread(target=f, args=('foo',))
-    bar_t = Thread(target=f, args=('bar',))
+    lock = threading.Lock()
+    foo_t = threading.Thread(target=f, args=('foo', lock))
+    bar_t = threading.Thread(target=f, args=('bar', lock))
 
     foo_t.start()
     bar_t.start()
@@ -163,16 +167,19 @@ def test_ctx_skt_reinit():
 
     @context()
     @socket(zmq.PUB)
-    def f(key, ctx, skt):
+    def f(key, lock, ctx, skt):
         assert isinstance(ctx, zmq.Context), ctx
         assert isinstance(skt, zmq.Socket), skt
 
         sleep(0.5)
-        result[key]['ctx'] = id(ctx)
-        result[key]['skt'] = id(skt)
 
-    foo_t = Thread(target=f, args=('foo',))
-    bar_t = Thread(target=f, args=('bar',))
+        with lock:
+            result[key]['ctx'] = id(ctx)
+            result[key]['skt'] = id(skt)
+
+    lock = threading.Lock()
+    foo_t = threading.Thread(target=f, args=('foo', lock))
+    bar_t = threading.Thread(target=f, args=('bar', lock))
 
     foo_t.start()
     bar_t.start()
