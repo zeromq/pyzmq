@@ -8,6 +8,16 @@ from zmq.decorators import context, socket
 def test_ctx(ctx):
     assert isinstance(ctx, zmq.Context), ctx
 
+def test_ctx_orig_args():
+    @context()
+    def f(foo, bar, ctx, baz=None):
+        assert isinstance(ctx, zmq.Context), ctx
+        assert foo == 42
+        assert bar is True
+        assert baz == 'mock'
+
+    f(42, True, baz='mock')
+
 
 @context('myctx')
 def test_ctx_arg_naming(myctx):
@@ -103,40 +113,40 @@ def test_skt_type_miss(ctx, myskt):
     pass  # the socket type is missing
 
 
-@socket(zmq.PUSH)  # baz
-@socket(zmq.SUB)   # bar
-@socket(zmq.PUB)   # foo
-def test_multi_skts(foo, bar, baz):
-    assert isinstance(foo, zmq.Socket), foo
-    assert isinstance(bar, zmq.Socket), bar
-    assert isinstance(baz, zmq.Socket), baz
+@socket(zmq.PUB)
+@socket(zmq.SUB)
+@socket(zmq.PUSH)
+def test_multi_skts(pub, sub, push):
+    assert isinstance(pub, zmq.Socket), pub
+    assert isinstance(sub, zmq.Socket), sub
+    assert isinstance(push, zmq.Socket), push
 
-    assert foo.context is zmq.Context.instance()
-    assert bar.context is zmq.Context.instance()
-    assert baz.context is zmq.Context.instance()
+    assert pub.context is zmq.Context.instance()
+    assert sub.context is zmq.Context.instance()
+    assert push.context is zmq.Context.instance()
 
-    assert foo.type == zmq.PUB
-    assert bar.type == zmq.SUB
-    assert baz.type == zmq.PUSH
+    assert pub.type == zmq.PUB
+    assert sub.type == zmq.SUB
+    assert push.type == zmq.PUSH
 
 
 @context()
-@socket(zmq.PUSH)  # baz
-@socket(zmq.SUB)   # bar
-@socket(zmq.PUB)   # foo
-def test_multi_skts_single_ctx(foo, bar, baz, ctx):
-    assert isinstance(foo, zmq.Socket), foo
-    assert isinstance(bar, zmq.Socket), bar
-    assert isinstance(baz, zmq.Socket), baz
+@socket(zmq.PUB)
+@socket(zmq.SUB)
+@socket(zmq.PUSH)
+def test_multi_skts_single_ctx(ctx, pub, sub, push):
     assert isinstance(ctx, zmq.Context), ctx
+    assert isinstance(pub, zmq.Socket), pub
+    assert isinstance(sub, zmq.Socket), sub
+    assert isinstance(push, zmq.Socket), push
 
-    assert foo.context is ctx
-    assert bar.context is ctx
-    assert baz.context is ctx
+    assert pub.context is ctx
+    assert sub.context is ctx
+    assert push.context is ctx
 
-    assert foo.type == zmq.PUB
-    assert bar.type == zmq.SUB
-    assert baz.type == zmq.PUSH
+    assert pub.type == zmq.PUB
+    assert sub.type == zmq.SUB
+    assert push.type == zmq.PUSH
 
 
 @socket('foo', zmq.PUSH)
@@ -154,3 +164,39 @@ def test_multi_skts_with_name(foo, bar, baz):
     assert foo.type == zmq.PUSH
     assert bar.type == zmq.SUB
     assert baz.type == zmq.PUB
+
+
+class TestMethodDecorators():
+    @context()
+    @socket(zmq.PUB)
+    @socket(zmq.SUB)
+    def test_multi_skts_method(self, ctx, pub, sub, foo='bar'):
+        assert isinstance(self, TestMethodDecorators), self
+        assert isinstance(ctx, zmq.Context), ctx
+        assert isinstance(pub, zmq.Socket), pub
+        assert isinstance(sub, zmq.Socket), sub
+        assert foo == 'bar'
+
+        assert pub.context is ctx
+        assert sub.context is ctx
+
+        assert pub.type is zmq.PUB
+        assert sub.type is zmq.SUB
+
+    def test_multi_skts_method_other_args(self):
+        @socket(zmq.PUB)
+        @socket(zmq.SUB)
+        def f(foo, pub, sub, bar=None):
+            assert isinstance(pub, zmq.Socket), pub
+            assert isinstance(sub, zmq.Socket), sub
+
+            assert foo == 'mock'
+            assert bar == 'fake'
+
+            assert pub.context is zmq.Context.instance()
+            assert sub.context is zmq.Context.instance()
+
+            assert pub.type is zmq.PUB
+            assert sub.type is zmq.SUB
+
+        f('mock', bar='fake')

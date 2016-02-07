@@ -61,7 +61,7 @@ class ZDecoratorBase(object):
                             " argument '{1}'".format(
                                 func.__name__, self.kwname))
                     else:
-                        self.wrap_args = (obj,) + self.wrap_args
+                        self.wrap_args += (obj,)
 
                     self.hook('preexec')
                     func(*self.wrap_args, **self.wrap_kwargs)

@@ -51,6 +51,8 @@ class _SocketDecorator(ZDecoratorBase):
         instance.
 
         Finally, we will provide default Context -- ``zmq.Context.instance``
+
+        :return: a ``zmq.Context`` instance
         '''
         if self.context_name in self.wrap_kwargs:
             ctx = self.wrap_kwargs[self.context_name]
