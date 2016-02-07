@@ -10,6 +10,7 @@ __all__ = (
 
 import zmq
 
+from functools import partial
 from zmq.decorators.base import ZDecoratorBase
 
 
@@ -38,7 +39,7 @@ class _SocketDecorator(ZDecoratorBase):
     def hook_preinit(self):
         self.context_name = self.dec_kwargs.pop('context_name', 'context')
         self.context = self._get_context()
-        self.dec_args = (self.context,) + self.dec_args
+        self.target = partial(zmq.Socket, self.context)
 
     def _get_context(self):
         '''

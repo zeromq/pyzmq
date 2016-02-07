@@ -1,12 +1,15 @@
 import zmq
 
 from nose.tools import raises
+from threading import Thread
+from time import sleep
 from zmq.decorators import context, socket
 
 
 @context()
 def test_ctx(ctx):
     assert isinstance(ctx, zmq.Context), ctx
+
 
 def test_ctx_orig_args():
     @context()
@@ -67,6 +70,30 @@ def test_multi_assign():
     f('mock')
 
 
+def test_ctx_reinit():
+    result = {'foo': None, 'bar': None}
+
+    @context()
+    def f(key, ctx):
+        assert isinstance(ctx, zmq.Context), ctx
+
+        sleep(0.5)
+        result[key] = id(ctx)
+
+    foo_t = Thread(target=f, args=('foo',))
+    bar_t = Thread(target=f, args=('bar',))
+
+    foo_t.start()
+    bar_t.start()
+
+    foo_t.join()
+    bar_t.join()
+
+    assert result['foo'] is not None
+    assert result['bar'] is not None
+    assert result['foo'] != result['bar']
+
+
 @context()
 @socket(zmq.PUB)
 def test_ctx_skt(skt, ctx):
@@ -104,6 +131,61 @@ def test_skt_default_ctx(skt):
     assert isinstance(skt, zmq.Socket), skt
     assert skt.context is zmq.Context.instance()
     assert skt.type == zmq.PUB
+
+
+def test_skt_reinit():
+    result = {'foo': None, 'bar': None}
+
+    @socket(zmq.PUB)
+    def f(key, skt):
+        assert isinstance(skt, zmq.Socket), skt
+
+        sleep(0.5)
+        result[key] = id(skt)
+
+    foo_t = Thread(target=f, args=('foo',))
+    bar_t = Thread(target=f, args=('bar',))
+
+    foo_t.start()
+    bar_t.start()
+
+    foo_t.join()
+    bar_t.join()
+
+    assert result['foo'] is not None
+    assert result['bar'] is not None
+    assert result['foo'] != result['bar']
+
+
+def test_ctx_skt_reinit():
+    result = {'foo': {'ctx': None, 'skt': None},
+              'bar': {'ctx': None, 'skt': None}}
+
+    @context()
+    @socket(zmq.PUB)
+    def f(key, ctx, skt):
+        assert isinstance(ctx, zmq.Context), ctx
+        assert isinstance(skt, zmq.Socket), skt
+
+        sleep(0.5)
+        result[key]['ctx'] = id(ctx)
+        result[key]['skt'] = id(skt)
+
+    foo_t = Thread(target=f, args=('foo',))
+    bar_t = Thread(target=f, args=('bar',))
+
+    foo_t.start()
+    bar_t.start()
+
+    foo_t.join()
+    bar_t.join()
+
+    assert result['foo']['ctx'] is not None
+    assert result['foo']['skt'] is not None
+    assert result['bar']['ctx'] is not None
+    assert result['bar']['skt'] is not None
+    assert result['foo']['ctx'] != result['bar']['ctx']
+    assert result['foo']['skt'] != result['bar']['skt']
 
 
 @raises(TypeError)
