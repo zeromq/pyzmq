@@ -182,7 +182,7 @@ class _AsyncSocket(_zmq.Socket):
             if future.done():
                 return
             if f.exception():
-                future.set_exception(f.exeception())
+                future.set_exception(f.exception())
             else:
                 evts = dict(f.result())
                 future.set_result(evts.get(self, 0))
@@ -200,7 +200,7 @@ class _AsyncSocket(_zmq.Socket):
         return f
     
     def _add_send_event(self, kind, msg=None, args=None, future=None):
-        """Add a recv event, returning the corresponding Future"""
+        """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
         self._send_futures.append(
             _FutureEvent(f, kind, args=args, msg=msg)
