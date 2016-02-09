@@ -1,3 +1,4 @@
+from copy import copy
 from functools import wraps
 
 from zmq.utils.strtypes import basestring
@@ -9,7 +10,7 @@ class ZDecoratorBase(object):
     '''
 
     def __init__(self, target):
-        self.target = target
+        self._target = target
 
     def __call__(self, *dec_args, **dec_kwargs):
         '''
@@ -36,43 +37,43 @@ class ZDecoratorBase(object):
             - ``self.postexec``
             - ``self.cleanup``
         '''
-        self.kwname = None
-        self.dec_args = dec_args
-        self.dec_kwargs = dec_kwargs
-
-        self.pop_kwname()
+        kwname, dec_args, dec_kwargs = self.pop_kwname(*dec_args, **dec_kwargs)
 
         def decorator(func):
             @wraps(func)
             def wrapper(*wrap_args, **wrap_kwargs):
-                self.wrap_args = wrap_args  # read-only
-                self.wrap_kwargs = wrap_kwargs.copy()  # read-only
+                this = copy(self)
+                this.target = this._target
+                this.dec_args = dec_args
+                this.dec_kwargs = dec_kwargs.copy()
+                this.wrap_args = wrap_args
+                this.wrap_kwargs = wrap_kwargs.copy()
                 extra_arg = tuple()
 
-                self.hook('preinit')
+                this.hook('preinit')
 
                 try:
-                    with self.target(*self.dec_args, **self.dec_kwargs) as obj:
-                        self.hook('postinit')
+                    with this.target(*this.dec_args, **this.dec_kwargs) as obj:
+                        this.hook('postinit')
 
-                        if self.kwname and self.kwname not in wrap_kwargs:
-                            wrap_kwargs[self.kwname] = obj
-                        elif self.kwname and self.kwname in wrap_kwargs:
+                        if kwname and kwname not in wrap_kwargs:
+                            wrap_kwargs[kwname] = obj
+                        elif kwname and kwname in wrap_kwargs:
                             raise TypeError(
                                 "{0}() got multiple values for"
                                 " argument '{1}'".format(
-                                    func.__name__, self.kwname))
+                                    func.__name__, kwname))
                         else:
                             extra_arg = (obj,)
 
-                        self.hook('preexec')
+                        this.hook('preexec')
                         ret = func(*(wrap_args + extra_arg), **wrap_kwargs)
-                        self.hook('postexec')
+                        this.hook('postexec')
                         return ret
                 except:
                     raise  # re-raise the exception
                 finally:
-                    self.hook('cleanup')
+                    this.hook('cleanup')
 
             return wrapper
 
@@ -85,10 +86,13 @@ class ZDecoratorBase(object):
     def nop(*args, **kwargs):
         pass  # and save the world silently
 
-    def pop_kwname(self):
-        if isinstance(self.dec_kwargs.get('name'), basestring):
-            self.kwname = self.dec_kwargs.pop('name')
-        elif (len(self.dec_args) >= 1 and
-              isinstance(self.dec_args[0], basestring)):
-            self.kwname = self.dec_args[0]
-            self.dec_args = self.dec_args[1:]
+    def pop_kwname(self, *args, **kwargs):
+        kwname = None
+
+        if isinstance(kwargs.get('name'), basestring):
+            kwname = kwargs.pop('name')
+        elif len(args) >= 1 and isinstance(args[0], basestring):
+            kwname = args[0]
+            args = args[1:]
+
+        return kwname, args, kwargs
