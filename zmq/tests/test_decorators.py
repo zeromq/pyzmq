@@ -2,12 +2,11 @@ import threading
 import zmq
 
 from nose.tools import raises
-from time import sleep
 from zmq.decorators import context, socket
 
 
 ##############################################
-#  Test cases for ``context``
+#  Test cases for @context
 ##############################################
 
 
@@ -79,16 +78,12 @@ def test_ctx_reinit():
     result = {'foo': None, 'bar': None}
 
     @context()
-    def f(key, lock, ctx):
+    def f(key, ctx):
         assert isinstance(ctx, zmq.Context), ctx
+        result[key] = ctx
 
-        sleep(0.5)
-        with lock:
-            result[key] = id(ctx)
-
-    lock = threading.Lock()
-    foo_t = threading.Thread(target=f, args=('foo', lock))
-    bar_t = threading.Thread(target=f, args=('bar', lock))
+    foo_t = threading.Thread(target=f, args=('foo',))
+    bar_t = threading.Thread(target=f, args=('bar',))
 
     foo_t.start()
     bar_t.start()
@@ -98,7 +93,7 @@ def test_ctx_reinit():
 
     assert result['foo'] is not None, result
     assert result['bar'] is not None, result
-    assert result['foo'] != result['bar'], result
+    assert result['foo'] is not result['bar'], result
 
 
 def test_ctx_multi_thread():
@@ -116,15 +111,15 @@ def test_ctx_multi_thread():
 
 
 ##############################################
-#  Test cases for ``socket``
+#  Test cases for @socket
 ##############################################
 
 
 @context()
 @socket(zmq.PUB)
-def test_ctx_skt(skt, ctx):
-    assert isinstance(skt, zmq.Socket), skt
+def test_ctx_skt(ctx, skt):
     assert isinstance(ctx, zmq.Context), ctx
+    assert isinstance(skt, zmq.Socket), skt
     assert skt.type == zmq.PUB
 
 
@@ -146,7 +141,7 @@ def test_skt_kwarg(ctx, myskt):
 
 @context('ctx')
 @socket('skt', zmq.PUB, context_name='ctx')
-def test_ctx_skt(ctx, skt):
+def test_ctx_skt_name(ctx, skt):
     assert isinstance(skt, zmq.Socket), skt
     assert isinstance(ctx, zmq.Context), ctx
     assert skt.type == zmq.PUB
@@ -163,16 +158,13 @@ def test_skt_reinit():
     result = {'foo': None, 'bar': None}
 
     @socket(zmq.PUB)
-    def f(key, lock, skt):
+    def f(key, skt):
         assert isinstance(skt, zmq.Socket), skt
 
-        sleep(0.5)
-        with lock:
-            result[key] = id(skt)
+        result[key] = skt
 
-    lock = threading.Lock()
-    foo_t = threading.Thread(target=f, args=('foo', lock))
-    bar_t = threading.Thread(target=f, args=('bar', lock))
+    foo_t = threading.Thread(target=f, args=('foo',))
+    bar_t = threading.Thread(target=f, args=('bar',))
 
     foo_t.start()
     bar_t.start()
@@ -181,8 +173,8 @@ def test_skt_reinit():
     bar_t.join()
 
     assert result['foo'] is not None, result
-    assert result['bar'] is not None, resule
-    assert result['foo'] != result['bar'], result
+    assert result['bar'] is not None, result
+    assert result['foo'] is not result['bar'], result
 
 
 def test_ctx_skt_reinit():
@@ -191,19 +183,15 @@ def test_ctx_skt_reinit():
 
     @context()
     @socket(zmq.PUB)
-    def f(key, lock, ctx, skt):
+    def f(key, ctx, skt):
         assert isinstance(ctx, zmq.Context), ctx
         assert isinstance(skt, zmq.Socket), skt
 
-        sleep(0.5)
+        result[key]['ctx'] = ctx
+        result[key]['skt'] = skt
 
-        with lock:
-            result[key]['ctx'] = id(ctx)
-            result[key]['skt'] = id(skt)
-
-    lock = threading.Lock()
-    foo_t = threading.Thread(target=f, args=('foo', lock))
-    bar_t = threading.Thread(target=f, args=('bar', lock))
+    foo_t = threading.Thread(target=f, args=('foo',))
+    bar_t = threading.Thread(target=f, args=('bar',))
 
     foo_t.start()
     bar_t.start()
@@ -215,8 +203,8 @@ def test_ctx_skt_reinit():
     assert result['foo']['skt'] is not None, result
     assert result['bar']['ctx'] is not None, result
     assert result['bar']['skt'] is not None, result
-    assert result['foo']['ctx'] != result['bar']['ctx'], result
-    assert result['foo']['skt'] != result['bar']['skt'], result
+    assert result['foo']['ctx'] is not result['bar']['ctx'], result
+    assert result['foo']['skt'] is not result['bar']['skt'], result
 
 
 @raises(TypeError)
