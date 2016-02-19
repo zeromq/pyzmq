@@ -103,8 +103,10 @@ class _AsyncPoller(_zmq.Poller):
             
         return future
 
+
 class Poller(_AsyncTornado, _AsyncPoller):
     pass
+
 
 class _AsyncSocket(_zmq.Socket):
     
@@ -133,7 +135,7 @@ class _AsyncSocket(_zmq.Socket):
             dict(flags=flags, copy=copy, track=track)
         )
     
-    def recv(self, flags=0, copy=True, track=False):
+    def recv(self, flags=0, copy=True, track=False, io_loop=None):
         """Receive a single zmq frame.
         
         Returns a Future, whose result will be the received frame.
@@ -141,30 +143,30 @@ class _AsyncSocket(_zmq.Socket):
         Recommend using recv_multipart instead.
         """
         return self._add_recv_event('recv',
-            dict(flags=flags, copy=copy, track=track)
+            dict(flags=flags, copy=copy, track=track), io_loop=io_loop,
         )
     
-    def send_multipart(self, msg, flags=0, copy=True, track=False):
+    def send_multipart(self, msg, flags=0, copy=True, track=False, io_loop=None):
         """Send a complete multipart zmq message.
         
         Returns a Future that resolves when sending is complete.
         """
-        return self._add_send_event('send_multipart', msg=msg,
+        return self._add_send_event('send_multipart', msg=msg, io_loop=io_loop,
             args=dict(flags=flags, copy=copy, track=track),
         )
     
-    def send(self, msg, flags=0, copy=True, track=False):
+    def send(self, msg, flags=0, copy=True, track=False, io_loop=None):
         """Send a single zmq frame.
         
         Returns a Future that resolves when sending is complete.
         
         Recommend using send_multipart instead.
         """
-        return self._add_send_event('send', msg=msg,
-            args=dict(flags=flags, copy=copy, track=track),
+        return self._add_send_event('send', msg=msg, io_loop=io_loop,
+            args=dict(flags=flags, copy=copy, track=track)
         )
     
-    def poll(self, timeout=None, flags=_zmq.POLLIN):
+    def poll(self, timeout=None, flags=_zmq.POLLIN, io_loop=None):
         """poll the socket for events
         
         returns a Future for the poll results.
@@ -177,7 +179,7 @@ class _AsyncSocket(_zmq.Socket):
         p.register(self, flags)
         f = p.poll(timeout)
         
-        future = self._Future()
+        future = self._Future(loop=io_loop)
         def unwrap_result(f):
             if future.done():
                 return
@@ -190,18 +192,18 @@ class _AsyncSocket(_zmq.Socket):
         f.add_done_callback(unwrap_result)
         return future
 
-    def _add_recv_event(self, kind, args=None, future=None):
+    def _add_recv_event(self, kind, args=None, future=None, io_loop=None):
         """Add a recv event, returning the corresponding Future"""
-        f = future or self._Future()
+        f = future or self._Future(loop=io_loop)
         self._recv_futures.append(
             _FutureEvent(f, kind, args, msg=None)
         )
         self._add_io_state(self._READ)
         return f
     
-    def _add_send_event(self, kind, msg=None, args=None, future=None):
+    def _add_send_event(self, kind, msg=None, args=None, future=None, io_loop=None):
         """Add a send event, returning the corresponding Future"""
-        f = future or self._Future()
+        f = future or self._Future(loop=io_loop)
         self._send_futures.append(
             _FutureEvent(f, kind, args=args, msg=msg)
         )
