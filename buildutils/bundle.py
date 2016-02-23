@@ -37,8 +37,8 @@ libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
 libzmq_url = "http://download.zeromq.org/" + libzmq
 # FIXME: temporarily use GitHub download while waiting for 4.1.5 release
 # use codeload URL because SSL fails on github.com/archive URLs on Windows for some reason
-libzmq_url = "https://codeload.github.com/zeromq/zeromq4-1/tar.gz/b7a30978cae343d061983e00e8b2c713b66fc5a9"
-libzmq_checksum = "sha256:2b1b318677133e3816e51ab6d0a5769e01504095b32064b6b90feeef3f2eec1a"
+libzmq_url = "https://codeload.github.com/zeromq/zeromq4-1/tar.gz/0b781f84e8a93796a3902bd5ec2828391e9e2bd1"
+libzmq_checksum = "sha256:01b8eeae47e928bddff97adc1706e33ad09165b456dc3782185673d3ac5a0bf4"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
