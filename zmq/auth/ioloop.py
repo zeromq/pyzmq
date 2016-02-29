@@ -14,7 +14,7 @@ class IOLoopAuthenticator(Authenticator):
     """ZAP authentication for use in the tornado IOLoop"""
 
     def __init__(self, context=None, encoding='utf-8', log=None, io_loop=None):
-        super(IOLoopAuthenticator, self).__init__(context)
+        super(IOLoopAuthenticator, self).__init__(context, encoding, log)
         self.zap_stream = None
         self.io_loop = io_loop or ioloop.IOLoop.instance()
 
