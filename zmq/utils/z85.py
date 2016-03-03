@@ -43,6 +43,9 @@ def encode(rawbytes):
 
 def decode(z85bytes):
     """decode Z85 bytes to raw bytes"""
+    if PY3 and isinstance(z85bytes, str):
+        z85bytes = z85bytes.encode('ascii')
+
     if len(z85bytes) % 5:
         raise ValueError("Z85 length must be multiple of 5, not %i" % len(z85bytes))
     
