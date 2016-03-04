@@ -50,4 +50,4 @@ matrix:
     - env: ZMQ=libzmq
     - python: nightly
 
-script: python setup.py test
+script: travis_retry python setup.py test
