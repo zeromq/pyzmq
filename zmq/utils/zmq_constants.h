@@ -638,6 +638,10 @@
     #define ZMQ_VMCI_CONNECT_TIMEOUT (_PYZMQ_UNDEFINED)
 #endif
 
+#ifndef ZMQ_USE_FD
+    #define ZMQ_USE_FD (_PYZMQ_UNDEFINED)
+#endif
+
 #ifndef ZMQ_AFFINITY
     #define ZMQ_AFFINITY (_PYZMQ_UNDEFINED)
 #endif

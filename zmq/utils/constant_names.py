@@ -141,6 +141,7 @@ new_in = {
         'VMCI_BUFFER_MIN_SIZE',
         'VMCI_BUFFER_MAX_SIZE',
         'VMCI_CONNECT_TIMEOUT',
+        'USE_FD',
         
         # polling
         'POLLPRI',
@@ -372,6 +373,7 @@ int_sockopt_names = [
     'THREAD_SAFE',
     'MULTICAST_MAXTPDU',
     'VMCI_CONNECT_TIMEOUT',
+    'USE_FD',
 ]
 
 switched_sockopt_names = [

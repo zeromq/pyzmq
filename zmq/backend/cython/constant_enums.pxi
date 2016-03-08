@@ -159,6 +159,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_VMCI_BUFFER_MIN_SIZE
     enum: ZMQ_VMCI_BUFFER_MAX_SIZE
     enum: ZMQ_VMCI_CONNECT_TIMEOUT
+    enum: ZMQ_USE_FD
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
