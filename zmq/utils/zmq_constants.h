@@ -618,14 +618,6 @@
     #define ZMQ_THREAD_SAFE (_PYZMQ_UNDEFINED)
 #endif
 
-#ifndef ZMQ_TCP_RECV_BUFFER
-    #define ZMQ_TCP_RECV_BUFFER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_TCP_SEND_BUFFER
-    #define ZMQ_TCP_SEND_BUFFER (_PYZMQ_UNDEFINED)
-#endif
-
 #ifndef ZMQ_AFFINITY
     #define ZMQ_AFFINITY (_PYZMQ_UNDEFINED)
 #endif

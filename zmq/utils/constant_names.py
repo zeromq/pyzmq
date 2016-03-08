@@ -136,8 +136,6 @@ new_in = {
         'CONNECT_TIMEOUT',
         'TCP_MAXRT',
         'THREAD_SAFE',
-        'TCP_RECV_BUFFER',
-        'TCP_SEND_BUFFER',
         
         # polling
         'POLLPRI',
@@ -362,8 +360,6 @@ int_sockopt_names = [
     'CONNECT_TIMEOUT',
     'TCP_MAXRT',
     'THREAD_SAFE',
-    'TCP_RECV_BUFFER',
-    'TCP_SEND_BUFFER',
 ]
 
 switched_sockopt_names = [
