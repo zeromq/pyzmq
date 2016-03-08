@@ -618,6 +618,10 @@
     #define ZMQ_THREAD_SAFE (_PYZMQ_UNDEFINED)
 #endif
 
+#ifndef ZMQ_MULTICAST_MAXTPDU
+    #define ZMQ_MULTICAST_MAXTPDU (_PYZMQ_UNDEFINED)
+#endif
+
 #ifndef ZMQ_AFFINITY
     #define ZMQ_AFFINITY (_PYZMQ_UNDEFINED)
 #endif

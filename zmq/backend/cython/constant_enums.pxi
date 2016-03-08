@@ -154,6 +154,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_CONNECT_TIMEOUT
     enum: ZMQ_TCP_MAXRT
     enum: ZMQ_THREAD_SAFE
+    enum: ZMQ_MULTICAST_MAXTPDU
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
