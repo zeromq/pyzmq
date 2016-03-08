@@ -147,7 +147,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_XPUB_MANUAL
     enum: ZMQ_STREAM_NOTIFY
     enum: ZMQ_INVERT_MATCHING
-    enum: ZMQ_XPUB_VERBOSE_UNSUBSCRIBE
+    enum: ZMQ_XPUB_VERBOSER
     enum: ZMQ_HEARTBEAT_IVL
     enum: ZMQ_HEARTBEAT_TTL
     enum: ZMQ_HEARTBEAT_TIMEOUT
