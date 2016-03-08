@@ -42,7 +42,13 @@ def encode(rawbytes):
         return b''.join(encoded)
 
 def decode(z85bytes):
-    """decode Z85 bytes to raw bytes"""
+    """decode Z85 bytes to raw bytes, accepts ASCII string"""
+    if PY3 and isinstance(z85bytes, str):
+        try:
+            z85bytes = z85bytes.encode('ascii')
+        except UnicodeEncodeError:
+            raise ValueError('string argument should contain only ASCII characters')
+
     if len(z85bytes) % 5:
         raise ValueError("Z85 length must be multiple of 5, not %i" % len(z85bytes))
     
