@@ -137,6 +137,10 @@ new_in = {
         'TCP_MAXRT',
         'THREAD_SAFE',
         'MULTICAST_MAXTPDU',
+        'VMCI_BUFFER_SIZE',
+        'VMCI_BUFFER_MIN_SIZE',
+        'VMCI_BUFFER_MAX_SIZE',
+        'VMCI_CONNECT_TIMEOUT',
         
         # polling
         'POLLPRI',
@@ -271,6 +275,11 @@ int64_sockopt_names = [
     'SWAP',
     'MCAST_LOOP',
     'RECOVERY_IVL_MSEC',
+
+    # new in 4.2
+    'VMCI_BUFFER_SIZE',
+    'VMCI_BUFFER_MIN_SIZE',
+    'VMCI_BUFFER_MAX_SIZE',
 ]
 
 bytes_sockopt_names = [
@@ -362,6 +371,7 @@ int_sockopt_names = [
     'TCP_MAXRT',
     'THREAD_SAFE',
     'MULTICAST_MAXTPDU',
+    'VMCI_CONNECT_TIMEOUT',
 ]
 
 switched_sockopt_names = [
