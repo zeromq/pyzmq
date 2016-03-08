@@ -152,7 +152,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_HEARTBEAT_TTL
     enum: ZMQ_HEARTBEAT_TIMEOUT
     enum: ZMQ_CONNECT_TIMEOUT
-    enum: ZMQ_TCP_RETRANSMIT_TIMEOUT
+    enum: ZMQ_TCP_MAXRT
     enum: ZMQ_THREAD_SAFE
     enum: ZMQ_TCP_RECV_BUFFER
     enum: ZMQ_TCP_SEND_BUFFER
