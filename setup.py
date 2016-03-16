@@ -59,6 +59,9 @@ from buildutils import (
     patch_lib_paths,
     )
 
+# name of the libzmq library - can be changed by --libzmq <name>
+libzmq_name = 'libzmq'
+
 #-----------------------------------------------------------------------------
 # Flags
 #-----------------------------------------------------------------------------
@@ -103,6 +106,12 @@ for idx, arg in enumerate(list(sys.argv)):
         sys.argv.insert(configure_idx + 1, arg)
         break
 
+for idx, arg in enumerate(list(sys.argv)):
+    if arg.startswith('--libzmq='):
+        sys.argv.pop(idx)
+        libzmq_name = arg.split("=",1)[1]
+        break
+
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
 #-----------------------------------------------------------------------------
@@ -137,7 +146,7 @@ def bundled_settings(debug):
         else:
             release = 'Release'
 
-        settings['libraries'].append('libzmq' + suffix)
+        settings['libraries'].append(libzmq_name + suffix)
         settings['library_dirs'].append(pjoin('build', temp, release, 'buildutils'))
 
     return settings
@@ -186,7 +195,7 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     settings['extra_link_args'] = [] 
     
     if sys.platform.startswith('win'):
-        settings['libraries'].append('libzmq')
+        settings['libraries'].append(libzmq_name)
         
         if prefix:
             settings['include_dirs'] += [pjoin(prefix, 'include')]
@@ -353,18 +362,18 @@ class Configure(build_ext):
         os.makedirs(self.tempdir)
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
-            local_dll = pjoin(self.tempdir, 'libzmq.dll')
+            local_dll = pjoin(self.tempdir, libzmq_name + '.dll')
             if not self.config['zmq_prefix'] and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg"
                 " or 'python setup.py configure --zmq=/path/to/zeromq2'")
             
             try:
-                shutil.copy(pjoin(self.config['zmq_prefix'], 'lib', 'libzmq.dll'), local_dll)
+                shutil.copy(pjoin(self.config['zmq_prefix'], 'lib', libzmq_name + '.dll'), local_dll)
             except Exception:
                 if not os.path.exists(local_dll):
-                    warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
+                    warn("Could not copy " + libzmq_name + " into zmq/, which is usually necessary on Windows."
                     "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
-                    "libzmq into zmq/ manually.")
+                    + libzmq_name + " into zmq/ manually.")
 
     def erase_tempdir(self):
         try:
@@ -445,16 +454,16 @@ class Configure(build_ext):
 
         if sys.platform.startswith('win'):
             # fetch libzmq.dll into local dir
-            local_dll = localpath('zmq','libzmq.dll')
+            local_dll = localpath('zmq', libzmq_name + '.dll')
             if not zmq_prefix and not os.path.exists(local_dll):
                 fatal("ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/zeromq2'")
             try:
-                shutil.copy(pjoin(zmq_prefix, 'lib', 'libzmq.dll'), local_dll)
+                shutil.copy(pjoin(zmq_prefix, 'lib', libzmq_name + '.dll'), local_dll)
             except Exception:
                 if not os.path.exists(local_dll):
-                    warn("Could not copy libzmq into zmq/, which is usually necessary on Windows."
+                    warn("Could not copy " + libzmq_name + " into zmq/, which is usually necessary on Windows."
                     "Please specify zmq prefix via configure --zmq=/path/to/zmq or copy "
-                    "libzmq into zmq/ manually.")
+                    + libzmq_name + " into zmq/ manually.")
     
     def bundle_libzmq_extension(self):
         bundledir = "bundled"
@@ -652,7 +661,7 @@ class Configure(build_ext):
             return
         
         if zmq_prefix and self.bundle_libzmq_dylib and not sys.platform.startswith('win'):
-            copy_and_patch_libzmq(zmq_prefix, 'libzmq'+lib_ext)
+            copy_and_patch_libzmq(zmq_prefix, libzmq_name+lib_ext)
         
         # first try with given config or defaults
         try:
@@ -1136,7 +1145,7 @@ package_data = {'zmq': ['*.pxd'],
                 'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
 
-package_data['zmq'].append('libzmq'+lib_ext)
+package_data['zmq'].append(libzmq_name+lib_ext)
 
 def extract_version():
     """extract pyzmq version from sugar/version.py, so it's not multiply defined"""
