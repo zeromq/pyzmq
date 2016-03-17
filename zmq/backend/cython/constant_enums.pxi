@@ -155,9 +155,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_TCP_MAXRT
     enum: ZMQ_THREAD_SAFE
     enum: ZMQ_MULTICAST_MAXTPDU
-    enum: ZMQ_VMCI_BUFFER_SIZE
-    enum: ZMQ_VMCI_BUFFER_MIN_SIZE
-    enum: ZMQ_VMCI_BUFFER_MAX_SIZE
     enum: ZMQ_VMCI_CONNECT_TIMEOUT
     enum: ZMQ_USE_FD
     enum: ZMQ_AFFINITY
@@ -166,6 +163,9 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_SWAP
     enum: ZMQ_MCAST_LOOP
     enum: ZMQ_RECOVERY_IVL_MSEC
+    enum: ZMQ_VMCI_BUFFER_SIZE
+    enum: ZMQ_VMCI_BUFFER_MIN_SIZE
+    enum: ZMQ_VMCI_BUFFER_MAX_SIZE
     enum: ZMQ_RATE
     enum: ZMQ_RECOVERY_IVL
     enum: ZMQ_SNDBUF
