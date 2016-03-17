@@ -146,6 +146,8 @@ class TestSocket(BaseZMQTestCase):
                 'ROUTER', 'XPUB', 'TCP', 'FAIL',
                 'REQ_', 'CURVE_', 'PROBE_ROUTER',
                 'IPC_FILTER', 'GSSAPI', 'STREAM_',
+                'VMCI_BUFFER_SIZE', 'VMCI_BUFFER_MIN_SIZE',
+                'VMCI_BUFFER_MAX_SIZE', 'VMCI_CONNECT_TIMEOUT',
                 )):
                 # some sockopts are write-only
                 continue

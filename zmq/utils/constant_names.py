@@ -132,12 +132,16 @@ new_in = {
         'HEARTBEAT_IVL',
         'HEARTBEAT_TTL',
         'HEARTBEAT_TIMEOUT',
-        'XPUB_VERBOSE_UNSUBSCRIBE',
+        'XPUB_VERBOSER',
         'CONNECT_TIMEOUT',
-        'TCP_RETRANSMIT_TIMEOUT',
+        'TCP_MAXRT',
         'THREAD_SAFE',
-        'TCP_RECV_BUFFER',
-        'TCP_SEND_BUFFER',
+        'MULTICAST_MAXTPDU',
+        'VMCI_BUFFER_SIZE',
+        'VMCI_BUFFER_MIN_SIZE',
+        'VMCI_BUFFER_MAX_SIZE',
+        'VMCI_CONNECT_TIMEOUT',
+        'USE_FD',
         
         # polling
         'POLLPRI',
@@ -272,6 +276,11 @@ int64_sockopt_names = [
     'SWAP',
     'MCAST_LOOP',
     'RECOVERY_IVL_MSEC',
+
+    # new in 4.2
+    'VMCI_BUFFER_SIZE',
+    'VMCI_BUFFER_MIN_SIZE',
+    'VMCI_BUFFER_MAX_SIZE',
 ]
 
 bytes_sockopt_names = [
@@ -355,15 +364,16 @@ int_sockopt_names = [
     'XPUB_MANUAL',
     'STREAM_NOTIFY',
     'INVERT_MATCHING',
-    'XPUB_VERBOSE_UNSUBSCRIBE',
+    'XPUB_VERBOSER',
     'HEARTBEAT_IVL',
     'HEARTBEAT_TTL',
     'HEARTBEAT_TIMEOUT',
     'CONNECT_TIMEOUT',
-    'TCP_RETRANSMIT_TIMEOUT',
+    'TCP_MAXRT',
     'THREAD_SAFE',
-    'TCP_RECV_BUFFER',
-    'TCP_SEND_BUFFER',
+    'MULTICAST_MAXTPDU',
+    'VMCI_CONNECT_TIMEOUT',
+    'USE_FD',
 ]
 
 switched_sockopt_names = [
