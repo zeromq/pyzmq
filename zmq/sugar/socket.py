@@ -135,6 +135,42 @@ class Socket(SocketBase, AttributeSetter):
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
     
+    def __setattr__(self, key, value):
+        """override to allow setting zmq.[UN]SUBSCRIBE even though we have a subscribe method"""
+        _key = key.lower()
+        if _key in ('subscribe', 'unsubscribe'):
+            
+            if isinstance(value, unicode):
+                value = value.encode('utf8')
+            if _key == 'subscribe':
+                self.set(zmq.SUBSCRIBE, value)
+            else:
+                self.set(zmq.UNSUBSCRIBE, value)
+            return
+        super(Socket, self).__setattr__(key, value)
+    
+    def subscribe(self, topic):
+        """Subscribe to a topic
+
+        Only for SUB sockets.
+
+        .. versionadded:: 15.3
+        """
+        if isinstance(topic, unicode):
+            topic = topic.encode('utf8')
+        self.set(zmq.SUBSCRIBE, topic)
+    
+    def unsubscribe(self, topic):
+        """Unsubscribe from a topic
+
+        Only for SUB sockets.
+
+        .. versionadded:: 15.3
+        """
+        if isinstance(topic, unicode):
+            topic = topic.encode('utf8')
+        self.set(zmq.UNSUBSCRIBE, topic)
+    
     def set_string(self, option, optval, encoding='utf-8'):
         """set socket options with a unicode object
         
