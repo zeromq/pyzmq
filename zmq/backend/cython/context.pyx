@@ -108,16 +108,12 @@ cdef class Context:
             if self._n_sockets:
                 # move last handle to closed socket's index
                 self._sockets[idx] = self._sockets[self._n_sockets]
-    
-    
+
     @property
     def underlying(self):
         """The address of the underlying libzmq context"""
         return <size_t> self.handle
-    
-    # backward-compat, though nobody is using it
-    _handle = underlying
-    
+
     cdef inline int _term(self):
         cdef int rc=0
         if self.handle != NULL and not self.closed and getpid() == self._pid:
