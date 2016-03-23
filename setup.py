@@ -1139,7 +1139,7 @@ if pypy:
 
 
 package_data = {'zmq': ['*.pxd'],
-                'zmq.backend.cython': ['*.pxd'],
+                'zmq.backend.cython': ['*.pxd', '*.pxi'],
                 'zmq.backend.cffi': ['*.h', '*.c'],
                 'zmq.devices': ['*.pxd'],
                 'zmq.utils': ['*.pxd', '*.h', '*.json'],
