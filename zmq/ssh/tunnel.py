@@ -220,7 +220,7 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
     cmd = "%s -O check %s" % (ssh, server)
     (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
     if not exitstatus:
-        pid = int(output[output.find("(pid=")+5:output.find(")")]) 
+        pid = int(output[output.find(b"(pid=")+5:output.find(b")")])
         cmd = "%s -O forward -L 127.0.0.1:%i:%s:%i %s" % (
             ssh, lport, remoteip, rport, server)
         (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
