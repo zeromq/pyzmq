@@ -79,7 +79,7 @@ class _AsyncPoller(_zmq.Poller):
                     future.set_result(result)
         watcher.add_done_callback(on_poll_ready)
         
-        if timeout > 0:
+        if timeout is not None and timeout > 0:
             # schedule cancel to fire on poll timeout, if any
             def trigger_timeout():
                 if not watcher.done():
