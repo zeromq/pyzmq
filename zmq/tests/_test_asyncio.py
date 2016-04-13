@@ -60,6 +60,21 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             self.assertEqual(recvd, b'there')
         self.loop.run_until_complete(test())
 
+    def test_recv_dontwait(self):
+        @asyncio.coroutine
+        def test():
+            push, pull = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = pull.recv(zmq.DONTWAIT)
+            with self.assertRaises(zmq.Again):
+                yield from f
+            yield from push.send(b'ping')
+            yield from pull.poll() # ensure message will be waiting
+            f = pull.recv(zmq.DONTWAIT)
+            assert f.done()
+            msg = yield from f
+            self.assertEqual(msg, b'ping')
+        self.loop.run_until_complete(test())
+
     def test_recv_cancel(self):
         @asyncio.coroutine
         def test():

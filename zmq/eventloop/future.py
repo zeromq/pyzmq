@@ -28,7 +28,7 @@ import zmq as _zmq
 from zmq.eventloop.ioloop import IOLoop
 
 
-_FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'args', 'msg'))
+_FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
 
 # mixins for tornado/asyncio compatibility
 
@@ -79,7 +79,7 @@ class _AsyncPoller(_zmq.Poller):
                     future.set_result(result)
         watcher.add_done_callback(on_poll_ready)
         
-        if timeout > 0:
+        if timeout is not None and timeout > 0:
             # schedule cancel to fire on poll timeout, if any
             def trigger_timeout():
                 if not watcher.done():
@@ -150,7 +150,7 @@ class _AsyncSocket(_zmq.Socket):
         Returns a Future that resolves when sending is complete.
         """
         return self._add_send_event('send_multipart', msg=msg,
-            args=dict(flags=flags, copy=copy, track=track),
+            kwargs=dict(flags=flags, copy=copy, track=track),
         )
     
     def send(self, msg, flags=0, copy=True, track=False):
@@ -161,7 +161,7 @@ class _AsyncSocket(_zmq.Socket):
         Recommend using send_multipart instead.
         """
         return self._add_send_event('send', msg=msg,
-            args=dict(flags=flags, copy=copy, track=track),
+            kwargs=dict(flags=flags, copy=copy, track=track),
         )
     
     def poll(self, timeout=None, flags=_zmq.POLLIN):
@@ -190,20 +190,42 @@ class _AsyncSocket(_zmq.Socket):
         f.add_done_callback(unwrap_result)
         return future
 
-    def _add_recv_event(self, kind, args=None, future=None):
+    def _add_recv_event(self, kind, kwargs=None, future=None):
         """Add a recv event, returning the corresponding Future"""
         f = future or self._Future()
+        if kind.startswith('recv') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+            # short-circuit non-blocking calls
+            recv = getattr(self._shadow_sock, kind)
+            try:
+                r = recv(**kwargs)
+            except Exception as e:
+                f.set_exception(e)
+            else:
+                f.set_result(r)
+            return f
+
         self._recv_futures.append(
-            _FutureEvent(f, kind, args, msg=None)
+            _FutureEvent(f, kind, kwargs, msg=None)
         )
         self._add_io_state(self._READ)
         return f
     
-    def _add_send_event(self, kind, msg=None, args=None, future=None):
+    def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
+        if kind.startswith('send') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+            # short-circuit non-blocking calls
+            send = getattr(self._shadow_sock, kind)
+            try:
+                r = send(**kwargs)
+            except Exception as e:
+                f.set_exception(e)
+            else:
+                f.set_result(r)
+            return f
+
         self._send_futures.append(
-            _FutureEvent(f, kind, args=args, msg=msg)
+            _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
         )
         self._add_io_state(self._WRITE)
         return f
