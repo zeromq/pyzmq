@@ -193,6 +193,17 @@ class _AsyncSocket(_zmq.Socket):
     def _add_recv_event(self, kind, kwargs=None, future=None):
         """Add a recv event, returning the corresponding Future"""
         f = future or self._Future()
+        if kind.startswith('recv') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+            # short-circuit non-blocking calls
+            recv = getattr(self._shadow_sock, kind)
+            try:
+                r = recv(**kwargs)
+            except Exception as e:
+                f.set_exception(e)
+            else:
+                f.set_result(r)
+            return f
+
         self._recv_futures.append(
             _FutureEvent(f, kind, kwargs, msg=None)
         )
@@ -202,6 +213,17 @@ class _AsyncSocket(_zmq.Socket):
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
+        if kind.startswith('send') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+            # short-circuit non-blocking calls
+            send = getattr(self._shadow_sock, kind)
+            try:
+                r = send(**kwargs)
+            except Exception as e:
+                f.set_exception(e)
+            else:
+                f.set_result(r)
+            return f
+
         self._send_futures.append(
             _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
         )
