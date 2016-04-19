@@ -9,16 +9,15 @@ import time
 import struct
 
 from unittest import TestCase
-
+from pytest import mark
 import zmq
-from zmq.tests import BaseZMQTestCase, skip_if, skip_pypy
+from zmq.tests import BaseZMQTestCase, skip_pypy, require_zmq_4
 from zmq.utils.monitor import recv_monitor_message
 
-skip_lt_4 = skip_if(zmq.zmq_version_info() < (4,), "requires zmq >= 4")
 
 class TestSocketMonitor(BaseZMQTestCase):
 
-    @skip_lt_4
+    @require_zmq_4
     def test_monitor(self):
         """Test monitoring interface for sockets."""
         s_rep = self.context.socket(zmq.REP)
@@ -48,21 +47,20 @@ class TestSocketMonitor(BaseZMQTestCase):
         m = recv_monitor_message(s_event)
         self.assertEqual(m['event'], zmq.EVENT_MONITOR_STOPPED)
 
-
-    @skip_lt_4
+    @require_zmq_4
     def test_monitor_repeat(self):
         s = self.socket(zmq.PULL)
         m = s.get_monitor_socket()
         self.sockets.append(m)
         m2 = s.get_monitor_socket()
-        self.assertIs(m, m2)
+        assert m is m2
         s.disable_monitor()
         evt = recv_monitor_message(m)
         self.assertEqual(evt['event'], zmq.EVENT_MONITOR_STOPPED)
         m.close()
         s.close()
 
-    @skip_lt_4
+    @require_zmq_4
     def test_monitor_connected(self):
         """Test connected monitoring socket."""
         s_rep = self.context.socket(zmq.REP)

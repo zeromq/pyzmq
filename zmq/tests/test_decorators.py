@@ -1,7 +1,7 @@
 import threading
 import zmq
 
-from nose.tools import raises
+from pytest import raises
 from zmq.decorators import context, socket
 
 
@@ -60,18 +60,20 @@ def test_ctx_kwargs_default(ctx=None):
     assert ctx.IO_THREADS == 5, ctx.IO_THREADS
 
 
-@raises(TypeError)
-@context(name='ctx')
-def test_ctx_keyword_miss(other_name):
-    pass  # the keyword ``ctx`` not found
+def test_ctx_keyword_miss():
+    @context(name='ctx')
+    def f(other_name):
+        pass  # the keyword ``ctx`` not found
+    with raises(TypeError):
+        f()
 
 
-@raises(TypeError)
 def test_ctx_multi_assign():
     @context(name='ctx')
     def f(ctx):
         pass  # explosion
-    f('mock')
+    with raises(TypeError):
+        f('mock')
 
 
 def test_ctx_reinit():
@@ -207,11 +209,13 @@ def test_ctx_skt_reinit():
     assert result['foo']['skt'] is not result['bar']['skt'], result
 
 
-@raises(TypeError)
-@context()
-@socket('myskt')
-def test_skt_type_miss(ctx, myskt):
-    pass  # the socket type is missing
+def test_skt_type_miss():
+    @context()
+    @socket('myskt')
+    def f(ctx, myskt):
+        pass  # the socket type is missing
+    with raises(TypeError):
+        f()
 
 
 @socket(zmq.PUB)
