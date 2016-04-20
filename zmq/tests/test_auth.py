@@ -101,7 +101,8 @@ class TestThreadAuthentication(BaseAuthTestCase):
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
         msg = [b"Hello World"]
-        server.send_multipart(msg)
+        if server.poll(1000, zmq.POLLOUT):
+            server.send_multipart(msg)
         if client.poll(1000):
             rcvd_msg = client.recv_multipart()
             self.assertEqual(rcvd_msg, msg)
