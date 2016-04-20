@@ -6,8 +6,9 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import time
 import logging
-from threading import Thread
+from threading import Thread, Event
 
 import zmq
 from zmq.utils import jsonapi
@@ -26,6 +27,7 @@ class AuthenticationThread(Thread):
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.log = log = log or logging.getLogger('zmq.auth')
+        self.started = Event()
         self.authenticator = authenticator or Authenticator(context, encoding=encoding, log=log)
 
         # create a socket to communicate back to main thread.
@@ -34,8 +36,9 @@ class AuthenticationThread(Thread):
         self.pipe.connect(endpoint)
 
     def run(self):
-        """ Start the Authentication Agent thread task """
+        """Start the Authentication Agent thread task"""
         self.authenticator.start()
+        self.started.set()
         zap = self.authenticator.zap_socket
         poller = zmq.Poller()
         poller.register(self.pipe, zmq.POLLIN)
@@ -161,6 +164,8 @@ class ThreadAuthenticator(object):
         self.pipe.bind(self.pipe_endpoint)
         self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log)
         self.thread.start()
+        if not self.thread.started.wait(timeout=10):
+            raise RuntimeError("Authenticator thread failed to start")
 
     def stop(self):
         """Stop the authentication thread"""
