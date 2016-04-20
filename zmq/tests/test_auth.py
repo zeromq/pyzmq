@@ -115,6 +115,8 @@ class TestThreadAuthentication(BaseAuthTestCase):
         # go through our authentication infrastructure at all.
         self.auth.stop()
         self.auth = None
+        # use a new context, so ZAP isn't inherited
+        self.context = self.Context()
         
         server = self.socket(zmq.PUSH)
         client = self.socket(zmq.PULL)
