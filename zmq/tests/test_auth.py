@@ -245,20 +245,20 @@ def with_ioloop(method, expect_success=True):
     """decorator for running tests with an IOLoop"""
     def test_method(self):
         r = method(self)
-        
+
         loop = self.io_loop
         if expect_success:
             self.pullstream.on_recv(self.on_message_succeed)
         else:
             self.pullstream.on_recv(self.on_message_fail)
         
-        t = loop.time()
-        loop.add_callback(self.attempt_connection)
-        loop.add_callback(self.send_msg)
+        loop.call_later(1, self.attempt_connection)
+        loop.call_later(1.2, self.send_msg)
+        
         if expect_success:
-            loop.add_timeout(t + 1, self.on_test_timeout_fail)
+            loop.call_later(2, self.on_test_timeout_fail)
         else:
-            loop.add_timeout(t + 1, self.on_test_timeout_succeed)
+            loop.call_later(2, self.on_test_timeout_succeed)
         
         loop.start()
         if self.fail_msg:
