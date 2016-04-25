@@ -125,7 +125,7 @@ class Context(ContextBase, AttributeSetter):
     def _socket_class(self):
         return Socket
     
-    def socket(self, socket_type):
+    def socket(self, socket_type, **kwargs):
         """Create a Socket associated with this Context.
 
         Parameters
@@ -133,10 +133,13 @@ class Context(ContextBase, AttributeSetter):
         socket_type : int
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
+
+        **kwargs
+            will be passed to the __init__ method of the socket class.
         """
         if self.closed:
             raise ZMQError(ENOTSUP)
-        s = self._socket_class(self, socket_type)
+        s = self._socket_class(self, socket_type, **kwargs)
         for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)

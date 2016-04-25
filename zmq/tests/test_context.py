@@ -13,6 +13,18 @@ from zmq.tests import (
 )
 
 
+class KwargTestSocket(zmq.Socket):
+    test_kwarg_value = None
+
+    def __init__(self, *args, **kwargs):
+        self.test_kwarg_value = kwargs.pop('test_kwarg', None)
+        super(KwargTestSocket, self).__init__(*args, **kwargs)
+
+
+class KwargTestContext(zmq.Context):
+    _socket_class = KwargTestSocket
+
+
 class TestContext(BaseZMQTestCase):
 
     def test_init(self):
@@ -64,7 +76,13 @@ class TestContext(BaseZMQTestCase):
         self.assertFalse(c3 is c2)
         self.assertFalse(c3.closed)
         self.assertTrue(c3 is c4)
-    
+
+    def test_socket_passes_kwargs(self):
+        test_kwarg_value = 'testing one two three'
+        with KwargTestContext() as ctx:
+            with ctx.socket(zmq.DEALER, test_kwarg=test_kwarg_value) as socket:
+                self.assertTrue(socket.test_kwarg_value is test_kwarg_value)
+
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""
         ctx = self.Context()
