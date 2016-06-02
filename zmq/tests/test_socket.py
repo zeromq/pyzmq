@@ -15,8 +15,10 @@ import zmq
 from zmq.tests import (
     BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy
 )
-from zmq.utils.strtypes import bytes, unicode
+from zmq.utils.strtypes import unicode
 
+pypy = platform.python_implementation().lower() == 'pypy'
+on_travis = bool(os.environ.get('TRAVIS_PYTHON_VERSION'))
 
 class TestSocket(BaseZMQTestCase):
 
@@ -465,8 +467,7 @@ class TestSocket(BaseZMQTestCase):
     # Travis can't handle how much memory PyPy uses on this test
     @mark.skipif(
         (
-            platform.python_implementation().lower() == 'pypy'
-            and os.environ.get('TRAVIS_PYTHON_VERSION')
+            pypy and on_travis
         ) or (
             sys.maxsize < 2**32
         ),
