@@ -1,13 +1,17 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-import functools
 import sys
 import time
 from threading import Thread
 
 from unittest import TestCase
+try:
+    from unittest import SkipTest
+except ImportError:
+    from unittest2 import SkipTest
 
+from pytest import mark
 import zmq
 from zmq.utils import jsonapi
 
@@ -18,14 +22,6 @@ try:
 except ImportError:
     have_gevent = False
 
-try:
-    from unittest import SkipTest
-except ImportError:
-    try:
-        from nose import SkipTest
-    except ImportError:
-        class SkipTest(Exception):
-            pass
 
 PYPY = 'PyPy' in sys.version
 
@@ -35,31 +31,8 @@ PYPY = 'PyPy' in sys.version
 
 _id = lambda x: x
 
-def skip(reason):
-    """
-    Unconditionally skip a test.
-    """
-    def decorator(test_item):
-        if not (isinstance(test_item, type) and issubclass(test_item, TestCase)):
-            @functools.wraps(test_item)
-            def skip_wrapper(*args, **kwargs):
-                raise SkipTest(reason)
-            test_item = skip_wrapper
-
-        test_item.__unittest_skip__ = True
-        test_item.__unittest_skip_why__ = reason
-        return test_item
-    return decorator
-
-def skip_if(condition, reason="Skipped"):
-    """
-    Skip a test if the condition is true.
-    """
-    if condition:
-        return skip(reason)
-    return _id
-
-skip_pypy = skip_if(PYPY, "Doesn't work on PyPy")
+skip_pypy = mark.skipif(PYPY, reason="Doesn't work on PyPy")
+require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq >= 4")
 
 #-----------------------------------------------------------------------------
 # Base test class

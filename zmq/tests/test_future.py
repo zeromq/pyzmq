@@ -1,13 +1,14 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import pytest
+gen = pytest.importorskip('tornado.gen')
+
 import zmq
-from tornado import gen
 from zmq.eventloop import future
 from zmq.eventloop.ioloop import IOLoop
 
 from zmq.tests import BaseZMQTestCase
-from tornado import gen
 
 class TestFutureSocket(BaseZMQTestCase):
     Context = future.Context
@@ -25,7 +26,7 @@ class TestFutureSocket(BaseZMQTestCase):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, future.Socket)
         s.close()
-    
+
     def test_recv_multipart(self):
         @gen.coroutine
         def test():

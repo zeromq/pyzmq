@@ -42,7 +42,6 @@ from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
 from distutils.version import LooseVersion as V
 
-from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
 
@@ -746,27 +745,8 @@ class TestCommand(Command):
     def finalize_options(self):
         pass
     
-    def run_nose(self):
-        """Run the test suite with nose."""
-        nose = 'nose.__main__' if sys.version_info < (2,7) else 'nose'
-        if subprocess.call([sys.executable, '-m', nose, '-vvx', pjoin(self._dir, 'zmq', 'tests')]):
-            sys.exit(1)
-    
-    def run_unittest(self):
-        """Finds all the tests modules in zmq/tests/ and runs them."""
-        testfiles = [ ]
-        for t in glob(pjoin(self._dir, 'zmq', 'tests', '*.py')):
-            name = splitext(basename(t))[0]
-            if name.startswith('test_'):
-                testfiles.append('.'.join(
-                    ['zmq.tests', name])
-                )
-        tests = TestLoader().loadTestsFromNames(testfiles)
-        t = TextTestRunner(verbosity = 2)
-        t.run(tests)
-    
     def run(self):
-        """Run the test suite, with nose, or unittest if nose is unavailable"""
+        """Run the test suite with py.test"""
         # crude check for inplace build:
         try:
             import zmq
@@ -778,14 +758,9 @@ class TestCommand(Command):
             sys.exit(1)
         
         info("Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version()))
-        
-        try:
-            import nose
-        except ImportError:
-            warn("nose unavailable, falling back on unittest. Skipped tests will appear as ERRORs.")
-            return self.run_unittest()
-        else:
-            return self.run_nose()
+        p = Popen([sys.executable, '-m', 'pytest', '-v', os.path.join('zmq', 'tests')])
+        p.wait()
+        sys.exit(p.returncode)
 
 class GitRevisionCommand(Command):
     """find the current git revision and add it to zmq.sugar.version.__revision__"""

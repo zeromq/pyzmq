@@ -5,16 +5,16 @@ import sys
 
 import zmq
 
-from . import skip_if
+from pytest import mark
 
-@skip_if(zmq.zmq_version_info() < (4,1), "libzmq < 4.1")
+@mark.skipif('zmq.zmq_version_info() < (4,1)')
 def test_has():
     assert not zmq.has('something weird')
     has_ipc = zmq.has('ipc')
     not_windows = not sys.platform.startswith('win')
     assert has_ipc == not_windows
 
-@skip_if(not hasattr(zmq, '_libzmq'), "bundled libzmq")
+@mark.skipif(not hasattr(zmq, '_libzmq'), reason="bundled libzmq")
 def test_has_curve():
     """bundled libzmq has curve support"""
     assert zmq.has('curve')

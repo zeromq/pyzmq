@@ -9,12 +9,16 @@ import time
 import warnings
 import sys
 
+from pytest import mark
+
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy, skip_if
+    BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy
 )
-from zmq.utils.strtypes import bytes, unicode
+from zmq.utils.strtypes import unicode
 
+pypy = platform.python_implementation().lower() == 'pypy'
+on_travis = bool(os.environ.get('TRAVIS_PYTHON_VERSION'))
 
 class TestSocket(BaseZMQTestCase):
 
@@ -461,13 +465,13 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(events, [])
     
     # Travis can't handle how much memory PyPy uses on this test
-    @skip_if(
+    @mark.skipif(
         (
-            platform.python_implementation().lower() == 'pypy'
-            and os.environ.get('TRAVIS_PYTHON_VERSION')
+            pypy and on_travis
         ) or (
             sys.maxsize < 2**32
-        )
+        ),
+        reason="only run on 64b and not on Travis."
     )
     def test_large_send(self):
         try:
@@ -495,7 +499,7 @@ if have_gevent:
             self.assertRaises(gevent.Timeout, b.recv)
             g.kill()
         
-        @skip_if(not hasattr(zmq, 'RCVTIMEO'))
+        @mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
         def test_warn_set_timeo(self):
             s = self.context.socket(zmq.REQ)
             with warnings.catch_warnings(record=True) as w:
@@ -505,7 +509,7 @@ if have_gevent:
             self.assertEqual(w[0].category, UserWarning)
             
 
-        @skip_if(not hasattr(zmq, 'SNDTIMEO'))
+        @mark.skipif(not hasattr(zmq, 'SNDTIMEO'), reason="requires SNDTIMEO")
         def test_warn_get_timeo(self):
             s = self.context.socket(zmq.REQ)
             with warnings.catch_warnings(record=True) as w:

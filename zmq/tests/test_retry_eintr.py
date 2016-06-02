@@ -6,9 +6,11 @@ import signal
 import time
 from threading import Thread
 
+from pytest import mark
+
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase, SkipTest, skip_pypy, skip_if
+    BaseZMQTestCase, SkipTest, skip_pypy
 )
 from zmq.utils.strtypes import b
 
@@ -24,7 +26,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
     timeout = .25
     timeout_ms = int(timeout * 1e3)
 
-    @skip_if(not hasattr(signal, 'setitimer'), 'EINTR tests require setitimer')
+    @mark.skipif(not hasattr(signal, 'setitimer'), reason='EINTR tests require setitimer')
     def alarm(self, t=None):
         """start a timer to fire only once
         
@@ -42,7 +44,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         signal.setitimer(signal.ITIMER_REAL, 0, 0)
         signal.signal(signal.SIGALRM, self.orig_handler)
     
-    @skip_if(not hasattr(zmq, 'RCVTIMEO'))
+    @mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
     def test_retry_recv(self):
         pull = self.socket(zmq.PULL)
         pull.rcvtimeo = self.timeout_ms
@@ -50,7 +52,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.assertRaises(zmq.Again, pull.recv)
         assert self.timer_fired
 
-    @skip_if(not hasattr(zmq, 'SNDTIMEO'))
+    @mark.skipif(not hasattr(zmq, 'SNDTIMEO'), reason="requires SNDTIMEO")
     def test_retry_send(self):
         push = self.socket(zmq.PUSH)
         push.sndtimeo = self.timeout_ms
