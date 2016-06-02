@@ -21,3 +21,4 @@ examples/security/public_keys
 examples/security/private_keys
 wheelhouse
 .coverage
+.cache
