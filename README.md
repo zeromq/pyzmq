@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/zeromq/pyzmq.svg?branch=master)](https://travis-ci.org/zeromq/pyzmq)
 
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/ugoid0r2fnq8sr56/branch/master?svg=true)](https://ci.appveyor.com/project/minrk/pyzmq/branch/master)
+
 This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
