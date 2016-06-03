@@ -506,8 +506,8 @@ class Configure(build_ext):
         self.distribution.ext_modules.insert(0, libzmq)
         
         # use tweetnacl to provide CURVE support
-        libzmq.define_macros.append(('HAVE_LIBSODIUM', 1))
-        libzmq.define_macros.append(('HAVE_TWEETNACL', 1))
+        libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
+        libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
         
         # select polling subsystem based on platform
         if sys.platform  == 'darwin' or 'bsd' in sys.platform:
