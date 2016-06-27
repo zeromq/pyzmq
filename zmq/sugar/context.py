@@ -134,7 +134,7 @@ class Context(ContextBase, AttributeSetter):
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
 
-        **kwargs
+        kwargs:
             will be passed to the __init__ method of the socket class.
         """
         if self.closed:

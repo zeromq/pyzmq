@@ -9,6 +9,18 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
 `git log <https://github.com/zeromq/pyzmq/commits>`_
 
+15.3
+====
+
+- Bump bundled libzmq to 4.1.5, using tweetnacl for bundled curve support instead of libsodium
+- FIX: include .pxi includes in installation for consumers of Cython API
+- FIX: various fixes in new async sockets
+- Introduce :mod:`zmq.decorators` API for decorating functions to create sockets or contexts
+- Add :meth:`zmq.Socket.subscribe` and :meth:`zmq.Socket.unsubscribe` methods to sockets, so that assignment is no longer needed for subscribing. Verbs should be methods!
+  Assignment is still supported for backward-compatibility.
+- Accept text (unicode) input to z85 encoding, not just bytes
+- :meth:`zmq.Context.socket` forwards keyword arguments to the :class:`Socket` constructor
+
 15.2
 ====
 
