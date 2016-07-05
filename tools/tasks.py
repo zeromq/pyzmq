@@ -193,6 +193,29 @@ def bdist(py, wheel=True, egg=False):
     run(cmd)
 
 @task
+def manylinux(vs, upload=False):
+    """Build manylinux wheels with Matthew Brett's manylinux-builds"""
+    manylinux = '/tmp/manylinux-builds'
+    if not os.path.exists(manylinux):
+        with cd('/tmp'):
+            run("git clone --recursive https://github.com/minrk/manylinux-builds -b pyzmq")
+    else:
+        with cd(manylinux):
+            run("git pull")
+            run("git submodule update")
+    
+    base_cmd = "docker run --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -v $PWD:/io".format(
+        vs=vs,
+        pys='2.7 3.4 3.5'
+    )
+    with cd(manylinux):
+        run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
+        run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
+    if upload:
+        py = make_env('3.5', 'twine')
+        run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
+
+@task
 def release(vs, upload=False):
     """Release pyzmq"""
     # Ensure all our Pythons exist before we start:
@@ -214,3 +237,4 @@ def release(vs, upload=False):
             py = make_env('3.5', 'twine')
             run(['twine', 'upload', 'dist/*'])
 
+    manylinux(vs, upload=upload)
