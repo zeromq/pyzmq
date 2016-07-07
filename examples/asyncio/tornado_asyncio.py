@@ -1,6 +1,16 @@
+"""Example showing ZMQ with asyncio and tornadoweb integration."""
+# Copyright (c) PyZMQ Developers.
+# This example is in the public domain (CC-0)
+
 import asyncio
 import zmq.asyncio
+
+from tornado.ioloop import IOLoop
 from tornado.platform.asyncio import AsyncIOMainLoop
+
+# Tell asyncio to use zmq's eventloop
+zmq.asyncio.install()
+# Tell tornado to use asyncio
 AsyncIOMainLoop().install()
 
 # This must be instantiated after the installing the IOLoop
@@ -12,6 +22,7 @@ async def pushing():
     server.bind('tcp://*:9000')
     while True:
         await server.send(b"Hello")
+        await asyncio.sleep(1)
 
 async def pulling():
     client = ctx.socket(zmq.PULL)
@@ -21,7 +32,6 @@ async def pulling():
         print(greeting)
 
 def zmq_tornado_loop():
-    from zmq.eventloop.ioloop import IOLoop
     loop = IOLoop.current()
     loop.spawn_callback(pushing)
     loop.spawn_callback(pulling)
