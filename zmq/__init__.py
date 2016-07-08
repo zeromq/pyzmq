@@ -3,53 +3,11 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import os
-import sys
-import glob
-
 # load bundled libzmq, if there is one:
-
-here = os.path.dirname(__file__)
-
-bundled = []
-for ext in ('pyd', 'so', 'dll', 'dylib'):
-    bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
-
-# If we are running in a debug interpreter, load libzmq_d.pyd instead of libzmq.pyd
-# hasattr(sys, 'gettotalrefcount') is used to detect whether we are running in a debug interpreter
-# Taken from http://stackoverflow.com/questions/646518/python-how-to-detect-debug-interpreter
-if os.name == 'nt':
-    def is_debug_filename(name):
-        # Note this fails for filenames like foo.bar_d.so.x.y.z,
-        # but such names should not appear on Windows.
-        root, ext = os.path.splitext(name)
-        return root.endswith('_d')
-
-    if hasattr(sys, 'gettotalrefcount'):
-        bundled = [x for x in bundled if is_debug_filename(x)]
-    else:
-        bundled = [x for x in bundled if not is_debug_filename(x)]
-
-if bundled:
-    import ctypes
-    if bundled[0].endswith('.pyd'):
-        # a Windows Extension
-        _libzmq = ctypes.cdll.LoadLibrary(bundled[0])
-    else:
-        _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
-    del ctypes
-else:
-    import zipimport
-    try:
-        if isinstance(__loader__, zipimport.zipimporter):
-            # a zipped pyzmq egg
-            from zmq import libzmq as _libzmq
-    except (NameError, ImportError):
-        pass
-    finally:
-        del zipimport
-
-del os, sys, glob, here, bundled, ext
+try:
+    from . import libzmq as _libzmq
+except ImportError:
+    pass
 
 # zmq top-level imports
 
