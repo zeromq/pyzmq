@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from collections import namedtuple
+from zmq import POLLOUT, POLLIN
 
 try:
     from tornado.concurrent import Future
@@ -207,7 +208,11 @@ class _AsyncSocket(_zmq.Socket):
         self._recv_futures.append(
             _FutureEvent(f, kind, kwargs, msg=None)
         )
-        self._add_io_state(self._READ)
+        if self.events & POLLIN:
+            # recv immediately, if we can
+            self._handle_recv()
+        if self._recv_futures:
+            self._add_io_state(self._READ)
         return f
     
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
@@ -227,7 +232,11 @@ class _AsyncSocket(_zmq.Socket):
         self._send_futures.append(
             _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
         )
-        self._add_io_state(self._WRITE)
+        if self.events & POLLOUT:
+            # send immediately if we can
+            self._handle_send()
+        if self._send_futures:
+            self._add_io_state(self._WRITE)
         return f
     
     def _handle_recv(self):
