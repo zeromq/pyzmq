@@ -4,10 +4,26 @@
 # Distributed under the terms of the Modified BSD License.
 
 # load bundled libzmq, if there is one:
-try:
-    from . import libzmq as _libzmq
-except ImportError:
-    pass
+def _load_libzmq():
+    """load bundled libzmq if there is one"""
+    import sys, ctypes
+    dlopen = hasattr(sys, 'getdlopenflags') # unix-only
+    if dlopen:
+        dlflags = sys.getdlopenflags()
+        sys.setdlopenflags(ctypes.RTLD_GLOBAL | dlflags)
+    try:
+        from . import libzmq
+    except ImportError:
+        pass
+    else:
+        # store libzmq as zmq._libzmq for backward-compat
+        globals()['_libzmq'] = libzmq
+    finally:
+        if dlopen:
+            sys.setdlopenflags(dlflags)
+
+_load_libzmq()
+
 
 # zmq top-level imports
 
@@ -25,4 +41,3 @@ def get_includes():
 
 
 __all__ = ['get_includes'] + sugar.__all__ + backend.__all__
-
