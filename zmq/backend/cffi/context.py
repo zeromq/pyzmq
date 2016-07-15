@@ -96,7 +96,7 @@ class Context(object):
         for s in sockets:
             s = s()
             if s and not s.closed:
-                if linger:
+                if linger is not None:
                     s.setsockopt(LINGER, linger)
                 s.close()
         
