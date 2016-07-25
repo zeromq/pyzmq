@@ -41,12 +41,12 @@ def zmq_poll(sockets, timeout):
     _retry_sys_call(C.zmq_poll, items, list_length, c_timeout)
     result = []
     for index in range(len(items)):
-        if not items[index].socket == ffi.NULL:
-            if items[index].revents > 0:
+        if items[index].revents > 0:
+            if not items[index].socket == ffi.NULL:
                 result.append((low_level_to_socket_obj[items[index].socket][0],
                             items[index].revents))
-        else:
-            result.append((items[index].fd, items[index].revents))
+            else:
+                result.append((items[index].fd, items[index].revents))
     return result
 
 __all__ = ['zmq_poll']
