@@ -6,7 +6,7 @@
 # load bundled libzmq, if there is one:
 def _load_libzmq():
     """load bundled libzmq if there is one"""
-    import sys, ctypes
+    import sys, ctypes, platform
     dlopen = hasattr(sys, 'getdlopenflags') # unix-only
     if dlopen:
         dlflags = sys.getdlopenflags()
@@ -18,6 +18,10 @@ def _load_libzmq():
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
+        if platform.python_implementation().lower() == 'pypy':
+            # pypy needs explicit CDLL load for some reason,
+            # otherwise symbols won't be globally available
+            ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
         if dlopen:
             sys.setdlopenflags(dlflags)
