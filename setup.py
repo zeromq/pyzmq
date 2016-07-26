@@ -1145,6 +1145,12 @@ def find_packages():
         if '__init__.py' not in files:
             # not a package
             continue
+        if sys.version_info < (3,3) and 'asyncio' in package and 'sdist' not in sys.argv:
+            # Don't install asyncio packages on old Python
+            # avoids issues with tools like compileall, pytest, etc.
+            # that get confused by presence of Python 3-only sources,
+            # even when they are never imported.
+            continue
         packages.append(package)
     return packages
 
