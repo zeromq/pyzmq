@@ -536,6 +536,30 @@ class Configure(build_ext):
 
             # And things like sockets come from libraries that must be named.
             libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
+            
+            # bundle MSCVP redist for CPython 3.5 if linking dynamically
+            if sys.version_info >= (3,5) \
+            and self.compiler_type == 'msvc' \
+            and not os.environ.get('DISTUTILS_USE_SDK'):
+                cc = new_compiler(compiler=self.compiler_type)
+                cc.initialize()
+                # get vc_redist location via private API
+                try:
+                    cc._vcruntime_redist
+                except AttributeError:
+                    msg = fatal if os.environ.get("PYZMQ_BUNDLE_CRT") else warn
+                    msg("Failed to get cc._vcruntime via private API, not bundling CRT")
+                if cc._vcruntime_redist:
+                    redist_dir, dll = os.path.split(cc._vcruntime_redist)
+                    to_bundle = [
+                        pjoin(redist_dir, dll.replace('vcruntime', name))
+                        for name in ('msvcp', 'concrt')
+                    ]
+                    for src in to_bundle:
+                        dest = localpath('zmq', basename(src))
+                        info("Copying %s -> %s" % (src, dest))
+                        # copyfile to avoid permission issues
+                        shutil.copyfile(src, dest)
 
         else:
             libzmq.include_dirs.append(bundledir)
@@ -1113,14 +1137,13 @@ if pypy:
     cmdclass['build_ext'] = pypy_build_ext
 
 
-package_data = {'zmq': ['*.pxd'],
+package_data = {'zmq': ['*.pxd', '*' + lib_ext],
                 'zmq.backend.cython': ['*.pxd', '*.pxi'],
                 'zmq.backend.cffi': ['*.h', '*.c'],
                 'zmq.devices': ['*.pxd'],
                 'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
 
-package_data['zmq'].append(libzmq_name+lib_ext)
 
 def extract_version():
     """extract pyzmq version from sugar/version.py, so it's not multiply defined"""
