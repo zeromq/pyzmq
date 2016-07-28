@@ -58,6 +58,7 @@ IF %MAJOR_PYTHON_VERSION% == 2 (
             SET SET_SDK_64=Y
         ) ELSE (
             SET SET_SDK_64=N
+            SET PYZMQ_BUNDLE_CRT=1
             IF EXIST "%WIN_WDK%" (
                 :: See: https://connect.microsoft.com/VisualStudio/feedback/details/1610302/
                 REN "%WIN_WDK%" 0wdf
