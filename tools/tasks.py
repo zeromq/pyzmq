@@ -22,9 +22,9 @@ import shutil
 import sys
 
 from contextlib import contextmanager
-from subprocess import check_call
 
 from invoke import task, run as invoke_run
+import requests
 
 pjoin = os.path.join
 
@@ -236,5 +236,56 @@ def release(vs, upload=False):
         if upload:
             py = make_env('3.5', 'twine')
             run(['twine', 'upload', 'dist/*'])
-
+    
     manylinux(vs, upload=upload)
+    if upload:
+        print("When AppVeyor finished building, upload artifacts with:")
+        print("  invoke appveyor_artifacts {} --upload".format(vs))
+
+
+_appveyor_api = 'https://ci.appveyor.com/api'
+_appveyor_project = 'minrk/pyzmq'
+def _appveyor_api_request(path):
+    """Make an appveyor API request"""
+    r = requests.get('{}/{}'.format(_appveyor_api, path),
+        headers={
+            # 'Authorization': 'Bearer %s' % token,
+            'Content-Type': 'application/json',
+        }
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+@task
+def appveyor_artifacts(vs, dest='win-dist', upload=False):
+    """Download appveyor artifacts
+
+    If --upload is given, upload to PyPI
+    """
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    build = _appveyor_api_request('projects/{}/branch/v{}'.format(_appveyor_project, vs))
+    jobs = build['build']['jobs']
+    artifact_urls = []
+    for job in jobs:
+        artifacts = _appveyor_api_request('buildjobs/{}/artifacts'.format(job['jobId']))
+        artifact_urls.extend('{}/buildjobs/{}/artifacts/{}'.format(
+            _appveyor_api, job['jobId'], artifact['fileName']
+        ) for artifact in artifacts)
+    for url in artifact_urls:
+        print("Downloading {} to {}".format(url, dest))
+        fname = url.rsplit('/', 1)[-1]
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        with open(os.path.join(dest, fname), 'wb') as f:
+            for chunk in r.iter_content(1024):
+                f.write(chunk)
+    if upload:
+        py = make_env('3.5', 'twine')
+        run(['twine', 'upload', '{}/*'.format(dest)])
+    else:
+        print("You can now upload these wheels with: ")
+        print("  twine upload {}/*".format(dest))
+
