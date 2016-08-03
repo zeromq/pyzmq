@@ -4,6 +4,8 @@
 
 import sys
 
+from pytest import mark
+
 import zmq
 from zmq.utils.strtypes import u
 
@@ -64,6 +66,33 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert f1.done()
             self.assertEqual(f1.result(), b'hi')
             self.assertEqual(recvd, b'there')
+        self.loop.run_until_complete(test())
+
+    @mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
+    def test_recv_timeout(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            b.rcvtimeo = 100
+            f1 = b.recv()
+            b.rcvtimeo = 1000
+            f2 = b.recv_multipart()
+            with self.assertRaises(zmq.Again):
+                yield from f1
+            yield from a.send_multipart([b'hi', b'there'])
+            recvd = yield from f2
+            assert f2.done()
+            self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_until_complete(test())
+
+    @mark.skipif(not hasattr(zmq, 'SNDTIMEO'), reason="requires SNDTIMEO")
+    def test_send_timeout(self):
+        @asyncio.coroutine
+        def test():
+            s = self.socket(zmq.PUSH)
+            s.sndtimeo = 100
+            with self.assertRaises(zmq.Again):
+                yield from s.send(b'not going anywhere')
         self.loop.run_until_complete(test())
 
     def test_recv_string(self):
