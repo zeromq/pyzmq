@@ -2,12 +2,17 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import sys
+
 import zmq
+
 try:
     import asyncio
     import zmq.asyncio as zaio
     from zmq.auth.asyncio import AsyncioAuthenticator
 except ImportError:
+    if sys.version_info >= (3,4):
+        raise
     asyncio = None
 
 from zmq.tests import BaseZMQTestCase, SkipTest
