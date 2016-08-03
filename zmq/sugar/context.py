@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import atexit
+from threading import Lock
 
 from zmq.backend import Context as ContextBase
 from . import constants
@@ -27,6 +28,7 @@ class Context(ContextBase, AttributeSetter):
     """
     sockopts = None
     _instance = None
+    _instance_lock = Lock()
     _shadow = False
     
     def __init__(self, io_threads=1, **kwargs):
@@ -101,7 +103,9 @@ class Context(ContextBase, AttributeSetter):
                     self.context = context or Context.instance()
         """
         if cls._instance is None or cls._instance.closed:
-            cls._instance = cls(io_threads=io_threads)
+            with cls._instance_lock:
+                if cls._instance is None or cls._instance.closed:
+                    cls._instance = cls(io_threads=io_threads)
         return cls._instance
     
     #-------------------------------------------------------------------------
