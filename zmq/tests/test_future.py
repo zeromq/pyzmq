@@ -1,3 +1,4 @@
+# coding: utf-8
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -7,6 +8,7 @@ gen = pytest.importorskip('tornado.gen')
 import zmq
 from zmq.eventloop import future
 from zmq.eventloop.ioloop import IOLoop
+from zmq.utils.strtypes import u
 
 from zmq.tests import BaseZMQTestCase
 
@@ -67,6 +69,48 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f1.cancelled()
             assert f2.done()
             self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_sync(test)
+
+    def test_recv_string(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_string()
+            assert not f.done()
+            msg = u('πøøπ')
+            yield a.send_string(msg)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), msg)
+            self.assertEqual(recvd, msg)
+        self.loop.run_sync(test)
+
+    def test_recv_json(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_json()
+            assert not f.done()
+            obj = dict(a=5)
+            yield a.send_json(obj)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
+        self.loop.run_sync(test)
+
+    def test_recv_pyobj(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_pyobj()
+            assert not f.done()
+            obj = dict(a=5)
+            yield a.send_pyobj(obj)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
         self.loop.run_sync(test)
 
     def test_poll(self):
