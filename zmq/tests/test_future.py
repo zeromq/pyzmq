@@ -80,7 +80,7 @@ class TestFutureSocket(BaseZMQTestCase):
             f1 = b.recv()
             b.rcvtimeo = 1000
             f2 = b.recv_multipart()
-            with self.assertRaises(zmq.Again):
+            with pytest.raises(zmq.Again):
                 yield f1
             yield  a.send_multipart([b'hi', b'there'])
             recvd = yield f2
@@ -94,7 +94,7 @@ class TestFutureSocket(BaseZMQTestCase):
         def test():
             s = self.socket(zmq.PUSH)
             s.sndtimeo = 100
-            with self.assertRaises(zmq.Again):
+            with pytest.raises(zmq.Again):
                 yield s.send(b'not going anywhere')
         self.loop.run_sync(test)
 
