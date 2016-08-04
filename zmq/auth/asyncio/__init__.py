@@ -10,7 +10,7 @@ import asyncio
 
 import zmq
 from zmq.asyncio import Poller
-from .base import Authenticator
+from ..base import Authenticator
 
 
 class AsyncioAuthenticator(Authenticator):

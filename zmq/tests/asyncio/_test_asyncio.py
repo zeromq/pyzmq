@@ -2,12 +2,18 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import sys
+
 import zmq
+from zmq.utils.strtypes import u
+
 try:
     import asyncio
     import zmq.asyncio as zaio
     from zmq.auth.asyncio import AsyncioAuthenticator
 except ImportError:
+    if sys.version_info >= (3,4):
+        raise
     asyncio = None
 
 from zmq.tests import BaseZMQTestCase, SkipTest
@@ -58,6 +64,48 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert f1.done()
             self.assertEqual(f1.result(), b'hi')
             self.assertEqual(recvd, b'there')
+        self.loop.run_until_complete(test())
+
+    def test_recv_string(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_string()
+            assert not f.done()
+            msg = u('πøøπ')
+            yield from a.send_string(msg)
+            recvd = yield from f
+            assert f.done()
+            self.assertEqual(f.result(), msg)
+            self.assertEqual(recvd, msg)
+        self.loop.run_until_complete(test())
+
+    def test_recv_json(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_json()
+            assert not f.done()
+            obj = dict(a=5)
+            yield from a.send_json(obj)
+            recvd = yield from f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
+        self.loop.run_until_complete(test())
+
+    def test_recv_pyobj(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_pyobj()
+            assert not f.done()
+            obj = dict(a=5)
+            yield from a.send_pyobj(obj)
+            recvd = yield from f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
         self.loop.run_until_complete(test())
 
     def test_recv_dontwait(self):

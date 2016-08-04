@@ -164,7 +164,24 @@ class _AsyncSocket(_zmq.Socket):
         return self._add_send_event('send', msg=msg,
             kwargs=dict(flags=flags, copy=copy, track=track),
         )
-    
+
+    def _deserialize(self, recvd, load):
+        """Deserialize with Futures"""
+        f = self._Future()
+        def _chain(_):
+            if recvd.exception():
+                f.set_exception(recvd.exception())
+            else:
+                buf = recvd.result()
+                try:
+                    loaded = load(buf)
+                except Exception as e:
+                    f.set_exception(e)
+                else:
+                    f.set_result(loaded)
+        recvd.add_done_callback(_chain)
+        return f
+
     def poll(self, timeout=None, flags=_zmq.POLLIN):
         """poll the socket for events
         
