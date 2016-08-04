@@ -117,9 +117,21 @@ new_in = {
         'GSSAPI',
     ],
     (4,2,0) : [
+        # polling
+        'POLLPRI',
+    ]
+}
+
+draft_in = {
+    (4,2,0): [
         # socket types
-        'CLIENT',
         'SERVER',
+        'CLIENT',
+        'RADIO',
+        'DISH',
+        'GATHER',
+        'SCATTER',
+        'DGRAM',
         
         # ctx options
         'BLOCKY',
@@ -142,9 +154,6 @@ new_in = {
         'VMCI_BUFFER_MAX_SIZE',
         'VMCI_CONNECT_TIMEOUT',
         'USE_FD',
-        
-        # polling
-        'POLLPRI',
     ]
 }
 
@@ -208,8 +217,13 @@ base_names = [
     'UPSTREAM',
     'DOWNSTREAM',
     'STREAM',
-    'CLIENT',
     'SERVER',
+    'CLIENT',
+    'RADIO',
+    'DISH',
+    'GATHER',
+    'SCATTER',
+    'DGRAM',
 
     # events
     'EVENT_CONNECTED',

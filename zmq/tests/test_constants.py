@@ -4,6 +4,8 @@
 import json
 from unittest import TestCase
 
+import pytest
+
 import zmq
 
 from zmq.utils import constant_names
@@ -77,6 +79,21 @@ class TestConstants(TestCase):
     def test_new(self):
         zmq_version = zmq.zmq_version_info()
         for version, new_names in constant_names.new_in.items():
+            should_have = zmq_version >= version
+            for name in new_names:
+                try:
+                    value = getattr(zmq, name)
+                except AttributeError:
+                    if should_have:
+                        self.fail("AttributeError: zmq.%s" % name)
+                else:
+                    if not should_have:
+                        self.fail("Shouldn't have: zmq.%s=%s" % (name, value))
+
+    @pytest.mark.skipif(not zmq.DRAFT_API, reason="Only test draft API if built with draft API")
+    def test_draft(self):
+        zmq_version = zmq.zmq_version_info()
+        for version, new_names in constant_names.draft_in.items():
             should_have = zmq_version >= version
             for name in new_names:
                 try:

@@ -1,6 +1,12 @@
 #ifndef _PYZMQ_CONSTANT_DEFS
 #define _PYZMQ_CONSTANT_DEFS
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    #define PYZMQ_DRAFT_API 1
+#else
+    #define PYZMQ_DRAFT_API 0
+#endif
+
 #define _PYZMQ_UNDEFINED (-9999)
 #ifndef ZMQ_VERSION
     #define ZMQ_VERSION (_PYZMQ_UNDEFINED)
@@ -142,12 +148,32 @@
     #define ZMQ_STREAM (_PYZMQ_UNDEFINED)
 #endif
 
+#ifndef ZMQ_SERVER
+    #define ZMQ_SERVER (_PYZMQ_UNDEFINED)
+#endif
+
 #ifndef ZMQ_CLIENT
     #define ZMQ_CLIENT (_PYZMQ_UNDEFINED)
 #endif
 
-#ifndef ZMQ_SERVER
-    #define ZMQ_SERVER (_PYZMQ_UNDEFINED)
+#ifndef ZMQ_RADIO
+    #define ZMQ_RADIO (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DISH
+    #define ZMQ_DISH (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_GATHER
+    #define ZMQ_GATHER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_SCATTER
+    #define ZMQ_SCATTER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DGRAM
+    #define ZMQ_DGRAM (_PYZMQ_UNDEFINED)
 #endif
 
 #ifndef ZMQ_EVENT_CONNECTED
@@ -697,6 +723,7 @@
 #ifndef ZMQ_SHARED
     #define ZMQ_SHARED (_PYZMQ_UNDEFINED)
 #endif
+
 
 
 #endif // ifndef _PYZMQ_CONSTANT_DEFS
