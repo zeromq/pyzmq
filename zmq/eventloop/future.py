@@ -204,9 +204,30 @@ class _AsyncSocket(_zmq.Socket):
             else:
                 evts = dict(f.result())
                 future.set_result(evts.get(self, 0))
-        
+
         f.add_done_callback(unwrap_result)
         return future
+
+    def _add_timeout(self, future, timeout):
+        """Add a timeout for a send or recv Future"""
+        def future_timeout():
+            print("calling future timeout")
+            if future.done():
+                # future already resolved, do nothing
+                return
+            # raise EAGAIN
+            future.set_exception(_zmq.Again())
+        self._call_later(timeout, future_timeout)
+
+    def _call_later(self, delay, callback):
+        """Schedule a function to be called later
+
+        Override for different IOLoop implementations
+
+        Tornado and asyncio happen to both have ioloop.call_later
+        with the same signature.
+        """
+        self.io_loop.call_later(delay, callback)
 
     def _add_recv_event(self, kind, kwargs=None, future=None):
         """Add a recv event, returning the corresponding Future"""
@@ -221,6 +242,11 @@ class _AsyncSocket(_zmq.Socket):
             else:
                 f.set_result(r)
             return f
+
+        if hasattr(_zmq, 'RCVTIMEO'):
+            timeout_ms = self._shadow_sock.rcvtimeo
+            if timeout_ms >= 0:
+                self._add_timeout(f, timeout_ms * 1e-3)
 
         self._recv_futures.append(
             _FutureEvent(f, kind, kwargs, msg=None)
@@ -245,6 +271,11 @@ class _AsyncSocket(_zmq.Socket):
             else:
                 f.set_result(r)
             return f
+
+        if hasattr(_zmq, 'SNDTIMEO'):
+            timeout_ms = self._shadow_sock.sndtimeo
+            if timeout_ms >= 0:
+                self._add_timeout(f, timeout_ms * 1e-3)
 
         self._send_futures.append(
             _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
