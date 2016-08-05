@@ -1,5 +1,5 @@
 cdef extern from "zmq.h" nogil:
-
+    enum: PYZMQ_DRAFT_API
     enum: ZMQ_VERSION
     enum: ZMQ_VERSION_MAJOR
     enum: ZMQ_VERSION_MINOR
@@ -35,8 +35,13 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_UPSTREAM
     enum: ZMQ_DOWNSTREAM
     enum: ZMQ_STREAM
-    enum: ZMQ_CLIENT
     enum: ZMQ_SERVER
+    enum: ZMQ_CLIENT
+    enum: ZMQ_RADIO
+    enum: ZMQ_DISH
+    enum: ZMQ_GATHER
+    enum: ZMQ_SCATTER
+    enum: ZMQ_DGRAM
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED

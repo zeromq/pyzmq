@@ -25,7 +25,10 @@ __all__ = [
     'bytes_sockopts',
     'ctx_opts',
     'ctx_opt_names',
+    'DRAFT_API',
     ]
+
+DRAFT_API = constants.DRAFT_API
 
 int_sockopts    = set()
 int64_sockopts  = set()
