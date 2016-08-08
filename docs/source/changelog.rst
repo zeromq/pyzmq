@@ -6,8 +6,24 @@
 Changes in PyZMQ
 ================
 
-This is a coarse summary of changes in pyzmq versions.  For a real changelog, consult the
-`git log <https://github.com/zeromq/pyzmq/commits>`_
+This is a coarse summary of changes in pyzmq versions.
+For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
+
+15.4
+====
+
+- Load bundled libzmq extension with import rather than CDLL,
+  which should fix some manifest issues in certain cases on Windows.
+- Avoid installing asyncio sources on Python 2, which confuses some tools that run `python -m compileall`, which reports errors on the Python 3-only files.
+- Bundle msvcp.dll in Windows wheels on CPython 3.5,
+  which should fix wheel compatibility systems without Visual C++ 2015 redistributable.
+- :meth:`zmq.Context.instance` is now threadsafe.
+- FIX: sync some behavior in zmq_poll and setting LINGER on close/destroy with the CFFI backend.
+- PERF: resolve send/recv immediately if events are available in async Sockets
+- Async Sockets (asyncio, tornado) now support ``send_json``, ``send_pyobj``, etc.
+- add preliminary support for ``zmq.DRAFT_API`` reflecting ZMQ_BUILD_DRAFT_API,
+  which indicates whether new APIs in prereleases are available.
+
 
 15.3
 ====
