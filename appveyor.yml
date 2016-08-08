@@ -51,8 +51,7 @@ install:
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  # pin setuptools to 25.1.3 for pypa/setuptools#722
-  - "%CMD_IN_ENV% pip install --disable-pip-version-check --user --upgrade pip setuptools==25.1.3 wheel cython nose"
+  - "%CMD_IN_ENV% pip install --disable-pip-version-check --user --upgrade pip setuptools wheel cython"
 
 build_script:
   # Build the compiled extension
