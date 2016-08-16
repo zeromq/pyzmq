@@ -245,7 +245,7 @@ class Socket(SocketBase, AttributeSetter):
         if hasattr(constants, 'LAST_ENDPOINT') and min_port == 49152 and max_port == 65536:
             # if LAST_ENDPOINT is supported, and min_port / max_port weren't specified,
             # we can bind to port 0 and let the OS do the work
-            self.bind("%s:0" % addr)
+            self.bind("%s:*" % addr)
             url = self.last_endpoint.decode('ascii', 'replace')
             _, port_s = url.rsplit(':', 1)
             return int(port_s)
