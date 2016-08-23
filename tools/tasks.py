@@ -22,9 +22,9 @@ import shutil
 import sys
 
 from contextlib import contextmanager
-from subprocess import check_call
 
 from invoke import task, run as invoke_run
+import requests
 
 pjoin = os.path.join
 
@@ -193,6 +193,29 @@ def bdist(py, wheel=True, egg=False):
     run(cmd)
 
 @task
+def manylinux(vs, upload=False):
+    """Build manylinux wheels with Matthew Brett's manylinux-builds"""
+    manylinux = '/tmp/manylinux-builds'
+    if not os.path.exists(manylinux):
+        with cd('/tmp'):
+            run("git clone --recursive https://github.com/minrk/manylinux-builds -b pyzmq")
+    else:
+        with cd(manylinux):
+            run("git pull")
+            run("git submodule update")
+    
+    base_cmd = "docker run --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -v $PWD:/io".format(
+        vs=vs,
+        pys='2.7 3.4 3.5'
+    )
+    with cd(manylinux):
+        run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
+        run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
+    if upload:
+        py = make_env('3.5', 'twine')
+        run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
+
+@task
 def release(vs, upload=False):
     """Release pyzmq"""
     # Ensure all our Pythons exist before we start:
@@ -213,4 +236,56 @@ def release(vs, upload=False):
         if upload:
             py = make_env('3.5', 'twine')
             run(['twine', 'upload', 'dist/*'])
+    
+    manylinux(vs, upload=upload)
+    if upload:
+        print("When AppVeyor finished building, upload artifacts with:")
+        print("  invoke appveyor_artifacts {} --upload".format(vs))
+
+
+_appveyor_api = 'https://ci.appveyor.com/api'
+_appveyor_project = 'minrk/pyzmq'
+def _appveyor_api_request(path):
+    """Make an appveyor API request"""
+    r = requests.get('{}/{}'.format(_appveyor_api, path),
+        headers={
+            # 'Authorization': 'Bearer %s' % token,
+            'Content-Type': 'application/json',
+        }
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+@task
+def appveyor_artifacts(vs, dest='win-dist', upload=False):
+    """Download appveyor artifacts
+
+    If --upload is given, upload to PyPI
+    """
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    build = _appveyor_api_request('projects/{}/branch/v{}'.format(_appveyor_project, vs))
+    jobs = build['build']['jobs']
+    artifact_urls = []
+    for job in jobs:
+        artifacts = _appveyor_api_request('buildjobs/{}/artifacts'.format(job['jobId']))
+        artifact_urls.extend('{}/buildjobs/{}/artifacts/{}'.format(
+            _appveyor_api, job['jobId'], artifact['fileName']
+        ) for artifact in artifacts)
+    for url in artifact_urls:
+        print("Downloading {} to {}".format(url, dest))
+        fname = url.rsplit('/', 1)[-1]
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        with open(os.path.join(dest, fname), 'wb') as f:
+            for chunk in r.iter_content(1024):
+                f.write(chunk)
+    if upload:
+        py = make_env('3.5', 'twine')
+        run(['twine', 'upload', '{}/*'.format(dest)])
+    else:
+        print("You can now upload these wheels with: ")
+        print("  twine upload {}/*".format(dest))
 

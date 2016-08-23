@@ -90,6 +90,8 @@ class Socket(object):
         rc = 0
         if not self._closed and hasattr(self, '_zmq_socket'):
             if self._zmq_socket is not None:
+                if linger is not None:
+                    self.set(zmq.LINGER, linger)
                 rc = C.zmq_close(self._zmq_socket)
             self._closed = True
             if self.context:

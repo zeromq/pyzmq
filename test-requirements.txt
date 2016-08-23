@@ -1,4 +1,6 @@
 gevent; python_version == '2.7' and platform_python_implementation != "PyPy"
-nose
-tornado
+pytest
+unittest2; python_version < '3'
+tornado; python_version != '3.2'
+tornado < 4.4 ; python_version == '3.2'
 aiohttp; python_version >= '3.4'

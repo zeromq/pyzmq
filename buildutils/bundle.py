@@ -33,12 +33,15 @@ pjoin = os.path.join
 #-----------------------------------------------------------------------------
 
 bundled_version = (4,1,5)
-libzmq = "zeromq-%i.%i.%i.tar.gz" % (bundled_version)
-libzmq_url = "http://download.zeromq.org/" + libzmq
-# FIXME: temporarily use GitHub download while waiting for 4.1.5 release
-# use codeload URL because SSL fails on github.com/archive URLs on Windows for some reason
-libzmq_url = "https://codeload.github.com/zeromq/zeromq4-1/tar.gz/b7a30978cae343d061983e00e8b2c713b66fc5a9"
-libzmq_checksum = "sha256:2b1b318677133e3816e51ab6d0a5769e01504095b32064b6b90feeef3f2eec1a"
+vs = '%i.%i.%i' % bundled_version
+libzmq = "zeromq-%s.tar.gz" % vs
+libzmq_url = "https://github.com/zeromq/zeromq{major}-{minor}/releases/download/v{vs}/{libzmq}".format(
+    major=bundled_version[0],
+    minor=bundled_version[1],
+    vs=vs,
+    libzmq=libzmq,
+)
+libzmq_checksum = "sha256:04aac57f081ffa3a2ee5ed04887be9e205df3a7ddade0027460b8042432bdbcf"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)

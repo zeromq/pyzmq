@@ -49,6 +49,7 @@ class Authenticator(object):
         self.zap_socket = self.context.socket(zmq.REP)
         self.zap_socket.linger = 1
         self.zap_socket.bind("inproc://zeromq.zap.01")
+        self.log.debug("Starting")
 
     def stop(self):
         """Close the ZAP socket"""
@@ -68,6 +69,7 @@ class Authenticator(object):
         """
         if self.blacklist:
             raise ValueError("Only use a whitelist or a blacklist, not both")
+        self.log.debug("Allowing %s", ','.join(addresses))
         self.whitelist.update(addresses)
 
     def deny(self, *addresses):
@@ -79,6 +81,7 @@ class Authenticator(object):
         """
         if self.whitelist:
             raise ValueError("Only use a whitelist or a blacklist, not both")
+        self.log.debug("Denying %s", ','.join(addresses))
         self.blacklist.update(addresses)
 
     def configure_plain(self, domain='*', passwords=None):
@@ -90,6 +93,7 @@ class Authenticator(object):
         """
         if passwords:
             self.passwords[domain] = passwords
+        self.log.debug("Configure plain: %s", domain)
 
     def configure_curve(self, domain='*', location=None):
         """Configure CURVE authentication for a given domain.
@@ -105,6 +109,7 @@ class Authenticator(object):
         """
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
         # treat location as a directory that holds the certificates.
+        self.log.debug("Configure curve: %s[%s]", domain, location)
         if location == CURVE_ALLOW_ANY:
             self.allow_any = True
         else:

@@ -1,13 +1,16 @@
+# coding: utf-8
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import pytest
+gen = pytest.importorskip('tornado.gen')
+
 import zmq
-from tornado import gen
 from zmq.eventloop import future
 from zmq.eventloop.ioloop import IOLoop
+from zmq.utils.strtypes import u
 
 from zmq.tests import BaseZMQTestCase
-from tornado import gen
 
 class TestFutureSocket(BaseZMQTestCase):
     Context = future.Context
@@ -25,7 +28,7 @@ class TestFutureSocket(BaseZMQTestCase):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, future.Socket)
         s.close()
-    
+
     def test_recv_multipart(self):
         @gen.coroutine
         def test():
@@ -66,6 +69,75 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f1.cancelled()
             assert f2.done()
             self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_sync(test)
+
+    @pytest.mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
+    def test_recv_timeout(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            b.rcvtimeo = 100
+            f1 = b.recv()
+            b.rcvtimeo = 1000
+            f2 = b.recv_multipart()
+            with pytest.raises(zmq.Again):
+                yield f1
+            yield  a.send_multipart([b'hi', b'there'])
+            recvd = yield f2
+            assert f2.done()
+            self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_sync(test)
+
+    @pytest.mark.skipif(not hasattr(zmq, 'SNDTIMEO'), reason="requires SNDTIMEO")
+    def test_send_timeout(self):
+        @gen.coroutine
+        def test():
+            s = self.socket(zmq.PUSH)
+            s.sndtimeo = 100
+            with pytest.raises(zmq.Again):
+                yield s.send(b'not going anywhere')
+        self.loop.run_sync(test)
+
+    def test_recv_string(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_string()
+            assert not f.done()
+            msg = u('πøøπ')
+            yield a.send_string(msg)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), msg)
+            self.assertEqual(recvd, msg)
+        self.loop.run_sync(test)
+
+    def test_recv_json(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_json()
+            assert not f.done()
+            obj = dict(a=5)
+            yield a.send_json(obj)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
+        self.loop.run_sync(test)
+
+    def test_recv_pyobj(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_pyobj()
+            assert not f.done()
+            obj = dict(a=5)
+            yield a.send_pyobj(obj)
+            recvd = yield f
+            assert f.done()
+            self.assertEqual(f.result(), obj)
+            self.assertEqual(recvd, obj)
         self.loop.run_sync(test)
 
     def test_poll(self):

@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import atexit
+from threading import Lock
 
 from zmq.backend import Context as ContextBase
 from . import constants
@@ -27,6 +28,7 @@ class Context(ContextBase, AttributeSetter):
     """
     sockopts = None
     _instance = None
+    _instance_lock = Lock()
     _shadow = False
     
     def __init__(self, io_threads=1, **kwargs):
@@ -101,7 +103,9 @@ class Context(ContextBase, AttributeSetter):
                     self.context = context or Context.instance()
         """
         if cls._instance is None or cls._instance.closed:
-            cls._instance = cls(io_threads=io_threads)
+            with cls._instance_lock:
+                if cls._instance is None or cls._instance.closed:
+                    cls._instance = cls(io_threads=io_threads)
         return cls._instance
     
     #-------------------------------------------------------------------------
@@ -125,7 +129,7 @@ class Context(ContextBase, AttributeSetter):
     def _socket_class(self):
         return Socket
     
-    def socket(self, socket_type):
+    def socket(self, socket_type, **kwargs):
         """Create a Socket associated with this Context.
 
         Parameters
@@ -133,10 +137,13 @@ class Context(ContextBase, AttributeSetter):
         socket_type : int
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
+
+        kwargs:
+            will be passed to the __init__ method of the socket class.
         """
         if self.closed:
             raise ZMQError(ENOTSUP)
-        s = self._socket_class(self, socket_type)
+        s = self._socket_class(self, socket_type, **kwargs)
         for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)

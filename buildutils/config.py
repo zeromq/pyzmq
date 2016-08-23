@@ -93,6 +93,7 @@ def get_cfg_args():
                 'no_libzmq_extension',
                 'have_sys_un_h',
                 'skip_check_zmq',
+                'bundle_msvcp',
                 ]:
         if key in g:
             g[key] = eval(g[key])
@@ -144,6 +145,7 @@ def discover_settings(conf_base=None):
         'no_libzmq_extension': False,
         'skip_check_zmq': False,
         'allow_legacy_libzmq': False,
+        'bundle_msvcp': None,
         'build_ext': {},
         'bdist_egg': {},
     }

@@ -1,5 +1,5 @@
 cdef extern from "zmq.h" nogil:
-
+    enum: PYZMQ_DRAFT_API
     enum: ZMQ_VERSION
     enum: ZMQ_VERSION_MAJOR
     enum: ZMQ_VERSION_MINOR
@@ -35,8 +35,13 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_UPSTREAM
     enum: ZMQ_DOWNSTREAM
     enum: ZMQ_STREAM
-    enum: ZMQ_CLIENT
     enum: ZMQ_SERVER
+    enum: ZMQ_CLIENT
+    enum: ZMQ_RADIO
+    enum: ZMQ_DISH
+    enum: ZMQ_GATHER
+    enum: ZMQ_SCATTER
+    enum: ZMQ_DGRAM
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED
@@ -147,21 +152,25 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_XPUB_MANUAL
     enum: ZMQ_STREAM_NOTIFY
     enum: ZMQ_INVERT_MATCHING
-    enum: ZMQ_XPUB_VERBOSE_UNSUBSCRIBE
+    enum: ZMQ_XPUB_VERBOSER
     enum: ZMQ_HEARTBEAT_IVL
     enum: ZMQ_HEARTBEAT_TTL
     enum: ZMQ_HEARTBEAT_TIMEOUT
     enum: ZMQ_CONNECT_TIMEOUT
-    enum: ZMQ_TCP_RETRANSMIT_TIMEOUT
+    enum: ZMQ_TCP_MAXRT
     enum: ZMQ_THREAD_SAFE
-    enum: ZMQ_TCP_RECV_BUFFER
-    enum: ZMQ_TCP_SEND_BUFFER
+    enum: ZMQ_MULTICAST_MAXTPDU
+    enum: ZMQ_VMCI_CONNECT_TIMEOUT
+    enum: ZMQ_USE_FD
     enum: ZMQ_AFFINITY
     enum: ZMQ_MAXMSGSIZE
     enum: ZMQ_HWM
     enum: ZMQ_SWAP
     enum: ZMQ_MCAST_LOOP
     enum: ZMQ_RECOVERY_IVL_MSEC
+    enum: ZMQ_VMCI_BUFFER_SIZE
+    enum: ZMQ_VMCI_BUFFER_MIN_SIZE
+    enum: ZMQ_VMCI_BUFFER_MAX_SIZE
     enum: ZMQ_RATE
     enum: ZMQ_RECOVERY_IVL
     enum: ZMQ_SNDBUF

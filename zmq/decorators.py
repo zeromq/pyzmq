@@ -1,5 +1,7 @@
 """Decorators for running functions with context/sockets.
 
+.. versionadded:: 15.3
+
 Like using Contexts and Sockets as context managers, but with decorator syntax.
 Context and sockets are closed at the end of the function.
 

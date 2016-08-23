@@ -40,26 +40,18 @@ except ImportError:
 from ..utils.strtypes import b
 
 
-_random_ports = set()
-
 def select_random_ports(n):
-    """Selects and return n random ports that are available."""
+    """Select and return n random ports that are available."""
     ports = []
+    sockets = []
     for i in range(n):
         sock = socket.socket()
         sock.bind(('', 0))
-        while sock.getsockname()[1] in _random_ports:
-            sock.close()
-            sock = socket.socket()
-            sock.bind(('', 0))
-        ports.append(sock)
-    for i, sock in enumerate(ports):
-        port = sock.getsockname()[1]
+        ports.append(sock.getsockname()[1])
+        sockets.append(sock)
+    for sock in sockets:
         sock.close()
-        ports[i] = port
-        _random_ports.add(port)
     return ports
-
 
 #-----------------------------------------------------------------------------
 # Check for passwordless login
@@ -220,7 +212,7 @@ def openssh_tunnel(lport, rport, server, remoteip='127.0.0.1', keyfile=None, pas
     cmd = "%s -O check %s" % (ssh, server)
     (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
     if not exitstatus:
-        pid = int(output[output.find("(pid=")+5:output.find(")")]) 
+        pid = int(output[output.find(b"(pid=")+5:output.find(b")")])
         cmd = "%s -O forward -L 127.0.0.1:%i:%s:%i %s" % (
             ssh, lport, remoteip, rport, server)
         (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)

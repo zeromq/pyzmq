@@ -68,7 +68,7 @@ def _make_defines(names):
 
     return "\n".join(_names)
 
-c_constant_names = []
+c_constant_names = ['PYZMQ_DRAFT_API']
 for name in all_names:
     if no_prefix(name):
         c_constant_names.append(name)

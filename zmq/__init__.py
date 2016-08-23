@@ -3,53 +3,31 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import os
-import sys
-import glob
-
 # load bundled libzmq, if there is one:
-
-here = os.path.dirname(__file__)
-
-bundled = []
-for ext in ('pyd', 'so', 'dll', 'dylib'):
-    bundled.extend(glob.glob(os.path.join(here, 'libzmq*.%s*' % ext)))
-
-# If we are running in a debug interpreter, load libzmq_d.pyd instead of libzmq.pyd
-# hasattr(sys, 'gettotalrefcount') is used to detect whether we are running in a debug interpreter
-# Taken from http://stackoverflow.com/questions/646518/python-how-to-detect-debug-interpreter
-if os.name == 'nt':
-    def is_debug_filename(name):
-        # Note this fails for filenames like foo.bar_d.so.x.y.z,
-        # but such names should not appear on Windows.
-        root, ext = os.path.splitext(name)
-        return root.endswith('_d')
-
-    if hasattr(sys, 'gettotalrefcount'):
-        bundled = [x for x in bundled if is_debug_filename(x)]
-    else:
-        bundled = [x for x in bundled if not is_debug_filename(x)]
-
-if bundled:
-    import ctypes
-    if bundled[0].endswith('.pyd'):
-        # a Windows Extension
-        _libzmq = ctypes.cdll.LoadLibrary(bundled[0])
-    else:
-        _libzmq = ctypes.CDLL(bundled[0], mode=ctypes.RTLD_GLOBAL)
-    del ctypes
-else:
-    import zipimport
+def _load_libzmq():
+    """load bundled libzmq if there is one"""
+    import sys, ctypes, platform
+    dlopen = hasattr(sys, 'getdlopenflags') # unix-only
+    if dlopen:
+        dlflags = sys.getdlopenflags()
+        sys.setdlopenflags(ctypes.RTLD_GLOBAL | dlflags)
     try:
-        if isinstance(__loader__, zipimport.zipimporter):
-            # a zipped pyzmq egg
-            from zmq import libzmq as _libzmq
-    except (NameError, ImportError):
+        from . import libzmq
+    except ImportError:
         pass
+    else:
+        # store libzmq as zmq._libzmq for backward-compat
+        globals()['_libzmq'] = libzmq
+        if platform.python_implementation().lower() == 'pypy':
+            # pypy needs explicit CDLL load for some reason,
+            # otherwise symbols won't be globally available
+            ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
-        del zipimport
+        if dlopen:
+            sys.setdlopenflags(dlflags)
 
-del os, sys, glob, here, bundled, ext
+_load_libzmq()
+
 
 # zmq top-level imports
 
@@ -67,4 +45,3 @@ def get_includes():
 
 
 __all__ = ['get_includes'] + sugar.__all__ + backend.__all__
-

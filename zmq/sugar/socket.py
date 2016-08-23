@@ -135,6 +135,42 @@ class Socket(SocketBase, AttributeSetter):
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
     
+    def __setattr__(self, key, value):
+        """override to allow setting zmq.[UN]SUBSCRIBE even though we have a subscribe method"""
+        _key = key.lower()
+        if _key in ('subscribe', 'unsubscribe'):
+            
+            if isinstance(value, unicode):
+                value = value.encode('utf8')
+            if _key == 'subscribe':
+                self.set(zmq.SUBSCRIBE, value)
+            else:
+                self.set(zmq.UNSUBSCRIBE, value)
+            return
+        super(Socket, self).__setattr__(key, value)
+    
+    def subscribe(self, topic):
+        """Subscribe to a topic
+
+        Only for SUB sockets.
+
+        .. versionadded:: 15.3
+        """
+        if isinstance(topic, unicode):
+            topic = topic.encode('utf8')
+        self.set(zmq.SUBSCRIBE, topic)
+    
+    def unsubscribe(self, topic):
+        """Unsubscribe from a topic
+
+        Only for SUB sockets.
+
+        .. versionadded:: 15.3
+        """
+        if isinstance(topic, unicode):
+            topic = topic.encode('utf8')
+        self.set(zmq.UNSUBSCRIBE, topic)
+    
     def set_string(self, option, optval, encoding='utf-8'):
         """set socket options with a unicode object
         
@@ -209,7 +245,7 @@ class Socket(SocketBase, AttributeSetter):
         if hasattr(constants, 'LAST_ENDPOINT') and min_port == 49152 and max_port == 65536:
             # if LAST_ENDPOINT is supported, and min_port / max_port weren't specified,
             # we can bind to port 0 and let the OS do the work
-            self.bind("%s:0" % addr)
+            self.bind("%s:*" % addr)
             url = self.last_endpoint.decode('ascii', 'replace')
             _, port_s = url.rsplit(':', 1)
             return int(port_s)
@@ -240,7 +276,7 @@ class Socket(SocketBase, AttributeSetter):
             # return sndhwm, fallback on rcvhwm
             try:
                 return self.getsockopt(zmq.SNDHWM)
-            except zmq.ZMQError as e:
+            except zmq.ZMQError:
                 pass
             
             return self.getsockopt(zmq.RCVHWM)
@@ -318,7 +354,7 @@ class Socket(SocketBase, AttributeSetter):
                 continue
             try:
                 _buffer_type(msg)
-            except Exception as e:
+            except Exception:
                 rmsg = repr(msg)
                 if len(rmsg) > 32:
                     rmsg = rmsg[:32] + '...'
@@ -364,6 +400,24 @@ class Socket(SocketBase, AttributeSetter):
     
         return parts
 
+    def _deserialize(self, recvd, load):
+        """Deserialize a received message
+
+        Override in subclass (e.g. Futures) if recvd is not the raw bytes.
+
+        The default implementation expects bytes and returns the deserialized message immediately.
+
+        Parameters
+        ----------
+
+        load: callable
+            Callable that deserializes bytes
+        recvd:
+            The object returned by self.recv
+
+        """
+        return load(recvd)
+
     def send_string(self, u, flags=0, copy=True, encoding='utf-8'):
         """send a Python unicode string as a message with an encoding
     
@@ -400,8 +454,8 @@ class Socket(SocketBase, AttributeSetter):
         s : unicode string (unicode on py2, str on py3)
             The Python unicode string that arrives as encoded bytes.
         """
-        b = self.recv(flags=flags)
-        return b.decode(encoding)
+        msg = self.recv(flags=flags)
+        return self._deserialize(msg, lambda buf: buf.decode(encoding))
     
     recv_unicode = recv_string
     
@@ -434,8 +488,8 @@ class Socket(SocketBase, AttributeSetter):
         obj : Python object
             The Python object that arrives as a message.
         """
-        s = self.recv(flags)
-        return pickle.loads(s)
+        msg = self.recv(flags)
+        return self._deserialize(msg, pickle.loads)
 
     def send_json(self, obj, flags=0, **kwargs):
         """send a Python object as a message using json to serialize
@@ -470,8 +524,8 @@ class Socket(SocketBase, AttributeSetter):
         """
         from zmq.utils import jsonapi
         msg = self.recv(flags)
-        return jsonapi.loads(msg, **kwargs)
-    
+        return self._deserialize(msg, lambda buf: jsonapi.loads(buf, **kwargs))
+
     _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):

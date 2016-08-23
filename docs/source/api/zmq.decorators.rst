@@ -2,8 +2,8 @@ decorators
 ==========
 
 
-Module: :mod:`decorators`
--------------------------
+Module: :mod:`zmq.decorators`
+-----------------------------
 
 .. automodule:: zmq.decorators
 
