@@ -211,7 +211,6 @@ class _AsyncSocket(_zmq.Socket):
     def _add_timeout(self, future, timeout):
         """Add a timeout for a send or recv Future"""
         def future_timeout():
-            print("calling future timeout")
             if future.done():
                 # future already resolved, do nothing
                 return
