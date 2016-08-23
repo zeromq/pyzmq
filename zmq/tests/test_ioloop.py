@@ -5,12 +5,13 @@ import time
 import os
 import threading
 
+import pytest
+
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq.tests import BaseZMQTestCase, have_gevent
 from zmq.eventloop import ioloop
-from zmq.eventloop.minitornado.ioloop import _Timeout
 try:
-    from tornado.ioloop import PollIOLoop, IOLoop as BaseIOLoop
+    from tornado.ioloop import IOLoop as BaseIOLoop
 except ImportError:
     from zmq.eventloop.minitornado.ioloop import IOLoop as BaseIOLoop
 
@@ -44,6 +45,11 @@ class Delay(threading.Thread):
 
 
 class TestIOLoop(BaseZMQTestCase):
+
+    def tearDown(self):
+        super(TestIOLoop, self).tearDown()
+        BaseIOLoop.clear_current()
+        BaseIOLoop.clear_instance()
 
     def test_simple(self):
         """simple IOLoop creation test"""
@@ -81,14 +87,21 @@ class TestIOLoop(BaseZMQTestCase):
         events = dict(poller.poll(1))
         self.assertEqual(events.get(rep), ioloop.IOLoop.READ)
         self.assertEqual(events.get(req), None)
-    
+
     def test_instance(self):
-        """Test IOLoop.instance returns the right object"""
+        """Green IOLoop.instance returns the right object"""
         loop = ioloop.IOLoop.instance()
-        self.assertEqual(loop.__class__, ioloop.IOLoop)
-        loop = BaseIOLoop.instance()
-        self.assertEqual(loop.__class__, ioloop.IOLoop)
-    
+        assert isinstance(loop, ioloop.IOLoop)
+        base_loop = BaseIOLoop.instance()
+        assert base_loop is loop
+
+    def test_current(self):
+        """Green IOLoop.current returns the right object"""
+        loop = ioloop.IOLoop.current()
+        assert isinstance(loop, ioloop.IOLoop)
+        base_loop = BaseIOLoop.current()
+        assert base_loop is loop
+
     def test_close_all(self):
         """Test close(all_fds=True)"""
         loop = ioloop.IOLoop.instance()
@@ -102,3 +115,21 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEqual(rep.closed, True)
         
 
+if have_gevent:
+    import zmq.green.eventloop.ioloop as green_ioloop
+    
+    class TestIOLoopGreen(BaseZMQTestCase):
+        def test_instance(self):
+            """Green IOLoop.instance returns the right object"""
+            loop = green_ioloop.IOLoop.instance()
+            assert isinstance(loop, green_ioloop.IOLoop)
+            base_loop = BaseIOLoop.instance()
+            assert base_loop is loop
+    
+        def test_current(self):
+            """Green IOLoop.current returns the right object"""
+            loop = green_ioloop.IOLoop.current()
+            assert isinstance(loop, green_ioloop.IOLoop)
+            base_loop = BaseIOLoop.current()
+            assert base_loop is loop
+    
