@@ -214,6 +214,19 @@ class _AsyncSocket(_zmq.Socket):
             if future.done():
                 # future already resolved, do nothing
                 return
+
+            # pop the entry from _recv_futures
+            for f_idx, (f, kind, kwargs, _) in enumerate(self._recv_futures):
+                if f == future:
+                    self._recv_futures.pop(f_idx)
+                    break
+
+            # pop the entry from _send_futures
+            for f_idx, (f, kind, kwargs, _) in enumerate(self._send_futures):
+                if f == future:
+                    self._send_futures.pop(f_idx)
+                    break
+
             # raise EAGAIN
             future.set_exception(_zmq.Again())
         self._call_later(timeout, future_timeout)
@@ -242,14 +255,17 @@ class _AsyncSocket(_zmq.Socket):
                 f.set_result(r)
             return f
 
+        # we add it to the list of futures before we add the timeout as the
+        # timeout will remove the future from recv_futures to avoid leaks
+        self._recv_futures.append(
+            _FutureEvent(f, kind, kwargs, msg=None)
+        )
+
         if hasattr(_zmq, 'RCVTIMEO'):
             timeout_ms = self._shadow_sock.rcvtimeo
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        self._recv_futures.append(
-            _FutureEvent(f, kind, kwargs, msg=None)
-        )
         if self.events & POLLIN:
             # recv immediately, if we can
             self._handle_recv()
@@ -273,14 +289,17 @@ class _AsyncSocket(_zmq.Socket):
                 f.set_result(r)
             return f
 
+        # we add it to the list of futures before we add the timeout as the
+        # timeout will remove the future from recv_futures to avoid leaks
+        self._send_futures.append(
+            _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
+        )
+
         if hasattr(_zmq, 'SNDTIMEO'):
             timeout_ms = self._shadow_sock.sndtimeo
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        self._send_futures.append(
-            _FutureEvent(f, kind, kwargs=kwargs, msg=msg)
-        )
         if self.events & POLLOUT:
             # send immediately if we can
             self._handle_send()
