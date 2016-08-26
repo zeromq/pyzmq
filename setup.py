@@ -529,7 +529,7 @@ class Configure(build_ext):
         
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:
-            libzmq.define_macros.append(('FD_SETSIZE', 1024))
+            libzmq.define_macros.append(('FD_SETSIZE', 16384))
             libzmq.define_macros.append(('DLL_EXPORT', 1))
             libzmq.define_macros.append(('_CRT_SECURE_NO_WARNINGS', 1))
             
