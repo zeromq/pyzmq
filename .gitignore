@@ -2,6 +2,7 @@
 zmq/backend/cython/*.c
 zmq/devices/*.c
 zmq/utils/*.json
+zmq/include/*.h
 __pycache__
 build
 dist

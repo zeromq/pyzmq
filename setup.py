@@ -587,6 +587,17 @@ class Configure(build_ext):
                     # not sure why
                     libzmq.libraries.append("stdc++")
         
+        # copy the header files to the source tree.
+        bundledincludedir = pjoin('zmq', 'include')
+        if not os.path.exists(bundledincludedir):
+            os.makedirs(bundledincludedir)
+        if not os.path.exists(pjoin(self.build_lib, bundledincludedir)):
+            os.makedirs(pjoin(self.build_lib, bundledincludedir))
+        
+        for header in glob(pjoin(bundledir, 'zeromq', 'include', '*.h')):
+            shutil.copyfile(header, pjoin(bundledincludedir, basename(header)))
+            shutil.copyfile(header, pjoin(self.build_lib, bundledincludedir, basename(header)))
+        
         # update other extensions, with bundled settings
         self.config['libzmq_extension'] = True
         self.init_settings_from_config()
@@ -887,6 +898,9 @@ class CleanCommand(Command):
         
         bundled = glob(pjoin('zmq', 'libzmq*'))
         _clean_me.extend([ b for b in bundled if b not in _clean_me ])
+        
+        bundled_headers = glob(pjoin('zmq', 'include', '*.h'))
+        _clean_me.extend([ h for h in bundled_headers if h not in _clean_me])
         
         for clean_me in _clean_me:
             print("removing %s" % clean_me)
