@@ -38,10 +38,26 @@ from zmq.sugar import *
 
 def get_includes():
     """Return a list of directories to include for linking against pyzmq with cython."""
+    from os.path import join, dirname, abspath, pardir, exists
+    base = dirname(__file__)
+    parent = abspath(join(base, pardir))
+    includes = [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
+    if exists(pjoin(parent, base, 'include')):
+        includes.append(pjoin(parent, base, 'include'))
+    return includes
+    
+def get_libdirs():
+    """Get the library directory for linking to the bundled copy of libzmq."""
     from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
-    return [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
+    global _libzmq
+    try:
+        _libzmq
+    except NameError:
+        return []
+    else:
+        return [pjoin(parent, base, pardir)]
 
 
 __all__ = ['get_includes'] + sugar.__all__ + backend.__all__
