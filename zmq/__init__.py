@@ -51,13 +51,7 @@ def get_library_dirs():
     from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
-    global _libzmq
-    try:
-        _libzmq
-    except NameError:
-        return []
-    else:
-        return [pjoin(parent, base, pardir)]
+    return [ pjoin(parent, base, pardir) ]
 
 
 __all__ = ['get_includes'] + sugar.__all__ + backend.__all__
