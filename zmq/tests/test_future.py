@@ -2,6 +2,8 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import os
+
 import pytest
 gen = pytest.importorskip('tornado.gen')
 
@@ -146,12 +148,12 @@ class TestFutureSocket(BaseZMQTestCase):
             a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
             f = b.poll(timeout=0)
             self.assertEqual(f.result(), 0)
-        
+
             f = b.poll(timeout=1)
             assert not f.done()
             evt = yield f
             self.assertEqual(evt, 0)
-        
+
             f = b.poll(timeout=1000)
             assert not f.done()
             yield a.send_multipart([b'hi', b'there'])
@@ -159,4 +161,35 @@ class TestFutureSocket(BaseZMQTestCase):
             self.assertEqual(evt, zmq.POLLIN)
             recvd = yield b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_sync(test)
+
+    def test_poll_raw(self):
+        @gen.coroutine
+        def test():
+            p = future.Poller()
+            # make a pipe
+            r, w = os.pipe()
+            r = os.fdopen(r, 'rb')
+            w = os.fdopen(w, 'wb')
+
+            # POLLOUT
+            p.register(r, zmq.POLLIN)
+            p.register(w, zmq.POLLOUT)
+            evts = yield p.poll(timeout=1)
+            evts = dict(evts)
+            assert r.fileno() not in evts
+            assert w.fileno() in evts
+            assert evts[w.fileno()] == zmq.POLLOUT
+
+            # POLLIN
+            p.unregister(w)
+            w.write(b'x')
+            w.flush()
+            evts = yield p.poll(timeout=1000)
+            evts = dict(evts)
+            assert r.fileno() in evts
+            assert evts[r.fileno()] == zmq.POLLIN
+            assert r.read(1) == b'x'
+            r.close()
+            w.close()
         self.loop.run_sync(test)
