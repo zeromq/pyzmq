@@ -297,6 +297,13 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         """initialize the ioloop event handler"""
         pass
 
+    def _clear_io_state(self):
+        """clear any ioloop event handler
+
+        called once at close
+        """
+        self._drop_io_state(self._state)
+
 class Context(_zmq.Context):
     """Context for creating asyncio-compatible Sockets"""
     _socket_class = Socket

@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from collections import namedtuple
+from itertools import chain
 from zmq import POLLOUT, POLLIN
 
 try:
@@ -115,7 +116,7 @@ class _AsyncSocket(_zmq.Socket):
     _shadow_sock = None
     _poller_class = Poller
     io_loop = None
-    
+
     def __init__(self, context, socket_type, io_loop=None):
         super(_AsyncSocket, self).__init__(context, socket_type)
         self.io_loop = io_loop or self._default_loop()
@@ -124,7 +125,16 @@ class _AsyncSocket(_zmq.Socket):
         self._state = 0
         self._shadow_sock = _zmq.Socket.shadow(self.underlying)
         self._init_io_state()
-    
+
+    def close(self, linger=None):
+        if not self.closed:
+            for event in chain(self._recv_futures, self._send_futures):
+                if not event.future.done():
+                    event.future.cancel()
+            self._clear_io_state()
+        super(_AsyncSocket, self).close(linger=linger)
+    close.__doc__ = _zmq.Socket.close.__doc__
+
     def recv_multipart(self, flags=0, copy=True, track=False):
         """Receive a complete multipart zmq message.
         
@@ -402,10 +412,18 @@ class _AsyncSocket(_zmq.Socket):
         """Update IOLoop handler with state."""
         self._state = state
         self.io_loop.update_handler(self, state)
-    
+
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         self.io_loop.add_handler(self, self._handle_events, self._state)
+
+    def _clear_io_state(self):
+        """unregister the ioloop event handler
+        
+        called once during close
+        """
+        self.io_loop.remove_handler(self)
+
 
 class Socket(_AsyncTornado, _AsyncSocket):
     pass
