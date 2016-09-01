@@ -44,6 +44,7 @@ class _AsyncTornado(object):
 
 class _AsyncPoller(_zmq.Poller):
     """Poller that returns a Future on poll, instead of blocking."""
+
     def poll(self, timeout=-1):
         """Return a Future for a poll event"""
         future = self._Future()
@@ -59,13 +60,30 @@ class _AsyncPoller(_zmq.Poller):
         loop = self._default_loop()
         
         # register Future to be called as soon as any event is available on any socket
-        # only support polling on zmq sockets, for now
         watcher = self._Future()
+        
+        # watch raw sockets:
+        raw_sockets = []
+        def wake_raw(*args):
+            if not watcher.done():
+                watcher.set_result(None)
+
+        watcher.add_done_callback(lambda f: self._unwatch_raw_sockets(loop, *raw_sockets))
+
         for socket, mask in self.sockets:
-            if mask & _zmq.POLLIN:
-                socket._add_recv_event('poll', future=watcher)
-            if mask & _zmq.POLLOUT:
-                socket._add_send_event('poll', future=watcher)
+            if isinstance(socket, _AsyncSocket):
+                if mask & _zmq.POLLIN:
+                    socket._add_recv_event('poll', future=watcher)
+                if mask & _zmq.POLLOUT:
+                    socket._add_send_event('poll', future=watcher)
+            else:
+                raw_sockets.append(socket)
+                evt = 0
+                if mask & _zmq.POLLIN:
+                    evt |= self._READ
+                if mask & _zmq.POLLOUT:
+                    evt |= self._WRITE
+                self._watch_raw_socket(loop, socket, evt, wake_raw)
         
         def on_poll_ready(f):
             if future.done():
@@ -97,16 +115,24 @@ class _AsyncPoller(_zmq.Poller):
                 else:
                     loop.remove_timeout(timeout_handle)
             future.add_done_callback(cancel_timeout)
-        
+
         def cancel_watcher(f):
             if not watcher.done():
                 watcher.cancel()
         future.add_done_callback(cancel_watcher)
-            
+
         return future
 
 class Poller(_AsyncTornado, _AsyncPoller):
-    pass
+    def _watch_raw_socket(self, loop, socket, evt, f):
+        """Schedule callback for a raw socket"""
+        loop.add_handler(socket, lambda *args: f(), evt)
+
+    def _unwatch_raw_sockets(self, loop, *sockets):
+        """Unschedule callback for a raw socket"""
+        for socket in sockets:
+            loop.remove_handler(socket)
+
 
 class _AsyncSocket(_zmq.Socket):
     

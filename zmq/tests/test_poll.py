@@ -1,7 +1,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
+import os
 import time
 from unittest import TestCase
 
@@ -17,8 +17,6 @@ class TestPoll(PollZMQTestCase):
 
     Poller = zmq.Poller
 
-    # This test is failing due to this issue:
-    # http://github.com/sustrik/zeromq2/issues#issue/26
     def test_pair(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
@@ -50,8 +48,6 @@ class TestPoll(PollZMQTestCase):
         poller.unregister(s1)
         poller.unregister(s2)
 
-        # Wait for everything to finish.
-        wait()
 
     def test_reqrep(self):
         s1, s2 = self.create_bound_pair(zmq.REP, zmq.REQ)
@@ -101,9 +97,6 @@ class TestPoll(PollZMQTestCase):
         poller.unregister(s1)
         poller.unregister(s2)
 
-        # Wait for everything to finish.
-        wait()
-    
     def test_no_events(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         poller = self.Poller()
@@ -147,8 +140,21 @@ class TestPoll(PollZMQTestCase):
         poller.unregister(s1)
         poller.unregister(s2)
 
-        # Wait for everything to finish.
-        wait()
+    def test_raw(self):
+        r, w = os.pipe()
+        r = os.fdopen(r, 'rb')
+        w = os.fdopen(w, 'wb')
+        p = self.Poller()
+        p.register(r, zmq.POLLIN)
+        socks = dict(p.poll(1))
+        assert socks == {}
+        w.write(b'x')
+        w.flush()
+        socks = dict(p.poll(1))
+        assert socks == {r.fileno(): zmq.POLLIN}
+        w.close()
+        r.close()
+
     def test_timeout(self):
         """make sure Poller.poll timeout has the right units (milliseconds)."""
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)

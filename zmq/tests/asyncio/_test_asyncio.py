@@ -2,6 +2,7 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import os
 import sys
 
 from pytest import mark
@@ -229,6 +230,39 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         loop.run_until_complete(server(loop))
         print("servered")
         loop.run_until_complete(client())
+
+    def test_poll_raw(self):
+        @asyncio.coroutine
+        def test():
+            p = zaio.Poller()
+            # make a pipe
+            r, w = os.pipe()
+            r = os.fdopen(r, 'rb')
+            w = os.fdopen(w, 'wb')
+
+            # POLLOUT
+            p.register(r, zmq.POLLIN)
+            p.register(w, zmq.POLLOUT)
+            evts = yield from p.poll(timeout=1)
+            evts = dict(evts)
+            assert r.fileno() not in evts
+            assert w.fileno() in evts
+            assert evts[w.fileno()] == zmq.POLLOUT
+
+            # POLLIN
+            p.unregister(w)
+            w.write(b'x')
+            w.flush()
+            evts = yield from p.poll(timeout=1000)
+            evts = dict(evts)
+            assert r.fileno() in evts
+            assert evts[r.fileno()] == zmq.POLLIN
+            assert r.read(1) == b'x'
+            r.close()
+            w.close()
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(test())
 
 
 class TestAsyncioAuthentication(TestThreadAuthentication):
