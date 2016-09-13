@@ -1034,7 +1034,11 @@ try:
     import Cython
     if V(Cython.__version__) < V('0.16'):
         raise ImportError("Cython >= 0.16 required, found %s" % Cython.__version__)
-    from Cython.Distutils import build_ext as build_ext_c
+    try:
+        # Cython 0.25 or later
+        from Cython.Distutils.old_build_ext import old_build_ext as build_ext_c
+    except ImportError:
+        from Cython.Distutils import build_ext as build_ext_c
     cython=True
 except Exception:
     cython=False
