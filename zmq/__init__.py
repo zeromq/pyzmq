@@ -42,8 +42,8 @@ def get_includes():
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
     includes = [ parent ] + [ join(parent, base, subdir) for subdir in ('utils',) ]
-    if exists(pjoin(parent, base, 'include')):
-        includes.append(pjoin(parent, base, 'include'))
+    if exists(join(parent, base, 'include')):
+        includes.append(join(parent, base, 'include'))
     return includes
     
 def get_library_dirs():
@@ -51,7 +51,7 @@ def get_library_dirs():
     from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
-    return [ pjoin(parent, base, pardir) ]
+    return [ join(parent, base) ]
 
 
 __all__ = ['get_includes'] + sugar.__all__ + backend.__all__
