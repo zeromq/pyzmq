@@ -49,14 +49,11 @@ matrix:
       env: ZMQ=zeromq4-1
     - python: 3.4
       env: ZMQ=zeromq3-x
-    - python: 2.6
-      env: ZMQ=
-    - python: 3.2
-      env: ZMQ=
     - python: 3.3
       env: ZMQ=
-    - python: pypy3
-      env: ZMQ=
+    # FIXME: pypy3 is still on unsupported Python 3.2
+    # - python: pypy3
+    #   env: ZMQ=
     - python: nightly
       env: ZMQ=
     - python: nightly
