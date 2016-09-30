@@ -946,9 +946,9 @@ class CheckingBuildExt(build_ext):
           for src in ext.sources:
             if not os.path.exists(src):
                 fatal("""Cython-generated file '%s' not found.
-                Cython >= 0.16 is required to compile pyzmq from a development branch.
+                Cython >= %s is required to compile pyzmq from a development branch.
                 Please install Cython or download a release package of pyzmq.
-                """%src)
+                """ % (src, min_cython_version))
     
     def build_extensions(self):
         self.check_cython_extensions(self.extensions)
@@ -1030,18 +1030,17 @@ submodules = {
     },
 }
 
+min_cython_version = '0.20'
 try:
     import Cython
-    if V(Cython.__version__) < V('0.16'):
-        raise ImportError("Cython >= 0.16 required, found %s" % Cython.__version__)
-    try:
-        # Cython 0.25 or later
-        from Cython.Distutils.old_build_ext import old_build_ext as build_ext_c
-    except ImportError:
-        from Cython.Distutils import build_ext as build_ext_c
-    cython=True
+    if V(Cython.__version__) < V(min_cython_version):
+        raise ImportError("Cython >= %s required for cython build, found %s" % (
+            min_cython_version, Cython.__version__))
+    from Cython.Distutils import build_ext as build_ext_c
+    from Cython.Distutils import Extension
+    cython = True
 except Exception:
-    cython=False
+    cython = False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
     
@@ -1062,12 +1061,13 @@ except Exception:
                 warn("Cython is missing")
             else:
                 cv = getattr(Cython, "__version__", None)
-                if cv is None or V(cv) < V('0.16'):
+                if cv is None or V(cv) < V(min_cython_version):
                     warn(
-                        "Cython >= 0.16 is required for compiling Cython sources, "
-                        "found: %s" % (cv or "super old")
+                        "Cython >= %s is required for compiling Cython sources, "
+                        "found: %s" % (min_cython_version, cv or Cython)
                     )
     cmdclass['cython'] = MissingCython
+    
 else:
     
     suffix = '.pyx'
@@ -1081,13 +1081,8 @@ else:
         
         def build_extension(self, ext):
             pass
-    
+
     class zbuild_ext(build_ext_c):
-        
-        def finalize_options(self):
-            build_ext_c.finalize_options(self)
-            # set binding so that compiled methods can be inspected
-            self.cython_directives['binding'] = True
         
         def build_extensions(self):
             if self.compiler.compiler_type == 'mingw32':
@@ -1108,26 +1103,29 @@ else:
     cmdclass['build_ext'] =  zbuild_ext
 
 extensions = []
+ext_include_dirs = [pjoin('zmq', sub) for sub in ('utils',)]
+ext_kwargs = {
+    'include_dirs': ext_include_dirs,
+}
+if cython:
+    # set binding so that compiled methods can be inspected
+    ext_kwargs['cython_directives'] = {'binding': True}
+
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
         sources = [pjoin('zmq', submod.replace('.', os.path.sep), pkg+suffix)]
-        if suffix == '.pyx':
-            sources.extend(packages[pkg])
         ext = Extension(
             'zmq.%s.%s'%(submod, pkg),
             sources = sources,
-            include_dirs=[pjoin('zmq', sub) for sub in ('utils',pjoin('backend', 'cython'),'devices')],
+            **ext_kwargs
         )
-        if suffix == '.pyx' and ext.sources[0].endswith('.c'):
-            # undo setuptools stupidly clobbering cython sources:
-            ext.sources = sources
         extensions.append(ext)
 
 if pypy:
     # add dummy extension, to ensure build_ext runs
     dummy_ext = Extension('dummy', sources=[])
     extensions = [dummy_ext]
-    
+
     bld_ext = cmdclass['build_ext']
     class pypy_build_ext(bld_ext):
         """hack to build pypy extension only after building bundled libzmq
