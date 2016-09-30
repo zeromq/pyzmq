@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from libzmq cimport (
+from .libzmq cimport (
     zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair,
     zmq_has, const_char_ptr
 )

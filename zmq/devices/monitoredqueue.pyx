@@ -24,8 +24,8 @@ cdef extern from "Python.h":
 
 from libc.string cimport memcpy
 
-from buffers cimport asbuffer_r
-from libzmq cimport *
+from zmq.utils.buffers cimport asbuffer_r
+from zmq.backend.cython.libzmq cimport *
 
 from zmq.backend.cython.socket cimport Socket
 from zmq.backend.cython.checkrc cimport _check_rc

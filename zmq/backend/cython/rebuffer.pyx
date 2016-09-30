@@ -18,7 +18,7 @@ Authors
 #-----------------------------------------------------------------------------
 
 from libc.stdlib cimport malloc
-from buffers cimport *
+from zmq.utils.buffers cimport *
 
 cdef inline object _rebuffer(object obj, char * format, int itemsize):
     """clobber the format & itemsize of a 1-D

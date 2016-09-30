@@ -25,13 +25,13 @@
 
 from libc.stdlib cimport free, malloc
 
-from libzmq cimport zmq_pollitem_t, ZMQ_VERSION_MAJOR
-from libzmq cimport zmq_poll as zmq_poll_c
+from .libzmq cimport zmq_pollitem_t, ZMQ_VERSION_MAJOR
+from .libzmq cimport zmq_poll as zmq_poll_c
 from socket cimport Socket
 
 import sys
 
-from zmq.backend.cython.checkrc cimport _check_rc
+from .checkrc cimport _check_rc
 from zmq.error import InterruptedSystemCall
 
 #-----------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 from libc.errno cimport EINTR, EAGAIN
 from cpython cimport PyErr_CheckSignals
-from libzmq cimport zmq_errno, ZMQ_ETERM
+from zmq.backend.cython.libzmq cimport zmq_errno, ZMQ_ETERM
 
 
 cdef inline int _check_rc(int rc) except -1:

@@ -34,9 +34,9 @@ from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF
 
-from buffers cimport asbuffer_r, viewfromobject_r
+from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 
-from libzmq cimport *
+from .libzmq cimport *
 from message cimport Frame, copy_zmq_msg_bytes
 
 from context cimport Context
@@ -71,8 +71,8 @@ except:
 
 import zmq
 from zmq.backend.cython import constants
-from zmq.backend.cython.constants import *
-from zmq.backend.cython.checkrc cimport _check_rc
+from .constants import *
+from .checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
 
