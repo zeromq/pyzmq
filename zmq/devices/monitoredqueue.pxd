@@ -30,7 +30,7 @@ Authors
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport *
+from zmq.backend.cython.libzmq cimport *
 
 #-----------------------------------------------------------------------------
 # MonitoredQueue C functions

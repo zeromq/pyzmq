@@ -23,9 +23,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
-from zmq.backend.cython.socket cimport Socket as cSocket
-from zmq.backend.cython.checkrc cimport _check_rc
+from .libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
+from .socket cimport Socket as cSocket
+from .checkrc cimport _check_rc
 
 from zmq.error import InterruptedSystemCall
 

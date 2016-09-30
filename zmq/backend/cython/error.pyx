@@ -27,7 +27,7 @@
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
-from libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
+from .libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
 
 from zmq.utils.strtypes import bytes
 

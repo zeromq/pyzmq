@@ -29,12 +29,12 @@ cdef extern from "pyversion_compat.h":
 
 from cpython cimport Py_DECREF, Py_INCREF
 
-from buffers cimport asbuffer_r, viewfromobject_r
+from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
-from libzmq cimport *
+from .libzmq cimport *
 
 from libc.stdio cimport fprintf, stderr as cstderr
 from libc.stdlib cimport malloc, free
@@ -51,7 +51,7 @@ except (ImportError, AttributeError):
 
 import zmq
 from zmq.error import _check_version
-from zmq.backend.cython.checkrc cimport _check_rc
+from .checkrc cimport _check_rc
 from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------

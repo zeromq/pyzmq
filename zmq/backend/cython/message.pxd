@@ -25,7 +25,7 @@
 
 from cpython cimport PyBytes_FromStringAndSize
 
-from libzmq cimport zmq_msg_t, zmq_msg_data, zmq_msg_size
+from zmq.backend.cython.libzmq cimport zmq_msg_t, zmq_msg_data, zmq_msg_size
 
 #-----------------------------------------------------------------------------
 # Code
