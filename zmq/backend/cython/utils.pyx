@@ -20,8 +20,8 @@
 #
 
 from .libzmq cimport (
-    zmq_stopwatch_start, zmq_stopwatch_stop, zmq_sleep, zmq_curve_keypair,
-    zmq_has, const_char_ptr
+    zmq_curve_keypair,
+    zmq_has, const_char_ptr,
 )
 from zmq.error import ZMQError, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
@@ -61,59 +61,4 @@ def curve_keypair():
     return public_key, secret_key
 
 
-cdef class Stopwatch:
-    """Stopwatch()
-
-    A simple stopwatch based on zmq_stopwatch_start/stop.
-
-    This class should be used for benchmarking and timing 0MQ code.
-    """
-
-    def __cinit__(self):
-        self.watch = NULL
-
-    def __dealloc__(self):
-        # copy of self.stop() we can't call object methods in dealloc as it
-        # might already be partially deleted
-        if self.watch:
-            zmq_stopwatch_stop(self.watch)
-            self.watch = NULL
-
-    def start(self):
-        """s.start()
-
-        Start the stopwatch.
-        """
-        if self.watch == NULL:
-            self.watch = zmq_stopwatch_start()
-        else:
-            raise ZMQError('Stopwatch is already running.')
-
-    def stop(self):
-        """s.stop()
-
-        Stop the stopwatch.
-        
-        Returns
-        -------
-        t : unsigned long int
-            the number of microseconds since ``start()`` was called.
-        """
-        cdef unsigned long time
-        if self.watch == NULL:
-            raise ZMQError('Must start the Stopwatch before calling stop.')
-        else:
-            time = zmq_stopwatch_stop(self.watch)
-            self.watch = NULL
-            return time
-
-    def sleep(self, int seconds):
-        """s.sleep(seconds)
-
-        Sleep for an integer number of seconds.
-        """
-        with nogil:
-            zmq_sleep(seconds)
-
-
-__all__ = ['has', 'curve_keypair', 'Stopwatch']
+__all__ = ['has', 'curve_keypair']

@@ -8,9 +8,13 @@
 #  Used under LGPLv3
 
 import argparse
+from multiprocessing import Process
 import time
 
-from multiprocessing import Process
+try:
+    now = time.monotonic
+except AttributeError:
+    now = time.time
 
 import zmq
 
@@ -74,11 +78,9 @@ def latency(url, count, size, poll, copy):
 
     msg = b' ' * size
 
-    watch = zmq.Stopwatch()
-
     block = zmq.NOBLOCK if poll else 0
     time.sleep(1)
-    watch.start()
+    start = now()
 
     for i in range (0, count):
         if poll:
@@ -93,16 +95,16 @@ def latency(url, count, size, poll, copy):
         
         assert len(msg) == size
 
-    elapsed = watch.stop()
+    elapsed = now() - start
 
     s.send(b'done')
 
-    latency = elapsed / (count * 2.)
+    latency = 1e6 * elapsed / (count * 2.)
 
     print ("message size   : %8i     [B]" % (size, ))
     print ("roundtrip count: %8i     [msgs]" % (count, ))
     print ("mean latency   : %12.3f [µs]" % (latency, ))
-    print ("test time      : %12.3f [s]" % (elapsed * 1e-6, ))
+    print ("test time      : %12.3f [s]" % (elapsed, ))
 
 def pusher(url, count, size, poll, copy):
     """send a bunch of messages on a PUSH socket"""
@@ -147,30 +149,27 @@ def throughput(url, count, size, poll, copy):
 
     s.bind(url)
 
-    watch = zmq.Stopwatch()
     block = zmq.NOBLOCK if poll else 0
     
     # Wait for the other side to connect.
     msg = s.recv()
     assert len (msg) == size
     
-    watch.start()
+    start = now()
     for i in range (count-1):
         if poll:
             res = p.poll()
         msg = s.recv(block, copy=copy)
-    elapsed = watch.stop()
-    if elapsed == 0:
-        elapsed = 1
+    elapsed = now() - start
     
-    throughput = (1e6 * float(count)) / float(elapsed)
+    throughput = (float(count)) / float(elapsed)
     megabits = float(throughput * size * 8) / 1e6
 
     print ("message size   : %8i     [B]" % (size, ))
     print ("message count  : %8i     [msgs]" % (count, ))
     print ("mean throughput: %8.0f     [msg/s]" % (throughput, ))
     print ("mean throughput: %12.3f [Mb/s]" % (megabits, ))
-    print ("test time      : %12.3f [s]" % (elapsed * 1e-6, ))
+    print ("test time      : %12.3f [s]" % (elapsed, ))
 
 
 def main():

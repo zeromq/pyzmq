@@ -8,7 +8,6 @@ public_api = [
     'Socket',
     'Frame',
     'Message',
-    'Stopwatch',
     'device',
     'proxy',
     'zmq_poll',

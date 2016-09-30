@@ -1010,7 +1010,6 @@ buffers = pxd('utils', 'buffers')
 message = pxd('backend', 'cython', 'message')
 context = pxd('backend', 'cython', 'context')
 socket = pxd('backend', 'cython', 'socket')
-utils = pxd('backend', 'cython', 'utils')
 checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 
@@ -1018,7 +1017,7 @@ submodules = {
     'backend.cython' : {'constants': [libzmq, pxi('backend', 'cython', 'constants')],
             'error':[libzmq, checkrc],
             '_poll':[libzmq, socket, context, checkrc],
-            'utils':[libzmq, utils, checkrc],
+            'utils':[libzmq, checkrc],
             'context':[context, libzmq, checkrc],
             'message':[libzmq, buffers, message, checkrc],
             'socket':[context, message, socket, libzmq, buffers, checkrc],
