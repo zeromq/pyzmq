@@ -318,7 +318,7 @@ class _AsyncSocket(_zmq.Socket):
             # short-circuit non-blocking calls
             send = getattr(self._shadow_sock, kind)
             try:
-                r = send(**kwargs)
+                r = send(msg, **kwargs)
             except Exception as e:
                 f.set_exception(e)
             else:
