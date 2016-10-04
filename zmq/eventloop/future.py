@@ -313,8 +313,6 @@ class _AsyncSocket(_zmq.Socket):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
         if kind.startswith('send') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
-            if kind == 'send_multipart':
-                kwargs['msg_parts'] = msg
             # short-circuit non-blocking calls
             send = getattr(self._shadow_sock, kind)
             try:

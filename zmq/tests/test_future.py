@@ -99,6 +99,24 @@ class TestFutureSocket(BaseZMQTestCase):
             with pytest.raises(zmq.Again):
                 yield s.send(b'not going anywhere')
         self.loop.run_sync(test)
+    
+    @pytest.mark.now
+    def test_send_noblock(self):
+        @gen.coroutine
+        def test():
+            s = self.socket(zmq.PUSH)
+            with pytest.raises(zmq.Again):
+                yield s.send(b'not going anywhere', flags=zmq.NOBLOCK)
+        self.loop.run_sync(test)
+
+    @pytest.mark.now
+    def test_send_multipart_noblock(self):
+        @gen.coroutine
+        def test():
+            s = self.socket(zmq.PUSH)
+            with pytest.raises(zmq.Again):
+                yield s.send_multipart([b'not going anywhere'], flags=zmq.NOBLOCK)
+        self.loop.run_sync(test)
 
     def test_recv_string(self):
         @gen.coroutine
