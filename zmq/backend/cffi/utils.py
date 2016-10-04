@@ -11,6 +11,7 @@ from ._cffi import ffi, C
 from zmq.error import ZMQError, InterruptedSystemCall, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
 
+
 def has(capability):
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
     
@@ -21,7 +22,8 @@ def has(capability):
     if isinstance(capability, unicode):
         capability = capability.encode('utf8')
     return bool(C.zmq_has(capability))
-    
+
+
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
     
@@ -40,27 +42,6 @@ def curve_keypair():
     return ffi.buffer(public)[:40], ffi.buffer(private)[:40]
 
 
-class Stopwatch(object):
-    def __init__(self):
-        self.watch = ffi.NULL
-
-    def start(self):
-        if self.watch == ffi.NULL:
-            self.watch = C.zmq_stopwatch_start()
-        else:
-            raise ZMQError('Stopwatch is already running.')
-
-    def stop(self):
-        if self.watch == ffi.NULL:
-            raise ZMQError('Must start the Stopwatch before calling stop.')
-        else:
-            time = C.zmq_stopwatch_stop(self.watch)
-            self.watch = ffi.NULL
-            return time
-
-    def sleep(self, seconds):
-        C.zmq_sleep(seconds)
-
 def _retry_sys_call(f, *args, **kwargs):
     """make a call, retrying if interrupted with EINTR"""
     while True:
@@ -72,4 +53,5 @@ def _retry_sys_call(f, *args, **kwargs):
         else:
             break
 
-__all__ = ['has', 'curve_keypair', 'Stopwatch']
+
+__all__ = ['has', 'curve_keypair']

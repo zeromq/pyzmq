@@ -20,7 +20,6 @@ class TestImports(TestCase):
         from zmq import Frame
         from zmq import constants
         from zmq import device, proxy
-        from zmq import Stopwatch
         from zmq import (
             zmq_version,
             zmq_version_info,

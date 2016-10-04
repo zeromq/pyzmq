@@ -295,16 +295,3 @@ class TestCFFIBackend(TestCase):
         assert 0 == C.zmq_msg_close(zmq_msg2)
         assert 0 == C.zmq_msg_close(zmq_msg_again)
 
-    def test_zmq_stopwatch_functions(self):
-        stopwatch = C.zmq_stopwatch_start()
-        ret = C.zmq_stopwatch_stop(stopwatch)
-
-        assert ffi.NULL != stopwatch
-        assert 0 < int(ret)
-
-    def test_zmq_sleep(self):
-        try:
-            C.zmq_sleep(1)
-        except Exception as e:
-            raise AssertionError("Error executing zmq_sleep(int)")
-

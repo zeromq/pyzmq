@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include <zmq.h>
-#include <zmq_utils.h>
 #include "zmq_compat.h"
 
 int get_ipc_path_max_len(void) {

@@ -22,6 +22,8 @@ from zmq.sugar.socket import *
 from zmq.sugar.constants import *
 from zmq.sugar.frame import *
 from zmq.sugar.poll import *
-# from zmq.sugar.stopwatch import *
-# from zmq.sugar._device import *
 from zmq.sugar.version import *
+
+# deprecated:
+from zmq.sugar.stopwatch import Stopwatch
+__all__.append('Stopwatch')
