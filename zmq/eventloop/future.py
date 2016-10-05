@@ -38,6 +38,7 @@ class _AsyncTornado(object):
     _Future = _TornadoFuture
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
+
     def _default_loop(self):
         return IOLoop.current()
 
@@ -109,6 +110,7 @@ class _AsyncPoller(_zmq.Poller):
                 1e-3 * timeout,
                 trigger_timeout
             )
+
             def cancel_timeout(f):
                 if hasattr(timeout_handle, 'cancel'):
                     timeout_handle.cancel()
@@ -201,22 +203,36 @@ class _AsyncSocket(_zmq.Socket):
             kwargs=dict(flags=flags, copy=copy, track=track),
         )
 
-    def _deserialize(self, recvd, load):
+    def _deserialize(self, recvd_f, load):
         """Deserialize with Futures"""
-        f = self._Future()
-        def _chain(_):
-            if recvd.exception():
-                f.set_exception(recvd.exception())
-            else:
-                buf = recvd.result()
-                try:
-                    loaded = load(buf)
-                except Exception as e:
-                    f.set_exception(e)
+        class DeserializeChain:
+            def __init__(self, parent):
+                self.chain_f = parent._Future()
+                self.chain_f.add_done_callback(self.chain_done)
+                recvd_f.add_done_callback(self.recvd_done)
+
+            def recvd_done(self, _):
+                # We're going to set the chain_f so don't listen to done anymore
+                self.chain_f.remove_done_callback(self.chain_done)
+
+                if recvd_f.exception():
+                    self.chain_f.set_exception(recvd_f.exception())
                 else:
-                    f.set_result(loaded)
-        recvd.add_done_callback(_chain)
-        return f
+                    buf = recvd_f.result()
+                    try:
+                        loaded = load(buf)
+                    except Exception as e:
+                        self.chain_f.set_exception(e)
+                    else:
+                        self.chain_f.set_result(loaded)
+
+            def chain_done(self, _):
+                if self.chain_f.cancelled():
+                    recvd_f.remove_done_callback(self.recvd_done)
+                    recvd_f.cancel()
+
+        chain = DeserializeChain(self)
+        return chain.chain_f
 
     def poll(self, timeout=None, flags=_zmq.POLLIN):
         """poll the socket for events
