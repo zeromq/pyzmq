@@ -205,6 +205,9 @@ class _AsyncSocket(_zmq.Socket):
         """Deserialize with Futures"""
         f = self._Future()
         def _chain(_):
+            """Chain result through serialization to recvd"""
+            if f.done():
+                return
             if recvd.exception():
                 f.set_exception(recvd.exception())
             else:
@@ -216,6 +219,15 @@ class _AsyncSocket(_zmq.Socket):
                 else:
                     f.set_result(loaded)
         recvd.add_done_callback(_chain)
+
+        def _chain_cancel(_):
+            """Chain cancellation from f to recvd"""
+            if recvd.done():
+                return
+            if f.cancelled():
+                recvd.cancel()
+        f.add_done_callback(_chain_cancel)
+
         return f
 
     def poll(self, timeout=None, flags=_zmq.POLLIN):

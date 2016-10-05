@@ -5,6 +5,7 @@
 import os
 import sys
 
+import pytest
 from pytest import mark
 
 import zmq
@@ -19,6 +20,7 @@ except ImportError:
         raise
     asyncio = None
 
+from concurrent.futures import CancelledError
 from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.tests.test_auth import TestThreadAuthentication
 
@@ -122,6 +124,30 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), obj)
             self.assertEqual(recvd, obj)
+        self.loop.run_until_complete(test())
+
+    def test_recv_json_cancelled(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+            f = b.recv_json()
+            assert not f.done()
+            f.cancel()
+            # cycle eventloop to allow cancel events to fire
+            yield from asyncio.sleep(0)
+            obj = dict(a=5)
+            yield from a.send_json(obj)
+            with pytest.raises(CancelledError):
+                recvd = yield from f
+            assert f.done()
+            # give it a chance to incorrectly consume the event
+            events = yield from b.poll(timeout=5)
+            assert events
+            yield from asyncio.sleep(0)
+            # make sure cancelled recv didn't eat up event
+            f = b.recv_json()
+            recvd = yield from asyncio.wait_for(f, timeout=5)
+            assert recvd == obj
         self.loop.run_until_complete(test())
 
     def test_recv_pyobj(self):
