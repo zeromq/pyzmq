@@ -488,25 +488,36 @@ class Configure(build_ext):
         fetch_libzmq(bundledir)
         
         stage_platform_hpp(pjoin(bundledir, 'zeromq'))
-        
-        tweetnacl = pjoin(bundledir, 'zeromq', 'tweetnacl')
-        tweetnacl_sources = glob(pjoin(tweetnacl, 'src', '*.c'))
-        randombytes = pjoin(tweetnacl, 'contrib', 'randombytes')
-        if sys.platform.startswith('win'):
-            tweetnacl_sources.append(pjoin(randombytes, 'winrandom.c'))
+
+        sources = [pjoin('buildutils', 'initlibzmq.c')]
+        sources += glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp'))
+
+        includes = [
+            pjoin(bundledir, 'zeromq', 'include')
+        ]
+
+        if bundled_version < (4, 2, 0):
+            tweetnacl = pjoin(bundledir, 'zeromq', 'tweetnacl')
+            tweetnacl_sources = glob(pjoin(tweetnacl, 'src', '*.c'))
+
+            randombytes = pjoin(tweetnacl, 'contrib', 'randombytes')
+            if sys.platform.startswith('win'):
+                tweetnacl_sources.append(pjoin(randombytes, 'winrandom.c'))
+            else:
+                tweetnacl_sources.append(pjoin(randombytes, 'devurandom.c'))
+
+            sources += tweetnacl_sources
+            includes.append(pjoin(tweetnacl, 'src'))
+            includes.append(randombytes)
         else:
-            tweetnacl_sources.append(pjoin(randombytes, 'devurandom.c'))
+            # >= 4.2
+            sources += glob(pjoin(bundledir, 'zeromq', 'src', 'tweetnacl.c'))
+
         # construct the Extensions:
         libzmq = Extension(
             'zmq.libzmq',
-            sources = [pjoin('buildutils', 'initlibzmq.c')] + \
-                      glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp')) + \
-                      tweetnacl_sources,
-            include_dirs = [
-                pjoin(bundledir, 'zeromq', 'include'),
-                pjoin(tweetnacl, 'src'),
-                randombytes,
-            ],
+            sources=sources,
+            include_dirs=includes,
         )
         
         # register the extension:
