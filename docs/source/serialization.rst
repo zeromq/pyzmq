@@ -87,4 +87,4 @@ the array.
 .. [msgpack] Message Pack serialization library http://msgpack.org
 .. [protobuf] Google Protocol Buffers http://code.google.com/p/protobuf
 .. [zlib] Python stdlib module for zip compression: :py:mod:`zlib`
-.. [blosc] Blosc: A blocking, shuffling and loss-less (and crazy-fast) compression library http://blosc.pytables.org/trac
+.. [blosc] Blosc: A blocking, shuffling and loss-less (and crazy-fast) compression library http://www.blosc.org
