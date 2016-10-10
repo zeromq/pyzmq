@@ -9,6 +9,23 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+
+16.0
+====
+
+- Support for Python 2.6 and Python 3.2 is dropped. For old Pythons, use :command:`pip install "pyzmq<16"` to get the last version of pyzmq that supports these versions.
+- Include zmq.h
+- Deprecate ``zmq.Stopwatch``. Native Python timing tools can be used instead.
+- Better support for using pyzmq as a Cython library
+  - bundle zmq.h when pyzmq bundles libzmq as an extension
+  - add :func:`zmq.get_library_dirs` to find bundled libzmq
+- Updates to setup.py for Cython 0.25 compatibility
+- Various asyncio/future fixes:
+  - support raw sockets in pollers
+  - allow cancelling async sends
+- Fix :meth:`IOLoop.current` in :mod:`zmq.green`
+
+
 15.4
 ====
 

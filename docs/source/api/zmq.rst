@@ -138,3 +138,5 @@ Functions
 .. autofunction:: zmq.curve_keypair
 
 .. autofunction:: zmq.get_includes
+
+.. autofunction:: zmq.get_library_dirs

@@ -47,7 +47,7 @@ def get_includes():
     return includes
     
 def get_library_dirs():
-    """Get the library directory for linking to the bundled copy of libzmq."""
+    """Return a list of directories used to link against pyzmq's bundled libzmq."""
     from os.path import join, dirname, abspath, pardir
     base = dirname(__file__)
     parent = abspath(join(base, pardir))
