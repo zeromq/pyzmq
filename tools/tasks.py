@@ -36,9 +36,10 @@ py_exes = {
     '3.4' : _framework_py('3.4'),
     '3.5' : _framework_py('3.5'),
     'pypy': "/usr/local/bin/pypy",
-    'pypy3': "/usr/local/bin/pypy3",
+    # FIXME: pypy3 can have releases when they support Python >= 3.3
+    # 'pypy3': "/usr/local/bin/pypy3",
 }
-egg_pys = {'2.7'}
+egg_pys = {} # no more eggs!
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')
@@ -145,7 +146,7 @@ def build_sdist(py, upload=False):
     Returns the path to the tarball
     """
     with cd(repo_root):
-        cmd = [py, 'setup.py', 'sdist', '--formats=zip,gztar']
+        cmd = [py, 'setup.py', 'sdist']
         run(cmd)
         if upload:
             run(['twine', 'upload', 'dist/*'])
