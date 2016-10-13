@@ -355,6 +355,9 @@ class _AsyncSocket(_zmq.Socket):
     
     def _handle_recv(self):
         """Handle recv events"""
+        if not self._shadow_sock.events & POLLIN:
+            # event triggered, but state may have been changed between trigger and callback
+            return
         f = None
         while self._recv_futures:
             f, kind, kwargs, _ = self._recv_futures.pop(0)
@@ -390,6 +393,9 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     def _handle_send(self):
+        if not self._shadow_sock.events & POLLOUT:
+            # event triggered, but state may have been changed between trigger and callback
+            return
         f = None
         while self._send_futures:
             f, kind, kwargs, msg = self._send_futures.pop(0)
