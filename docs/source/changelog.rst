@@ -10,6 +10,12 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+16.0.1
+======
+
+- Fix erroneous EAGAIN that could happen on async sockets
+- Bundle libzmq 4.1.6
+
 16.0
 ====
 
