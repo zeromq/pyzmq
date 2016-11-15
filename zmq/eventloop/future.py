@@ -151,7 +151,7 @@ class _AsyncSocket(_zmq.Socket):
     _poller_class = Poller
     io_loop = None
     _started_starving = 0
-    starvation_limit = .01 # limit starvation to 10ms by default
+    starvation_limit = .02 # limit starvation to 20ms by default
 
     def __init__(self, context, socket_type, io_loop=None):
         super(_AsyncSocket, self).__init__(context, socket_type)
