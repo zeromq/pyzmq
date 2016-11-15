@@ -5,12 +5,20 @@
 
 from collections import namedtuple
 from itertools import chain
+import weakref
+
 from zmq import POLLOUT, POLLIN
 
 try:
     from tornado.concurrent import Future
 except ImportError:
     from .minitornado.concurrent import Future
+
+try:
+    from time import monotonic as now
+except ImportError:
+    # use time.clock on Python 2
+    from time import clock as now
 
 class CancelledError(Exception):
     pass
@@ -142,6 +150,8 @@ class _AsyncSocket(_zmq.Socket):
     _shadow_sock = None
     _poller_class = Poller
     io_loop = None
+    _started_starving = 0
+    starvation_limit = .01 # limit starvation to 10ms by default
 
     def __init__(self, context, socket_type, io_loop=None):
         super(_AsyncSocket, self).__init__(context, socket_type)
@@ -149,6 +159,7 @@ class _AsyncSocket(_zmq.Socket):
         self._recv_futures = []
         self._send_futures = []
         self._state = 0
+        self._reset_starvation()
         self._shadow_sock = _zmq.Socket.shadow(self.underlying)
         self._init_io_state()
 
@@ -289,6 +300,29 @@ class _AsyncSocket(_zmq.Socket):
         """
         self.io_loop.call_later(delay, callback)
 
+    def _reset_starvation(self):
+        self._started_starving = 0
+
+    def _starving(self):
+        """Am I starving?"""
+        if not self.starvation_limit or not self._started_starving:
+            return False
+        return now() > (self._started_starving + self.starvation_limit)
+
+    def _schedule_starvation_reset(self):
+        """Start starvation counter and schedule reset"""
+        if not self.starvation_limit:
+            return False
+        if not self._started_starving:
+            self._started_starving = now()
+            weak_self = weakref.ref(self)
+            def _reset():
+                async_socket = weak_self()
+                if async_socket is None:
+                    return
+                async_socket._reset_starvation()
+            self._call_later(self.starvation_limit, _reset)
+
     def _add_recv_event(self, kind, kwargs=None, future=None):
         """Add a recv event, returning the corresponding Future"""
         f = future or self._Future()
@@ -314,8 +348,9 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLIN:
+        if self.events & POLLIN and not self._starving():
             # recv immediately, if we can
+            self._schedule_starvation_reset()
             self._handle_recv()
         if self._recv_futures:
             self._add_io_state(self._READ)
@@ -346,8 +381,9 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLOUT:
+        if self.events & POLLOUT and not self._starving():
             # send immediately if we can
+            self._schedule_starvation_reset()
             self._handle_send()
         if self._send_futures:
             self._add_io_state(self._WRITE)

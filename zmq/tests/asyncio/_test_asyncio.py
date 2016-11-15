@@ -217,7 +217,40 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             recvd = yield from b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_until_complete(test())
-    
+
+    def test_starvation(self):
+        # shared namespace because closures around coroutines are weird
+        ns = dict(
+            send_count=0,
+            sleep_count=0,
+            stop=False,
+        )
+        @asyncio.coroutine
+        def starve():
+            pub = self.socket(zmq.PUB)
+            pub.bind_to_random_port('tcp://127.0.0.1')
+            while ns['sleep_count'] < 10:
+                if ns['stop']:
+                    break
+                yield from pub.send(b'x')
+                ns['send_count'] += 1
+                if ns['sleep_count'] <= 1 and ns['send_count'] >= 1e5:
+                    # starvation is probaby happening
+                    self.fail("sent %i msgs before waking twice, assuming starvation" % ns['send_count'])
+            pub.close()
+        
+        sleep_count = 0
+        @asyncio.coroutine
+        def dont_starve():
+            for i in range(10):
+                yield from asyncio.sleep(0.1)
+                ns['sleep_count'] += 1
+            ns['stop'] = True
+
+        self.loop.run_until_complete(asyncio.wait([ starve(), dont_starve() ]))
+        assert ns['send_count'] >= 1000, "sent: %i" % ns['send_count']
+        assert ns['sleep_count'] >= 10, "slept: %i" % ns['sleep_count']
+
     def test_aiohttp(self):
         try:
             import aiohttp

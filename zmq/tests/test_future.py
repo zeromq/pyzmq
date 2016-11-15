@@ -101,7 +101,6 @@ class TestFutureSocket(BaseZMQTestCase):
                 yield s.send(b'not going anywhere')
         self.loop.run_sync(test)
     
-    @pytest.mark.now
     def test_send_noblock(self):
         @gen.coroutine
         def test():
@@ -110,7 +109,6 @@ class TestFutureSocket(BaseZMQTestCase):
                 yield s.send(b'not going anywhere', flags=zmq.NOBLOCK)
         self.loop.run_sync(test)
 
-    @pytest.mark.now
     def test_send_multipart_noblock(self):
         @gen.coroutine
         def test():
@@ -235,3 +233,38 @@ class TestFutureSocket(BaseZMQTestCase):
             r.close()
             w.close()
         self.loop.run_sync(test)
+
+    def test_starvation(self):
+        # shared namespace because closures around coroutines are weird
+        ns = dict(
+            send_count=0,
+            sleep_count=0,
+            stop=False,
+        )
+        @gen.coroutine
+        def starve():
+            pub = self.socket(zmq.PUB)
+            pub.bind_to_random_port('tcp://127.0.0.1')
+            while ns['sleep_count'] < 10:
+                if ns['stop']:
+                    break
+                yield pub.send(b'x')
+                ns['send_count'] += 1
+                if ns['sleep_count'] <= 1 and ns['send_count'] >= 1e5:
+                    # starvation is probaby happening
+                    self.fail("sent %i msgs before waking twice, assuming starvation" % ns['send_count'])
+            pub.close()
+
+        sleep_count = 0
+        @gen.coroutine
+        def dont_starve():
+            for i in range(10):
+                yield gen.sleep(0.1)
+                ns['sleep_count'] += 1
+            ns['stop'] = True
+
+        self.loop.add_callback(starve)
+        self.loop.run_sync(dont_starve)
+
+        assert ns['send_count'] >= 1000
+        assert ns['sleep_count'] >= 10
