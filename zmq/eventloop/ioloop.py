@@ -180,7 +180,7 @@ class ZMQIOLoop(PollIOLoop):
                 # quietly return on ETERM
                 pass
             else:
-                raise e
+                raise
 
 
 if (3, 0) <= tornado_version < (3, 1):
