@@ -82,6 +82,7 @@ def zmq_poll(sockets, long timeout=-1):
         s, events = sockets[i]
         if isinstance(s, Socket):
             pollitems[i].socket = (<Socket>s).handle
+            pollitems[i].fd = 0
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif isinstance(s, int_t):
