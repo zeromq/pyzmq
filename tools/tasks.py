@@ -26,6 +26,9 @@ from contextlib import contextmanager
 from invoke import task, run as invoke_run
 import requests
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from buildutils.bundle import vs as libzmq_vs
+
 pjoin = os.path.join
 
 repo = "git@github.com:zeromq/pyzmq"
@@ -205,9 +208,12 @@ def manylinux(vs, upload=False):
             run("git pull")
             run("git submodule update")
     
-    base_cmd = "docker run --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -v $PWD:/io".format(
+    run("docker pull quay.io/pypa/manylinux1_x86_64")
+    run("docker pull quay.io/pypa/manylinux1_i686")
+    base_cmd = "docker run --dns 8.8.8.8 --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -e ZMQ_VERSION='{zmq}' -v $PWD:/io".format(
         vs=vs,
-        pys='2.7 3.4 3.5'
+        pys='2.7 3.4 3.5',
+        zmq=libzmq_vs,
     )
     with cd(manylinux):
         run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
