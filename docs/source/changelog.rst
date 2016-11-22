@@ -10,6 +10,11 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+16.0.2
+======
+
+- Workaround bug in libzmq-4.2.0 causing EINVAL on poll.
+
 16.0.1
 ======
 
