@@ -1,3 +1,5 @@
+.idea
+.vagrant
 *.pyc
 zmq/backend/cython/*.c
 zmq/devices/*.c
