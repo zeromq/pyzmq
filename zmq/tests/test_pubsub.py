@@ -67,7 +67,7 @@ if have_gevent:
                         sub.set(zmq.UNSUBSCRIBE, topic)
                     # Sleep with 0 is necessary to reproduce the crash.
                     gevent.sleep(0)
-            for x in range(10):
+            for x in range(3):
                 sub, addr = self.create_sub()
                 pub.connect(addr)
                 workload(sub)
