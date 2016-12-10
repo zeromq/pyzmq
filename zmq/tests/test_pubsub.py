@@ -47,15 +47,16 @@ if have_gevent:
             addr = '%s:%s' % (interface, port)
             return sub, addr
 
-        def test_sigabrt_issue(self):
+        def test_sigabrt_issue(self, random=Random(42)):
             import gevent
             pub = self.context.socket(zmq.PUB)
             pub.setsockopt(zmq.LINGER, 0)
             self.sockets.append(pub)
-            random = Random(42)
             topics = [str(random.random())[2:] for x in range(10000)]
             def workload(sub):
                 subscribed = set()
+                # Many subscriptions, for example above 5000, are
+                # raising up reproducibility of the crash.
                 for x in range(10000):
                     if not subscribed or random.random() < 0.9:
                         topic = random.choice(topics)
@@ -65,10 +66,13 @@ if have_gevent:
                         topic = random.choice(list(subscribed))
                         subscribed.remove(topic)
                         sub.set(zmq.UNSUBSCRIBE, topic)
-                    # Sleep with 0 is necessary to reproduce the crash.
+                    # Sleeping with gevent for 0 seconds is necessary
+                    # to reproduce the crash.
                     gevent.sleep(0)
             for x in range(3):
                 sub, addr = self.create_sub()
                 pub.connect(addr)
                 workload(sub)
+                # Only SUB socket closes.  If PUB socket disconnects,
+                # the crash won't be reproduced.
                 sub.close()
