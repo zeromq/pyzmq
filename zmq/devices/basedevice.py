@@ -7,6 +7,7 @@
 import time
 from threading import Thread
 from multiprocessing import Process
+from signal import signal, SIGTERM, SIGINT, SIG_DFL
 
 from zmq import device, QUEUE, Context, ETERM, ZMQError
 
@@ -201,7 +202,14 @@ class BackgroundDevice(Device):
     def start(self):
         self.launcher = self._launch_class(target=self.run)
         self.launcher.daemon = self.daemon
-        return self.launcher.start()
+        
+        old_sigterm_action = signal(SIGTERM, SIG_DFL)
+        old_sigint_action = signal(SIGINT, SIG_DFL)
+        try:
+            self.launcher.start()
+        finally:
+            signal(SIGTERM, old_sigterm_action)
+            signal(SIGINT, old_sigint_action)
 
     def join(self, timeout=None):
         return self.launcher.join(timeout=timeout)
