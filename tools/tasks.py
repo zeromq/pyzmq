@@ -38,6 +38,7 @@ py_exes = {
     '2.7' : _framework_py('2.7'),
     '3.4' : _framework_py('3.4'),
     '3.5' : _framework_py('3.5'),
+    '3.6' : _framework_py('3.6'),
     'pypy': "/usr/local/bin/pypy",
     # FIXME: pypy3 can have releases when they support Python >= 3.3
     # 'pypy3': "/usr/local/bin/pypy3",
@@ -70,7 +71,7 @@ def cd(path):
         os.chdir(cwd)
 
 @task
-def clone_repo(reset=False):
+def clone_repo(ctx, reset=False):
     """Clone the repo"""
     if os.path.exists(repo_root) and reset:
         shutil.rmtree(repo_root)
@@ -81,7 +82,7 @@ def clone_repo(reset=False):
         run("git clone %s %s" % (repo, repo_root))
 
 @task
-def patch_version(vs):
+def patch_version(ctx, vs):
     """Patch zmq/sugar/version.py for the current release"""
     major, minor, patch = vs_to_tup(vs)
     version_py = pjoin(repo_root, 'zmq', 'sugar', 'version.py')
@@ -109,9 +110,9 @@ def patch_version(vs):
             f.write(line)
 
 @task
-def tag(vs, push=False):
+def tag(ctx, vs, push=False):
     """Make the tag (don't push)"""
-    patch_version(vs)
+    patch_version(ctx, vs)
     with cd(repo_root):
         run('git commit -a -m "release {}"'.format(vs))
         run('git tag -a -m "release {0}" v{0}'.format(vs))
@@ -157,15 +158,14 @@ def build_sdist(py, upload=False):
     return glob.glob(pjoin(repo_root, 'dist', '*.tar.gz'))[0]
 
 @task
-def sdist(vs, upload=False):
-    clone_repo()
-    tag(vs, push=upload)
+def sdist(ctx, vs, upload=False):
+    clone_repo(ctx)
+    tag(ctx, vs, push=upload)
     py = make_env('3.5', 'cython', 'twine')
-    tarball = build_sdist(py, upload=upload)
+    tarball = build_sdist(ctx, py, upload=upload)
     return untar(tarball)
 
 def install(py, *packages):
-    packages
     run([py, '-m', 'pip', 'install', '--upgrade'] + list(packages))
 
 def vs_to_tup(vs):
@@ -185,7 +185,8 @@ def untar(tarball):
     
     return glob.glob(pjoin(sdist_root, '*'))[0]
 
-def bdist(py, wheel=True, egg=False):
+@task
+def bdist(ctx, py, wheel=True, egg=False):
     py = make_env(py, 'wheel')
     cmd = [py, 'setup.py']
     if wheel:
@@ -197,7 +198,7 @@ def bdist(py, wheel=True, egg=False):
     run(cmd)
 
 @task
-def manylinux(vs, upload=False):
+def manylinux(ctx, vs, upload=False):
     """Build manylinux wheels with Matthew Brett's manylinux-builds"""
     manylinux = '/tmp/manylinux-builds'
     if not os.path.exists(manylinux):
@@ -212,7 +213,7 @@ def manylinux(vs, upload=False):
     run("docker pull quay.io/pypa/manylinux1_i686")
     base_cmd = "docker run --dns 8.8.8.8 --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -e ZMQ_VERSION='{zmq}' -v $PWD:/io".format(
         vs=vs,
-        pys='2.7 3.4 3.5',
+        pys='2.7 3.4 3.5 3.6',
         zmq=libzmq_vs,
     )
     with cd(manylinux):
@@ -223,7 +224,7 @@ def manylinux(vs, upload=False):
         run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
 
 @task
-def release(vs, upload=False):
+def release(ctx, vs, upload=False):
     """Release pyzmq"""
     # Ensure all our Pythons exist before we start:
     for v, path in py_exes.items():
@@ -231,20 +232,20 @@ def release(vs, upload=False):
             raise ValueError("Need %s at %s" % (v, path))
     
     # start from scrach with clone and envs
-    clone_repo(reset=True)
+    clone_repo(ctx, reset=True)
     if os.path.exists(env_root):
         shutil.rmtree(env_root)
     
-    path = sdist(vs, upload=upload)
+    path = sdist(ctx, vs, upload=upload)
     
     with cd(path):
         for v in py_exes:
-            bdist(v, wheel=True, egg=(v in egg_pys))
+            bdist(ctx, v, wheel=True, egg=(v in egg_pys))
         if upload:
             py = make_env('3.5', 'twine')
             run(['twine', 'upload', 'dist/*'])
     
-    manylinux(vs, upload=upload)
+    manylinux(ctx, vs, upload=upload)
     if upload:
         print("When AppVeyor finished building, upload artifacts with:")
         print("  invoke appveyor_artifacts {} --upload".format(vs))
@@ -265,7 +266,7 @@ def _appveyor_api_request(path):
 
 
 @task
-def appveyor_artifacts(vs, dest='win-dist', upload=False):
+def appveyor_artifacts(ctx, vs, dest='win-dist', upload=False):
     """Download appveyor artifacts
 
     If --upload is given, upload to PyPI
