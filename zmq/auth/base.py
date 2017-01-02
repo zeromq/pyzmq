@@ -203,13 +203,18 @@ class Authenticator(object):
                     return
                 key = credentials[0]
                 allowed, reason = self._authenticate_curve(domain, key)
+                if allowed:
+                    # use client public key (z85-encoded) as user-id by default
+                    # TODO: add extensible mechanism for determining user id
+                    username = z85.encode(key)
 
             elif mechanism == b'GSSAPI':
                 if len(credentials) != 1:
                     self.log.error("Invalid GSSAPI credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
-                principal = u(credentials[0], 'replace')
+                # use principal as user-id for now
+                principal = username = credentials[0]
                 allowed, reason = self._authenticate_gssapi(domain, principal)
 
         if allowed:

@@ -14,6 +14,7 @@ from zmq.auth.ioloop import IOLoopAuthenticator
 from zmq.auth.thread import ThreadAuthenticator
 
 from zmq.eventloop import ioloop, zmqstream
+from zmq.utils.strtypes import u
 from zmq.tests import (BaseZMQTestCase, SkipTest)
 
 
@@ -221,15 +222,23 @@ class TestThreadAuthentication(BaseAuthTestCase):
 
         # Try CURVE authentication - with server configured, connection should pass
         self.auth.configure_curve(domain='*', location=self.public_keys_dir)
-        server = self.socket(zmq.PUSH)
+        server = self.socket(zmq.PULL)
         server.curve_publickey = server_public
         server.curve_secretkey = server_secret
         server.curve_server = True
-        client = self.socket(zmq.PULL)
+        client = self.socket(zmq.PUSH)
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(client, server)
+        client.send(b'test')
+        msg = self.recv(server, copy=False)
+        try:
+            user_id = msg.get('User-Id')
+        except zmq.ZMQVersionError:
+            pass
+        else:
+            assert user_id == u(client_public)
 
         # Remove authenticator and check that a normal connection works
         self.auth.stop()
