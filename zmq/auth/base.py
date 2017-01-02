@@ -178,7 +178,7 @@ class Authenticator(object):
                 self.log.debug("PASSED (not in blacklist) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
-        username = u("user")
+        username = u("anonymous")
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
@@ -286,7 +286,7 @@ class Authenticator(object):
         self.log.debug("ALLOWED (GSSAPI) domain=%s principal=%s", domain, principal)
         return True, b'OK'
 
-    def _send_zap_reply(self, request_id, status_code, status_text, user_id='user'):
+    def _send_zap_reply(self, request_id, status_code, status_text, user_id='anonymous'):
         """Send a ZAP reply to finish the authentication."""
         user_id = user_id if status_code == b'200' else b''
         if isinstance(user_id, unicode):
