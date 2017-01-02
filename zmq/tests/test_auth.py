@@ -15,7 +15,7 @@ from zmq.auth.thread import ThreadAuthenticator
 
 from zmq.eventloop import ioloop, zmqstream
 from zmq.utils.strtypes import u
-from zmq.tests import (BaseZMQTestCase, SkipTest)
+from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
 
 
 class BaseAuthTestCase(BaseZMQTestCase):
@@ -241,6 +241,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
 
+    @skip_pypy
     def test_curve_user_id(self):
         """threaded auth - CURVE"""
         self.auth.allow('127.0.0.1')
