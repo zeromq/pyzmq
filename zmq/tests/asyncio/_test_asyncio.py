@@ -338,3 +338,13 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
                 result = True
             return result
         return self.loop.run_until_complete(go())
+
+    def _select_recv(self, multipart, socket, **kwargs):
+        recv = socket.recv_multipart if multipart else socket.recv
+        @asyncio.coroutine
+        def coro():
+            if not (yield from socket.poll(5000)):
+                raise TimeoutError("Should have received a message")
+            return (yield from recv(**kwargs))
+        return self.loop.run_until_complete(coro())
+

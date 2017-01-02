@@ -119,6 +119,27 @@ class Authenticator(object):
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
 
+    def curve_user_id(self, client_public_key):
+        """Return the User-Id corresponding to a CURVE client's public key
+        
+        Default implementation uses the z85-encoding of the public key.
+        
+        Override to define a custom mapping of public key : user-id
+        
+        This is only called on successful authentication.
+        
+        Parameters
+        ----------
+        client_public_key: bytes
+            The client public key used for the given message
+        
+        Returns
+        -------
+        user_id: unicode
+            The user ID as text
+        """
+        return z85.encode(client_public_key).decode('ascii')
+
     def configure_gssapi(self, domain='*', location=None):
         """Configure GSSAPI authentication
         
@@ -178,7 +199,7 @@ class Authenticator(object):
                 self.log.debug("PASSED (not in blacklist) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
-        username = u("user")
+        username = u("anonymous")
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
@@ -203,13 +224,16 @@ class Authenticator(object):
                     return
                 key = credentials[0]
                 allowed, reason = self._authenticate_curve(domain, key)
-
+                if allowed:
+                    username = self.curve_user_id(key)
+                    
             elif mechanism == b'GSSAPI':
                 if len(credentials) != 1:
                     self.log.error("Invalid GSSAPI credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
-                principal = u(credentials[0], 'replace')
+                # use principal as user-id for now
+                principal = username = credentials[0]
                 allowed, reason = self._authenticate_gssapi(domain, principal)
 
         if allowed:
@@ -286,7 +310,7 @@ class Authenticator(object):
         self.log.debug("ALLOWED (GSSAPI) domain=%s principal=%s", domain, principal)
         return True, b'OK'
 
-    def _send_zap_reply(self, request_id, status_code, status_text, user_id='user'):
+    def _send_zap_reply(self, request_id, status_code, status_text, user_id='anonymous'):
         """Send a ZAP reply to finish the authentication."""
         user_id = user_id if status_code == b'200' else b''
         if isinstance(user_id, unicode):
