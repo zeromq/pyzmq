@@ -124,7 +124,7 @@ class AuthenticationThread(Thread):
 def _inherit_docstrings(cls):
     """inherit docstrings from Authenticator, so we don't duplicate them"""
     for name, method in cls.__dict__.items():
-        if name.startswith('_'):
+        if name.startswith('_') or not callable(method):
             continue
         upstream_method = getattr(Authenticator, name, None)
         if not method.__doc__:
@@ -134,6 +134,13 @@ def _inherit_docstrings(cls):
 @_inherit_docstrings
 class ThreadAuthenticator(object):
     """Run ZAP authentication in a background thread"""
+    context = None
+    log = None
+    encoding = None
+    pipe = None
+    pipe_endpoint = ''
+    thread = None
+    auth = None
 
     def __init__(self, context=None, encoding='utf-8', log=None):
         self.context = context or zmq.Context.instance()
@@ -142,6 +149,21 @@ class ThreadAuthenticator(object):
         self.pipe = None
         self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
         self.thread = None
+
+    # proxy base Authenticator attributes
+
+    def __setattr__(self, key, value):
+        for obj in [self] + self.__class__.mro():
+            if key in obj.__dict__:
+                object.__setattr__(self, key, value)
+                return
+        setattr(self.thread.authenticator, key, value)
+
+    def __getattr__(self, key):
+        try:
+            object.__getattr__(self, key)
+        except AttributeError:
+            return getattr(self.thread.authenticator, key)
 
     def allow(self, *addresses):
         self.pipe.send_multipart([b'ALLOW'] + [b(a, self.encoding) for a in addresses])

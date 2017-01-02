@@ -119,6 +119,27 @@ class Authenticator(object):
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
 
+    def curve_user_id(self, client_public_key):
+        """Return the User-Id corresponding to a CURVE client's public key
+        
+        Default implementation uses the z85-encoding of the public key.
+        
+        Override to define a custom mapping of public key : user-id
+        
+        This is only called on successful authentication.
+        
+        Parameters
+        ----------
+        client_public_key: bytes
+            The client public key used for the given message
+        
+        Returns
+        -------
+        user_id: unicode
+            The user ID as text
+        """
+        return z85.encode(client_public_key).decode('ascii')
+
     def configure_gssapi(self, domain='*', location=None):
         """Configure GSSAPI authentication
         
@@ -204,10 +225,8 @@ class Authenticator(object):
                 key = credentials[0]
                 allowed, reason = self._authenticate_curve(domain, key)
                 if allowed:
-                    # use client public key (z85-encoded) as user-id by default
-                    # TODO: add extensible mechanism for determining user id
-                    username = z85.encode(key)
-
+                    username = self.curve_user_id(key)
+                    
             elif mechanism == b'GSSAPI':
                 if len(credentials) != 1:
                     self.log.error("Invalid GSSAPI credentials: %r", credentials)

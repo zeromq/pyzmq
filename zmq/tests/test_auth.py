@@ -231,14 +231,6 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
         assert self.can_connect(client, server)
-        client.send(b'test')
-        msg = self.recv(server, copy=False)
-        try:
-            user_id = msg.get('User-Id')
-        except zmq.ZMQVersionError:
-            pass
-        else:
-            assert user_id == u(client_public)
 
         # Remove authenticator and check that a normal connection works
         self.auth.stop()
@@ -248,6 +240,53 @@ class TestThreadAuthentication(BaseAuthTestCase):
         server = self.socket(zmq.PUSH)
         client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
+
+    def test_curve_user_id(self):
+        """threaded auth - CURVE"""
+        self.auth.allow('127.0.0.1')
+        certs = self.load_certs(self.secret_keys_dir)
+        server_public, server_secret, client_public, client_secret = certs
+
+        self.auth.configure_curve(domain='*', location=self.public_keys_dir)
+        server = self.socket(zmq.PULL)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PUSH)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        assert self.can_connect(client, server)
+        
+        # test default user-id map
+        client.send(b'test')
+        msg = self.recv(server, copy=False)
+        assert msg.bytes == b'test'
+        try:
+            user_id = msg.get('User-Id')
+        except zmq.ZMQVersionError:
+            pass
+        else:
+            assert user_id == u(client_public)
+
+        # test custom user-id map
+        self.auth.curve_user_id = lambda client_key: u'custom'
+
+        client2 = self.socket(zmq.PUSH)
+        client2.curve_publickey = client_public
+        client2.curve_secretkey = client_secret
+        client2.curve_serverkey = server_public
+        assert self.can_connect(client2, server)
+
+        client2.send(b'test2')
+        msg = self.recv(server, copy=False)
+        assert msg.bytes == b'test2'
+        try:
+            user_id = msg.get('User-Id')
+        except zmq.ZMQVersionError:
+            pass
+        else:
+            assert user_id == u'custom'
 
 
 def with_ioloop(method, expect_success=True):
