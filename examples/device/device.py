@@ -1,5 +1,5 @@
-"""Demonstrate usin zmq.proxy device for message relay"""
-# This example is places in the Public Domain
+"""Demonstrate using zmq.proxy device for message relay"""
+# This example is placed in the Public Domain
 # It may also be used under the Creative Commons CC-0 License, (C) PyZMQ Developers
 
 from __future__ import print_function
