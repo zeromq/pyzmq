@@ -464,6 +464,9 @@ class _AsyncSocket(_zmq.Socket):
         
         called once during close
         """
+        if getattr(self.io_loop, '_closing', False):
+            # check closing flag to avoid RuntimeError in IOLoop.close(all_fds=True)
+            return
         self.io_loop.remove_handler(self)
 
 

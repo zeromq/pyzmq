@@ -25,7 +25,8 @@ class TestFutureSocket(BaseZMQTestCase):
     
     def tearDown(self):
         super(TestFutureSocket, self).tearDown()
-        self.loop.close(all_fds=True)
+        if self.loop:
+            self.loop.close(all_fds=True)
     
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
@@ -204,6 +205,12 @@ class TestFutureSocket(BaseZMQTestCase):
             recvd = yield b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_sync(test)
+    
+    def test_close_all_fds(self):
+        s = self.socket(zmq.PUB)
+        self.loop.close(all_fds=True)
+        self.loop = None # avoid second close later
+        assert s.closed
 
     def test_poll_raw(self):
         @gen.coroutine
