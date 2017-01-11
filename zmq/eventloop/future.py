@@ -453,21 +453,18 @@ class _AsyncSocket(_zmq.Socket):
     def _update_handler(self, state):
         """Update IOLoop handler with state."""
         self._state = state
-        self.io_loop.update_handler(self, state)
+        self.io_loop.update_handler(self._shadow_sock, state)
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_handler(self, self._handle_events, self._state)
+        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._state)
 
     def _clear_io_state(self):
         """unregister the ioloop event handler
         
         called once during close
         """
-        if getattr(self.io_loop, '_closing', False):
-            # check closing flag to avoid RuntimeError in IOLoop.close(all_fds=True)
-            return
-        self.io_loop.remove_handler(self)
+        self.io_loop.remove_handler(self._shadow_sock)
 
 
 class Socket(_AsyncTornado, _AsyncSocket):
