@@ -81,10 +81,30 @@ class Socket(object):
     def underlying(self):
         """The address of the underlying libzmq socket"""
         return int(ffi.cast('size_t', self._zmq_socket))
-    
+
+    def _check_closed_deep(self):
+        """thorough check of whether the socket has been closed,
+        even if by another entity (e.g. ctx.destroy).
+
+        Only used by the `closed` property.
+
+        returns True if closed, False otherwise
+        """
+        if self._closed:
+            return True
+        try:
+            self.get(zmq.TYPE)
+        except ZMQError as e:
+            if e.errno == zmq.ENOTSOCK:
+                self._closed = True
+                return True
+            else:
+                raise
+        return False
+
     @property
     def closed(self):
-        return self._closed
+        return self._check_closed_deep()
 
     def close(self, linger=None):
         rc = 0
@@ -96,7 +116,8 @@ class Socket(object):
             self._closed = True
             if self.context:
                 self.context._rm_socket(self._ref)
-        return rc
+        if rc < 0:
+            _check_rc(rc)
 
     def bind(self, address):
         if isinstance(address, unicode):
