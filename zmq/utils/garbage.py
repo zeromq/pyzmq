@@ -85,6 +85,7 @@ class GarbageCollector(object):
         self._lock = Lock()
         self._stay_down = False
         self._push = None
+        self._push_mutex = None
         atexit.register(self._atexit)
     
     @property
@@ -121,10 +122,14 @@ class GarbageCollector(object):
         self._stop()
     
     def _stop(self):
-        push = self._push_socket
+        push = self.context.socket(zmq.PUSH)
+        push.connect(self.url)
         push.send(b'DIE')
         push.close()
-        self._push = None
+        if self._push:
+            self._push.close()
+            self._push = None
+        self._push_mutex = None
         self.thread.join()
         self.context.term()
         self.refs.clear()
