@@ -68,7 +68,7 @@ build_script:
 test_script:
   # Run the project tests
   - ps: cmd /c 'cd dist & python -c "import zmq; print(zmq.zmq_version())"'
-  - ps: cmd /c 'cd dist & python -m pytest --pyargs zmq.tests.test_socket'
+  - ps: cmd /c 'cd dist & python -m pytest -vsx --pyargs zmq.tests.test_socket'
 
 after_test:
   # If tests are successful, create binary packages for the project.
