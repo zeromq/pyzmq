@@ -39,7 +39,7 @@ class GarbageCollectorThread(Thread):
             s.bind(self.gc.url)
         finally:
             self.ready.set()
-        
+
         while True:
             # detect fork
             if getpid is None or getpid() != self.pid:
@@ -84,6 +84,7 @@ class GarbageCollector(object):
         self._context = context
         self._lock = Lock()
         self._stay_down = False
+        self._push = None
         atexit.register(self._atexit)
     
     @property
@@ -120,14 +121,23 @@ class GarbageCollector(object):
         self._stop()
     
     def _stop(self):
-        push = self.context.socket(zmq.PUSH)
-        push.connect(self.url)
+        push = self._push_socket
         push.send(b'DIE')
         push.close()
+        self._push = None
         self.thread.join()
         self.context.term()
         self.refs.clear()
         self.context = None
+
+    @property
+    def _push_socket(self):
+        """The PUSH socket for use in the zmq message destructor callback.
+        """
+        if not self.is_alive() or self._push is None:
+            self._push = self.context.socket(zmq.PUSH)
+            self._push.connect(self.url)
+        return self._push
     
     def start(self):
         """Start a new garbage collection thread.

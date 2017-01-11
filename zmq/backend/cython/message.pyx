@@ -59,7 +59,7 @@ from zmq.utils.strtypes import bytes,unicode,basestring
 #-----------------------------------------------------------------------------
 
 ctypedef struct zhint:
-    void *ctx
+    void *sock
     size_t id
 
 cdef void free_python_msg(void *data, void *vhint) nogil:
@@ -69,42 +69,29 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
     
     The hint is a `zhint` struct with two values:
     
-    ctx (void *): pointer to the Garbage Collector's context
+    sock (void *): pointer to the Garbage Collector's PUSH socket
     id (size_t): the id to be used to construct a zmq_msg_t that should be sent on a PUSH socket,
        signaling the Garbage Collector to remove its reference to the object.
-    
-    - A PUSH socket is created in the context,
-    - it is connected to the garbage collector inproc channel,
-    - it sends the gc message
-    - the PUSH socket is closed
     
     When the Garbage Collector's PULL socket receives the message,
     it deletes its reference to the object,
     allowing Python to free the memory.
     """
-    cdef void *push
     cdef zmq_msg_t msg
     cdef zhint *hint = <zhint *> vhint
+    cdef int rc
+
     if hint != NULL:
         zmq_msg_init_size(&msg, sizeof(size_t))
         memcpy(zmq_msg_data(&msg), &hint.id, sizeof(size_t))
-        
-        push = zmq_socket(hint.ctx, ZMQ_PUSH)
-        if push == NULL:
-            # this will happen if the context has been terminated
-            return
-        rc = zmq_connect(push, "inproc://pyzmq.gc.01")
-        if rc < 0:
-            fprintf(cstderr, "pyzmq-gc connect failed: %s\n", zmq_strerror(zmq_errno()))
-            return
-        
-        rc = zmq_msg_send(&msg, push, 0)
+
+        rc = zmq_msg_send(&msg, hint.sock, 0)
         if rc < 0:
             fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
-        
+
         zmq_msg_close(&msg)
-        zmq_close(push)
         free(hint)
+
 
 gc = None
 
@@ -176,10 +163,10 @@ cdef class Frame:
         global gc
         if gc is None:
             from zmq.utils.garbage import gc
-        
+
         hint = <zhint *> malloc(sizeof(zhint))
         hint.id = gc.store(data, self.tracker_event)
-        hint.ctx = <void *> <size_t> gc._context.underlying
+        hint.sock = <void *> <size_t> gc._push_socket.underlying
         
         rc = zmq_msg_init_data(
                 &self.zmq_msg, <void *>data_c, data_len_c, 
