@@ -473,6 +473,8 @@ class TestSocket(BaseZMQTestCase):
             pypy and on_travis
         ) or (
             sys.maxsize < 2**32
+        ) or (
+            sys.platform.startswith('win')
         ),
         reason="only run on 64b and not on Travis."
     )
