@@ -19,7 +19,11 @@ from zmq.tests import (
 from zmq.utils.strtypes import unicode
 
 pypy = platform.python_implementation().lower() == 'pypy'
+windows = platform.platform().lower().startswith('windows')
 on_travis = bool(os.environ.get('TRAVIS_PYTHON_VERSION'))
+
+# polling on windows is slow
+POLL_TIMEOUT = 1000 if windows else 100
 
 class TestSocket(BaseZMQTestCase):
 
@@ -354,16 +358,16 @@ class TestSocket(BaseZMQTestCase):
     def test_poll(self):
         a,b = self.create_bound_pair()
         tic = time.time()
-        evt = a.poll(50)
+        evt = a.poll(POLL_TIMEOUT)
         self.assertEqual(evt, 0)
-        evt = a.poll(50, zmq.POLLOUT)
+        evt = a.poll(POLL_TIMEOUT, zmq.POLLOUT)
         self.assertEqual(evt, zmq.POLLOUT)
         msg = b'hi'
         a.send(msg)
-        evt = b.poll(50)
+        evt = b.poll(POLL_TIMEOUT)
         self.assertEqual(evt, zmq.POLLIN)
         msg2 = self.recv(b)
-        evt = b.poll(50)
+        evt = b.poll(POLL_TIMEOUT)
         self.assertEqual(evt, 0)
         self.assertEqual(msg2, msg)
     
@@ -473,6 +477,8 @@ class TestSocket(BaseZMQTestCase):
             pypy and on_travis
         ) or (
             sys.maxsize < 2**32
+        ) or (
+            windows
         ),
         reason="only run on 64b and not on Travis."
     )
@@ -487,7 +493,7 @@ class TestSocket(BaseZMQTestCase):
         assert rcvd == buf
 
 
-if have_gevent:
+if have_gevent and not windows:
     import gevent
     
     class TestSocketGreen(GreenTest, TestSocket):

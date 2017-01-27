@@ -2,8 +2,10 @@
 # Distributed under the terms of the Modified BSD License.
 
 import os
+import sys
 import time
-from unittest import TestCase
+
+from pytest import mark
 
 import zmq
 
@@ -140,6 +142,7 @@ class TestPoll(PollZMQTestCase):
         poller.unregister(s1)
         poller.unregister(s2)
 
+    @mark.skipif(sys.platform.startswith('win'), reason='Windows')
     def test_raw(self):
         r, w = os.pipe()
         r = os.fdopen(r, 'rb')
