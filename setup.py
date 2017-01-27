@@ -1015,6 +1015,7 @@ pxd = lambda *path: makename(path, '.pxd')
 pxi = lambda *path: makename(path, '.pxi')
 pyx = lambda *path: makename(path, '.pyx')
 dotc = lambda *path: makename(path, '.c')
+doth = lambda *path: makename(path, '.h')
 
 libzmq = pxd('backend', 'cython', 'libzmq')
 buffers = pxd('utils', 'buffers')
@@ -1023,6 +1024,7 @@ context = pxd('backend', 'cython', 'context')
 socket = pxd('backend', 'cython', 'socket')
 checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
+mutex = doth('utils', 'mutex')
 
 submodules = {
     'backend.cython' : {'constants': [libzmq, pxi('backend', 'cython', 'constants')],
@@ -1030,7 +1032,7 @@ submodules = {
             '_poll':[libzmq, socket, context, checkrc],
             'utils':[libzmq, checkrc],
             'context':[context, libzmq, checkrc],
-            'message':[libzmq, buffers, message, checkrc],
+            'message':[libzmq, buffers, message, checkrc, mutex],
             'socket':[context, message, socket, libzmq, buffers, checkrc],
             '_device':[libzmq, socket, context, checkrc],
             '_version':[libzmq],
