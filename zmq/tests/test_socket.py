@@ -493,7 +493,7 @@ class TestSocket(BaseZMQTestCase):
         assert rcvd == buf
 
 
-if have_gevent:
+if have_gevent and not windows:
     import gevent
     
     class TestSocketGreen(GreenTest, TestSocket):
