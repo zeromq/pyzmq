@@ -58,7 +58,11 @@ def test_compilation(cfile, compiler=None, **compiler_attrs):
     cc.link_executable(objs, efile, extra_preargs=lpreargs)
     return efile
 
-def compile_and_run(basedir, src, compiler=None, **compiler_attrs):
+def compile_and_forget(basedir, src, compiler=None, **compiler_attrs):
+    """Make sure src compiles and links successfully.
+
+    The resulting binary is deleted without being run.
+    """
     if not os.path.exists(basedir):
         os.makedirs(basedir)
     cfile = pjoin(basedir, os.path.basename(src))
@@ -66,17 +70,8 @@ def compile_and_run(basedir, src, compiler=None, **compiler_attrs):
     try:
         cc = get_compiler(compiler, **compiler_attrs)
         efile = test_compilation(cfile, compiler=cc)
-        patch_lib_paths(efile, cc.library_dirs)
-        result = Popen(efile, stdout=PIPE, stderr=PIPE)
-        so, se = result.communicate()
-        # for py3k:
-        so = so.decode()
-        se = se.decode()
     finally:
         shutil.rmtree(basedir)
-    
-    return result.returncode, so, se
-    
     
 def detect_zmq(basedir, compiler=None, **compiler_attrs):
     """Compile, link & execute a test program, in empty directory `basedir`.

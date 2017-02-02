@@ -54,7 +54,7 @@ from buildutils import (
     info, warn, fatal, debug, line, copy_and_patch_libzmq, localpath,
     fetch_libzmq, stage_platform_hpp,
     bundled_version, customize_mingw,
-    compile_and_run,
+    compile_and_forget,
     patch_lib_paths,
     )
 
@@ -327,7 +327,7 @@ class Configure(build_ext):
             except Exception:
                 pass
             try:
-                compile_and_run(self.tempdir,
+                compile_and_forget(self.tempdir,
                     pjoin('buildutils', 'check_sys_un.c'),
                     **minus_zmq
                 )
