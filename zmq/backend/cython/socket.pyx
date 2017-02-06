@@ -642,8 +642,9 @@ cdef class Socket:
 
         Parameters
         ----------
-        data : object, str, Frame
-            The content of the message.
+        data : bytes, Frame, memoryview
+            The content of the message. This can be any object that provides
+            the Python buffer API (`memoryview(data)` can be called).
         flags : int
             Any supported flag: NOBLOCK, SNDMORE.
         copy : bool
@@ -715,7 +716,7 @@ cdef class Socket:
         msg : bytes, Frame
             The received message frame.  If `copy` is False, then it will be a Frame,
             otherwise it will be bytes.
-            
+
         Raises
         ------
         ZMQError
