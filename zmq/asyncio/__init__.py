@@ -54,7 +54,11 @@ class _AsyncIO(object):
     _READ = selectors.EVENT_READ
 
     def _default_loop(self):
-        return asyncio.get_event_loop()
+        loop = asyncio.get_event_loop()
+        if not isinstance(loop, ZMQEventLoop):
+            raise TypeError(
+                "Current asyncio eventloop is %r, not a ZMQEventLoop."
+                "  Run `zmq.asyncio.install() first." % loop)
 
 
 def _fileobj_to_fd(fileobj):
