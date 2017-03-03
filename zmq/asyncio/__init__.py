@@ -59,6 +59,7 @@ class _AsyncIO(object):
             raise TypeError(
                 "Current asyncio eventloop is %r, not a ZMQEventLoop."
                 "  Run `zmq.asyncio.install() first." % loop)
+        return loop
 
 
 def _fileobj_to_fd(fileobj):

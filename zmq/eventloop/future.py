@@ -44,6 +44,7 @@ class _AsyncTornado(object):
             raise TypeError(
                 "Current tornado IOLoop is %r, not a ZMQIOLoop."
                 "  Run `zmq.eventloop.ioloop.install() first." % loop)
+        return loop
 
 
 class _AsyncPoller(_zmq.Poller):
