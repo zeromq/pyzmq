@@ -27,7 +27,7 @@ class _TornadoFuture(Future):
         return self.done() and isinstance(self.exception(), CancelledError)
 
 import zmq as _zmq
-from zmq.eventloop.ioloop import IOLoop
+from zmq.eventloop.ioloop import IOLoop, ZMQIOLoop
 
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
@@ -39,7 +39,12 @@ class _AsyncTornado(object):
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
     def _default_loop(self):
-        return IOLoop.current()
+        loop = IOLoop.current()
+        if not isinstance(loop, ZMQIOLoop):
+            raise TypeError(
+                "Current tornado IOLoop is %r, not a ZMQIOLoop."
+                "  Run `zmq.eventloop.ioloop.install() first." % loop)
+        return loop
 
 
 class _AsyncPoller(_zmq.Poller):
