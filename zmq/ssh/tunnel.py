@@ -103,7 +103,7 @@ def _try_passwordless_openssh(server, keyfile):
 def _try_passwordless_paramiko(server, keyfile):
     """Try passwordless login with paramiko."""
     if paramiko is None:
-        msg = "Paramiko unavaliable, "
+        msg = "Paramiko unavailable, "
         if sys.platform == 'win32':
             msg += "Paramiko is required for ssh tunneled connections on Windows."
         else:
