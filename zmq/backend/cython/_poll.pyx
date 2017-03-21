@@ -34,6 +34,7 @@ try:
     from time import monotonic
 except ImportError:
     from time import clock as monotonic
+import warnings
 
 from .checkrc cimport _check_rc
 from zmq.error import InterruptedSystemCall
@@ -123,6 +124,16 @@ def zmq_poll(sockets, long timeout=-1):
             except InterruptedSystemCall:
                 if timeout > 0:
                     ms_passed = int(1000 * (monotonic() - start))
+                    if ms_passed < 0:
+                        # don't allow negative ms_passed,
+                        # which can happen on old Python versions without time.monotonic.
+                        warnings.warn(
+                            "Negative elapsed time for interrupted poll: %s."
+                            "  Did the clock change?" % ms_passed,
+                            RuntimeWarning)
+                        # treat this case the same as no time passing,
+                        # since it should be rare and not happen twice in a row.
+                        ms_passed = 0
                     timeout = max(0, timeout - ms_passed)
                 continue
             else:
