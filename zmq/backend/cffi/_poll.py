@@ -10,8 +10,7 @@ except ImportError:
     from time import clock as monotonic
 
 from ._cffi import C, ffi
-from .utils import _retry_sys_call
-
+from zmq.error import InterruptedSystemCall, _check_rc
 
 def _make_zmq_pollitem(socket, flags):
     zmq_socket = socket._zmq_socket
