@@ -30,6 +30,10 @@ from .libzmq cimport zmq_poll as zmq_poll_c
 from socket cimport Socket
 
 import sys
+try:
+    from time import monotonic
+except ImportError:
+    from time import clock as monotonic
 
 from .checkrc cimport _check_rc
 from zmq.error import InterruptedSystemCall
@@ -108,13 +112,18 @@ def zmq_poll(sockets, long timeout=-1):
                 "a fileno() method: %r" % s
             )
     
+    cdef int ms_passed
     try:
         while True:
+            start = monotonic()
             with nogil:
                 rc = zmq_poll_c(pollitems, nsockets, timeout)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:
+                if timeout > 0:
+                    ms_passed = int(1000 * (monotonic() - start))
+                    timeout = max(0, timeout - ms_passed)
                 continue
             else:
                 break
