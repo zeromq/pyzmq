@@ -4,9 +4,14 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from ._cffi import C, ffi
-from .utils import _retry_sys_call
+try:
+    from time import monotonic
+except ImportError:
+    from time import clock as monotonic
+import warnings
 
+from ._cffi import C, ffi
+from zmq.error import InterruptedSystemCall, _check_rc
 
 def _make_zmq_pollitem(socket, flags):
     zmq_socket = socket._zmq_socket
@@ -41,8 +46,27 @@ def zmq_poll(sockets, timeout):
             cffi_pollitem_list.append(_make_zmq_pollitem_fromfd(item[0], item[1]))
     items = ffi.new('zmq_pollitem_t[]', cffi_pollitem_list)
     list_length = ffi.cast('int', len(cffi_pollitem_list))
-    c_timeout = ffi.cast('long', timeout)
-    _retry_sys_call(C.zmq_poll, items, list_length, c_timeout)
+    while True:
+        c_timeout = ffi.cast('long', timeout)
+        start = monotonic()
+        rc = C.zmq_poll(items, list_length, c_timeout)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            if timeout > 0:
+                ms_passed = int(1000 * (monotonic() - start))
+                if ms_passed < 0:
+                    # don't allow negative ms_passed,
+                    # which can happen on old Python versions without time.monotonic.
+                    warnings.warn(
+                        "Negative elapsed time for interrupted poll: %s."
+                        "  Did the clock change?" % ms_passed,
+                        RuntimeWarning)
+                    ms_passed = 0
+                timeout = max(0, timeout - ms_passed)
+            continue
+        else:
+            break
     result = []
     for index in range(len(items)):
         if items[index].revents > 0:
