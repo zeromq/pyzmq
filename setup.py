@@ -318,7 +318,10 @@ class Configure(build_ext):
             settings = bundled_settings(self.debug)
         else:
             settings = settings_from_prefix(cfg['zmq_prefix'], self.bundle_libzmq_dylib)
-        
+
+        settings.setdefault('define_macros', [])
+        settings['define_macros'].append(('ZMQ_BUILD_DRAFT_API', 1))
+
         if 'have_sys_un_h' not in cfg:
             # don't link against anything when checking for sys/un.h
             minus_zmq = copy.deepcopy(settings)
@@ -340,9 +343,7 @@ class Configure(build_ext):
             self.save_config('config', cfg)
     
         if cfg['have_sys_un_h']:
-            settings['define_macros'] = [('HAVE_SYS_UN_H', 1)]
-    
-        settings.setdefault('define_macros', [])
+            settings['define_macros'].append(('HAVE_SYS_UN_H', 1))
     
         # include internal directories
         settings.setdefault('include_dirs', [])
@@ -524,6 +525,7 @@ class Configure(build_ext):
         self.distribution.ext_modules.insert(0, libzmq)
         
         # use tweetnacl to provide CURVE support
+        libzmq.define_macros.append(('ZMQ_BUILD_DRAFT_API', 1))
         libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
         libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
         
