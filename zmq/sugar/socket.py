@@ -128,7 +128,15 @@ class Socket(SocketBase, AttributeSetter):
         ):
             keys.extend(collection)
         return keys
-    
+
+    #-------------------------------------------------------------------------
+    # File object interface fileno()
+    #-------------------------------------------------------------------------
+
+    def fileno(self):
+        return self.getsockopt(zmq.FD)
+
+
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------
