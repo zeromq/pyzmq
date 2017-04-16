@@ -83,7 +83,8 @@ class TestSecurity(BaseZMQTestCase):
                     self.assertEqual(frame.get('User-Id'), 'anonymous')
                     self.assertEqual(frame.get('Hello'), 'World')
                     self.assertEqual(frame['Socket-Type'], 'DEALER')
-        except zmq.ZMQVersionError:
+        except zmq.ZMQVersionError as e:
+            print('error %s' % e)
             pass
 
         self.assertEqual(recvd, msg)
