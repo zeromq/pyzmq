@@ -216,7 +216,7 @@ class Socket(SocketBase, AttributeSetter):
     
     getsockopt_unicode = getsockopt_string = get_string
     
-    def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
+    def bind_to_random_port(self, addr, min_port=32768, max_port=49151, max_tries=100):
         """bind this socket to a random port in a range
 
         If the port range is unspecified, the system will choose the port.
