@@ -413,13 +413,8 @@ class ZMQStream(object):
             with stack_context.NullContext():
                 callback(*args, **kwargs)
         except:
-            gen_log.error("Uncaught exception, closing connection.",
+            gen_log.error("Uncaught exception in ZMQStream callback",
                           exc_info=True)
-            # Close the socket on an uncaught exception from a user callback
-            # (It would eventually get closed when the socket object is
-            # gc'd, but we don't want to rely on gc happening before we
-            # run out of file descriptors)
-            self.close()
             # Re-raise the exception so that IOLoop.handle_callback_exception
             # can see it and log the error
             raise
