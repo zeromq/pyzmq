@@ -7,7 +7,6 @@ Requires asyncio and Python 3.
 # Distributed under the terms of the Modified BSD License.
 # Derived from Python 3.5.1 selectors._BaseSelectorImpl, used under PSF License
 
-from collections import Mapping
 import warnings
 
 import zmq as _zmq

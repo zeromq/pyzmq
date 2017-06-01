@@ -17,8 +17,6 @@
 
 from __future__ import with_statement
 
-import sys
-
 import zmq
 from zmq.utils import jsonapi
 
@@ -42,7 +40,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from zmq.utils.strtypes import bytes, unicode, basestring
+from zmq.utils.strtypes import basestring
 
 try:
     callable
