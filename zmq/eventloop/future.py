@@ -335,11 +335,11 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLIN:
+        if self._shadow_sock.EVENTS & POLLIN:
             # recv immediately, if we can
             self._handle_recv()
         if self._recv_futures:
-            self._add_io_state(self._READ)
+            self._add_io_state(POLLIN)
         return f
     
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
@@ -369,16 +369,16 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLOUT:
+        if self._shadow_sock.EVENTS & POLLOUT:
             # send immediately if we can
             self._handle_send()
         if self._send_futures:
-            self._add_io_state(self._WRITE)
+            self._add_io_state(POLLOUT)
         return f
     
     def _handle_recv(self):
         """Handle recv events"""
-        if not self._shadow_sock.events & POLLIN:
+        if not self._shadow_sock.EVENTS & POLLIN:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -392,7 +392,7 @@ class _AsyncSocket(_zmq.Socket):
                 break
         
         if not self._recv_futures:
-            self._drop_io_state(self._READ)
+            self._drop_io_state(POLLIN)
         
         if f is None:
             return
@@ -417,7 +417,7 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     def _handle_send(self):
-        if not self._shadow_sock.events & POLLOUT:
+        if not self._shadow_sock.EVENTS & POLLOUT:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -431,7 +431,7 @@ class _AsyncSocket(_zmq.Socket):
                 break
         
         if not self._send_futures:
-            self._drop_io_state(self._WRITE)
+            self._drop_io_state(POLLOUT)
 
         if f is None:
             return
