@@ -100,14 +100,14 @@ if have_gevent:
         def test_instance(self):
             """Green IOLoop.instance returns the right object"""
             loop = green_ioloop.IOLoop.instance()
-            assert isinstance(loop, green_ioloop.IOLoop)
+            assert not isinstance(loop, green_ioloop.IOLoop)
             base_loop = BaseIOLoop.instance()
             assert base_loop is loop
     
         def test_current(self):
             """Green IOLoop.current returns the right object"""
             loop = green_ioloop.IOLoop.current()
-            assert isinstance(loop, green_ioloop.IOLoop)
+            assert not isinstance(loop, green_ioloop.IOLoop)
             base_loop = BaseIOLoop.current()
             assert base_loop is loop
     
