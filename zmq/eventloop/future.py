@@ -27,7 +27,8 @@ class _TornadoFuture(Future):
         return self.done() and isinstance(self.exception(), CancelledError)
 
 import zmq as _zmq
-from zmq.eventloop.ioloop import IOLoop, ZMQIOLoop
+from zmq.eventloop.ioloop import IOLoop
+from tornado.ioloop import IOLoop
 
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
@@ -39,12 +40,7 @@ class _AsyncTornado(object):
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
     def _default_loop(self):
-        loop = IOLoop.current()
-        if not isinstance(loop, ZMQIOLoop):
-            raise TypeError(
-                "Current tornado IOLoop is %r, not a ZMQIOLoop."
-                "  Run `zmq.eventloop.ioloop.install() first." % loop)
-        return loop
+        return IOLoop.current()
 
 
 class _AsyncPoller(_zmq.Poller):
@@ -127,6 +123,7 @@ class _AsyncPoller(_zmq.Poller):
         future.add_done_callback(cancel_watcher)
 
         return future
+
 
 class Poller(_AsyncTornado, _AsyncPoller):
     def _watch_raw_socket(self, loop, socket, evt, f):
@@ -461,35 +458,43 @@ class _AsyncSocket(_zmq.Socket):
     # event masking from ZMQStream
     def _handle_events(self, fd, events):
         """Dispatch IO events to _handle_recv, etc."""
-        if events & self._READ:
+        zmq_events = self._shadow_sock.EVENTS
+        if zmq_events & _zmq.POLLIN:
             self._handle_recv()
-        if events & self._WRITE:
+        if zmq_events & _zmq.POLLOUT:
             self._handle_send()
+        # edge-triggered handling
+        zmq_events = self._shadow_sock.EVENTS
+        if zmq_events & self._state:
+            self.io_loop.add_callback(lambda : self._handle_events(fd, events))
     
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
             self._update_handler(self._state)
-    
+
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
             self._state = self._state & (~state)
             self._update_handler(self._state)
-    
+
     def _update_handler(self, state):
-        """Update IOLoop handler with state."""
-        self._state = state
-        self.io_loop.update_handler(self._shadow_sock, state)
+        """Update IOLoop handler with state.
+        
+        zmq FD is always read-only.
+        """
+        if self._shadow_sock.EVENTS & state:
+            self.io_loop.add_callback(lambda : self._handle_events(fd, events))
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._state)
+        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
 
     def _clear_io_state(self):
         """unregister the ioloop event handler
-        
+
         called once during close
         """
         self.io_loop.remove_handler(self._shadow_sock)
