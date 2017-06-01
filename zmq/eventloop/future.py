@@ -456,17 +456,24 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     # event masking from ZMQStream
-    def _handle_events(self, fd, events):
+    def _handle_events(self, fd=0, events=0):
         """Dispatch IO events to _handle_recv, etc."""
         zmq_events = self._shadow_sock.EVENTS
         if zmq_events & _zmq.POLLIN:
             self._handle_recv()
         if zmq_events & _zmq.POLLOUT:
             self._handle_send()
+        self._schedule_remaining_events()
+
+    def _schedule_remaining_events(self):
+        """Schedule a call to handle_events next loop iteration
+        
+        If there are still events to handle.
+        """
         # edge-triggered handling
         zmq_events = self._shadow_sock.EVENTS
         if zmq_events & self._state:
-            self.io_loop.add_callback(lambda : self._handle_events(fd, events))
+            self._call_later(0, self._handle_events)
     
     def _add_io_state(self, state):
         """Add io_state to poller."""
@@ -485,8 +492,7 @@ class _AsyncSocket(_zmq.Socket):
         
         zmq FD is always read-only.
         """
-        if self._shadow_sock.EVENTS & state:
-            self.io_loop.add_callback(lambda : self._handle_events(fd, events))
+        self._schedule_remaining_events()
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
