@@ -29,11 +29,11 @@ try:
     from tornado import ioloop
     if not hasattr(ioloop.IOLoop, 'configurable_default'):
         raise ImportError("Tornado too old")
-    from tornado.ioloop import  PeriodicCallback
+    from tornado.ioloop import PollIOLoop, PeriodicCallback
     from tornado.log import gen_log
 except ImportError:
     from .minitornado import ioloop
-    from .minitornado.ioloop import  PeriodicCallback
+    from .minitornado.ioloop import PollIOLoop, PeriodicCallback
     from .minitornado.log import gen_log
 
 
@@ -75,6 +75,43 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
     def __init__(self, *args, **kwargs):
         warnings.warn("ZMQLoop is deprecated in pyzmq 17. No special eventloop integration is needed.", DeprecationWarning)
         return super(ZMQIOLoop, self).__init__(*args, **kwargs)
+    
+    def initialize(self, *args, **kwargs):
+        super(ZMQIOLoop, self).initialize(*args, **kwargs)
+    
+    @classmethod
+    def instance(cls, *args, **kwargs):
+        """Returns a global `IOLoop` instance.
+        
+        Most applications have a single, global `IOLoop` running on the
+        main thread.  Use this method to get this instance from
+        another thread.  To get the current thread's `IOLoop`, use `current()`.
+        """
+        # install ZMQIOLoop as the active IOLoop implementation
+        # when using tornado 3
+        if tornado_version >= (3,):
+            PollIOLoop.configure(cls)
+        loop = PollIOLoop.instance(*args, **kwargs)
+        if not isinstance(loop, cls):
+            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
+                RuntimeWarning, stacklevel=2,
+            )
+        return loop
+    
+    @classmethod
+    def current(cls, *args, **kwargs):
+        """Returns the current thread’s IOLoop.
+        """
+        # install ZMQIOLoop as the active IOLoop implementation
+        # when using tornado 3
+        if tornado_version >= (3,):
+            PollIOLoop.configure(cls)
+        loop = PollIOLoop.current(*args, **kwargs)
+        if not isinstance(loop, cls):
+            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
+                RuntimeWarning, stacklevel=2,
+            )
+        return loop
 
 
 # public API name
