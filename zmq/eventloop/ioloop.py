@@ -1,12 +1,10 @@
 # coding: utf-8
 """tornado IOLoop API with zmq compatibility
 
-If you have tornado ≥ 3.0, this is a subclass of tornado's IOLoop,
-otherwise we ship a minimal subset of tornado in zmq.eventloop.minitornado.
-
-The minimal shipped version of tornado's IOLoop does not include
-support for concurrent futures - this will only be available if you
-have tornado ≥ 3.0.
+This module is deprecated in pyzmq 17.
+To use zmq with tornado,
+eventloop integration is no longer required
+and tornado itself should be used.
 """
 
 # Copyright (C) PyZMQ Developers
