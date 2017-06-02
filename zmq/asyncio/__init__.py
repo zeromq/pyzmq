@@ -5,9 +5,6 @@ Requires asyncio and Python 3.
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
-# Derived from Python 3.5.1 selectors._BaseSelectorImpl, used under PSF License
-
-import warnings
 
 import zmq as _zmq
 from zmq.eventloop import future as _future
@@ -70,18 +67,25 @@ class Context(_zmq.Context):
 class ZMQEventLoop(SelectorEventLoop):
     """AsyncIO eventloop using zmq_poll"""
     def __init__(self, selector=None):
-        import warnings
-        warnings.warn("""ZMQEventLoop is deprecated in pyzmq 17 and no longer required.""", DeprecationWarning)
+        _deprecated()
         return super(ZMQEventLoop, self).__init__(selector)
 
 
 _loop = None
 
+
+def _deprecated():
+    if _deprecated.called:
+        return
+    _deprecated.called = True
+    import warnings
+    warnings.warn("ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
+_deprecated.called = False
+
+
 def install():
     """DEPRECATED: No longer needed in pyzmq 17"""
-    warnings.warn("""zmq.asyncio.install is deprecated in pyzmq 17 and no longer required.""",
-        DeprecationWarning,
-    )
+    _deprecated()
 
 
 __all__ = [

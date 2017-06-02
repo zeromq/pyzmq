@@ -69,11 +69,19 @@ class DelayedCallback(PeriodicCallback):
             gen_log.error("Error in delayed callback", exc_info=True)
 
 
+def _deprecated():
+    if _deprecated.called:
+        return
+    _deprecated.called = True
+    warnings.warn("ZMQLoop and zmq.eventloop.ioloop.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
+_deprecated.called = False
+
+
 class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
     """DEPRECATED: No longer needed as of pyzmq-17"""
 
     def __init__(self, *args, **kwargs):
-        warnings.warn("ZMQLoop is deprecated in pyzmq 17. No special eventloop integration is needed.", DeprecationWarning)
+        _deprecated()
         return super(ZMQIOLoop, self).__init__(*args, **kwargs)
     
     def initialize(self, *args, **kwargs):
@@ -91,11 +99,8 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         # when using tornado 3
         if tornado_version >= (3,):
             PollIOLoop.configure(cls)
+        _deprecated()
         loop = PollIOLoop.instance(*args, **kwargs)
-        if not isinstance(loop, cls):
-            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
-                RuntimeWarning, stacklevel=2,
-            )
         return loop
     
     @classmethod
@@ -106,11 +111,8 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         # when using tornado 3
         if tornado_version >= (3,):
             PollIOLoop.configure(cls)
+        _deprecated()
         loop = PollIOLoop.current(*args, **kwargs)
-        if not isinstance(loop, cls):
-            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
-                RuntimeWarning, stacklevel=2,
-            )
         return loop
 
 
@@ -123,7 +125,5 @@ def install():
     
     pyzmq 17 no longer needs any special integration for tornado.
     """
-    import warnings
-    warnings.warn("zmq.eventloop.install is deprecated in pyzmq-17.0. "
-    "No special integration is needed.", DeprecationWarning)
-    return
+    _deprecated()
+    PollIOLoop.configure(ZMQIOLoop)
