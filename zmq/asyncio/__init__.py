@@ -65,7 +65,10 @@ class Context(_zmq.Context):
 
 
 class ZMQEventLoop(SelectorEventLoop):
-    """AsyncIO eventloop using zmq_poll"""
+    """DEPRECATED: AsyncIO eventloop using zmq_poll.
+
+    pyzmq sockets should work with any asyncio event loop as of pyzmq 17.
+    """
     def __init__(self, selector=None):
         _deprecated()
         return super(ZMQEventLoop, self).__init__(selector)

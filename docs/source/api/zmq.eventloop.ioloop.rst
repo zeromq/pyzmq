@@ -22,16 +22,6 @@ Classes
   :inherited-members:
 
 
-:class:`ZMQPoller`
-~~~~~~~~~~~~~~~~~~
-
-
-.. autoclass:: ZMQPoller
-  :members:
-  :undoc-members:
-  :inherited-members:
-
-
 Function
 --------
 

@@ -76,7 +76,10 @@ _deprecated.called = False
 
 
 class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
-    """DEPRECATED: No longer needed as of pyzmq-17"""
+    """DEPRECATED: No longer needed as of pyzmq-17
+    
+    PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
+    """
 
     def __init__(self, *args, **kwargs):
         _deprecated()
