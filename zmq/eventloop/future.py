@@ -159,6 +159,13 @@ class _AsyncSocket(_zmq.Socket):
         super(_AsyncSocket, self).close(linger=linger)
     close.__doc__ = _zmq.Socket.close.__doc__
 
+    def get(self, key):
+        result = super(_AsyncSocket, self).get(key)
+        if key == _zmq.EVENTS:
+            self._schedule_remaining_events(result)
+        return result
+    get.__doc__ = _zmq.Socket.get.__doc__
+
     def recv_multipart(self, flags=0, copy=True, track=False):
         """Receive a complete multipart zmq message.
         
@@ -461,14 +468,17 @@ class _AsyncSocket(_zmq.Socket):
             self._handle_send()
         self._schedule_remaining_events()
 
-    def _schedule_remaining_events(self):
+    def _schedule_remaining_events(self, events=None):
         """Schedule a call to handle_events next loop iteration
         
         If there are still events to handle.
         """
         # edge-triggered handling
-        zmq_events = self._shadow_sock.EVENTS
-        if zmq_events & self._state:
+        # allow passing events in, in case this is triggered by retrieving events,
+        # so we don't have to retrieve it twice.
+        if events is None:
+            events = self._shadow_sock.EVENTS
+        if events & self._state:
             self._call_later(0, self._handle_events)
     
     def _add_io_state(self, state):
