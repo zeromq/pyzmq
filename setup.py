@@ -351,8 +351,17 @@ class Configure(build_ext):
             pjoin('backend', 'cython'),
             'devices',
         )]
+        # provide an implementation of <stdint.h> if we are building in
+        # bundle mode on Windows.
         if sys.platform.startswith('win') and sys.version_info < (3, 3):
-            settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
+            if cfg['libzmq_extension']:
+                settings['include_dirs'].insert(0,
+                                 pjoin('buildutils', 'include_win32'))
+            else:
+                warn("<stdint.h> is needed for building pyzmq, however it is "
+            "not provided by VS2008, you can find a solution on"
+            "http://stackoverflow.com/questions/126279/c99-stdint-h-header-and-ms-visual-studio"
+                    )
         
         for ext in self.distribution.ext_modules:
             if ext.name.startswith('zmq.lib'):
