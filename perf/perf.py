@@ -51,7 +51,7 @@ def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
     
     block = zmq.NOBLOCK if poll else 0
     
-    for i in range(count):
+    for i in range(count + 1):
         if poll:
             res = p.poll()
         msg = s.recv(block, copy=copy)
@@ -79,7 +79,9 @@ def latency(url, count, size, poll=False, copy=True, quiet=False):
     msg = b' ' * size
 
     block = zmq.NOBLOCK if poll else 0
-    time.sleep(1)
+    # trigger one roundtrip before starting the timer
+    s.send(msg)
+    s.recv()
     start = now()
 
     for i in range (0, count):
