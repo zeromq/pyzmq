@@ -31,7 +31,7 @@ def parse_args(argv=None):
                        help='number of test messages to send')
     parser.add_argument('--url', dest='url', type=str, default='tcp://127.0.0.1:5555',
                        help='the zmq URL on which to run the test')
-    parser.add_argument(dest='test', type=str, default='lat', choices=['lat', 'thr'],
+    parser.add_argument(dest='test', nargs='?', type=str, default='lat', choices=['lat', 'thr'],
                        help='which test to run')
     return parser.parse_args(argv)
 
