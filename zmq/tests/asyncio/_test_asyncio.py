@@ -224,9 +224,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         except ImportError:
             raise SkipTest("Requires aiohttp")
         from aiohttp import web
-        
-        zmq.asyncio.install()
-        
+
         @asyncio.coroutine
         def echo(request):
             print(request.path)
