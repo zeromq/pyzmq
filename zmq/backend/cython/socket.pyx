@@ -261,11 +261,12 @@ cdef class Socket:
     --------
     .Context.socket : method for creating a socket bound to a Context.
     """
-    
-    # no-op for the signature
-    def __init__(self, context=None, socket_type=-1, shadow=0):
-        pass
-    
+
+    def __init__(self, context=None, socket_type=-1, shadow=0, copy_threshold=None):
+        if copy_threshold is None:
+            copy_threshold = zmq.COPY_THRESHOLD
+        self.copy_threshold = copy_threshold
+
     def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
 
@@ -672,10 +673,10 @@ cdef class Socket:
         
         """
         _check_closed(self)
-        
+
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_string")
-        
+
         if copy:
             # msg.bytes never returns the input data object
             # it is always a copy, but always the same copy
@@ -688,6 +689,12 @@ cdef class Socket:
                     raise ValueError('Not a tracked message')
                 msg = data
             else:
+                if self.copy_threshold:
+                    buf = memoryview(data)
+                    # always copy messages smaller than copy_threshold
+                    if buf.nbytes < self.copy_threshold:
+                        _send_copy(self.handle, buf, flags)
+                        return zmq._FINISHED_TRACKER
                 msg = Frame(data, track=track)
             return _send_frame(self.handle, msg, flags)
 

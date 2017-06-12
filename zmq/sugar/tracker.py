@@ -117,4 +117,6 @@ class MessageTracker(object):
             remaining -= (toc-tic)
             tic = toc
 
-__all__ = ['MessageTracker']
+_FINISHED_TRACKER = MessageTracker()
+
+__all__ = ['MessageTracker', '_FINISHED_TRACKER']

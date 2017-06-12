@@ -39,6 +39,7 @@ cdef class Socket:
     # collected until the socket it done with it.
     cdef public Context context # The zmq Context object that owns this.
     cdef public bint _closed    # bool property for a closed socket.
+    cdef public int copy_threshold # threshold below which pyzmq will always copy messages
     cdef int _pid               # the pid of the process which created me (for fork safety)
 
     # cpdef methods for direct-cython access:
