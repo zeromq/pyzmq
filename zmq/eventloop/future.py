@@ -7,10 +7,7 @@ from collections import namedtuple
 from itertools import chain
 from zmq import POLLOUT, POLLIN
 
-try:
-    from tornado.concurrent import Future
-except ImportError:
-    from .minitornado.concurrent import Future
+from tornado.concurrent import Future
 
 class CancelledError(Exception):
     pass
@@ -27,7 +24,7 @@ class _TornadoFuture(Future):
         return self.done() and isinstance(self.exception(), CancelledError)
 
 import zmq as _zmq
-from zmq.eventloop.ioloop import IOLoop, ZMQIOLoop
+from tornado.ioloop import IOLoop
 
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
@@ -39,12 +36,7 @@ class _AsyncTornado(object):
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
     def _default_loop(self):
-        loop = IOLoop.current()
-        if not isinstance(loop, ZMQIOLoop):
-            raise TypeError(
-                "Current tornado IOLoop is %r, not a ZMQIOLoop."
-                "  Run `zmq.eventloop.ioloop.install() first." % loop)
-        return loop
+        return IOLoop.current()
 
 
 class _AsyncPoller(_zmq.Poller):
@@ -128,6 +120,7 @@ class _AsyncPoller(_zmq.Poller):
 
         return future
 
+
 class Poller(_AsyncTornado, _AsyncPoller):
     def _watch_raw_socket(self, loop, socket, evt, f):
         """Schedule callback for a raw socket"""
@@ -165,6 +158,13 @@ class _AsyncSocket(_zmq.Socket):
             self._clear_io_state()
         super(_AsyncSocket, self).close(linger=linger)
     close.__doc__ = _zmq.Socket.close.__doc__
+
+    def get(self, key):
+        result = super(_AsyncSocket, self).get(key)
+        if key == _zmq.EVENTS:
+            self._schedule_remaining_events(result)
+        return result
+    get.__doc__ = _zmq.Socket.get.__doc__
 
     def recv_multipart(self, flags=0, copy=True, track=False):
         """Receive a complete multipart zmq message.
@@ -338,11 +338,11 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLIN:
+        if self._shadow_sock.EVENTS & POLLIN:
             # recv immediately, if we can
             self._handle_recv()
         if self._recv_futures:
-            self._add_io_state(self._READ)
+            self._add_io_state(POLLIN)
         return f
     
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
@@ -372,16 +372,16 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self.events & POLLOUT:
+        if self._shadow_sock.EVENTS & POLLOUT:
             # send immediately if we can
             self._handle_send()
         if self._send_futures:
-            self._add_io_state(self._WRITE)
+            self._add_io_state(POLLOUT)
         return f
     
     def _handle_recv(self):
         """Handle recv events"""
-        if not self._shadow_sock.events & POLLIN:
+        if not self._shadow_sock.EVENTS & POLLIN:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -395,7 +395,7 @@ class _AsyncSocket(_zmq.Socket):
                 break
         
         if not self._recv_futures:
-            self._drop_io_state(self._READ)
+            self._drop_io_state(POLLIN)
         
         if f is None:
             return
@@ -420,7 +420,7 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     def _handle_send(self):
-        if not self._shadow_sock.events & POLLOUT:
+        if not self._shadow_sock.EVENTS & POLLOUT:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -434,7 +434,7 @@ class _AsyncSocket(_zmq.Socket):
                 break
         
         if not self._send_futures:
-            self._drop_io_state(self._WRITE)
+            self._drop_io_state(POLLOUT)
 
         if f is None:
             return
@@ -459,37 +459,54 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     # event masking from ZMQStream
-    def _handle_events(self, fd, events):
+    def _handle_events(self, fd=0, events=0):
         """Dispatch IO events to _handle_recv, etc."""
-        if events & self._READ:
+        zmq_events = self._shadow_sock.EVENTS
+        if zmq_events & _zmq.POLLIN:
             self._handle_recv()
-        if events & self._WRITE:
+        if zmq_events & _zmq.POLLOUT:
             self._handle_send()
+        self._schedule_remaining_events()
+
+    def _schedule_remaining_events(self, events=None):
+        """Schedule a call to handle_events next loop iteration
+        
+        If there are still events to handle.
+        """
+        # edge-triggered handling
+        # allow passing events in, in case this is triggered by retrieving events,
+        # so we don't have to retrieve it twice.
+        if events is None:
+            events = self._shadow_sock.EVENTS
+        if events & self._state:
+            self._call_later(0, self._handle_events)
     
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
             self._update_handler(self._state)
-    
+
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
             self._state = self._state & (~state)
             self._update_handler(self._state)
-    
+
     def _update_handler(self, state):
-        """Update IOLoop handler with state."""
-        self._state = state
-        self.io_loop.update_handler(self._shadow_sock, state)
+        """Update IOLoop handler with state.
+        
+        zmq FD is always read-only.
+        """
+        self._schedule_remaining_events()
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._state)
+        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
 
     def _clear_io_state(self):
         """unregister the ioloop event handler
-        
+
         called once during close
         """
         self.io_loop.remove_handler(self._shadow_sock)

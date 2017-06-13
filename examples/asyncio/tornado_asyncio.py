@@ -8,8 +8,6 @@ import zmq.asyncio
 from tornado.ioloop import IOLoop
 from tornado.platform.asyncio import AsyncIOMainLoop
 
-# Tell asyncio to use zmq's eventloop
-zmq.asyncio.install()
 # Tell tornado to use asyncio
 AsyncIOMainLoop().install()
 

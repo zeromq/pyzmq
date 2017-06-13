@@ -15,37 +15,27 @@ import threading
 import time
 
 import zmq
-from zmq.eventloop import ioloop, zmqstream
-
-"""
-ioloop.install() must be called prior to instantiating *any* tornado objects,
-and ideally before importing anything from tornado, just to be safe.
-
-install() sets the singleton instance of tornado.ioloop.IOLoop with zmq's
-IOLoop. If this is not done properly, multiple IOLoop instances may be
-created, which will have the effect of some subset of handlers never being
-called, because only one loop will be running.
-"""
-
-ioloop.install()
+from zmq.eventloop.future import Context as FutureContext
 
 import tornado
+from tornado import gen
+from tornado import ioloop
 from tornado import web
 
 
 def slow_responder():
     """thread for slowly responding to replies."""
-    ctx = zmq.Context.instance()
-    socket = ctx.socket(zmq.REP)
+    ctx = zmq.Context()
+    socket = ctx.socket(zmq.ROUTER)
     socket.linger = 0
     socket.bind('tcp://127.0.0.1:5555')
-    i=0
+    i = 0
     while True:
-        msg = socket.recv()
-        print "\nworker received %r\n" % msg
+        frame, msg = socket.recv_multipart()
+        print("\nworker received %r\n" % msg, end='')
         time.sleep(random.randint(1,5))
-        socket.send(msg + " to you too, #%i" % i)
-        i+=1
+        socket.send_multipart([frame, msg + b" to you too, #%i" % i])
+        i += 1
 
 def dot():
     """callback for showing that IOLoop is still responsive while we wait"""
@@ -54,23 +44,19 @@ def dot():
 
 class TestHandler(web.RequestHandler):
     
-    @web.asynchronous
+    @gen.coroutine
     def get(self):
-        ctx = zmq.Context.instance()
-        s = ctx.socket(zmq.REQ)
+        ctx = FutureContext.instance()
+        s = ctx.socket(zmq.DEALER)
+
         s.connect('tcp://127.0.0.1:5555')
         # send request to worker
-        s.send('hello')
-        self.stream = zmqstream.ZMQStream(s)
-        self.stream.on_recv(self.handle_reply)
-    
-    def handle_reply(self, msg):
+        yield s.send(b'hello')
+
         # finish web request with worker's reply
-        reply = msg[0]
-        print "\nfinishing with %r\n" % reply,
-        self.stream.close()
+        reply = yield s.recv_string()
+        print("\nfinishing with %r\n" % reply)
         self.write(reply)
-        self.finish()
 
 def main():
     worker = threading.Thread(target=slow_responder)
@@ -84,9 +70,9 @@ def main():
     try:
         ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
-        print ' Interrupted'
-    
-    
+        print(' Interrupted')
+
+
 if __name__ == "__main__":
     main()
 

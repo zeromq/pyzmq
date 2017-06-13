@@ -1,12 +1,10 @@
 # coding: utf-8
 """tornado IOLoop API with zmq compatibility
 
-If you have tornado ≥ 3.0, this is a subclass of tornado's IOLoop,
-otherwise we ship a minimal subset of tornado in zmq.eventloop.minitornado.
-
-The minimal shipped version of tornado's IOLoop does not include
-support for concurrent futures - this will only be available if you
-have tornado ≥ 3.0.
+This module is deprecated in pyzmq 17.
+To use zmq with tornado,
+eventloop integration is no longer required
+and tornado itself should be used.
 """
 
 # Copyright (C) PyZMQ Developers
@@ -14,15 +12,9 @@ have tornado ≥ 3.0.
 
 from __future__ import absolute_import, division, with_statement
 
-import os
 import time
 import warnings
 
-from zmq import (
-    Poller,
-    POLLIN, POLLOUT, POLLERR,
-    ZMQError, ETERM,
-)
 
 try:
     import tornado
@@ -31,10 +23,14 @@ except (ImportError, AttributeError):
     tornado_version = ()
 
 try:
-    # tornado ≥ 3
+    # tornado ≥ 4
+    from tornado import ioloop
+    if not hasattr(ioloop.IOLoop, 'configurable_default'):
+        raise ImportError("Tornado too old")
     from tornado.ioloop import PollIOLoop, PeriodicCallback
     from tornado.log import gen_log
 except ImportError:
+    from .minitornado import ioloop
     from .minitornado.ioloop import PollIOLoop, PeriodicCallback
     from .minitornado.log import gen_log
 
@@ -71,72 +67,26 @@ class DelayedCallback(PeriodicCallback):
             gen_log.error("Error in delayed callback", exc_info=True)
 
 
-class ZMQPoller(object):
-    """A poller that can be used in the tornado IOLoop.
-    
-    This simply wraps a regular zmq.Poller, scaling the timeout
-    by 1000, so that it is in seconds rather than milliseconds.
-    """
-    
-    def __init__(self):
-        self._poller = Poller()
-    
-    @staticmethod
-    def _map_events(events):
-        """translate IOLoop.READ/WRITE/ERROR event masks into zmq.POLLIN/OUT/ERR"""
-        z_events = 0
-        if events & IOLoop.READ:
-            z_events |= POLLIN
-        if events & IOLoop.WRITE:
-            z_events |= POLLOUT
-        if events & IOLoop.ERROR:
-            z_events |= POLLERR
-        return z_events
-    
-    @staticmethod
-    def _remap_events(z_events):
-        """translate zmq.POLLIN/OUT/ERR event masks into IOLoop.READ/WRITE/ERROR"""
-        events = 0
-        if z_events & POLLIN:
-            events |= IOLoop.READ
-        if z_events & POLLOUT:
-            events |= IOLoop.WRITE
-        if z_events & POLLERR:
-            events |= IOLoop.ERROR
-        return events
-    
-    def register(self, fd, events):
-        return self._poller.register(fd, self._map_events(events))
-    
-    def modify(self, fd, events):
-        return self._poller.modify(fd, self._map_events(events))
-    
-    def unregister(self, fd):
-        return self._poller.unregister(fd)
-    
-    def poll(self, timeout):
-        """poll in seconds rather than milliseconds.
-        
-        Event masks will be IOLoop.READ/WRITE/ERROR
-        """
-        z_events = self._poller.poll(1000*timeout)
-        return [ (fd,self._remap_events(evt)) for (fd,evt) in z_events ]
-    
-    def close(self):
-        pass
+def _deprecated():
+    if _deprecated.called:
+        return
+    _deprecated.called = True
+    warnings.warn("ZMQLoop and zmq.eventloop.ioloop.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
+_deprecated.called = False
 
 
-class ZMQIOLoop(PollIOLoop):
-    """ZMQ subclass of tornado's IOLoop
+class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
+    """DEPRECATED: No longer needed as of pyzmq-17
     
-    Minor modifications, so that .current/.instance return self
+    PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
     """
+
+    def __init__(self, *args, **kwargs):
+        _deprecated()
+        return super(ZMQIOLoop, self).__init__(*args, **kwargs)
     
-    _zmq_impl = ZMQPoller
-    
-    def initialize(self, impl=None, **kwargs):
-        impl = self._zmq_impl() if impl is None else impl
-        super(ZMQIOLoop, self).initialize(impl=impl, **kwargs)
+    def initialize(self, *args, **kwargs):
+        super(ZMQIOLoop, self).initialize(*args, **kwargs)
     
     @classmethod
     def instance(cls, *args, **kwargs):
@@ -150,11 +100,8 @@ class ZMQIOLoop(PollIOLoop):
         # when using tornado 3
         if tornado_version >= (3,):
             PollIOLoop.configure(cls)
+        _deprecated()
         loop = PollIOLoop.instance(*args, **kwargs)
-        if not isinstance(loop, cls):
-            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
-                RuntimeWarning, stacklevel=2,
-            )
         return loop
     
     @classmethod
@@ -165,30 +112,9 @@ class ZMQIOLoop(PollIOLoop):
         # when using tornado 3
         if tornado_version >= (3,):
             PollIOLoop.configure(cls)
+        _deprecated()
         loop = PollIOLoop.current(*args, **kwargs)
-        if not isinstance(loop, cls):
-            warnings.warn("IOLoop.current expected instance of %r, got %r" % (cls, loop),
-                RuntimeWarning, stacklevel=2,
-            )
         return loop
-    
-    def start(self):
-        try:
-            super(ZMQIOLoop, self).start()
-        except ZMQError as e:
-            if e.errno == ETERM:
-                # quietly return on ETERM
-                pass
-            else:
-                raise
-
-
-if (3, 0) <= tornado_version < (3, 1):
-    def backport_close(self, all_fds=False):
-        """backport IOLoop.close to 3.0 from 3.1 (supports fd.close() method)"""
-        from zmq.eventloop.minitornado.ioloop import PollIOLoop as mini_loop
-        return mini_loop.close.__get__(self)(all_fds)
-    ZMQIOLoop.close = backport_close
 
 
 # public API name
@@ -196,24 +122,9 @@ IOLoop = ZMQIOLoop
 
 
 def install():
-    """set the tornado IOLoop instance with the pyzmq IOLoop.
+    """DEPRECATED
     
-    After calling this function, tornado's IOLoop.instance() and pyzmq's
-    IOLoop.instance() will return the same object.
-    
-    An assertion error will be raised if tornado's IOLoop has been initialized
-    prior to calling this function.
+    pyzmq 17 no longer needs any special integration for tornado.
     """
-    from tornado import ioloop
-    # check if tornado's IOLoop is already initialized to something other
-    # than the pyzmq IOLoop instance:
-    assert (not ioloop.IOLoop.initialized()) or \
-        ioloop.IOLoop.instance() is IOLoop.instance(), "tornado IOLoop already initialized"
-    
-    if tornado_version >= (3,):
-        # tornado 3 has an official API for registering new defaults, yay!
-        ioloop.IOLoop.configure(ZMQIOLoop)
-    else:
-        # we have to set the global instance explicitly
-        ioloop.IOLoop._instance = IOLoop.instance()
-
+    _deprecated()
+    PollIOLoop.configure(ZMQIOLoop)

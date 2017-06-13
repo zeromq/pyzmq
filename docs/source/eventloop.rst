@@ -1,29 +1,53 @@
-.. PyZMQ eventloop doc, by Min Ragan-Kelley, 2011
-
 .. _eventloop:
 
 ====================
 Eventloops and PyZMQ
 ====================
 
-Integrating zmq with eventloops is *almost* really easy,
-since most eventloops happily support sockets.
-What gets messy is that zmq sockets aren't regular sockets,
-so they need special handling.
-libzmq provides a :func:`zmq_poll` function that is the same as regular polling,
-but **also** support zmq sockets. PyZMQ wrapps this in a :class:`~.Poller` class.
-Most of pyzmq's eventloop support involves setting up existing eventloops (tornado, asyncio)
-to use :func:`zmq_poll` as the inner poller, rather than the default select/poll/etc.
-Once that's done, zmq sockets can be happily treated like regular sockets,
-and regular sockets should continue to work as before.
+As of pyzmq 17, integrating pyzmq with eventloops should work without any pre-configuration.
+Due to the use of an edge-triggered file descriptor,
+this has been known to have issues, so please report problems with eventloop integration.
+
+
+.. _asyncio:
+
+AsyncIO
+=======
+
+PyZMQ 15 adds support for :mod:`asyncio` via :mod:`zmq.asyncio`, containing a Socket subclass
+that returns :py:class:`asyncio.Future` objects for use in :py:mod:`asyncio` coroutines.
+To use this API, import :class:`zmq.asyncio.Context`.
+Sockets created by this Context will return Futures from any would-be blocking method.
+
+.. sourcecode:: python
+
+    import asyncio
+    import zmq
+    from zmq.asyncio import Context
+
+    ctx = Context.instance()
+
+    async def recv():
+        s = ctx.socket(zmq.SUB)
+        s.connect('tcp://127.0.0.1:5555')
+        s.subscribe(b'')
+        while True:
+            msg = await s.recv_multipart()
+            print('received', msg)
+        s.close()
 
 .. note::
 
-    It *is* possible to integrate zmq sockets into existing eventloops without modifying the poller
-    by using the ``socket.FD`` attribute.
-    The incredibly unfortunate aspect of this is that it was implemented as an edge-triggered fd,
-    which is highly error prone, and I wouldn't recommend using unless absolutely necessary.
-    This is used in :mod:`zmq.green`, and has been the source of many problems.
+    In PyZMQ < 17, an additional step is needed to register the zmq poller prior to starting any async code:
+
+    .. sourcecode:: python
+
+        import zmq.asyncio
+        zmq.asyncio.install()
+
+        ctx = zmq.asyncio.Context()
+    
+    This step is no longer needed in pyzmq 17.
 
 
 Tornado IOLoop
@@ -38,62 +62,6 @@ but instead of calling :meth:`~.Socket.recv` directly, you register a callback w
 with :meth:`~.ZMQStream.on_send`.
 
 
-:func:`install()`
------------------
-
-With PyZMQ's ioloop, you can use zmq sockets in any tornado application.  You can tell tornado to use zmq's poller by calling the :func:`.ioloop.install` function:
-
-.. sourcecode:: python
-
-    from zmq.eventloop import ioloop
-    ioloop.install()
-
-You can also do the same thing by requesting the global instance from pyzmq:
-
-.. sourcecode:: python
-
-    from zmq.eventloop.ioloop import IOLoop
-    loop = IOLoop.current()
-
-This configures tornado's :class:`tornado.ioloop.IOLoop` to use zmq's poller,
-and registers the current instance.
-
-Either ``install()`` or retrieving the zmq instance must be done before the global * instance is registered, else there will be a conflict.
-
-It is possible to use PyZMQ sockets with tornado *without* registering as the global instance,
-but it is less convenient. First, you must instruct the tornado IOLoop to use the zmq poller:
-
-.. sourcecode:: python
-
-    from zmq.eventloop.ioloop import ZMQIOLoop
-
-    loop = ZMQIOLoop()
-
-Then, when you instantiate tornado and ZMQStream objects, you must pass the `io_loop`
-argument to ensure that they use this loop, instead of the global instance.
-
-This is especially useful for writing tests, such as this:
-
-.. sourcecode:: python
-
-    from tornado.testing import AsyncTestCase
-    from zmq.eventloop.ioloop import ZMQIOLoop
-    from zmq.eventloop.zmqstream import ZMQStream
-
-    class TestZMQBridge(AsyncTestCase):
-
-         # Use a ZMQ-compatible I/O loop so that we can use `ZMQStream`.
-         def get_new_ioloop(self):
-             return ZMQIOLoop()
-
-You can also manually install this IOLoop as the global tornado instance, with:
-
-.. sourcecode:: python
-
-    from zmq.eventloop.ioloop import ZMQIOLoop
-    loop = ZMQIOLoop()
-    loop.install()
-
 .. _futures:
 
 Futures and coroutines
@@ -101,6 +69,26 @@ Futures and coroutines
 
 PyZMQ 15 adds :mod:`zmq.eventloop.future`, containing a Socket subclass
 that returns :class:`~.tornado.concurrent.Future` objects for use in :mod:`tornado` coroutines.
+To use this API, import :class:`zmq.eventloop.future.Context`.
+Sockets created by this Context will return Futures from any would-be blocking method.
+
+.. sourcecode::
+
+    from tornado import gen, ioloop
+    import zmq
+    from zmq.eventloop.future import Context
+
+    ctx = Context.instance()
+
+    @gen.coroutine
+    def recv():
+        s = ctx.socket(zmq.SUB)
+        s.connect('tcp://127.0.0.1:5555')
+        s.subscribe(b'')
+        while True:
+            msg = yield s.recv_multipart()
+            print('received', msg)
+        s.close()
 
 
 :class:`ZMQStream`
@@ -187,12 +175,68 @@ starvation.
 
 .. _Tornado: https://github.com/facebook/tornado
 
-.. _asyncio:
+:func:`install()`
+-----------------
 
-AsyncIO
-=======
+.. note::
 
-PyZMQ 15 adds support for :mod:`asyncio` via :mod:`zmq.asyncio`.
+    If you are using pyzmq < 17, there is an additional step
+    to tell tornado to use the zmq poller instead of its default.
+    :func:`.ioloop.install` is no longer needed for pyzmq ≥ 17.
+
+With PyZMQ's ioloop, you can use zmq sockets in any tornado application.  You can tell tornado to use zmq's poller by calling the :func:`.ioloop.install` function:
+
+.. sourcecode:: python
+
+    from zmq.eventloop import ioloop
+    ioloop.install()
+
+You can also do the same thing by requesting the global instance from pyzmq:
+
+.. sourcecode:: python
+
+    from zmq.eventloop.ioloop import IOLoop
+    loop = IOLoop.current()
+
+This configures tornado's :class:`tornado.ioloop.IOLoop` to use zmq's poller,
+and registers the current instance.
+
+Either ``install()`` or retrieving the zmq instance must be done before the global * instance is registered, else there will be a conflict.
+
+It is possible to use PyZMQ sockets with tornado *without* registering as the global instance,
+but it is less convenient. First, you must instruct the tornado IOLoop to use the zmq poller:
+
+.. sourcecode:: python
+
+    from zmq.eventloop.ioloop import ZMQIOLoop
+
+    loop = ZMQIOLoop()
+
+Then, when you instantiate tornado and ZMQStream objects, you must pass the `io_loop`
+argument to ensure that they use this loop, instead of the global instance.
+
+This is especially useful for writing tests, such as this:
+
+.. sourcecode:: python
+
+    from tornado.testing import AsyncTestCase
+    from zmq.eventloop.ioloop import ZMQIOLoop
+    from zmq.eventloop.zmqstream import ZMQStream
+
+    class TestZMQBridge(AsyncTestCase):
+
+         # Use a ZMQ-compatible I/O loop so that we can use `ZMQStream`.
+         def get_new_ioloop(self):
+             return ZMQIOLoop()
+
+You can also manually install this IOLoop as the global tornado instance, with:
+
+.. sourcecode:: python
+
+    from zmq.eventloop.ioloop import ZMQIOLoop
+    loop = ZMQIOLoop()
+    loop.install()
+
 
 .. _zmq_green:
 

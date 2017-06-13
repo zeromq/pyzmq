@@ -66,28 +66,6 @@ class TestIOLoop(BaseZMQTestCase):
         else:
             self.fail("IOLoop failed to exit")
     
-    def test_poller_events(self):
-        """Tornado poller implementation maps events correctly"""
-        req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
-        poller = ioloop.ZMQPoller()
-        poller.register(req, ioloop.IOLoop.READ)
-        poller.register(rep, ioloop.IOLoop.READ)
-        events = dict(poller.poll(0))
-        self.assertEqual(events.get(rep), None)
-        self.assertEqual(events.get(req), None)
-        
-        poller.register(req, ioloop.IOLoop.WRITE)
-        poller.register(rep, ioloop.IOLoop.WRITE)
-        events = dict(poller.poll(1))
-        self.assertEqual(events.get(req), ioloop.IOLoop.WRITE)
-        self.assertEqual(events.get(rep), None)
-        
-        poller.register(rep, ioloop.IOLoop.READ)
-        req.send(b'hi')
-        events = dict(poller.poll(1))
-        self.assertEqual(events.get(rep), ioloop.IOLoop.READ)
-        self.assertEqual(events.get(req), None)
-
     def test_instance(self):
         """Green IOLoop.instance returns the right object"""
         loop = ioloop.IOLoop.instance()

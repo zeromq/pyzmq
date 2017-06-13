@@ -6,7 +6,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq.eventloop import ioloop, zmqstream
+from tornado import ioloop
+from zmq.eventloop import zmqstream
 from .base import Authenticator
 
 

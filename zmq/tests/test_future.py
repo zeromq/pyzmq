@@ -10,7 +10,7 @@ gen = pytest.importorskip('tornado.gen')
 
 import zmq
 from zmq.eventloop import future
-from zmq.eventloop.ioloop import IOLoop
+from tornado.ioloop import IOLoop
 from zmq.utils.strtypes import u
 
 from zmq.tests import BaseZMQTestCase

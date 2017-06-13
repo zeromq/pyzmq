@@ -6,13 +6,13 @@ import time
 
 import zmq
 from zmq.eventloop.future import Context, Poller
-from zmq.eventloop.ioloop import IOLoop
+from tornado.ioloop import IOLoop
 
 from tornado import gen
 
 url = 'tcp://127.0.0.1:5555'
 
-ctx = Context()
+ctx = Context.instance()
 
 @gen.coroutine
 def ping():
@@ -20,6 +20,7 @@ def ping():
     while True:
         yield gen.sleep(0.25)
         print('.')
+
 
 @gen.coroutine
 def receiver():
@@ -37,6 +38,7 @@ def receiver():
         else:
             print("nothing to recv")
 
+
 @gen.coroutine
 def sender():
     """send a message every second"""
@@ -52,8 +54,8 @@ def sender():
 
 loop = IOLoop.instance()
 
-loop.add_callback(ping)
-loop.add_callback(receiver)
-loop.add_callback(sender)
+loop.spawn_callback(ping)
+loop.spawn_callback(receiver)
+loop.spawn_callback(sender)
 loop.start()
 

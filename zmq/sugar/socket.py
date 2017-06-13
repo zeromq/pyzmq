@@ -148,7 +148,18 @@ class Socket(SocketBase, AttributeSetter):
                 self.set(zmq.UNSUBSCRIBE, value)
             return
         super(Socket, self).__setattr__(key, value)
-    
+
+    def fileno(self):
+        """Return edge-triggered file descriptor for this socket.
+
+        This is a read-only edge-triggered file descriptor for both read and write events on this socket.
+        It is important that all available events be consumed when an event is detected,
+        otherwise the read event will not trigger again.
+
+        .. versionadded:: 17.0
+        """
+        return self.FD
+
     def subscribe(self, topic):
         """Subscribe to a topic
 

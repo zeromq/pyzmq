@@ -1,27 +1,28 @@
 #!/usr/bin/env python
-"""A trivial ZMQ echo server using the eventloop.
+"""A basic ZMQ echo server using the tornado eventloop
 
-Authors
--------
-* MinRK
+without relying on tornado integration (see echostream).
 """
 
 import zmq
-from zmq.eventloop import ioloop
+from tornado import ioloop
 
-loop = ioloop.IOLoop.instance()
+def echo(sock, events):
+    # We don't know how many recv's we can do?
+    if not sock.EVENTS & zmq.POLLIN:
+        # not a read event
+        return
+    msg = sock.recv_multipart()
+    sock.send_multipart(msg)
+    # avoid starving due to edge-triggered event FD
+    # if there is more than one read event waiting
+    if sock.EVENTS & zmq.POLLIN:
+        ioloop.IOLoop.current().add_callback(partial(rep_handler, sock, events))
 
-ctx = zmq.Context()
-s = ctx.socket(zmq.REP)
+ctx = zmq.Context.instance()
+s = ctx.socket(zmq.ROUTER)
 s.bind('tcp://127.0.0.1:5555')
 
-def rep_handler(sock, events):
-    # We don't know how many recv's we can do?
-    msg = sock.recv()
-    # No guarantee that we can do the send. We need a way of putting the
-    # send in the event loop.
-    sock.send(msg)
-
-loop.add_handler(s, rep_handler, zmq.POLLIN)
-
+loop = ioloop.IOLoop.current()
+loop.add_handler(s, echo, loop.READ)
 loop.start()

@@ -17,8 +17,6 @@
 
 from __future__ import with_statement
 
-import sys
-
 import zmq
 from zmq.utils import jsonapi
 
@@ -42,7 +40,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from zmq.utils.strtypes import bytes, unicode, basestring
+from zmq.utils.strtypes import basestring
 
 try:
     callable
@@ -110,7 +108,7 @@ class ZMQStream(object):
         self._recv_copy = False
         self._flushed = False
         
-        self._state = self.io_loop.ERROR
+        self._state = 0
         self._init_io_state()
         
         # shortcircuit some socket methods
@@ -172,9 +170,9 @@ class ZMQStream(object):
         self._recv_callback = stack_context.wrap(callback)
         self._recv_copy = copy
         if callback is None:
-            self._drop_io_state(self.io_loop.READ)
+            self._drop_io_state(zmq.POLLIN)
         else:
-            self._add_io_state(self.io_loop.READ)
+            self._add_io_state(zmq.POLLIN)
     
     def on_recv_stream(self, callback, copy=True):
         """Same as on_recv, but callback will get this stream as first argument
@@ -264,7 +262,7 @@ class ZMQStream(object):
         else:
             # noop callback
             self.on_send(lambda *args: None)
-        self._add_io_state(self.io_loop.WRITE)
+        self._add_io_state(zmq.POLLOUT)
     
     def send_string(self, u, flags=0, encoding='utf-8', callback=None):
         """Send a unicode message with an encoding.
@@ -422,32 +420,28 @@ class ZMQStream(object):
     def _handle_events(self, fd, events):
         """This method is the actual handler for IOLoop, that gets called whenever
         an event on my socket is posted. It dispatches to _handle_recv, etc."""
-        # print "handling events"
         if not self.socket:
             gen_log.warning("Got events for closed stream %s", fd)
             return
+        zmq_events = self.socket.EVENTS
         try:
             # dispatch events:
-            if events & IOLoop.ERROR:
-                gen_log.error("got POLLERR event on ZMQStream, which doesn't make sense")
-                return
-            if events & IOLoop.READ:
+            if zmq_events & zmq.POLLIN and self.receiving():
                 self._handle_recv()
                 if not self.socket:
                     return
-            if events & IOLoop.WRITE:
+            if zmq_events & zmq.POLLOUT and self.sending():
                 self._handle_send()
                 if not self.socket:
                     return
 
             # rebuild the poll state
             self._rebuild_io_state()
-        except:
-            gen_log.error("Uncaught exception, closing connection.",
+        except Exception:
+            gen_log.error("Uncaught exception in zmqstream callback",
                           exc_info=True)
-            self.close()
             raise
-            
+
     def _handle_recv(self):
         """Handle a recv event."""
         if self._flushed:
@@ -459,14 +453,11 @@ class ZMQStream(object):
                 # state changed since poll event
                 pass
             else:
-                gen_log.error("RECV Error: %s"%zmq.strerror(e.errno))
+                raise
         else:
             if self._recv_callback:
                 callback = self._recv_callback
-                # self._recv_callback = None
                 self._run_callback(callback, msg)
-                
-        # self.update_state()
         
 
     def _handle_send(self):
@@ -486,8 +477,6 @@ class ZMQStream(object):
         if self._send_callback:
             callback = self._send_callback
             self._run_callback(callback, msg, status)
-        
-        # self.update_state()
     
     def _check_closed(self):
         if not self.socket:
@@ -497,35 +486,39 @@ class ZMQStream(object):
         """rebuild io state based on self.sending() and receiving()"""
         if self.socket is None:
             return
-        state = self.io_loop.ERROR
+        state = 0
         if self.receiving():
-            state |= self.io_loop.READ
+            state |= zmq.POLLIN
         if self.sending():
-            state |= self.io_loop.WRITE
-        if state != self._state:
-            self._state = state
-            self._update_handler(state)
-    
+            state |= zmq.POLLOUT
+
+        self._state = state
+        self._update_handler(state)
+
     def _add_io_state(self, state):
         """Add io_state to poller."""
         if not self._state & state:
             self._state = self._state | state
             self._update_handler(self._state)
-    
+
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
         if self._state & state:
             self._state = self._state & (~state)
             self._update_handler(self._state)
-    
+
     def _update_handler(self, state):
         """Update IOLoop handler with state."""
         if self.socket is None:
             return
-        self.io_loop.update_handler(self.socket, state)
-    
+
+        if state & self.socket.events:
+            # events still exist that haven't been processed
+            # explicitly schedule handling to avoid missing events due to edge-triggered FDs
+            self.io_loop.add_callback(lambda : self._handle_events(self.socket, 0))
+
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         with stack_context.NullContext():
-            self.io_loop.add_handler(self.socket, self._handle_events, self._state)
+            self.io_loop.add_handler(self.socket, self._handle_events, self.io_loop.READ)
 

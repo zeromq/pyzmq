@@ -45,8 +45,6 @@ Classes
 :class:`ZMQEventLoop`
 ~~~~~~~~~~~~~~~~~~~~~
 
-An asyncio event loop using zmq_poll for zmq socket support.
-
 .. autoclass:: ZMQEventLoop
 
 
