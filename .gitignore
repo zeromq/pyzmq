@@ -25,3 +25,5 @@ examples/security/private_keys
 wheelhouse
 .coverage
 .cache
+*.pickle
+.ipynb_checkpoints

@@ -31,11 +31,11 @@ def parse_args(argv=None):
                        help='number of test messages to send')
     parser.add_argument('--url', dest='url', type=str, default='tcp://127.0.0.1:5555',
                        help='the zmq URL on which to run the test')
-    parser.add_argument(dest='test', type=str, default='lat', choices=['lat', 'thr'],
+    parser.add_argument(dest='test', nargs='?', type=str, default='lat', choices=['lat', 'thr'],
                        help='which test to run')
     return parser.parse_args(argv)
 
-def latency_echo(url, count, poll, copy):
+def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
     """echo messages on a REP socket
     
     Should be started before `latency`
@@ -51,7 +51,7 @@ def latency_echo(url, count, poll, copy):
     
     block = zmq.NOBLOCK if poll else 0
     
-    for i in range(count):
+    for i in range(count + 1):
         if poll:
             res = p.poll()
         msg = s.recv(block, copy=copy)
@@ -66,7 +66,7 @@ def latency_echo(url, count, poll, copy):
     s.close()
     ctx.term()
     
-def latency(url, count, size, poll, copy):
+def latency(url, count, size, poll=False, copy=True, quiet=False):
     """Perform a latency test"""
     ctx = zmq.Context()
     s = ctx.socket(zmq.REQ)
@@ -79,7 +79,9 @@ def latency(url, count, size, poll, copy):
     msg = b' ' * size
 
     block = zmq.NOBLOCK if poll else 0
-    time.sleep(1)
+    # trigger one roundtrip before starting the timer
+    s.send(msg)
+    s.recv()
     start = now()
 
     for i in range (0, count):
@@ -100,13 +102,16 @@ def latency(url, count, size, poll, copy):
     s.send(b'done')
 
     latency = 1e6 * elapsed / (count * 2.)
+    
+    if not quiet:
+        print ("message size   : %8i     [B]" % (size, ))
+        print ("roundtrip count: %8i     [msgs]" % (count, ))
+        print ("mean latency   : %12.3f [µs]" % (latency, ))
+        print ("test time      : %12.3f [s]" % (elapsed, ))
+    ctx.destroy()
+    return latency
 
-    print ("message size   : %8i     [B]" % (size, ))
-    print ("roundtrip count: %8i     [msgs]" % (count, ))
-    print ("mean latency   : %12.3f [µs]" % (latency, ))
-    print ("test time      : %12.3f [s]" % (elapsed, ))
-
-def pusher(url, count, size, poll, copy):
+def pusher(url, count, size, poll=False, copy=True, quiet=False):
     """send a bunch of messages on a PUSH socket"""
     ctx = zmq.Context()
     s = ctx.socket(zmq.PUSH)
@@ -132,7 +137,7 @@ def pusher(url, count, size, poll, copy):
     s.close()
     ctx.term()
 
-def throughput(url, count, size, poll, copy):
+def throughput(url, count, size, poll=False, copy=True, quiet=False):
     """recv a bunch of messages on a PULL socket
     
     Should be started before `pusher`
@@ -165,25 +170,34 @@ def throughput(url, count, size, poll, copy):
     throughput = (float(count)) / float(elapsed)
     megabits = float(throughput * size * 8) / 1e6
 
-    print ("message size   : %8i     [B]" % (size, ))
-    print ("message count  : %8i     [msgs]" % (count, ))
-    print ("mean throughput: %8.0f     [msg/s]" % (throughput, ))
-    print ("mean throughput: %12.3f [Mb/s]" % (megabits, ))
-    print ("test time      : %12.3f [s]" % (elapsed, ))
+    if not quiet:
+        print ("message size   : %8i     [B]" % (size, ))
+        print ("message count  : %8i     [msgs]" % (count, ))
+        print ("mean throughput: %8.0f     [msg/s]" % (throughput, ))
+        print ("mean throughput: %12.3f [Mb/s]" % (megabits, ))
+        print ("test time      : %12.3f [s]" % (elapsed, ))
+    ctx.destroy()
+    return throughput
 
+def do_run(test, **kwargs):
+    """Do a single run"""
+    if test == 'lat':
+        bg_func = latency_echo
+        fg_func = latency
+    elif test == 'thr':
+        bg_func = pusher
+        fg_func = throughput
+    bg = Process(target=bg_func, kwargs=kwargs)
+    bg.start()
+    result = fg_func(**kwargs)
+    bg.join()
+    return result
 
 def main():
     args = parse_args()
     tic = time.time()
-    if args.test == 'lat':
-        bg = Process(target=latency_echo, args=(args.url, args.count, args.poll, args.copy))
-        bg.start()
-        latency(args.url, args.count, args.size, args.poll, args.copy)
-    elif args.test == 'thr':
-        bg = Process(target=throughput, args=(args.url, args.count, args.size, args.poll, args.copy))
-        bg.start()
-        pusher(args.url, args.count, args.size, args.poll, args.copy)
-    bg.join()
+    do_run(args.test, url=args.url, size=args.size, count=args.count,
+           poll=args.poll, copy=args.copy)
     toc = time.time()
     if (toc - tic) < 3:
         print ("For best results, tests should take at least a few seconds.")
