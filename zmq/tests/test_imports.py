@@ -4,6 +4,8 @@
 import sys
 from unittest import TestCase
 
+import pytest
+
 class TestImports(TestCase):
     """Test Imports - the quickest test to ensure that we haven't
     introduced version-incompatible syntax errors."""
