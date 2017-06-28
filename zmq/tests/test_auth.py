@@ -14,7 +14,6 @@ import pytest
 import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 
-from zmq.eventloop import ioloop, zmqstream
 from zmq.utils.strtypes import u
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
 
@@ -327,8 +326,11 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
     """Test authentication running in ioloop"""
 
     def setUp(self):
-        if not ioloop._tornado:
-            pytest.skip()
+        try:
+            from tornado import ioloop
+        except ImportError:
+            pytest.skip("Requires tornado")
+        from zmq.eventloop import zmqstream
         self.fail_msg = None
         self.io_loop = ioloop.IOLoop()
         super(TestIOLoopAuthentication, self).setUp()

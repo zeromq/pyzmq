@@ -15,26 +15,12 @@ from __future__ import absolute_import, division, with_statement
 import time
 import warnings
 
-
-try:
-    import tornado
-    tornado_version = tornado.version_info
-except (ImportError, AttributeError):
-    tornado_version = ()
-
-try:
-    # tornado ≥ 4
-    from tornado import ioloop
-    if not hasattr(ioloop.IOLoop, 'configurable_default'):
-        raise ImportError("Tornado too old")
-    from tornado.ioloop import PollIOLoop, PeriodicCallback
-    from tornado.log import gen_log
-    _tornado = True
-except ImportError:
-    from .minitornado import ioloop
-    from .minitornado.ioloop import PollIOLoop, PeriodicCallback
-    from .minitornado.log import gen_log
-    _tornado = False
+import tornado
+from tornado import ioloop
+if not hasattr(ioloop.IOLoop, 'configurable_default'):
+    raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
+from tornado.ioloop import PollIOLoop, PeriodicCallback
+from tornado.log import gen_log
 
 
 class DelayedCallback(PeriodicCallback):
@@ -76,26 +62,18 @@ def _deprecated():
     warnings.warn("ZMQLoop and zmq.eventloop.ioloop.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
 _deprecated.called = False
 
-if _tornado:
-    _BaseIOLoop = ioloop.IOLoop.configurable_default()
-else:
-    _BaseIOLoop = ioloop.PollIOLoop
 
-class ZMQIOLoop(_BaseIOLoop):
+class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
     """DEPRECATED: No longer needed as of pyzmq-17
     
     PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
     """
 
     def __init__(self, *args, **kwargs):
-        if not _tornado:
-            raise ImportError("ZMQIOLoop requires tornado >= 4")
         _deprecated()
         return super(ZMQIOLoop, self).__init__(*args, **kwargs)
     
     def initialize(self, *args, **kwargs):
-        if not _tornado:
-            raise ImportError("ZMQIOLoop requires tornado >= 4")
         super(ZMQIOLoop, self).initialize(*args, **kwargs)
     
     @classmethod
@@ -108,8 +86,7 @@ class ZMQIOLoop(_BaseIOLoop):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        if tornado_version >= (3,):
-            PollIOLoop.configure(cls)
+        PollIOLoop.configure(cls)
         _deprecated()
         loop = PollIOLoop.instance(*args, **kwargs)
         return loop
@@ -120,8 +97,7 @@ class ZMQIOLoop(_BaseIOLoop):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        if tornado_version >= (3,):
-            PollIOLoop.configure(cls)
+        PollIOLoop.configure(cls)
         _deprecated()
         loop = PollIOLoop.current(*args, **kwargs)
         return loop

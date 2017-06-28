@@ -27,13 +27,8 @@ except ImportError:
 
 from .ioloop import IOLoop
 
-try:
-    # gen_log will only import from >= 3.0
-    from tornado.log import gen_log
-    from tornado import stack_context
-except ImportError:
-    from .minitornado.log import gen_log
-    from .minitornado import stack_context
+from tornado.log import gen_log
+from tornado import stack_context
 
 try:
     from queue import Queue
