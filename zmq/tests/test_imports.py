@@ -41,11 +41,13 @@ class TestImports(TestCase):
 
     def test_eventloop(self):
         """test eventloop imports"""
+        try:
+            import tornado
+        except ImportError:
+            pytest.skip('requires tornado')
         import zmq.eventloop
         from zmq.eventloop import ioloop
         from zmq.eventloop import zmqstream
-        from zmq.eventloop.minitornado.platform import auto
-        from zmq.eventloop.minitornado import ioloop
 
     def test_utils(self):
         """test util imports"""
