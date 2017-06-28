@@ -9,9 +9,9 @@ import pytest
 
 import zmq
 from zmq.tests import BaseZMQTestCase, have_gevent
-from zmq.eventloop import ioloop
 try:
     from tornado.ioloop import IOLoop as BaseIOLoop
+    from zmq.eventloop import ioloop
     _tornado = True
 except ImportError:
     _tornado = False
@@ -99,7 +99,7 @@ class TestIOLoop(BaseZMQTestCase):
         self.assertEqual(rep.closed, True)
         
 
-if have_gevent:
+if have_gevent and _tornado:
     import zmq.green.eventloop.ioloop as green_ioloop
     
     class TestIOLoopGreen(BaseZMQTestCase):

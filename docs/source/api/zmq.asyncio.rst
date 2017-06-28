@@ -16,8 +16,6 @@ When imported from this module, blocking methods such as
 :meth:`zmq.asyncio.Socket.recv_multipart`, :meth:`zmq.asyncio.Socket.poll`,
 and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future` s.
 
-It also provides a :class:`zmq.asyncio.ZMQEventLoop`.
-
 .. sourcecode:: python
 
     import asyncio
@@ -25,8 +23,6 @@ It also provides a :class:`zmq.asyncio.ZMQEventLoop`.
     import zmq.asyncio
 
     ctx = zmq.asyncio.Context()
-    loop = zmq.asyncio.ZMQEventLoop()
-    asyncio.set_event_loop(loop)
 
     @asyncio.coroutine
     def recv_and_process():
@@ -36,7 +32,7 @@ It also provides a :class:`zmq.asyncio.ZMQEventLoop`.
         reply = yield from async_process(msg)
         yield from sock.send_multipart(reply)
 
-    loop.run_until_complete(recv_and_process())
+    asyncio.get_event_loop().run_until_complete(recv_and_process())
 
 
 Classes

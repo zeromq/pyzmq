@@ -17,9 +17,6 @@ Classes
 
 
 .. autoclass:: ZMQIOLoop
-  :members:
-  :undoc-members:
-  :inherited-members:
 
 
 Function

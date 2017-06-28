@@ -7,10 +7,10 @@ from unittest import TestCase
 
 import pytest
 import zmq
-from zmq.eventloop import ioloop, zmqstream
 try:
     import tornado
     from tornado import gen
+    from zmq.eventloop import ioloop, zmqstream
 except ImportError:
     tornado = None
 

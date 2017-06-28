@@ -7,7 +7,7 @@ Requires asyncio and Python 3.
 # Distributed under the terms of the Modified BSD License.
 
 import zmq as _zmq
-from zmq.eventloop import future as _future
+from zmq import _future
 
 # TODO: support trollius for Legacy Python? (probably not)
 

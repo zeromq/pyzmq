@@ -13,7 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A utility class to send to and recv from a non-blocking socket."""
+"""A utility class to send to and recv from a non-blocking socket,
+using tornado.
+
+.. seealso::
+
+    - :mod:`zmq.asyncio`
+    - :mod:`zmq.eventloop.future`
+
+"""
 
 from __future__ import with_statement
 
@@ -27,13 +35,8 @@ except ImportError:
 
 from .ioloop import IOLoop
 
-try:
-    # gen_log will only import from >= 3.0
-    from tornado.log import gen_log
-    from tornado import stack_context
-except ImportError:
-    from .minitornado.log import gen_log
-    from .minitornado import stack_context
+from tornado.log import gen_log
+from tornado import stack_context
 
 try:
     from queue import Queue
