@@ -112,4 +112,5 @@ SphinxAutodoc.FunctionDocumenter = MyFunctionDocumenter
 
 # don't use AttributeDocumenter on 'method_descriptor' members:
 AD = SphinxAutodoc.AttributeDocumenter
-AD.method_types = tuple(list(AD.method_types) + [type(str.count)])
+if hasattr(AD, 'method_types'):
+    AD.method_types = tuple(list(AD.method_types) + [type(str.count)])

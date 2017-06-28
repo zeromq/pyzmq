@@ -13,7 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A utility class to send to and recv from a non-blocking socket."""
+"""A utility class to send to and recv from a non-blocking socket,
+using tornado.
+
+.. seealso::
+
+    - :mod:`zmq.asyncio`
+    - :mod:`zmq.eventloop.future`
+
+"""
 
 from __future__ import with_statement
 

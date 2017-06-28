@@ -72,7 +72,7 @@ that returns :class:`~.tornado.concurrent.Future` objects for use in :mod:`torna
 To use this API, import :class:`zmq.eventloop.future.Context`.
 Sockets created by this Context will return Futures from any would-be blocking method.
 
-.. sourcecode::
+.. sourcecode:: python
 
     from tornado import gen, ioloop
     import zmq

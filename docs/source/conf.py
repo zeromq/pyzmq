@@ -60,8 +60,8 @@ copyright = u"""Brian E. Granger & Min Ragan-Kelley.
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3', None),
-    'http://www.tornadoweb.org/en/stable': None
+    'python': ('https://docs.python.org/3', None),
+    'tornado': ('http://www.tornadoweb.org/en/stable', None),
 }
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

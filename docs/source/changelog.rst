@@ -9,6 +9,19 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+17.0.0
+======
+
+- Removed bundled tornado IOLoop.
+  Using tornado-integrated zmqstream, ioloop now requires tornado to be installed.
+- Allow pyzmq asyncio/tornado integration to run without installing :func:`zmq_poll`
+  implementation. The following methods and classes are deprecated and no longer required:
+  
+  - :func:`zmq.eventloop.ioloop.install`
+  - :class:`zmq.eventloop.ioloop.IOLoop`
+  - :func:`zmq.asyncio.install`
+  - :class:`zmq.asyncio.ZMQEventLoop`
+
 
 16.0.2
 ======

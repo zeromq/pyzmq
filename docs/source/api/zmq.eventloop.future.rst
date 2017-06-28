@@ -19,7 +19,7 @@ These sockets let you easily use zmq with tornado's coroutines.
 
 .. seealso::
 
-    :mod:`tornado:tornado.gen`
+    :mod:`tornado.gen`
 
 .. sourcecode:: python
 
