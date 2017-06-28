@@ -29,10 +29,12 @@ try:
         raise ImportError("Tornado too old")
     from tornado.ioloop import PollIOLoop, PeriodicCallback
     from tornado.log import gen_log
+    _tornado = True
 except ImportError:
     from .minitornado import ioloop
     from .minitornado.ioloop import PollIOLoop, PeriodicCallback
     from .minitornado.log import gen_log
+    _tornado = False
 
 
 class DelayedCallback(PeriodicCallback):
@@ -74,18 +76,26 @@ def _deprecated():
     warnings.warn("ZMQLoop and zmq.eventloop.ioloop.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
 _deprecated.called = False
 
+if _tornado:
+    _BaseIOLoop = ioloop.IOLoop.configurable_default()
+else:
+    _BaseIOLoop = ioloop.PollIOLoop
 
-class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
+class ZMQIOLoop(_BaseIOLoop):
     """DEPRECATED: No longer needed as of pyzmq-17
     
     PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
     """
 
     def __init__(self, *args, **kwargs):
+        if not _tornado:
+            raise ImportError("ZMQIOLoop requires tornado >= 4")
         _deprecated()
         return super(ZMQIOLoop, self).__init__(*args, **kwargs)
     
     def initialize(self, *args, **kwargs):
+        if not _tornado:
+            raise ImportError("ZMQIOLoop requires tornado >= 4")
         super(ZMQIOLoop, self).initialize(*args, **kwargs)
     
     @classmethod

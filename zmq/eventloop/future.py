@@ -7,7 +7,10 @@ from collections import namedtuple
 from itertools import chain
 from zmq import POLLOUT, POLLIN
 
-from tornado.concurrent import Future
+try:
+    from tornado.concurrent import Future
+except ImportError:
+    from concurrent.futures import Future
 
 class CancelledError(Exception):
     pass
@@ -24,7 +27,10 @@ class _TornadoFuture(Future):
         return self.done() and isinstance(self.exception(), CancelledError)
 
 import zmq as _zmq
-from tornado.ioloop import IOLoop
+try:
+    from tornado.ioloop import IOLoop
+except ImportError:
+    from .minitornado.ioloop import IOLoop
 
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))

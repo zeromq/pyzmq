@@ -12,8 +12,9 @@ from zmq.tests import BaseZMQTestCase, have_gevent
 from zmq.eventloop import ioloop
 try:
     from tornado.ioloop import IOLoop as BaseIOLoop
+    _tornado = True
 except ImportError:
-    from zmq.eventloop.minitornado.ioloop import IOLoop as BaseIOLoop
+    _tornado = False
 
 
 def printer():
@@ -45,6 +46,11 @@ class Delay(threading.Thread):
 
 
 class TestIOLoop(BaseZMQTestCase):
+
+    def setUp(self):
+        if not _tornado:
+            pytest.skip("tornado required")
+        super(TestIOLoop, self).setUp()
 
     def tearDown(self):
         super(TestIOLoop, self).tearDown()

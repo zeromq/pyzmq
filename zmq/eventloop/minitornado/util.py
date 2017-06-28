@@ -14,6 +14,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import sys
 
+PY3 = sys.version_info >= (3,)
 
 # Fake unicode literal support:  Python 3.2 doesn't have the u'' marker for
 # literal strings, and alternative solutions like "from __future__ import

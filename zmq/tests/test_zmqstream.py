@@ -3,18 +3,22 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-import sys
-import time
-
-from tornado import gen
 from unittest import TestCase
 
+import pytest
 import zmq
 from zmq.eventloop import ioloop, zmqstream
+try:
+    import tornado
+    from tornado import gen
+except ImportError:
+    tornado = None
 
 class TestZMQStream(TestCase):
 
     def setUp(self):
+        if tornado is None:
+            pytest.skip()
         self.context = zmq.Context()
         self.loop = ioloop.IOLoop.instance()
         self.push = zmqstream.ZMQStream(self.context.socket(zmq.PUSH))
