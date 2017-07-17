@@ -235,12 +235,17 @@ class TestSocket(BaseZMQTestCase):
         a.connect(iface)
         time.sleep(0.1)
         p1 = a.send(b'something', copy=False, track=True)
-        self.assertTrue(isinstance(p1, zmq.MessageTracker))
-        self.assertFalse(p1.done)
+        assert isinstance(p1, zmq.MessageTracker)
+        assert p1 is zmq._FINISHED_TRACKER
+        # small message, should start done
+        assert p1.done
+
+        # disable zero-copy threshold
+        a.copy_threshold = 0
+
         p2 = a.send_multipart([b'something', b'else'], copy=False, track=True)
-        self.assert_(isinstance(p2, zmq.MessageTracker))
-        self.assertEqual(p2.done, False)
-        self.assertEqual(p1.done, False)
+        assert isinstance(p2, zmq.MessageTracker)
+        assert not p2.done
 
         b.bind(iface)
         msg = self.recv_multipart(b)
