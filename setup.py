@@ -555,7 +555,7 @@ class Configure(build_ext):
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
-            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
+            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32', 'iphlpapi'])
             
             # bundle MSCVP redist
             if self.config['bundle_msvcp']:
