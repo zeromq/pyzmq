@@ -3,7 +3,7 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-from collections import namedtuple
+from collections import namedtuple, deque
 from itertools import chain
 
 from zmq import POLLOUT, POLLIN
@@ -114,8 +114,8 @@ class _AsyncSocket(_zmq.Socket):
     def __init__(self, context, socket_type, io_loop=None):
         super(_AsyncSocket, self).__init__(context, socket_type)
         self.io_loop = io_loop or self._default_loop()
-        self._recv_futures = []
-        self._send_futures = []
+        self._recv_futures = deque()
+        self._send_futures = deque()
         self._state = 0
         self._shadow_sock = _zmq.Socket.shadow(self.underlying)
         self._init_io_state()
@@ -238,20 +238,6 @@ class _AsyncSocket(_zmq.Socket):
                 # future already resolved, do nothing
                 return
 
-            # pop the entry from _recv_futures
-            for f_idx, (f, kind, kwargs, _) in enumerate(self._recv_futures):
-                if f == future:
-                    self._recv_futures.pop(f_idx)
-                    f._pyzmq_popped = True
-                    break
-
-            # pop the entry from _send_futures
-            for f_idx, (f, kind, kwargs, _) in enumerate(self._send_futures):
-                if f == future:
-                    self._send_futures.pop(f_idx)
-                    f._pyzmq_popped = True
-                    break
-
             # raise EAGAIN
             future.set_exception(_zmq.Again())
         self._call_later(timeout, future_timeout)
@@ -277,8 +263,11 @@ class _AsyncSocket(_zmq.Socket):
             return
         for f_idx, (f, kind, kwargs, _) in enumerate(event_list):
             if f is future:
-                event_list.pop(f_idx)
-                return
+                break
+        else:
+            return
+        future._pyzmq_popped = True
+        event_list.remove(event_list[f_idx])
 
     def _add_recv_event(self, kind, kwargs=None, future=None):
         """Add a recv event, returning the corresponding Future"""
@@ -356,7 +345,7 @@ class _AsyncSocket(_zmq.Socket):
             return
         f = None
         while self._recv_futures:
-            f, kind, kwargs, _ = self._recv_futures.pop(0)
+            f, kind, kwargs, _ = self._recv_futures.popleft()
             f._pyzmq_popped = True
             # skip any cancelled futures
             if f.done():
@@ -395,7 +384,7 @@ class _AsyncSocket(_zmq.Socket):
             return
         f = None
         while self._send_futures:
-            f, kind, kwargs, msg = self._send_futures.pop(0)
+            f, kind, kwargs, msg = self._send_futures.popleft()
             f._pyzmq_popped = True
             # skip any cancelled futures
             if f.done():
