@@ -27,7 +27,7 @@
 cdef extern from "pyversion_compat.h":
     pass
 
-from libc.errno cimport ENAMETOOLONG
+from libc.errno cimport ENAMETOOLONG, ENOTSOCK
 from libc.string cimport memcpy
 
 from cpython cimport PyBytes_FromStringAndSize
@@ -36,7 +36,36 @@ from cpython cimport Py_DECREF, Py_INCREF, PY_VERSION_HEX
 
 from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 
-from .libzmq cimport *
+from .libzmq cimport (
+    fd_t,
+    int64_t,
+
+    zmq_errno,
+
+    zmq_msg_t,
+    zmq_msg_init,
+    zmq_msg_init_size,
+    zmq_msg_close,
+    zmq_msg_data,
+    zmq_msg_size,
+    zmq_msg_send,
+    zmq_msg_recv,
+
+    zmq_socket,
+    zmq_socket_monitor,
+    zmq_connect,
+    zmq_disconnect,
+    zmq_bind,
+    zmq_unbind,
+    zmq_setsockopt,
+    zmq_getsockopt,
+    zmq_close,
+
+    ZMQ_EVENT_ALL,
+    ZMQ_IDENTITY,
+    ZMQ_LINGER,
+    ZMQ_TYPE,
+)
 from message cimport Frame, copy_zmq_msg_bytes
 
 from context cimport Context
@@ -71,7 +100,6 @@ except:
 
 import zmq
 from zmq.backend.cython import constants
-from .constants import *
 from .checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
