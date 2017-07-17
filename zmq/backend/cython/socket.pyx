@@ -32,7 +32,7 @@ from libc.string cimport memcpy
 
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
-from cpython cimport Py_DECREF, Py_INCREF
+from cpython cimport Py_DECREF, Py_INCREF, PY_VERSION_HEX
 
 from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 
@@ -84,6 +84,18 @@ IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
+
+cdef inline int nbytes(buf):
+    """get n bytes"""
+    if PY_VERSION_HEX >= 0x03030000:
+        return buf.nbytes
+
+    cdef int n = buf.itemsize
+    cdef int ndim = buf.ndim
+    cdef int dim = 0
+    for i in range(ndim):
+        n *= buf.shape[i]
+    return n
 
 cdef inline _check_closed(Socket s):
     """raise ENOTSUP if socket is closed
@@ -692,7 +704,7 @@ cdef class Socket:
                 if self.copy_threshold:
                     buf = memoryview(data)
                     # always copy messages smaller than copy_threshold
-                    if buf.nbytes < self.copy_threshold:
+                    if nbytes(buf) < self.copy_threshold:
                         _send_copy(self.handle, buf, flags)
                         return zmq._FINISHED_TRACKER
                 msg = Frame(data, track=track)
