@@ -27,16 +27,45 @@
 cdef extern from "pyversion_compat.h":
     pass
 
-from libc.errno cimport ENAMETOOLONG
+from libc.errno cimport ENAMETOOLONG, ENOTSOCK
 from libc.string cimport memcpy
 
 from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
-from cpython cimport Py_DECREF, Py_INCREF
+from cpython cimport Py_DECREF, Py_INCREF, PY_VERSION_HEX
 
 from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 
-from .libzmq cimport *
+from .libzmq cimport (
+    fd_t,
+    int64_t,
+
+    zmq_errno,
+
+    zmq_msg_t,
+    zmq_msg_init,
+    zmq_msg_init_size,
+    zmq_msg_close,
+    zmq_msg_data,
+    zmq_msg_size,
+    zmq_msg_send,
+    zmq_msg_recv,
+
+    zmq_socket,
+    zmq_socket_monitor,
+    zmq_connect,
+    zmq_disconnect,
+    zmq_bind,
+    zmq_unbind,
+    zmq_setsockopt,
+    zmq_getsockopt,
+    zmq_close,
+
+    ZMQ_EVENT_ALL,
+    ZMQ_IDENTITY,
+    ZMQ_LINGER,
+    ZMQ_TYPE,
+)
 from message cimport Frame, copy_zmq_msg_bytes
 
 from context cimport Context
@@ -71,7 +100,6 @@ except:
 
 import zmq
 from zmq.backend.cython import constants
-from .constants import *
 from .checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 from zmq.utils.strtypes import bytes,unicode,basestring
@@ -84,6 +112,18 @@ IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
+
+cdef inline int nbytes(buf):
+    """get n bytes"""
+    if PY_VERSION_HEX >= 0x03030000:
+        return buf.nbytes
+
+    cdef int n = buf.itemsize
+    cdef int ndim = buf.ndim
+    cdef int dim = 0
+    for i in range(ndim):
+        n *= buf.shape[i]
+    return n
 
 cdef inline _check_closed(Socket s):
     """raise ENOTSUP if socket is closed
@@ -261,11 +301,12 @@ cdef class Socket:
     --------
     .Context.socket : method for creating a socket bound to a Context.
     """
-    
-    # no-op for the signature
-    def __init__(self, context=None, socket_type=-1, shadow=0):
-        pass
-    
+
+    def __init__(self, context=None, socket_type=-1, shadow=0, copy_threshold=None):
+        if copy_threshold is None:
+            copy_threshold = zmq.COPY_THRESHOLD
+        self.copy_threshold = copy_threshold
+
     def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
         cdef Py_ssize_t c_handle
 
@@ -672,10 +713,10 @@ cdef class Socket:
         
         """
         _check_closed(self)
-        
+
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_string")
-        
+
         if copy:
             # msg.bytes never returns the input data object
             # it is always a copy, but always the same copy
@@ -688,6 +729,12 @@ cdef class Socket:
                     raise ValueError('Not a tracked message')
                 msg = data
             else:
+                if self.copy_threshold:
+                    buf = memoryview(data)
+                    # always copy messages smaller than copy_threshold
+                    if nbytes(buf) < self.copy_threshold:
+                        _send_copy(self.handle, buf, flags)
+                        return zmq._FINISHED_TRACKER
                 msg = Frame(data, track=track)
             return _send_frame(self.handle, msg, flags)
 

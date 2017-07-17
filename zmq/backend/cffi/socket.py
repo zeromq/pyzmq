@@ -62,6 +62,7 @@ class Socket(object):
     _closed = None
     _ref = None
     _shadow = False
+    copy_threshold = 0
 
     def __init__(self, context=None, socket_type=None, shadow=None):
         self.context = context

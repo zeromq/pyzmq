@@ -53,5 +53,5 @@ def get_library_dirs():
     parent = abspath(join(base, pardir))
     return [ join(parent, base) ]
 
-
-__all__ = ['get_includes'] + sugar.__all__ + backend.__all__
+COPY_THRESHOLD = 65536
+__all__ = ['get_includes', 'COPY_THRESHOLD'] + sugar.__all__ + backend.__all__
