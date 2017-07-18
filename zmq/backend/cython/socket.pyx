@@ -307,12 +307,11 @@ cdef class Socket:
             copy_threshold = zmq.COPY_THRESHOLD
         self.copy_threshold = copy_threshold
 
-    def __cinit__(self, Context context=None, int socket_type=-1, size_t shadow=0, *args, **kwargs):
-        cdef Py_ssize_t c_handle
-
         self.handle = NULL
         self.context = context
         if shadow:
+            if isinstance(shadow, Socket):
+                shadow = Socket.underlying
             self._shadow = True
             self.handle = <void *>shadow
         else:
@@ -321,13 +320,20 @@ cdef class Socket:
             if socket_type < 0:
                 raise TypeError("socket_type must be specified")
             self._shadow = False
-            self.handle = zmq_socket(context.handle, socket_type)
+            self.handle = zmq_socket(self.context.handle, socket_type)
         if self.handle == NULL:
             raise ZMQError()
         self._closed = False
         self._pid = getpid()
         if context:
-            context._add_socket(self.handle)
+            self.context._add_socket(self.handle)
+
+    def __cinit__(self, *args, **kwargs):
+        # basic init
+        self.handle = NULL
+        self._pid = 0
+        self._shadow = False
+        self.context = None
 
     def __dealloc__(self):
         """remove from context's list
