@@ -9,7 +9,7 @@ BDFL (Benevolent Dictator for Life).
 A portion of the commits made by the GitHub handle "pitrou", with
 commit author "Antoine Pitrou <antoine@python.org>", are copyright of
 Continuum Analytics.
-This document hereby grants the libzmq project team to relicense libzmq,
+This document hereby grants the pyzmq project team permission to relicense pyzmq,
 including all past, present and future contributions of the author listed above.
 
 Antoine Pitrou
