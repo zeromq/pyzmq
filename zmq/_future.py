@@ -49,7 +49,10 @@ class _AsyncPoller(_zmq.Poller):
         watcher.add_done_callback(lambda f: self._unwatch_raw_sockets(loop, *raw_sockets))
 
         for socket, mask in self.sockets:
-            if isinstance(socket, _AsyncSocket):
+            if isinstance(socket, _zmq.Socket):
+                if not isinstance(socket, self._socket_class):
+                    # it's a blocking zmq.Socket, wrap it in async
+                    socket = self._socket_class.from_socket(socket)
                 if mask & _zmq.POLLIN:
                     socket._add_recv_event('poll', future=watcher)
                 if mask & _zmq.POLLOUT:
@@ -111,14 +114,27 @@ class _AsyncSocket(_zmq.Socket):
     _poller_class = _AsyncPoller
     io_loop = None
 
-    def __init__(self, context, socket_type, io_loop=None):
-        super(_AsyncSocket, self).__init__(context, socket_type)
+    def __init__(self, context=None, socket_type=-1, io_loop=None, **kwargs):
+        if isinstance(context, _zmq.Socket):
+            context, from_socket = (None, context)
+        else:
+            from_socket = kwargs.pop('_from_socket', None)
+        if from_socket is not None:
+            super(_AsyncSocket, self).__init__(shadow=from_socket.underlying)
+            self._shadow_sock = from_socket
+        else:
+            super(_AsyncSocket, self).__init__(context, socket_type, **kwargs)
+            self._shadow_sock = _zmq.Socket.shadow(self.underlying)
         self.io_loop = io_loop or self._default_loop()
         self._recv_futures = deque()
         self._send_futures = deque()
         self._state = 0
-        self._shadow_sock = _zmq.Socket.shadow(self.underlying)
         self._init_io_state()
+
+    @classmethod
+    def from_socket(cls, socket, io_loop=None):
+        """Create an async socket from an existing Socket"""
+        return cls(_from_socket=socket, io_loop=io_loop)
 
     def close(self, linger=None):
         if not self.closed:

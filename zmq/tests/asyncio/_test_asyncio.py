@@ -202,19 +202,42 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             f = b.poll(timeout=0)
             yield from asyncio.sleep(0)
             self.assertEqual(f.result(), 0)
-        
+
             f = b.poll(timeout=1)
             assert not f.done()
             evt = yield from f
-            
+
             self.assertEqual(evt, 0)
-        
+
             f = b.poll(timeout=1000)
             assert not f.done()
             yield from a.send_multipart([b'hi', b'there'])
             evt = yield from f
             self.assertEqual(evt, zmq.POLLIN)
             recvd = yield from b.recv_multipart()
+            self.assertEqual(recvd, [b'hi', b'there'])
+        self.loop.run_until_complete(test())
+
+    def test_poll_base_socket(self):
+        @asyncio.coroutine
+        def test():
+            ctx = zmq.Context()
+            url = 'inproc://test'
+            a = ctx.socket(zmq.PUSH)
+            b = ctx.socket(zmq.PULL)
+            self.sockets.extend([a, b])
+            a.bind(url)
+            b.connect(url)
+
+            poller = zaio.Poller()
+            poller.register(b, zmq.POLLIN)
+
+            f = poller.poll(timeout=1000)
+            assert not f.done()
+            a.send_multipart([b'hi', b'there'])
+            evt = yield from f
+            self.assertEqual(evt, [(b, zmq.POLLIN)])
+            recvd = b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_until_complete(test())
     
@@ -287,6 +310,14 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(test())
+    
+    def test_shadow(self):
+        @asyncio.coroutine
+        def test():
+            ctx = zmq.Context()
+            s = ctx.socket(zmq.PULL)
+            async_s = zaio.Socket(s)
+            assert isinstance(async_s, self.socket_class)
 
 
 class TestAsyncioAuthentication(TestThreadAuthentication):

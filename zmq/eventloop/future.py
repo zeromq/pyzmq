@@ -54,6 +54,8 @@ class Poller(_AsyncTornado, _AsyncPoller):
 class Socket(_AsyncTornado, _AsyncSocket):
     _poller_class = Poller
 
+Poller._socket_class = Socket
+
 class Context(_zmq.Context):
     
     io_loop = None

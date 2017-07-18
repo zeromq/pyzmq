@@ -206,6 +206,32 @@ class TestFutureSocket(BaseZMQTestCase):
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_sync(test)
     
+    def test_poll_base_socket(self):
+        @gen.coroutine
+        def test():
+            ctx = zmq.Context()
+            url = 'inproc://test'
+            a = ctx.socket(zmq.PUSH)
+            b = ctx.socket(zmq.PULL)
+            self.sockets.extend([a, b])
+            a.bind(url)
+            b.connect(url)
+
+            poller = future.Poller()
+            poller.register(b, zmq.POLLIN)
+
+            f = poller.poll(timeout=1000)
+            assert not f.done()
+            a.send_multipart([b'hi', b'there'])
+            evt = yield f
+            self.assertEqual(evt, [(b, zmq.POLLIN)])
+            recvd = b.recv_multipart()
+            self.assertEqual(recvd, [b'hi', b'there'])
+            a.close()
+            b.close()
+            ctx.term()
+        self.loop.run_sync(test)
+
     def test_close_all_fds(self):
         s = self.socket(zmq.PUB)
         self.loop.close(all_fds=True)
