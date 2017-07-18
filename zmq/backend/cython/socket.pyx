@@ -309,11 +309,13 @@ cdef class Socket:
 
         self.handle = NULL
         self.context = context
+        cdef size_t c_shadow
         if shadow:
             if isinstance(shadow, Socket):
-                shadow = Socket.underlying
+                shadow = shadow.underlying
+            c_shadow = shadow
             self._shadow = True
-            self.handle = <void *>shadow
+            self.handle = <void *>c_shadow
         else:
             if context is None:
                 raise TypeError("context must be specified")
