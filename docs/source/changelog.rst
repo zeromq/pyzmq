@@ -12,6 +12,8 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 17.0.0
 ======
 
+- Add :meth:`zmq.Socket.send_serialized` and :meth:`zmq.Socket.recv_serialized`
+  for sending/receiving messages with custom serialization.
 - Removed bundled tornado IOLoop.
   Using tornado-integrated zmqstream, ioloop now requires tornado to be installed.
 - Allow pyzmq asyncio/tornado integration to run without installing :func:`zmq_poll`
