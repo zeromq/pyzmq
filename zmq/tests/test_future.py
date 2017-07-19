@@ -4,6 +4,7 @@
 
 from datetime import timedelta
 import os
+import json
 
 import pytest
 gen = pytest.importorskip('tornado.gen')
@@ -183,6 +184,62 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), obj)
             self.assertEqual(recvd, obj)
+        self.loop.run_sync(test)
+
+    def test_custom_serialize(self):
+        def serialize(msg):
+            frames = []
+            frames.extend(msg.get('identities', []))
+            content = json.dumps(msg['content']).encode('utf8')
+            frames.append(content)
+            return frames
+
+        def deserialize(frames):
+            identities = frames[:-1]
+            content = json.loads(frames[-1].decode('utf8'))
+            return {
+                'identities': identities,
+                'content': content,
+            }
+
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.DEALER, zmq.ROUTER)
+
+            msg = {
+                'content': {
+                    'a': 5,
+                    'b': 'bee',
+                }
+            }
+            yield a.send_serialized(msg, serialize)
+            recvd = yield b.recv_serialized(deserialize)
+            assert recvd['content'] == msg['content']
+            assert recvd['identities']
+            # bounce back, tests identities
+            yield b.send_serialized(recvd, serialize)
+            r2 = yield a.recv_serialized(deserialize)
+            assert r2['content'] == msg['content']
+            assert not r2['identities']
+        self.loop.run_sync(test)
+
+    def test_custom_serialize_error(self):
+        @gen.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.DEALER, zmq.ROUTER)
+
+            msg = {
+                'content': {
+                    'a': 5,
+                    'b': 'bee',
+                }
+            }
+            with pytest.raises(TypeError):
+                yield a.send_serialized(json, json.dumps)
+
+            yield a.send(b'not json')
+            with pytest.raises(TypeError):
+                recvd = yield b.recv_serialized(json.loads)
         self.loop.run_sync(test)
 
     def test_poll(self):

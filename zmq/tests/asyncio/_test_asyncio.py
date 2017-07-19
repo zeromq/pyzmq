@@ -2,6 +2,7 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import json
 import os
 import sys
 
@@ -162,6 +163,63 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), obj)
             self.assertEqual(recvd, obj)
+        self.loop.run_until_complete(test())
+
+
+    def test_custom_serialize(self):
+        def serialize(msg):
+            frames = []
+            frames.extend(msg.get('identities', []))
+            content = json.dumps(msg['content']).encode('utf8')
+            frames.append(content)
+            return frames
+
+        def deserialize(frames):
+            identities = frames[:-1]
+            content = json.loads(frames[-1].decode('utf8'))
+            return {
+                'identities': identities,
+                'content': content,
+            }
+
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.DEALER, zmq.ROUTER)
+
+            msg = {
+                'content': {
+                    'a': 5,
+                    'b': 'bee',
+                }
+            }
+            yield from a.send_serialized(msg, serialize)
+            recvd = yield from b.recv_serialized(deserialize)
+            assert recvd['content'] == msg['content']
+            assert recvd['identities']
+            # bounce back, tests identities
+            yield from b.send_serialized(recvd, serialize)
+            r2 = yield from a.recv_serialized(deserialize)
+            assert r2['content'] == msg['content']
+            assert not r2['identities']
+        self.loop.run_until_complete(test())
+
+    def test_custom_serialize_error(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.DEALER, zmq.ROUTER)
+
+            msg = {
+                'content': {
+                    'a': 5,
+                    'b': 'bee',
+                }
+            }
+            with pytest.raises(TypeError):
+                yield from a.send_serialized(json, json.dumps)
+
+            yield from a.send(b'not json')
+            with pytest.raises(TypeError):
+                recvd = yield from b.recv_serialized(json.loads)
         self.loop.run_until_complete(test())
 
     def test_recv_dontwait(self):
