@@ -59,6 +59,8 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         """
         self.io_loop.remove_reader(self._shadow_sock)
 
+Poller._socket_class = Socket
+
 class Context(_zmq.Context):
     """Context for creating asyncio-compatible Sockets"""
     _socket_class = Socket
