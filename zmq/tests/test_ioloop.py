@@ -60,8 +60,9 @@ class TestIOLoop(BaseZMQTestCase):
     def test_simple(self):
         """simple IOLoop creation test"""
         loop = ioloop.IOLoop()
-        dc = ioloop.PeriodicCallback(loop.stop, 200, loop)
-        pc = ioloop.PeriodicCallback(lambda : None, 10, loop)
+        loop.make_current()
+        dc = ioloop.PeriodicCallback(loop.stop, 200)
+        pc = ioloop.PeriodicCallback(lambda : None, 10)
         pc.start()
         dc.start()
         t = Delay(loop.stop,1)

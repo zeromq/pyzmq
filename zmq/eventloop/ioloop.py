@@ -19,7 +19,7 @@ import tornado
 from tornado import ioloop
 if not hasattr(ioloop.IOLoop, 'configurable_default'):
     raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
-from tornado.ioloop import PollIOLoop, PeriodicCallback
+from tornado.ioloop import PeriodicCallback
 from tornado.log import gen_log
 
 
@@ -86,9 +86,9 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        PollIOLoop.configure(cls)
+        ioloop.IOLoop.configure(cls)
         _deprecated()
-        loop = PollIOLoop.instance(*args, **kwargs)
+        loop = ioloop.IOLoop.instance(*args, **kwargs)
         return loop
     
     @classmethod
@@ -97,9 +97,9 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        PollIOLoop.configure(cls)
+        ioloop.IOLoop.configure(cls)
         _deprecated()
-        loop = PollIOLoop.current(*args, **kwargs)
+        loop = ioloop.IOLoop.current(*args, **kwargs)
         return loop
 
 
@@ -113,4 +113,4 @@ def install():
     pyzmq 17 no longer needs any special integration for tornado.
     """
     _deprecated()
-    PollIOLoop.configure(ZMQIOLoop)
+    ioloop.IOLoop.configure(ZMQIOLoop)
