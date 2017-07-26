@@ -36,6 +36,10 @@ before_install:
     fi
   - pip install -r test-requirements.txt
   - |
+    if [[ "$TORNADO" == "master" ]]; then
+      pip install https://github.com/tornadoweb/tornado/archive/master.zip
+    fi
+  - |
     if [[ "$NOTORNADO" == "1" ]]; then
       pip uninstall -yq tornado
     fi
@@ -51,6 +55,14 @@ matrix:
       env:
         - ZMQ=
         - NOTORNADO=1
+    - python: 3.6
+      env:
+        - ZMQ=
+        - TORNADO=master
+    - python: 2.7
+      env:
+        - ZMQ=
+        - TORNADO=master
     - python: 3.5
       env: ZMQ=libzmq
     - python: 3.4
