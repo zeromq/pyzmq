@@ -38,7 +38,9 @@ environment:
 matrix:
   fast_finish: true
 
+cache:
   - C:\Users\appveyor\AppData\Local\pip\Cache
+
 install:
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
@@ -61,8 +63,10 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
-  # about it being out of date.
-  - "%CMD_IN_ENV% pip install --disable-pip-version-check --user --upgrade pip setuptools wheel cython -r test-requirements.txt"
+  # about it being out of date. Install wheel package separate so that
+  # we also cache wheels
+  - pip install --upgrade pip wheel
+  - pip install --upgrade setuptools cython -r test-requirements.txt
 
 build_script:
   # Build the compiled extension
