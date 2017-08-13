@@ -23,7 +23,8 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
   - :class:`zmq.eventloop.ioloop.IOLoop`
   - :func:`zmq.asyncio.install`
   - :class:`zmq.asyncio.ZMQEventLoop`
-
+- Compatibility fixes with tornado 5.0.dev (may not be quite enough for 5.0 final,
+  which is not yet released as of pyzmq 17).
 
 16.0.2
 ======

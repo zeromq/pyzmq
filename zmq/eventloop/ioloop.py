@@ -19,7 +19,7 @@ import tornado
 from tornado import ioloop
 if not hasattr(ioloop.IOLoop, 'configurable_default'):
     raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
-from tornado.ioloop import PollIOLoop, PeriodicCallback
+from tornado.ioloop import PeriodicCallback
 from tornado.log import gen_log
 
 
@@ -63,7 +63,12 @@ def _deprecated():
 _deprecated.called = False
 
 
-class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
+# resolve 'true' default loop
+_IOLoop = ioloop.IOLoop
+while _IOLoop.configurable_default() is not _IOLoop:
+    _IOLoop = _IOLoop.configurable_default()
+
+class ZMQIOLoop(_IOLoop):
     """DEPRECATED: No longer needed as of pyzmq-17
     
     PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
@@ -72,10 +77,7 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
     def __init__(self, *args, **kwargs):
         _deprecated()
         return super(ZMQIOLoop, self).__init__(*args, **kwargs)
-    
-    def initialize(self, *args, **kwargs):
-        super(ZMQIOLoop, self).initialize(*args, **kwargs)
-    
+
     @classmethod
     def instance(cls, *args, **kwargs):
         """Returns a global `IOLoop` instance.
@@ -86,9 +88,9 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        PollIOLoop.configure(cls)
+        ioloop.IOLoop.configure(cls)
         _deprecated()
-        loop = PollIOLoop.instance(*args, **kwargs)
+        loop = ioloop.IOLoop.instance(*args, **kwargs)
         return loop
     
     @classmethod
@@ -97,9 +99,9 @@ class ZMQIOLoop(ioloop.IOLoop.configurable_default()):
         """
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
-        PollIOLoop.configure(cls)
+        ioloop.IOLoop.configure(cls)
         _deprecated()
-        loop = PollIOLoop.current(*args, **kwargs)
+        loop = ioloop.IOLoop.current(*args, **kwargs)
         return loop
 
 
@@ -113,4 +115,4 @@ def install():
     pyzmq 17 no longer needs any special integration for tornado.
     """
     _deprecated()
-    PollIOLoop.configure(ZMQIOLoop)
+    ioloop.IOLoop.configure(ZMQIOLoop)
