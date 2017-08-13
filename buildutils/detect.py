@@ -34,7 +34,7 @@ def test_compilation(cfile, compiler=None, **compiler_attrs):
     
     efile, ext = os.path.splitext(cfile)
 
-    cpreargs = lpreargs = None
+    cpreargs = lpreargs = []
     if sys.platform == 'darwin':
         # use appropriate arch for compiler
         if platform.architecture()[0]=='32bit':
@@ -53,6 +53,8 @@ def test_compilation(cfile, compiler=None, **compiler_attrs):
         else: 
             lpreargs = ['-m64']
     extra = compiler_attrs.get('extra_compile_args', None)
+    extra_link = compiler_attrs.get('extra_link_args', [])
+    lpreargs.extend(extra_link)
 
     objs = cc.compile([cfile], extra_preargs=cpreargs, extra_postargs=extra)
     cc.link_executable(objs, efile, extra_preargs=lpreargs)
@@ -69,7 +71,7 @@ def compile_and_forget(basedir, src, compiler=None, **compiler_attrs):
     shutil.copy(src, cfile)
     try:
         cc = get_compiler(compiler, **compiler_attrs)
-        efile = test_compilation(cfile, compiler=cc)
+        efile = test_compilation(cfile, compiler=cc, **compiler_attrs)
     finally:
         shutil.rmtree(basedir)
     
@@ -111,7 +113,7 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
             compiler_attrs['libraries'].append('rt')
     
     cc = get_compiler(compiler=compiler, **compiler_attrs)
-    efile = test_compilation(cfile, compiler=cc)
+    efile = test_compilation(cfile, compiler=cc, **compiler_attrs)
     patch_lib_paths(efile, cc.library_dirs)
     
     rc, so, se = get_output_error([efile])
