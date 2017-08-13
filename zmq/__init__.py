@@ -6,15 +6,20 @@
 # load bundled libzmq, if there is one:
 def _load_libzmq():
     """load bundled libzmq if there is one"""
-    import sys, ctypes, platform
+    import sys, ctypes, platform, os
     dlopen = hasattr(sys, 'getdlopenflags') # unix-only
+    # RTLD flags are added to os in Python 3
+    # get values from os because ctypes are WRONG on pypy
     if dlopen:
         dlflags = sys.getdlopenflags()
-        flags = ctypes.RTLD_GLOBAL
-        # pypy needs RTLD_LAZY for some reason
-        # ctypes doesn't expose it, but it's 1
+        # set RTLD_GLOBAL, unset RTLD_LOCAL
+        flags = ctypes.RTLD_GLOBAL | dlflags
+        # ctypes.RTLD_LOCAL is 0 on pypy, which is *wrong*
+        flags &= ~ getattr(os, 'RTLD_LOCAL', 4)
+        # # pypy needs RTLD_LAZY for some reason
         if platform.python_implementation().lower() == 'pypy':
-            flags |= getattr(ctypes, 'RTLD_LAZY', 1)
+            flags |= getattr(os, 'RTLD_LAZY', 1)
+            flags &= ~ getattr(os, 'RTLD_NOW', 2)
         sys.setdlopenflags(flags)
     try:
         from . import libzmq
