@@ -10,7 +10,12 @@ def _load_libzmq():
     dlopen = hasattr(sys, 'getdlopenflags') # unix-only
     if dlopen:
         dlflags = sys.getdlopenflags()
-        sys.setdlopenflags(ctypes.RTLD_GLOBAL | dlflags)
+        flags = ctypes.RTLD_GLOBAL
+        # pypy needs RTLD_LAZY for some reason
+        # ctypes doesn't expose it, but it's 1
+        if platform.python_implementation().lower() == 'pypy':
+            flags |= getattr(ctypes, 'RTLD_LAZY', 1)
+        sys.setdlopenflags(flags)
     try:
         from . import libzmq
     except ImportError:
@@ -18,10 +23,6 @@ def _load_libzmq():
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
-        if platform.python_implementation().lower() == 'pypy':
-            # pypy needs explicit CDLL load for some reason,
-            # otherwise symbols won't be globally available
-            ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
         if dlopen:
             sys.setdlopenflags(dlflags)
