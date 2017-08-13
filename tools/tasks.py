@@ -162,7 +162,7 @@ def sdist(ctx, vs, upload=False):
     clone_repo(ctx)
     tag(ctx, vs, push=upload)
     py = make_env('3.5', 'cython', 'twine')
-    tarball = build_sdist(ctx, py, upload=upload)
+    tarball = build_sdist(py, upload=upload)
     return untar(tarball)
 
 def install(py, *packages):
