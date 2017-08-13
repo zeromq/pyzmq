@@ -26,12 +26,13 @@ from contextlib import contextmanager
 from invoke import task, run as invoke_run
 import requests
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PYZMQ_ROOT)
 from buildutils.bundle import vs as libzmq_vs
 
 pjoin = os.path.join
 
-repo = "git@github.com:zeromq/pyzmq"
+repo = PYZMQ_ROOT
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
