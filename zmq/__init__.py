@@ -16,8 +16,8 @@ def _load_libzmq():
         flags = ctypes.RTLD_GLOBAL | dlflags
         # ctypes.RTLD_LOCAL is 0 on pypy, which is *wrong*
         flags &= ~ getattr(os, 'RTLD_LOCAL', 4)
-        # # pypy needs RTLD_LAZY for some reason
-        if platform.python_implementation().lower() == 'pypy':
+        # pypy on darwin needs RTLD_LAZY for some reason
+        if sys.platform == 'darwin' and platform.python_implementation().lower() == 'pypy':
             flags |= getattr(os, 'RTLD_LAZY', 1)
             flags &= ~ getattr(os, 'RTLD_NOW', 2)
         sys.setdlopenflags(flags)
