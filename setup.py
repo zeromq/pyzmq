@@ -183,6 +183,16 @@ def check_pkgconfig():
 
     return zmq_config
 
+def _add_rpath(settings, path):
+    """Add rpath to settings
+    
+    Implemented here because distutils runtime_library_dirs doesn't do anything on darwin
+    """
+    if sys.platform == 'darwin':
+        settings['extra_link_args'].extend(['-Wl,-rpath','-Wl,%s' % path])
+    else:
+        settings['runtime_library_dirs'].append(path)
+
 def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
     """load appropriate library/include settings from ZMQ prefix"""
     settings = {}
@@ -242,17 +252,13 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
         if bundle_libzmq_dylib:
             # bdist should link against bundled libzmq
             settings['library_dirs'].append('zmq')
-            if sys.platform == 'darwin':
-                pass
-                # unused rpath args for OS X:
-                # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/..']
-            else:
-                settings['runtime_library_dirs'] += ['$ORIGIN/..']
-        elif sys.platform != 'darwin':
-            info("%r" % settings)
-            settings['runtime_library_dirs'] += [
-                os.path.abspath(x) for x in settings['library_dirs']
-            ]
+            _add_rpath(settings, '$ORIGIN/..')
+            if sys.platform == 'darwin' and pypy:
+                settings['extra_link_args'].extend(['-undefined', 'dynamic_lookup'])
+        else:
+            for path in settings['library_dirs']:
+                _add_rpath(settings, os.path.abspath(path))
+    info(settings)
     
     return settings
 
@@ -663,12 +669,7 @@ class Configure(build_ext):
         if self.bundle_libzmq_dylib and not sys.platform.startswith('win'):
             # rpath slightly differently here, because libzmq not in .. but ../zmq:
             settings['library_dirs'] = ['zmq']
-            if sys.platform == 'darwin':
-                pass
-                # unused rpath args for OS X:
-                # settings['extra_link_args'] = ['-Wl,-rpath','-Wl,$ORIGIN/../zmq']
-            else:
-                settings['runtime_library_dirs'] = [ os.path.abspath(pjoin('.', 'zmq')) ]
+            _add_rpath(settings, os.path.abspath(pjoin('.', 'zmq')))
         line()
         info("Configure: Autodetecting ZMQ settings...")
         info("    Custom ZMQ dir:       %s" % prefix)
