@@ -30,9 +30,10 @@ def _load_libzmq():
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
-        if PYPY and sys.pypy_version_info < (5,):
-            # some versions of pypy (< 5?) needs explicit CDLL load for some reason,
+        if PYPY:
+            # some versions of pypy (5.3 < ? < 5.8) needs explicit CDLL load for some reason,
             # otherwise symbols won't be globally available
+            # do this unconditionally because it should be harmless (?)
             ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
         if dlopen:
