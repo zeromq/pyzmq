@@ -5,6 +5,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 import os
+import contextlib
+import time
 from threading import Thread
 
 import zmq
@@ -63,6 +65,15 @@ class TestSecurity(BaseZMQTestCase):
             socket.send_multipart(reply)
         finally:
             socket.close()
+
+    @contextlib.contextmanager
+    def zap(self):
+        self.start_zap()
+        time.sleep(0.5) # allow time for the Thread to start
+        try:
+            yield
+        finally:
+            self.stop_zap()
 
     def start_zap(self):
         self.zap_thread = Thread(target=self.zap_handler)
@@ -124,13 +135,11 @@ class TestSecurity(BaseZMQTestCase):
         assert not client.plain_server
         assert server.plain_server
 
-        self.start_zap()
-
-        iface = 'tcp://127.0.0.1'
-        port = server.bind_to_random_port(iface)
-        client.connect("%s:%i" % (iface, port))
-        self.bounce(server, client)
-        self.stop_zap()
+        with self.zap():
+            iface = 'tcp://127.0.0.1'
+            port = server.bind_to_random_port(iface)
+            client.connect("%s:%i" % (iface, port))
+            self.bounce(server, client)
 
     def skip_plain_inauth(self):
         """test PLAIN failed authentication"""
@@ -144,15 +153,13 @@ class TestSecurity(BaseZMQTestCase):
         self.assertEqual(server.mechanism, zmq.PLAIN)
         self.assertEqual(client.mechanism, zmq.PLAIN)
 
-        self.start_zap()
-
-        iface = 'tcp://127.0.0.1'
-        port = server.bind_to_random_port(iface)
-        client.connect("%s:%i" % (iface, port))
-        client.send(b'ping')
-        server.rcvtimeo = 250
-        self.assertRaisesErrno(zmq.EAGAIN, server.recv)
-        self.stop_zap()
+        with self.zap():
+            iface = 'tcp://127.0.0.1'
+            port = server.bind_to_random_port(iface)
+            client.connect("%s:%i" % (iface, port))
+            client.send(b'ping')
+            server.rcvtimeo = 250
+            self.assertRaisesErrno(zmq.EAGAIN, server.recv)
 
     def test_keypair(self):
         """test curve_keypair"""
@@ -202,11 +209,8 @@ class TestSecurity(BaseZMQTestCase):
         self.assertEqual(server.get(zmq.CURVE_SERVER), True)
         self.assertEqual(client.get(zmq.CURVE_SERVER), False)
 
-        self.start_zap()
-        try:
+        with self.zap():
             iface = 'tcp://127.0.0.1'
             port = server.bind_to_random_port(iface)
             client.connect("%s:%i" % (iface, port))
             self.bounce(server, client)
-        finally:
-            self.stop_zap()
