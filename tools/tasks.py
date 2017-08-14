@@ -34,7 +34,7 @@ from buildutils.bundle import vs as libzmq_vs
 
 pjoin = os.path.join
 
-repo = PYZMQ_ROOT
+repo = 'git@github.com:zeromq/pyzmq'
 
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
@@ -90,7 +90,7 @@ def clone_repo(ctx, reset=False):
 @task
 def patch_version(ctx, vs):
     """Patch zmq/sugar/version.py for the current release"""
-    major, minor, patch = vs_to_tup(vs)
+    major, minor, patch, extra = vs_to_tup(vs)
     version_py = pjoin(repo_root, 'zmq', 'sugar', 'version.py')
     print("patching %s with %s" % (version_py, vs))
     # read version.py, minus VERSION_ constants
@@ -111,7 +111,7 @@ def patch_version(ctx, vs):
         f.write('VERSION_MAJOR = %s\n' % major)
         f.write('VERSION_MINOR = %s\n' % minor)
         f.write('VERSION_PATCH = %s\n' % patch)
-        f.write('VERSION_EXTRA = ""\n')
+        f.write('VERSION_EXTRA = "%s"\n' % extra)
         for line in post_lines:
             f.write(line)
 
@@ -176,7 +176,7 @@ def install(py, *packages):
 
 def vs_to_tup(vs):
     """version string to tuple"""
-    return re.findall(r'\d+', vs)
+    return re.match(r'(\d+)\.(\d+)\.(\d+)\.?([^\.]*)$', vs).groups()
 
 def tup_to_vs(tup):
     """tuple to version string"""
