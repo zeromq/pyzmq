@@ -29,6 +29,8 @@ class TestFutureSocket(BaseZMQTestCase):
         super(TestFutureSocket, self).tearDown()
         if self.loop:
             self.loop.close(all_fds=True)
+        IOLoop.clear_current()
+        IOLoop.clear_instance()
 
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)

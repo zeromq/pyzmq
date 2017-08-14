@@ -36,7 +36,25 @@ Basic Classes
 
       boolean - whether the socket has been closed.
       If True, you can no longer use this Socket.
-  
+
+  .. attribute:: copy_threshold
+
+      integer - size (in bytes) below which messages
+      should always be copied.
+      Zero-copy support has nontrivial overhead
+      due to the need to coordinate garbage collection
+      with the libzmq IO thread,
+      so sending small messages (typically < 10s of kB)
+      with ``copy=False`` is often more expensive
+      than with ``copy=True``.
+      The initial default value is 65536 (64kB),
+      a reasonable default based on testing.
+
+      Defaults to :const:`zmq.COPY_THRESHOLD` on socket construction.
+      Setting :const:`zmq.COPY_THRESHOLD` will define the default
+      value for any subsequently created sockets.
+
+      .. versionadded:: 17
 
 
 :class:`Frame`

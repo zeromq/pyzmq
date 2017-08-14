@@ -14,16 +14,21 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 
 - Add :meth:`zmq.Socket.send_serialized` and :meth:`zmq.Socket.recv_serialized`
   for sending/receiving messages with custom serialization.
+- Add :attr:`zmq.Socket.copy_threshold` and :const:`zmq.COPY_THRESHOLD`.
+  Messages smaller than this are always copied, regardless of ``copy=False``,
+  to avoid overhead of zero-copy bookkeeping on small messages.
 - Removed bundled tornado IOLoop.
   Using tornado-integrated zmqstream, ioloop now requires tornado to be installed.
 - Allow pyzmq asyncio/tornado integration to run without installing :func:`zmq_poll`
   implementation. The following methods and classes are deprecated and no longer required:
-  
+
   - :func:`zmq.eventloop.ioloop.install`
   - :class:`zmq.eventloop.ioloop.IOLoop`
   - :func:`zmq.asyncio.install`
   - :class:`zmq.asyncio.ZMQEventLoop`
-
+- Set RPATH correctly when building on macOS.
+- Compatibility fixes with tornado 5.0.dev (may not be quite enough for 5.0 final,
+  which is not yet released as of pyzmq 17).
 
 16.0.2
 ======

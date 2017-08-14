@@ -2,6 +2,8 @@
 """
 invoke script for releasing pyzmq
 
+Must be run on macOS with Framework Python from Python.org
+
 usage:
 
     invoke release 14.3.1
@@ -26,12 +28,17 @@ from contextlib import contextmanager
 from invoke import task, run as invoke_run
 import requests
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PYZMQ_ROOT)
 from buildutils.bundle import vs as libzmq_vs
 
 pjoin = os.path.join
 
-repo = "git@github.com:zeromq/pyzmq"
+repo = 'git@github.com:zeromq/pyzmq'
+
+# Workaround for PyPy3 5.8
+if 'LDFLAGS' not in os.environ:
+    os.environ['LDFLAGS'] = '-undefined dynamic_lookup'
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
@@ -40,8 +47,7 @@ py_exes = {
     '3.5' : _framework_py('3.5'),
     '3.6' : _framework_py('3.6'),
     'pypy': "/usr/local/bin/pypy",
-    # FIXME: pypy3 can have releases when they support Python >= 3.3
-    # 'pypy3': "/usr/local/bin/pypy3",
+    'pypy3': "/usr/local/bin/pypy3",
 }
 egg_pys = {} # no more eggs!
 
@@ -84,7 +90,7 @@ def clone_repo(ctx, reset=False):
 @task
 def patch_version(ctx, vs):
     """Patch zmq/sugar/version.py for the current release"""
-    major, minor, patch = vs_to_tup(vs)
+    major, minor, patch, extra = vs_to_tup(vs)
     version_py = pjoin(repo_root, 'zmq', 'sugar', 'version.py')
     print("patching %s with %s" % (version_py, vs))
     # read version.py, minus VERSION_ constants
@@ -105,7 +111,7 @@ def patch_version(ctx, vs):
         f.write('VERSION_MAJOR = %s\n' % major)
         f.write('VERSION_MINOR = %s\n' % minor)
         f.write('VERSION_PATCH = %s\n' % patch)
-        f.write('VERSION_EXTRA = ""\n')
+        f.write('VERSION_EXTRA = "%s"\n' % extra)
         for line in post_lines:
             f.write(line)
 
@@ -162,7 +168,7 @@ def sdist(ctx, vs, upload=False):
     clone_repo(ctx)
     tag(ctx, vs, push=upload)
     py = make_env('3.5', 'cython', 'twine')
-    tarball = build_sdist(ctx, py, upload=upload)
+    tarball = build_sdist(py, upload=upload)
     return untar(tarball)
 
 def install(py, *packages):
@@ -170,7 +176,7 @@ def install(py, *packages):
 
 def vs_to_tup(vs):
     """version string to tuple"""
-    return re.findall(r'\d+', vs)
+    return re.match(r'(\d+)\.(\d+)\.(\d+)\.?([^\.]*)$', vs).groups()
 
 def tup_to_vs(tup):
     """tuple to version string"""
