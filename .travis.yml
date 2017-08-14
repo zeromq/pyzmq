@@ -6,7 +6,8 @@ cache:
 python:
   - 2.7
   - 3.6
-  - pypy
+  - pypy2.7-5.8.0
+  - pypy3.5-5.8.0
 env:
     - ZMQ=
     - ZMQ=bundled
@@ -61,9 +62,6 @@ matrix:
       env: ZMQ=zeromq3-x
     - python: 3.3
       env: ZMQ=
-    # FIXME: pypy3 is still on unsupported Python 3.2
-    # - python: pypy3
-    #   env: ZMQ=
     - python: nightly
       env: ZMQ=
     - python: nightly
