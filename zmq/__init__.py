@@ -6,11 +6,23 @@
 # load bundled libzmq, if there is one:
 def _load_libzmq():
     """load bundled libzmq if there is one"""
-    import sys, ctypes, platform
+    import sys, ctypes, platform, os
     dlopen = hasattr(sys, 'getdlopenflags') # unix-only
+    # RTLD flags are added to os in Python 3
+    # get values from os because ctypes values are WRONG on pypy
+    PYPY = platform.python_implementation().lower() == 'pypy'
+    
     if dlopen:
         dlflags = sys.getdlopenflags()
-        sys.setdlopenflags(ctypes.RTLD_GLOBAL | dlflags)
+        # set RTLD_GLOBAL, unset RTLD_LOCAL
+        flags = ctypes.RTLD_GLOBAL | dlflags
+        # ctypes.RTLD_LOCAL is 0 on pypy, which is *wrong*
+        flags &= ~ getattr(os, 'RTLD_LOCAL', 4)
+        # pypy on darwin needs RTLD_LAZY for some reason
+        if PYPY and sys.platform == 'darwin':
+            flags |= getattr(os, 'RTLD_LAZY', 1)
+            flags &= ~ getattr(os, 'RTLD_NOW', 2)
+        sys.setdlopenflags(flags)
     try:
         from . import libzmq
     except ImportError:
@@ -18,9 +30,10 @@ def _load_libzmq():
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
-        if platform.python_implementation().lower() == 'pypy':
-            # pypy needs explicit CDLL load for some reason,
+        if PYPY:
+            # some versions of pypy (5.3 < ? < 5.8) needs explicit CDLL load for some reason,
             # otherwise symbols won't be globally available
+            # do this unconditionally because it should be harmless (?)
             ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
         if dlopen:
