@@ -46,6 +46,8 @@ install:
 
 matrix:
   include:
+    - python: pypy
+      env: ZMQ=bundled
     - python: 3.6-dev
       env: ZMQ=bundled
     - python: 3.6

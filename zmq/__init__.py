@@ -10,6 +10,8 @@ def _load_libzmq():
     dlopen = hasattr(sys, 'getdlopenflags') # unix-only
     # RTLD flags are added to os in Python 3
     # get values from os because ctypes values are WRONG on pypy
+    PYPY = platform.python_implementation().lower() == 'pypy'
+    
     if dlopen:
         dlflags = sys.getdlopenflags()
         # set RTLD_GLOBAL, unset RTLD_LOCAL
@@ -17,7 +19,7 @@ def _load_libzmq():
         # ctypes.RTLD_LOCAL is 0 on pypy, which is *wrong*
         flags &= ~ getattr(os, 'RTLD_LOCAL', 4)
         # pypy on darwin needs RTLD_LAZY for some reason
-        if sys.platform == 'darwin' and platform.python_implementation().lower() == 'pypy':
+        if PYPY and sys.platform == 'darwin':
             flags |= getattr(os, 'RTLD_LAZY', 1)
             flags &= ~ getattr(os, 'RTLD_NOW', 2)
         sys.setdlopenflags(flags)
@@ -28,11 +30,9 @@ def _load_libzmq():
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
-        # some versions of pyzmq (< 5?) require loading via CDLL
-        if platform.python_implementation().lower() == 'pypy':
+        if PYPY and sys.pypy_version_info < (5,):
             # some versions of pypy (< 5?) needs explicit CDLL load for some reason,
             # otherwise symbols won't be globally available
-            # this is *probably* harmless where it's not needed
             ctypes.CDLL(libzmq.__file__, ctypes.RTLD_GLOBAL)
     finally:
         if dlopen:
