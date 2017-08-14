@@ -336,7 +336,7 @@ class Socket(SocketBase, AttributeSetter):
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False):
         """send a sequence of buffers as a multipart message
-        
+
         The zmq.SNDMORE flag is added to all msg parts before the last.
 
         Parameters
@@ -348,6 +348,8 @@ class Socket(SocketBase, AttributeSetter):
             SNDMORE is handled automatically for frames before the last.
         copy : bool, optional
             Should the frame(s) be sent in a copying or non-copying manner.
+            If copy=False, frames smaller than self.copy_threshold bytes
+            will be copied anyway.
         track : bool, optional
             Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
