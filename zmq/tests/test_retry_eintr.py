@@ -28,7 +28,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
 
     def alarm(self, t=None):
         """start a timer to fire only once
-
+        
         like signal.alarm, but with better resolution than integer seconds.
         """
         if not hasattr(signal, 'setitimer'):
@@ -39,12 +39,12 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.orig_handler = signal.signal(signal.SIGALRM, self.stop_timer)
         # signal_period ignored, since only one timer event is allowed to fire
         signal.setitimer(signal.ITIMER_REAL, t, 1000)
-
+    
     def stop_timer(self, *args):
         self.timer_fired = True
         signal.setitimer(signal.ITIMER_REAL, 0, 0)
         signal.signal(signal.SIGALRM, self.orig_handler)
-
+    
     @mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
     def test_retry_recv(self):
         pull = self.socket(zmq.PULL)
@@ -60,7 +60,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.alarm()
         self.assertRaises(zmq.Again, push.send, b('buf'))
         assert self.timer_fired
-
+    
     def test_retry_poll(self):
         x, y = self.create_bound_pair()
         poller = zmq.Poller()
@@ -76,7 +76,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         assert x in evts
         assert self.timer_fired
         x.recv()
-
+    
     def test_retry_term(self):
         push = self.socket(zmq.PUSH)
         push.linger = self.timeout_ms
@@ -87,9 +87,9 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.context.destroy()
         assert self.timer_fired
         assert self.context.closed
-
+    
     def test_retry_getsockopt(self):
         raise SkipTest("TODO: find a way to interrupt getsockopt")
-
+    
     def test_retry_setsockopt(self):
         raise SkipTest("TODO: find a way to interrupt setsockopt")

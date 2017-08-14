@@ -19,12 +19,12 @@ from zmq.tests import BaseZMQTestCase
 
 class TestFutureSocket(BaseZMQTestCase):
     Context = future.Context
-
+    
     def setUp(self):
         self.loop = IOLoop()
         self.loop.make_current()
         super(TestFutureSocket, self).setUp()
-
+    
     def tearDown(self):
         super(TestFutureSocket, self).tearDown()
         if self.loop:
@@ -105,7 +105,7 @@ class TestFutureSocket(BaseZMQTestCase):
             with pytest.raises(zmq.Again):
                 yield s.send(b'not going anywhere')
         self.loop.run_sync(test)
-
+    
     @pytest.mark.now
     def test_send_noblock(self):
         @gen.coroutine

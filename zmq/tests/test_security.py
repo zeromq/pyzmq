@@ -20,7 +20,7 @@ USER = b"admin"
 PASS = b"password"
 
 class TestSecurity(BaseZMQTestCase):
-
+    
     def setUp(self):
         if zmq.zmq_version_info() < (4,0):
             raise SkipTest("security is new in libzmq 4.0")
@@ -29,8 +29,7 @@ class TestSecurity(BaseZMQTestCase):
         except zmq.ZMQError:
             raise SkipTest("security requires libzmq to be built with CURVE support")
         super(TestSecurity, self).setUp()
-
-
+      
     def zap_handler(self):
         socket = self.context.socket(zmq.REP)
         socket.bind("inproc://zeromq.zap.01")
@@ -78,7 +77,7 @@ class TestSecurity(BaseZMQTestCase):
     def start_zap(self):
         self.zap_thread = Thread(target=self.zap_handler)
         self.zap_thread.start()
-
+    
     def stop_zap(self):
         self.zap_thread.join()
 
@@ -101,7 +100,7 @@ class TestSecurity(BaseZMQTestCase):
         server.send_multipart(recvd)
         msg2 = self.recv_multipart(client)
         self.assertEqual(msg2, msg)
-
+    
     def test_null(self):
         """test NULL (default) security"""
         server = self.socket(zmq.DEALER)
@@ -131,7 +130,7 @@ class TestSecurity(BaseZMQTestCase):
         server.plain_server = True
         self.assertEqual(server.mechanism, zmq.PLAIN)
         self.assertEqual(client.mechanism, zmq.PLAIN)
-
+        
         assert not client.plain_server
         assert server.plain_server
 
@@ -167,20 +166,19 @@ class TestSecurity(BaseZMQTestCase):
             public, secret = zmq.curve_keypair()
         except zmq.ZMQError:
             raise SkipTest("CURVE unsupported")
-
+        
         self.assertEqual(type(secret), bytes)
         self.assertEqual(type(public), bytes)
         self.assertEqual(len(secret), 40)
         self.assertEqual(len(public), 40)
-
+        
         # verify that it is indeed Z85
         bsecret, bpublic = [ z85.decode(key) for key in (public, secret) ]
         self.assertEqual(type(bsecret), bytes)
         self.assertEqual(type(bpublic), bytes)
         self.assertEqual(len(bsecret), 32)
         self.assertEqual(len(bpublic), 32)
-
-
+         
     def test_curve(self):
         """test CURVE encryption"""
         server = self.socket(zmq.DEALER)
@@ -193,19 +191,19 @@ class TestSecurity(BaseZMQTestCase):
             # will raise EINVAL if no CURVE support
             if e.errno == zmq.EINVAL:
                 raise SkipTest("CURVE unsupported")
-
+        
         server_public, server_secret = zmq.curve_keypair()
         client_public, client_secret = zmq.curve_keypair()
-
+        
         server.curve_secretkey = server_secret
         server.curve_publickey = server_public
         client.curve_serverkey = server_public
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
-
+        
         self.assertEqual(server.mechanism, zmq.CURVE)
         self.assertEqual(client.mechanism, zmq.CURVE)
-
+        
         self.assertEqual(server.get(zmq.CURVE_SERVER), True)
         self.assertEqual(client.get(zmq.CURVE_SERVER), False)
 
