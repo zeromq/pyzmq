@@ -29,23 +29,23 @@ from zmq.tests.test_auth import TestThreadAuthentication
 class TestAsyncIOSocket(BaseZMQTestCase):
     if asyncio is not None:
         Context = zaio.Context
-    
+
     def setUp(self):
         if asyncio is None:
             raise SkipTest()
         self.loop = zaio.ZMQEventLoop()
         asyncio.set_event_loop(self.loop)
         super(TestAsyncIOSocket, self).setUp()
-    
+
     def tearDown(self):
         self.loop.close()
         super().tearDown()
-    
+
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, zaio.Socket)
         s.close()
-    
+
     def test_recv_multipart(self):
         @asyncio.coroutine
         def test():
@@ -298,7 +298,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             recvd = b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_until_complete(test())
-    
+
     def test_aiohttp(self):
         try:
             import aiohttp
@@ -310,7 +310,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         def echo(request):
             print(request.path)
             return web.Response(body=str(request).encode('utf8'))
-        
+
         @asyncio.coroutine
         def server(loop):
             app = web.Application(loop=loop)
@@ -324,7 +324,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         @asyncio.coroutine
         def client():
             push, pull = self.create_bound_pair(zmq.PUSH, zmq.PULL)
-            
+
             res = yield from aiohttp.request('GET', 'http://127.0.0.1:8080/')
             text = yield from res.text()
             yield from push.send(text.encode('utf8'))
@@ -336,6 +336,9 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         print("servered")
         loop.run_until_complete(client())
 
+    @pytest.mark.skipif(
+        sys.platform.startswith('win'),
+        reason='Windows does not support polling on files')
     def test_poll_raw(self):
         @asyncio.coroutine
         def test():
@@ -368,7 +371,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(test())
-    
+
     def test_shadow(self):
         @asyncio.coroutine
         def test():
@@ -434,4 +437,3 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
                 raise TimeoutError("Should have received a message")
             return (yield from recv(**kwargs))
         return self.loop.run_until_complete(coro())
-

@@ -5,6 +5,7 @@
 from datetime import timedelta
 import os
 import json
+import sys
 
 import pytest
 gen = pytest.importorskip('tornado.gen')
@@ -18,17 +19,17 @@ from zmq.tests import BaseZMQTestCase
 
 class TestFutureSocket(BaseZMQTestCase):
     Context = future.Context
-    
+
     def setUp(self):
         self.loop = IOLoop()
         self.loop.make_current()
         super(TestFutureSocket, self).setUp()
-    
+
     def tearDown(self):
         super(TestFutureSocket, self).tearDown()
         if self.loop:
             self.loop.close(all_fds=True)
-    
+
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, future.Socket)
@@ -102,7 +103,7 @@ class TestFutureSocket(BaseZMQTestCase):
             with pytest.raises(zmq.Again):
                 yield s.send(b'not going anywhere')
         self.loop.run_sync(test)
-    
+
     @pytest.mark.now
     def test_send_noblock(self):
         @gen.coroutine
@@ -262,7 +263,10 @@ class TestFutureSocket(BaseZMQTestCase):
             recvd = yield b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_sync(test)
-    
+
+    @pytest.mark.skipif(
+        sys.platform.startswith('win'),
+        reason='Windows unsupported socket type')
     def test_poll_base_socket(self):
         @gen.coroutine
         def test():
@@ -295,6 +299,9 @@ class TestFutureSocket(BaseZMQTestCase):
         self.loop = None # avoid second close later
         assert s.closed
 
+    @pytest.mark.skipif(
+        sys.platform.startswith('win'),
+        reason='Windows does not support polling on files')
     def test_poll_raw(self):
         @gen.coroutine
         def test():

@@ -18,21 +18,21 @@ if PYPY or zmq.zmq_version_info() >= (4,1):
 
 
 class TestMonitoredQueue(BaseZMQTestCase):
-    
+
     sockets = []
-    
+
     def build_device(self, mon_sub=b"", in_prefix=b'in', out_prefix=b'out'):
         self.device = devices.ThreadMonitoredQueue(zmq.PAIR, zmq.PAIR, zmq.PUB,
                                             in_prefix, out_prefix)
         alice = self.context.socket(zmq.PAIR)
         bob = self.context.socket(zmq.PAIR)
         mon = self.context.socket(zmq.SUB)
-        
+
         aport = alice.bind_to_random_port('tcp://127.0.0.1')
         bport = bob.bind_to_random_port('tcp://127.0.0.1')
         mport = mon.bind_to_random_port('tcp://127.0.0.1')
         mon.setsockopt(zmq.SUBSCRIBE, mon_sub)
-        
+
         self.device.connect_in("tcp://127.0.0.1:%i"%aport)
         self.device.connect_out("tcp://127.0.0.1:%i"%bport)
         self.device.connect_mon("tcp://127.0.0.1:%i"%mport)
@@ -46,14 +46,14 @@ class TestMonitoredQueue(BaseZMQTestCase):
             pass
         self.sockets.extend([alice, bob, mon])
         return alice, bob, mon
-        
-    
+
+
     def teardown_device(self):
         for socket in self.sockets:
             socket.close()
             del socket
         del self.device
-        
+
     def test_reply(self):
         alice, bob, mon = self.build_device()
         alices = b"hello bob".split()
@@ -65,7 +65,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         alices = self.recv_multipart(alice)
         self.assertEqual(alices, bobs)
         self.teardown_device()
-    
+
     def test_queue(self):
         alice, bob, mon = self.build_device()
         alices = b"hello bob".split()
@@ -85,7 +85,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         alices = self.recv_multipart(alice)
         self.assertEqual(alices, bobs)
         self.teardown_device()
-    
+
     def test_monitor(self):
         alice, bob, mon = self.build_device()
         alices = b"hello bob".split()
@@ -113,7 +113,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         mons = self.recv_multipart(mon)
         self.assertEqual([b'out']+bobs, mons)
         self.teardown_device()
-    
+
     def test_prefix(self):
         alice, bob, mon = self.build_device(b"", b'foo', b'bar')
         alices = b"hello bob".split()
@@ -141,7 +141,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         mons = self.recv_multipart(mon)
         self.assertEqual([b'bar']+bobs, mons)
         self.teardown_device()
-    
+
     def test_monitor_subscribe(self):
         alice, bob, mon = self.build_device(b"out")
         alices = b"hello bob".split()
@@ -163,7 +163,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         mons = self.recv_multipart(mon)
         self.assertEqual([b'out']+bobs, mons)
         self.teardown_device()
-    
+
     def test_router_router(self):
         """test router-router MQ devices"""
         dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.ROUTER, zmq.PUB, b'in', b'out')
@@ -171,24 +171,24 @@ class TestMonitoredQueue(BaseZMQTestCase):
         dev.setsockopt_in(zmq.LINGER, 0)
         dev.setsockopt_out(zmq.LINGER, 0)
         dev.setsockopt_mon(zmq.LINGER, 0)
-        
+
         binder = self.context.socket(zmq.DEALER)
         porta = binder.bind_to_random_port('tcp://127.0.0.1')
         portb = binder.bind_to_random_port('tcp://127.0.0.1')
         binder.close()
-        time.sleep(0.1)
+        time.sleep(1)
         a = self.context.socket(zmq.DEALER)
         a.identity = b'a'
         b = self.context.socket(zmq.DEALER)
         b.identity = b'b'
         self.sockets.extend([a, b])
-        
+
         a.connect('tcp://127.0.0.1:%i'%porta)
         dev.bind_in('tcp://127.0.0.1:%i'%porta)
         b.connect('tcp://127.0.0.1:%i'%portb)
         dev.bind_out('tcp://127.0.0.1:%i'%portb)
         dev.start()
-        time.sleep(0.2)
+        time.sleep(1)
         if zmq.zmq_version_info() >= (3,1,0):
             # flush erroneous poll state, due to LIBZMQ-280
             ping_msg = [ b'ping', b'pong' ]
@@ -206,7 +206,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         amsg = self.recv_multipart(a)
         self.assertEqual(amsg, [b'b']+msg)
         self.teardown_device()
-    
+
     def test_default_mq_args(self):
         self.device = dev = devices.ThreadMonitoredQueue(zmq.ROUTER, zmq.DEALER, zmq.PUB)
         dev.setsockopt_in(zmq.LINGER, 0)
@@ -215,13 +215,13 @@ class TestMonitoredQueue(BaseZMQTestCase):
         # this will raise if default args are wrong
         dev.start()
         self.teardown_device()
-    
+
     def test_mq_check_prefix(self):
         ins = self.context.socket(zmq.ROUTER)
         outs = self.context.socket(zmq.DEALER)
         mons = self.context.socket(zmq.PUB)
         self.sockets.extend([ins, outs, mons])
-        
+
         ins = unicode('in')
         outs = unicode('out')
         self.assertRaises(TypeError, devices.monitoredqueue, ins, outs, mons)
