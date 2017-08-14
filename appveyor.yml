@@ -42,9 +42,6 @@ cache:
   - C:\Users\appveyor\AppData\Local\pip\Cache
 
 install:
-  # Set the error action preference to so that output to stderr does not
-  # fail the build
-  - ps: $ErrorActionPreference = "SilentlyContinue"
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
   # purpose but it is problematic because it tends to cancel builds pushed
