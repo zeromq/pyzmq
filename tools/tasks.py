@@ -2,6 +2,8 @@
 """
 invoke script for releasing pyzmq
 
+Must be run on macOS with Framework Python from Python.org
+
 usage:
 
     invoke release 14.3.1
@@ -34,6 +36,10 @@ pjoin = os.path.join
 
 repo = PYZMQ_ROOT
 
+# Workaround for PyPy3 5.8
+if 'LDFLAGS' not in os.environ:
+    os.environ['LDFLAGS'] = '-undefined dynamic_lookup'
+
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
     '2.7' : _framework_py('2.7'),
@@ -41,8 +47,7 @@ py_exes = {
     '3.5' : _framework_py('3.5'),
     '3.6' : _framework_py('3.6'),
     'pypy': "/usr/local/bin/pypy",
-    # FIXME: pypy3 can have releases when they support Python >= 3.3
-    # 'pypy3': "/usr/local/bin/pypy3",
+    'pypy3': "/usr/local/bin/pypy3",
 }
 egg_pys = {} # no more eggs!
 
