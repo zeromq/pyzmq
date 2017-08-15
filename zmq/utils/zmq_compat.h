@@ -56,9 +56,9 @@
     #define zmq_join(s, group) _missing
     #define zmq_leave(s, group) _missing
     #define zmq_msg_set_routing_id(msg, routing_id) _missing
-    #define zmq_msg_routing_id(msg) _missing
+    #define zmq_msg_routing_id(msg) 0
     #define zmq_msg_set_group(msg, group) _missing
-    #define zmq_msg_group(msg) _missing
+    #define zmq_msg_group(msg) NULL
 #endif
 
 #if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 1
