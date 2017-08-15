@@ -11,6 +11,8 @@ try:
 except ImportError:
     from Queue import Queue
 
+from pytest import mark
+
 import zmq
 from zmq.tests import (
     BaseZMQTestCase, have_gevent, GreenTest, skip_green, PYPY, SkipTest,
@@ -142,7 +144,9 @@ class TestContext(BaseZMQTestCase):
         
         ctx.term()
 
-    
+    @mark.skipif(
+        sys.platform.startswith('win'),
+        reason='Segfaults on Windows')
     def test_destroy(self):
         """Context.destroy should close sockets"""
         ctx = self.Context()

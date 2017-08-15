@@ -1,3 +1,7 @@
+shallow_clone: false
+skip_branch_with_pr: true
+clone_depth: 1
+
 # mostly copied from
 environment:
   global:
@@ -34,6 +38,9 @@ environment:
 matrix:
   fast_finish: true
 
+cache:
+  - C:\Users\appveyor\AppData\Local\pip\Cache
+
 install:
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
@@ -56,8 +63,10 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
-  # about it being out of date.
-  - "%CMD_IN_ENV% pip install --disable-pip-version-check --user --upgrade pip setuptools wheel cython -r test-requirements.txt"
+  # about it being out of date. Install wheel package separate so that
+  # we also cache wheels
+  - pip install --upgrade pip wheel
+  - pip install --upgrade setuptools cython -r test-requirements.txt
 
 build_script:
   # Build the compiled extension
@@ -67,12 +76,21 @@ build_script:
 
 test_script:
   # Run the project tests
-  - ps: cmd /c 'cd dist & python -c "import zmq; print(zmq.zmq_version())"'
-  - ps: cmd /c 'cd dist & python -m pytest -vsx --pyargs zmq.tests.test_socket'
+  - cd dist
+  - python -c "import zmq; print(zmq.zmq_version())"
+  # ``test_win32_shim`` will create a CTLR-C event which will be sent
+  # to all processes that share the same group id and creates problems
+  # with the appveyor build. To avoid the problems we single out that
+  # specific test run it using the ``start`` command and then check
+  # the junit report to pass or fail the build.
+  - pytest -vsx -m "not new_console" --pyargs zmq.tests
+  - start /W pytest -vsx -m "new_console" --pyargs zmq.tests --junit-xml=../results.xml
+  - python ../tools/check_junit_result.py ../results.xml
+  - cd ..
 
 after_test:
   # If tests are successful, create binary packages for the project.
-  - ps: "ls dist"
+  - ps: ls dist
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
@@ -80,4 +98,3 @@ artifacts:
 
 #on_success:
 #  - TODO: upload the content of dist/*.whl to a public wheelhouse
-#

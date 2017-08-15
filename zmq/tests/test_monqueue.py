@@ -46,8 +46,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
             pass
         self.sockets.extend([alice, bob, mon])
         return alice, bob, mon
-        
-    
+            
     def teardown_device(self):
         for socket in self.sockets:
             socket.close()
@@ -176,7 +175,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         porta = binder.bind_to_random_port('tcp://127.0.0.1')
         portb = binder.bind_to_random_port('tcp://127.0.0.1')
         binder.close()
-        time.sleep(0.1)
+        time.sleep(1)
         a = self.context.socket(zmq.DEALER)
         a.identity = b'a'
         b = self.context.socket(zmq.DEALER)
@@ -188,7 +187,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         b.connect('tcp://127.0.0.1:%i'%portb)
         dev.bind_out('tcp://127.0.0.1:%i'%portb)
         dev.start()
-        time.sleep(0.2)
+        time.sleep(1)
         if zmq.zmq_version_info() >= (3,1,0):
             # flush erroneous poll state, due to LIBZMQ-280
             ping_msg = [ b'ping', b'pong' ]

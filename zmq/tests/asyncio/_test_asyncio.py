@@ -336,6 +336,9 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         print("servered")
         loop.run_until_complete(client())
 
+    @pytest.mark.skipif(
+        sys.platform.startswith('win'),
+        reason='Windows does not support polling on files')
     def test_poll_raw(self):
         @asyncio.coroutine
         def test():
@@ -434,4 +437,3 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
                 raise TimeoutError("Should have received a message")
             return (yield from recv(**kwargs))
         return self.loop.run_until_complete(coro())
-

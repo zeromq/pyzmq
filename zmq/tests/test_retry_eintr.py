@@ -26,12 +26,13 @@ class TestEINTRSysCall(BaseZMQTestCase):
     timeout = .25
     timeout_ms = int(timeout * 1e3)
 
-    @mark.skipif(not hasattr(signal, 'setitimer'), reason='EINTR tests require setitimer')
     def alarm(self, t=None):
         """start a timer to fire only once
         
         like signal.alarm, but with better resolution than integer seconds.
         """
+        if not hasattr(signal, 'setitimer'):
+            raise SkipTest('EINTR tests require setitimer')
         if t is None:
             t = self.signal_delay
         self.timer_fired = False
