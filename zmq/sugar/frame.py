@@ -7,6 +7,7 @@
 from .attrsettr import AttributeSetter
 from zmq.backend import Frame as FrameBase
 import zmq
+from zmq.error import _check_version
 
 
 class Frame(FrameBase, AttributeSetter):
@@ -19,14 +20,29 @@ class Frame(FrameBase, AttributeSetter):
         _check_version((4,2), "RADIO-DISH")
         if not zmq.DRAFT_API:
             raise RuntimeError("libzmq and pyzmq must be built with draft support")
-        return self._get_group()
+        return self.get('group')
 
     @group.setter
     def group(self, group):
         _check_version((4,2), "RADIO-DISH")
         if not zmq.DRAFT_API:
             raise RuntimeError("libzmq and pyzmq must be built with draft support")
-        self._set_group(group)
+        self.set('group', group)
+
+    @property
+    def routing_id(self):
+        print('getting routing id')
+        _check_version((4,2), "CLIENT-SERVER")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        return self.get('routing_id')
+
+    @routing_id.setter
+    def routing_id(self, routing_id):
+        _check_version((4,2), "CLIENT-SERVER")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        self.set('routing_id', routing_id)
 
 
 # keep deprecated alias
