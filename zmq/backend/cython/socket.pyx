@@ -682,7 +682,7 @@ cdef class Socket:
     # Sending and receiving messages
     #-------------------------------------------------------------------------
 
-    cpdef object send(self, object data, int flags=0, copy=True, track=False):
+    cpdef send(self, object data, int flags=0, copy=True, track=False):
         """s.send(data, flags=0, copy=True, track=False)
 
         Send a message on this socket.
@@ -725,11 +725,7 @@ cdef class Socket:
         if isinstance(data, unicode):
             raise TypeError("unicode not allowed, use send_string")
 
-        if copy:
-            # msg.bytes never returns the input data object
-            # it is always a copy, but always the same copy
-            if isinstance(data, Frame):
-                data = data.buffer
+        if copy and not isinstance(data, Frame):
             return _send_copy(self.handle, data, flags)
         else:
             if isinstance(data, Frame):
@@ -746,7 +742,7 @@ cdef class Socket:
                 msg = Frame(data, track=track)
             return _send_frame(self.handle, msg, flags)
 
-    cpdef object recv(self, int flags=0, copy=True, track=False):
+    cpdef recv(self, int flags=0, copy=True, track=False):
         """s.recv(flags=0, copy=True, track=False)
 
         Receive a message.
