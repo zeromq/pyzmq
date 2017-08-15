@@ -7,8 +7,11 @@
 from .attrsettr import AttributeSetter
 from zmq.backend import Frame as FrameBase
 import zmq
-from zmq.error import _check_version
 
+def _draft(v, feature):
+    zmq.error._check_version(v, feature)
+    if not zmq.DRAFT_API:
+        raise RuntimeError("libzmq and pyzmq must be built with draft support for %s" % features)
 
 class Frame(FrameBase, AttributeSetter):
     def __getitem__(self, key):
@@ -17,31 +20,22 @@ class Frame(FrameBase, AttributeSetter):
 
     @property
     def group(self):
-        _check_version((4,2), "RADIO-DISH")
-        if not zmq.DRAFT_API:
-            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        _draft((4,2), "RADIO-DISH")
         return self.get('group')
 
     @group.setter
     def group(self, group):
-        _check_version((4,2), "RADIO-DISH")
-        if not zmq.DRAFT_API:
-            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        _draft((4,2), "RADIO-DISH")
         self.set('group', group)
 
     @property
     def routing_id(self):
-        print('getting routing id')
-        _check_version((4,2), "CLIENT-SERVER")
-        if not zmq.DRAFT_API:
-            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        _draft((4,2), "CLIENT-SERVER")
         return self.get('routing_id')
 
     @routing_id.setter
     def routing_id(self, routing_id):
-        _check_version((4,2), "CLIENT-SERVER")
-        if not zmq.DRAFT_API:
-            raise RuntimeError("libzmq and pyzmq must be built with draft support")
+        _draft((4,2), "CLIENT-SERVER")
         self.set('routing_id', routing_id)
 
 
