@@ -608,6 +608,7 @@ class Socket(SocketBase, AttributeSetter):
             Any valid send flag
         """
         from zmq.utils import jsonapi
+        send_kwargs = {}
         for key in ('routing_id', 'group'):
             if key in kwargs:
                 send_kwargs[key] = kwargs.pop(key)
