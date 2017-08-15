@@ -107,9 +107,11 @@ for idx, arg in enumerate(list(sys.argv)):
 
 for idx, arg in enumerate(list(sys.argv)):
     if arg.startswith('--libzmq='):
-        sys.argv.pop(idx)
+        sys.argv.remove(arg)
         libzmq_name = arg.split("=",1)[1]
-        break
+    if arg == '--enable-draft':
+        sys.argv.remove(arg)
+        os.environ['ZMQ_DRAFT_API'] = '1'
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
