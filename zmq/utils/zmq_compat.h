@@ -7,9 +7,11 @@
 
 #if defined(_MSC_VER)
 #define pyzmq_int64_t __int64
+#define pyzmq_uint32_t __uint32
 #else
 #include <stdint.h>
 #define pyzmq_int64_t int64_t
+#define pyzmq_uint32_t uint32_t
 #endif
 
 
@@ -42,6 +44,20 @@
     #endif
 #else
     #define zmq_curve_keypair(z85_public_key, z85_secret_key) _missing
+#endif
+
+// libzmq 4.2 draft API
+#ifdef ZMQ_BUILD_DRAFT_API
+    #if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 2
+        #define PYZMQ_DRAFT_42
+    #endif
+#endif
+#ifndef PYZMQ_DRAFT_42
+    #define zmq_join(s, group) _missing
+    #define zmq_leave(s, group) _missing
+    #define zmq_msg_set_routing_id(msg, routing_id) _missing
+    #define zmq_msg_set_group(msg, group) _missing
+    #define zmq_msg_group(msg) _missing
 #endif
 
 #if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 1
