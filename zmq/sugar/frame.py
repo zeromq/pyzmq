@@ -6,6 +6,7 @@
 
 from .attrsettr import AttributeSetter
 from zmq.backend import Frame as FrameBase
+import zmq
 
 
 class Frame(FrameBase, AttributeSetter):
@@ -16,15 +17,15 @@ class Frame(FrameBase, AttributeSetter):
     @property
     def group(self):
         _check_version((4,2), "RADIO-DISH")
-        if not zmq.has('draft'):
-            raise RuntimeError("libzmq must be built with draft support")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
         return self._get_group()
 
     @group.setter
     def group(self, group):
         _check_version((4,2), "RADIO-DISH")
-        if not zmq.has('draft'):
-            raise RuntimeError("libzmq must be built with draft support")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
         self._set_group(group)
 
 
