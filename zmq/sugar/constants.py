@@ -29,7 +29,10 @@ __all__ = [
     'DRAFT_API',
     ]
 
-DRAFT_API = has('draft') and constants.DRAFT_API
+if constants.VERSION < 40200:
+    DRAFT_API = False
+else:
+    DRAFT_API = bool(has('draft') and constants.DRAFT_API)
 
 int_sockopts    = set()
 int64_sockopts  = set()
