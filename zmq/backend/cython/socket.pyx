@@ -39,6 +39,7 @@ from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 from .libzmq cimport (
     fd_t,
     int64_t,
+    const_char_ptr,
 
     zmq_errno,
 
@@ -60,6 +61,8 @@ from .libzmq cimport (
     zmq_setsockopt,
     zmq_getsockopt,
     zmq_close,
+    zmq_join,
+    zmq_leave,
 
     ZMQ_EVENT_ALL,
     ZMQ_IDENTITY,
@@ -677,6 +680,41 @@ cdef class Socket:
         c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
         _check_rc(rc)
+    
+    def join(self, group):
+        """Join a RADIO-DISH group
+
+        Only for DISH sockets.
+
+        libzmq and pyzmq must have been built with ZMQ_BUILD_DRAFT_API
+
+        .. versionadded:: 17
+        """
+        _check_version((4,2), "RADIO-DISH")
+        if not zmq.has('draft'):
+            raise RuntimeError("libzmq must be built with draft support")
+        if isinstance(group, unicode):
+            group = group.encode('utf8')
+        cdef const_char_ptr c_group = group
+        cdef int rc = zmq_join(self.handle, c_group)
+        _check_rc(rc)
+    
+    def leave(self, group):
+        """Leave a RADIO-DISH group
+
+        Only for DISH sockets.
+
+        libzmq and pyzmq must have been built with ZMQ_BUILD_DRAFT_API
+
+        .. versionadded:: 17
+        """
+        _check_version((4,2), "RADIO-DISH")
+        if not zmq.has('draft'):
+            raise RuntimeError("libzmq must be built with draft support")
+        cdef const_char_ptr c_group = group
+        cdef int rc = zmq_leave(self.handle, c_group)
+        _check_rc(rc)
+        
 
     #-------------------------------------------------------------------------
     # Sending and receiving messages

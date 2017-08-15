@@ -343,6 +343,20 @@ cdef class Frame:
         cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
         _check_rc(rc)
 
+    def _get_group(self):
+        cdef const_char_ptr buf
+        buf = zmq_msg_group(&self.zmq_msg)
+        if buf == NULL:
+            _check_rc(-1)
+        return buf.decode('utf8')
+
+    def _set_group(self, group):
+        if isinstance(group, unicode):
+            group = group.encode('utf8')
+        cdef const_char_ptr c_group = group
+        cdef int rc = zmq_msg_set_group(&self.zmq_msg, c_group)
+        _check_rc(rc)
+
     def get(self, option):
         """Frame.get(option)
 
