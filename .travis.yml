@@ -34,7 +34,7 @@ before_install:
       sudo ldconfig
       popd
       export ZMQ=/usr/local
-      export ZMQ_BUILD_DRAFT=1
+      export ZMQ_DRAFT_API=1
     fi
   - pip install -r test-requirements.txt
   - |
