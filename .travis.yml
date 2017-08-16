@@ -28,7 +28,7 @@ before_install:
       unzip libzmq.zip
       pushd "$ZMQ-master"
       ./autogen.sh
-      ./configure --enable-draft
+      ./configure --enable-drafts
       make -j
       sudo make install
       sudo ldconfig

@@ -109,7 +109,7 @@ for idx, arg in enumerate(list(sys.argv)):
     if arg.startswith('--libzmq='):
         sys.argv.remove(arg)
         libzmq_name = arg.split("=",1)[1]
-    if arg == '--enable-draft':
+    if arg == '--enable-drafts':
         sys.argv.remove(arg)
         os.environ['ZMQ_DRAFT_API'] = '1'
 
