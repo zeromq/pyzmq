@@ -20,6 +20,12 @@ class Frame(FrameBase, AttributeSetter):
 
     @property
     def group(self):
+        """The RADIO-DISH group of the message.
+
+        Requires libzmq >= 4.2 and pyzmq built with draft APIs enabled.
+
+        .. versionadded:: 17
+        """
         _draft((4,2), "RADIO-DISH")
         return self.get('group')
 
@@ -30,6 +36,12 @@ class Frame(FrameBase, AttributeSetter):
 
     @property
     def routing_id(self):
+        """The CLIENT-SERVER routing id of the message.
+
+        Requires libzmq >= 4.2 and pyzmq built with draft APIs enabled.
+
+        .. versionadded:: 17
+        """
         _draft((4,2), "CLIENT-SERVER")
         return self.get('routing_id')
 

@@ -339,6 +339,10 @@ cdef class Frame:
         
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
+        .. versionchanged:: 17.0
+            Added support for `routing_id` and `group`.
+            Only available if draft API is enabled
+            with libzmq >= 4.2.
         """
         cdef int rc
         cdef uint32_t routing_id
@@ -370,9 +374,13 @@ cdef class Frame:
 
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
-        
+
         .. versionchanged:: 14.3
             add support for zmq_msg_gets (requires libzmq-4.1)
+        .. versionchanged:: 17.0
+            Added support for `routing_id` and `group`.
+            Only available if draft API is enabled
+            with libzmq >= 4.2.
         """
         cdef int rc = 0
         cdef char *property_c = NULL

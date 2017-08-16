@@ -52,13 +52,14 @@ Using PyZMQ
     
     api/index.rst
     changelog.rst
+    draft.rst
     morethanbindings.rst
     serialization.rst
     devices.rst
     eventloop.rst
     logging.rst
     ssh.rst
-    
+
 
 Notes from developing PyZMQ
 ===========================

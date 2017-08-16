@@ -680,9 +680,11 @@ cdef class Socket:
         c_flags = events
         rc = zmq_socket_monitor(self.handle, c_addr, c_flags)
         _check_rc(rc)
-    
+
     def join(self, group):
-        """Join a RADIO-DISH group
+        """join(group)
+
+        Join a RADIO-DISH group
 
         Only for DISH sockets.
 
@@ -698,9 +700,11 @@ cdef class Socket:
         cdef const_char_ptr c_group = group
         cdef int rc = zmq_join(self.handle, c_group)
         _check_rc(rc)
-    
+
     def leave(self, group):
-        """Leave a RADIO-DISH group
+        """leave(group)
+
+        Leave a RADIO-DISH group
 
         Only for DISH sockets.
 
