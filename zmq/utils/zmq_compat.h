@@ -7,7 +7,7 @@
 
 #if defined(_MSC_VER)
 #define pyzmq_int64_t __int64
-#define pyzmq_uint32_t __uint32
+#define pyzmq_uint32_t unsigned __int32
 #else
 #include <stdint.h>
 #define pyzmq_int64_t int64_t
