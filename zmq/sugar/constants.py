@@ -3,6 +3,7 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+import zmq
 from zmq.backend import constants
 from zmq.utils.constant_names import (
     base_names,
@@ -28,7 +29,10 @@ __all__ = [
     'DRAFT_API',
     ]
 
-DRAFT_API = constants.DRAFT_API
+try:
+    DRAFT_API = zmq.has('draft')
+except Exception:
+    DRAFT_API = 0
 
 int_sockopts    = set()
 int64_sockopts  = set()

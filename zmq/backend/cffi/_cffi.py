@@ -32,6 +32,8 @@ def load_compiler_config():
     cfg.setdefault("library_dirs", [])
     cfg.setdefault("runtime_library_dirs", [])
     cfg.setdefault("libraries", ["zmq"])
+    cfg.setdefault("define_macros", [("ZMQ_BUILD_DRAFT_API", 1)])
+    cfg['define_macros'] = [ tuple(macro) for macro in cfg['define_macros']]
     
     # cast to str, because cffi can't handle unicode paths (?!)
     cfg['libraries'] = [str(lib) for lib in cfg['libraries']]
@@ -68,7 +70,7 @@ def _make_defines(names):
 
     return "\n".join(_names)
 
-c_constant_names = ['PYZMQ_DRAFT_API']
+c_constant_names = []
 for name in all_names:
     if no_prefix(name):
         c_constant_names.append(name)
@@ -93,6 +95,7 @@ try:
         include_dirs=cfg['include_dirs'],
         library_dirs=cfg['library_dirs'],
         runtime_library_dirs=cfg['runtime_library_dirs'],
+        define_macros=cfg['define_macros'],
     )
     _version_info = zmq_version_info()
 except Exception as e:

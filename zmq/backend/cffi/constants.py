@@ -12,5 +12,4 @@ for cname in c_constant_names:
         name = cname
     g[name] = getattr(C, cname)
 
-DRAFT_API = C.PYZMQ_DRAFT_API
-__all__ = ['DRAFT_API'] + all_names
+__all__ = all_names

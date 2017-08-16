@@ -2,8 +2,6 @@
 # Python module level constants
 #-----------------------------------------------------------------------------
 
-DRAFT_API = PYZMQ_DRAFT_API
-
 VERSION = ZMQ_VERSION
 VERSION_MAJOR = ZMQ_VERSION_MAJOR
 VERSION_MINOR = ZMQ_VERSION_MINOR
@@ -188,7 +186,6 @@ SHARED = ZMQ_SHARED
 # Symbols to export
 #-----------------------------------------------------------------------------
 __all__ = [
-  "DRAFT_API",
   "VERSION",
   "VERSION_MAJOR",
   "VERSION_MINOR",
