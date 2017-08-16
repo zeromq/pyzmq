@@ -522,7 +522,7 @@ class Socket(SocketBase, AttributeSetter):
         frames = self.recv_multipart(flags=flags, copy=copy)
         return self._deserialize(frames, deserialize)
 
-    def send_string(self, u, flags=0, copy=True, encoding='utf-8'):
+    def send_string(self, u, flags=0, copy=True, encoding='utf-8', **kwargs):
         """send a Python unicode string as a message with an encoding
     
         0MQ communicates with raw bytes, so you must encode/decode
@@ -539,7 +539,7 @@ class Socket(SocketBase, AttributeSetter):
         """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
-        return self.send(u.encode(encoding), flags=flags, copy=copy)
+        return self.send(u.encode(encoding), flags=flags, copy=copy, **kwargs)
     
     send_unicode = send_string
     
