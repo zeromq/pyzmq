@@ -29,6 +29,10 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 - Set RPATH correctly when building on macOS.
 - Compatibility fixes with tornado 5.0.dev (may not be quite enough for 5.0 final,
   which is not yet released as of pyzmq 17).
+- Draft support for CLIENT-SERVER`routing_id` and `group`.
+
+  .. seealso::
+    :ref:`draft`
 
 16.0.2
 ======

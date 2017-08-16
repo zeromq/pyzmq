@@ -334,16 +334,14 @@ class Socket(SocketBase, AttributeSetter):
     # Sending and receiving messages
     #-------------------------------------------------------------------------
     
-    def send(self, frame, flags=0, copy=True, track=False, routing_id=None, group=None):
-        """s.send(data, flags=0, copy=True, track=False)
-
-        Send a single zmq message frame on this socket.
+    def send(self, data, flags=0, copy=True, track=False, routing_id=None, group=None):
+        """Send a single zmq message frame on this socket.
 
         Parameters
         ----------
         data : bytes, Frame, memoryview
             The content of the message. This can be any object that provides
-            the Python buffer API (`memoryview(data)` can be called).
+            the Python buffer API (i.e. `memoryview(data)` can be called).
         flags : int
             Any supported flag: NOBLOCK, SNDMORE.
         copy : bool
@@ -353,7 +351,7 @@ class Socket(SocketBase, AttributeSetter):
             finished with it? (ignored if copy=True)
         routing_id : int
             For use with SERVER sockets
-        group: text
+        group: str
             For use with RADIO sockets
 
         Returns
@@ -373,16 +371,19 @@ class Socket(SocketBase, AttributeSetter):
         ZMQError
             If the send does not succeed for any reason.
 
+        .. versionchanged:: 17.0
+
+            DRAFT support for routing_id and group arguments.
         """
         if routing_id is not None:
-            if not isinstance(frame, zmq.Frame):
-                frame = zmq.Frame(frame, track=track)
-            frame.routing_id = routing_id
+            if not isinstance(data, zmq.Frame):
+                data = zmq.Frame(data, track=track)
+            data.routing_id = routing_id
         if group is not None:
-            if not isinstance(frame, zmq.Frame):
-                frame = zmq.Frame(frame, track=track)
-            frame.group = group
-        return super(Socket, self).send(frame, flags=flags, copy=copy, track=track)
+            if not isinstance(data, zmq.Frame):
+                data = zmq.Frame(data, track=track)
+            data.group = group
+        return super(Socket, self).send(data, flags=flags, copy=copy, track=track)
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False, **kwargs):
         """send a sequence of buffers as a multipart message
