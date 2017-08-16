@@ -31,8 +31,11 @@ cdef extern from *:
     ctypedef void* const_void_ptr "const void *"
     ctypedef char* const_char_ptr "const char *"
 
+# were it not for Windows,
+# we could cimport these from libc.stdint
 cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
+    ctypedef unsigned int uint32_t "pyzmq_uint32_t"
 
 include "constant_enums.pxi"
 
@@ -103,3 +106,11 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 
+    # 4.2 draft
+    int zmq_join (void *s, const_char_ptr group)
+    int zmq_leave (void *s, const_char_ptr group)
+
+    int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
+    uint32_t zmq_msg_routing_id(zmq_msg_t *msg);
+    int zmq_msg_set_group(zmq_msg_t *msg, const_char_ptr group);
+    const_char_ptr zmq_msg_group(zmq_msg_t *msg);

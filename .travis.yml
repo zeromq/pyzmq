@@ -29,12 +29,13 @@ before_install:
       unzip libzmq.zip
       pushd "$ZMQ-master"
       ./autogen.sh
-      ./configure
+      ./configure --enable-drafts
       make -j
       sudo make install
       sudo ldconfig
       popd
       export ZMQ=/usr/local
+      export ZMQ_DRAFT_API=1
     fi
   - pip install -r test-requirements.txt
   - |

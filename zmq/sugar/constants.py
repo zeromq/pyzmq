@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from zmq.backend import constants
+from zmq.backend import has
 from zmq.utils.constant_names import (
     base_names,
     switched_sockopt_names,
@@ -28,7 +29,10 @@ __all__ = [
     'DRAFT_API',
     ]
 
-DRAFT_API = constants.DRAFT_API
+if constants.VERSION < 40200:
+    DRAFT_API = False
+else:
+    DRAFT_API = bool(has('draft') and constants.DRAFT_API)
 
 int_sockopts    = set()
 int64_sockopts  = set()

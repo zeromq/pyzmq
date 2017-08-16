@@ -247,17 +247,17 @@ class ZMQStream(object):
             self.on_send(lambda msg, status: callback(self, msg, status))
         
         
-    def send(self, msg, flags=0, copy=True, track=False, callback=None):
+    def send(self, msg, flags=0, copy=True, track=False, callback=None, **kwargs):
         """Send a message, optionally also register a new callback for sends.
         See zmq.socket.send for details.
         """
-        return self.send_multipart([msg], flags=flags, copy=copy, track=track, callback=callback)
+        return self.send_multipart([msg], flags=flags, copy=copy, track=track, callback=callback, **kwargs)
 
-    def send_multipart(self, msg, flags=0, copy=True, track=False, callback=None):
+    def send_multipart(self, msg, flags=0, copy=True, track=False, callback=None, **kwargs):
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
         """
-        kwargs = dict(flags=flags, copy=copy, track=track)
+        kwargs.update(dict(flags=flags, copy=copy, track=track))
         self._send_queue.put((msg, kwargs))
         callback = callback or self._send_callback
         if callback is not None:
@@ -267,17 +267,17 @@ class ZMQStream(object):
             self.on_send(lambda *args: None)
         self._add_io_state(zmq.POLLOUT)
     
-    def send_string(self, u, flags=0, encoding='utf-8', callback=None):
+    def send_string(self, u, flags=0, encoding='utf-8', callback=None, **kwargs):
         """Send a unicode message with an encoding.
         See zmq.socket.send_unicode for details.
         """
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
-        return self.send(u.encode(encoding), flags=flags, callback=callback)
+        return self.send(u.encode(encoding), flags=flags, callback=callback, **kwargs)
     
     send_unicode = send_string
     
-    def send_json(self, obj, flags=0, callback=None):
+    def send_json(self, obj, flags=0, callback=None, **kwargs):
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
         """
@@ -285,15 +285,15 @@ class ZMQStream(object):
             raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
         else:
             msg = jsonapi.dumps(obj)
-            return self.send(msg, flags=flags, callback=callback)
+            return self.send(msg, flags=flags, callback=callback, **kwargs)
 
-    def send_pyobj(self, obj, flags=0, protocol=-1, callback=None):
+    def send_pyobj(self, obj, flags=0, protocol=-1, callback=None, **kwargs):
         """Send a Python object as a message using pickle to serialize.
 
         See zmq.socket.send_json for details.
         """
         msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags, callback=callback)
+        return self.send(msg, flags, callback=callback, **kwargs)
     
     def _finish_flush(self):
         """callback for unsetting _flushed flag."""

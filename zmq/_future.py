@@ -172,25 +172,23 @@ class _AsyncSocket(_zmq.Socket):
             dict(flags=flags, copy=copy, track=track)
         )
     
-    def send_multipart(self, msg, flags=0, copy=True, track=False):
+    def send_multipart(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a complete multipart zmq message.
         
         Returns a Future that resolves when sending is complete.
         """
-        return self._add_send_event('send_multipart', msg=msg,
-            kwargs=dict(flags=flags, copy=copy, track=track),
-        )
+        kwargs.update(dict(flags=flags, copy=copy, track=track))
+        return self._add_send_event('send_multipart', msg=msg, kwargs=kwargs)
     
-    def send(self, msg, flags=0, copy=True, track=False):
+    def send(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a single zmq frame.
         
         Returns a Future that resolves when sending is complete.
         
         Recommend using send_multipart instead.
         """
-        return self._add_send_event('send', msg=msg,
-            kwargs=dict(flags=flags, copy=copy, track=track),
-        )
+        kwargs.update(dict(flags=flags, copy=copy, track=track))
+        return self._add_send_event('send', msg=msg, kwargs=kwargs)
 
     def _deserialize(self, recvd, load):
         """Deserialize with Futures"""

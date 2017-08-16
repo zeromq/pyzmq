@@ -180,7 +180,7 @@ class _Socket(_original_Socket):
                 timeout.cancel()
             self.__readable.set()
 
-    def send(self, data, flags=0, copy=True, track=False):
+    def send(self, data, flags=0, copy=True, track=False, **kwargs):
         """send, which will only block current greenlet
         
         state_changed always fires exactly once (success or fail) at the
@@ -190,7 +190,7 @@ class _Socket(_original_Socket):
         # if we're given the NOBLOCK flag act as normal and let the EAGAIN get raised
         if flags & zmq.NOBLOCK:
             try:
-                msg = super(_Socket, self).send(data, flags, copy, track)
+                msg = super(_Socket, self).send(data, flags, copy, track, **kwargs)
             finally:
                 if not self.__in_send_multipart:
                     self.__state_changed()

@@ -107,9 +107,11 @@ for idx, arg in enumerate(list(sys.argv)):
 
 for idx, arg in enumerate(list(sys.argv)):
     if arg.startswith('--libzmq='):
-        sys.argv.pop(idx)
+        sys.argv.remove(arg)
         libzmq_name = arg.split("=",1)[1]
-        break
+    if arg == '--enable-drafts':
+        sys.argv.remove(arg)
+        os.environ['ZMQ_DRAFT_API'] = '1'
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: http://h5py.googlecode.com)
@@ -342,14 +344,16 @@ class Configure(build_ext):
                 cfg['have_sys_un_h'] = False
             else:
                 cfg['have_sys_un_h'] = True
-        
+
             self.save_config('config', cfg)
-    
+
         if cfg['have_sys_un_h']:
             settings['define_macros'] = [('HAVE_SYS_UN_H', 1)]
-    
+
         settings.setdefault('define_macros', [])
-    
+        if cfg.get('zmq_draft_api'):
+            settings['define_macros'].append(('ZMQ_BUILD_DRAFT_API', 1))
+
         # include internal directories
         settings.setdefault('include_dirs', [])
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in (

@@ -333,8 +333,58 @@ class Socket(SocketBase, AttributeSetter):
     #-------------------------------------------------------------------------
     # Sending and receiving messages
     #-------------------------------------------------------------------------
+    
+    def send(self, frame, flags=0, copy=True, track=False, routing_id=None, group=None):
+        """s.send(data, flags=0, copy=True, track=False)
 
-    def send_multipart(self, msg_parts, flags=0, copy=True, track=False):
+        Send a single zmq message frame on this socket.
+
+        Parameters
+        ----------
+        data : bytes, Frame, memoryview
+            The content of the message. This can be any object that provides
+            the Python buffer API (`memoryview(data)` can be called).
+        flags : int
+            Any supported flag: NOBLOCK, SNDMORE.
+        copy : bool
+            Should the message be sent in a copying or non-copying manner.
+        track : bool
+            Should the message be tracked for notification that ZMQ has
+            finished with it? (ignored if copy=True)
+        routing_id : int
+            For use with SERVER sockets
+        group: text
+            For use with RADIO sockets
+
+        Returns
+        -------
+        None : if `copy` or not track
+            None if message was sent, raises an exception otherwise.
+        MessageTracker : if track and not copy
+            a MessageTracker object, whose `pending` property will
+            be True until the send is completed.
+
+        Raises
+        ------
+        TypeError
+            If a unicode object is passed
+        ValueError
+            If `track=True`, but an untracked Frame is passed.
+        ZMQError
+            If the send does not succeed for any reason.
+
+        """
+        if routing_id is not None:
+            if not isinstance(frame, zmq.Frame):
+                frame = zmq.Frame(frame, track=track)
+            frame.routing_id = routing_id
+        if group is not None:
+            if not isinstance(frame, zmq.Frame):
+                frame = zmq.Frame(frame, track=track)
+            frame.group = group
+        return super(Socket, self).send(frame, flags=flags, copy=copy, track=track)
+
+    def send_multipart(self, msg_parts, flags=0, copy=True, track=False, **kwargs):
         """send a sequence of buffers as a multipart message
 
         The zmq.SNDMORE flag is added to all msg parts before the last.
@@ -431,7 +481,7 @@ class Socket(SocketBase, AttributeSetter):
         """
         return load(recvd)
 
-    def send_serialized(self, msg, serialize, flags=0, copy=True):
+    def send_serialized(self, msg, serialize, flags=0, copy=True, **kwargs):
         """Send a message with a custom serialization function.
 
         .. versionadded:: 17
@@ -450,7 +500,7 @@ class Socket(SocketBase, AttributeSetter):
 
         """
         frames = serialize(msg)
-        return self.send_multipart(frames, flags=flags, copy=copy)
+        return self.send_multipart(frames, flags=flags, copy=copy, **kwargs)
 
     def recv_serialized(self, deserialize, flags=0, copy=True):
         """Receive a message with a custom deserialization function.
@@ -513,7 +563,7 @@ class Socket(SocketBase, AttributeSetter):
     
     recv_unicode = recv_string
     
-    def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL):
+    def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL, **kwargs):
         """send a Python object as a message using pickle to serialize
 
         Parameters
@@ -527,7 +577,7 @@ class Socket(SocketBase, AttributeSetter):
             where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
         """
         msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags)
+        return self.send(msg, flags=flags, **kwargs)
 
     def recv_pyobj(self, flags=0):
         """receive a Python object as a message using pickle to serialize
@@ -558,8 +608,12 @@ class Socket(SocketBase, AttributeSetter):
             Any valid send flag
         """
         from zmq.utils import jsonapi
+        send_kwargs = {}
+        for key in ('routing_id', 'group'):
+            if key in kwargs:
+                send_kwargs[key] = kwargs.pop(key)
         msg = jsonapi.dumps(obj, **kwargs)
-        return self.send(msg, flags)
+        return self.send(msg, flags=flags, **send_kwargs)
 
     def recv_json(self, flags=0, **kwargs):
         """receive a Python object as a message using json to serialize

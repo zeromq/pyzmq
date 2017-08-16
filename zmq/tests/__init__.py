@@ -128,7 +128,7 @@ got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
             # See LIBZMQ-280 on JIRA
             time.sleep(0.1)
         
-        r,w,x = zmq.select([socket], [], [], timeout=5)
+        r,w,x = zmq.select([socket], [], [], timeout=kwargs.pop('timeout', 5))
         assert len(r) > 0, "Should have received a message"
         kwargs['flags'] = zmq.DONTWAIT | kwargs.get('flags', 0)
         

@@ -60,10 +60,14 @@ def get_env_args():
 
     settings = {}
 
-    zmq = os.environ.get("ZMQ_PREFIX", None)
-    if zmq is not None:
+    zmq = os.environ.get("ZMQ_PREFIX")
+    if zmq:
         debug("Found environ var ZMQ_PREFIX=%s" % zmq)
         settings['zmq_prefix'] = zmq
+    draft_api = os.environ.get("ZMQ_DRAFT_API")
+    if draft_api:
+        debug("Found environ var ZMQ_DRAFT_API=%s" % draft_api)
+        settings['zmq_draft_api'] = int(draft_api)
 
     return settings
 
@@ -141,6 +145,7 @@ def discover_settings(conf_base=None):
     """ Discover custom settings for ZMQ path"""
     settings = {
         'zmq_prefix': '',
+        'zmq_draft_api': False,
         'libzmq_extension': False,
         'no_libzmq_extension': False,
         'skip_check_zmq': False,

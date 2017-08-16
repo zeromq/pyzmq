@@ -329,7 +329,7 @@ cdef class Frame:
             self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
     
-    def set(self, int option, int value):
+    def set(self, option, value):
         """Frame.set(option, value)
         
         Set a Frame option.
@@ -340,7 +340,24 @@ cdef class Frame:
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
         """
-        cdef int rc = zmq_msg_set(&self.zmq_msg, option, value)
+        cdef int rc
+        cdef uint32_t routing_id
+        cdef const_char_ptr buf
+
+        if option == 'routing_id':
+            routing_id = value
+            rc = zmq_msg_set_routing_id(&self.zmq_msg, routing_id)
+            _check_rc(rc)
+            return
+        elif option == 'group':
+            if isinstance(value, unicode):
+                value = value.encode('utf8')
+            buf = value
+            rc = zmq_msg_set_group(&self.zmq_msg, buf)
+            _check_rc(rc)
+            return
+
+        rc = zmq_msg_set(&self.zmq_msg, option, value)
         _check_rc(rc)
 
     def get(self, option):
@@ -360,12 +377,25 @@ cdef class Frame:
         cdef int rc = 0
         cdef char *property_c = NULL
         cdef Py_ssize_t property_len_c = 0
+        cdef uint32_t routing_id
+        cdef const_char_ptr buf
 
         # zmq_msg_get
         if isinstance(option, int):
             rc = zmq_msg_get(&self.zmq_msg, option)
             _check_rc(rc)
             return rc
+        
+        if option == 'routing_id':
+            routing_id = zmq_msg_routing_id(&self.zmq_msg)
+            if (routing_id == 0):
+                _check_rc(-1)
+            return routing_id
+        elif option == 'group':
+            buf = zmq_msg_group(&self.zmq_msg)
+            if buf == NULL:
+                _check_rc(-1)
+            return buf.decode('utf8')
 
         # zmq_msg_gets
         _check_version((4,1), "get string properties")
