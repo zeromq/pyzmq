@@ -91,7 +91,7 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
     cdef zhint *hint = <zhint *> vhint
     cdef int rc
 
-    if hint != NULL: 
+    if hint != NULL:
         zmq_msg_init_size(&msg, sizeof(size_t))
         memcpy(zmq_msg_data(&msg), &hint.id, sizeof(size_t))
         rc = mutex_lock(hint.mutex)
@@ -99,7 +99,10 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
             fprintf(cstderr, "pyzmq-gc mutex lock failed rc=%d\n", rc)
         rc = zmq_msg_send(&msg, hint.sock, 0)
         if rc < 0:
-            fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
+            # gc socket could have been closed, e.g. during process teardown.
+            # If so, ignore the failure because there's nothing to do.
+            if zmq_errno() != ZMQ_ENOTSOCK:
+                fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
         rc = mutex_unlock(hint.mutex)
         if rc != 0:
             fprintf(cstderr, "pyzmq-gc mutex unlock failed rc=%d\n", rc)
