@@ -134,14 +134,22 @@ cdef class Frame:
         whether a MessageTracker_ should be created to track this object.
         Tracking a message has a cost at creation, because it creates a threadsafe
         Event object.
-    
+    copy : bool [default: depends on copy_threshold]
+        Whether to create a copy of the data to pass to libzmq
+        or share the memory with libzmq.
+        If unspecified, copy_threshold is used.
+    copy_threshold: int [default: zmq.COPY_THRESHOLD]
+        If copy is unspecified, messages smaller than this size
+        will be copied and messages larger than this size will be shared with libzmq.
     """
 
-    def __cinit__(self, object data=None, track=False, **kwargs):
+    def __cinit__(self, object data=None, track=False, copy=None, copy_threshold=None, **kwargs):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
         cdef zhint *hint
+        if copy_threshold is None:
+            copy_threshold = zmq.COPY_THRESHOLD
 
         # init more as False
         self.more = False
@@ -152,14 +160,12 @@ cdef class Frame:
         self._buffer = None       # buffer view of data
         self._bytes = None        # bytes copy of data
 
-        # Event and MessageTracker for monitoring when zmq is done with data:
+        self.tracker_event = None
+        self.tracker = None
+        # self.tracker should start finished
+        # except in the case where we are sharing memory with libzmq
         if track:
-            evt = Event()
-            self.tracker_event = evt
-            self.tracker = zmq.MessageTracker(evt)
-        else:
-            self.tracker_event = None
-            self.tracker = None
+            self.tracker = zmq._FINISHED_TRACKER
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -169,9 +175,33 @@ cdef class Frame:
             _check_rc(rc)
             self._failed_init = False
             return
-        else:
-            asbuffer_r(data, <void **>&data_c, &data_len_c)
-        
+
+        asbuffer_r(data, <void **>&data_c, &data_len_c)
+
+        # copy unspecified, apply copy_threshold
+        if copy is None:
+            if copy_threshold and data_len_c < copy_threshold:
+                copy = True
+            else:
+                copy = False
+
+        if copy:
+            # copy message data instead of sharing memory
+            rc = zmq_msg_init_size(&self.zmq_msg, data_len_c)
+            _check_rc(rc)
+            memcpy(zmq_msg_data(&self.zmq_msg), data_c, data_len_c)
+            self._failed_init = False
+            return
+
+        # Getting here means that we are doing a true zero-copy Frame,
+        # where libzmq and Python are sharing memory.
+        # Hook up garbage collection with MessageTracker and zmq_free_fn
+
+        # Event and MessageTracker for monitoring when zmq is done with data:
+        if track:
+            evt = Event()
+            self.tracker_event = evt
+            self.tracker = zmq.MessageTracker(evt)
         # create the hint for zmq_free_fn
         # two pointers: the gc context and a message to be sent to the gc PULL socket
         # allows libzmq to signal to Python when it is done with Python-owned memory.
@@ -197,7 +227,7 @@ cdef class Frame:
             _check_rc(rc)
         self._failed_init = False
     
-    def __init__(self, object data=None, track=False):
+    def __init__(self, object data=None, track=False, copy=False, copy_threshold=None):
         """Enforce signature"""
         pass
 

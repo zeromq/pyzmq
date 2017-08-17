@@ -263,7 +263,7 @@ class TestSocket(BaseZMQTestCase):
             time.sleep(0.1)
         self.assertEqual(p2.done, True)
         self.assertEqual(msg, [b'something', b'else'])
-        m = zmq.Frame(b"again", track=True)
+        m = zmq.Frame(b"again", copy=False, track=True)
         self.assertEqual(m.tracker.done, False)
         p1 = a.send(m, copy=False)
         p2 = a.send(m, copy=False)
