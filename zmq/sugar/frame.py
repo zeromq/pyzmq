@@ -14,6 +14,38 @@ def _draft(v, feature):
         raise RuntimeError("libzmq and pyzmq must be built with draft support for %s" % features)
 
 class Frame(FrameBase, AttributeSetter):
+    """Frame(data=None, track=False, copy=None, copy_threshold=zmq.COPY_THRESHOLD)
+
+    A zmq message Frame class for non-copy send/recvs.
+
+    This class is only needed if you want to do non-copying send and recvs.
+    When you pass a string to this class, like ``Frame(s)``, the 
+    ref-count of `s` is increased by two: once because the Frame saves `s` as 
+    an instance attribute and another because a ZMQ message is created that
+    points to the buffer of `s`. This second ref-count increase makes sure
+    that `s` lives until all messages that use it have been sent. Once 0MQ
+    sends all the messages and it doesn't need the buffer of s, 0MQ will call
+    ``Py_DECREF(s)``.
+
+    Parameters
+    ----------
+
+    data : object, optional
+        any object that provides the buffer interface will be used to
+        construct the 0MQ message data.
+    track : bool [default: False]
+        whether a MessageTracker_ should be created to track this object.
+        Tracking a message has a cost at creation, because it creates a threadsafe
+        Event object.
+    copy : bool [default: use copy_threshold]
+        Whether to create a copy of the data to pass to libzmq
+        or share the memory with libzmq.
+        If unspecified, copy_threshold is used.
+    copy_threshold: int [default: zmq.COPY_THRESHOLD]
+        If copy is unspecified, messages smaller than this many bytes
+        will be copied and messages larger than this will be shared with libzmq.
+    """
+
     def __getitem__(self, key):
         # map Frame['User-Id'] to Frame.get('User-Id')
         return self.get(key)

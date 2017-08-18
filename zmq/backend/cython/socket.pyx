@@ -781,7 +781,7 @@ cdef class Socket:
                     if nbytes(buf) < self.copy_threshold:
                         _send_copy(self.handle, buf, flags)
                         return zmq._FINISHED_TRACKER
-                msg = Frame(data, track=track)
+                msg = Frame(data, track=track, copy_threshold=self.copy_threshold)
             return _send_frame(self.handle, msg, flags)
 
     cpdef recv(self, int flags=0, copy=True, track=False):

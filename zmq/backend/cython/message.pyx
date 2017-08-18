@@ -91,7 +91,7 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
     cdef zhint *hint = <zhint *> vhint
     cdef int rc
 
-    if hint != NULL: 
+    if hint != NULL:
         zmq_msg_init_size(&msg, sizeof(size_t))
         memcpy(zmq_msg_data(&msg), &hint.id, sizeof(size_t))
         rc = mutex_lock(hint.mutex)
@@ -99,7 +99,10 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
             fprintf(cstderr, "pyzmq-gc mutex lock failed rc=%d\n", rc)
         rc = zmq_msg_send(&msg, hint.sock, 0)
         if rc < 0:
-            fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
+            # gc socket could have been closed, e.g. during process teardown.
+            # If so, ignore the failure because there's nothing to do.
+            if zmq_errno() != ZMQ_ENOTSOCK:
+                fprintf(cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno()))
         rc = mutex_unlock(hint.mutex)
         if rc != 0:
             fprintf(cstderr, "pyzmq-gc mutex unlock failed rc=%d\n", rc)
@@ -111,37 +114,13 @@ cdef void free_python_msg(void *data, void *vhint) nogil:
 gc = None
 
 cdef class Frame:
-    """Frame(data=None, track=False)
-
-    A zmq message Frame class for non-copy send/recvs.
-
-    This class is only needed if you want to do non-copying send and recvs.
-    When you pass a string to this class, like ``Frame(s)``, the 
-    ref-count of `s` is increased by two: once because the Frame saves `s` as 
-    an instance attribute and another because a ZMQ message is created that
-    points to the buffer of `s`. This second ref-count increase makes sure
-    that `s` lives until all messages that use it have been sent. Once 0MQ
-    sends all the messages and it doesn't need the buffer of s, 0MQ will call
-    ``Py_DECREF(s)``.
-
-    Parameters
-    ----------
-
-    data : object, optional
-        any object that provides the buffer interface will be used to
-        construct the 0MQ message data.
-    track : bool [default: False]
-        whether a MessageTracker_ should be created to track this object.
-        Tracking a message has a cost at creation, because it creates a threadsafe
-        Event object.
-    
-    """
-
-    def __cinit__(self, object data=None, track=False, **kwargs):
+    def __cinit__(self, object data=None, track=False, copy=None, copy_threshold=None, **kwargs):
         cdef int rc
         cdef char *data_c = NULL
         cdef Py_ssize_t data_len_c=0
         cdef zhint *hint
+        if copy_threshold is None:
+            copy_threshold = zmq.COPY_THRESHOLD
 
         # init more as False
         self.more = False
@@ -152,14 +131,12 @@ cdef class Frame:
         self._buffer = None       # buffer view of data
         self._bytes = None        # bytes copy of data
 
-        # Event and MessageTracker for monitoring when zmq is done with data:
+        self.tracker_event = None
+        self.tracker = None
+        # self.tracker should start finished
+        # except in the case where we are sharing memory with libzmq
         if track:
-            evt = Event()
-            self.tracker_event = evt
-            self.tracker = zmq.MessageTracker(evt)
-        else:
-            self.tracker_event = None
-            self.tracker = None
+            self.tracker = zmq._FINISHED_TRACKER
 
         if isinstance(data, unicode):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
@@ -169,9 +146,33 @@ cdef class Frame:
             _check_rc(rc)
             self._failed_init = False
             return
-        else:
-            asbuffer_r(data, <void **>&data_c, &data_len_c)
-        
+
+        asbuffer_r(data, <void **>&data_c, &data_len_c)
+
+        # copy unspecified, apply copy_threshold
+        if copy is None:
+            if copy_threshold and data_len_c < copy_threshold:
+                copy = True
+            else:
+                copy = False
+
+        if copy:
+            # copy message data instead of sharing memory
+            rc = zmq_msg_init_size(&self.zmq_msg, data_len_c)
+            _check_rc(rc)
+            memcpy(zmq_msg_data(&self.zmq_msg), data_c, data_len_c)
+            self._failed_init = False
+            return
+
+        # Getting here means that we are doing a true zero-copy Frame,
+        # where libzmq and Python are sharing memory.
+        # Hook up garbage collection with MessageTracker and zmq_free_fn
+
+        # Event and MessageTracker for monitoring when zmq is done with data:
+        if track:
+            evt = Event()
+            self.tracker_event = evt
+            self.tracker = zmq.MessageTracker(evt)
         # create the hint for zmq_free_fn
         # two pointers: the gc context and a message to be sent to the gc PULL socket
         # allows libzmq to signal to Python when it is done with Python-owned memory.
@@ -197,7 +198,7 @@ cdef class Frame:
             _check_rc(rc)
         self._failed_init = False
     
-    def __init__(self, object data=None, track=False):
+    def __init__(self, object data=None, track=False, copy=False, copy_threshold=None):
         """Enforce signature"""
         pass
 

@@ -53,7 +53,7 @@ class TestFrame(BaseZMQTestCase):
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i)*x
             self.assertEqual(grc(s), 2)
-            m = zmq.Frame(s)
+            m = zmq.Frame(s, copy=False)
             self.assertEqual(grc(s), 4)
             del m
             await_gc(s, 2)
@@ -105,7 +105,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i)*x
             rc = 2
             self.assertEqual(grc(s), rc)
-            m = zmq.Frame(s)
+            m = zmq.Frame(s, copy=False)
             rc += 2
             self.assertEqual(grc(s), rc)
             m2 = copy.copy(m)
@@ -141,7 +141,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i)*x
             rc = 2
             self.assertEqual(grc(s), rc)
-            m = zmq.Frame(s)
+            m = zmq.Frame(s, copy=False)
             rc += 2
             self.assertEqual(grc(s), rc)
             m2 = copy.copy(m)
@@ -172,7 +172,7 @@ class TestFrame(BaseZMQTestCase):
     
     @skip_pypy
     def test_tracker(self):
-        m = zmq.Frame(b'asdf', track=True)
+        m = zmq.Frame(b'asdf', copy=False, track=True)
         self.assertFalse(m.tracker.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
@@ -192,8 +192,8 @@ class TestFrame(BaseZMQTestCase):
     
     @skip_pypy
     def test_multi_tracker(self):
-        m = zmq.Frame(b'asdf', track=True)
-        m2 = zmq.Frame(b'whoda', track=True)
+        m = zmq.Frame(b'asdf', copy=False, track=True)
+        m2 = zmq.Frame(b'whoda', copy=False, track=True)
         mt = zmq.MessageTracker(m,m2)
         self.assertFalse(m.tracker.done)
         self.assertFalse(mt.done)

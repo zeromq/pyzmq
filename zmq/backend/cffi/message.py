@@ -23,7 +23,7 @@ class Frame(object):
     buffer = None
 
 
-    def __init__(self, data, track=False):
+    def __init__(self, data, track=False, copy=None, copy_threshold=None):
         try:
             view(data)
         except TypeError:
@@ -39,7 +39,7 @@ class Frame(object):
         self.tracker = None
         self.closed = False
         if track:
-            self.tracker = zmq.MessageTracker()
+            self.tracker = zmq._FINISHED_TRACKER
 
         self.buffer = view(self.bytes)
 

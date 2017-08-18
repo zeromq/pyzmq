@@ -377,11 +377,13 @@ class Socket(SocketBase, AttributeSetter):
         """
         if routing_id is not None:
             if not isinstance(data, zmq.Frame):
-                data = zmq.Frame(data, track=track)
+                data = zmq.Frame(data, track=track, copy=copy or None,
+                                 copy_threshold=self.copy_threshold)
             data.routing_id = routing_id
         if group is not None:
             if not isinstance(data, zmq.Frame):
-                data = zmq.Frame(data, track=track)
+                data = zmq.Frame(data, track=track, copy=copy or None,
+                                 copy_threshold=self.copy_threshold)
             data.group = group
         return super(Socket, self).send(data, flags=flags, copy=copy, track=track)
 
