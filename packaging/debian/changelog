@@ -1,0 +1,5 @@
+pyzmq (17.0.0b1) unstable; urgency=low
+
+  * Initial packaging.
+
+ -- pyzmq developers <zeromq-dev@lists.zeromq.org>  Sun, 20 Aug 2017 11:30:22 +0000

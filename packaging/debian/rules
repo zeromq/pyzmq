@@ -1,0 +1,74 @@
+#!/usr/bin/make -f
+
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+ARCHITECTURE := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+export PYBUILD_DESTDIR_python2=debian/python-zmq/
+export PYBUILD_DESTDIR_python2-dbg=debian/python-zmq-dbg/
+export PYBUILD_DESTDIR_python3=debian/python3-zmq/
+export PYBUILD_DESTDIR_python3-dbg=debian/python3-zmq-dbg/
+export PYBUILD_DESTDIR_pypy=debian/pypy-zmq/
+export PYBUILD_DEBUG=1
+# ignore that randomly hang or crash (gh-953)
+export PYBUILD_TEST_ARGS=-v --ignore=zmq/tests/test_auth.py --ignore=zmq/tests/test_security.py
+export DH_VERBOSE=1
+
+# OBS build: add
+#   Macros:
+#   %_with_drafts 1
+# at the BOTTOM of the OBS prjconf
+OBS_BUILD_CFG=/.build/build.dist
+ifeq ("$(wildcard $(OBS_BUILD_CFG))","")
+BUILDCONFIG=$(shell ls -1 /usr/src/packages/SOURCES/_buildconfig* | head -n 1)
+endif
+ifneq ("$(wildcard $(OBS_BUILD_CFG))","")
+ifneq ("$(shell grep drafts $(OBS_BUILD_CFG))","")
+export PYBUILD_BUILD_ARGS=--enable-drafts
+endif
+endif
+
+# User build: DEB_BUILD_OPTIONS=drafts dpkg-buildpackage
+ifneq (,$(findstring drafts,$(DEB_BUILD_OPTIONS)))
+export PYBUILD_BUILD_ARGS=--enable-drafts
+endif
+
+%:
+	dh $@ --with python2,python3,pypy --buildsystem=pybuild
+
+override_dh_install:
+	dh_install
+	# remove a couple of header files already in python3-zmq
+	find debian/python3-zmq-dbg/usr/lib/ ! -type d ! -name '*.so' -delete
+	find debian/python-zmq-dbg/usr/lib/ ! -type d ! -name '*.so' -delete
+	# cffi is only used for pypy
+	rm -rf debian/python-zmq/usr/lib/python*/dist-packages/zmq/backend/cffi/
+	rm -rf debian/python-dbg-zmq/usr/lib/python*/dist-packages/zmq/backend/cffi/
+	rm -rf debian/python3-zmq/usr/lib/python*/dist-packages/zmq/backend/cffi/
+	rm -rf debian/python3-dbg-zmq/usr/lib/python*/dist-packages/zmq/backend/cffi/
+	find debian/python*-zmq/ -name compiler.json -delete
+	find debian/python*-zmq/ -name config.json -delete
+	# cython core is only used for cpython
+	rm -rf debian/pypy-zmq/usr/lib/pypy/dist-packages/zmq/backend/cython
+	# yield from isn't byte-compileable in Python 2.x
+	find debian/python-zmq debian/pypy-zmq -name '*test_asyncio.py' -delete
+	find debian/python-zmq debian/pypy-zmq -name '*asyncio.py' -delete
+
+	# build shared libraries for pypy and install them
+	pypy -c 'import zmq'
+	mv -v zmq/backend/cffi/__pycache__/*so \
+	  $(CURDIR)/debian/pypy-zmq/usr/lib/pypy/dist-packages/zmq/backend/cffi
+	# put there by install, not needed
+	rm -f $(CURDIR)/debian/pypy-zmq/usr/lib/pypy/dist-packages/_cffi*.so
+
+	find debian/python-zmq -depth -type d -empty -exec rmdir {} \;
+	find debian/python-zmq-dbg -type d -depth -empty -exec rmdir {} \;
+	find debian/python3-zmq -depth -type d -empty -exec rmdir {} \;
+	find debian/python3-zmq-dbg -type d -depth -empty -exec rmdir {} \;
+	find debian/pypy-zmq -type d -depth -empty -exec rmdir {} \;
+
+override_dh_auto_test:
+
+override_dh_strip:
+	dh_strip --dbg-package=python-zmq-dbg
+	dh_strip --dbg-package=python3-zmq-dbg
