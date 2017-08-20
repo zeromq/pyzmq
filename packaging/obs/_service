@@ -1,0 +1,66 @@
+<services>
+  <service name="tar_scm">
+    <param name="url">https://github.com/zeromq/pyzmq</param>
+    <param name="scm">git</param>
+    <param name="versionformat">@PARENT_TAG@+git%cd</param>
+    <param name="versionrewrite-pattern">v(.*)</param>
+    <param name="versionrewrite-replacement">\1</param>
+    <param name="exclude">.git</param>
+    <param name="changesgenerate">enable</param>
+    <param name="filename">pyzmq</param>
+  </service>
+
+  <!-- extract redhat packaging -->
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/redhat/python-pyzmq.spec</param>
+    <param name="outfilename">python-pyzmq.spec</param>
+  </service>
+
+  <!-- extract debian packaging -->
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/pyzmq.dsc.obs</param>
+    <param name="outfilename">pyzmq.dsc</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/changelog</param>
+    <param name="outfilename">debian.changelog</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/compat</param>
+    <param name="outfilename">debian.compat</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/control</param>
+    <param name="outfilename">debian.control</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/copyright</param>
+    <param name="outfilename">debian.copyright</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/source/format</param>
+    <param name="outfilename">debian.format</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*.tar</param>
+    <param name="files">*/packaging/debian/rules</param>
+    <param name="outfilename">debian.rules</param>
+  </service>
+
+  <service name="set_version">
+    <param name="basename">pyzmq</param>
+  </service>
+
+  <service name="recompress">
+    <param name="file">*.tar</param>
+    <param name="compression">gz</param>
+  </service>
+</services>
+
