@@ -1,0 +1,17 @@
+Format: 3.0 (native)
+Source: pyzmq
+Binary: python-zmq, python-zmq-dbg, python3-zmq, python3-zmq-dbg, pypy-zmq
+Architecture: any
+Version: 17.0.0b1
+Maintainer: pyzmq developers <zeromq-dev@lists.zeromq.org>
+Homepage: http://www.zeromq.org/bindings:python
+Standards-Version: 3.9.8
+Build-Depends: cython (>= 0.20-1~), cython-dbg (>= 0.20-1~), debhelper (>= 9~), dh-python (>= 1.20131021-1~), dpkg-dev (>= 1.16.1~), libzmq3-dev, pypy (>= 2.2), python-all-dbg (>= 2.7.3-1~), python-all-dev (>= 2.7.3-1~), python-cffi, python3-cffi, python-setuptools, python3 (>= 3.3.0-1~), python3-all-dbg (>= 3.3.0-1~), python3-all-dev (>= 3.3.0-1~)
+Package-List:
+ pypy-zmq deb python optional arch=any
+ python-zmq deb python optional arch=any
+ python-zmq-dbg deb debug extra arch=any
+ python3-zmq deb python optional arch=any
+ python3-zmq-dbg deb debug extra arch=any
+Files:
+ 4cf14a2995742253b2b009541f4436f4 455492 pyzmq.orig.tar.gz
