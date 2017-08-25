@@ -56,7 +56,8 @@ def curve_keypair():
     cdef char[64] public_key
     cdef char[64] secret_key
     _check_version((4,0), "curve_keypair")
-    rc = zmq_curve_keypair (public_key, secret_key)
+    with nogil:
+        rc = zmq_curve_keypair (public_key, secret_key)
     _check_rc(rc)
     return public_key, secret_key
 
