@@ -30,14 +30,14 @@ def sync(connect_to):
 
 def main():
     if len (sys.argv) != 3:
-        print 'usage: subscriber <connect_to> <array-count>'
+        print('usage: subscriber <connect_to> <array-count>')
         sys.exit (1)
 
     try:
         connect_to = sys.argv[1]
         array_count = int (sys.argv[2])
     except (ValueError, OverflowError), e:
-        print 'array-count must be integers'
+        print('array-count must be integers')
         sys.exit (1)
 
     ctx = zmq.Context()
@@ -49,10 +49,10 @@ def main():
 
     start = time.clock()
 
-    print "Receiving arrays..."
+    print("Receiving arrays...")
     for i in range(array_count):
         a = s.recv_pyobj()
-    print "   Done."
+    print("   Done.")
 
     end = time.clock()
 
@@ -63,10 +63,10 @@ def main():
     message_size = a.nbytes
     megabits = float (throughput * message_size * 8) / 1000000
 
-    print "message size: %.0f [B]" % (message_size, )
-    print "array count: %.0f" % (array_count, )
-    print "mean throughput: %.0f [msg/s]" % (throughput, )
-    print "mean throughput: %.3f [Mb/s]" % (megabits, )
+    print("message size: %.0f [B]" % (message_size, ))
+    print("array count: %.0f" % (array_count, ))
+    print("mean throughput: %.0f [msg/s]" % (throughput, ))
+    print("mean throughput: %.3f [Mb/s]" % (megabits, ))
 
     time.sleep(1.0)
 
