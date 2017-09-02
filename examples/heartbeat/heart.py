@@ -26,9 +26,8 @@ dev.start()
 time.sleep(1)
 
 A = numpy.random.random((2**11,2**11))
-print "starting blocking loop"
+print("starting blocking loop")
 while True:
     tic = time.time()
     numpy.dot(A,A.transpose())
-    print "blocked for %.3f s"%(time.time()-tic)
-
+    print("blocked for %.3f s"%(time.time()-tic))
