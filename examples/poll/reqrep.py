@@ -10,7 +10,7 @@
 import time
 import zmq
 
-print "Running polling tests for REQ/REP sockets..."
+print("Running polling tests for REQ/REP sockets...")
 
 addr = 'tcp://127.0.0.1:5555'
 ctx = zmq.Context()
@@ -68,4 +68,4 @@ poller.unregister(s2)
 # Wait for everything to finish.
 time.sleep(1.0)
 
-print "Finished."
+print("Finished.")
