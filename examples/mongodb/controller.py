@@ -5,11 +5,12 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+from __future__ import print_function
+import json
 import sys
 import zmq
 import pymongo
 import pymongo.json_util
-import json
 
 class MongoZMQ(object):
     """
@@ -38,7 +39,7 @@ class MongoZMQ(object):
         """
         Inserts a document (dictionary) into mongo database table
         """
-        print 'adding docment %s' % (doc)
+        print('adding docment %s' % (doc))
         try:
             self._table.insert(doc)
         except Exception,e:
@@ -49,7 +50,7 @@ class MongoZMQ(object):
         Attempts to return a single document from database table that matches
         each key/value in keys dictionary.
         """
-        print 'attempting to retrieve document using keys: %s' % keys
+        print('attempting to retrieve document using keys: %s' % keys)
         try:
             return self._table.find_one(keys)
         except Exception,e:
@@ -61,10 +62,10 @@ class MongoZMQ(object):
         socket.bind(self._bind_addr)
         while True:
             msg = socket.recv_multipart()
-            print "Received msg: ", msg
+            print("Received msg: ", msg)
             if  len(msg) != 3:
                 error_msg = 'invalid message received: %s' % msg
-                print error_msg
+                print(error_msg)
                 reply = [msg[0], error_msg]
                 socket.send_multipart(reply)
                 continue
@@ -81,7 +82,7 @@ class MongoZMQ(object):
                 json_doc = self._doc_to_json(doc)
                 reply.append(json_doc)
             else:
-                print 'unknown request'
+                print('unknown request')
             socket.send_multipart(reply)
 
 def main():
