@@ -1,8 +1,9 @@
+from __future__ import print_function
 from gevent import spawn, spawn_later
 import zmq.green as zmq
 
 # server
-print zmq.Context
+print(zmq.Context)
 ctx = zmq.Context()
 sock = ctx.socket(zmq.PUSH)
 sock.bind('ipc:///tmp/zmqtest')
@@ -22,13 +23,13 @@ sock.connect('ipc:///tmp/zmqtest')
 def get_objs(sock):
     while True:
         o = sock.recv_pyobj()
-        print 'received python object:', o
+        print('received python object:', o)
         if o == 'quit':
-            print 'exiting.'
+            print('exiting.')
             break
 
 def print_every(s, t=None):
-    print s
+    print(s)
     if t:
         spawn_later(t, print_every, s, t)
 
