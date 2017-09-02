@@ -18,7 +18,7 @@ sizes = [1] + kB + MB
 def benchmark_set(f, sizes, reps):
     latencies = []
     for size, rep in zip(sizes, reps):
-        print "Running benchmark with %r reps of %r bytes" % (rep, size)
+        print("Running benchmark with %r reps of %r bytes" % (rep, size))
         lat = benchmark(f, size, rep)
         latencies.append(lat)
     return sizes, latencies
