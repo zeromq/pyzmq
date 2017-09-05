@@ -11,7 +11,6 @@ which is not worth paying for small messages.
 import argparse
 from contextlib import contextmanager
 import os
-import sys
 import pickle
 try:
     from time import monotonic
@@ -77,6 +76,12 @@ def main():
     parser = argparse.ArgumentParser(description='Run a zmq performance test')
     parser.add_argument(dest='test', nargs='?', type=str, default='lat', choices=['lat', 'thr'],
                        help='which test to run')
+    parser.add_argument('--points', type=int, default=3,
+                       help='how many data points to collect per interval')
+    parser.add_argument('--max', type=int, default=0,
+                       help='maximum msg size (log10, so 3=1000)')
+    parser.add_argument('--min', type=int, default=0,
+                       help='minimum msg size (log10, so 3=1000)')
     args = parser.parse_args()
 
     test = args.test
@@ -93,17 +98,18 @@ def main():
             before = pickle.load(f)
     
     if test == 'lat':
-        nmin = 3
-        nmax = 7
-        npoints = 9
+        nmin = args.min or 2
+        nmax = args.max or 7
         t_min = 0.4
         t_max = 3
     else:
-        nmin = 2
-        nmax = 6
-        npoints = 9
+        nmin = args.min or 2
+        nmax = args.max or 6
         t_min = 1
         t_max = 3
+    npoints = args.points * (nmax - nmin) + 1
+    sizes = np.logspace(nmin, nmax, npoints).astype(int)
+    print("Computing %s datapoints: size=%s" % (len(sizes), list(sizes)))
     for size in np.logspace(nmin, nmax, npoints).astype(int):
         for copy in (True, False):
             if before is not None:
