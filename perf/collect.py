@@ -43,12 +43,15 @@ def compute_data_point(test, size, copy=True, poll=False, transport='ipc', t_min
     count = 2
     results = []
     print('copy=%s, size=%s' % (copy, size))
-    print('count result dt')
+    print('%8s %5s %7s' % ('count', 'dt', 'result'))
     while duration < t_max:
         with timer() as get_duration:
             result = do_run(test, count=count, size=size, copy=copy, url=url, quiet=True)
+        if not isinstance(result, tuple):
+            result = (result,)
         duration = get_duration()
-        print('  %8i %4i %5.02g' % (count, result, duration))
+        fmt = '%8i %5.02g {}'.format('%7i ' * len(result))
+        print(fmt % ((count, duration) + result))
         if duration >= t_min:
             # within our window, record result
             results.append((result, count))
@@ -63,6 +66,11 @@ def compute_data_point(test, size, copy=True, poll=False, transport='ipc', t_min
 full_names = {
     'lat': 'latency',
     'thr': 'throughput',
+}
+
+result_columns = {
+    'lat':['latency'],
+    'thr': ['sends', 'throughput'],
 }
 
 def main():
@@ -92,7 +100,7 @@ def main():
         t_max = 3
     else:
         nmin = 2
-        nmax = 4
+        nmax = 6
         npoints = 9
         t_min = 1
         t_max = 3
@@ -111,11 +119,13 @@ def main():
                     continue
             for result, count in compute_data_point(test, size,
                     copy=copy, transport=transport, poll=poll, t_min=t_min, t_max=t_max):
+
                 data.append(
-                    (size, count, result, copy, poll, transport),
+                    (size, count, copy, poll, transport) + result,
                 )
                 df = pd.DataFrame(data,
-                    columns=['size', 'count', full_name, 'copy', 'poll', 'transport'])
+                    columns=['size', 'count', 'copy', 'poll', 'transport'] + result_columns[test],
+                )
                 if before is not None:
                     df = pd.concat([before, df])
                 df.to_pickle(fname)
