@@ -4,6 +4,7 @@
 without relying on tornado integration (see echostream).
 """
 
+from functools import partial
 import zmq
 from tornado import ioloop
 
