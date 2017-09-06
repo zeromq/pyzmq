@@ -4,6 +4,7 @@
 
 import sys
 import time
+from threading import Thread
 
 import zmq
 from zmq import ZMQError, strerror, Again, ContextTerminated
@@ -40,4 +41,3 @@ class TestZMQError(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.TERM, s.recv, zmq.NOBLOCK)
         s.close()
         t.join()
-
