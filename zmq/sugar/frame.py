@@ -11,7 +11,7 @@ import zmq
 def _draft(v, feature):
     zmq.error._check_version(v, feature)
     if not zmq.DRAFT_API:
-        raise RuntimeError("libzmq and pyzmq must be built with draft support for %s" % features)
+        raise RuntimeError("libzmq and pyzmq must be built with draft support for %s" % feature)
 
 class Frame(FrameBase, AttributeSetter):
     """Frame(data=None, track=False, copy=None, copy_threshold=zmq.COPY_THRESHOLD)
