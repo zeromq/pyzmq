@@ -2,7 +2,7 @@
 
 # This file has been placed in the public domain.
 
-
+from __future__ import print_function
 import zmq
 from zmq.utils.win32 import allow_interrupt
 
@@ -15,7 +15,7 @@ def main(addrs):
     updates.setsockopt(zmq.SUBSCRIBE, "")
     updates.connect('inproc://control')
     for addr in addrs:
-        print "Connecting to: ", addr
+        print("Connecting to: ", addr)
         updates.connect(addr)
 
     def interrupt_polling():
@@ -27,19 +27,19 @@ def main(addrs):
         while message != 'quit':
             message = updates.recv_multipart()
             if len(message) < 2:
-                print 'Invalid message.'
+                print('Invalid message.')
                 continue
             account = message[0]
             message = ' '.join(message[1:])
             if message == 'quit':
-                print 'Killed by "%s".' % account
+                print('Killed by "%s".' % account)
                 break
-            print '%s: %s' % (account, message)
+            print('%s: %s' % (account, message))
 
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 2:
-        print "usage: display.py <address> [,<address>...]"
+        print("usage: display.py <address> [,<address>...]")
         raise SystemExit
     main(sys.argv[1:])

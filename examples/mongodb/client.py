@@ -5,6 +5,7 @@
 #  the file COPYING.BSD, distributed as part of this software.
 #-----------------------------------------------------------------------------
 
+from __future__ import print_function
 import json
 import zmq
 
@@ -35,12 +36,12 @@ def main():
     client = MongoZMQClient()
     for i in range(10):
         doc = {'job': str(i)}
-        print "Adding doc", doc
-        print client.add_doc(doc)
+        print("Adding doc", doc)
+        print(client.add_doc(doc))
     for i in range(10):
         query = {'job': str(i)}
-        print "Getting doc matching query:", query
-        print client.get_doc(query)
+        print("Getting doc matching query:", query)
+        print(client.get_doc(query))
 
 if __name__ == "__main__":
     main()

@@ -25,7 +25,7 @@ import zmq
 
 def main():
     if len (sys.argv) != 2:
-        print 'usage: publisher <bind-to>'
+        print('usage: publisher <bind-to>')
         sys.exit (1)
 
     bind_to = sys.argv[1]
@@ -38,27 +38,27 @@ def main():
     s = ctx.socket(zmq.PUB)
     s.bind(bind_to)
 
-    print "Starting broadcast on topics:"
-    print "   %s" % all_topics
-    print "Hit Ctrl-C to stop broadcasting."
-    print "Waiting so subscriber sockets can connect..."
-    print
+    print("Starting broadcast on topics:")
+    print("   %s" % all_topics)
+    print("Hit Ctrl-C to stop broadcasting.")
+    print("Waiting so subscriber sockets can connect...")
+    print("")
     time.sleep(1.0)
 
     msg_counter = itertools.count()
     try:
         for topic in itertools.cycle(all_topics):
             msg_body = str(msg_counter.next())
-            print '   Topic: %s, msg:%s' % (topic, msg_body)
+            print('   Topic: %s, msg:%s' % (topic, msg_body))
             s.send_multipart([topic, msg_body])
             # short wait so we don't hog the cpu
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
 
-    print "Waiting for message queues to flush..."
+    print("Waiting for message queues to flush...")
     time.sleep(0.5)
-    print "Done."
+    print("Done.")
 
 if __name__ == "__main__":
     main()

@@ -18,6 +18,7 @@
 #    You should have received a copy of the Lesser GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import zmq
 
 def main(addrs):
@@ -26,16 +27,16 @@ def main(addrs):
     socket = context.socket(zmq.SUB)
     socket.setsockopt(zmq.SUBSCRIBE, "")
     for addr in addrs:
-        print "Connecting to: ", addr
+        print("Connecting to: ", addr)
         socket.connect(addr)
 
     while True:
         msg = socket.recv_pyobj()
-        print "%s: %s" % (msg[1], msg[0])
+        print("%s: %s" % (msg[1], msg[0]))
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 2:
-        print "usage: display.py <address> [,<address>...]"
+        print("usage: display.py <address> [,<address>...]")
         raise SystemExit
     main(sys.argv[1:])

@@ -1,6 +1,7 @@
 """
 Complex example which is a combination of the rr* examples from the zguide.
 """
+from __future__ import print_function
 from gevent import spawn
 import zmq.green as zmq
 
@@ -12,7 +13,7 @@ socket.connect("tcp://localhost:5560")
 def serve(socket):
     while True:
         message = socket.recv()
-        print "Received request: ", message
+        print("Received request: ", message)
         socket.send("World")
 server = spawn(serve, socket)
 
@@ -27,7 +28,7 @@ def client():
     for request in range(1,10):
         socket.send("Hello")
         message = socket.recv()
-        print "Received reply ", request, "[", message, "]"
+        print("Received reply ", request, "[", message, "]")
 
 
 # broker
