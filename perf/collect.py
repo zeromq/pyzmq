@@ -11,7 +11,6 @@ which is not worth paying for small messages.
 import argparse
 from contextlib import contextmanager
 import os
-import sys
 import pickle
 try:
     from time import monotonic
@@ -43,12 +42,15 @@ def compute_data_point(test, size, copy=True, poll=False, transport='ipc', t_min
     count = 2
     results = []
     print('copy=%s, size=%s' % (copy, size))
-    print('count result dt')
+    print('%8s %5s %7s' % ('count', 'dt', 'result'))
     while duration < t_max:
         with timer() as get_duration:
             result = do_run(test, count=count, size=size, copy=copy, url=url, quiet=True)
+        if not isinstance(result, tuple):
+            result = (result,)
         duration = get_duration()
-        print('  %8i %4i %5.02g' % (count, result, duration))
+        fmt = '%8i %5.02g {}'.format('%7i ' * len(result))
+        print(fmt % ((count, duration) + result))
         if duration >= t_min:
             # within our window, record result
             results.append((result, count))
@@ -65,10 +67,21 @@ full_names = {
     'thr': 'throughput',
 }
 
+result_columns = {
+    'lat':['latency'],
+    'thr': ['sends', 'throughput'],
+}
+
 def main():
     parser = argparse.ArgumentParser(description='Run a zmq performance test')
     parser.add_argument(dest='test', nargs='?', type=str, default='lat', choices=['lat', 'thr'],
                        help='which test to run')
+    parser.add_argument('--points', type=int, default=3,
+                       help='how many data points to collect per interval')
+    parser.add_argument('--max', type=int, default=0,
+                       help='maximum msg size (log10, so 3=1000)')
+    parser.add_argument('--min', type=int, default=0,
+                       help='minimum msg size (log10, so 3=1000)')
     args = parser.parse_args()
 
     test = args.test
@@ -85,17 +98,18 @@ def main():
             before = pickle.load(f)
     
     if test == 'lat':
-        nmin = 3
-        nmax = 7
-        npoints = 9
+        nmin = args.min or 2
+        nmax = args.max or 7
         t_min = 0.4
         t_max = 3
     else:
-        nmin = 2
-        nmax = 4
-        npoints = 9
+        nmin = args.min or 2
+        nmax = args.max or 6
         t_min = 1
         t_max = 3
+    npoints = args.points * (nmax - nmin) + 1
+    sizes = np.logspace(nmin, nmax, npoints).astype(int)
+    print("Computing %s datapoints: size=%s" % (len(sizes), list(sizes)))
     for size in np.logspace(nmin, nmax, npoints).astype(int):
         for copy in (True, False):
             if before is not None:
@@ -111,11 +125,13 @@ def main():
                     continue
             for result, count in compute_data_point(test, size,
                     copy=copy, transport=transport, poll=poll, t_min=t_min, t_max=t_max):
+
                 data.append(
-                    (size, count, result, copy, poll, transport),
+                    (size, count, copy, poll, transport) + result,
                 )
                 df = pd.DataFrame(data,
-                    columns=['size', 'count', full_name, 'copy', 'poll', 'transport'])
+                    columns=['size', 'count', 'copy', 'poll', 'transport'] + result_columns[test],
+                )
                 if before is not None:
                     df = pd.concat([before, df])
                 df.to_pickle(fname)

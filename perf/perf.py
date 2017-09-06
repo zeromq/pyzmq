@@ -17,6 +17,8 @@ except AttributeError:
     now = time.time
 
 import zmq
+# disable copy threshold for benchmarking
+zmq.COPY_THRESHOLD = 0
 
 def parse_args(argv=None):
 
@@ -111,10 +113,11 @@ def latency(url, count, size, poll=False, copy=True, quiet=False):
     ctx.destroy()
     return latency
 
-def pusher(url, count, size, poll=False, copy=True, quiet=False):
+def thr_sink(url, count, size, poll=False, copy=True, quiet=False):
     """send a bunch of messages on a PUSH socket"""
     ctx = zmq.Context()
-    s = ctx.socket(zmq.PUSH)
+    s = ctx.socket(zmq.ROUTER)
+    s.RCVHWM = 0
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
@@ -123,16 +126,21 @@ def pusher(url, count, size, poll=False, copy=True, quiet=False):
         p = zmq.Poller()
         p.register(s)
 
-    s.connect(url)
-    
-    msg = zmq.Message(b' ' * size)
-    block = zmq.NOBLOCK if poll else 0
-    
+    s.bind(url)
+    msg = s.recv_multipart()
+    assert msg[1] == b'BEGIN', msg
+    count = int(msg[2].decode('ascii'))
+    s.send_multipart(msg)
+
+    flags = zmq.NOBLOCK if poll else 0
+
     for i in range(count):
         if poll:
             res = p.poll()
-            assert(res[0][1] & zmq.POLLOUT)
-        s.send(msg, block, copy=copy)
+            assert(res[0][1] & zmq.POLLIN)
+        msg = s.recv_multipart(flags=flags, copy=copy)
+
+    s.send_multipart([msg[0], b'DONE'])
 
     s.close()
     ctx.term()
@@ -143,41 +151,50 @@ def throughput(url, count, size, poll=False, copy=True, quiet=False):
     Should be started before `pusher`
     """
     ctx = zmq.Context()
-    s = ctx.socket(zmq.PULL)
+    s = ctx.socket(zmq.DEALER)
+    s.SNDHWM = 0
 
     #  Add your socket options here.
     #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
 
     if poll:
         p = zmq.Poller()
-        p.register(s)
+        p.register(s, zmq.POLLOUT)
 
-    s.bind(url)
+    s.connect(url)
+    data = b' ' * size
 
-    block = zmq.NOBLOCK if poll else 0
-    
+    flags = zmq.NOBLOCK if poll else 0
+    s.send_multipart([b'BEGIN', str(count).encode('ascii')])
     # Wait for the other side to connect.
-    msg = s.recv()
-    assert len (msg) == size
-    
+    msg = s.recv_multipart()
+    assert msg[0] == b'BEGIN'
     start = now()
-    for i in range (count-1):
+    for i in range(count):
         if poll:
             res = p.poll()
-        msg = s.recv(block, copy=copy)
+            assert(res[0][1] & zmq.POLLOUT)
+        s.send(data, flags=flags, copy=copy)
+    sent = now()
+    # wait for receiver
+    reply = s.recv_multipart()
     elapsed = now() - start
-    
-    throughput = (float(count)) / float(elapsed)
-    megabits = float(throughput * size * 8) / 1e6
+    assert reply[0] == b'DONE'
+    send_only = sent - start
+
+    send_throughput = count / send_only
+    throughput = count / elapsed
+    megabits = throughput * size * 8 / 1e6
 
     if not quiet:
-        print ("message size   : %8i     [B]" % (size, ))
-        print ("message count  : %8i     [msgs]" % (count, ))
-        print ("mean throughput: %8.0f     [msg/s]" % (throughput, ))
-        print ("mean throughput: %12.3f [Mb/s]" % (megabits, ))
-        print ("test time      : %12.3f [s]" % (elapsed, ))
+        print ("message size   : %8i     [B]" % size)
+        print ("message count  : %8i     [msgs]" % count)
+        print ("send only      : %8.0f     [msg/s]" % send_throughput)
+        print ("mean throughput: %8.0f     [msg/s]" % throughput)
+        print ("mean throughput: %12.3f [Mb/s]" % megabits)
+        print ("test time      : %12.3f [s]" % elapsed)
     ctx.destroy()
-    return throughput
+    return (send_throughput, throughput)
 
 def do_run(test, **kwargs):
     """Do a single run"""
@@ -185,7 +202,7 @@ def do_run(test, **kwargs):
         bg_func = latency_echo
         fg_func = latency
     elif test == 'thr':
-        bg_func = pusher
+        bg_func = thr_sink
         fg_func = throughput
     bg = Process(target=bg_func, kwargs=kwargs)
     bg.start()
