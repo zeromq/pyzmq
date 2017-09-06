@@ -20,6 +20,11 @@
 
 import zmq
 
+try:
+    raw_input          # Python 2
+except NameError:
+    raw_input = input  # Python 3
+
 def main(addr, who):
 
     ctx = zmq.Context()

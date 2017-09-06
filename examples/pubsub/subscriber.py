@@ -36,7 +36,7 @@ def main():
     try:
         connect_to = sys.argv[1]
         array_count = int (sys.argv[2])
-    except (ValueError, OverflowError), e:
+    except (ValueError, OverflowError) as e:
         print('array-count must be integers')
         sys.exit (1)
 

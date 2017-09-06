@@ -42,7 +42,7 @@ class MongoZMQ(object):
         print('adding docment %s' % (doc))
         try:
             self._table.insert(doc)
-        except Exception,e:
+        except Exception as e:
             return 'Error: %s' % e
 
     def get_document_by_keys(self, keys):
@@ -53,7 +53,7 @@ class MongoZMQ(object):
         print('attempting to retrieve document using keys: %s' % keys)
         try:
             return self._table.find_one(keys)
-        except Exception,e:
+        except Exception as e:
             return 'Error: %s' % e
 
     def start(self):
