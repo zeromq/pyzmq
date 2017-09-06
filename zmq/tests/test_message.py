@@ -274,12 +274,8 @@ class TestFrame(BaseZMQTestCase):
             shape = shapes[:i]
             A = numpy.random.random(shape)
             m = zmq.Frame(A)
-            if memoryview.__name__ == 'buffer':
-                self.assertEqual(A.data, m.buffer)
-                B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
-            else:
-                self.assertEqual(memoryview(A), m.buffer)
-                B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
+            self.assertEqual(memoryview(A), m.buffer)
+            B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEqual((A==B).all(), True)
     
     def test_memoryview(self):
@@ -312,10 +308,7 @@ class TestFrame(BaseZMQTestCase):
                 ff=b'\xff'*(40 + i*10)
                 sb.send(ff, copy=False)
                 m2 = sa.recv(copy=False)
-                if memoryview.__name__ == 'buffer':
-                    b = bytes(buf)
-                else:
-                    b = buf.tobytes()
+                b = buf.tobytes()
                 self.assertEqual(b, null)
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
