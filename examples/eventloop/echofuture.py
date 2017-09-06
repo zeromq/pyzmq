@@ -2,7 +2,7 @@
 """A basic ZMQ echo server with zmq.eventloop.future"""
 
 import zmq
-from tornado import ioloop
+from tornado import gen, ioloop
 from zmq.eventloop.future import Context
 
 @gen.coroutine
