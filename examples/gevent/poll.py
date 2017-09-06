@@ -8,7 +8,7 @@ def sender():
     sender.connect('inproc://polltest1')
     sender.connect('inproc://polltest2')
 
-    for i in xrange(10):
+    for i in range(10):
         sender.send('test %d' % i)
         gevent.sleep(1)
 
