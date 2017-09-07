@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """A basic ZMQ echo server using the tornado eventloop
 
-without relying on tornado integration (see echostream).
+without relying on tornado integration (see echostream, echofuture).
 """
 
-from functools import partial
 import zmq
 from tornado import ioloop
 
@@ -14,11 +13,12 @@ def echo(sock, events):
         # not a read event
         return
     msg = sock.recv_multipart()
+    print(msg)
     sock.send_multipart(msg)
     # avoid starving due to edge-triggered event FD
     # if there is more than one read event waiting
     if sock.EVENTS & zmq.POLLIN:
-        ioloop.IOLoop.current().add_callback(partial(rep_handler, sock, events))
+        ioloop.IOLoop.current().add_callback(echo, sock, events)
 
 ctx = zmq.Context.instance()
 s = ctx.socket(zmq.ROUTER)
