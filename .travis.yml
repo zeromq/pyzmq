@@ -1,17 +1,19 @@
 language: python
-dist: trusty
 
 cache:
   - apt
   - pip
+
 python:
   - 2.7
   - 3.6
   - pypy2.7-5.8.0
   - pypy3.5-5.8.0
+
 env:
     - ZMQ=
     - ZMQ=bundled
+
 before_install:
   - sudo add-apt-repository -y ppa:anton+/dnscrypt
   - sudo apt-get update
@@ -76,8 +78,6 @@ matrix:
       env: ZMQ=zeromq4-1
     - python: 3.4
       env: ZMQ=zeromq3-x
-    - python: 3.3
-      env: ZMQ=
     - python: nightly
       env: ZMQ=
     - python: nightly

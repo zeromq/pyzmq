@@ -8,7 +8,7 @@ This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
 PyZMQ should work with any reasonable version of Python (≥ 3.4),
-as well as Python 2.7 and 3.3, as well as PyPy.
+as well as Python 2.7 and PyPy.
 The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x and 4.x),
 but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2 (including 4.x).
 
@@ -78,6 +78,10 @@ Building pyzmq from the git repo (including release tags on GitHub) requires Cyt
 
 ## Old versions
 
+pyzmq 17 drops support Python 3.3.
+If you need to use Python 3.3, you can pin your pyzmq version to before 17:
+
+    pip install 'pyzmq<17'
 
 pyzmq 16 drops support Python 2.6 and 3.2.
 If you need to use one of those Python versions, you can pin your pyzmq version to before 16:
