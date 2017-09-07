@@ -38,10 +38,6 @@ try:
 except AttributeError:
     DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
 
-try:
-    _buffer_type = memoryview
-except NameError:
-    _buffer_type = buffer
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
@@ -416,10 +412,10 @@ class Socket(SocketBase, AttributeSetter):
         """
         # typecheck parts before sending:
         for i,msg in enumerate(msg_parts):
-            if isinstance(msg, (zmq.Frame, bytes, _buffer_type)):
+            if isinstance(msg, (zmq.Frame, bytes, memoryview)):
                 continue
             try:
-                _buffer_type(msg)
+                memoryview(msg)
             except Exception:
                 rmsg = repr(msg)
                 if len(rmsg) > 32:

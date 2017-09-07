@@ -8,11 +8,6 @@ from ._cffi import ffi, C
 import zmq
 from zmq.utils.strtypes import unicode
 
-try:
-    view = memoryview
-except NameError:
-    view = buffer
-
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 
 class Frame(object):
@@ -25,7 +20,7 @@ class Frame(object):
 
     def __init__(self, data, track=False, copy=None, copy_threshold=None):
         try:
-            view(data)
+            memoryview(data)
         except TypeError:
             raise
 
@@ -41,7 +36,7 @@ class Frame(object):
         if track:
             self.tracker = zmq._FINISHED_TRACKER
 
-        self.buffer = view(self.bytes)
+        self.buffer = memoryview(self.bytes)
 
     @property
     def bytes(self):

@@ -23,14 +23,9 @@ from zmq.utils.strtypes import unicode, bytes, b, u
 
 x = b'x'
 
-try:
-    view = memoryview
-except NameError:
-    view = buffer
-
 if grc:
     rc0 = grc(x)
-    v = view(x)
+    v = memoryview(x)
     view_rc = grc(x) - rc0
 
 def await_gc(obj, rc):
@@ -210,7 +205,7 @@ class TestFrame(BaseZMQTestCase):
     def test_buffer_in(self):
         """test using a buffer as input"""
         ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
-        m = zmq.Frame(view(ins))
+        m = zmq.Frame(memoryview(ins))
     
     def test_bad_buffer_in(self):
         """test using a bad object"""
@@ -222,7 +217,7 @@ class TestFrame(BaseZMQTestCase):
         ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(ins)
         outb = m.buffer
-        self.assertTrue(isinstance(outb, view))
+        self.assertTrue(isinstance(outb, memoryview))
         self.assert_(outb is m.buffer)
         self.assert_(m.buffer is m.buffer)
     
@@ -279,12 +274,8 @@ class TestFrame(BaseZMQTestCase):
             shape = shapes[:i]
             A = numpy.random.random(shape)
             m = zmq.Frame(A)
-            if view.__name__ == 'buffer':
-                self.assertEqual(A.data, m.buffer)
-                B = numpy.frombuffer(m.buffer,dtype=A.dtype).reshape(A.shape)
-            else:
-                self.assertEqual(memoryview(A), m.buffer)
-                B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
+            self.assertEqual(memoryview(A), m.buffer)
+            B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
             self.assertEqual((A==B).all(), True)
     
     def test_memoryview(self):
@@ -310,17 +301,14 @@ class TestFrame(BaseZMQTestCase):
             sb.send(null, copy=False)
             m = sa.recv(copy=False)
             mb = m.bytes
-            # buf = view(m)
+            # buf = memoryview(m)
             buf = m.buffer
             del m
             for i in range(5):
                 ff=b'\xff'*(40 + i*10)
                 sb.send(ff, copy=False)
                 m2 = sa.recv(copy=False)
-                if view.__name__ == 'buffer':
-                    b = bytes(buf)
-                else:
-                    b = buf.tobytes()
+                b = buf.tobytes()
                 self.assertEqual(b, null)
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
