@@ -500,15 +500,13 @@ class ZMQStream(object):
 
     def _add_io_state(self, state):
         """Add io_state to poller."""
-        if not self._state & state:
-            self._state = self._state | state
-            self._update_handler(self._state)
+        self._state = self._state | state
+        self._update_handler(self._state)
 
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
-        if self._state & state:
-            self._state = self._state & (~state)
-            self._update_handler(self._state)
+        self._state = self._state & (~state)
+        self._update_handler(self._state)
 
     def _update_handler(self, state):
         """Update IOLoop handler with state."""
