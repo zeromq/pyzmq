@@ -33,7 +33,7 @@ def client():
 
 # broker
 frontend = context.socket(zmq.ROUTER)
-backend  = context.socket(zmq.DEALER);
+backend  = context.socket(zmq.DEALER)
 frontend.bind("tcp://*:5559")
 backend.bind("tcp://*:5560")
 
@@ -42,7 +42,7 @@ def proxy(socket_from, socket_to):
         m = socket_from.recv_multipart()
         socket_to.send_multipart(m)
 
-a = spawn(proxy, frontend, backend)
-b = spawn(proxy, backend, frontend)
+spawn(proxy, frontend, backend)
+spawn(proxy, backend, frontend)
 
 spawn(client).join()
