@@ -1256,10 +1256,14 @@ setup_args = dict(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
 if 'setuptools' in sys.modules:
     setup_args['zip_safe'] = False
+    # require Python 2.7, >= 3.3,
+    setup_args['python_requires'] = ">=2.7,!=3.0*,!=3.1*,!=3.2*"
+
     if pypy:
         setup_args['install_requires'] = [
             'py',
