@@ -35,6 +35,7 @@ from buildutils.bundle import vs as libzmq_vs
 pjoin = os.path.join
 
 repo = 'git@github.com:zeromq/pyzmq'
+branch = 'master'
 
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
@@ -83,9 +84,10 @@ def clone_repo(ctx, reset=False):
         shutil.rmtree(repo_root)
     if os.path.exists(repo_root):
         with cd(repo_root):
+            run("git checkout %s" % branch)
             run("git pull")
     else:
-        run("git clone %s %s" % (repo, repo_root))
+        run("git clone -b %s %s %s" % (branch, repo, repo_root))
 
 @task
 def patch_version(ctx, vs):
