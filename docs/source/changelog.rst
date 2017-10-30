@@ -10,6 +10,12 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+16.0.3
+======
+
+- Regenerate Cython sources in sdists with Cython 0.27.2,
+  fixing builds on CPython 3.7.
+
 16.0.2
 ======
 
