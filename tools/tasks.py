@@ -35,6 +35,7 @@ from buildutils.bundle import vs as libzmq_vs
 pjoin = os.path.join
 
 repo = 'git@github.com:zeromq/pyzmq'
+branch = '16.x'
 
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
