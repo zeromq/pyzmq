@@ -83,9 +83,10 @@ def clone_repo(ctx, reset=False):
         shutil.rmtree(repo_root)
     if os.path.exists(repo_root):
         with cd(repo_root):
+            run("git checkout %s" % branch)
             run("git pull")
     else:
-        run("git clone %s %s" % (repo, repo_root))
+        run("git clone -b %s %s %s" % (branch, repo, repo_root))
 
 @task
 def patch_version(ctx, vs):
