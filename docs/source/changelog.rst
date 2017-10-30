@@ -34,6 +34,12 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
   .. seealso::
     :ref:`draft`
 
+16.0.3
+======
+
+- Regenerate Cython sources in sdists with Cython 0.27.2,
+  fixing builds on CPython 3.7.
+
 16.0.2
 ======
 
