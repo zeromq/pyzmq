@@ -106,13 +106,14 @@ class _AsyncPoller(_zmq.Poller):
 
 
 class _AsyncSocket(_zmq.Socket):
-    
+
     _recv_futures = None
     _send_futures = None
     _state = 0
     _shadow_sock = None
     _poller_class = _AsyncPoller
     io_loop = None
+    _fd = None
 
     def __init__(self, context=None, socket_type=-1, io_loop=None, **kwargs):
         if isinstance(context, _zmq.Socket):
@@ -129,6 +130,7 @@ class _AsyncSocket(_zmq.Socket):
         self._recv_futures = deque()
         self._send_futures = deque()
         self._state = 0
+        self._fd = self._shadow_sock.FD
         self._init_io_state()
 
     @classmethod
@@ -447,7 +449,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def _schedule_remaining_events(self, events=None):
         """Schedule a call to handle_events next loop iteration
-        
+
         If there are still events to handle.
         """
         # edge-triggered handling
@@ -470,7 +472,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def _update_handler(self, state):
         """Update IOLoop handler with state.
-        
+
         zmq FD is always read-only.
         """
         self._schedule_remaining_events()
@@ -485,6 +487,9 @@ class _AsyncSocket(_zmq.Socket):
 
         called once during close
         """
-        self.io_loop.remove_handler(self._shadow_sock)
+        fd = self._shadow_sock
+        if self._shadow_sock.closed:
+            fd = self._fd
+        self.io_loop.remove_handler(fd)
 
 
