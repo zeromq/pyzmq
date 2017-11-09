@@ -453,18 +453,16 @@ class _AsyncSocket(_zmq.Socket):
             events = self._shadow_sock.EVENTS
         if events & self._state:
             self._call_later(0, self._handle_events)
-    
+
     def _add_io_state(self, state):
         """Add io_state to poller."""
-        if not self._state & state:
-            self._state = self._state | state
-            self._update_handler(self._state)
+        self._state = self._state | state
+        self._update_handler(self._state)
 
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
-        if self._state & state:
-            self._state = self._state & (~state)
-            self._update_handler(self._state)
+        self._state = self._state & (~state)
+        self._update_handler(self._state)
 
     def _update_handler(self, state):
         """Update IOLoop handler with state.
@@ -476,6 +474,7 @@ class _AsyncSocket(_zmq.Socket):
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
+        self._call_later(0, self._handle_events)
 
     def _clear_io_state(self):
         """unregister the ioloop event handler
