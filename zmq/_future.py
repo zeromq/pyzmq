@@ -140,7 +140,11 @@ class _AsyncSocket(_zmq.Socket):
         if not self.closed:
             for event in chain(self._recv_futures, self._send_futures):
                 if not event.future.done():
-                    event.future.cancel()
+                    try:
+                        event.future.cancel()
+                    except RuntimeError:
+                        # RuntimeError may be called during teardown
+                        pass
             self._clear_io_state()
         super(_AsyncSocket, self).close(linger=linger)
     close.__doc__ = _zmq.Socket.close.__doc__
