@@ -24,6 +24,7 @@ using tornado.
 """
 
 from __future__ import with_statement
+import warnings
 
 import zmq
 from zmq.utils import jsonapi
@@ -87,7 +88,7 @@ class ZMQStream(object):
     True
     
     """
-    
+
     socket = None
     io_loop = None
     poller = None
@@ -98,22 +99,24 @@ class ZMQStream(object):
     _state = 0
     _flushed = False
     _recv_copy = False
-    
+    _fd = None
+
     def __init__(self, socket, io_loop=None):
         self.socket = socket
         self.io_loop = io_loop or IOLoop.instance()
         self.poller = zmq.Poller()
-        
+        self._fd = self.socket.FD
+
         self._send_queue = Queue()
         self._recv_callback = None
         self._send_callback = None
         self._close_callback = None
         self._recv_copy = False
         self._flushed = False
-        
+
         self._state = 0
         self._init_io_state()
-        
+
         # shortcircuit some socket methods
         self.bind = self.socket.bind
         self.bind_to_random_port = self.socket.bind_to_random_port
@@ -124,8 +127,7 @@ class ZMQStream(object):
         self.getsockopt_string = self.socket.getsockopt_string
         self.setsockopt_unicode = self.socket.setsockopt_unicode
         self.getsockopt_unicode = self.socket.getsockopt_unicode
-    
-    
+
     def stop_on_recv(self):
         """Disable callback and automatic receiving."""
         return self.on_recv(None)
@@ -380,15 +382,28 @@ class ZMQStream(object):
         # update ioloop poll state, which may have changed
         self._rebuild_io_state()
         return count
-    
+
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
         self._close_callback = stack_context.wrap(callback)
-    
+
     def close(self, linger=None):
         """Close this stream."""
         if self.socket is not None:
-            self.io_loop.remove_handler(self.socket)
+            if self.socket.closed:
+                # fallback on raw fd for closed sockets
+                # hopefully this happened promptly after close,
+                # otherwise somebody else may have
+                warnings.warn(
+                    "Unregistering FD %s after closing socket. "
+                    "This could result in unregistering handlers for the wrong socket. "
+                    "Please use stream.close() instead of closing the socket directly."
+                    % self._fd,
+                    stacklevel=2,
+                )
+                self.io_loop.remove_handler(self._fd)
+            else:
+                self.io_loop.remove_handler(self.socket)
             self.socket.close(linger)
             self.socket = None
             if self._close_callback:
