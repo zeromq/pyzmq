@@ -227,7 +227,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def poll(self, timeout=None, flags=_zmq.POLLIN):
         """poll the socket for events
-        
+
         returns a Future for the poll results.
         """
 
@@ -237,7 +237,7 @@ class _AsyncSocket(_zmq.Socket):
         p = self._poller_class()
         p.register(self, flags)
         f = p.poll(timeout)
-        
+
         future = self._Future()
         def unwrap_result(f):
             if future.done():
@@ -248,7 +248,11 @@ class _AsyncSocket(_zmq.Socket):
                 evts = dict(f.result())
                 future.set_result(evts.get(self, 0))
 
-        f.add_done_callback(unwrap_result)
+        if f.done():
+            # hook up result if
+            unwrap_result(f)
+        else:
+            f.add_done_callback(unwrap_result)
         return future
 
     def _add_timeout(self, future, timeout):
