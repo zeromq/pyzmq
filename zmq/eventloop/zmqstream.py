@@ -33,7 +33,7 @@ try:
 except ImportError:
     import pickle
 
-from .ioloop import IOLoop
+from tornado.ioloop import IOLoop
 
 from tornado.log import gen_log
 from tornado import stack_context
