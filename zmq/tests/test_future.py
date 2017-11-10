@@ -250,6 +250,7 @@ class TestFutureSocket(BaseZMQTestCase):
         def test():
             a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
             f = b.poll(timeout=0)
+            assert f.done()
             self.assertEqual(f.result(), 0)
 
             f = b.poll(timeout=1)
