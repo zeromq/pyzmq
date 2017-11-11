@@ -59,7 +59,9 @@ def _deprecated():
     if _deprecated.called:
         return
     _deprecated.called = True
-    warnings.warn("ZMQLoop and zmq.eventloop.ioloop.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
+    warnings.warn("zmq.eventloop.ioloop is deprecated in pyzmq 17."
+        " pyzmq now works with default tornado and asyncio eventloops.",
+        DeprecationWarning, stacklevel=3)
 _deprecated.called = False
 
 
@@ -70,18 +72,19 @@ while _IOLoop.configurable_default() is not _IOLoop:
 
 class ZMQIOLoop(_IOLoop):
     """DEPRECATED: No longer needed as of pyzmq-17
-    
+
     PyZMQ tornado integration now works with the default :mod:`tornado.ioloop.IOLoop`.
     """
 
     def __init__(self, *args, **kwargs):
         _deprecated()
-        return super(ZMQIOLoop, self).__init__(*args, **kwargs)
+        # super is object, which takes no args
+        return super(ZMQIOLoop, self).__init__()
 
     @classmethod
     def instance(cls, *args, **kwargs):
         """Returns a global `IOLoop` instance.
-        
+
         Most applications have a single, global `IOLoop` running on the
         main thread.  Use this method to get this instance from
         another thread.  To get the current thread's `IOLoop`, use `current()`.
@@ -92,7 +95,7 @@ class ZMQIOLoop(_IOLoop):
         _deprecated()
         loop = ioloop.IOLoop.instance(*args, **kwargs)
         return loop
-    
+
     @classmethod
     def current(cls, *args, **kwargs):
         """Returns the current thread’s IOLoop.

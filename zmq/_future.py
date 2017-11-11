@@ -106,13 +106,14 @@ class _AsyncPoller(_zmq.Poller):
 
 
 class _AsyncSocket(_zmq.Socket):
-    
+
     _recv_futures = None
     _send_futures = None
     _state = 0
     _shadow_sock = None
     _poller_class = _AsyncPoller
     io_loop = None
+    _fd = None
 
     def __init__(self, context=None, socket_type=-1, io_loop=None, **kwargs):
         if isinstance(context, _zmq.Socket):
@@ -129,6 +130,7 @@ class _AsyncSocket(_zmq.Socket):
         self._recv_futures = deque()
         self._send_futures = deque()
         self._state = 0
+        self._fd = self._shadow_sock.FD
         self._init_io_state()
 
     @classmethod
@@ -140,7 +142,11 @@ class _AsyncSocket(_zmq.Socket):
         if not self.closed:
             for event in chain(self._recv_futures, self._send_futures):
                 if not event.future.done():
-                    event.future.cancel()
+                    try:
+                        event.future.cancel()
+                    except RuntimeError:
+                        # RuntimeError may be called during teardown
+                        pass
             self._clear_io_state()
         super(_AsyncSocket, self).close(linger=linger)
     close.__doc__ = _zmq.Socket.close.__doc__
@@ -221,7 +227,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def poll(self, timeout=None, flags=_zmq.POLLIN):
         """poll the socket for events
-        
+
         returns a Future for the poll results.
         """
 
@@ -231,7 +237,7 @@ class _AsyncSocket(_zmq.Socket):
         p = self._poller_class()
         p.register(self, flags)
         f = p.poll(timeout)
-        
+
         future = self._Future()
         def unwrap_result(f):
             if future.done():
@@ -242,7 +248,11 @@ class _AsyncSocket(_zmq.Socket):
                 evts = dict(f.result())
                 future.set_result(evts.get(self, 0))
 
-        f.add_done_callback(unwrap_result)
+        if f.done():
+            # hook up result if
+            unwrap_result(f)
+        else:
+            f.add_done_callback(unwrap_result)
         return future
 
     def _add_timeout(self, future, timeout):
@@ -443,7 +453,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def _schedule_remaining_events(self, events=None):
         """Schedule a call to handle_events next loop iteration
-        
+
         If there are still events to handle.
         """
         # edge-triggered handling
@@ -453,22 +463,20 @@ class _AsyncSocket(_zmq.Socket):
             events = self._shadow_sock.EVENTS
         if events & self._state:
             self._call_later(0, self._handle_events)
-    
+
     def _add_io_state(self, state):
         """Add io_state to poller."""
-        if not self._state & state:
-            self._state = self._state | state
-            self._update_handler(self._state)
+        self._state = self._state | state
+        self._update_handler(self._state)
 
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
-        if self._state & state:
-            self._state = self._state & (~state)
-            self._update_handler(self._state)
+        self._state = self._state & (~state)
+        self._update_handler(self._state)
 
     def _update_handler(self, state):
         """Update IOLoop handler with state.
-        
+
         zmq FD is always read-only.
         """
         self._schedule_remaining_events()
@@ -476,12 +484,16 @@ class _AsyncSocket(_zmq.Socket):
     def _init_io_state(self):
         """initialize the ioloop event handler"""
         self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
+        self._call_later(0, self._handle_events)
 
     def _clear_io_state(self):
         """unregister the ioloop event handler
 
         called once during close
         """
-        self.io_loop.remove_handler(self._shadow_sock)
+        fd = self._shadow_sock
+        if self._shadow_sock.closed:
+            fd = self._fd
+        self.io_loop.remove_handler(fd)
 
 

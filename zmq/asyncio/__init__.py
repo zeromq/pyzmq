@@ -50,14 +50,14 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_reader(self._shadow_sock.FD, lambda : self._handle_events(0, 0))
+        self.io_loop.add_reader(self._fd, lambda : self._handle_events(0, 0))
 
     def _clear_io_state(self):
         """clear any ioloop event handler
 
         called once at close
         """
-        self.io_loop.remove_reader(self._shadow_sock.FD)
+        self.io_loop.remove_reader(self._fd)
 
 Poller._socket_class = Socket
 

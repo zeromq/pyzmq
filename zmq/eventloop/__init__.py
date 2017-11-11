@@ -1,4 +1,4 @@
-"""A Tornado based event loop for PyZMQ."""
+"""Tornado eventloop integration for pyzmq"""
 
 from zmq.eventloop.ioloop import IOLoop
 
