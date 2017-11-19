@@ -132,7 +132,7 @@ class Socket(SocketBase, AttributeSetter):
     getsockopt = SocketBase.get
     
     def __setattr__(self, key, value):
-        """override to allow setting zmq.[UN]SUBSCRIBE even though we have a subscribe method"""
+        """Override to allow setting zmq.[UN]SUBSCRIBE even though we have a subscribe method"""
         _key = key.lower()
         if _key in ('subscribe', 'unsubscribe'):
             
@@ -179,7 +179,7 @@ class Socket(SocketBase, AttributeSetter):
         self.set(zmq.UNSUBSCRIBE, topic)
     
     def set_string(self, option, optval, encoding='utf-8'):
-        """set socket options with a unicode object
+        """Set socket options with a unicode object.
         
         This is simply a wrapper for setsockopt to protect from encoding ambiguity.
 
@@ -202,7 +202,7 @@ class Socket(SocketBase, AttributeSetter):
     setsockopt_unicode = setsockopt_string = set_string
     
     def get_string(self, option, encoding='utf-8'):
-        """get the value of a socket option
+        """Get the value of a socket option.
 
         See the 0MQ documentation for details on specific options.
 
@@ -224,7 +224,7 @@ class Socket(SocketBase, AttributeSetter):
     getsockopt_unicode = getsockopt_string = get_string
     
     def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
-        """bind this socket to a random port in a range
+        """Bind this socket to a random port in a range.
 
         If the port range is unspecified, the system will choose the port.
 
@@ -274,7 +274,7 @@ class Socket(SocketBase, AttributeSetter):
         raise ZMQBindError("Could not bind socket to random port.")
     
     def get_hwm(self):
-        """get the High Water Mark
+        """Get the High Water Mark.
         
         On libzmq ≥ 3, this gets SNDHWM if available, otherwise RCVHWM
         """
@@ -291,7 +291,7 @@ class Socket(SocketBase, AttributeSetter):
             return self.getsockopt(zmq.HWM)
     
     def set_hwm(self, value):
-        """set the High Water Mark
+        """Set the High Water Mark.
         
         On libzmq ≥ 3, this sets both SNDHWM and RCVHWM
 
@@ -319,7 +319,7 @@ class Socket(SocketBase, AttributeSetter):
             return self.setsockopt(zmq.HWM, value)
     
     hwm = property(get_hwm, set_hwm,
-        """property for High Water Mark
+        """Property for High Water Mark.
         
         Setting hwm sets both SNDHWM and RCVHWM as appropriate.
         It gets SNDHWM if available, otherwise RCVHWM.
@@ -333,13 +333,19 @@ class Socket(SocketBase, AttributeSetter):
     def send(self, data, flags=0, copy=True, track=False, routing_id=None, group=None):
         """Send a single zmq message frame on this socket.
 
+        This queues the message to be sent by the IO thread at a later time.
+
+        With flags=NOBLOCK, this raises :class:`ZMQError` if the queue is full;
+        otherwise, this waits until space is available.
+        See :class:`Poller` for more general non-blocking I/O.
+
         Parameters
         ----------
         data : bytes, Frame, memoryview
             The content of the message. This can be any object that provides
             the Python buffer API (i.e. `memoryview(data)` can be called).
         flags : int
-            Any supported flag: NOBLOCK, SNDMORE.
+            0, NOBLOCK, SNDMORE, or NOBLOCK|SNDMORE.
         copy : bool
             Should the message be sent in a copying or non-copying manner.
         track : bool
@@ -347,7 +353,7 @@ class Socket(SocketBase, AttributeSetter):
             finished with it? (ignored if copy=True)
         routing_id : int
             For use with SERVER sockets
-        group: str
+        group : str
             For use with RADIO sockets
 
         Returns
@@ -365,7 +371,8 @@ class Socket(SocketBase, AttributeSetter):
         ValueError
             If `track=True`, but an untracked Frame is passed.
         ZMQError
-            If the send does not succeed for any reason.
+            If the send does not succeed for any reason (including
+            if NOBLOCK is set and the outgoing queue is full).
 
         .. versionchanged:: 17.0
 
@@ -384,7 +391,7 @@ class Socket(SocketBase, AttributeSetter):
         return super(Socket, self).send(data, flags=flags, copy=copy, track=track)
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False, **kwargs):
-        """send a sequence of buffers as a multipart message
+        """Send a sequence of buffers as a multipart message.
 
         The zmq.SNDMORE flag is added to all msg parts before the last.
 
@@ -394,7 +401,8 @@ class Socket(SocketBase, AttributeSetter):
             A sequence of objects to send as a multipart message. Each element
             can be any sendable object (Frame, bytes, buffer-providers)
         flags : int, optional
-            SNDMORE is handled automatically for frames before the last.
+            Any valid flags for :func:`Socket.send`.
+            SNDMORE is added automatically for frames before the last.
         copy : bool, optional
             Should the frame(s) be sent in a copying or non-copying manner.
             If copy=False, frames smaller than self.copy_threshold bytes
@@ -430,15 +438,12 @@ class Socket(SocketBase, AttributeSetter):
         return self.send(msg_parts[-1], flags, copy=copy, track=track)
 
     def recv_multipart(self, flags=0, copy=True, track=False):
-        """receive a multipart message as a list of bytes or Frame objects
+        """Receive a multipart message as a list of bytes or Frame objects
 
         Parameters
         ----------
         flags : int, optional
-            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
-            will raise a ZMQError with EAGAIN if a message is not ready.
-            If NOBLOCK is not set, then this method will block until a
-            message arrives.
+            Any valid flags for :func:`Socket.recv`.
         copy : bool, optional
             Should the message frame(s) be received in a copying or non-copying manner?
             If False a Frame object is returned for each part, if True a copy of
@@ -452,7 +457,11 @@ class Socket(SocketBase, AttributeSetter):
         msg_parts : list
             A list of frames in the multipart message; either Frames or bytes,
             depending on `copy`.
-    
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons :func:`~Socket.recv` might fail
         """
         parts = [self.recv(flags, copy=copy, track=track)]
         # have first part already, only loop while more to receive
@@ -493,7 +502,7 @@ class Socket(SocketBase, AttributeSetter):
             serialize(msg) should return an iterable of sendable message frames
             (e.g. bytes objects), which will be passed to send_multipart.
         flags : int, optional
-            Any valid send flag.
+            Any valid flags for :func:`Socket.send`.
         copy : bool, optional
             Whether to copy the frames.
 
@@ -513,16 +522,25 @@ class Socket(SocketBase, AttributeSetter):
             deserialize will be called with one argument: the list of frames
             returned by recv_multipart() and can return any object.
         flags : int, optional
-            Any valid send flag.
+            Any valid flags for :func:`Socket.recv`.
         copy : bool, optional
             Whether to recv bytes or Frame objects.
 
+        Returns
+        -------
+        obj : object
+            The object returned by the deserialization function.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons :func:`~Socket.recv` might fail
         """
         frames = self.recv_multipart(flags=flags, copy=copy)
         return self._deserialize(frames, deserialize)
 
     def send_string(self, u, flags=0, copy=True, encoding='utf-8', **kwargs):
-        """send a Python unicode string as a message with an encoding
+        """Send a Python unicode string as a message with an encoding.
     
         0MQ communicates with raw bytes, so you must encode/decode
         text (unicode on py2, str on py3) around 0MQ.
@@ -532,7 +550,7 @@ class Socket(SocketBase, AttributeSetter):
         u : Python unicode string (unicode on py2, str on py3)
             The unicode string to send.
         flags : int, optional
-            Any valid send flag.
+            Any valid flags for :func:`Socket.send`.
         encoding : str [default: 'utf-8']
             The encoding to be used
         """
@@ -543,12 +561,12 @@ class Socket(SocketBase, AttributeSetter):
     send_unicode = send_string
     
     def recv_string(self, flags=0, encoding='utf-8'):
-        """receive a unicode string, as sent by send_string
+        """Receive a unicode string, as sent by send_string.
     
         Parameters
         ----------
         flags : int
-            Any valid recv flag.
+            Any valid flags for :func:`Socket.recv`.
         encoding : str [default: 'utf-8']
             The encoding to be used
 
@@ -556,6 +574,11 @@ class Socket(SocketBase, AttributeSetter):
         -------
         s : unicode string (unicode on py2, str on py3)
             The Python unicode string that arrives as encoded bytes.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons :func:`~Socket.recv` might fail
         """
         msg = self.recv(flags=flags)
         return self._deserialize(msg, lambda buf: buf.decode(encoding))
@@ -563,14 +586,14 @@ class Socket(SocketBase, AttributeSetter):
     recv_unicode = recv_string
     
     def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL, **kwargs):
-        """send a Python object as a message using pickle to serialize
+        """Send a Python object as a message using pickle to serialize.
 
         Parameters
         ----------
         obj : Python object
             The Python object to send.
         flags : int
-            Any valid send flag.
+            Any valid flags for :func:`Socket.send`.
         protocol : int
             The pickle protocol number to use. The default is pickle.DEFAULT_PROTOCOL
             where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
@@ -579,23 +602,28 @@ class Socket(SocketBase, AttributeSetter):
         return self.send(msg, flags=flags, **kwargs)
 
     def recv_pyobj(self, flags=0):
-        """receive a Python object as a message using pickle to serialize
+        """Receive a Python object as a message using pickle to serialize.
 
         Parameters
         ----------
         flags : int
-            Any valid recv flag.
+            Any valid flags for :func:`Socket.recv`.
 
         Returns
         -------
         obj : Python object
             The Python object that arrives as a message.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons :func:`~Socket.recv` might fail
         """
         msg = self.recv(flags)
         return self._deserialize(msg, pickle.loads)
 
     def send_json(self, obj, flags=0, **kwargs):
-        """send a Python object as a message using json to serialize
+        """Send a Python object as a message using json to serialize.
         
         Keyword arguments are passed on to json.dumps
         
@@ -604,7 +632,7 @@ class Socket(SocketBase, AttributeSetter):
         obj : Python object
             The Python object to send
         flags : int
-            Any valid send flag
+            Any valid flags for :func:`Socket.send`
         """
         from zmq.utils import jsonapi
         send_kwargs = {}
@@ -615,19 +643,24 @@ class Socket(SocketBase, AttributeSetter):
         return self.send(msg, flags=flags, **send_kwargs)
 
     def recv_json(self, flags=0, **kwargs):
-        """receive a Python object as a message using json to serialize
+        """Receive a Python object as a message using json to serialize.
 
         Keyword arguments are passed on to json.loads
         
         Parameters
         ----------
         flags : int
-            Any valid recv flag.
+            Any valid flags for :func:`Socket.recv`.
 
         Returns
         -------
         obj : Python object
             The Python object that arrives as a message.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons :func:`~Socket.recv` might fail
         """
         from zmq.utils import jsonapi
         msg = self.recv(flags)
@@ -636,25 +669,22 @@ class Socket(SocketBase, AttributeSetter):
     _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):
-        """poll the socket for events
-        
-        The default is to poll forever for incoming
-        events.  Timeout is in milliseconds, if specified.
+        """Poll the socket for events.
+        See :class:`Poller` to wait for multiple sockets at once.
 
         Parameters
         ----------
         timeout : int [default: None]
             The timeout (in milliseconds) to wait for an event. If unspecified
             (or specified None), will wait forever for an event.
-        flags : bitfield (int) [default: POLLIN]
-            The event flags to poll for (any combination of POLLIN|POLLOUT).
-            The default is to check for incoming events (POLLIN).
+        flags : int [default: POLLIN]
+            POLLIN, POLLOUT, or POLLIN|POLLOUT. The event flags to poll for.
 
         Returns
         -------
-        events : bitfield (int)
-            The events that are ready and waiting.  Will be 0 if no events were ready
-            by the time timeout was reached.
+        events : int
+            The events that are ready and waiting,
+            0 if the timeout was reached with no events.
         """
 
         if self.closed:
@@ -674,7 +704,7 @@ class Socket(SocketBase, AttributeSetter):
         
         Parameters
         ----------
-        events : bitfield (int) [default: ZMQ_EVENTS_ALL]
+        events : int [default: ZMQ_EVENTS_ALL]
             The bitmask defining which events are wanted.
         addr :  string [default: None]
             The optional endpoint for the monitoring sockets.

@@ -725,11 +725,13 @@ cdef class Socket:
     #-------------------------------------------------------------------------
 
     cpdef send(self, object data, int flags=0, copy=True, track=False):
-        """s.send(data, flags=0, copy=True, track=False)
-
-        Send a message on this socket.
+        """Send a single zmq message frame on this socket.
 
         This queues the message to be sent by the IO thread at a later time.
+
+        With flags=NOBLOCK, this raises :class:`ZMQError` if the queue is full;
+        otherwise, this waits until space is available.
+        See :class:`Poller` for more general non-blocking I/O.
 
         Parameters
         ----------
@@ -737,7 +739,7 @@ cdef class Socket:
             The content of the message. This can be any object that provides
             the Python buffer API (`memoryview(data)` can be called).
         flags : int
-            Any supported flag: NOBLOCK, SNDMORE.
+            0, NOBLOCK, SNDMORE, or NOBLOCK|SNDMORE.
         copy : bool
             Should the message be sent in a copying or non-copying manner.
         track : bool
@@ -759,7 +761,8 @@ cdef class Socket:
         ValueError
             If `track=True`, but an untracked Frame is passed.
         ZMQError
-            If the send does not succeed for any reason.
+            for any of the reasons zmq_msg_send might fail (including
+            if NOBLOCK is set and the outgoing queue is full).
         
         """
         _check_closed(self)
@@ -789,13 +792,14 @@ cdef class Socket:
 
         Receive a message.
 
+        With flags=NOBLOCK, this raises :class:`ZMQError` if no messages have
+        arrived; otherwise, this waits until a message arrives.
+        See :class:`Poller` for more general non-blocking I/O.
+
         Parameters
         ----------
         flags : int
-            Any supported flag: NOBLOCK. If NOBLOCK is set, this method
-            will raise a ZMQError with EAGAIN if a message is not ready.
-            If NOBLOCK is not set, then this method will block until a
-            message arrives.
+            0 or NOBLOCK.
         copy : bool
             Should the message be received in a copying or non-copying manner?
             If False a Frame object is returned, if True a string copy of
@@ -806,14 +810,15 @@ cdef class Socket:
 
         Returns
         -------
-        msg : bytes, Frame
+        msg : bytes or Frame
             The received message frame.  If `copy` is False, then it will be a Frame,
             otherwise it will be bytes.
 
         Raises
         ------
         ZMQError
-            for any of the reasons zmq_msg_recv might fail.
+            for any of the reasons zmq_msg_recv might fail (including if
+            NOBLOCK is set and no new messages have arrived).
         """
         _check_closed(self)
         
