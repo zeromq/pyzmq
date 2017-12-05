@@ -147,7 +147,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def close(self, linger=None):
         if not self.closed:
-            for event in chain(self._recv_futures, self._send_futures):
+            for event in list(chain(self._recv_futures, self._send_futures)):
                 if not event.future.done():
                     try:
                         event.future.cancel()
