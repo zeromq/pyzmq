@@ -69,6 +69,13 @@ class _AsyncPoller(_zmq.Poller):
         def on_poll_ready(f):
             if future.done():
                 return
+            if watcher.cancelled():
+                try:
+                    future.cancel()
+                except RuntimeError:
+                    # RuntimeError may be called during teardown
+                    pass
+                return
             if watcher.exception():
                 future.set_exception(watcher.exception())
             else:
@@ -140,7 +147,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def close(self, linger=None):
         if not self.closed:
-            for event in chain(self._recv_futures, self._send_futures):
+            for event in list(chain(self._recv_futures, self._send_futures)):
                 if not event.future.done():
                     try:
                         event.future.cancel()
