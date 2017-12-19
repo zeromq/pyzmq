@@ -34,10 +34,12 @@ try:
 except ImportError:
     import pickle
 
-from tornado.ioloop import IOLoop
+from .ioloop import IOLoop, gen_log
 
-from tornado.log import gen_log
-from tornado import stack_context
+try:
+    from tornado import stack_context
+except ImportError:
+    from .minitornado import stack_context
 
 try:
     from queue import Queue
