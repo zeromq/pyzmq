@@ -71,13 +71,13 @@ _deprecated.called = False
 
 
 # resolve 'true' default loop
-print(ioloop)
 if '.minitornado.' in ioloop.__name__:
-    _IOLoop = ioloop.IOLoop
+    from ._deprecated import ZMQIOLoop as _IOLoop
 else:
     _IOLoop = ioloop.IOLoop
     while _IOLoop.configurable_default() is not _IOLoop:
         _IOLoop = _IOLoop.configurable_default()
+
 
 class ZMQIOLoop(_IOLoop):
     """DEPRECATED: No longer needed as of pyzmq-17
@@ -123,8 +123,14 @@ IOLoop = ZMQIOLoop
 
 def install():
     """DEPRECATED
-    
+
     pyzmq 17 no longer needs any special integration for tornado.
     """
     _deprecated()
     ioloop.IOLoop.configure(ZMQIOLoop)
+
+
+# if minitornado is used, fallback on deprecated ZMQIOLoop, install implementations
+if '.minitornado.' in ioloop.__name__:
+    from ._deprecated import ZMQIOLoop, install, IOLoop
+

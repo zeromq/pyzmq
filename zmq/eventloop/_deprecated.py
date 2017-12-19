@@ -30,13 +30,8 @@ try:
 except (ImportError, AttributeError):
     tornado_version = ()
 
-try:
-    # tornado ≥ 3
-    from tornado.ioloop import PollIOLoop, PeriodicCallback
-    from tornado.log import gen_log
-except ImportError:
-    from .minitornado.ioloop import PollIOLoop, PeriodicCallback
-    from .minitornado.log import gen_log
+from .minitornado.ioloop import PollIOLoop, PeriodicCallback
+from .minitornado.log import gen_log
 
 
 class DelayedCallback(PeriodicCallback):
@@ -45,7 +40,7 @@ class DelayedCallback(PeriodicCallback):
     The callback is called once, after callback_time milliseconds.
 
     `start` must be called after the DelayedCallback is created.
-    
+
     The timeout is calculated from when `start` is called.
     """
     def __init__(self, callback, callback_time, io_loop=None):
@@ -54,14 +49,14 @@ class DelayedCallback(PeriodicCallback):
         Use loop.add_timeout instead.""", DeprecationWarning)
         callback_time = max(callback_time, 1e-3)
         super(DelayedCallback, self).__init__(callback, callback_time, io_loop)
-    
+
     def start(self):
         """Starts the timer."""
         self._running = True
         self._firstrun = True
         self._next_timeout = time.time() + self.callback_time / 1000.0
         self.io_loop.add_timeout(self._next_timeout, self._run)
-    
+
     def _run(self):
         if not self._running: return
         self._running = False
