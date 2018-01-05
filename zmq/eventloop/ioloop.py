@@ -15,12 +15,17 @@ from __future__ import absolute_import, division, with_statement
 import time
 import warnings
 
-import tornado
-from tornado import ioloop
-if not hasattr(ioloop.IOLoop, 'configurable_default'):
-    raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
-from tornado.ioloop import PeriodicCallback
-from tornado.log import gen_log
+try:
+    import tornado
+    from tornado.log import gen_log
+    from tornado import ioloop
+    if not hasattr(ioloop.IOLoop, 'configurable_default'):
+        raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
+except ImportError:
+    from .minitornado import ioloop
+    from .minitornado.log import gen_log
+
+PeriodicCallback = ioloop.PeriodicCallback
 
 
 class DelayedCallback(PeriodicCallback):
@@ -66,9 +71,13 @@ _deprecated.called = False
 
 
 # resolve 'true' default loop
-_IOLoop = ioloop.IOLoop
-while _IOLoop.configurable_default() is not _IOLoop:
-    _IOLoop = _IOLoop.configurable_default()
+if '.minitornado.' in ioloop.__name__:
+    from ._deprecated import ZMQIOLoop as _IOLoop
+else:
+    _IOLoop = ioloop.IOLoop
+    while _IOLoop.configurable_default() is not _IOLoop:
+        _IOLoop = _IOLoop.configurable_default()
+
 
 class ZMQIOLoop(_IOLoop):
     """DEPRECATED: No longer needed as of pyzmq-17
@@ -114,8 +123,14 @@ IOLoop = ZMQIOLoop
 
 def install():
     """DEPRECATED
-    
+
     pyzmq 17 no longer needs any special integration for tornado.
     """
     _deprecated()
     ioloop.IOLoop.configure(ZMQIOLoop)
+
+
+# if minitornado is used, fallback on deprecated ZMQIOLoop, install implementations
+if '.minitornado.' in ioloop.__name__:
+    from ._deprecated import ZMQIOLoop, install, IOLoop
+
