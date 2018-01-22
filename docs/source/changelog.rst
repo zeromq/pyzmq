@@ -17,8 +17,9 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 - Add :attr:`zmq.Socket.copy_threshold` and :const:`zmq.COPY_THRESHOLD`.
   Messages smaller than this are always copied, regardless of ``copy=False``,
   to avoid overhead of zero-copy bookkeeping on small messages.
-- Removed bundled tornado IOLoop.
-  Using tornado-integrated zmqstream, ioloop now requires tornado to be installed.
+- Added visible deprecation warnings to bundled tornado IOLoop.
+  Tornado eventloop integration shouldn't be used without a proper tornado install
+  since pyzmq 14.
 - Allow pyzmq asyncio/tornado integration to run without installing :func:`zmq_poll`
   implementation. The following methods and classes are deprecated and no longer required:
 
@@ -29,7 +30,7 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 - Set RPATH correctly when building on macOS.
 - Compatibility fixes with tornado 5.0.dev (may not be quite enough for 5.0 final,
   which is not yet released as of pyzmq 17).
-- Draft support for CLIENT-SERVER`routing_id` and `group`.
+- Draft support for CLIENT-SERVER `routing_id` and `group`.
 
   .. seealso::
     :ref:`draft`
