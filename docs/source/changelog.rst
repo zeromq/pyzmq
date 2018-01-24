@@ -35,6 +35,13 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
   .. seealso::
     :ref:`draft`
 
+16.0.4
+======
+
+- Regenerate Cython sources in sdists with Cython 0.27.3,
+  fixing builds on CPython 3.7.
+- Add warning when using bundled tornado, which was deprecated too quietly in 14.x.
+
 16.0.3
 ======
 
