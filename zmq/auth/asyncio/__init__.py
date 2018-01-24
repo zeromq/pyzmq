@@ -35,7 +35,7 @@ class AsyncioAuthenticator(Authenticator):
         super().start()
         self.__poller = Poller()
         self.__poller.register(self.zap_socket, zmq.POLLIN)
-        self.__task = asyncio.async(self.__handle_zap())
+        self.__task = asyncio.ensure_future(self.__handle_zap())
 
     def stop(self):
         """Stop ZAP authentication"""
