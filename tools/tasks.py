@@ -105,7 +105,7 @@ def patch_version(ctx, vs):
                 lines = post_lines
             else:
                 lines.append(line)
-    
+
     # write new version.py with given VERSION_ constants
     with open(version_py, 'w') as f:
         for line in pre_lines:
@@ -125,19 +125,19 @@ def tag(ctx, vs, push=False):
         run('git commit -a -m "release {}"'.format(vs))
         run('git tag -a -m "release {0}" v{0}'.format(vs))
         if push:
-            run('git push')
             run('git push --tags')
+            run('git push')
 
 def make_env(py_exe, *packages):
     """Make a virtualenv
-    
+
     Assumes `which python` has the `virtualenv` package
     """
     py_exe = py_exes.get(py_exe, py_exe)
-    
+
     if not os.path.exists(env_root):
         os.makedirs(env_root)
-    
+
     env = os.path.join(env_root, os.path.basename(py_exe))
     py = pjoin(env, 'bin', 'python')
     # new env
