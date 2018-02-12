@@ -54,7 +54,6 @@ class TestPubSubCrash(BaseZMQTestCase):
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
-    @pytest.mark.xfail
     @capture_crash
     def test_inconsistent_subscriptions(self, random=Random(42)):
         """
@@ -91,7 +90,6 @@ class TestPubSubCrash(BaseZMQTestCase):
         # Assertion failed: erased == 1 (src/mtrie.cpp:297)
         workload([sub1, sub2])
 
-    @pytest.mark.xfail
     @capture_crash
     def test_many_subscription_and_unsubscriptions(self):
         """
