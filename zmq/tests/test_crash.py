@@ -56,30 +56,6 @@ class TestPubSubCrash(BaseZMQTestCase):
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
-    @classmethod
-    def _workload(cls, subs, random, n=10000, timeout=5):
-        """A workload on SUB sockets which indicates issue #950.
-
-        .. seealso:: https://github.com/zeromq/pyzmq/issues/950
-
-        """
-        # Many subscriptions, for example above 5000, are raising up
-        # reproducibility of the crash.  Unbalanced and duplicated
-        # SUBSCRIBE/UNSUBSCRIBE is the key of the crash.
-        started_at = time.time()
-        while True:
-            for sub in subs:
-                t = topic(random.randrange(n))
-                if random.random() < 0.5:
-                    sub.set(zmq.SUBSCRIBE, t)
-                else:
-                    sub.set(zmq.UNSUBSCRIBE, t)
-                # Sleeping with gevent for 0 seconds is necessary
-                # to reproduce the crash.
-                cls.sleep(0)
-            if time.time() - started_at > timeout:
-                return
-
     @capture_crash
     def test_inconsistent_subscriptions(self, random=Random(42)):
         """https://github.com/zeromq/pyzmq/issues/950"""
