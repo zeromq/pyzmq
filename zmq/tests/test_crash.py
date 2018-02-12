@@ -4,11 +4,9 @@
 
 import functools
 import hashlib
-from multiprocessing import Pipe, Process
+from multiprocessing import Process
 from random import Random
 import time
-
-import pytest
 
 import zmq
 
