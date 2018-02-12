@@ -107,11 +107,7 @@ class _Socket(_original_Socket):
             self._state_event = read_event(fd, self.__readable_detected, persist=True)
 
     def __readable_detected(self):
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # DO NOT CALL "getsockopt" HERE
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # if it is called, there will be a thread-safety issue.
-        # see also: https://github.com/zeromq/pyzmq/issues/950
+        # NOTE: DO NOT MAKE BLOCKING HERE
         if self.closed:
             self.__cleanup_events()
             return
