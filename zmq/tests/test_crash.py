@@ -56,20 +56,8 @@ class TestPubSubCrash(BaseZMQTestCase):
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
-    @capture_crash
-    @pytest.mark.xfail
-    def test_pubsub_crash(self, random=Random(42)):
-        pub = self.socket(zmq.PUB)
-        sub1, addr1 = self.create_sub()
-        sub2, addr2 = self.create_sub()
-        pub.connect(addr1)
-        pub.connect(addr2)
-        # Here was a crash:
-        # Assertion failed: erased == 1 (src/mtrie.cpp:297)
-        self._issue_950_workload([sub1, sub2], random, timeout=5)
-
     @classmethod
-    def _issue_950_workload(cls, subs, random, n=10000, timeout=5):
+    def _workload(cls, subs, random, n=10000, timeout=5):
         """A workload on SUB sockets which indicates issue #950.
 
         .. seealso:: https://github.com/zeromq/pyzmq/issues/950
@@ -91,6 +79,30 @@ class TestPubSubCrash(BaseZMQTestCase):
                 cls.sleep(0)
             if time.time() - started_at > timeout:
                 return
+
+    @capture_crash
+    def test_inconsistent_subscriptions(self, random=Random(42)):
+        """https://github.com/zeromq/pyzmq/issues/950"""
+        pub = self.socket(zmq.PUB)
+        sub1, addr1 = self.create_sub()
+        sub2, addr2 = self.create_sub()
+        pub.connect(addr1)
+        pub.connect(addr2)
+        # Here was a crash:
+        # Assertion failed: erased == 1 (src/mtrie.cpp:297)
+        self._workload([sub1, sub2], random, timeout=5)
+
+    @capture_crash
+    def test_close_sub_sockets(self, random=Random(42)):
+        pub = self.socket(zmq.PUB)
+        pub.setsockopt(zmq.LINGER, 0)
+        for x in range(3):
+            sub, addr = self.create_sub()
+            pub.connect(addr)
+            self._workload([sub], random, timeout=5)
+            # Only SUB socket closes.  If PUB socket disconnects,
+            # the crash won't be reproduced.
+            sub.close()
 
 
 if have_gevent:
