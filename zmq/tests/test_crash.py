@@ -105,6 +105,7 @@ class TestPubSubCrash(BaseZMQTestCase):
 
         for x in range(10):
             sub, addr = self.create_sub()
+            # Connection from PUB to SUB indicates this crash.
             pub.connect(addr)
             workload(sub)
 
