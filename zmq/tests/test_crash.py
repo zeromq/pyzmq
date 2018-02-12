@@ -57,7 +57,10 @@ class TestPubSubCrash(BaseZMQTestCase):
     @pytest.mark.xfail
     @capture_crash
     def test_inconsistent_subscriptions(self, random=Random(42)):
-        """https://github.com/zeromq/pyzmq/issues/950"""
+        """
+        https://github.com/zeromq/pyzmq/issues/950
+        https://github.com/zeromq/libzmq/issues/2942
+        """
         sub1, addr1 = self.create_sub()
         sub2, addr2 = self.create_sub()
 
@@ -91,6 +94,9 @@ class TestPubSubCrash(BaseZMQTestCase):
     @pytest.mark.xfail
     @capture_crash
     def test_many_subscription_and_unsubscriptions(self):
+        """
+        https://github.com/zeromq/libzmq/issues/2942
+        """
         pub = self.socket(zmq.PUB)
 
         def workload(sub):
