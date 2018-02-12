@@ -56,6 +56,7 @@ class TestPubSubCrash(BaseZMQTestCase):
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
+    @pytest.mark.xfail
     @capture_crash
     def test_inconsistent_subscriptions(self, random=Random(42)):
         """https://github.com/zeromq/pyzmq/issues/950"""
@@ -89,6 +90,7 @@ class TestPubSubCrash(BaseZMQTestCase):
         # Assertion failed: erased == 1 (src/mtrie.cpp:297)
         workload([sub1, sub2])
 
+    @pytest.mark.xfail
     @capture_crash
     def test_close_sub_sockets(self, random=Random(42)):
         """https://github.com/zeromq/pyzmq/pull/951"""
