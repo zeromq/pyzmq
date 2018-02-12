@@ -92,29 +92,21 @@ class TestPubSubCrash(BaseZMQTestCase):
 
     @pytest.mark.xfail
     @capture_crash
-    def test_close_sub_sockets(self, random=Random(42)):
-        """https://github.com/zeromq/pyzmq/pull/951"""
+    def test_many_subscription_and_unsubscriptions(self):
         pub = self.socket(zmq.PUB)
-        pub.setsockopt(zmq.LINGER, 0)
 
         def workload(sub):
             # Many subscriptions, for example above 5000, are
             # raising up reproducibility of the crash.
             for x in range(10000):
                 sub.set(zmq.SUBSCRIBE, topic(x))
-                self.sleep(0)  # 0 seconds sleep is matter.
             for x in range(10000):
                 sub.set(zmq.UNSUBSCRIBE, topic(x))
-                self.sleep(0)  # 0 seconds sleep is matter.
 
-        for x in range(3):
+        for x in range(10):
             sub, addr = self.create_sub()
-            sub.setsockopt(zmq.LINGER, 0)
             pub.connect(addr)
             workload(sub)
-            # Only SUB socket closes.  If PUB socket disconnects,
-            # the crash won't be reproduced.
-            sub.close()
 
 
 if have_gevent:
