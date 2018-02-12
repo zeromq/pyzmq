@@ -26,6 +26,7 @@ from .poll import _Poller
 import gevent
 from gevent.event import AsyncResult
 from gevent.hub import get_hub
+from gevent.select import select
 
 if hasattr(zmq, 'RCVTIMEO'):
     TIMEOS = (zmq.RCVTIMEO, zmq.SNDTIMEO)
@@ -120,17 +121,14 @@ class _Socket(_original_Socket):
         if self.closed:
             self.__cleanup_events()
             return
-        try:
-            # avoid triggering __state_changed from inside __state_changed
-            events = super(_Socket, self).getsockopt(zmq.EVENTS)
-        except zmq.ZMQError as exc:
-            self.__writable.set_exception(exc)
-            self.__readable.set_exception(exc)
-        else:
-            if events & zmq.POLLOUT:
-                self.__writable.set()
-            if events & zmq.POLLIN:
-                self.__readable.set()
+        # getsockopt(ZMQ_EVENTS) at here can cause SIGABRT
+        # https://github.com/zeromq/libzmq/issues/2942
+        fd = self.getsockopt(zmq.FD)
+        readable, writable, __ = select([fd], [fd], [], timeout=0)
+        if readable:
+            self.__readable.set()
+        if writable:
+            self.__writable.set()
 
     def _wait_write(self):
         assert self.__writable.ready(), "Only one greenlet can be waiting on this event"
