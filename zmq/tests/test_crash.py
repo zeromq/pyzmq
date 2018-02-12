@@ -94,6 +94,7 @@ class TestPubSubCrash(BaseZMQTestCase):
 
     @capture_crash
     def test_close_sub_sockets(self, random=Random(42)):
+        """https://github.com/zeromq/pyzmq/pull/951"""
         pub = self.socket(zmq.PUB)
         pub.setsockopt(zmq.LINGER, 0)
         for x in range(3):
