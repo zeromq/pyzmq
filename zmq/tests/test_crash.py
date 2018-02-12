@@ -83,24 +83,57 @@ class TestPubSubCrash(BaseZMQTestCase):
     @capture_crash
     def test_inconsistent_subscriptions(self, random=Random(42)):
         """https://github.com/zeromq/pyzmq/issues/950"""
-        pub = self.socket(zmq.PUB)
         sub1, addr1 = self.create_sub()
         sub2, addr2 = self.create_sub()
+
+        pub = self.socket(zmq.PUB)
         pub.connect(addr1)
         pub.connect(addr2)
+
+        def workload(subs):
+            # Unbalanced and duplicated, so inconsistent SUBSCRIBE/UNSUBSCRIBE
+            # is the key of the crash.
+            n = 10000
+            for x in range(10000):
+                for sub in subs:
+                    t = topic(random.randrange(n))
+                    if random.random() < 0.5:
+                        # Same topic should be subscribed multiple times for
+                        # the crash.
+                        sub.set(zmq.SUBSCRIBE, t)
+                    else:
+                        # Unsubscribed topics also should be unsubscribed again
+                        # for the crash.
+                        sub.set(zmq.UNSUBSCRIBE, t)
+                    # Sleeping with gevent for 0 seconds is necessary
+                    # to reproduce the crash.
+                    self.sleep(0)
+
         # Here was a crash:
         # Assertion failed: erased == 1 (src/mtrie.cpp:297)
-        self._workload([sub1, sub2], random, timeout=5)
+        workload([sub1, sub2])
 
     @capture_crash
     def test_close_sub_sockets(self, random=Random(42)):
         """https://github.com/zeromq/pyzmq/pull/951"""
         pub = self.socket(zmq.PUB)
         pub.setsockopt(zmq.LINGER, 0)
+
+        def workload(sub):
+            # Many subscriptions, for example above 5000, are
+            # raising up reproducibility of the crash.
+            for x in range(10000):
+                sub.set(zmq.SUBSCRIBE, topic(x))
+                self.sleep(0)  # 0 seconds sleep is matter.
+            for x in range(10000):
+                sub.set(zmq.UNSUBSCRIBE, topic(x))
+                self.sleep(0)  # 0 seconds sleep is matter.
+
         for x in range(3):
             sub, addr = self.create_sub()
+            sub.setsockopt(zmq.LINGER, 0)
             pub.connect(addr)
-            self._workload([sub], random, timeout=5)
+            workload(sub)
             # Only SUB socket closes.  If PUB socket disconnects,
             # the crash won't be reproduced.
             sub.close()
