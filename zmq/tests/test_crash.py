@@ -37,8 +37,6 @@ def capture_crash(f):
         p = Process(target=f, args=args, kwargs=kwargs)
         p.start()
         p.join()
-        if p.exitcode == 1:
-            raise AssertionError('Test failed')
         assert_exit_code(p.exitcode)
     return wrapped
 
