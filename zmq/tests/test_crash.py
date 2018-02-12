@@ -51,7 +51,7 @@ class TestPubSubCrash(BaseZMQTestCase):
     def create_sub(self, interface='tcp://127.0.0.1'):
         sub = self.socket(zmq.SUB)
         # Lower high water mark leads the crash faster.
-        sub.set(zmq.SNDHWM, 10)
+        sub.set(zmq.SNDHWM, 1)
         port = sub.bind_to_random_port(interface)
         addr = '%s:%s' % (interface, port)
         return sub, addr
