@@ -98,11 +98,22 @@ class _Socket(_original_Socket):
         
         try:
             self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
-            self._state_event.start(self.__state_changed)
+            self._state_event.start(self.__readable_detected)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(self.getsockopt(zmq.FD), self.__state_changed, persist=True)
+            self._state_event = read_event(self.getsockopt(zmq.FD), self.__readable_detected, persist=True)
+
+    def __readable_detected(self):
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # DO NOT CALL "getsockopt" HERE
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # if it is called, there will be a thread-safety issue.
+        # see also: https://github.com/zeromq/pyzmq/issues/950
+        if self.closed:
+            self.__cleanup_events()
+            return
+        self.__readable.set()
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
@@ -276,10 +287,9 @@ class _Socket(_original_Socket):
         """set socket option"""
         if opt in TIMEOS:
             warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
-        result = super(_Socket, self).set(opt, val)
+        super(_Socket, self).set(opt, val)
         if opt in (zmq.SUBSCRIBE, zmq.UNSUBSCRIBE):
             self.__state_changed()
-        return result
 
 
 class _Context(_original_Context):
