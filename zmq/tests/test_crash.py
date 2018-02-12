@@ -15,7 +15,7 @@ from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent
 
 def topic(x):
     """Generates a PUB/SUB topic from a number."""
-    return hashlib.md5(str(x)).hexdigest()[:8]
+    return hashlib.md5(bytes(x)).hexdigest()[:8].encode()
 
 
 def assert_exit_code(exit_code):
