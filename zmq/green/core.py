@@ -62,17 +62,17 @@ class _Socket(_original_Socket):
     __in_recv_multipart = False
     __writable = None
     __readable = None
+    __fd = 0
     _state_event = None
     _gevent_bug_timeout = 11.6 # timeout for not trusting gevent
     _debug_gevent = False # turn on if you think gevent is missing events
     _poller_class = _Poller
-    
+
     def __init__(self, *a, **kw):
         super(_Socket, self).__init__(*a, **kw)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
-        
 
     def __del__(self):
         self.close()
@@ -95,14 +95,16 @@ class _Socket(_original_Socket):
         self.__writable = AsyncResult()
         self.__readable.set()
         self.__writable.set()
-        
+        self.__fd = self.getsockopt(zmq.FD)
+
         try:
-            self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
+            # read state watcher
+            self._state_event = get_hub().loop.io(self.__fd, 1)
             self._state_event.start(self.__readable_detected)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(self.getsockopt(zmq.FD), self.__readable_detected, persist=True)
+            self._state_event = read_event(self.__fd, self.__readable_detected, persist=True)
 
     def __readable_detected(self):
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
