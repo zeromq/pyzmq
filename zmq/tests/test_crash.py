@@ -52,7 +52,7 @@ class TestPubSubCrash(BaseZMQTestCase):
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
-    def _many_subscriptions(self, pub_hwm, sub_hwm):
+    def _many_subscriptions(self, hwm):
         """A low SNDHWM makes a SUB socket drop some subscription messages.
         When a SUB socket drops a subscription message but doesn't drop the
         corresponding unsubscription message, the connected PUB socket will be
@@ -65,29 +65,35 @@ class TestPubSubCrash(BaseZMQTestCase):
 
         """
         pub = self.socket(zmq.PUB)
-        pub.set(zmq.RCVHWM, pub_hwm)
+        pub.set(zmq.RCVHWM, hwm)
 
         for x in range(100):
-            sub, addr = self.create_sub(sndhwm=sub_hwm)
+            sub, addr = self.create_sub(sndhwm=hwm)
+
+            # Subscriptions before connecting will be processed at once.
+            # They have more change to be dropped due to the HWM.
+            for x in range(10000):
+                sub.set(zmq.SUBSCRIBE, topic(x))
+
             pub.connect(addr)
 
-            # Many duplicated subscriptions raise up reproducibility of the
-            # crash.
-            for x in range(100):
-                for y in range(100):
-                    sub.set(zmq.SUBSCRIBE, topic(x))
-                for y in range(100):
-                    sub.set(zmq.UNSUBSCRIBE, topic(x))
-                    # Getting zmq.EVENTS flushes queued messages.
-                    # This will be helpful to reproduce a crash.
-                    sub.get(zmq.EVENTS)
+            # Getting zmq.EVENTS flushes queued messages.
+            # This will be helpful to reproduce a crash.
+            pub.get(zmq.EVENTS)
+            sub.get(zmq.EVENTS)
+
+            # Unsubscriptions after connecting will be processed one by one.
+            # They have less change to be dropped due to the HWM.
+            for x in range(10000):
+                sub.set(zmq.UNSUBSCRIBE, topic(x))
+                sub.get(zmq.EVENTS)
 
     def test_many_subscriptions_with_unlimited_hwm(self):
-        self._many_subscriptions(pub_hwm=0, sub_hwm=0)
+        self._many_subscriptions(hwm=0)  # 0 means unlimited
 
     @expect_exit_code(-signal.SIGABRT)
     def test_many_subscriptions_with_low_hwm(self):
-        self._many_subscriptions(pub_hwm=1, sub_hwm=1)
+        self._many_subscriptions(hwm=1)  # 1 means just 1 message
 
 
 if have_gevent:
