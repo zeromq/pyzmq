@@ -58,15 +58,15 @@ class TestPubSubCrash(BaseZMQTestCase):
 
     @staticmethod
     def _workload_many_subscriptions(sub):
-        # Many subscriptions, for example above 5000, are
-        # raising up reproducibility of the crash.
-        for x in range(10000):
-            sub.set(zmq.SUBSCRIBE, topic(x))
-        for x in range(10000):
-            sub.set(zmq.UNSUBSCRIBE, topic(x))
-            # Getting zmq.EVENTS can flush queued messages.
-            # This will be helpful to reproduce a crash.
-            sub.get(zmq.EVENTS)
+        # Many duplicated subscriptions raise up reproducibility of the crash.
+        for x in range(100):
+            for y in range(100):
+                sub.set(zmq.SUBSCRIBE, topic(x))
+            for y in range(100):
+                sub.set(zmq.UNSUBSCRIBE, topic(x))
+                # Getting zmq.EVENTS flushes queued messages.
+                # This will be helpful to reproduce a crash.
+                sub.get(zmq.EVENTS)
 
     def test_many_subscriptions_with_unlimited_hwm(self):
         """A low SNDHWM makes a SUB socket drop some subscription messages.
