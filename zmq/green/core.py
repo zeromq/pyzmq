@@ -99,18 +99,11 @@ class _Socket(_original_Socket):
         try:
             # read state watcher
             self._state_event = get_hub().loop.io(fd, 1)
-            self._state_event.start(self.__readable_detected)
+            self._state_event.start(self.__state_changed)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(fd, self.__readable_detected, persist=True)
-
-    def __readable_detected(self):
-        # NOTE: DO NOT MAKE BLOCKING HERE
-        if self.closed:
-            self.__cleanup_events()
-            return
-        self.__readable.set()
+            self._state_event = read_event(fd, self.__state_changed, persist=True)
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
