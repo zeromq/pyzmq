@@ -6,7 +6,10 @@ import functools
 import hashlib
 from multiprocessing import Process
 from random import Random
+import signal
 import time
+
+import pytest
 
 import zmq
 
@@ -43,70 +46,62 @@ class TestPubSubCrash(BaseZMQTestCase):
     sleep = staticmethod(time.sleep)
     poller = zmq.Poller
 
-    def create_sub(self, interface='tcp://127.0.0.1'):
+    def create_sub(self, sndhwm, interface='tcp://127.0.0.1'):
         sub = self.socket(zmq.SUB)
-        # Lower high water mark leads the crash faster.
-        sub.set(zmq.SNDHWM, 1)
+        # SNDHWM should be set before bind() on a green socket.
+        # Because bind() can synchronize the previous SNDHWM
+        # in a very short time.
+        sub.set(zmq.SNDHWM, sndhwm)
         port = sub.bind_to_random_port(interface)
         addr = '%s:%s' % (interface, port)
         return sub, addr
 
-    @capture_crash
-    def test_inconsistent_subscriptions(self, random=Random(42)):
-        """
-        https://github.com/zeromq/pyzmq/issues/950
-        https://github.com/zeromq/libzmq/issues/2942
-        """
-        sub1, addr1 = self.create_sub()
-        sub2, addr2 = self.create_sub()
+    @staticmethod
+    def _workload_many_subscriptions(sub):
+        # Many subscriptions, for example above 5000, are
+        # raising up reproducibility of the crash.
+        for x in range(10000):
+            sub.set(zmq.SUBSCRIBE, topic(x))
+        for x in range(10000):
+            sub.set(zmq.UNSUBSCRIBE, topic(x))
+            # Getting zmq.EVENTS can flush queued messages.
+            # This will be helpful to reproduce a crash.
+            sub.get(zmq.EVENTS)
 
-        pub = self.socket(zmq.PUB)
-        pub.connect(addr1)
-        pub.connect(addr2)
+    def test_many_subscriptions_with_unlimited_hwm(self):
+        """A low SNDHWM makes a SUB socket drop some subscription messages.
+        When a SUB socket drops a subscription message but doesn't drop the
+        corresponding unsubscription message, the connected PUB socket will be
+        crashed with SIGABRT.
 
-        def workload(subs):
-            # Unbalanced and duplicated, so inconsistent SUBSCRIBE/UNSUBSCRIBE
-            # is the key of the crash.
-            n = 10000
-            for x in range(10000):
-                for sub in subs:
-                    t = topic(random.randrange(n))
-                    if random.random() < 0.5:
-                        # Same topic should be subscribed multiple times for
-                        # the crash.
-                        sub.set(zmq.SUBSCRIBE, t)
-                    else:
-                        # Unsubscribed topics also should be unsubscribed again
-                        # for the crash.
-                        sub.set(zmq.UNSUBSCRIBE, t)
-                    # Sleeping with gevent for 0 seconds is necessary
-                    # to reproduce the crash.
-                    self.sleep(0)
+        The workaround is unlimited SUB's SNDHWM and PUB's RCVHWM.  There won't
+        be dropped subscriptions.
 
-        # Here was a crash:
-        # Assertion failed: erased == 1 (src/mtrie.cpp:297)
-        workload([sub1, sub2])
+        .. seealso:: https://github.com/zeromq/libzmq/issues/2942
 
-    @capture_crash
-    def test_many_subscription_and_unsubscriptions(self):
-        """
-        https://github.com/zeromq/libzmq/issues/2942
         """
         pub = self.socket(zmq.PUB)
+        pub.set(zmq.RCVHWM, 0)
 
-        def workload(sub):
-            # Many subscriptions, for example above 5000, are
-            # raising up reproducibility of the crash.
-            for x in range(10000):
-                sub.set(zmq.SUBSCRIBE, topic(x))
-            for x in range(10000):
-                sub.set(zmq.UNSUBSCRIBE, topic(x))
-
-        for x in range(10):
-            sub, addr = self.create_sub()
-            # Connection from PUB to SUB indicates this crash.
+        for x in range(100):
+            sub, addr = self.create_sub(sndhwm=0)
             pub.connect(addr)
-            workload(sub)
+            self._workload_many_subscriptions(sub)
+
+    @expect_exit_code(-signal.SIGABRT)
+    def test_many_subscriptions_with_low_hwm(self):
+        """Same with :meth:`test_many_subscriptions_with_unlimited_hwm` but
+        it uses low HWMs.  It crashes.
+        """
+        # It will be crashed until
+        # https://github.com/zeromq/libzmq/issues/2942 fixed.
+        pub = self.socket(zmq.PUB)
+        pub.set(zmq.RCVHWM, 1)  # just 1 message.
+
+        for x in range(100):
+            sub, addr = self.create_sub(sndhwm=1)
+            pub.connect(addr)
+            self._workload_many_subscriptions(sub)
 
 
 if have_gevent:
