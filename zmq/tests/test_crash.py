@@ -18,25 +18,24 @@ def topic(x):
     return hashlib.md5(bytes(x)).hexdigest()[:8].encode()
 
 
-def assert_exit_code(exit_code):
-    if exit_code == 1:
-        raise AssertionError('Program error')
-    elif exit_code == -6:
-        raise AssertionError('Crashed by SIGABRT')
-    elif exit_code == -11:
-        raise AssertionError('Crashed by SIGSEGV')
-    elif exit_code < 0:
-        raise AssertionError('Crashed with exit code %d' % exit_code)
+def expect_exit_code(exit_code):
+    """Calls a function in a subprocess and checks if the exit code is
+    expected.  If you want to verify killing by SIGABRT, try::
 
+       @expect_exit_code(-signal.SIGABRT)
+       def test_foo_bar():
+           ...
 
-def capture_crash(f):
-    @functools.wraps(f)
-    def wrapped(*args, **kwargs):
-        p = Process(target=f, args=args, kwargs=kwargs)
-        p.start()
-        p.join()
-        assert_exit_code(p.exitcode)
-    return wrapped
+    """
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapped(*args, **kwargs):
+            p = Process(target=f, args=args, kwargs=kwargs)
+            p.start()
+            p.join()
+            assert p.exitcode == exit_code
+        return wrapped
+    return decorator
 
 
 class TestPubSubCrash(BaseZMQTestCase):
