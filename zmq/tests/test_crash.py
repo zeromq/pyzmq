@@ -14,7 +14,7 @@ from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent
 
 def topic(x):
     """Generates a PUB/SUB topic from a number."""
-    return format(x, '08x')
+    return format(x, '08x').encode()
 
 
 def expect_exit_code(exit_code):
