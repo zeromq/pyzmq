@@ -276,10 +276,7 @@ class _Socket(_original_Socket):
         """set socket option"""
         if opt in TIMEOS:
             warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
-        result = super(_Socket, self).set(opt, val)
-        if opt in (zmq.SUBSCRIBE, zmq.UNSUBSCRIBE):
-            self.__state_changed()
-        return result
+        return super(_Socket, self).set(opt, val)
 
 
 class _Context(_original_Context):
