@@ -66,13 +66,12 @@ class _Socket(_original_Socket):
     _gevent_bug_timeout = 11.6 # timeout for not trusting gevent
     _debug_gevent = False # turn on if you think gevent is missing events
     _poller_class = _Poller
-    
+
     def __init__(self, *a, **kw):
         super(_Socket, self).__init__(*a, **kw)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
-        
 
     def __del__(self):
         self.close()
@@ -95,14 +94,16 @@ class _Socket(_original_Socket):
         self.__writable = AsyncResult()
         self.__readable.set()
         self.__writable.set()
-        
+
+        fd = self.getsockopt(zmq.FD)
         try:
-            self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
+            # read state watcher
+            self._state_event = get_hub().loop.io(fd, 1)
             self._state_event.start(self.__state_changed)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(self.getsockopt(zmq.FD), self.__state_changed, persist=True)
+            self._state_event = read_event(fd, self.__state_changed, persist=True)
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
@@ -276,10 +277,7 @@ class _Socket(_original_Socket):
         """set socket option"""
         if opt in TIMEOS:
             warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
-        result = super(_Socket, self).set(opt, val)
-        if opt in (zmq.SUBSCRIBE, zmq.UNSUBSCRIBE):
-            self.__state_changed()
-        return result
+        return super(_Socket, self).set(opt, val)
 
 
 class _Context(_original_Context):
