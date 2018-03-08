@@ -21,6 +21,7 @@
 
 from .libzmq cimport (
     zmq_curve_keypair,
+    zmq_curve_public,
     zmq_has, const_char_ptr,
 )
 from zmq.error import ZMQError, _check_rc, _check_version
@@ -62,4 +63,34 @@ def curve_keypair():
     return public_key, secret_key
 
 
-__all__ = ['has', 'curve_keypair']
+def curve_public(secret_key):
+    """ Compute the public key corresponding to a secret key for use
+    with zmq.CURVE security
+
+    Requires libzmq (≥ 4.2) to have been built with CURVE support.
+
+    Parameters
+    ----------
+    private
+        The private key as a 40 byte z85-encoded bytestring
+    Returns
+    -------
+    bytestring
+        The public key as a 40 byte z85-encoded bytestring.
+    """
+    if isinstance(secret_key, unicode):
+        secret_key = secret_key.encode('utf8')
+    if not len(secret_key) == 40:
+        raise ValueError('secret key must be a 40 byte z85 encoded string')
+
+    cdef int rc
+    cdef char[64] public_key
+    cdef char* c_secret_key = secret_key
+    _check_version((4,2), "curve_public")
+    with nogil:
+        rc = zmq_curve_public (public_key, c_secret_key)
+    _check_rc(rc)
+    return public_key[:40]
+
+
+__all__ = ['has', 'curve_keypair', 'curve_public']

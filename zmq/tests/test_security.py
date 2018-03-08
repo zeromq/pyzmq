@@ -178,6 +178,28 @@ class TestSecurity(BaseZMQTestCase):
         self.assertEqual(type(bpublic), bytes)
         self.assertEqual(len(bsecret), 32)
         self.assertEqual(len(bpublic), 32)
+
+    def test_curve_public(self):
+        """test curve_public"""
+        try:
+            public, secret = zmq.curve_keypair()
+        except zmq.ZMQError:
+            raise SkipTest("CURVE unsupported")
+        if zmq.zmq_version_info() < (4,2):
+            raise SkipTest("curve_public is new in libzmq 4.2")
+
+        derived_public = zmq.curve_public(secret)
+
+        self.assertEqual(type(derived_public), bytes)
+        self.assertEqual(len(derived_public), 40)
+
+        # verify that it is indeed Z85
+        bpublic = z85.decode(derived_public)
+        self.assertEqual(type(bpublic), bytes)
+        self.assertEqual(len(bpublic), 32)
+
+        # verify that it is equal to the known public key
+        self.assertEqual(derived_public, public)
          
     def test_curve(self):
         """test CURVE encryption"""

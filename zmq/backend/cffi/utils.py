@@ -34,12 +34,36 @@ def curve_keypair():
     (public, secret) : two bytestrings
         The public and private keypair as 40 byte z85-encoded bytestrings.
     """
-    _check_version((3,2), "monitor")
+    _check_version((3,2), "curve_keypair")
     public = ffi.new('char[64]')
     private = ffi.new('char[64]')
     rc = C.zmq_curve_keypair(public, private)
     _check_rc(rc)
     return ffi.buffer(public)[:40], ffi.buffer(private)[:40]
+
+
+def curve_public(private):
+    """ Compute the public key corresponding to a private key for use
+    with zmq.CURVE security
+
+    Requires libzmq (≥ 4.2) to have been built with CURVE support.
+
+    Parameters
+    ----------
+    private
+        The private key as a 40 byte z85-encoded bytestring
+    Returns
+    -------
+    bytestring
+        The public key as a 40 byte z85-encoded bytestring.
+    """
+    if isinstance(private, unicode):
+        private = private.encode('utf8')
+    _check_version((4,2), "curve_public")
+    public = ffi.new('char[64]')
+    rc = C.zmq_curve_public(public, private)
+    _check_rc(rc)
+    return ffi.buffer(public)[:40]
 
 
 def _retry_sys_call(f, *args, **kwargs):
@@ -54,4 +78,4 @@ def _retry_sys_call(f, *args, **kwargs):
             break
 
 
-__all__ = ['has', 'curve_keypair']
+__all__ = ['has', 'curve_keypair', 'curve_public']
