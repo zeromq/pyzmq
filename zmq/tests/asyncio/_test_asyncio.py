@@ -29,23 +29,23 @@ from zmq.tests.test_auth import TestThreadAuthentication
 class TestAsyncIOSocket(BaseZMQTestCase):
     if asyncio is not None:
         Context = zaio.Context
-    
+
     def setUp(self):
         if asyncio is None:
             raise SkipTest()
-        self.loop = zaio.ZMQEventLoop()
+        self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         super(TestAsyncIOSocket, self).setUp()
-    
+
     def tearDown(self):
         self.loop.close()
         super().tearDown()
-    
+
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, zaio.Socket)
         s.close()
-    
+
     def test_recv_multipart(self):
         @asyncio.coroutine
         def test():
