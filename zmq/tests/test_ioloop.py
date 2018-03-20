@@ -58,8 +58,8 @@ class Delay(threading.Thread):
 
 
 class TestIOLoop(BaseZMQTestCase):
-
-    IOLoop = ioloop.IOLoop
+    if _tornado:
+        IOLoop = ioloop.IOLoop
 
     def setUp(self):
         if not _tornado:
