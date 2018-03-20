@@ -2,6 +2,10 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+try:
+    import asyncio
+except ImportError:
+    asyncio = None
 
 from unittest import TestCase
 
@@ -19,6 +23,8 @@ class TestZMQStream(TestCase):
     def setUp(self):
         if tornado is None:
             pytest.skip()
+        if asyncio:
+            asyncio.set_event_loop(asyncio.new_event_loop())
         self.context = zmq.Context()
         self.loop = ioloop.IOLoop.instance()
         self.push = zmqstream.ZMQStream(self.context.socket(zmq.PUSH))

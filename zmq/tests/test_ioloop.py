@@ -64,13 +64,13 @@ class TestIOLoop(BaseZMQTestCase):
         if not _tornado:
             pytest.skip("tornado required")
         super(TestIOLoop, self).setUp()
+        if asyncio:
+            asyncio.set_event_loop(asyncio.new_event_loop())
 
     def tearDown(self):
         super(TestIOLoop, self).tearDown()
         BaseIOLoop.clear_current()
         BaseIOLoop.clear_instance()
-        if asyncio:
-            asyncio.new_event_loop()
 
     def test_simple(self):
         """simple IOLoop creation test"""
@@ -120,9 +120,9 @@ class TestIOLoop(BaseZMQTestCase):
 if have_gevent and _tornado:
     import zmq.green.eventloop.ioloop as green_ioloop
 
-    class TestIOLoopGreen(BaseZMQTestCase):
+    class TestIOLoopGreen(TestIOLoop):
         IOLoop = green_ioloop.IOLoop
-        def test_instance(self):
+        def xtest_instance(self):
             """Green IOLoop.instance returns the right object"""
             loop = self.IOLoop.instance()
             if not t5asyncio:
@@ -130,7 +130,7 @@ if have_gevent and _tornado:
             base_loop = BaseIOLoop.instance()
             assert base_loop is loop
 
-        def test_current(self):
+        def xtest_current(self):
             """Green IOLoop.current returns the right object"""
             loop = self.IOLoop.current()
             if not t5asyncio:
