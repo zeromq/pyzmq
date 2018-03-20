@@ -29,23 +29,23 @@ from zmq.tests.test_auth import TestThreadAuthentication
 class TestAsyncIOSocket(BaseZMQTestCase):
     if asyncio is not None:
         Context = zaio.Context
-    
+
     def setUp(self):
         if asyncio is None:
             raise SkipTest()
-        self.loop = zaio.ZMQEventLoop()
+        self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         super(TestAsyncIOSocket, self).setUp()
-    
+
     def tearDown(self):
         self.loop.close()
         super().tearDown()
-    
+
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
         assert isinstance(s, zaio.Socket)
         s.close()
-    
+
     def test_recv_multipart(self):
         @asyncio.coroutine
         def test():
@@ -298,43 +298,6 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             recvd = b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_until_complete(test())
-    
-    def test_aiohttp(self):
-        try:
-            import aiohttp
-        except ImportError:
-            raise SkipTest("Requires aiohttp")
-        from aiohttp import web
-
-        @asyncio.coroutine
-        def echo(request):
-            print(request.path)
-            return web.Response(body=str(request).encode('utf8'))
-        
-        @asyncio.coroutine
-        def server(loop):
-            app = web.Application(loop=loop)
-            app.router.add_route('GET', '/', echo)
-
-            srv = yield from loop.create_server(app.make_handler(),
-                                                '127.0.0.1', 8080)
-            print("Server started at http://127.0.0.1:8080")
-            return srv
-
-        @asyncio.coroutine
-        def client():
-            push, pull = self.create_bound_pair(zmq.PUSH, zmq.PULL)
-            
-            res = yield from aiohttp.request('GET', 'http://127.0.0.1:8080/')
-            text = yield from res.text()
-            yield from push.send(text.encode('utf8'))
-            rcvd = yield from pull.recv()
-            self.assertEqual(rcvd.decode('utf8'), text)
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(server(loop))
-        print("servered")
-        loop.run_until_complete(client())
 
     @pytest.mark.skipif(
         sys.platform.startswith('win'),
@@ -371,7 +334,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(test())
-    
+
     def test_shadow(self):
         @asyncio.coroutine
         def test():

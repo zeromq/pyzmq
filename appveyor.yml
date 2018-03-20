@@ -65,7 +65,7 @@ install:
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date. Install wheel package separate so that
   # we also cache wheels
-  - pip install --upgrade pip wheel
+  - python -m pip install --upgrade pip wheel
   - pip install --upgrade setuptools cython -r test-requirements.txt
 
 build_script:
