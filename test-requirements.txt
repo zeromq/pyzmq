@@ -1,4 +1,4 @@
 gevent; python_version == '2.7' and platform_python_implementation != "PyPy"
 pytest
 unittest2; python_version < '3'
-tornado
+tornado; python_version != '3.3'
