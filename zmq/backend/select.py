@@ -15,6 +15,7 @@ public_api = [
     'zmq_errno',
     'has',
     'curve_keypair',
+    'curve_public',
     'constants',
     'zmq_version_info',
     'IPC_PATH_MAX_LEN',

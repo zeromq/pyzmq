@@ -21,6 +21,7 @@ int zmq_proxy(void *frontend, void *backend, void *capture);
 int zmq_socket_monitor(void *socket, const char *addr, int events);
 
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+int zmq_curve_public (char *z85_public_key, char *z85_secret_key);
 int zmq_has (const char *capability);
 
 typedef struct { ...; } zmq_msg_t;
