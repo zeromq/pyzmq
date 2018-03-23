@@ -11,6 +11,12 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\tools\\run_with_env.cmd"
 
   matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: 32
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.x"
+      PYTHON_ARCH: 64
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6.x"
       PYTHON_ARCH: 32
@@ -22,12 +28,6 @@ environment:
       PYTHON_ARCH: 32
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.x"
-      PYTHON_ARCH: 64
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: 32
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x"
       PYTHON_ARCH: 64
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.x"
