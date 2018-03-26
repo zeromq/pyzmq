@@ -32,14 +32,14 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4, 2, 4)
+bundled_version = (4, 2, 5)
 vs = '%i.%i.%i' % bundled_version
 libzmq = "zeromq-%s.tar.gz" % vs
 libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}".format(
     vs=vs,
     libzmq=libzmq,
 )
-libzmq_checksum = "sha256:1ad5c28d44e31f0f7cad09b95bafaca8cc5346ff24a63a5e7d01c954162ad536"
+libzmq_checksum = "sha256:cc9090ba35713d59bb2f7d7965f877036c49c5558ea0c290b0dcc6f2a17e489f"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
