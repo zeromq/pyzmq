@@ -529,14 +529,14 @@ class Configure(build_ext):
             sources=sources,
             include_dirs=includes,
         )
-        
+
         # register the extension:
         self.distribution.ext_modules.insert(0, libzmq)
-        
+
         # use tweetnacl to provide CURVE support
         libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
         libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
-        
+
         # select polling subsystem based on platform
         if sys.platform  == 'darwin' or 'bsd' in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
@@ -547,13 +547,13 @@ class Configure(build_ext):
         else:
             # this may not be sufficiently precise
             libzmq.define_macros.append(('ZMQ_USE_POLL', 1))
-        
+
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:
             libzmq.define_macros.append(('FD_SETSIZE', 16384))
             libzmq.define_macros.append(('DLL_EXPORT', 1))
             libzmq.define_macros.append(('_CRT_SECURE_NO_WARNINGS', 1))
-            
+
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
@@ -563,8 +563,8 @@ class Configure(build_ext):
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
-            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32'])
-            
+            libzmq.libraries.extend(['rpcrt4', 'ws2_32', 'advapi32', 'iphlpapi'])
+
             # bundle MSCVP redist
             if self.config['bundle_msvcp']:
                 cc = new_compiler(compiler=self.compiler_type)
@@ -602,29 +602,28 @@ class Configure(build_ext):
                     libzmq.libraries.append('rt')
                 else:
                     info("ok")
-                
+
                 if pypy:
                     # seem to need explicit libstdc++ on linux + pypy
                     # not sure why
                     libzmq.libraries.append("stdc++")
-        
+
         # copy the header files to the source tree.
         bundledincludedir = pjoin('zmq', 'include')
         if not os.path.exists(bundledincludedir):
             os.makedirs(bundledincludedir)
         if not os.path.exists(pjoin(self.build_lib, bundledincludedir)):
             os.makedirs(pjoin(self.build_lib, bundledincludedir))
-        
+
         for header in glob(pjoin(bundledir, 'zeromq', 'include', '*.h')):
             shutil.copyfile(header, pjoin(bundledincludedir, basename(header)))
             shutil.copyfile(header, pjoin(self.build_lib, bundledincludedir, basename(header)))
-        
+
         # update other extensions, with bundled settings
         self.config['libzmq_extension'] = True
         self.init_settings_from_config()
         self.save_config('config', self.config)
-        
-    
+
     def fallback_on_bundled(self):
         """Couldn't build, fallback after waiting a while"""
         
