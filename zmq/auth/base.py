@@ -33,6 +33,7 @@ class Authenticator(object):
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
+        self.auth_callbacks = {}
         self.zap_socket = None
         self.whitelist = set()
         self.blacklist = set()
@@ -103,10 +104,12 @@ class Authenticator(object):
         
         To cover all domains, use "*".
         
-        You can add and remove certificates in that directory at any time.
+        You can add and remove certificates in that directory at any time. configure_curve must be called 
+        every time certificates are added or removed, in order to update the Authenticator's state 
         
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
+
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
         # treat location as a directory that holds the certificates.
         self.log.debug("Configure curve: %s[%s]", domain, location)
@@ -118,6 +121,26 @@ class Authenticator(object):
                 self.certs[domain] = load_certificates(location)
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
+    
+    def configure_curve_callback(self, domain='*',callback=None):
+        """Configure CURVE authentication for a given domain.
+        
+        CURVE authentication using a callback function validating
+        the client public key according to a custom mechanism, e.g. checking the 
+        key against records in a db  
+        
+        To cover all domains, use "*".
+        
+        
+        To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
+        """
+
+        self.allow_any = False
+
+        if callback is not None:
+            self.auth_callbacks[domain] = callback
+        else:
+            self.log.error("None auth_callback provided for domain:%s",)
 
     def curve_user_id(self, client_public_key):
         """Return the User-Id corresponding to a CURVE client's public key
@@ -274,6 +297,7 @@ class Authenticator(object):
 
         return allowed, reason
 
+
     def _authenticate_curve(self, domain, client_key):
         """CURVE ZAP authentication"""
         allowed = False
@@ -282,6 +306,26 @@ class Authenticator(object):
             allowed = True
             reason = b"OK"
             self.log.debug("ALLOWED (CURVE allow any client)")
+        elif self.auth_callbacks != {}:
+            # If no explicit domain is specified then use the default domain
+            if not domain:
+                domain = '*'
+
+            if domain in self.auth_callbacks:
+                z85_client_key = z85.encode(client_key)
+                # Callback to check if key is Allowed
+                if (self.auth_callbacks[domain](domain, z85_client_key)):
+                    allowed = True
+                    reason = b"OK"
+                else:
+                    reason = b"Unknown key"
+
+                status = "ALLOWED" if allowed else "DENIED"
+                self.log.debug("%s (CURVE auth_callback) domain=%s client_key=%s",
+                    status, domain, z85_client_key,
+                )
+            else:
+                reason = b"Unknown domain"
         else:
             # If no explicit domain is specified then use the default domain
             if not domain:
