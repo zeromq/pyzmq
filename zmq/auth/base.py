@@ -33,7 +33,7 @@ class Authenticator(object):
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
-        self.auth_callbacks = {}
+        self.credentials_providers = {}
         self.zap_socket = None
         self.whitelist = set()
         self.blacklist = set()
@@ -122,23 +122,38 @@ class Authenticator(object):
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
     
-    def configure_curve_callback(self, domain='*',callback=None):
+    def configure_curve_callback(self, domain='*', credentials_provider=None):
         """Configure CURVE authentication for a given domain.
         
         CURVE authentication using a callback function validating
         the client public key according to a custom mechanism, e.g. checking the 
-        key against records in a db  
+        key against records in a db. credentials_provider is an object of a class which 
+        implements a callback method accepting two parameters (domain and key), e.g.:
+
+        class CredentialsProvider(object):
+
+            def __init__(self):
+                ...e.g. db connection
+
+            def callback(self, domain, key):
+                valid = ...lookup key and/or domain in db
+                if (valid):
+                    logging.info('Autorizing: {0}, {1}'.format(domain, key))
+                    return True
+                else:
+                    logging.info('NOT Autorizing: {0}, {1}'.format(domain, key))
+                    return False
+
         
         To cover all domains, use "*".
-        
-        
+         
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
 
         self.allow_any = False
 
-        if callback is not None:
-            self.auth_callbacks[domain] = callback
+        if credentials_provider is not None:
+            self.credentials_providers[domain] = credentials_provider
         else:
             self.log.error("None auth_callback provided for domain:%s",)
 
@@ -306,15 +321,15 @@ class Authenticator(object):
             allowed = True
             reason = b"OK"
             self.log.debug("ALLOWED (CURVE allow any client)")
-        elif self.auth_callbacks != {}:
+        elif self.credentials_providers != {}:
             # If no explicit domain is specified then use the default domain
             if not domain:
                 domain = '*'
 
-            if domain in self.auth_callbacks:
+            if domain in self.credentials_providers:
                 z85_client_key = z85.encode(client_key)
                 # Callback to check if key is Allowed
-                if (self.auth_callbacks[domain](domain, z85_client_key)):
+                if (self.credentials_providers[domain].callback(domain, z85_client_key)):
                     allowed = True
                     reason = b"OK"
                 else:
