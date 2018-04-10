@@ -109,7 +109,6 @@ class Authenticator(object):
         
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
-
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
         # treat location as a directory that holds the certificates.
         self.log.debug("Configure curve: %s[%s]", domain, location)
@@ -311,7 +310,6 @@ class Authenticator(object):
             self.log.debug("DENIED (PLAIN) %s", reason)
 
         return allowed, reason
-
 
     def _authenticate_curve(self, domain, client_key):
         """CURVE ZAP authentication"""
