@@ -154,7 +154,7 @@ class Authenticator(object):
         if credentials_provider is not None:
             self.credentials_providers[domain] = credentials_provider
         else:
-            self.log.error("None auth_callback provided for domain:%s",)
+            self.log.error("None credentials_provider provided for domain:%s",domain)
 
     def curve_user_id(self, client_public_key):
         """Return the User-Id corresponding to a CURVE client's public key
