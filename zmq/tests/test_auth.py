@@ -241,6 +241,73 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         self.assertTrue(self.can_connect(server, client))
 
+    def test_curve_callback(self):
+        """threaded auth - CURVE with callback authentication"""
+        self.auth.allow('127.0.0.1')
+        certs = self.load_certs(self.secret_keys_dir)
+        server_public, server_secret, client_public, client_secret = certs
+
+        #Try CURVE authentication - without configuring server, connection should fail
+        server = self.socket(zmq.PUSH)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PULL)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        self.assertFalse(self.can_connect(server, client))
+
+        #Try CURVE authentication - with callback authentication configured, connection should pass 
+
+        class CredentialsProvider(object):
+            def __init__(self):
+               self.client = client_public  
+
+            def callback(self, domain, key):
+                if (key == self.client):
+                    return True
+                else:
+                    return False
+
+        provider = CredentialsProvider()
+        self.auth.configure_curve_callback(credentials_provider=provider)
+        server = self.socket(zmq.PUSH)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PULL)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        self.assertTrue(self.can_connect(server, client))
+
+        #Try CURVE authentication - with callback authentication configured with wrong key, connection should not pass 
+
+        class WrongCredentialsProvider(object):
+            def __init__(self):
+               self.client = "WrongCredentials"
+
+            def callback(self, domain, key):
+                if (key == self.client):
+                    return True
+                else:
+                    return False
+
+        provider = WrongCredentialsProvider()
+        self.auth.configure_curve_callback(credentials_provider=provider)
+        server = self.socket(zmq.PUSH)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PULL)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        self.assertFalse(self.can_connect(server, client))
+
+
+
     @skip_pypy
     def test_curve_user_id(self):
         """threaded auth - CURVE"""
