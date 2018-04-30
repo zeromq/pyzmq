@@ -342,28 +342,26 @@ cdef class Socket:
 
     def __dealloc__(self):
         """remove from context's list
-        
+
         But be careful that context might not exist if called during gc
         """
         if self.handle != NULL and not self._shadow and getpid() == self._pid:
-            # during gc, self.context might be NULL
-            if self.context and not self.context.closed:
-                self.context._remove_socket(self.handle)
-    
+            self._c_close()
+
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
         return <size_t> self.handle
-    
+
     @property
     def closed(self):
         return _check_closed_deep(self)
-    
+
     def close(self, linger=None):
         """s.close(linger=None)
 
         Close the socket.
-        
+
         If linger is specified, LINGER sockopt will be set prior to closing.
 
         This can be called to close the socket by hand. If this is not
@@ -373,23 +371,27 @@ cdef class Socket:
         cdef int rc=0
         cdef int linger_c
         cdef bint setlinger=False
-        
+
         if linger is not None:
             linger_c = linger
             setlinger=True
-        
+
         if self.handle != NULL and not self._closed and getpid() == self._pid:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, &linger_c, sizeof(int))
-            rc = zmq_close(self.handle)
-            if rc < 0 and zmq_errno() != ENOTSOCK:
-                # ignore ENOTSOCK (closed by Context)
-                _check_rc(rc)
-            self._closed = True
-            # during gc, self.context might be NULL
-            if self.context:
-                self.context._remove_socket(self.handle)
-            self.handle = NULL
+            self._c_close()
+
+    cdef void _c_close(self):
+        """Close underlying socket and unregister with self.context"""
+        rc = zmq_close(self.handle)
+        if rc < 0 and zmq_errno() != ENOTSOCK:
+            # ignore ENOTSOCK (closed by Context)
+            _check_rc(rc)
+        self._closed = True
+        # during gc, self.context might be NULL
+        if self.context:
+            self.context._remove_socket(self.handle)
+        self.handle = NULL
 
     def set(self, int option, optval):
         """s.set(option, optval)
@@ -403,9 +405,9 @@ cdef class Socket:
         option : int
             The option to set.  Available values will depend on your
             version of libzmq.  Examples include::
-            
+
                 zmq.SUBSCRIBE, UNSUBSCRIBE, IDENTITY, HWM, LINGER, FD
-        
+
         optval : int or bytes
             The value of the option to set.
 
