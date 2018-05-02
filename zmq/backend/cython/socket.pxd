@@ -41,6 +41,7 @@ cdef class Socket:
     cdef public bint _closed    # bool property for a closed socket.
     cdef public int copy_threshold # threshold below which pyzmq will always copy messages
     cdef int _pid               # the pid of the process which created me (for fork safety)
+    cdef void _c_close(self)    # underlying close of zmq socket
 
     # cpdef methods for direct-cython access:
     cpdef object send(self, object data, int flags=*, copy=*, track=*)
