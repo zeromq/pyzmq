@@ -354,7 +354,8 @@ class Configure(build_ext):
         if cfg.get('zmq_draft_api'):
             settings['define_macros'].append(('ZMQ_BUILD_DRAFT_API', 1))
 
-        if cfg['use_static_zmq']:
+        use_static_zmq = cfg.get('use_static_zmq', 'False').upper()
+        if use_static_zmq in ('TRUE', '1'):
             settings['define_macros'].append(('ZMQ_STATIC', '1'))
 
         # include internal directories
