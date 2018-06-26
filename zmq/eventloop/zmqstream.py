@@ -105,7 +105,7 @@ class ZMQStream(object):
 
     def __init__(self, socket, io_loop=None):
         self.socket = socket
-        self.io_loop = io_loop or IOLoop.instance()
+        self.io_loop = io_loop or IOLoop.current()
         self.poller = zmq.Poller()
         self._fd = self.socket.FD
 

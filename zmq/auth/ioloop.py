@@ -17,7 +17,7 @@ class IOLoopAuthenticator(Authenticator):
     def __init__(self, context=None, encoding='utf-8', log=None, io_loop=None):
         super(IOLoopAuthenticator, self).__init__(context, encoding, log)
         self.zap_stream = None
-        self.io_loop = io_loop or ioloop.IOLoop.instance()
+        self.io_loop = io_loop or ioloop.IOLoop.current()
 
     def start(self):
         """Start ZAP authentication"""
