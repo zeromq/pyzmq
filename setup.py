@@ -918,8 +918,9 @@ class CleanCommand(Command):
         # remove generated cython files
         if self.all:
             for root, dirs, files in os.walk(pjoin('zmq', 'backend', 'cython')):
-                 if os.path.splitext(f)[-1] == '.c':
-                     _clean_me.append(pjoin(root, f))
+                for f in files:
+                     if os.path.splitext(f)[-1] == '.c':
+                         _clean_me.append(pjoin(root, f))
 
         bundled = glob(pjoin('zmq', 'libzmq*'))
         _clean_me.extend([ b for b in bundled if b not in _clean_me ])
@@ -1280,4 +1281,3 @@ if 'setuptools' in sys.modules:
         ]
 
 setup(**setup_args)
-
