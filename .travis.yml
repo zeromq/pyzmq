@@ -56,6 +56,10 @@ matrix:
       env: ZMQ=bundled
     - python: 3.6-dev
       env: ZMQ=bundled
+    - python: 3.7-dev
+      env: ZMQ=
+    - python: 3.7-dev
+      env: ZMQ=bundled
     - python: 3.6
       env:
         - ZMQ=
