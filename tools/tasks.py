@@ -43,14 +43,18 @@ if 'LDFLAGS' not in os.environ:
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
+    '3.7' : _framework_py('3.7'),
     '2.7' : _framework_py('2.7'),
-    '3.4' : _framework_py('3.4'),
     '3.5' : _framework_py('3.5'),
     '3.6' : _framework_py('3.6'),
     'pypy': "/usr/local/bin/pypy",
     'pypy3': "/usr/local/bin/pypy3",
 }
 egg_pys = {} # no more eggs!
+
+default_py = '3.6'
+# all the Python versions to be built on linux
+manylinux_pys = '3.7 2.7 3.5 3.6'
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')
@@ -154,7 +158,7 @@ def make_env(py_exe, *packages):
 
 def build_sdist(py, upload=False):
     """Build sdists
-    
+
     Returns the path to the tarball
     """
     with cd(repo_root):
@@ -162,14 +166,14 @@ def build_sdist(py, upload=False):
         run(cmd)
         if upload:
             run(['twine', 'upload', 'dist/*'])
-    
+
     return glob.glob(pjoin(repo_root, 'dist', '*.tar.gz'))[0]
 
 @task
 def sdist(ctx, vs, upload=False):
     clone_repo(ctx)
     tag(ctx, vs, push=upload)
-    py = make_env('3.5', 'cython', 'twine')
+    py = make_env(default_py, 'cython', 'twine', 'certifi')
     tarball = build_sdist(py, upload=upload)
     return untar(tarball)
 
@@ -190,7 +194,7 @@ def untar(tarball):
     os.makedirs(sdist_root)
     with cd(sdist_root):
         run(['tar', '-xzf', tarball])
-    
+
     return glob.glob(pjoin(sdist_root, '*'))[0]
 
 @task
@@ -202,7 +206,7 @@ def bdist(ctx, py, wheel=True, egg=False):
     if egg:
         cmd.append('bdist_egg')
     cmd.append('--zmq=bundled')
-    
+
     run(cmd)
 
 @task
@@ -216,19 +220,19 @@ def manylinux(ctx, vs, upload=False):
         with cd(manylinux):
             run("git pull")
             run("git submodule update")
-    
+
     run("docker pull quay.io/pypa/manylinux1_x86_64")
     run("docker pull quay.io/pypa/manylinux1_i686")
     base_cmd = "docker run --dns 8.8.8.8 --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -e ZMQ_VERSION='{zmq}' -v $PWD:/io".format(
         vs=vs,
-        pys='2.7 3.4 3.5 3.6',
+        pys=manylinux_pys,
         zmq=libzmq_vs,
     )
     with cd(manylinux):
         run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
         run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
     if upload:
-        py = make_env('3.5', 'twine')
+        py = make_env(default_py, 'twine')
         run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
 
 @task
@@ -238,21 +242,21 @@ def release(ctx, vs, upload=False):
     for v, path in py_exes.items():
         if not os.path.exists(path):
             raise ValueError("Need %s at %s" % (v, path))
-    
+
     # start from scrach with clone and envs
     clone_repo(ctx, reset=True)
     if os.path.exists(env_root):
         shutil.rmtree(env_root)
-    
+
     path = sdist(ctx, vs, upload=upload)
-    
+
     with cd(path):
         for v in py_exes:
             bdist(ctx, v, wheel=True, egg=(v in egg_pys))
         if upload:
             py = make_env('3.5', 'twine')
             run(['twine', 'upload', 'dist/*'])
-    
+
     manylinux(ctx, vs, upload=upload)
     if upload:
         print("When AppVeyor finished building, upload artifacts with:")
@@ -299,7 +303,7 @@ def appveyor_artifacts(ctx, vs, dest='win-dist', upload=False):
             for chunk in r.iter_content(1024):
                 f.write(chunk)
     if upload:
-        py = make_env('3.5', 'twine')
+        py = make_env(default_py, 'twine')
         run(['twine', 'upload', '{}/*'.format(dest)])
     else:
         print("You can now upload these wheels with: ")
