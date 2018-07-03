@@ -911,15 +911,16 @@ class CleanCommand(Command):
                 if os.path.splitext(f)[-1] in ('.pyc', '.so', '.o', '.pyd', '.json'):
                     _clean_me.append(pjoin(root, f))
 
+            # remove generated cython files
+            if self.all:
+                for f in files:
+                    f2 = os.path.splitext(f)
+                    if f2[1] == '.c' and os.path.isfile(os.path.join(root, f2[0]) + '.pyx'):
+                        _clean_me.append(pjoin(root, f))
+
             for d in dirs:
                 if d == '__pycache__':
                     _clean_trees.append(pjoin(root, d))
-
-        # remove generated cython files
-        if self.all:
-            for root, dirs, files in os.walk(pjoin('zmq', 'backend', 'cython')):
-                 if os.path.splitext(f)[-1] == '.c':
-                     _clean_me.append(pjoin(root, f))
 
         bundled = glob(pjoin('zmq', 'libzmq*'))
         _clean_me.extend([ b for b in bundled if b not in _clean_me ])
@@ -1280,4 +1281,3 @@ if 'setuptools' in sys.modules:
         ]
 
 setup(**setup_args)
-
