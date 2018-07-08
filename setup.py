@@ -114,7 +114,7 @@ for idx, arg in enumerate(list(sys.argv)):
         os.environ['ZMQ_DRAFT_API'] = '1'
 
 #-----------------------------------------------------------------------------
-# Configuration (adapted from h5py: http://h5py.googlecode.com)
+# Configuration (adapted from h5py: https://www.h5py.org/)
 #-----------------------------------------------------------------------------
 
 # --- compiler settings -------------------------------------------------
