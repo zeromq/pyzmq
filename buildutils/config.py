@@ -24,7 +24,7 @@ pjoin = os.path.join
 from .msg import debug, fatal, warn
 
 #-----------------------------------------------------------------------------
-# Utility functions (adapted from h5py: http://h5py.googlecode.com)
+# Utility functions (adapted from h5py: https://www.h5py.org/)
 #-----------------------------------------------------------------------------
 
 

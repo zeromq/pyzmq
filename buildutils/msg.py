@@ -10,7 +10,7 @@ import sys
 import logging
 
 #-----------------------------------------------------------------------------
-# Logging (adapted from h5py: http://h5py.googlecode.com)
+# Logging (adapted from h5py: https://www.h5py.org/)
 #-----------------------------------------------------------------------------
 
 
