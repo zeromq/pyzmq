@@ -179,6 +179,9 @@ class ThreadAuthenticator(object):
         location = b(location, self.encoding)
         self.pipe.send_multipart([b'CURVE', domain, location])
 
+    def configure_curve_callback(self, domain='*', credentials_provider=None):
+        self.thread.authenticator.configure_curve_callback(domain, credentials_provider=credentials_provider)
+
     def start(self):
         """Start the authentication thread"""
         # create a socket to communicate with auth thread.
