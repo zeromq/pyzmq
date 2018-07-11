@@ -1,3 +1,3 @@
-cython>=0.20
-sphinx>=1.3,<1.7
+cython>=0.25
+sphinx>=1.7
 gevent
