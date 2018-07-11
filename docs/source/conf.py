@@ -28,9 +28,6 @@ rst_epilog = """
 .. |target_libzmq| replace:: {target_libzmq}
 """.format(**locals())
 
-# patch autodoc to work with Cython Sources
-import sphinx_cython
-
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
