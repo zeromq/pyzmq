@@ -20,7 +20,7 @@ class Authenticator(object):
     """Implementation of ZAP authentication for zmq connections.
 
     Note:
-    
+
     - libzmq provides four levels of security: default NULL (which the Authenticator does
       not see), and authenticated NULL, PLAIN, CURVE, and GSSAPI, which the Authenticator can see.
     - until you add policies, all incoming NULL connections are allowed.
@@ -120,32 +120,31 @@ class Authenticator(object):
                 self.certs[domain] = load_certificates(location)
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
-    
+
     def configure_curve_callback(self, domain='*', credentials_provider=None):
         """Configure CURVE authentication for a given domain.
-        
+
         CURVE authentication using a callback function validating
-        the client public key according to a custom mechanism, e.g. checking the 
-        key against records in a db. credentials_provider is an object of a class which 
-        implements a callback method accepting two parameters (domain and key), e.g.:
+        the client public key according to a custom mechanism, e.g. checking the
+        key against records in a db. credentials_provider is an object of a class which
+        implements a callback method accepting two parameters (domain and key), e.g.::
 
-        class CredentialsProvider(object):
+            class CredentialsProvider(object):
 
-            def __init__(self):
-                ...e.g. db connection
+                def __init__(self):
+                    ...e.g. db connection
 
-            def callback(self, domain, key):
-                valid = ...lookup key and/or domain in db
-                if (valid):
-                    logging.info('Autorizing: {0}, {1}'.format(domain, key))
-                    return True
-                else:
-                    logging.info('NOT Autorizing: {0}, {1}'.format(domain, key))
-                    return False
+                def callback(self, domain, key):
+                    valid = ...lookup key and/or domain in db
+                    if valid:
+                        logging.info('Autorizing: {0}, {1}'.format(domain, key))
+                        return True
+                    else:
+                        logging.warning('NOT Autorizing: {0}, {1}'.format(domain, key))
+                        return False
 
-        
         To cover all domains, use "*".
-         
+
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
 

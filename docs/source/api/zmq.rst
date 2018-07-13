@@ -16,9 +16,9 @@ Basic Classes
   :members:
   :inherited-members:
   :exclude-members: sockopts, closed, __del__, __enter__, __exit__, __copy__, __deepcopy__, __delattr__, __getattr__, __setattr__,
-  
+
   .. attribute:: closed
-  
+
       boolean - whether the context has been terminated.
       If True, you can no longer use this Context.
 
@@ -152,6 +152,8 @@ Functions
 .. autofunction:: zmq.device
 
 .. autofunction:: zmq.proxy
+
+.. autofunction:: zmq.curve_public
 
 .. autofunction:: zmq.curve_keypair
 
