@@ -17,6 +17,8 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
   (use :meth:`~tornado.ioloop.IOLoop.current` instead of :meth:`~tornado.ioloop.IOLoop.instance`
   to get default loops in :class:`.ZMQStream` and :class:`.IOLoopAuthenticator`)
 - Add support for :func:`.curve_public`
+- Remove delayed import of json in ``send/recv_json``
+- Add :meth:`.Authenticator.configure_curve_callback`
 - Various build fixes
 - sdist sources generated with Cython 0.28.3
 - Stop building wheels for Python 3.4, start building wheels for Python 3.7
