@@ -612,11 +612,6 @@ class Configure(build_ext):
                 else:
                     info("ok")
 
-                if pypy:
-                    # seem to need explicit libstdc++ on linux + pypy
-                    # not sure why
-                    libzmq.libraries.append("stdc++")
-
         # copy the header files to the source tree.
         bundledincludedir = pjoin('zmq', 'include')
         if not os.path.exists(bundledincludedir):
