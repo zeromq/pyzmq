@@ -67,10 +67,9 @@ cdef extern from "Python.h":
 
 # Python 2 buffer interface (legacy)
 cdef extern from "Python.h":
-    ctypedef void const_void "const void"
     Py_ssize_t Py_END_OF_BUFFER
     int PyObject_CheckReadBuffer(object)
-    int PyObject_AsReadBuffer (object, const_void **, Py_ssize_t *) except -1
+    int PyObject_AsReadBuffer (object, const void **, Py_ssize_t *) except -1
     int PyObject_AsWriteBuffer(object, void **, Py_ssize_t *) except -1
     
     object PyBuffer_FromMemory(void *ptr, Py_ssize_t s)
@@ -168,7 +167,7 @@ cdef inline object asbuffer(object ob, int writable, int format,
         if writable:
             PyObject_AsWriteBuffer(ob, &bptr, &blen)
         else:
-            PyObject_AsReadBuffer(ob, <const_void **>&bptr, &blen)
+            PyObject_AsReadBuffer(ob, <const void **>&bptr, &blen)
         if format:
             try: # numpy.ndarray
                 dtype = ob.dtype

@@ -39,7 +39,6 @@ from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
 from .libzmq cimport (
     fd_t,
     int64_t,
-    const_char_ptr,
 
     zmq_errno,
 
@@ -105,7 +104,6 @@ import zmq
 from zmq.backend.cython import constants
 from .checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
-from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -699,8 +697,7 @@ cdef class Socket:
             raise RuntimeError("libzmq must be built with draft support")
         if isinstance(group, unicode):
             group = group.encode('utf8')
-        cdef const_char_ptr c_group = group
-        cdef int rc = zmq_join(self.handle, c_group)
+        cdef int rc = zmq_join(self.handle, group)
         _check_rc(rc)
 
     def leave(self, group):
@@ -717,8 +714,7 @@ cdef class Socket:
         _check_version((4,2), "RADIO-DISH")
         if not zmq.has('draft'):
             raise RuntimeError("libzmq must be built with draft support")
-        cdef const_char_ptr c_group = group
-        cdef int rc = zmq_leave(self.handle, c_group)
+        cdef int rc = zmq_leave(self.handle, group)
         _check_rc(rc)
         
 

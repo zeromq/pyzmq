@@ -23,23 +23,17 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-# allow const char*
-cdef extern from *:
-    ctypedef char* const_char_ptr "const char*"
-
+from cpython.version cimport PY_MAJOR_VERSION
 from .libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
-
-from zmq.utils.strtypes import bytes
 
 def strerror(int errno):
     """strerror(errno)
 
     Return the error string given the error number.
     """
-    cdef const_char_ptr str_e
-    # char * will be a bytes object:
+    # This is a const char *
     str_e = zmq_strerror(errno)
-    if str is bytes:
+    if PY_MAJOR_VERSION <= 2:
         # Python 2: str is bytes, so we already have the right type
         return str_e
     else:

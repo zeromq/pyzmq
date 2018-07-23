@@ -27,10 +27,6 @@
 # Import the C header files
 #-----------------------------------------------------------------------------
 
-cdef extern from *:
-    ctypedef void* const_void_ptr "const void *"
-    ctypedef char* const_char_ptr "const char *"
-
 # were it not for Windows,
 # we could cimport these from libc.stdint
 cdef extern from "zmq_compat.h":
@@ -46,7 +42,7 @@ cdef extern from "zmq.h" nogil:
     ctypedef int fd_t "ZMQ_FD_T"
     
     enum: errno
-    char *zmq_strerror (int errnum)
+    const char *zmq_strerror (int errnum)
     int zmq_errno()
 
     void *zmq_ctx_new ()
@@ -75,8 +71,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_more (zmq_msg_t *msg)
     int zmq_msg_get (zmq_msg_t *msg, int option)
     int zmq_msg_set (zmq_msg_t *msg, int option, int optval)
-    const_char_ptr zmq_msg_gets (zmq_msg_t *msg, const_char_ptr property)
-    int zmq_has (const_char_ptr capability)
+    const char *zmq_msg_gets (zmq_msg_t *msg, const char *property)
+    int zmq_has (const char *capability)
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
@@ -90,7 +86,7 @@ cdef extern from "zmq.h" nogil:
     int zmq_socket_monitor (void *s, char *addr, int flags)
     
     # send/recv
-    int zmq_sendbuf (void *s, const_void_ptr buf, size_t n, int flags)
+    int zmq_sendbuf (void *s, const void *buf, size_t n, int flags)
     int zmq_recvbuf (void *s, void *buf, size_t n, int flags)
 
     ctypedef struct zmq_pollitem_t:
@@ -108,10 +104,10 @@ cdef extern from "zmq.h" nogil:
     int zmq_curve_public (char *z85_public_key, char *z85_secret_key)
 
     # 4.2 draft
-    int zmq_join (void *s, const_char_ptr group)
-    int zmq_leave (void *s, const_char_ptr group)
+    int zmq_join (void *s, const char *group)
+    int zmq_leave (void *s, const char *group)
 
-    int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
-    uint32_t zmq_msg_routing_id(zmq_msg_t *msg);
-    int zmq_msg_set_group(zmq_msg_t *msg, const_char_ptr group);
-    const_char_ptr zmq_msg_group(zmq_msg_t *msg);
+    int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id)
+    uint32_t zmq_msg_routing_id(zmq_msg_t *msg)
+    int zmq_msg_set_group(zmq_msg_t *msg, const char *group)
+    const char *zmq_msg_group(zmq_msg_t *msg)
