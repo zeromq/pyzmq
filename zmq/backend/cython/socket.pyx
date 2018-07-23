@@ -116,14 +116,14 @@ IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 # inline some small socket submethods:
 # true methods frequently cannot be inlined, acc. Cython docs
 
-cdef inline int nbytes(buf):
+cdef inline Py_ssize_t nbytes(buf) except -1:
     """get n bytes"""
     if PY_VERSION_HEX >= 0x03030000:
         return buf.nbytes
 
-    cdef int n = buf.itemsize
-    cdef int ndim = buf.ndim
-    cdef int dim = 0
+    cdef Py_ssize_t n = buf.itemsize
+    cdef Py_ssize_t ndim = buf.ndim
+    cdef Py_ssize_t i
     for i in range(ndim):
         n *= buf.shape[i]
     return n
