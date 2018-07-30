@@ -254,7 +254,7 @@ def release(ctx, vs, upload=False):
         for v in py_exes:
             bdist(ctx, v, wheel=True, egg=(v in egg_pys))
         if upload:
-            py = make_env('3.5', 'twine')
+            py = make_env(default_py, 'twine')
             run(['twine', 'upload', 'dist/*'])
 
     manylinux(ctx, vs, upload=upload)
