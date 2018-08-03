@@ -61,7 +61,6 @@ except (ImportError, AttributeError):
 import zmq
 from zmq.error import _check_version
 from .checkrc cimport _check_rc
-from zmq.utils.strtypes import bytes,unicode,basestring
 
 #-----------------------------------------------------------------------------
 # Code
@@ -347,7 +346,6 @@ cdef class Frame:
         """
         cdef int rc
         cdef uint32_t routing_id
-        cdef const_char_ptr buf
 
         if option == 'routing_id':
             routing_id = value
@@ -357,8 +355,7 @@ cdef class Frame:
         elif option == 'group':
             if isinstance(value, unicode):
                 value = value.encode('utf8')
-            buf = value
-            rc = zmq_msg_set_group(&self.zmq_msg, buf)
+            rc = zmq_msg_set_group(&self.zmq_msg, value)
             _check_rc(rc)
             return
 
@@ -387,7 +384,6 @@ cdef class Frame:
         cdef char *property_c = NULL
         cdef Py_ssize_t property_len_c = 0
         cdef uint32_t routing_id
-        cdef const_char_ptr buf
 
         # zmq_msg_get
         if isinstance(option, int):

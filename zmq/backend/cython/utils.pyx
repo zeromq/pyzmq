@@ -22,10 +22,9 @@
 from .libzmq cimport (
     zmq_curve_keypair,
     zmq_curve_public,
-    zmq_has, const_char_ptr,
+    zmq_has,
 )
 from zmq.error import ZMQError, _check_rc, _check_version
-from zmq.utils.strtypes import unicode
 
 def has(capability):
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
