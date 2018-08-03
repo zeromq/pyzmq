@@ -70,10 +70,6 @@ matrix:
       env:
         - ZMQ=
         - TORNADO=master
-    - python: 2.7
-      env:
-        - ZMQ=
-        - TORNADO=master
     - python: 3.5
       env: ZMQ=libzmq
     - python: 3.4
