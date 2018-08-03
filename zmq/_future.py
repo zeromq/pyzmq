@@ -334,7 +334,7 @@ class _AsyncSocket(_zmq.Socket):
         if self._recv_futures:
             self._add_io_state(POLLIN)
         return f
-    
+
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
@@ -365,10 +365,16 @@ class _AsyncSocket(_zmq.Socket):
         if self._shadow_sock.EVENTS & POLLOUT:
             # send immediately if we can
             self._handle_send()
+            # make sure we schedule pending events
+            # if we are taking this shortcut
+            # only if not _send_futures because `_add_io_state`
+            # does the same thing below
+            if not self._send_futures:
+                self._schedule_remaining_events()
         if self._send_futures:
             self._add_io_state(POLLOUT)
         return f
-    
+
     def _handle_recv(self):
         """Handle recv events"""
         if not self._shadow_sock.EVENTS & POLLIN:
@@ -383,13 +389,13 @@ class _AsyncSocket(_zmq.Socket):
                 f = None
             else:
                 break
-        
+
         if not self._recv_futures:
             self._drop_io_state(POLLIN)
-        
+
         if f is None:
             return
-        
+
         if kind == 'poll':
             # on poll event, just signal ready, nothing else.
             f.set_result(None)
