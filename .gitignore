@@ -25,5 +25,7 @@ examples/security/private_keys
 wheelhouse
 .coverage
 .cache
+.pytest_cache
+win-dist
 *.pickle
 .ipynb_checkpoints
