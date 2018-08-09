@@ -40,6 +40,7 @@ from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
+from distutils.sysconfig import customize_compiler
 from distutils.version import LooseVersion as V
 
 from glob import glob
@@ -602,6 +603,7 @@ class Configure(build_ext):
 
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
+            customize_compiler(cc)
             cc.output_dir = self.build_temp
             if not sys.platform.startswith(('darwin', 'freebsd')):
                 line()
