@@ -10,12 +10,13 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
-17.1.1
+17.1.2
 ======
 
 - Fix possible hang when working with asyncio
 - Remove some outdated workarounds for old Cython versions
 - Fix some compilation with custom compilers
+- Remove unneeded link of libstdc++ on PyPy
 
 
 17.1.0
