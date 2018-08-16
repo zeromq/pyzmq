@@ -99,6 +99,10 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_device (int device_, void *insocket_, void *outsocket_)
     int zmq_proxy (void *frontend, void *backend, void *capture)
+    int zmq_proxy_steerable (void *frontend,
+                             void *backend,
+                             void *capture,
+                             void *control)
 
     int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     int zmq_curve_public (char *z85_public_key, char *z85_secret_key)
