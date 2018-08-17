@@ -35,7 +35,7 @@
 %endif
 
 Name:           python-pyzmq
-Version:        17.0.0b1
+Version:        17.1.2
 Release:        0
 Summary:        Python bindings for 0MQ
 License:        LGPL-3.0+ and BSD-3-Clause
