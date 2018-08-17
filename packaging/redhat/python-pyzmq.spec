@@ -53,6 +53,7 @@ BuildRequires:  %{python_module Cython}
 BuildRequires:  %{python_module cffi}
 BuildRequires:  %{python_module py}
 BuildRequires:  zeromq-devel
+BuildRequires:  -post-build-checks
 Requires:       python
 %if 0%{?centos_version} == 0 && 0%{?rhel_version} == 0
 Recommends:     python-cffi
