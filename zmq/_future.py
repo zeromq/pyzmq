@@ -65,7 +65,7 @@ class _AsyncPoller(_zmq.Poller):
                 if mask & _zmq.POLLOUT:
                     evt |= self._WRITE
                 self._watch_raw_socket(loop, socket, evt, wake_raw)
-        
+
         def on_poll_ready(f):
             if future.done():
                 return
@@ -176,30 +176,35 @@ class _AsyncSocket(_zmq.Socket):
     
     def recv(self, flags=0, copy=True, track=False):
         """Receive a single zmq frame.
-        
+
         Returns a Future, whose result will be the received frame.
-        
+
         Recommend using recv_multipart instead.
         """
         return self._add_recv_event('recv',
             dict(flags=flags, copy=copy, track=track)
         )
-    
+
     def send_multipart(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a complete multipart zmq message.
-        
+
         Returns a Future that resolves when sending is complete.
         """
-        kwargs.update(dict(flags=flags, copy=copy, track=track))
+        kwargs['flags'] = flags
+        kwargs['copy'] = copy
+        kwargs['track'] = track
         return self._add_send_event('send_multipart', msg=msg, kwargs=kwargs)
-    
+
     def send(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a single zmq frame.
-        
+
         Returns a Future that resolves when sending is complete.
-        
+
         Recommend using send_multipart instead.
         """
+        kwargs['flags'] = flags
+        kwargs['copy'] = copy
+        kwargs['track'] = track
         kwargs.update(dict(flags=flags, copy=copy, track=track))
         return self._add_send_event('send', msg=msg, kwargs=kwargs)
 
@@ -338,16 +343,42 @@ class _AsyncSocket(_zmq.Socket):
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
-        if kind.startswith('send') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+        # attempt send with DONTWAIT if no futures are waiting
+        # short-circuit for sends that will resolve immediately
+        # only call if no send Futures are waiting
+        if (
+            kind in ('send', 'send_multipart')
+            and not self._send_futures
+        ):
+            flags = kwargs.get('flags', 0)
+            nowait_kwargs = kwargs.copy()
+            nowait_kwargs['flags'] = flags | _zmq.DONTWAIT
+
             # short-circuit non-blocking calls
             send = getattr(self._shadow_sock, kind)
+            # track if the send resolved or not
+            # (EAGAIN if DONTWAIT is not set should proceed with)
+            finish_early = True
             try:
-                r = send(msg, **kwargs)
+                r = send(msg, **nowait_kwargs)
+            except _zmq.Again as e:
+                if flags & _zmq.DONTWAIT:
+                    f.set_exception(e)
+                else:
+                    # EAGAIN raised and DONTWAIT not requested,
+                    # proceed with async send
+                    finish_early = False
             except Exception as e:
                 f.set_exception(e)
             else:
                 f.set_result(r)
-            return f
+
+            if finish_early:
+                # short-circuit resolved, return finished Future
+                # schedule wake for recv if there are any receivers waiting
+                if self._recv_futures:
+                    self._schedule_remaining_events()
+                return f
 
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
@@ -362,17 +393,7 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self._shadow_sock.get(EVENTS) & POLLOUT:
-            # send immediately if we can
-            self._handle_send()
-            # make sure we schedule pending events
-            # if we are taking this shortcut
-            # only if not _send_futures because `_add_io_state`
-            # does the same thing below
-            if not self._send_futures:
-                self._schedule_remaining_events()
-        if self._send_futures:
-            self._add_io_state(POLLOUT)
+        self._add_io_state(POLLOUT)
         return f
 
     def _handle_recv(self):
