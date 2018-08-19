@@ -10,6 +10,7 @@ public_api = [
     'Message',
     'device',
     'proxy',
+    'proxy_steerable',
     'zmq_poll',
     'strerror',
     'zmq_errno',

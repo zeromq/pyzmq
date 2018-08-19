@@ -72,6 +72,7 @@
 #else
     #define zmq_msg_gets(msg, prop) _missing
     #define zmq_has(capability) _missing
+    #define zmq_proxy_steerable(in, out, mon, ctrl) _missing
 #endif
 
 #if ZMQ_VERSION_MAJOR >= 3
