@@ -114,7 +114,7 @@ class Socket(SocketBase, AttributeSetter):
     #-------------------------------------------------------------------------
     # Hooks for sockopt completion
     #-------------------------------------------------------------------------
-    
+
     def __dir__(self):
         keys = dir(self.__class__)
         for collection in (
@@ -125,18 +125,21 @@ class Socket(SocketBase, AttributeSetter):
         ):
             keys.extend(collection)
         return keys
-    
+
     #-------------------------------------------------------------------------
     # Getting/Setting options
     #-------------------------------------------------------------------------
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
-    
+
     def __setattr__(self, key, value):
         """Override to allow setting zmq.[UN]SUBSCRIBE even though we have a subscribe method"""
+        if key in self.__dict__:
+            object.__setattr__(self, key, value)
+            return
         _key = key.lower()
         if _key in ('subscribe', 'unsubscribe'):
-            
+
             if isinstance(value, unicode):
                 value = value.encode('utf8')
             if _key == 'subscribe':

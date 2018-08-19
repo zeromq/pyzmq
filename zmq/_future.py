@@ -6,7 +6,7 @@
 from collections import namedtuple, deque
 from itertools import chain
 
-from zmq import POLLOUT, POLLIN
+from zmq import EVENTS, POLLOUT, POLLIN
 import zmq as _zmq
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
@@ -65,7 +65,7 @@ class _AsyncPoller(_zmq.Poller):
                 if mask & _zmq.POLLOUT:
                     evt |= self._WRITE
                 self._watch_raw_socket(loop, socket, evt, wake_raw)
-        
+
         def on_poll_ready(f):
             if future.done():
                 return
@@ -160,7 +160,7 @@ class _AsyncSocket(_zmq.Socket):
 
     def get(self, key):
         result = super(_AsyncSocket, self).get(key)
-        if key == _zmq.EVENTS:
+        if key == EVENTS:
             self._schedule_remaining_events(result)
         return result
     get.__doc__ = _zmq.Socket.get.__doc__
@@ -176,30 +176,35 @@ class _AsyncSocket(_zmq.Socket):
     
     def recv(self, flags=0, copy=True, track=False):
         """Receive a single zmq frame.
-        
+
         Returns a Future, whose result will be the received frame.
-        
+
         Recommend using recv_multipart instead.
         """
         return self._add_recv_event('recv',
             dict(flags=flags, copy=copy, track=track)
         )
-    
+
     def send_multipart(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a complete multipart zmq message.
-        
+
         Returns a Future that resolves when sending is complete.
         """
-        kwargs.update(dict(flags=flags, copy=copy, track=track))
+        kwargs['flags'] = flags
+        kwargs['copy'] = copy
+        kwargs['track'] = track
         return self._add_send_event('send_multipart', msg=msg, kwargs=kwargs)
-    
+
     def send(self, msg, flags=0, copy=True, track=False, **kwargs):
         """Send a single zmq frame.
-        
+
         Returns a Future that resolves when sending is complete.
-        
+
         Recommend using send_multipart instead.
         """
+        kwargs['flags'] = flags
+        kwargs['copy'] = copy
+        kwargs['track'] = track
         kwargs.update(dict(flags=flags, copy=copy, track=track))
         return self._add_send_event('send', msg=msg, kwargs=kwargs)
 
@@ -328,7 +333,7 @@ class _AsyncSocket(_zmq.Socket):
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self._shadow_sock.EVENTS & POLLIN:
+        if self._shadow_sock.get(EVENTS) & POLLIN:
             # recv immediately, if we can
             self._handle_recv()
         if self._recv_futures:
@@ -338,16 +343,42 @@ class _AsyncSocket(_zmq.Socket):
     def _add_send_event(self, kind, msg=None, kwargs=None, future=None):
         """Add a send event, returning the corresponding Future"""
         f = future or self._Future()
-        if kind.startswith('send') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
+        # attempt send with DONTWAIT if no futures are waiting
+        # short-circuit for sends that will resolve immediately
+        # only call if no send Futures are waiting
+        if (
+            kind in ('send', 'send_multipart')
+            and not self._send_futures
+        ):
+            flags = kwargs.get('flags', 0)
+            nowait_kwargs = kwargs.copy()
+            nowait_kwargs['flags'] = flags | _zmq.DONTWAIT
+
             # short-circuit non-blocking calls
             send = getattr(self._shadow_sock, kind)
+            # track if the send resolved or not
+            # (EAGAIN if DONTWAIT is not set should proceed with)
+            finish_early = True
             try:
-                r = send(msg, **kwargs)
+                r = send(msg, **nowait_kwargs)
+            except _zmq.Again as e:
+                if flags & _zmq.DONTWAIT:
+                    f.set_exception(e)
+                else:
+                    # EAGAIN raised and DONTWAIT not requested,
+                    # proceed with async send
+                    finish_early = False
             except Exception as e:
                 f.set_exception(e)
             else:
                 f.set_result(r)
-            return f
+
+            if finish_early:
+                # short-circuit resolved, return finished Future
+                # schedule wake for recv if there are any receivers waiting
+                if self._recv_futures:
+                    self._schedule_remaining_events()
+                return f
 
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
@@ -358,26 +389,16 @@ class _AsyncSocket(_zmq.Socket):
         f.add_done_callback(lambda f: self._remove_finished_future(f, self._send_futures))
 
         if hasattr(_zmq, 'SNDTIMEO'):
-            timeout_ms = self._shadow_sock.sndtimeo
+            timeout_ms = self._shadow_sock.get(_zmq.SNDTIMEO)
             if timeout_ms >= 0:
                 self._add_timeout(f, timeout_ms * 1e-3)
 
-        if self._shadow_sock.EVENTS & POLLOUT:
-            # send immediately if we can
-            self._handle_send()
-            # make sure we schedule pending events
-            # if we are taking this shortcut
-            # only if not _send_futures because `_add_io_state`
-            # does the same thing below
-            if not self._send_futures:
-                self._schedule_remaining_events()
-        if self._send_futures:
-            self._add_io_state(POLLOUT)
+        self._add_io_state(POLLOUT)
         return f
 
     def _handle_recv(self):
         """Handle recv events"""
-        if not self._shadow_sock.EVENTS & POLLIN:
+        if not self._shadow_sock.get(EVENTS) & POLLIN:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -416,7 +437,7 @@ class _AsyncSocket(_zmq.Socket):
             f.set_result(result)
     
     def _handle_send(self):
-        if not self._shadow_sock.EVENTS & POLLOUT:
+        if not self._shadow_sock.get(EVENTS) & POLLOUT:
             # event triggered, but state may have been changed between trigger and callback
             return
         f = None
@@ -457,7 +478,7 @@ class _AsyncSocket(_zmq.Socket):
     # event masking from ZMQStream
     def _handle_events(self, fd=0, events=0):
         """Dispatch IO events to _handle_recv, etc."""
-        zmq_events = self._shadow_sock.EVENTS
+        zmq_events = self._shadow_sock.get(EVENTS)
         if zmq_events & _zmq.POLLIN:
             self._handle_recv()
         if zmq_events & _zmq.POLLOUT:
@@ -472,19 +493,24 @@ class _AsyncSocket(_zmq.Socket):
         # edge-triggered handling
         # allow passing events in, in case this is triggered by retrieving events,
         # so we don't have to retrieve it twice.
+        if self._state == 0:
+            # not watching for anything, nothing to schedule
+            return
         if events is None:
-            events = self._shadow_sock.EVENTS
+            events = self._shadow_sock.get(EVENTS)
         if events & self._state:
             self._call_later(0, self._handle_events)
 
     def _add_io_state(self, state):
         """Add io_state to poller."""
-        self._state = self._state | state
+        if self._state != state:
+            state = self._state = self._state | state
         self._update_handler(self._state)
 
     def _drop_io_state(self, state):
         """Stop poller from watching an io_state."""
-        self._state = self._state & (~state)
+        if self._state & state:
+            self._state = self._state & (~state)
         self._update_handler(self._state)
 
     def _update_handler(self, state):
