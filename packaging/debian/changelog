@@ -1,4 +1,4 @@
-pyzmq (17.0.0b1) unstable; urgency=low
+pyzmq (17.1.2) unstable; urgency=low
 
   * Initial packaging.
 
