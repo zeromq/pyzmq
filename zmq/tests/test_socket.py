@@ -413,7 +413,7 @@ class TestSocket(BaseZMQTestCase):
                 except AttributeError:
                     pass
             s.close()
-    
+
     def test_copy(self):
         s = self.socket(zmq.PUB)
         scopy = copy.copy(s)
@@ -423,7 +423,16 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(s.underlying, scopy.underlying)
         self.assertEqual(s.underlying, sdcopy.underlying)
         s.close()
-    
+
+    def test_send_buffer(self):
+        a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+        for buffer_type in (memoryview, bytearray):
+            rawbytes = str(buffer_type).encode('ascii')
+            msg = buffer_type(rawbytes)
+            a.send(msg)
+            recvd = b.recv()
+            assert recvd == rawbytes
+
     def test_shadow(self):
         p = self.socket(zmq.PUSH)
         p.bind("tcp://127.0.0.1:5555")
@@ -438,13 +447,13 @@ class TestSocket(BaseZMQTestCase):
         p2.send(sent)
         rcvd = self.recv(s2)
         self.assertEqual(rcvd, sent)
-    
+
     def test_shadow_pyczmq(self):
         try:
             from pyczmq import zctx, zsocket
         except Exception:
             raise SkipTest("Requires pyczmq")
-        
+
         ctx = zctx.new()
         ca = zsocket.new(ctx, zmq.PUSH)
         cb = zsocket.new(ctx, zmq.PULL)
@@ -455,7 +464,7 @@ class TestSocket(BaseZMQTestCase):
         a.send(b'hi')
         rcvd = self.recv(b)
         self.assertEqual(rcvd, b'hi')
-    
+
     def test_subscribe_method(self):
         pub, sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
         sub.subscribe('prefix')

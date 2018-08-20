@@ -206,6 +206,10 @@ class Socket(object):
             message = message.bytes
 
         zmq_msg = ffi.new('zmq_msg_t*')
+        if not isinstance(message, bytes):
+            # cast any bufferable data to bytes via memoryview
+            message = memoryview(message).tobytes()
+
         c_message = ffi.new('char[]', message)
         rc = C.zmq_msg_init_size(zmq_msg, len(message))
         _check_rc(rc)
