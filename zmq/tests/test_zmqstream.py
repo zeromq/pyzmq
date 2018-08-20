@@ -27,7 +27,8 @@ class TestZMQStream(TestCase):
         if asyncio:
             asyncio.set_event_loop(asyncio.new_event_loop())
         self.context = zmq.Context()
-        self.loop = ioloop.IOLoop.instance()
+        self.loop = ioloop.IOLoop()
+        self.loop.make_current()
         self.push = zmqstream.ZMQStream(self.context.socket(zmq.PUSH))
         self.pull = zmqstream.ZMQStream(self.context.socket(zmq.PULL))
         port = self.push.bind_to_random_port('tcp://127.0.0.1')
@@ -37,7 +38,7 @@ class TestZMQStream(TestCase):
     def tearDown(self):
         self.loop.close(all_fds=True)
         self.context.term()
-        ioloop.IOLoop.clear_instance()
+        ioloop.IOLoop.clear_current()
 
     def run_until_timeout(self, timeout=10):
         timed_out = []
