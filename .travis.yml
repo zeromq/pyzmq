@@ -16,14 +16,17 @@ before_install:
   - sudo add-apt-repository -y ppa:anton+/dnscrypt
   - sudo apt-get update
   - |
+    # install libzmq, libsodium unless zmq=bundled
     if [[ $ZMQ != bundled ]]; then
       sudo apt-get install -y -qq libzmq3-dev libsodium-dev
     fi
   - |
+    # install cython unless pypy
     if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then
-      pip install -q cython --install-option="--no-cython-compile"
+      pip install cython
     fi
   - |
+    # build libzmq
     if [[ ! -z "$ZMQ" && $ZMQ != bundled ]]; then
       wget https://github.com/zeromq/$ZMQ/archive/master.zip -O libzmq.zip
       unzip libzmq.zip
@@ -39,13 +42,15 @@ before_install:
     fi
   - pip install -r test-requirements.txt
   - |
+    # install pinned tornado
     if [[ "$TORNADO" == "master" ]]; then
       pip install https://github.com/tornadoweb/tornado/archive/master.zip
-    fi
-  - |
-    if [[ "$NOTORNADO" == "1" ]]; then
+    elif [[ "$TORNADO" == "none" ]]; then
       pip uninstall -yq tornado
+    elif [[ ! -z "$TORNADO" ]]; then
+      pip install tornado==${TORNADO}
     fi
+  - pip freeze
 
 install:
   - python setup.py build_ext --inplace --zmq=$ZMQ
@@ -53,8 +58,6 @@ install:
 matrix:
   include:
     - python: pypy
-      env: ZMQ=bundled
-    - python: 3.6-dev
       env: ZMQ=bundled
     - python: 3.7
       env: ZMQ=
@@ -65,11 +68,19 @@ matrix:
     - python: 3.6
       env:
         - ZMQ=
-        - NOTORNADO=1
+        - TORNADO=none
     - python: 3.6
       env:
         - ZMQ=
         - TORNADO=master
+    - python: 3.6
+      env:
+        - ZMQ=
+        - TORNADO=4.5.*
+    - python: 2.7
+      env:
+        - ZMQ=
+        - TORNADO=4.5.*
     - python: 3.5
       env: ZMQ=libzmq
     - python: 3.4
