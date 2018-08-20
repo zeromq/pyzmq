@@ -261,23 +261,7 @@ class TestFrame(BaseZMQTestCase):
             r = b.recv()
             self.assertEqual(s,r)
         self.assertEqual(s, m.bytes)
-    
-    def test_buffer_numpy(self):
-        """test non-copying numpy array messages"""
-        try:
-            import numpy
-        except ImportError:
-            raise SkipTest("numpy required")
-        rand = numpy.random.randint
-        shapes = [ rand(2,16) for i in range(5) ]
-        for i in range(1,len(shapes)+1):
-            shape = shapes[:i]
-            A = numpy.random.random(shape)
-            m = zmq.Frame(A)
-            self.assertEqual(memoryview(A), m.buffer)
-            B = numpy.array(m.buffer,dtype=A.dtype).reshape(A.shape)
-            self.assertEqual((A==B).all(), True)
-    
+
     def test_memoryview(self):
         """test messages from memoryview"""
         major,minor = sys.version_info[:2]
@@ -291,7 +275,7 @@ class TestFrame(BaseZMQTestCase):
         s2 = buf.tobytes()
         self.assertEqual(s2,s)
         self.assertEqual(m.bytes,s)
-    
+
     def test_noncopying_recv(self):
         """check for clobbering message buffers"""
         null = b'\0'*64
@@ -318,6 +302,7 @@ class TestFrame(BaseZMQTestCase):
         """test non-copying numpy array messages"""
         try:
             import numpy
+            from numpy.testing import assert_array_equal
         except ImportError:
             raise SkipTest("requires numpy")
         if sys.version_info < (2,7):
@@ -330,26 +315,22 @@ class TestFrame(BaseZMQTestCase):
             shape = shapes[:i]
             for dt in dtypes:
                 A = numpy.empty(shape, dtype=dt)
-                while numpy.isnan(A).any():
-                    # don't let nan sneak in
-                    A = numpy.ndarray(shape, dtype=dt)
                 a.send(A, copy=False)
                 msg = b.recv(copy=False)
-                
+
                 B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
-                self.assertEqual(A.shape, B.shape)
-                self.assertTrue((A==B).all())
+                assert_array_equal(A, B)
+
             A = numpy.empty(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
             A['a'] = 1024
             A['b'] = 1e9
             A['c'] = 'hello there'
             a.send(A, copy=False)
             msg = b.recv(copy=False)
-            
+
             B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
-            self.assertEqual(A.shape, B.shape)
-            self.assertTrue((A==B).all())
-    
+            assert_array_equal(A, B)
+
     def test_frame_more(self):
         """test Frame.more attribute"""
         frame = zmq.Frame(b"hello")
