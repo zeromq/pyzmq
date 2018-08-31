@@ -24,18 +24,11 @@ class TestProxySteerable(BaseZMQTestCase):
             zmq.PUSH,
             zmq.PAIR
         )
-        binder = self.context.socket(zmq.REQ)
         iface = 'tcp://127.0.0.1'
-        port = binder.bind_to_random_port(iface)
-        port2 = binder.bind_to_random_port(iface)
-        port3 = binder.bind_to_random_port(iface)
-        port4 = binder.bind_to_random_port(iface)
-        binder.close()
-        time.sleep(0.1)
-        dev.bind_in("%s:%i" % (iface, port))
-        dev.bind_out("%s:%i" % (iface, port2))
-        dev.bind_mon("%s:%i" % (iface, port3))
-        dev.bind_ctrl("%s:%i" % (iface, port4))
+        port = dev.bind_in_to_random_port(iface)
+        port2 = dev.bind_out_to_random_port(iface)
+        port3 = dev.bind_mon_to_random_port(iface)
+        port4 = dev.bind_ctrl_to_random_port(iface)
         dev.start()
         time.sleep(0.25)
         msg = b'hello'
@@ -85,18 +78,11 @@ class TestProxySteerable(BaseZMQTestCase):
             zmq.PUSH,
             zmq.PAIR
         )
-        binder = self.context.socket(zmq.REQ)
         iface = 'tcp://127.0.0.1'
-        port = binder.bind_to_random_port(iface)
-        port2 = binder.bind_to_random_port(iface)
-        port3 = binder.bind_to_random_port(iface)
-        port4 = binder.bind_to_random_port(iface)
-        binder.close()
-        time.sleep(0.1)
-        dev.bind_in("%s:%i" % (iface, port))
-        dev.bind_out("%s:%i" % (iface, port2))
-        dev.bind_mon("%s:%i" % (iface, port3))
-        dev.bind_ctrl("%s:%i" % (iface, port4))
+        port = dev.bind_in_to_random_port(iface)
+        port2 = dev.bind_out_to_random_port(iface)
+        port3 = dev.bind_mon_to_random_port(iface)
+        port4 = dev.bind_ctrl_to_random_port(iface)
         dev.start()
         time.sleep(0.25)
         msg = b'hello'

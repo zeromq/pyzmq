@@ -171,11 +171,8 @@ class TestMonitoredQueue(BaseZMQTestCase):
         dev.setsockopt_out(zmq.LINGER, 0)
         dev.setsockopt_mon(zmq.LINGER, 0)
         
-        binder = self.context.socket(zmq.DEALER)
-        porta = binder.bind_to_random_port('tcp://127.0.0.1')
-        portb = binder.bind_to_random_port('tcp://127.0.0.1')
-        binder.close()
-        time.sleep(1)
+        porta = dev.bind_in_to_random_port('tcp://127.0.0.1')
+        portb = dev.bind_out_to_random_port('tcp://127.0.0.1')
         a = self.context.socket(zmq.DEALER)
         a.identity = b'a'
         b = self.context.socket(zmq.DEALER)
@@ -183,9 +180,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.sockets.extend([a, b])
         
         a.connect('tcp://127.0.0.1:%i'%porta)
-        dev.bind_in('tcp://127.0.0.1:%i'%porta)
         b.connect('tcp://127.0.0.1:%i'%portb)
-        dev.bind_out('tcp://127.0.0.1:%i'%portb)
         dev.start()
         time.sleep(1)
         if zmq.zmq_version_info() >= (3,1,0):
