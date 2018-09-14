@@ -8,7 +8,7 @@ import time
 from threading import Thread
 from multiprocessing import Process
 
-from zmq import device, QUEUE, Context, ETERM, ZMQError
+from zmq import device, QUEUE, REQ, Context, ETERM, ZMQBindError, ZMQError
 
 
 class Device:
@@ -81,6 +81,7 @@ class Device:
         self._out_binds = []
         self._out_connects = []
         self._out_sockopts = []
+        self._random_addrs = []
         self.daemon = True
         self.done = False
     
@@ -91,6 +92,18 @@ class Device:
         """
         self._in_binds.append(addr)
     
+    def bind_in_to_random_port(self, addr, *args, **kwargs):
+        """Enqueue a random port on the given interface for binding on
+        in_socket.
+
+        See zmq.Socket.bind_to_random_port for details.
+        """
+        port = self._reserve_random_port(addr, *args, **kwargs)
+
+        self.bind_in('%s:%i' % (addr, port))
+
+        return port
+
     def connect_in(self, addr):
         """Enqueue ZMQ address for connecting on in_socket.
 
@@ -112,6 +125,18 @@ class Device:
         """
         self._out_binds.append(addr)
     
+    def bind_out_to_random_port(self, addr, *args, **kwargs):
+        """Enqueue a random port on the given interface for binding on
+        out_socket.
+
+        See zmq.Socket.bind_to_random_port for details.
+        """
+        port = self._reserve_random_port(addr, *args, **kwargs)
+
+        self.bind_out('%s:%i' % (addr, port))
+
+        return port
+
     def connect_out(self, addr):
         """Enqueue ZMQ address for connecting on out_socket.
 
@@ -126,6 +151,29 @@ class Device:
         """
         self._out_sockopts.append((opt, value))
     
+    def _reserve_random_port(self, addr, *args, **kwargs):
+        ctx = Context()
+
+        binder = ctx.socket(REQ)
+
+        for i in range(5):
+            port = binder.bind_to_random_port(addr, *args, **kwargs)
+
+            new_addr = '%s:%i' % (addr, port)
+
+            if new_addr in self._random_addrs:
+                continue
+            else:
+                break
+        else:
+            raise ZMQBindError("Could not reserve random port.")
+
+        self._random_addrs.append(new_addr)
+
+        binder.close()
+
+        return port
+
     def _setup_sockets(self):
         ctx = self.context_factory()
         

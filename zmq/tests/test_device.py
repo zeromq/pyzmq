@@ -58,14 +58,9 @@ class TestDevice(BaseZMQTestCase):
         if zmq.zmq_version() in ('4.1.1', '4.0.6'):
             raise SkipTest("libzmq-%s broke single-socket devices" % zmq.zmq_version())
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
-        # select random port:
-        binder = self.context.socket(zmq.REQ)
-        port = binder.bind_to_random_port('tcp://127.0.0.1')
-        binder.close()
-        time.sleep(0.1)
+        port = dev.bind_in_to_random_port('tcp://127.0.0.1')
         req = self.context.socket(zmq.REQ)
         req.connect('tcp://127.0.0.1:%i'%port)
-        dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
         msg = b'hello'
@@ -74,14 +69,9 @@ class TestDevice(BaseZMQTestCase):
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
-        # select random port:
-        binder = self.context.socket(zmq.REQ)
-        port = binder.bind_to_random_port('tcp://127.0.0.1')
-        binder.close()
-        time.sleep(0.1)
+        port = dev.bind_in_to_random_port('tcp://127.0.0.1')
         req = self.context.socket(zmq.REQ)
         req.connect('tcp://127.0.0.1:%i'%port)
-        dev.bind_in('tcp://127.0.0.1:%i'%port)
         dev.start()
         time.sleep(.25)
         msg = b'hello again'
@@ -90,20 +80,40 @@ class TestDevice(BaseZMQTestCase):
         del dev
         req.close()
     
+    def test_device_bind_to_random_with_args(self):
+        dev = devices.ThreadDevice(zmq.PULL, zmq.PUSH, -1)
+        iface = 'tcp://127.0.0.1'
+        ports = []
+        min, max = 5000, 5050
+        ports.extend([
+            dev.bind_in_to_random_port(iface, min_port=min, max_port=max),
+            dev.bind_out_to_random_port(iface, min_port=min, max_port=max)
+        ])
+        for port in ports:
+            if port < min or port > max:
+                self.fail('Unexpected port number: %i' % port)
+
+    def test_device_bind_to_random_binderror(self):
+        dev = devices.ThreadDevice(zmq.PULL, zmq.PUSH, -1)
+        iface = 'tcp://127.0.0.1'
+        try:
+            for i in range(11):
+                dev.bind_in_to_random_port(
+                    iface, min_port=10000, max_port=10010
+                )
+        except zmq.ZMQBindError as e:
+            return
+        else:
+            self.fail('Should have failed')
+
     def test_proxy(self):
         if zmq.zmq_version_info() < (3,2):
             raise SkipTest("Proxies only in libzmq >= 3")
         dev = devices.ThreadProxy(zmq.PULL, zmq.PUSH, zmq.PUSH)
-        binder = self.context.socket(zmq.REQ)
         iface = 'tcp://127.0.0.1'
-        port = binder.bind_to_random_port(iface)
-        port2 = binder.bind_to_random_port(iface)
-        port3 = binder.bind_to_random_port(iface)
-        binder.close()
-        time.sleep(0.1)
-        dev.bind_in("%s:%i" % (iface, port))
-        dev.bind_out("%s:%i" % (iface, port2))
-        dev.bind_mon("%s:%i" % (iface, port3))
+        port = dev.bind_in_to_random_port(iface)
+        port2 = dev.bind_out_to_random_port(iface)
+        port3 = dev.bind_mon_to_random_port(iface)
         dev.start()
         time.sleep(0.25)
         msg = b'hello'
@@ -117,6 +127,22 @@ class TestDevice(BaseZMQTestCase):
         self.sockets.extend([push, pull, mon])
         self.assertEqual(msg, self.recv(pull))
         self.assertEqual(msg, self.recv(mon))
+
+    def test_proxy_bind_to_random_with_args(self):
+        if zmq.zmq_version_info() < (3, 2):
+            raise SkipTest("Proxies only in libzmq >= 3")
+        dev = devices.ThreadProxy(zmq.PULL, zmq.PUSH, zmq.PUSH)
+        iface = 'tcp://127.0.0.1'
+        ports = []
+        min, max = 5000, 5050
+        ports.extend([
+            dev.bind_in_to_random_port(iface, min_port=min, max_port=max),
+            dev.bind_out_to_random_port(iface, min_port=min, max_port=max),
+            dev.bind_mon_to_random_port(iface, min_port=min, max_port=max)
+        ])
+        for port in ports:
+            if port < min or port > max:
+                self.fail('Unexpected port number: %i' % port)
 
 if have_gevent:
     import gevent
