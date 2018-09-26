@@ -38,7 +38,7 @@ Python version of every example. We also have some information on our
 
 Unless you specifically want to develop PyZMQ, we recommend downloading
 the PyZMQ source code or wheels from
-[PyPI](https://pypi.io/projects/pyzmq),
+[PyPI](https://pypi.io/project/pyzmq),
 or install with conda.
 
 You can also get the latest source code from our GitHub repository, but
