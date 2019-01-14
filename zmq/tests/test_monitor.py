@@ -26,7 +26,7 @@ class TestSocketMonitor(BaseZMQTestCase):
         s_req.bind("tcp://127.0.0.1:6666")
         # try monitoring the REP socket
         
-        s_rep.monitor("inproc://monitor.rep", zmq.EVENT_ALL)
+        s_rep.monitor("inproc://monitor.rep", zmq.EVENT_CONNECT_DELAYED | zmq.EVENT_CONNECTED | zmq.EVENT_MONITOR_STOPPED)
         # create listening socket for monitor
         s_event = self.context.socket(zmq.PAIR)
         self.sockets.append(s_event)
