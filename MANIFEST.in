@@ -21,7 +21,6 @@ include bundled/zeromq/COPYING
 graft bundled/zeromq/include
 graft bundled/zeromq/src
 graft bundled/zeromq/tweetnacl
-include bundled/zeromq/builds/msvc/platform.hpp
 exclude bundled/zeromq/src/Makefile*
 exclude bundled/zeromq/src/platform.hpp
 
