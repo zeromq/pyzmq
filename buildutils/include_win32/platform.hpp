@@ -15,4 +15,7 @@
 // \builds\msvc\vs2015\libsodium.import.props
 // \builds\msvc\vs2015\libsodium.import.xml
 
+// additional defines required for 4.3 after this file was removed
+#define ZMQ_IOTHREAD_POLLER_USE_SELECT 1
+
 #endif
