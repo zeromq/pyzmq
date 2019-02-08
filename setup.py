@@ -550,13 +550,21 @@ class Configure(build_ext):
         # select polling subsystem based on platform
         if sys.platform  == 'darwin' or 'bsd' in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
+            libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_KQUEUE', 1))
+            libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_POLL', 1))
         elif 'linux' in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_EPOLL', 1))
+            libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_EPOLL', 1))
+            libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_POLL', 1))
         elif sys.platform.startswith('win'):
             libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
+            libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_SELECT', 1))
+            libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_SELECT', 1))
         else:
             # this may not be sufficiently precise
             libzmq.define_macros.append(('ZMQ_USE_POLL', 1))
+            libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_POLL', 1))
+            libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_POLL', 1))
 
         if sys.platform.startswith('win'):
             # include defines from zeromq msvc project:

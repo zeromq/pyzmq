@@ -1,6 +1,9 @@
 /* src/platform.hpp.  Generated from platform.hpp.in by configure.  */
 /* src/platform.hpp.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `accept4' function. */
+/* #undef HAVE_ACCEPT4 */
+
 /* Define to 1 if you have the <alloca.h> header file. */
 #define HAVE_ALLOCA_H 1
 
@@ -9,6 +12,9 @@
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #define HAVE_CLOCK_GETTIME 1
+
+/* define if the compiler supports basic C++11 syntax */
+#define HAVE_CXX11 1
 
 /* Define to 1 if you have the declaration of `LOCAL_PEERCRED', and to 0 if
    you don't. */
@@ -39,17 +45,23 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
 
+/* Define to 1 if you have the <gssapi/gssapi_generic.h> header file. */
+/* #undef HAVE_GSSAPI_GSSAPI_GENERIC_H */
+
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the `gssapi_krb5' library (-lgssapi_krb5). */
+/* Enabled GSSAPI security */
 /* #undef HAVE_LIBGSSAPI_KRB5 */
 
 /* Define to 1 if you have the `iphlpapi' library (-liphlpapi). */
 /* #undef HAVE_LIBIPHLPAPI */
+
+/* Define to 1 if you have the `network' library (-lnetwork). */
+/* #undef HAVE_LIBNETWORK */
 
 /* Define to 1 if you have the `nsl' library (-lnsl). */
 /* #undef HAVE_LIBNSL */
@@ -66,8 +78,8 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
 
-/* The libsodium library is to be used. */
-/* #undef HAVE_LIBSODIUM */
+/* The libunwind library is to be used */
+/* #undef HAVE_LIBUNWIND */
 
 /* Define to 1 if you have the `ws2_32' library (-lws2_32). */
 /* #undef HAVE_LIBWS2_32 */
@@ -81,6 +93,9 @@
 /* Define to 1 if you have the `memset' function. */
 #define HAVE_MEMSET 1
 
+/* Define to 1 if you have the `mkdtemp' function. */
+#define HAVE_MKDTEMP 1
+
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #define HAVE_NETINET_IN_H 1
 
@@ -89,6 +104,9 @@
 
 /* Define to 1 if you have the `perror' function. */
 #define HAVE_PERROR 1
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#define HAVE_POSIX_MEMALIGN 1
 
 /* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1
@@ -112,7 +130,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <sys/eventfd.h> header file. */
-#define HAVE_SYS_EVENTFD_H 1
+/* #undef HAVE_SYS_EVENTFD_H */
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #define HAVE_SYS_SOCKET_H 1
@@ -155,7 +173,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 4.1.1"
+#define PACKAGE_STRING "zeromq 4.3.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -164,7 +182,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.1.1"
+#define PACKAGE_VERSION "4.3.1"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -176,10 +194,13 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "4.1.1"
+#define VERSION "4.3.1"
 
 /* Enable militant API assertions */
 /* #undef ZMQ_ACT_MILITANT */
+
+/* Provide draft classes and methods */
+/* #undef ZMQ_BUILD_DRAFT_API */
 
 /* Force to use mutexes */
 /* #undef ZMQ_FORCE_MUTEXES */
@@ -190,14 +211,35 @@
 /* Have Android OS */
 /* #undef ZMQ_HAVE_ANDROID */
 
+/* Whether compiler has __atomic_Xxx intrinsics. */
+#define ZMQ_HAVE_ATOMIC_INTRINSICS 1
+
+/* Using curve encryption */
+#define ZMQ_HAVE_CURVE 1
+
 /* Have Cygwin */
 /* #undef ZMQ_HAVE_CYGWIN */
 
-/* Have eventfd extension. */
-#define ZMQ_HAVE_EVENTFD 1
+/* Have DragonFly OS */
+/* #undef ZMQ_HAVE_DRAGONFLY */
+
+/* Have eventfd extension */
+/* #undef ZMQ_HAVE_EVENTFD */
+
+/* Whether EFD_CLOEXEC is defined and functioning. */
+/* #undef ZMQ_HAVE_EVENTFD_CLOEXEC */
 
 /* Have FreeBSD OS */
 /* #undef ZMQ_HAVE_FREEBSD */
+
+/* Whether getrandom is supported. */
+/* #undef ZMQ_HAVE_GETRANDOM */
+
+/* Have GNU/Hurd OS */
+/* #undef ZMQ_HAVE_GNU */
+
+/* Have Haiku OS */
+/* #undef ZMQ_HAVE_HAIKU */
 
 /* Have HPUX OS */
 /* #undef ZMQ_HAVE_HPUX */
@@ -211,8 +253,8 @@
 /* Have LOCAL_PEERCRED socket option */
 /* #undef ZMQ_HAVE_LOCAL_PEERCRED */
 
-/* Have MinGW32 */
-/* #undef ZMQ_HAVE_MINGW32 */
+/* Have MinGW */
+/* #undef ZMQ_HAVE_MINGW */
 
 /* Have NetBSD OS */
 /* #undef ZMQ_HAVE_NETBSD */
@@ -229,14 +271,35 @@
 /* Have DarwinOSX OS */
 /* #undef ZMQ_HAVE_OSX */
 
+/* Whether O_CLOEXEC is defined and functioning. */
+/* #undef ZMQ_HAVE_O_CLOEXEC */
+
+/* Whether pthread_setname_np() has 1 argument */
+/* #undef ZMQ_HAVE_PTHREAD_SETNAME_1 */
+
+/* Whether pthread_setname_np() has 2 arguments */
+/* #undef ZMQ_HAVE_PTHREAD_SETNAME_2 */
+
+/* Whether pthread_setname_np() has 3 arguments */
+/* #undef ZMQ_HAVE_PTHREAD_SETNAME_3 */
+
+/* Whether pthread_setaffinity_np() exists */
+#define ZMQ_HAVE_PTHREAD_SET_AFFINITY 1
+
+/* Whether pthread_set_name_np() exists */
+/* #undef ZMQ_HAVE_PTHREAD_SET_NAME */
+
 /* Have QNX Neutrino OS */
 /* #undef ZMQ_HAVE_QNXNTO */
 
 /* Whether SOCK_CLOEXEC is defined and functioning. */
-#define ZMQ_HAVE_SOCK_CLOEXEC 1
+/* #undef ZMQ_HAVE_SOCK_CLOEXEC */
 
 /* Have Solaris OS */
 /* #undef ZMQ_HAVE_SOLARIS */
+
+/* Whether SO_BINDTODEVICE is supported. */
+#define ZMQ_HAVE_SO_BINDTODEVICE 1
 
 /* Whether SO_KEEPALIVE is supported. */
 #define ZMQ_HAVE_SO_KEEPALIVE 1
@@ -257,13 +320,52 @@
 #define ZMQ_HAVE_TCP_KEEPINTVL 1
 
 /* Have TIPC support */
-/* #undef ZMQ_HAVE_TIPC */
+#define ZMQ_HAVE_TIPC 1
 
 /* Have uio.h header. */
 #define ZMQ_HAVE_UIO 1
 
+/* Have VMCI transport */
+/* #undef ZMQ_HAVE_VMCI */
+
 /* Have Windows OS */
 /* #undef ZMQ_HAVE_WINDOWS */
+
+/* Use 'devpoll' I/O thread polling system */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_DEVPOLL */
+
+/* Use 'epoll' I/O thread polling system */
+#define ZMQ_IOTHREAD_POLLER_USE_EPOLL 1
+
+/* Use 'epoll' I/O thread polling system with CLOEXEC */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC */
+
+/* Use 'kqueue' I/O thread polling system */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_KQUEUE */
+
+/* Use 'poll' I/O thread polling system */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_POLL */
+
+/* Use 'pollset' I/O thread polling system */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_POLLSET */
+
+/* Use 'select' I/O thread polling system */
+/* #undef ZMQ_IOTHREAD_POLLER_USE_SELECT */
+
+/* Use 'poll' zmq_poll(er)_* API polling system */
+#define ZMQ_POLL_BASED_ON_POLL 1
+
+/* Use 'select' zmq_poll(er)_* API polling system */
+/* #undef ZMQ_POLL_BASED_ON_SELECT */
+
+/* Using libsodium for curve encryption */
+/* #undef ZMQ_USE_LIBSODIUM */
+
+/* Use radix tree implementation to manage subscriptions */
+/* #undef ZMQ_USE_RADIX_TREE */
+
+/* Using tweetnacl for curve encryption */
+/* #define ZMQ_USE_TWEETNACL 1 */
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
