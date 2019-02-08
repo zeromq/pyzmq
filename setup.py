@@ -1039,7 +1039,8 @@ monqueue = pxd('devices', 'monitoredqueue')
 mutex = doth('utils', 'mutex')
 
 submodules = {
-    'backend.cython' : {'constants': [libzmq, pxi('backend', 'cython', 'constants')],
+    'backend.cython' : {
+            'constants': [libzmq, pxi('backend', 'cython', 'constants')],
             'error':[libzmq, checkrc],
             '_poll':[libzmq, socket, context, checkrc],
             'utils':[libzmq, checkrc],

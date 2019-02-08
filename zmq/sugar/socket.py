@@ -700,13 +700,13 @@ class Socket(SocketBase, AttributeSetter):
 
     def get_monitor_socket(self, events=None, addr=None):
         """Return a connected PAIR socket ready to receive the event notifications.
-        
+
         .. versionadded:: libzmq-4.0
         .. versionadded:: 14.0
-        
+
         Parameters
         ----------
-        events : int [default: ZMQ_EVENTS_ALL]
+        events : int [default: PYZMQ_EVENT_ALL]
             The bitmask defining which events are wanted.
         addr :  string [default: None]
             The optional endpoint for the monitoring sockets.
@@ -732,7 +732,7 @@ class Socket(SocketBase, AttributeSetter):
             addr = "inproc://monitor.s-%d" % self.FD
         if events is None:
             # use all events
-            events = zmq.EVENT_ALL
+            events = zmq.PYZMQ_EVENT_ALL
         # attach monitoring socket
         self.monitor(addr, events)
         # create new PAIR socket and connect it
