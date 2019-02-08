@@ -633,7 +633,7 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
-        
+
         _check_version((3,2), "disconnect")
         _check_closed(self)
         if isinstance(addr, unicode):
@@ -641,36 +641,45 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        
+
         rc = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
-    def monitor(self, addr, int events=ZMQ_EVENT_ALL):
+    def monitor(self, addr, int events=-1):
         """s.monitor(addr, flags)
 
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
-        
+
         While this function is available from libzmq 3.2,
         pyzmq cannot parse monitor messages from libzmq prior to 4.0.
-        
+
         .. versionadded: libzmq-3.2
         .. versionadded: 14.0
-        
+
+        .. versionchanged: 18.0
+            default to new zmq.PYZMQ_EVENT_ALL,
+            which is all events known by pyzmq,
+            instead of zmq.EVENT_ALL,
+            which may include unrecognized events.
+
         Parameters
         ----------
         addr : str
             The inproc url used for monitoring. Passing None as
             the addr will cause an existing socket monitor to be
             deregistered.
-        events : int [default: zmq.EVENT_ALL]
+        events : int [default: zmq.PYZMQ_EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
+
         """
         cdef int rc, c_flags
         cdef char* c_addr = NULL
-        
+
         _check_version((3,2), "monitor")
+        if events < 0:
+            events = zmq.PYZMQ_EVENT_ALL
         if addr is not None:
             if isinstance(addr, unicode):
                 addr = addr.encode('utf-8')

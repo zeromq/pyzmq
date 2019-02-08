@@ -261,10 +261,10 @@ class Socket(object):
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
-        
+
         _check_version((3,2), "monitor")
         if events < 0:
-            events = zmq.EVENT_ALL
+            events = zmq.PYZMQ_EVENT_ALL
         if addr is None:
             addr = ffi.NULL
         if isinstance(addr, unicode):

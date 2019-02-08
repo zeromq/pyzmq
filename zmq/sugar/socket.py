@@ -704,6 +704,13 @@ class Socket(SocketBase, AttributeSetter):
         .. versionadded:: libzmq-4.0
         .. versionadded:: 14.0
 
+        .. versionchanged: 18.0
+            default to new zmq.PYZMQ_EVENT_ALL,
+            which is all events known by pyzmq
+            instead of zmq.EVENT_ALL,
+            which may include unrecognized events.
+            EVENT_ALL may still be used.
+
         Parameters
         ----------
         events : int [default: PYZMQ_EVENT_ALL]
