@@ -264,7 +264,7 @@ class Socket(object):
 
         _check_version((3,2), "monitor")
         if events < 0:
-            events = zmq.PYZMQ_EVENT_ALL
+            events = zmq.EVENT_ALL
         if addr is None:
             addr = ffi.NULL
         if isinstance(addr, unicode):

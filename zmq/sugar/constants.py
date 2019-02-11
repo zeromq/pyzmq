@@ -28,7 +28,6 @@ __all__ = [
     'ctx_opts',
     'ctx_opt_names',
     'DRAFT_API',
-    'PYZMQ_EVENT_ALL',
 ]
 
 if constants.VERSION < 40200:
@@ -50,15 +49,6 @@ else:
     int_sockopt_names.extend(switched_sockopt_names)
 
 _UNDEFINED = -9999
-
-# define PYZMQ_EVENTS_ALL as mask of all *known* events
-PYZMQ_EVENT_ALL = 0
-for _evtname in dir(constants):
-    if not _evtname.startswith('EVENT_') or _evtname == 'EVENT_ALL':
-        continue
-    _evt = getattr(constants, _evtname, _UNDEFINED)
-    if _evt != _UNDEFINED:
-        PYZMQ_EVENT_ALL |= _evt
 
 
 def _add_constant(name, container=None):

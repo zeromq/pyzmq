@@ -646,7 +646,7 @@ cdef class Socket:
         if rc != 0:
             raise ZMQError()
 
-    def monitor(self, addr, int events=-1):
+    def monitor(self, addr, int events=ZMQ_EVENT_ALL):
         """s.monitor(addr, flags)
 
         Start publishing socket events on inproc.
@@ -658,28 +658,19 @@ cdef class Socket:
         .. versionadded: libzmq-3.2
         .. versionadded: 14.0
 
-        .. versionchanged: 18.0
-            default to new zmq.PYZMQ_EVENT_ALL,
-            which is all events known by pyzmq,
-            instead of zmq.EVENT_ALL,
-            which may include unrecognized events.
-
         Parameters
         ----------
         addr : str
             The inproc url used for monitoring. Passing None as
             the addr will cause an existing socket monitor to be
             deregistered.
-        events : int [default: zmq.PYZMQ_EVENT_ALL]
+        events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
-
         """
         cdef int rc, c_flags
         cdef char* c_addr = NULL
 
         _check_version((3,2), "monitor")
-        if events < 0:
-            events = zmq.PYZMQ_EVENT_ALL
         if addr is not None:
             if isinstance(addr, unicode):
                 addr = addr.encode('utf-8')

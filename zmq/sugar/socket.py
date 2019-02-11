@@ -704,16 +704,9 @@ class Socket(SocketBase, AttributeSetter):
         .. versionadded:: libzmq-4.0
         .. versionadded:: 14.0
 
-        .. versionchanged: 18.0
-            default to new zmq.PYZMQ_EVENT_ALL,
-            which is all events known by pyzmq
-            instead of zmq.EVENT_ALL,
-            which may include unrecognized events.
-            EVENT_ALL may still be used.
-
         Parameters
         ----------
-        events : int [default: PYZMQ_EVENT_ALL]
+        events : int [default: ZMQ_EVENT_ALL]
             The bitmask defining which events are wanted.
         addr :  string [default: None]
             The optional endpoint for the monitoring sockets.
@@ -739,7 +732,7 @@ class Socket(SocketBase, AttributeSetter):
             addr = "inproc://monitor.s-%d" % self.FD
         if events is None:
             # use all events
-            events = zmq.PYZMQ_EVENT_ALL
+            events = zmq.EVENT_ALL
         # attach monitoring socket
         self.monitor(addr, events)
         # create new PAIR socket and connect it
