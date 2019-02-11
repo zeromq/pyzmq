@@ -168,9 +168,6 @@ new_in = {
         'PROTOCOL_ERROR_ZAP_BAD_VERSION',
         'PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE',
         'PROTOCOL_ERROR_ZAP_INVALID_METADATA',
-
-        'NOTIFY_CONNECT',
-        'NOTIFY_DISCONNECT',
     ]
 }
 
@@ -218,6 +215,9 @@ draft_in = {
         # socket options
         'ROUTER_NOTIFY',
         'MULTICAST_LOOP',
+
+        'NOTIFY_CONNECT',
+        'NOTIFY_DISCONNECT',
     ],
 }
 
