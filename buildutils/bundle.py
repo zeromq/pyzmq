@@ -32,14 +32,14 @@ pjoin = os.path.join
 # Constants
 #-----------------------------------------------------------------------------
 
-bundled_version = (4, 2, 5)
+bundled_version = (4, 3, 1)
 vs = '%i.%i.%i' % bundled_version
 libzmq = "zeromq-%s.tar.gz" % vs
 libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}".format(
     vs=vs,
     libzmq=libzmq,
 )
-libzmq_checksum = "sha256:cc9090ba35713d59bb2f7d7965f877036c49c5558ea0c290b0dcc6f2a17e489f"
+libzmq_checksum = "sha1:6cce22d830eaf95feff7cab00744df13ad7ab7f3"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -113,21 +113,20 @@ def fetch_libzmq(savedir):
 
 def stage_platform_hpp(zmqroot):
     """stage platform.hpp into libzmq sources
-    
+
     Tries ./configure first (except on Windows),
     then falls back on included platform.hpp previously generated.
     """
-    
+
     platform_hpp = pjoin(zmqroot, 'src', 'platform.hpp')
     if os.path.exists(platform_hpp):
         info("already have platform.hpp")
         return
     if os.name == 'nt':
-        # stage msvc platform header
-        platform_dir = pjoin(zmqroot, 'builds', 'msvc')
+        platform_dir = pjoin(HERE, 'include_win32')
     else:
         info("attempting ./configure to generate platform.hpp")
-        
+
         p = Popen('./configure', cwd=zmqroot, shell=True,
             stdout=PIPE, stderr=PIPE,
         )
@@ -144,7 +143,7 @@ def stage_platform_hpp(zmqroot):
                 platform_dir = pjoin(HERE, 'include_linux')
         else:
             return
-    
+
     info("staging platform.hpp from: %s" % platform_dir)
     shutil.copy(pjoin(platform_dir, 'platform.hpp'), platform_hpp)
 

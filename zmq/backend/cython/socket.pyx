@@ -633,7 +633,7 @@ cdef class Socket:
         """
         cdef int rc
         cdef char* c_addr
-        
+
         _check_version((3,2), "disconnect")
         _check_closed(self)
         if isinstance(addr, unicode):
@@ -641,7 +641,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        
+
         rc = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
@@ -651,13 +651,13 @@ cdef class Socket:
 
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
-        
+
         While this function is available from libzmq 3.2,
         pyzmq cannot parse monitor messages from libzmq prior to 4.0.
-        
+
         .. versionadded: libzmq-3.2
         .. versionadded: 14.0
-        
+
         Parameters
         ----------
         addr : str
@@ -669,7 +669,7 @@ cdef class Socket:
         """
         cdef int rc, c_flags
         cdef char* c_addr = NULL
-        
+
         _check_version((3,2), "monitor")
         if addr is not None:
             if isinstance(addr, unicode):

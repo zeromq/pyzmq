@@ -21,13 +21,13 @@ new_in = {
         'ETIMEDOUT',
         'EHOSTUNREACH',
         'ENETRESET',
-        
+
         # ctx opts
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
-        
+
         # socket opts
         'IPV4ONLY',
         'LAST_ENDPOINT',
@@ -40,10 +40,10 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
-        
+
         # msg opts
         'MORE',
-        
+
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
         'EVENT_CONNECT_RETRIED',
@@ -59,7 +59,7 @@ new_in = {
     (4,0,0) : [
         # socket types
         'STREAM',
-        
+
         # socket opts
         'IMMEDIATE',
         'ROUTER_RAW',
@@ -77,12 +77,12 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-        
+
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-        
+
         # events
         'EVENT_MONITOR_STOPPED',
     ],
@@ -93,7 +93,7 @@ new_in = {
         'THREAD_PRIORITY_DFLT',
         'THREAD_SCHED_POLICY',
         'THREAD_SCHED_POLICY_DFLT',
-        
+
         # socket opts
         'ROUTER_HANDOVER',
         'TOS',
@@ -108,17 +108,66 @@ new_in = {
         'HANDSHAKE_IVL',
         'XPUB_NODROP',
         'SOCKS_PROXY',
-        
+
         # msg opts
         'SRCFD',
         'SHARED',
-        
+
         # security
         'GSSAPI',
     ],
-    (4,2,0) : [
+    (4,2,0): [
         # polling
         'POLLPRI',
+    ],
+    (4,2,3): [
+        'ROUTING_ID',
+        'CONNECT_ROUTING_ID',
+    ],
+    (4,3,0): [
+        # context options
+        'MSG_T_SIZE',
+        'THREAD_AFFINITY_CPU_ADD',
+        'THREAD_AFFINITY_CPU_REMOVE',
+        'THREAD_NAME_PREFIX',
+
+        # socket options
+        'GSSAPI_PRINCIPAL_NAMETYPE',
+        'GSSAPI_SERVICE_PRINCIPAL_NAMETYPE',
+        'BINDTODEVICE',
+
+        # GSSAPI principal name types
+        'GSSAPI_NT_HOSTBASED',
+        'GSSAPI_NT_USER_NAME',
+        'GSSAPI_NT_KRB5_PRINCIPAL',
+
+        # events
+        'EVENT_HANDSHAKE_FAILED_NO_DETAIL',
+        'EVENT_HANDSHAKE_SUCCEEDED',
+        'EVENT_HANDSHAKE_FAILED_PROTOCOL',
+        'EVENT_HANDSHAKE_FAILED_AUTH',
+
+        'PROTOCOL_ERROR_ZMTP_UNSPECIFIED',
+        'PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND',
+        'PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE',
+        'PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_READY',
+        'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_WELCOME',
+        'PROTOCOL_ERROR_ZMTP_INVALID_METADATA',
+        'PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC',
+        'PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH',
+
+        'PROTOCOL_ERROR_ZAP_UNSPECIFIED',
+        'PROTOCOL_ERROR_ZAP_MALFORMED_REPLY',
+        'PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID',
+        'PROTOCOL_ERROR_ZAP_BAD_VERSION',
+        'PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE',
+        'PROTOCOL_ERROR_ZAP_INVALID_METADATA',
     ]
 }
 
@@ -132,10 +181,10 @@ draft_in = {
         'GATHER',
         'SCATTER',
         'DGRAM',
-        
+
         # ctx options
         'BLOCKY',
-        
+
         # socket options
         'XPUB_MANUAL',
         'XPUB_WELCOME_MSG',
@@ -154,7 +203,22 @@ draft_in = {
         'VMCI_BUFFER_MAX_SIZE',
         'VMCI_CONNECT_TIMEOUT',
         'USE_FD',
-    ]
+    ],
+    (4,2,4): [
+        # socket options
+        'ZAP_ENFORCE_DOMAIN',
+        'LOOPBACK_FASTPATH',
+        'METADATA',
+        'ZERO_COPY_RECV',
+    ],
+    (4,3,0): [
+        # socket options
+        'ROUTER_NOTIFY',
+        'MULTICAST_LOOP',
+
+        'NOTIFY_CONNECT',
+        'NOTIFY_DISCONNECT',
+    ],
 }
 
 
@@ -162,7 +226,7 @@ removed_in = {
     (3,2,2) : [
         'UPSTREAM',
         'DOWNSTREAM',
-        
+
         'HWM',
         'SWAP',
         'MCAST_LOOP',
@@ -187,7 +251,7 @@ base_names = [
     'POLLOUT',
     'POLLERR',
     'POLLPRI',
-    
+
     'SNDMORE',
 
     'STREAMER',
@@ -238,12 +302,44 @@ base_names = [
     'EVENT_DISCONNECTED',
     'EVENT_ALL',
     'EVENT_MONITOR_STOPPED',
+    'EVENT_HANDSHAKE_FAILED_NO_DETAIL',
+    'EVENT_HANDSHAKE_SUCCEEDED',
+    'EVENT_HANDSHAKE_FAILED_PROTOCOL',
+    'EVENT_HANDSHAKE_FAILED_AUTH',
+
+    'PROTOCOL_ERROR_ZMTP_UNSPECIFIED',
+    'PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND',
+    'PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE',
+    'PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_READY',
+    'PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_WELCOME',
+    'PROTOCOL_ERROR_ZMTP_INVALID_METADATA',
+    'PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC',
+    'PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH',
+
+    'PROTOCOL_ERROR_ZAP_UNSPECIFIED',
+    'PROTOCOL_ERROR_ZAP_MALFORMED_REPLY',
+    'PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID',
+    'PROTOCOL_ERROR_ZAP_BAD_VERSION',
+    'PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE',
+    'PROTOCOL_ERROR_ZAP_INVALID_METADATA',
+
+    'NOTIFY_CONNECT',
+    'NOTIFY_DISCONNECT',
 
     # security
     'NULL',
     'PLAIN',
     'CURVE',
     'GSSAPI',
+    'GSSAPI_NT_HOSTBASED',
+    'GSSAPI_NT_USER_NAME',
+    'GSSAPI_NT_KRB5_PRINCIPAL',
 
     ## ERRNO
     # Often used (these are else in errno.)
@@ -315,8 +411,15 @@ bytes_sockopt_names = [
     'GSSAPI_PRINCIPAL',
     'GSSAPI_SERVICE_PRINCIPAL',
     'SOCKS_PROXY',
-    
+
     'XPUB_WELCOME_MSG',
+
+    # new in 4.2.3
+    'ROUTING_ID',
+    'CONNECT_ROUTING_ID',
+
+    # new in 4.3.0
+    'BINDTODEVICE',
 ]
 
 fd_sockopt_names = [
@@ -350,7 +453,7 @@ int_sockopt_names = [
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
-    
+
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
 
@@ -373,7 +476,7 @@ int_sockopt_names = [
     'GSSAPI_PLAINTEXT',
     'HANDSHAKE_IVL',
     'XPUB_NODROP',
-    
+
     # new in 4.2
     'XPUB_MANUAL',
     'STREAM_NOTIFY',
@@ -388,6 +491,13 @@ int_sockopt_names = [
     'MULTICAST_MAXTPDU',
     'VMCI_CONNECT_TIMEOUT',
     'USE_FD',
+
+    # new in 4.3
+    'GSSAPI_PRINCIPAL_NAMETYPE',
+    'GSSAPI_SERVICE_PRINCIPAL_NAMETYPE',
+    'MULTICAST_LOOP',
+    'ROUTER_NOTIFY',
+    'ZAP_ENFORCE_DOMAIN',
 ]
 
 switched_sockopt_names = [
@@ -405,6 +515,12 @@ ctx_opt_names = [
     'THREAD_PRIORITY',
     'THREAD_SCHED_POLICY',
     'BLOCKY',
+
+    # new in 4.3
+    'MSG_T_SIZE',
+    'THREAD_AFFINITY_CPU_ADD',
+    'THREAD_AFFINITY_CPU_REMOVE',
+    'THREAD_NAME_PREFIX',
 ]
 
 msg_opt_names = [
