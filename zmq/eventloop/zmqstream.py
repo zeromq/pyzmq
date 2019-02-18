@@ -24,6 +24,7 @@ using tornado.
 """
 
 from __future__ import with_statement
+import sys
 import warnings
 
 import zmq
@@ -37,9 +38,15 @@ except ImportError:
 from .ioloop import IOLoop, gen_log
 
 try:
-    from tornado import stack_context
+    from tornado.stack_context import wrap as stack_context_wrap
 except ImportError:
-    from .minitornado import stack_context
+    if "zmq.eventloop.minitornado" in sys.modules:
+        from .minitornado.stack_context import wrap as stack_context_wrap
+    else:
+        # tornado 5 deprecates stack_context,
+        # tornado 6 removes it
+        def stack_context_wrap(callback):
+            return callback
 
 try:
     from queue import Queue
@@ -174,7 +181,7 @@ class ZMQStream(object):
         
         self._check_closed()
         assert callback is None or callable(callback)
-        self._recv_callback = stack_context.wrap(callback)
+        self._recv_callback = stack_context_wrap(callback)
         self._recv_copy = copy
         if callback is None:
             self._drop_io_state(zmq.POLLIN)
@@ -233,7 +240,7 @@ class ZMQStream(object):
         
         self._check_closed()
         assert callback is None or callable(callback)
-        self._send_callback = stack_context.wrap(callback)
+        self._send_callback = stack_context_wrap(callback)
         
     
     def on_send_stream(self, callback):
@@ -387,7 +394,7 @@ class ZMQStream(object):
 
     def set_close_callback(self, callback):
         """Call the given callback when the stream is closed."""
-        self._close_callback = stack_context.wrap(callback)
+        self._close_callback = stack_context_wrap(callback)
 
     def close(self, linger=None):
         """Close this stream."""
@@ -428,8 +435,7 @@ class ZMQStream(object):
         try:
             # Use a NullContext to ensure that all StackContexts are run
             # inside our blanket exception handler rather than outside.
-            with stack_context.NullContext():
-                callback(*args, **kwargs)
+            callback(*args, **kwargs)
         except:
             gen_log.error("Uncaught exception in ZMQStream callback",
                           exc_info=True)
@@ -537,6 +543,5 @@ class ZMQStream(object):
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        with stack_context.NullContext():
-            self.io_loop.add_handler(self.socket, self._handle_events, self.io_loop.READ)
+        self.io_loop.add_handler(self.socket, self._handle_events, self.io_loop.READ)
 
