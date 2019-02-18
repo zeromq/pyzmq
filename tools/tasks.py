@@ -21,6 +21,7 @@ import os
 import pipes
 import re
 import shutil
+from subprocess import check_output
 import sys
 
 from contextlib import contextmanager
@@ -36,6 +37,15 @@ pjoin = os.path.join
 
 repo = 'git@github.com:zeromq/pyzmq'
 branch = os.getenv('PYZMQ_BRANCH', 'master')
+sdkroot = os.getenv("SDKROOT")
+if not sdkroot:
+    xcode_prefix = check_output(["xcode-select", "-p"]).decode().strip()
+    # 10.9
+    sdkroot = os.path.join(xcode_prefix, "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
+    if os.path.exists(sdkroot):
+        os.environ["SDKROOT"] = sdkroot
+    else:
+        print("SDK not found at %r" % sdkroot)
 
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
