@@ -10,6 +10,11 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+17.1.3
+======
+
+- Fix compatibility with tornado 6 (removal of stack_context)
+
 17.1.2
 ======
 
