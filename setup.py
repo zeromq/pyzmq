@@ -1237,11 +1237,8 @@ def find_packages():
 # Main setup
 #-----------------------------------------------------------------------------
 
-long_desc = \
-"""
-PyZMQ is the official Python binding for the ZeroMQ Messaging Library (http://www.zeromq.org).
-See `the docs <https://pyzmq.readthedocs.io>`_ for more info.
-"""
+with open("README.md") as f:
+    long_desc = f.read()
 
 setup_args = dict(
     name = "pyzmq",
@@ -1254,6 +1251,7 @@ setup_args = dict(
     url = 'https://pyzmq.readthedocs.org',
     description = "Python bindings for 0MQ",
     long_description = long_desc,
+    long_description_content_type="text/markdown",
     license = "LGPL+BSD",
     cmdclass = cmdclass,
     classifiers = [
