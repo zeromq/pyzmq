@@ -33,6 +33,8 @@ PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PYZMQ_ROOT)
 from buildutils.bundle import vs as libzmq_vs
 
+libsodium_version = '1.0.17'
+
 pjoin = os.path.join
 
 repo = 'git@github.com:zeromq/pyzmq'
@@ -233,11 +235,23 @@ def manylinux(ctx, vs, upload=False):
 
     run("docker pull quay.io/pypa/manylinux1_x86_64")
     run("docker pull quay.io/pypa/manylinux1_i686")
-    base_cmd = "docker run --dns 8.8.8.8 --rm -e PYZMQ_VERSIONS='{vs}' -e PYTHON_VERSIONS='{pys}' -e ZMQ_VERSION='{zmq}' -v $PWD:/io".format(
-        vs=vs,
-        pys=manylinux_pys,
-        zmq=libzmq_vs,
-    )
+    base_cmd = ' '.join([
+        "docker",
+        "run",
+        "--dns=8.8.8.8",
+        "--rm",
+        "-e",
+        "PYZMQ_VERSIONS='{}'".format(vs),
+        "-e",
+        "PYTHON_VERSIONS='{}'".format(manylinux_pys),
+        "-e",
+        "ZMQ_VERSION='{}'".format(libzmq_vs),
+        "-e",
+        "LIBSODIUM_VERSION='{}'".format(libsodium_version),
+        "-v",
+        "$PWD:/io",
+    ])
+
     with cd(manylinux):
         run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
         run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
