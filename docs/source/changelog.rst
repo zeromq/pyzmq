@@ -10,6 +10,16 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+18.0.0
+======
+
+- Update bundled libzmq to 4.3.1 (fixes CVE-2019-6250)
+- Added :func:`~zmq.proxy_steerable` and :class:`zmq.devices.ProxySteerable`
+- Added `bind_{in|out|mon}_to_random_port` variants for proxy device methods
+- Performance improvements for sends with asyncio
+- Fix sending memoryviews/bytearrays with cffi backend
+
+
 17.1.3
 ======
 
