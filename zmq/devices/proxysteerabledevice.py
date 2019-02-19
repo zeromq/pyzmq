@@ -88,6 +88,9 @@ class ProxySteerable(ProxySteerableBase, Proxy):
 
     This subclass adds a <method>_ctrl version of each <method>_{in|out}
     method, for configuring the control socket.
+
+    .. versionadded:: libzmq-4.1
+    .. versionadded:: 18.0
     """
     pass
 

@@ -33,7 +33,7 @@ def proxy_steerable(frontend, backend, capture=None, control=None):
     Start a zeromq proxy with control flow.
 
     .. versionadded:: libzmq-4.1
-    .. versionadded:: 17.2
+    .. versionadded:: 18.0
 
     Parameters
     ----------

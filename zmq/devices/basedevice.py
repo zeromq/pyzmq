@@ -97,6 +97,8 @@ class Device:
         in_socket.
 
         See zmq.Socket.bind_to_random_port for details.
+
+        .. versionadded:: 18.0
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 
@@ -130,6 +132,8 @@ class Device:
         out_socket.
 
         See zmq.Socket.bind_to_random_port for details.
+
+        .. versionadded:: 18.0
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 

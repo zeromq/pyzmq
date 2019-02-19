@@ -153,6 +153,8 @@ Functions
 
 .. autofunction:: zmq.proxy
 
+.. autofunction:: zmq.proxy_steerable
+
 .. autofunction:: zmq.curve_public
 
 .. autofunction:: zmq.curve_keypair
