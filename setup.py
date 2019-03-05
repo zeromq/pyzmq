@@ -19,6 +19,7 @@
 from __future__ import with_statement, print_function
 
 import copy
+import io
 import os
 import shutil
 import subprocess
@@ -26,7 +27,6 @@ import sys
 import time
 import errno
 import platform
-import codecs
 from traceback import print_exc
 
 # whether any kind of bdist is happening
@@ -1239,7 +1239,8 @@ def find_packages():
 #-----------------------------------------------------------------------------
 # Main setup
 #-----------------------------------------------------------------------------
-with codecs.open('README.md', 'r', 'utf-8') as f:
+
+with io.open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(
