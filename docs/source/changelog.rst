@@ -10,6 +10,12 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+18.0.1
+======
+
+Fixes installation from source on non-unicode locales with Python 3.
+There are no code changes in this release.
+
 18.0.0
 ======
 
