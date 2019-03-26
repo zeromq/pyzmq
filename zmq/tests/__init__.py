@@ -40,7 +40,7 @@ require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq 
 
 class BaseZMQTestCase(TestCase):
     green = False
-    teardown_timeout = 2
+    teardown_timeout = 10
     
     @property
     def Context(self):
