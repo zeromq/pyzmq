@@ -40,6 +40,7 @@ require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq 
 
 class BaseZMQTestCase(TestCase):
     green = False
+    teardown_timeout = 10
     
     @property
     def Context(self):
@@ -70,7 +71,7 @@ class BaseZMQTestCase(TestCase):
             t = Thread(target=ctx.term)
             t.daemon = True
             t.start()
-            t.join(timeout=2)
+            t.join(timeout=self.teardown_timeout)
             if t.is_alive():
                 # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
                 zmq.sugar.context.Context._instance = None
@@ -150,6 +151,7 @@ class PollZMQTestCase(BaseZMQTestCase):
 class GreenTest:
     """Mixin for making green versions of test classes"""
     green = True
+    teardown_timeout = 10
     
     def assertRaisesErrno(self, errno, func, *args, **kwargs):
         if errno == zmq.EAGAIN:
@@ -170,7 +172,7 @@ got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
             contexts.add(sock.context) # in case additional contexts are created
             sock.close()
         try:
-            gevent.joinall([gevent.spawn(ctx.term) for ctx in contexts], timeout=2, raise_error=True)
+            gevent.joinall([gevent.spawn(ctx.term) for ctx in contexts], timeout=teardown_timeout, raise_error=True)
         except gevent.Timeout:
             raise RuntimeError("context could not terminate, open sockets likely remain in test")
     
