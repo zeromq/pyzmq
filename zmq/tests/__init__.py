@@ -151,7 +151,7 @@ class PollZMQTestCase(BaseZMQTestCase):
 class GreenTest:
     """Mixin for making green versions of test classes"""
     green = True
-    teardown_timeout = 2
+    teardown_timeout = 10
     
     def assertRaisesErrno(self, errno, func, *args, **kwargs):
         if errno == zmq.EAGAIN:
