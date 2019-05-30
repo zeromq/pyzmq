@@ -1146,7 +1146,7 @@ ext_kwargs = {
 }
 if cython:
     # set binding so that compiled methods can be inspected
-    ext_kwargs['cython_directives'] = {'binding': True}
+    ext_kwargs['cython_directives'] = {'binding': True, 'language_level': 2}
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
