@@ -172,7 +172,11 @@ got '%s'" % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)))
             contexts.add(sock.context) # in case additional contexts are created
             sock.close()
         try:
-            gevent.joinall([gevent.spawn(ctx.term) for ctx in contexts], timeout=teardown_timeout, raise_error=True)
+            gevent.joinall(
+                [gevent.spawn(ctx.term) for ctx in contexts],
+                timeout=self.teardown_timeout,
+                raise_error=True,
+            )
         except gevent.Timeout:
             raise RuntimeError("context could not terminate, open sockets likely remain in test")
     
