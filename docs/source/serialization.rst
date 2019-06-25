@@ -79,7 +79,8 @@ the array.
         """recv a numpy array"""
         md = socket.recv_json(flags=flags)
         msg = socket.recv(flags=flags, copy=copy, track=track)
-        buf = buffer(msg)
+        buf = buffer(msg)  # Python 2.x
+        # buf = memoryview(msg) # Python 3.x
         A = numpy.frombuffer(buf, dtype=md['dtype'])
         return A.reshape(md['shape'])
 
