@@ -136,6 +136,14 @@ class Socket(object):
                                 'characters (sizeof(sockaddr_un.sun_path)).'
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(C.zmq_errno(), msg=msg)
+            elif C.zmq_errno() == errno_mod.ENOENT:
+                # py3compat: address is bytes, but msg wants str
+                if str is unicode:
+                    address = address.decode('utf-8', 'replace')
+                path = address.split('://', 1)[-1]
+                msg = ('No such file or directory for ipc path "{0}".'.format(
+                       path))
+                raise ZMQError(C.zmq_errno(), msg=msg)
             else:
                 _check_rc(rc)
 

@@ -11,6 +11,7 @@ import warnings
 import socket
 import sys
 
+import pytest
 from pytest import mark
 
 import zmq
@@ -396,7 +397,19 @@ class TestSocket(BaseZMQTestCase):
             s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
             self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
-    
+
+    @mark.skipif(windows, reason="ipc not supported on Windows.")
+    def test_ipc_path_no_such_file_or_directory_message(self):
+        """Display the ipc path in case of an ENOENT exception"""
+        s = self.context.socket(zmq.PUB)
+        self.sockets.append(s)
+        invalid_path = '/foo/bar'
+        with pytest.raises(zmq.ZMQError) as error:
+            s.bind('ipc://{0}'.format(invalid_path))
+        error_message = str(error.value)
+        assert invalid_path in error_message
+        assert "no such file or directory" in error_message.lower()
+
     def test_hwm(self):
         zmq3 = zmq.zmq_version_info()[0] >= 3
         for stype in (zmq.PUB, zmq.ROUTER, zmq.SUB, zmq.REQ, zmq.DEALER):
