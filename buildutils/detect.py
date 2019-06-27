@@ -18,9 +18,9 @@ import logging
 import platform
 from distutils import ccompiler
 from distutils.sysconfig import customize_compiler
-from subprocess import Popen, PIPE
 
 from .misc import get_compiler, get_output_error
+from .msg import info
 from .patch import patch_lib_paths
 
 pjoin = os.path.join
@@ -102,22 +102,26 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
         The compiler options used to compile the test function, e.g. `include_dirs`,
         `library_dirs`, `libs`, etc.
     """
-    
+
     cfile = pjoin(basedir, 'vers.c')
     shutil.copy(pjoin(os.path.dirname(__file__), 'vers.c'), cfile)
-    
+
     # check if we need to link against Realtime Extensions library
     if sys.platform.startswith('linux'):
         cc = ccompiler.new_compiler(compiler=compiler)
         customize_compiler(cc)
         cc.output_dir = basedir
+        info("Checking for timer_create")
+        info("** Errors about missing timer_create are a normal part of this process **")
         if not cc.has_function('timer_create'):
             compiler_attrs['libraries'].append('rt')
-    
+            info("** The above error about timer_create is normal and not a problem! **")
+            info("no timer_create, linking librt")
+
     cc = get_compiler(compiler=compiler, **compiler_attrs)
     efile = test_compilation(cfile, compiler=cc, **compiler_attrs)
     patch_lib_paths(efile, cc.library_dirs)
-    
+
     rc, so, se = get_output_error([efile])
     if rc:
         msg = "Error running version detection script:\n%s\n%s" % (so,se)
