@@ -3,6 +3,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import copy
+import errno
 import json
 import os
 import platform
@@ -406,6 +407,7 @@ class TestSocket(BaseZMQTestCase):
         invalid_path = '/foo/bar'
         with pytest.raises(zmq.ZMQError) as error:
             s.bind('ipc://{0}'.format(invalid_path))
+        assert error.value.errno == errno.ENOENT
         error_message = str(error.value)
         assert invalid_path in error_message
         assert "no such file or directory" in error_message.lower()
