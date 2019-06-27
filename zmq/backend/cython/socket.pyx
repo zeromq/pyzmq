@@ -27,7 +27,7 @@
 cdef extern from "pyversion_compat.h":
     pass
 
-from libc.errno cimport ENAMETOOLONG, ENOTSOCK
+from libc.errno cimport ENAMETOOLONG, ENOENT, ENOTSOCK
 from libc.string cimport memcpy
 
 from cpython cimport PyBytes_FromStringAndSize
@@ -541,6 +541,14 @@ cdef class Socket:
                                 'zmq.IPC_PATH_MAX_LEN constant can be used '
                                 'to check addr length (if it is defined).'
                                 .format(path, IPC_PATH_MAX_LEN))
+                raise ZMQError(msg=msg)
+            elif zmq_errno() == ENOENT:
+                # py3compat: address is bytes, but msg wants str
+                if str is unicode:
+                    addr = addr.decode('utf-8', 'replace')
+                path = addr.split('://', 1)[-1]
+                msg = ('No such file or directory for ipc path "{0}".'.format(
+                       path))
                 raise ZMQError(msg=msg)
         while True:
             try:
