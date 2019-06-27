@@ -10,6 +10,14 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+18.0.2
+======
+
+- Compatibility with Python 3.8 prerelease by regenerating Cython sources
+  with Cython 0.29.10.
+- Fix language_level=2 in Cython sources, for compatibility with Cython 0.30
+- Show missing path for ENOENT errors on ipc connections.
+
 18.0.1
 ======
 
