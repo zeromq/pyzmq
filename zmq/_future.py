@@ -254,6 +254,13 @@ class _AsyncSocket(_zmq.Socket):
         def unwrap_result(f):
             if future.done():
                 return
+            if f.cancelled():
+                try:
+                    future.cancel()
+                except RuntimeError:
+                    # RuntimeError may be called during teardown
+                    pass
+                return
             if f.exception():
                 future.set_exception(f.exception())
             else:
