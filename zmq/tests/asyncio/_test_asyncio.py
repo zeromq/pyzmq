@@ -299,6 +299,24 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             self.assertEqual(recvd, [b'hi', b'there'])
         self.loop.run_until_complete(test())
 
+    def test_poll_on_closed_socket(self):
+        @asyncio.coroutine
+        def test():
+            a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+
+            f = b.poll(timeout=1)
+            b.close()
+
+            # The test might stall if we try to yield from f directly so instead just make a few
+            # passes through the event loop to schedule and execute all callbacks
+            for _ in range(5):
+                yield from asyncio.sleep(0)
+                if f.cancelled():
+                    break
+            assert f.cancelled()
+
+        self.loop.run_until_complete(test())
+
     @pytest.mark.skipif(
         sys.platform.startswith('win'),
         reason='Windows does not support polling on files')
