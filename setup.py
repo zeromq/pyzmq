@@ -563,6 +563,7 @@ class Configure(build_ext):
             libzmq.define_macros.append(('ZMQ_USE_SELECT', 1))
             libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_SELECT', 1))
             libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_SELECT', 1))
+            libzmq.define_macros.append(('ZMQ_USE_CV_IMPL_NONE', 1))
         else:
             # this may not be sufficiently precise
             libzmq.define_macros.append(('ZMQ_USE_POLL', 1))
@@ -611,6 +612,14 @@ class Configure(build_ext):
 
         else:
             libzmq.include_dirs.append(bundledir)
+            libzmq.define_macros.append(('ZMQ_USE_CV_IMPL_STL11', 1))
+            # set CPPARGS for c++11
+            cppargs = os.getenv("CPPARGS", "")
+            if "-std=" not in cppargs:
+                cppargs = "-std=c++11 " + cppargs
+            if sys.platform == 'darwin' and "-stdlib=" not in cppargs:
+                cppargs = "-stdlib=libc++ " + cppargs
+            os.environ['CPPARGS'] = cppargs
 
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
