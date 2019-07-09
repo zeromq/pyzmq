@@ -119,11 +119,11 @@ for idx, arg in enumerate(list(sys.argv)):
 
 if not sys.platform.startswith('win'):
     # zeromq 4.3.2 requires C++11
-    # enable it in CPPARGS
-    cppargs = os.getenv("CPPARGS", "")
+    # enable it in CPPFLAGS
+    cppargs = os.getenv("CPPFLAGS", "")
     if "-std=" not in cppargs:
         cppargs = "-std=c++11 " + cppargs
-    os.environ['CPPARGS'] = cppargs
+    os.environ['CPPFLAGS'] = cppargs
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: https://www.h5py.org/)
