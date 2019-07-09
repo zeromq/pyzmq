@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import atexit
+import os
 from threading import Lock
 
 from zmq.backend import Context as ContextBase
@@ -23,14 +24,15 @@ atexit.register(_notice_atexit)
 
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
-    
+
     A zmq Context creates sockets via its ``ctx.socket`` method.
     """
     sockopts = None
     _instance = None
     _instance_lock = Lock()
+    _instance_pid = None
     _shadow = False
-    
+
     def __init__(self, io_threads=1, **kwargs):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
         if kwargs.get('shadow', False):
@@ -38,8 +40,7 @@ class Context(ContextBase, AttributeSetter):
         else:
             self._shadow = False
         self.sockopts = {}
-        
-    
+
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
         if not self._shadow and not _exiting:
@@ -102,12 +103,21 @@ class Context(ContextBase, AttributeSetter):
                 def __init__(self, context=None):
                     self.context = context or Context.instance()
         """
-        if cls._instance is None or cls._instance.closed:
+        if (
+            cls._instance is None
+            or cls._instance_pid != os.getpid()
+            or cls._instance.closed
+        ):
             with cls._instance_lock:
-                if cls._instance is None or cls._instance.closed:
+                if (
+                    cls._instance is None
+                    or cls._instance_pid != os.getpid()
+                    or cls._instance.closed
+                ):
                     cls._instance = cls(io_threads=io_threads)
+                    cls._instance_pid = os.getpid()
         return cls._instance
-    
+
     #-------------------------------------------------------------------------
     # Hooks for ctxopt completion
     #-------------------------------------------------------------------------
