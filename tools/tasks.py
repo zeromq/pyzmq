@@ -33,7 +33,7 @@ PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PYZMQ_ROOT)
 from buildutils.bundle import vs as libzmq_vs
 
-libsodium_version = '1.0.17'
+libsodium_version = '1.0.18'
 
 pjoin = os.path.join
 
