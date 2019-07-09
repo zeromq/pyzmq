@@ -117,6 +117,14 @@ for idx, arg in enumerate(list(sys.argv)):
         sys.argv.remove(arg)
         os.environ['ZMQ_DRAFT_API'] = '1'
 
+if not sys.platform.startswith('win'):
+    # zeromq 4.3.2 requires C++11
+    # enable it in CPPARGS
+    cppargs = os.getenv("CPPARGS", "")
+    if "-std=" not in cppargs:
+        cppargs = "-std=c++11 " + cppargs
+    os.environ['CPPARGS'] = cppargs
+
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: https://www.h5py.org/)
 #-----------------------------------------------------------------------------
@@ -613,13 +621,6 @@ class Configure(build_ext):
         else:
             libzmq.include_dirs.append(bundledir)
             libzmq.define_macros.append(('ZMQ_USE_CV_IMPL_STL11', 1))
-            # set CPPARGS for c++11
-            cppargs = os.getenv("CPPARGS", "")
-            if "-std=" not in cppargs:
-                cppargs = "-std=c++11 " + cppargs
-            if sys.platform == 'darwin' and "-stdlib=" not in cppargs:
-                cppargs = "-stdlib=libc++ " + cppargs
-            os.environ['CPPARGS'] = cppargs
 
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
