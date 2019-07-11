@@ -33,7 +33,7 @@ PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PYZMQ_ROOT)
 from buildutils.bundle import vs as libzmq_vs
 
-libsodium_version = '1.0.17'
+libsodium_version = '1.0.18'
 
 pjoin = os.path.join
 
@@ -52,6 +52,10 @@ if not sdkroot:
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
     os.environ['LDFLAGS'] = '-undefined dynamic_lookup'
+
+# set mac deployment target
+if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {

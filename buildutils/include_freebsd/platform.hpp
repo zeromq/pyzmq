@@ -13,6 +13,9 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #define HAVE_CLOCK_GETTIME 1
 
+/* Define to 1 if you have the <condition_variable> header file. */
+#define HAVE_CONDITION_VARIABLE 1
+
 /* define if the compiler supports basic C++11 syntax */
 #define HAVE_CXX11 1
 
@@ -105,7 +108,7 @@
 /* Define to 1 if you have the `perror' function. */
 #define HAVE_PERROR 1
 
-/* Define to 1 if you have the `posix_memalign' function. */
+/* Define to 1 if `posix_memalign' works. */
 #define HAVE_POSIX_MEMALIGN 1
 
 /* Define to 1 if you have the `socket' function. */
@@ -128,6 +131,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
+
+/* strnlen is available */
+#define HAVE_STRNLEN 1
 
 /* Define to 1 if you have the <sys/eventfd.h> header file. */
 /* #undef HAVE_SYS_EVENTFD_H */
@@ -159,8 +165,7 @@
 /* Define to 1 if the system has the type `_Bool'. */
 /* #undef HAVE__BOOL */
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -173,7 +178,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 4.3.1"
+#define PACKAGE_STRING "zeromq 4.3.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -182,7 +187,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.3.1"
+#define PACKAGE_VERSION "4.3.2"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -194,13 +199,17 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "4.3.1"
+#define VERSION "4.3.2"
 
 /* Enable militant API assertions */
 /* #undef ZMQ_ACT_MILITANT */
 
 /* Provide draft classes and methods */
 /* #undef ZMQ_BUILD_DRAFT_API */
+
+/* Using "$zmq_cacheline_size" bytes alignment for lock-free data structures
+   */
+#define ZMQ_CACHELINE_SIZE 64
 
 /* Force to use mutexes */
 /* #undef ZMQ_FORCE_MUTEXES */
@@ -357,6 +366,18 @@
 
 /* Use 'select' zmq_poll(er)_* API polling system */
 /* #undef ZMQ_POLL_BASED_ON_SELECT */
+
+/* Use no condition variable implementation. */
+/* #undef ZMQ_USE_CV_IMPL_NONE */
+
+/* Use pthread condition variable implementation. */
+/* #undef ZMQ_USE_CV_IMPL_PTHREADS */
+
+/* Use stl11 condition variable implementation. */
+#define ZMQ_USE_CV_IMPL_STL11 1
+
+/* Use vxworks condition variable implementation. */
+/* #undef ZMQ_USE_CV_IMPL_VXWORKS */
 
 /* Using libsodium for curve encryption */
 /* #undef ZMQ_USE_LIBSODIUM */
