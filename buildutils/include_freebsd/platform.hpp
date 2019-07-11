@@ -371,10 +371,10 @@
 /* #undef ZMQ_USE_CV_IMPL_NONE */
 
 /* Use pthread condition variable implementation. */
-/* #undef ZMQ_USE_CV_IMPL_PTHREADS */
+#define ZMQ_USE_CV_IMPL_PTHREADS 1
 
 /* Use stl11 condition variable implementation. */
-#define ZMQ_USE_CV_IMPL_STL11 1
+/* #undef ZMQ_USE_CV_IMPL_STL11 */
 
 /* Use vxworks condition variable implementation. */
 /* #undef ZMQ_USE_CV_IMPL_VXWORKS */
