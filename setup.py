@@ -18,6 +18,7 @@
 
 from __future__ import with_statement, print_function
 
+from contextlib import contextmanager
 import copy
 import io
 import os
@@ -43,7 +44,7 @@ from distutils.ccompiler import new_compiler
 from distutils.extension import Extension
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist
-from distutils.sysconfig import customize_compiler
+from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.version import LooseVersion as V
 
 from glob import glob
@@ -117,6 +118,16 @@ for idx, arg in enumerate(list(sys.argv)):
         sys.argv.remove(arg)
         os.environ['ZMQ_DRAFT_API'] = '1'
 
+
+if not sys.platform.startswith('win'):
+    cxx_flags = os.getenv("CXXFLAGS", "")
+    if "-std" not in cxx_flags:
+        cxx_flags = "-std=c++11 " + cxx_flags
+        os.environ["CXXFLAGS"] = cxx_flags
+    if cxx_flags:
+        # distutils doesn't support $CXXFLAGS
+        cxx = os.getenv("CXX", get_config_var("CXX"))
+        os.environ["CXX"] = cxx + " " + cxx_flags
 
 #-----------------------------------------------------------------------------
 # Configuration (adapted from h5py: https://www.h5py.org/)
@@ -612,7 +623,6 @@ class Configure(build_ext):
 
         else:
             libzmq.include_dirs.append(bundledir)
-            libzmq.extra_compile_args.append("-std=c++11")
 
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
@@ -974,6 +984,49 @@ class CheckSDist(sdist):
                 assert os.path.isfile(cfile), msg
         sdist.run(self)
 
+
+@contextmanager
+def use_cxx(compiler):
+    """use C++ compiler in this context
+
+    used in fix_cxx which detects when C++ should be used
+    """
+    compiler_so_save = compiler.compiler_so[:]
+    compiler_so_cxx = compiler.compiler_cxx + compiler.compiler_so[1:]
+    # actually use CXX compiler
+    compiler.compiler_so = compiler_so_cxx
+    try:
+        yield
+    finally:
+        # restore original state
+        compiler.compiler_so = compiler_so_save
+
+
+@contextmanager
+def fix_cxx(compiler, extension):
+    """Fix C++ compilation to use C++ compiler
+
+    See https://bugs.python.org/issue1222585 for Python support for C++,
+    which apparently doesn't exist and only works by accident.
+    """
+    if compiler.detect_language(extension.sources) != "c++":
+        # no c++, nothing to do
+        yield
+        return
+    _compile_save = compiler._compile
+    def _compile_cxx(obj, src, ext, *args, **kwargs):
+        if compiler.language_map.get(ext) == "c++":
+            with use_cxx(compiler):
+                _compile_save(obj, src, ext, *args, **kwargs)
+        else:
+            _compile_save(obj, src, ext, *args, **kwargs)
+    compiler._compile = _compile_cxx
+    try:
+        yield
+    finally:
+        compiler._compile = _compile_save
+
+
 class CheckingBuildExt(build_ext):
     """Subclass build_ext to get clearer report if Cython is necessary."""
 
@@ -997,7 +1050,9 @@ class CheckingBuildExt(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        build_ext.build_extension(self, ext)
+        with fix_cxx(self.compiler, ext):
+            build_ext.build_extension(self, ext)
+
         ext_path = self.get_ext_fullpath(ext.name)
         patch_lib_paths(ext_path, self.compiler.library_dirs)
 
@@ -1129,7 +1184,8 @@ else:
             return build_ext_c.build_extensions(self)
 
         def build_extension(self, ext):
-            build_ext_c.build_extension(self, ext)
+            with fix_cxx(self.compiler, ext):
+                build_ext.build_extension(self, ext)
             ext_path = self.get_ext_fullpath(ext.name)
             patch_lib_paths(ext_path, self.compiler.library_dirs)
 
