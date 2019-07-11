@@ -513,7 +513,7 @@ class Configure(build_ext):
 
         stage_platform_hpp(pjoin(bundledir, 'zeromq'))
 
-        sources = [pjoin('buildutils', 'initlibzmq.c')]
+        sources = [pjoin('buildutils', 'initlibzmq.cpp')]
         sources += glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp'))
 
         includes = [
@@ -612,6 +612,7 @@ class Configure(build_ext):
 
         else:
             libzmq.include_dirs.append(bundledir)
+            libzmq.extra_compile_args.append("-std=c++11")
 
             # check if we need to link against Realtime Extensions library
             cc = new_compiler(compiler=self.compiler_type)
