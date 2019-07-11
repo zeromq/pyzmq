@@ -328,8 +328,6 @@ cdef class Socket:
             raise ZMQError()
         self._closed = False
         self._pid = getpid()
-        if context:
-            self.context._add_socket(self.handle)
 
     def __cinit__(self, *args, **kwargs):
         # basic init
@@ -386,9 +384,6 @@ cdef class Socket:
             # ignore ENOTSOCK (closed by Context)
             _check_rc(rc)
         self._closed = True
-        # during gc, self.context might be NULL
-        if self.context:
-            self.context._remove_socket(self.handle)
         self.handle = NULL
 
     def set(self, int option, optval):

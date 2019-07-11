@@ -28,14 +28,8 @@ cdef class Context:
     cdef object __weakref__     # enable weakref
     cdef void *handle           # The C handle for the underlying zmq object.
     cdef bint _shadow           # whether the Context is a shadow wrapper of another
-    cdef void **_sockets        # A C-array containg socket handles
-    cdef size_t _n_sockets      # the number of sockets
-    cdef size_t _max_sockets    # the size of the _sockets array
     cdef int _pid               # the pid of the process which created me (for fork safety)
-    
+
     cdef public bint closed   # bool property for a closed context.
     cdef inline int _term(self)
-    # helpers for events on _sockets in Socket.__cinit__()/close()
-    cdef inline void _add_socket(self, void* handle)
-    cdef inline void _remove_socket(self, void* handle)
 
