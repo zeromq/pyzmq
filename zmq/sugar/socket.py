@@ -100,10 +100,10 @@ class Socket(SocketBase, AttributeSetter):
         address = cast_int_addr(address)
         return cls(shadow=address)
 
-    def close(self):
+    def close(self, linger=None):
         if self.context:
             self.context._rm_socket(self)
-        super(Socket, self).close()
+        super(Socket, self).close(linger=linger)
 
     #-------------------------------------------------------------------------
     # Deprecated aliases
