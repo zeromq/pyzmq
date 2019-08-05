@@ -138,8 +138,13 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             yield from asyncio.sleep(0)
             obj = dict(a=5)
             yield from a.send_json(obj)
-            with pytest.raises(CancelledError):
-                recvd = yield from f
+            # CancelledError change in 3.8 https://bugs.python.org/issue32528
+            if sys.version_info < (3, 8):
+                with pytest.raises(CancelledError):
+                    recvd = yield from f
+            else:
+                with pytest.raises(asyncio.exceptions.CancelledError):
+                    recvd = yield from f
             assert f.done()
             # give it a chance to incorrectly consume the event
             events = yield from b.poll(timeout=5)
