@@ -100,11 +100,17 @@ class Context(ContextBase, AttributeSetter):
 
         A common pattern for classes that depend on Contexts is to use
         a default argument to enable programs with multiple Contexts
-        but not require the argument for simpler applications:
+        but not require the argument for simpler applications::
 
             class MyClass(object):
                 def __init__(self, context=None):
                     self.context = context or Context.instance()
+
+        .. versionchanged:: 18.1
+
+            When called in a subprocess after forking,
+            a new global instance is created instead of inheriting
+            a Context that won't work from the parent process.
         """
         if (
             cls._instance is None
