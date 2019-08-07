@@ -77,8 +77,6 @@ class Socket(object):
         if self._zmq_socket == ffi.NULL:
             raise ZMQError()
         self._closed = False
-        if context:
-            self._ref = context._add_socket(self)
     
     @property
     def underlying(self):
@@ -117,8 +115,6 @@ class Socket(object):
                     self.set(zmq.LINGER, linger)
                 rc = C.zmq_close(self._zmq_socket)
             self._closed = True
-            if self.context:
-                self.context._rm_socket(self._ref)
         if rc < 0:
             _check_rc(rc)
 

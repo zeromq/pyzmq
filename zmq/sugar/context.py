@@ -7,11 +7,12 @@
 import atexit
 import os
 from threading import Lock
+import weakref
 
 from zmq.backend import Context as ContextBase
 from . import constants
 from .attrsettr import AttributeSetter
-from .constants import ENOTSUP, ctx_opt_names
+from .constants import ENOTSUP, LINGER, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
@@ -32,6 +33,7 @@ class Context(ContextBase, AttributeSetter):
     _instance_lock = Lock()
     _instance_pid = None
     _shadow = False
+    _sockets = None
 
     def __init__(self, io_threads=1, **kwargs):
         super(Context, self).__init__(io_threads=io_threads, **kwargs)
@@ -40,6 +42,7 @@ class Context(ContextBase, AttributeSetter):
         else:
             self._shadow = False
         self.sockopts = {}
+        self._sockets = set()
 
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
@@ -135,10 +138,49 @@ class Context(ContextBase, AttributeSetter):
     # Creating Sockets
     #-------------------------------------------------------------------------
 
+    def _add_socket(self, socket):
+        ref = weakref.ref(socket)
+        self._sockets.add(ref)
+        return ref
+
+    def _rm_socket(self, socket):
+        ref = weakref.ref(socket)
+        if ref in self._sockets:
+            self._sockets.remove(ref)
+
+    def destroy(self, linger=None):
+        """Close all sockets associated with this context and then terminate
+        the context.
+
+        .. warning::
+
+            destroy involves calling ``zmq_close()``, which is **NOT** threadsafe.
+            If there are active sockets in other threads, this must not be called.
+
+        Parameters
+        ----------
+
+        linger : int, optional
+            If specified, set LINGER on sockets prior to closing them.
+        """
+        if self.closed:
+            return
+
+        sockets = self._sockets
+        self._sockets = set()
+        for s in sockets:
+            s = s()
+            if s and not s.closed:
+                if linger is not None:
+                    s.setsockopt(LINGER, linger)
+                s.close()
+
+        self.term()
+
     @property
     def _socket_class(self):
         return Socket
-    
+
     def socket(self, socket_type, **kwargs):
         """Create a Socket associated with this Context.
 
@@ -162,18 +204,19 @@ class Context(ContextBase, AttributeSetter):
                 # that do not apply to a particular socket type, e.g.
                 # SUBSCRIBE for non-SUB sockets.
                 pass
+        self._add_socket(s)
         return s
-    
+
     def setsockopt(self, opt, value):
         """set default socket options for new sockets created by this Context
-        
+
         .. versionadded:: 13.0
         """
         self.sockopts[opt] = value
-    
+
     def getsockopt(self, opt):
         """get default socket options for new sockets created by this Context
-        
+
         .. versionadded:: 13.0
         """
         return self.sockopts[opt]

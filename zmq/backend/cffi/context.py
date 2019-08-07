@@ -16,7 +16,6 @@ class Context(object):
     _zmq_ctx = None
     _iothreads = None
     _closed = None
-    _sockets = None
     _shadow = False
 
     def __init__(self, io_threads=1, shadow=None):
@@ -35,7 +34,6 @@ class Context(object):
         if not shadow:
             C.zmq_ctx_set(self._zmq_ctx, IO_THREADS, io_threads)
         self._closed = False
-        self._sockets = set()
     
     @property
     def underlying(self):
@@ -45,15 +43,6 @@ class Context(object):
     @property
     def closed(self):
         return self._closed
-
-    def _add_socket(self, socket):
-        ref = weakref.ref(socket)
-        self._sockets.add(ref)
-        return ref
-
-    def _rm_socket(self, ref):
-        if ref in self._sockets:
-            self._sockets.remove(ref)
 
     def set(self, option, value):
         """set a context option
@@ -75,7 +64,7 @@ class Context(object):
     def term(self):
         if self.closed:
             return
-        
+
         rc = C.zmq_ctx_destroy(self._zmq_ctx)
         try:
             _check_rc(rc)
@@ -86,20 +75,5 @@ class Context(object):
 
         self._zmq_ctx = None
         self._closed = True
-
-    def destroy(self, linger=None):
-        if self.closed:
-            return
-
-        sockets = self._sockets
-        self._sockets = set()
-        for s in sockets:
-            s = s()
-            if s and not s.closed:
-                if linger is not None:
-                    s.setsockopt(LINGER, linger)
-                s.close()
-        
-        self.term()
 
 __all__ = ['Context']

@@ -42,30 +42,30 @@ except AttributeError:
 
 class Socket(SocketBase, AttributeSetter):
     """The ZMQ socket object
-    
+
     To create a Socket, first create a Context::
-    
+
         ctx = zmq.Context.instance()
-    
+
     then call ``ctx.socket(socket_type)``::
-    
+
         s = ctx.socket(zmq.ROUTER)
-    
+
     """
     _shadow = False
     _monitor_socket = None
-    
+
     def __init__(self, *a, **kw):
         super(Socket, self).__init__(*a, **kw)
         if 'shadow' in kw:
             self._shadow = True
         else:
             self._shadow = False
-    
+
     def __del__(self):
         if not self._shadow:
             self.close()
-    
+
     # socket as context manager:
     def __enter__(self):
         """Sockets are context managers
@@ -80,30 +80,35 @@ class Socket(SocketBase, AttributeSetter):
     #-------------------------------------------------------------------------
     # Socket creation
     #-------------------------------------------------------------------------
-    
+
     def __copy__(self, memo=None):
         """Copying a Socket creates a shadow copy"""
         return self.__class__.shadow(self.underlying)
-    
+
     __deepcopy__ = __copy__
-    
+
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq socket
-        
+
         address is the integer address of the libzmq socket
         or an FFI pointer to it.
-        
+
         .. versionadded:: 14.1
         """
         from zmq.utils.interop import cast_int_addr
         address = cast_int_addr(address)
         return cls(shadow=address)
-    
+
+    def close(self, linger=None):
+        if self.context:
+            self.context._rm_socket(self)
+        super(Socket, self).close(linger=linger)
+
     #-------------------------------------------------------------------------
     # Deprecated aliases
     #-------------------------------------------------------------------------
-    
+
     @property
     def socket_type(self):
         warnings.warn("Socket.socket_type is deprecated, use Socket.type",
