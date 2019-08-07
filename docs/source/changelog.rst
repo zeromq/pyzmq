@@ -10,6 +10,15 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+18.1.0
+======
+
+- Compatibility with Python 3.8 release candidate by regenerating Cython courses with Cython 0.29.13
+- bump bundled libzmq to 4.3.2
+- handle cancelled futures in asyncio
+- make :meth:`zmq.Context.instance` fork-safe
+- fix errors in :meth:`zmq.Context.destroy` when opening and closing many sockets
+
 18.0.2
 ======
 
