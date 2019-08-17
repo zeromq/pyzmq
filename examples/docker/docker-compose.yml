@@ -1,0 +1,19 @@
+version: "3"
+services:
+  sub:
+    build:
+      context: ./sub  # Docker context from folder of this file; needed to include requirement.txt
+      dockerfile: Dockerfile
+    ports:
+      - "5550:5550"  # map container interal 5550 port to publicly accessible 5550 port
+    # stdin_open: true  # same as docker -i (interactive)
+    tty: true  # same as docker -t (tty); see if sub actually receives pub messages
+    command: ["python", "main.py", "--ip", "0.0.0.0"]  # sub module binds, so no need for a specific IP
+  
+  pub:
+    build:
+      context: ./pub
+      dockerfile: Dockerfile
+    # stdin_open: true  # same as docker -i (interactive)
+    tty: true  # same as docker -t (tty); see if pub actually publishes messages to sub
+    command: ["python", "main.py", "--ip", "sub"]  # pub module connects, therefore sub Docker IP needed
