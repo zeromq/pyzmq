@@ -92,6 +92,7 @@ matrix:
     - python: 3.4
       env: ZMQ=zeromq3-x
     - python: 3.3
+      dist: trusty
       env: ZMQ=
     - python: nightly
       env: ZMQ=
