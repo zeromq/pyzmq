@@ -1,5 +1,4 @@
 language: python
-dist: trusty
 
 cache:
   - apt
@@ -7,8 +6,9 @@ cache:
 python:
   - 2.7
   - 3.6
-  - pypy2.7-5.8.0
-  - pypy3.5-5.8.0
+  - 3.8
+  - pypy
+  - pypy3
 env:
     - ZMQ=
     - ZMQ=bundled
@@ -59,12 +59,14 @@ matrix:
   include:
     - python: pypy
       env: ZMQ=bundled
+    - python: 3.8
+      env: ZMQ=
+    - python: 3.8
+      env: ZMQ=bundled
     - python: 3.7
       env: ZMQ=
-      dist: xenial
     - python: 3.7
       env: ZMQ=bundled
-      dist: xenial
     - python: 3.6
       env:
         - ZMQ=
