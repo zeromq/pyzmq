@@ -59,7 +59,7 @@ If the wheel doesn't work for some reason, or you want to force pyzmq to be comp
 (this is often preferable if you already have libzmq installed and configured the way you want it),
 you can force installation with:
 
-    pip install --no-use-wheel pyzmq
+    pip install --no-binary=:all: pyzmq
 
 When compiling pyzmq (e.g. installing with pip on Linux),
 it is generally recommended that zeromq be installed separately,
