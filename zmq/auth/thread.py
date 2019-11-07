@@ -51,7 +51,17 @@ class AuthenticationThread(Thread):
                 break  # interrupted
 
             if self.pipe in socks and socks[self.pipe] == zmq.POLLIN:
-                terminate = self._handle_pipe()
+                # Make sure all API requests are processed before
+                # looking at the ZAP socket.
+                while True:
+                    try:
+                        msg = self.pipe.recv_multipart(flags=zmq.NOBLOCK)
+                    except zmq.Again:
+                        break
+
+                    terminate = self._handle_pipe(msg)
+                    if terminate:
+                        break
                 if terminate:
                     break
 
@@ -69,14 +79,11 @@ class AuthenticationThread(Thread):
         if not msg: return
         self.authenticator.handle_zap_message(msg)
 
-    def _handle_pipe(self):
+    def _handle_pipe(self, msg):
         """
         Handle a message from front-end API.
         """
         terminate = False
-
-        # Get the whole message off the pipe in one go
-        msg = self.pipe.recv_multipart()
 
         if msg is None:
             terminate = True
