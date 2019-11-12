@@ -59,6 +59,7 @@ if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
+    '3.8' : _framework_py('3.8'),
     '3.7' : _framework_py('3.7'),
     '2.7' : _framework_py('2.7'),
     '3.5' : _framework_py('3.5'),
@@ -68,9 +69,9 @@ py_exes = {
 }
 egg_pys = {} # no more eggs!
 
-default_py = '3.6'
+default_py = '3.7'
 # all the Python versions to be built on linux
-manylinux_pys = '3.7 2.7 3.5 3.6'
+manylinux_pys = '3.8 3.7 2.7 3.5 3.6'
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')
@@ -225,8 +226,9 @@ def bdist(ctx, py, wheel=True, egg=False):
 
     run(cmd)
 
+
 @task
-def manylinux(ctx, vs, upload=False):
+def manylinux(ctx, vs, upload=False, pythons=manylinux_pys):
     """Build manylinux wheels with Matthew Brett's manylinux-builds"""
     manylinux = '/tmp/manylinux-builds'
     if not os.path.exists(manylinux):
@@ -247,7 +249,7 @@ def manylinux(ctx, vs, upload=False):
         "-e",
         "PYZMQ_VERSIONS='{}'".format(vs),
         "-e",
-        "PYTHON_VERSIONS='{}'".format(manylinux_pys),
+        "PYTHON_VERSIONS='{}'".format(pythons),
         "-e",
         "ZMQ_VERSION='{}'".format(libzmq_vs),
         "-e",
@@ -262,6 +264,7 @@ def manylinux(ctx, vs, upload=False):
     if upload:
         py = make_env(default_py, 'twine')
         run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
+
 
 @task
 def release(ctx, vs, upload=False):
