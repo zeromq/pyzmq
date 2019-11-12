@@ -8,6 +8,9 @@ from xml.etree import cElementTree
 def main(filename):
     tree = cElementTree.parse(filename)
     root = tree.getroot()
+    # find testsuite tag
+    if root.tag.lower() != "testsuite":
+        root = root.find("testsuite")
     attributes = root.attrib
     errors = int(attributes.get('errors', '0'))
     failures = int(attributes.get('failures', '0'))
