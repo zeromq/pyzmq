@@ -10,6 +10,14 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+18.1.1
+======
+
+- Fix race condition when shutting down ZAP thread while events are still processing (only affects tests)
+- Publish wheels for Python 3.8 on all platforms
+- Stop publishing wheels for Python 3.4 on Windows
+- Sources generated with Cython 0.29.14
+
 18.1.0
 ======
 
