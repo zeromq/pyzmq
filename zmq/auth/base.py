@@ -137,10 +137,10 @@ class Authenticator(object):
                 def callback(self, domain, key):
                     valid = ...lookup key and/or domain in db
                     if valid:
-                        logging.info('Autorizing: {0}, {1}'.format(domain, key))
+                        logging.info('Authorizing: {0}, {1}'.format(domain, key))
                         return True
                     else:
-                        logging.warning('NOT Autorizing: {0}, {1}'.format(domain, key))
+                        logging.warning('NOT Authorizing: {0}, {1}'.format(domain, key))
                         return False
 
         To cover all domains, use "*".
