@@ -23,6 +23,7 @@ import re
 import shutil
 from subprocess import check_output
 import sys
+import time
 
 from contextlib import contextmanager
 
@@ -48,6 +49,7 @@ if not sdkroot:
         os.environ["SDKROOT"] = sdkroot
     else:
         print("SDK not found at %r" % sdkroot)
+        time.sleep(10)
 
 # Workaround for PyPy3 5.8
 if 'LDFLAGS' not in os.environ:
@@ -56,6 +58,13 @@ if 'LDFLAGS' not in os.environ:
 # set mac deployment target
 if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+
+# set compiler env (avoids issues with missing 'gcc-4.2' on py27, etc.)
+if 'CC' not in os.environ:
+    os.environ['CC'] = 'clang'
+
+if 'CXX' not in os.environ:
+    os.environ['CXX'] = 'clang++'
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
@@ -291,7 +300,7 @@ def release(ctx, vs, upload=False):
     manylinux(ctx, vs, upload=upload)
     if upload:
         print("When AppVeyor finished building, upload artifacts with:")
-        print("  invoke appveyor_artifacts {} --upload".format(vs))
+        print("  invoke appveyor-artifacts {} --upload".format(vs))
 
 
 _appveyor_api = 'https://ci.appveyor.com/api'
