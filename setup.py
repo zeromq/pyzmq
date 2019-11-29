@@ -127,6 +127,9 @@ if not sys.platform.startswith('win'):
     if cxx_flags:
         # distutils doesn't support $CXXFLAGS
         cxx = os.getenv("CXX", get_config_var("CXX"))
+        # get_config_var is broken on some old versions of pypy, add a fallback
+        if cxx is None:
+            cxx = "c++ -pthread"
         os.environ["CXX"] = cxx + " " + cxx_flags
 
 #-----------------------------------------------------------------------------
