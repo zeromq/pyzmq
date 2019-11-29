@@ -24,15 +24,14 @@ and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future` s.
 
     ctx = zmq.asyncio.Context()
 
-    @asyncio.coroutine
-    def recv_and_process():
+    async def recv_and_process():
         sock = ctx.socket(zmq.PULL)
         sock.bind(url)
-        msg = yield from sock.recv_multipart() # waits for msg to be ready
-        reply = yield from async_process(msg)
-        yield from sock.send_multipart(reply)
+        msg = await sock.recv_multipart() # waits for msg to be ready
+        reply = await async_process(msg)
+        await sock.send_multipart(reply)
 
-    asyncio.get_event_loop().run_until_complete(recv_and_process())
+    asyncio.run(recv_and_process())
 
 
 Classes
