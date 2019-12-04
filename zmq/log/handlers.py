@@ -56,22 +56,23 @@ class PUBHandler(logging.Handler):
     (DEBUG,INFO,etc.), followed by any additional subtopics specified in the
     message by: log.debug("subtopic.subsub::the real message")
     """
-    root_topic=""
+
     socket = None
     
-    formatters = {
-        logging.DEBUG: logging.Formatter(
-        "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
-        logging.INFO: logging.Formatter("%(message)s\n"),
-        logging.WARN: logging.Formatter(
-        "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
-        logging.ERROR: logging.Formatter(
-        "%(levelname)s %(filename)s:%(lineno)d - %(message)s - %(exc_info)s\n"),
-        logging.CRITICAL: logging.Formatter(
-        "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n")}
     
-    def __init__(self, interface_or_socket, context=None):
+    def __init__(self, interface_or_socket, context=None, root_topic='root'):
         logging.Handler.__init__(self)
+        self._root_topic = root_topic
+        self._formatters = {
+            logging.DEBUG: logging.Formatter(
+            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
+            logging.INFO: logging.Formatter("%(message)s\n"),
+            logging.WARN: logging.Formatter(
+            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
+            logging.ERROR: logging.Formatter(
+            "%(levelname)s %(filename)s:%(lineno)d - %(message)s - %(exc_info)s\n"),
+            logging.CRITICAL: logging.Formatter(
+            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n")}
         if isinstance(interface_or_socket, zmq.Socket):
             self.socket = interface_or_socket
             self.ctx = self.socket.context
@@ -80,9 +81,52 @@ class PUBHandler(logging.Handler):
             self.socket = self.ctx.socket(zmq.PUB)
             self.socket.bind(interface_or_socket)
 
+    @property
+    def root_topic(self):
+        return self._root_topic
+
+    @root_topic.setter
+    def root_topic(self, value):
+        self.setRootTopic(value)
+
+    def setRootTopic(self, root_topic):
+        """Set the root topic for this handler.
+
+        This value is prepended to all messages published by this handler, and it
+        defaults to the string 'root'. When you subscribe to this socket, you must
+        set your subscription to an empty string, or to at least the first letter of
+        the binary representation of this string to ensure you receive any messages
+        from this handler.
+
+        You may also set the root topic to an empty string. In this case, messages
+        will begin with the binary representation of the log level string (INFO, WARN, etc.).
+        Note that ZMQ SUB sockets can have multiple subscriptions.
+        """
+        self._root_topic = root_topic
+
+    @property
+    def formatters(self):
+        return self._formatters
+
+    @formatters.setter
+    def formatters(self, value):
+        self._formatters = value
+
+    def setFormatter(self, fmt, level=logging.NOTSET):
+        """Set the Formatter for this handler.
+
+        If no level is provided, the same format is used for all levels. This
+        will overwrite all selective formatters set in the object constructor.
+        """
+        if level==logging.NOTSET:
+            for fmt_level in self._formatters.keys():
+                self._formatters[fmt_level] = fmt
+        else:
+            self._formatters[level] = fmt
+
     def format(self,record):
         """Format a record."""
-        return self.formatters[record.levelno].format(record)
+        return self._formatters[record.levelno].format(record)
 
     def emit(self, record):
         """Emit a log message on my socket."""

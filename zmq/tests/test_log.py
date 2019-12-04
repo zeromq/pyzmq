@@ -102,6 +102,30 @@ class TestPubLog(BaseZMQTestCase):
         
         logger.removeHandler(handler)
     
+    def test_blank_root_topic(self):
+        logger, handler, sub_everything = self.connect_handler()
+        sub_everything.setsockopt(zmq.SUBSCRIBE, b'')
+        handler.socket.bind(self.iface)
+        sub_only_info = sub_everything.context.socket(zmq.SUB)
+        self.sockets.append(sub_only_info)
+        sub_only_info.connect(self.iface)
+        sub_only_info.setsockopt(zmq.SUBSCRIBE, b'INFO')
+        handler.setRootTopic(b'')
+        msg_debug = 'debug_message'
+        logger.debug(msg_debug)
+        self.assertRaisesErrno(zmq.EAGAIN, sub_only_info.recv, zmq.NOBLOCK)
+        topic, msg_debug_response = sub_everything.recv_multipart()
+        self.assertEqual(topic, b'DEBUG')
+        msg_info = 'info_message'
+        logger.info(msg_info)
+        topic, msg_info_response_everything = sub_everything.recv_multipart()
+        self.assertEqual(topic, b'INFO')
+        topic, msg_info_response_onlyinfo = sub_only_info.recv_multipart()
+        self.assertEqual(topic, b'INFO')
+        self.assertEqual(msg_info_response_everything, msg_info_response_onlyinfo)
+
+        logger.removeHandler(handler)
+
     def test_unicode_message(self):
         logger, handler, sub = self.connect_handler()
         base_topic = b(self.topic + '.INFO')
@@ -113,4 +137,42 @@ class TestPubLog(BaseZMQTestCase):
             logger.info(msg)
             received = sub.recv_multipart()
             self.assertEqual(received, expected)
+        logger.removeHandler(handler)
 
+    def test_set_info_formatter_via_property(self):
+        logger, handler, sub = self.connect_handler()
+        handler.formatters[logging.INFO] = logging.Formatter("%(message)s UNITTEST\n")
+        handler.socket.bind(self.iface)
+        sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
+        logger.info('info message')
+        topic, msg = sub.recv_multipart()
+        self.assertEqual(msg, b'info message UNITTEST\n')
+        logger.removeHandler(handler)
+
+    def test_custom_global_formatter(self):
+        logger, handler, sub = self.connect_handler()
+        formatter = logging.Formatter("UNITTEST %(message)s")
+        handler.setFormatter(formatter)
+        handler.socket.bind(self.iface)
+        sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
+        logger.info('info message')
+        topic, msg = sub.recv_multipart()
+        self.assertEqual(msg, b'UNITTEST info message')
+        logger.debug('debug message')
+        topic, msg = sub.recv_multipart()
+        self.assertEqual(msg, b'UNITTEST debug message')
+        logger.removeHandler(handler)
+
+    def test_custom_debug_formatter(self):
+        logger, handler, sub = self.connect_handler()
+        formatter = logging.Formatter("UNITTEST DEBUG %(message)s")
+        handler.setFormatter(formatter, logging.DEBUG)
+        handler.socket.bind(self.iface)
+        sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
+        logger.info('info message')
+        topic, msg = sub.recv_multipart()
+        self.assertEqual(msg, b'info message\n')
+        logger.debug('debug message')
+        topic, msg = sub.recv_multipart()
+        self.assertEqual(msg, b'UNITTEST DEBUG debug message')
+        logger.removeHandler(handler)
