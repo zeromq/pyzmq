@@ -84,7 +84,7 @@ class TestIOLoop(BaseZMQTestCase):
         t = Delay(loop.stop,1)
         t.start()
         loop.start()
-        if t.isAlive():
+        if t.is_alive():
             t.abort()
         else:
             self.fail("IOLoop failed to exit")
