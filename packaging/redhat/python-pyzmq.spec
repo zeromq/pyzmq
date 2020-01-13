@@ -45,7 +45,7 @@ Release:        0
 Summary:        Python bindings for 0MQ
 License:        LGPL-3.0-or-later AND BSD-3-Clause
 URL:            https://github.com/zeromq/pyzmq
-Source:         https://files.pythonhosted.org/packages/source/p/pyzmq/pyzmq-%{version}.tar.gz
+Source0:         https://files.pythonhosted.org/packages/source/p/pyzmq/pyzmq-%{version}.tar.gz
 
 BuildRequires:  zeromq-devel
 
