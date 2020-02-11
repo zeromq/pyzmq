@@ -101,4 +101,3 @@ def print_view_info(obj):
             if view.suboffsets:
                 print view.suboffsets[0],
         print
-    

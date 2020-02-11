@@ -58,7 +58,7 @@ def get_includes():
     if exists(join(parent, base, 'include')):
         includes.append(join(parent, base, 'include'))
     return includes
-    
+
 def get_library_dirs():
     """Return a list of directories used to link against pyzmq's bundled libzmq."""
     from os.path import join, dirname, abspath, pardir

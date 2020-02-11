@@ -381,8 +381,6 @@ class Configure(build_ext):
         settings.setdefault('include_dirs', [])
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in (
             'utils',
-            pjoin('backend', 'cython'),
-            'devices',
         )]
         if sys.platform.startswith('win') and sys.version_info < (3, 3):
             settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
@@ -1207,7 +1205,7 @@ ext_kwargs = {
 }
 if cython:
     # set binding so that compiled methods can be inspected
-    ext_kwargs['cython_directives'] = {'binding': True, 'language_level': 2}
+    ext_kwargs['cython_directives'] = {'binding': True, 'language_level': '3str'}
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):

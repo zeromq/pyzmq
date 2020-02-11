@@ -68,9 +68,9 @@ from .libzmq cimport (
     ZMQ_LINGER,
     ZMQ_TYPE,
 )
-from message cimport Frame, copy_zmq_msg_bytes
+from .message cimport Frame, copy_zmq_msg_bytes
 
-from context cimport Context
+from .context cimport Context
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -827,7 +827,7 @@ cdef class Socket:
             return _recv_copy(self.handle, flags)
         else:
             frame = _recv_frame(self.handle, flags, track)
-            frame.more = self.getsockopt(zmq.RCVMORE)
+            frame.more = self.get(zmq.RCVMORE)
             return frame
     
 
