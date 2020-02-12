@@ -27,7 +27,7 @@ from libc.stdlib cimport free, malloc
 
 from .libzmq cimport zmq_pollitem_t, ZMQ_VERSION_MAJOR
 from .libzmq cimport zmq_poll as zmq_poll_c
-from socket cimport Socket
+from .socket cimport Socket
 
 import sys
 try:
