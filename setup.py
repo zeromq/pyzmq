@@ -1126,6 +1126,7 @@ submodules = {
 }
 
 min_cython_version = '0.20'
+cython_language_level = '3str'
 try:
     import Cython
     if V(Cython.__version__) < V(min_cython_version):
@@ -1134,6 +1135,9 @@ try:
     from Cython.Distutils import build_ext as build_ext_c
     from Cython.Distutils import Extension
     cython = True
+    # 3str was added in cython 0.29
+    if V(Cython.__version__) < V('0.29'):
+        cython_language_level = 2
 except Exception:
     cython = False
     suffix = '.c'
@@ -1205,7 +1209,7 @@ ext_kwargs = {
 }
 if cython:
     # set binding so that compiled methods can be inspected
-    ext_kwargs['cython_directives'] = {'binding': True, 'language_level': '3str'}
+    ext_kwargs['cython_directives'] = {'binding': True, 'language_level': cython_language_level}
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
