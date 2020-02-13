@@ -5,7 +5,7 @@ Easily view log messages published by the PUBHandler in zmq.log.handlers
 Designed to be run as an executable module - try this to see options:
     python -m zmq.log -h
 
-Subscribes to the 'root' topic by default which means it will work
+Subscribes to the '' (empty string) topic by default which means it will work
 out-of-the-box with a PUBHandler object instantiated with default settings. 
 If you change the root topic with PUBHandler.setRootTopic() you must pass 
 the value to this script with the --topic argument.
@@ -33,7 +33,7 @@ from zmq.utils.strtypes import u, cast_bytes
 parser = argparse.ArgumentParser('ZMQ Log Watcher')
 parser.add_argument('zmq_pub_url',type=str, 
                     help='URL to a ZMQ publisher socket.')
-parser.add_argument('-t', '--topic', type=str, default='root', 
+parser.add_argument('-t', '--topic', type=str, default='',
                     help='Only receive messages that start with this topic.')
 parser.add_argument('--timestamp', action='store_true',
                     help='Append local time to the log messages.')
