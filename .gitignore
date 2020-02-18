@@ -29,3 +29,6 @@ wheelhouse
 win-dist
 *.pickle
 .ipynb_checkpoints
+venv
+*.code-workspace
+.vscode
