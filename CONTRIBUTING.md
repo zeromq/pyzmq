@@ -19,9 +19,9 @@ The basics:
 import sys
 import zmq
 
-print "libzmq-%s" % zmq.zmq_version()
-print "pyzmq-%s" % zmq.pyzmq_version()
-print "Python-%s" % sys.version
+print("libzmq-%s" % zmq.zmq_version())
+print("pyzmq-%s" % zmq.pyzmq_version())
+print("Python-%s" % sys.version)
 ```
 
 Which will give something like:
