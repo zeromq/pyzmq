@@ -169,7 +169,6 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(rc, 2)
             del s
 
-    @skip_pypy
     def test_tracker(self):
         m = zmq.Frame(b'asdf', copy=False, track=True)
         self.assertFalse(m.tracker.done)
@@ -189,7 +188,6 @@ class TestFrame(BaseZMQTestCase):
         self.assertEqual(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
 
-    @skip_pypy
     def test_multi_tracker(self):
         m = zmq.Frame(b'asdf', copy=False, track=True)
         m2 = zmq.Frame(b'whoda', copy=False, track=True)
@@ -224,7 +222,6 @@ class TestFrame(BaseZMQTestCase):
         assert outb is m.buffer
         assert m.buffer is m.buffer
 
-    @skip_pypy
     def test_memoryview_shape(self):
         """memoryview shape info"""
         data = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
@@ -294,7 +291,6 @@ class TestFrame(BaseZMQTestCase):
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
 
-    @skip_pypy
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
         try:

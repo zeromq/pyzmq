@@ -8,10 +8,15 @@ from ._cffi import ffi, C
 import zmq
 from zmq.utils.strtypes import unicode
 
+try:
+    from __pypy__.bufferable import bufferable as maybe_bufferable
+except ImportError:
+    maybe_bufferable = object
+
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 
 
-class Frame(object):
+class Frame(maybe_bufferable):
     _data = None
     tracker = None
     closed = False
@@ -56,9 +61,11 @@ class Frame(object):
         else:
             return self.bytes
 
-    @property
     def done(self):
         return True
+
+    def __buffer__(self, flags):
+        return self.buffer
 
 
 Message = Frame
