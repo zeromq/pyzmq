@@ -10,7 +10,12 @@ cdef inline int _check_rc(int rc) except -1:
     and raising the appropriate Exception class
     """
     cdef int errno = zmq_errno()
-    PyErr_CheckSignals()
+    cdef int signal_code = PyErr_CheckSignals()
+    if signal_code == -1:
+        # The signal handler raised an exception, e.g. SIGINT does
+        # KeyboardInterrupt by default, so make sure it gets raised and not
+        # swallowed.
+        return -1
     if rc == -1: # if rc < -1, it's a bug in libzmq. Should we warn?
         if errno == EINTR:
             from zmq.error import InterruptedSystemCall
