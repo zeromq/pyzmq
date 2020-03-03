@@ -9,6 +9,10 @@ import os
 from threading import Lock
 import weakref
 
+# direct reference limits garbage collection issues
+# during process teardown
+weak_ref = weakref.ref
+
 from zmq.backend import Context as ContextBase
 from . import constants
 from .attrsettr import AttributeSetter
@@ -145,13 +149,17 @@ class Context(ContextBase, AttributeSetter):
     #-------------------------------------------------------------------------
 
     def _add_socket(self, socket):
-        ref = weakref.ref(socket)
+        ref = weak_ref(socket)
         self._sockets.add(ref)
         return ref
 
     def _rm_socket(self, socket):
-        ref = weakref.ref(socket)
-        if ref in self._sockets:
+        if not self._sockets or not weak_ref:
+            # weakref.ref itself might have been garbage collected
+            # during process teardown!
+            return
+        ref = weak_ref(socket)
+        if self._sockets and ref in self._sockets:
             self._sockets.remove(ref)
 
     def destroy(self, linger=None):
