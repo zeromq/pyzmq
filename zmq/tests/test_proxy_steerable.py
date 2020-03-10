@@ -100,7 +100,7 @@ class TestProxySteerable(BaseZMQTestCase):
         self.assertEqual(msg, self.recv(mon))
         ctrl.send(b'STATISTICS')
         stats = self.recv_multipart(ctrl)
-        stats_int = [struct.unpack("<Q", x)[0] for x in stats]
+        stats_int = [struct.unpack("=Q", x)[0] for x in stats]
         self.assertEqual(1, stats_int[0])
         self.assertEqual(len(msg), stats_int[1])
         self.assertEqual(1, stats_int[6])
