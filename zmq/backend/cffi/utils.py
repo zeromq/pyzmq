@@ -6,7 +6,7 @@
 
 from errno import EINTR
 
-from ._cffi import ffi, C
+from ._cffi import ffi, lib as C
 
 from zmq.error import ZMQError, InterruptedSystemCall, _check_rc, _check_version
 from zmq.utils.strtypes import unicode

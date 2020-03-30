@@ -4,6 +4,7 @@
 
 
 import copy
+import gc
 import sys
 
 try:
@@ -196,10 +197,13 @@ class TestFrame(BaseZMQTestCase):
         self.assertFalse(mt.done)
         self.assertRaises(zmq.NotDone, mt.wait, 0.1)
         del m
-        time.sleep(0.1)
+        for i in range(3):
+            gc.collect()
         self.assertRaises(zmq.NotDone, mt.wait, 0.1)
         self.assertFalse(mt.done)
         del m2
+        for i in range(3):
+            gc.collect()
         self.assertTrue(mt.wait() is None)
         self.assertTrue(mt.done)
 

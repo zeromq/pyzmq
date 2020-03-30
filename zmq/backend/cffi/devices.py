@@ -4,7 +4,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from ._cffi import C, ffi
+from ._cffi import lib as C, ffi
 from .socket import Socket
 from .utils import _retry_sys_call
 

@@ -68,3 +68,17 @@ int zmq_poll(zmq_pollitem_t *items, int nitems, long timeout);
 // miscellany
 void * memcpy(void *restrict s1, const void *restrict s2, size_t n);
 int get_ipc_path_max_len(void);
+
+typedef struct _zhint {
+    void *sock;
+    void *mutex;
+    size_t id;
+} zhint;
+
+void* mutex_allocate();
+
+int zmq_wrap_msg_init_data(zmq_msg_t *msg,
+                      void *data,
+                      size_t size,
+                      void *hint);
+

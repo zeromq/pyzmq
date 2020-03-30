@@ -6,19 +6,30 @@
 
 import errno as errno_mod
 
-from ._cffi import (
-    C,
-    ffi,
-    new_uint64_pointer,
-    new_int64_pointer,
-    new_int_pointer,
-    new_binary_data,
-    value_uint64_pointer,
-    value_int64_pointer,
-    value_int_pointer,
-    value_binary_data,
-    IPC_PATH_MAX_LEN,
-)
+from ._cffi import lib as C, ffi
+
+
+nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
+
+new_uint64_pointer = lambda: (ffi.new('uint64_t*'),
+                              nsp(ffi.sizeof('uint64_t')))
+new_int64_pointer = lambda: (ffi.new('int64_t*'),
+                             nsp(ffi.sizeof('int64_t')))
+new_int_pointer = lambda: (ffi.new('int*'),
+                           nsp(ffi.sizeof('int')))
+new_binary_data = lambda length: (ffi.new('char[%d]' % (length)),
+                                  nsp(ffi.sizeof('char') * length))
+
+value_uint64_pointer = lambda val : (ffi.new('uint64_t*', val),
+                                     ffi.sizeof('uint64_t'))
+value_int64_pointer = lambda val: (ffi.new('int64_t*', val),
+                                   ffi.sizeof('int64_t'))
+value_int_pointer = lambda val: (ffi.new('int*', val),
+                                 ffi.sizeof('int'))
+value_binary_data = lambda val, length: (ffi.new('char[%d]' % (length + 1), val),
+                                         ffi.sizeof('char') * length)
+
+IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 from .message import Frame
 from .constants import RCVMORE

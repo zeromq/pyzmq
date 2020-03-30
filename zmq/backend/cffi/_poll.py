@@ -10,7 +10,7 @@ except ImportError:
     from time import clock as monotonic
 import warnings
 
-from ._cffi import C, ffi
+from ._cffi import lib as C, ffi
 from zmq.error import InterruptedSystemCall, _check_rc
 
 
