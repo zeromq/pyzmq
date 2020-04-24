@@ -48,7 +48,7 @@ _mutex_finalize(mutex_t* mutex) {
 
 mutex_t*
 mutex_allocate(void) {
-    mutex_t* mutex = malloc(sizeof(mutex_t));
+    mutex_t* mutex = (mutex_t*)malloc(sizeof(mutex_t));
     _mutex_initialize(mutex);
     return mutex;
 }
