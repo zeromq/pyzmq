@@ -10,6 +10,13 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+19.0.1
+======
+
+- Fix TypeError during garbage collection
+- Fix compilation with some C++ compilers
+- Fixes in tests and examples
+
 19.0
 ====
 
