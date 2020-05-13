@@ -80,15 +80,8 @@ here = os.path.dirname(__file__)
 with open(os.path.join(here, '_cdefs.h')) as f:
     _cdefs = f.read()
 
-_verify = """\
-#include <stdio.h>
-#include <string.h>
-
-#include <zmq.h>
-#include "zmq_compat.h"
-"""
 with open(os.path.join(here, '_verify.c')) as f:
-    _verify += f.read()
+    _verify = f.read()
 
 ffi.cdef(_cdefs)
 ffi.cdef(_make_defines(c_constant_names))
