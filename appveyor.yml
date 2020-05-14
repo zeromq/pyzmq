@@ -9,6 +9,15 @@ environment:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\tools\\run_with_env.cmd"
+    PYPI_REPOSITORY: https://upload.pypi.org/legacy/
+    PYPI_USERNAME: __token__
+    PYPI_PASSWORD:
+      secure: "\
+        SX9+AI3l3dlYv0NeTnjw8WS+HUHmFJEp+cklKNGx2H7jLtl+0eJxPFf0zCkiW26R0ErtIt\
+        ii6xpLbkFzmXBlr6tvE8q7b7FnWcB9vln+wn/Jy9d42QJa2CSAObgQzFo7/HSFq2anLGdv\
+        /WTbZ8lZDyJYLaYTCGDRIZ8LTr8HCntQikGMC7UihcqlKT5+dBL/YHeTO3GvtmumaFI5jV\
+        jH4mSL4Ki2JMGTzuWjgtazYUb/ShHOg5GfuKuSXuUprRIIc34/NEVHlc4CxdTtN0pOoEH2\
+        E+ykDsDxhcJgrBbY6EA="
 
   matrix:
     - PYTHON: "C:\\Python27"
@@ -97,6 +106,17 @@ test_script:
 after_test:
   # If tests are successful, create binary packages for the project.
   - ps: ls dist
+  # Upload whl files if building a tag on master branch. The latest Python 3
+  # is specified here because twine doesn't support older versions.
+  - >
+    IF "%APPVEYOR_REPO_BRANCH%" == "master"
+    (
+    IF "%APPVEYOR_REPO_TAG%" == "true"
+    (
+    py -3 -m pip install twine &&
+    py -3 -m twine upload --verbose --skip-existing --repository-url %PYPI_REPOSITORY% -u %PYPI_USERNAME% -p %PYPI_PASSWORD% dist/*.whl
+    )
+    )
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
