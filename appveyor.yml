@@ -9,9 +9,10 @@ environment:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\tools\\run_with_env.cmd"
-    PYPI_REPOSITORY: https://upload.pypi.org/legacy/
-    PYPI_USERNAME: __token__
-    PYPI_PASSWORD:
+    TWINE_NON_INTERACTIVE: "1"
+    TWINE_REPOSITORY: https://upload.pypi.org/legacy/
+    TWINE_USERNAME: __token__
+    TWINE_PASSWORD:
       secure: NVlc8AZi0Y/k+ZiyFs9rfCoFRbeOqG+PVGSRTM9KpwN3Zantsl9h+/mbT7M7FOkLyIZvo41njOfGKekw762uJDy2Cp/jBhBz/qNgQNHC/+ith/r+NjaRvgO4P783ItckYhG/e0lvWBs8rmdMroC2hNUmL9nGXxbtzn7vG1ZCSkOsyNHRejzTu4Xd/uksFDViLhnJmxQyaozqa5KKcuBoFv4IxkNuoqdE7TgdFEJUmZcciDF13LfWsgm/lARDIsHoze7V5CR139XV1RtGFg5W+A==
 
   matrix:
@@ -108,8 +109,8 @@ after_test:
     (
     IF "%APPVEYOR_REPO_TAG%" == "true"
     (
-    py -3 -m pip install twine &&
-    py -3 -m twine upload --verbose --skip-existing --repository-url %PYPI_REPOSITORY% -u %PYPI_USERNAME% -p %PYPI_PASSWORD% dist/*.whl
+    python3 -m pip install twine &&
+    python3 -m twine upload --verbose --skip-existing dist/*.whl
     )
     )
 
