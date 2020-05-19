@@ -12,12 +12,7 @@ environment:
     PYPI_REPOSITORY: https://upload.pypi.org/legacy/
     PYPI_USERNAME: __token__
     PYPI_PASSWORD:
-      secure: "\
-        SX9+AI3l3dlYv0NeTnjw8WS+HUHmFJEp+cklKNGx2H7jLtl+0eJxPFf0zCkiW26R0ErtIt\
-        ii6xpLbkFzmXBlr6tvE8q7b7FnWcB9vln+wn/Jy9d42QJa2CSAObgQzFo7/HSFq2anLGdv\
-        /WTbZ8lZDyJYLaYTCGDRIZ8LTr8HCntQikGMC7UihcqlKT5+dBL/YHeTO3GvtmumaFI5jV\
-        jH4mSL4Ki2JMGTzuWjgtazYUb/ShHOg5GfuKuSXuUprRIIc34/NEVHlc4CxdTtN0pOoEH2\
-        E+ykDsDxhcJgrBbY6EA="
+      secure: NVlc8AZi0Y/k+ZiyFs9rfCoFRbeOqG+PVGSRTM9KpwN3Zantsl9h+/mbT7M7FOkLyIZvo41njOfGKekw762uJDy2Cp/jBhBz/qNgQNHC/+ith/r+NjaRvgO4P783ItckYhG/e0lvWBs8rmdMroC2hNUmL9nGXxbtzn7vG1ZCSkOsyNHRejzTu4Xd/uksFDViLhnJmxQyaozqa5KKcuBoFv4IxkNuoqdE7TgdFEJUmZcciDF13LfWsgm/lARDIsHoze7V5CR139XV1RtGFg5W+A==
 
   matrix:
     - PYTHON: "C:\\Python27"
