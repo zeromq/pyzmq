@@ -162,7 +162,6 @@ def bundled_settings(debug):
             suffix = os.path.splitext(ext_suffix)[0]
 
         if debug:
-            suffix = '_d' + suffix
             release = 'Debug'
         else:
             release = 'Release'
