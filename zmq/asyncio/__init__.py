@@ -65,6 +65,9 @@ class Context(_zmq.Context):
     """Context for creating asyncio-compatible Sockets"""
     _socket_class = Socket
 
+    # avoid sharing instance with base Context class
+    _instance = None
+
 
 class ZMQEventLoop(SelectorEventLoop):
     """DEPRECATED: AsyncIO eventloop using zmq_poll.

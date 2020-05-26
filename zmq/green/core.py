@@ -262,7 +262,7 @@ class _Socket(_original_Socket):
             self.__in_recv_multipart = False
             self.__state_changed()
         return msg
-    
+
     def get(self, opt):
         """trigger state_changed on getsockopt(EVENTS)"""
         if opt in TIMEOS:
@@ -271,7 +271,7 @@ class _Socket(_original_Socket):
         if opt == zmq.EVENTS:
             self.__state_changed()
         return optval
-    
+
     def set(self, opt, val):
         """set socket option"""
         if opt in TIMEOS:
@@ -285,3 +285,6 @@ class _Context(_original_Context):
     Ensures that the greened Socket above is used in calls to `socket`.
     """
     _socket_class = _Socket
+
+    # avoid sharing instance with base Context class
+    _instance = None
