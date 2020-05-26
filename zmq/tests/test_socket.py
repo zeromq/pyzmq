@@ -11,6 +11,10 @@ import time
 import warnings
 import socket
 import sys
+try:
+    from unittest import mock
+except ImportError:
+    mock = None
 
 import pytest
 from pytest import mark
@@ -54,7 +58,7 @@ class TestSocket(BaseZMQTestCase):
                 self.assertEqual(b.closed, True)
             self.assertEqual(a.closed, True)
         self.assertEqual(ctx.closed, True)
-    
+
     def test_dir(self):
         ctx = self.Context()
         s = ctx.socket(zmq.PUB)
@@ -64,6 +68,12 @@ class TestSocket(BaseZMQTestCase):
         self.assertTrue('FD' in dir(s))
         s.close()
         ctx.term()
+
+    @mark.skipif(mock is None, reason="requires unittest.mock")
+    def test_mockable(self):
+        s = self.socket(zmq.SUB)
+        m = mock.Mock(spec=s)
+        s.close()
 
     def test_bind_unicode(self):
         s = self.socket(zmq.PUB)

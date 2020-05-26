@@ -4,7 +4,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
+import errno
 from . import constants
 
 class AttributeSetter(object):
@@ -45,7 +45,18 @@ class AttributeSetter(object):
                 self.__class__.__name__, upper_key)
             )
         else:
-            return self._get_attr_opt(upper_key, opt)
+            from zmq import ZMQError
+            try:
+                return self._get_attr_opt(upper_key, opt)
+            except ZMQError as e:
+                # EINVAL will be raised on access for write-only attributes.
+                # Turn that into an AttributeError
+                # necessary for mocking
+                if e.errno == errno.EINVAL:
+                    raise AttributeError("{} attribute is write-only".format(key))
+                else:
+                    raise
+
 
     def _get_attr_opt(self, name, opt):
         """override if getattr should do something other than call self.get"""
