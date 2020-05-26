@@ -37,6 +37,22 @@ class TestFutureSocket(BaseZMQTestCase):
         assert isinstance(s, future.Socket)
         s.close()
 
+    def test_instance_subclass_first(self):
+        actx = self.Context.instance()
+        ctx = zmq.Context.instance()
+        ctx.term()
+        actx.term()
+        assert type(ctx) is zmq.Context
+        assert type(actx) is self.Context
+
+    def test_instance_subclass_second(self):
+        ctx = zmq.Context.instance()
+        actx = self.Context.instance()
+        ctx.term()
+        actx.term()
+        assert type(ctx) is zmq.Context
+        assert type(actx) is self.Context
+
     def test_recv_multipart(self):
         @gen.coroutine
         def test():

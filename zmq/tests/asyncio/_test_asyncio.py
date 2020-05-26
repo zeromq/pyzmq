@@ -46,6 +46,22 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         assert isinstance(s, zaio.Socket)
         s.close()
 
+    def test_instance_subclass_first(self):
+        actx = zmq.asyncio.Context.instance()
+        ctx = zmq.Context.instance()
+        ctx.term()
+        actx.term()
+        assert type(ctx) is zmq.Context
+        assert type(actx) is zmq.asyncio.Context
+
+    def test_instance_subclass_second(self):
+        ctx = zmq.Context.instance()
+        actx = zmq.asyncio.Context.instance()
+        ctx.term()
+        actx.term()
+        assert type(ctx) is zmq.Context
+        assert type(actx) is zmq.asyncio.Context
+
     def test_recv_multipart(self):
         @asyncio.coroutine
         def test():

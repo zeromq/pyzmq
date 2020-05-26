@@ -57,12 +57,15 @@ class Socket(_AsyncTornado, _AsyncSocket):
 Poller._socket_class = Socket
 
 class Context(_zmq.Context):
-    
+
+    # avoid sharing instance with base Context class
+    _instance = None
+
     io_loop = None
     @staticmethod
     def _socket_class(self, socket_type):
         return Socket(self, socket_type, io_loop=self.io_loop)
-    
+
     def __init__(self, *args, **kwargs):
         io_loop = kwargs.pop('io_loop', None)
         super(Context, self).__init__(*args, **kwargs)

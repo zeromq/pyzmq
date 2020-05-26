@@ -56,15 +56,15 @@ class TestContext(BaseZMQTestCase):
         c = self.Context()
         c.term()
         self.assert_(c.closed)
-    
+
     def test_context_manager(self):
         with self.Context() as c:
             pass
         self.assert_(c.closed)
-    
+
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
-    
+
     def test_term_hang(self):
         rep,req = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
         req.setsockopt(zmq.LINGER, 0)
@@ -72,7 +72,7 @@ class TestContext(BaseZMQTestCase):
         req.close()
         rep.close()
         self.context.term()
-    
+
     def test_instance(self):
         ctx = self.Context.instance()
         c2 = self.Context.instance(io_threads=2)
@@ -83,6 +83,34 @@ class TestContext(BaseZMQTestCase):
         self.assertFalse(c3 is c2)
         self.assertFalse(c3.closed)
         self.assertTrue(c3 is c4)
+
+    def test_instance_subclass_first(self):
+        self.context.term()
+        class SubContext(zmq.Context):
+            pass
+        sctx = SubContext.instance()
+        ctx = zmq.Context.instance()
+        ctx.term()
+        sctx.term()
+        assert type(ctx) is zmq.Context
+        assert type(sctx) is SubContext
+
+    def test_instance_subclass_second(self):
+        self.context.term()
+        class SubContextInherit(zmq.Context):
+            pass
+        class SubContextNoInherit(zmq.Context):
+            _instance = None
+            pass
+        ctx = zmq.Context.instance()
+        sctx = SubContextInherit.instance()
+        sctx2 = SubContextNoInherit.instance()
+        ctx.term()
+        sctx.term()
+        sctx2.term()
+        assert type(ctx) is zmq.Context
+        assert type(sctx) is zmq.Context
+        assert type(sctx2) is SubContextNoInherit
 
     def test_instance_threadsafe(self):
         self.context.term() # clear default context
