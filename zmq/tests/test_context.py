@@ -11,6 +11,10 @@ try:
     from queue import Queue
 except ImportError:
     from Queue import Queue
+try:
+    from unittest import mock
+except ImportError:
+    mock = None
 
 from pytest import mark
 
@@ -51,6 +55,11 @@ class TestContext(BaseZMQTestCase):
         if zmq.zmq_version_info() > (3,):
             self.assertTrue('IO_THREADS' in dir(ctx))
         ctx.term()
+
+    @mark.skipif(mock is None, reason="requires unittest.mock")
+    def test_mockable(self):
+        m = mock.Mock(spec=self.context)
+
 
     def test_term(self):
         c = self.Context()
