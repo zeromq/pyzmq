@@ -154,13 +154,14 @@ class Context(ContextBase, AttributeSetter):
         return ref
 
     def _rm_socket(self, socket):
-        if not self._sockets or not weak_ref:
+        if not weak_ref:
             # weakref.ref itself might have been garbage collected
             # during process teardown!
-            return
-        ref = weak_ref(socket)
-        if self._sockets and ref in self._sockets:
-            self._sockets.remove(ref)
+            if self._sockets:
+                # release reference to sockets to prevent hang-up on term().
+                self._sockets.clear()
+        elif self._sockets:
+            self._sockets.discard(weak_ref(socket))
 
     def destroy(self, linger=None):
         """Close all sockets associated with this context and then terminate
