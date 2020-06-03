@@ -4,8 +4,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import weakref
-
 from ._cffi import C, ffi
 
 from .constants import EINVAL, IO_THREADS, LINGER
