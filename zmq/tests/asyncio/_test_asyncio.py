@@ -39,19 +39,19 @@ class ProcessForTeardownTest(Process):
         actx = zaio.Context.instance()
         socket = actx.socket(zmq.PAIR)
         socket.bind_to_random_port('tcp://127.0.0.1')
-        coro = asyncio.wait_for(self.never_ending_task(socket), timeout=1)
+
+        @asyncio.coroutine
+        def never_ending_task(socket):
+            yield from socket.recv()  # never ever receive anything
 
         loop = asyncio.get_event_loop()
+        coro = asyncio.wait_for(never_ending_task(socket), timeout=1)
         try:
             loop.run_until_complete(coro)
         except asyncio.TimeoutError:
             pass  # expected timeout
         else:
             assert False, "never_ending_task was completed unexpectedly"
-
-    @asyncio.coroutine
-    def never_ending_task(self, socket):
-        yield from socket.recv()  # never ever receive anything
 
 
 class TestAsyncIOSocket(BaseZMQTestCase):
