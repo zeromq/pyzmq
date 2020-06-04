@@ -3,6 +3,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import json
+from multiprocessing import Process
 import os
 import sys
 
@@ -24,6 +25,33 @@ except ImportError:
 from concurrent.futures import CancelledError
 from zmq.tests import BaseZMQTestCase, SkipTest
 from zmq.tests.test_auth import TestThreadAuthentication
+
+
+class ProcessForTeardownTest(Process):
+    def __init__(self, event_loop_policy_class):
+        Process.__init__(self)
+        self.event_loop_policy_class = event_loop_policy_class
+
+    def run(self):
+        """Leave context, socket and event loop upon implicit disposal"""
+        asyncio.set_event_loop_policy(self.event_loop_policy_class())
+
+        actx = zaio.Context.instance()
+        socket = actx.socket(zmq.PAIR)
+        socket.bind_to_random_port('tcp://127.0.0.1')
+
+        @asyncio.coroutine
+        def never_ending_task(socket):
+            yield from socket.recv()  # never ever receive anything
+
+        loop = asyncio.get_event_loop()
+        coro = asyncio.wait_for(never_ending_task(socket), timeout=1)
+        try:
+            loop.run_until_complete(coro)
+        except asyncio.TimeoutError:
+            pass  # expected timeout
+        else:
+            assert False, "never_ending_task was completed unexpectedly"
 
 
 class TestAsyncIOSocket(BaseZMQTestCase):
@@ -381,6 +409,18 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             s = ctx.socket(zmq.PULL)
             async_s = zaio.Socket(s)
             assert isinstance(async_s, self.socket_class)
+
+    def test_process_teardown(self):
+        event_loop_policy_class = type(asyncio.get_event_loop_policy())
+        proc = ProcessForTeardownTest(event_loop_policy_class)
+        proc.start()
+        try:
+            proc.join(10)  # starting new Python process may cost a lot
+            self.assertEqual(proc.exitcode, 0,
+                             "Python process died with code %d" % proc.exitcode
+                             if proc.exitcode else "process teardown hangs")
+        finally:
+            proc.terminate()
 
 
 class TestAsyncioAuthentication(TestThreadAuthentication):

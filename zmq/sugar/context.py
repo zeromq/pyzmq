@@ -7,11 +7,7 @@
 import atexit
 import os
 from threading import Lock
-import weakref
-
-# direct reference limits garbage collection issues
-# during process teardown
-weak_ref = weakref.ref
+from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
 from . import constants
@@ -46,10 +42,14 @@ class Context(ContextBase, AttributeSetter):
         else:
             self._shadow = False
         self.sockopts = {}
-        self._sockets = set()
+        self._sockets = WeakSet()
 
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
+
+        # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
+        locals()
+
         if not self._shadow and not _exiting:
             self.term()
     
@@ -149,18 +149,11 @@ class Context(ContextBase, AttributeSetter):
     #-------------------------------------------------------------------------
 
     def _add_socket(self, socket):
-        ref = weak_ref(socket)
-        self._sockets.add(ref)
-        return ref
+        self._sockets.add(socket)
 
     def _rm_socket(self, socket):
-        if not self._sockets or not weak_ref:
-            # weakref.ref itself might have been garbage collected
-            # during process teardown!
-            return
-        ref = weak_ref(socket)
-        if self._sockets and ref in self._sockets:
-            self._sockets.remove(ref)
+        if self._sockets:
+            self._sockets.discard(socket)
 
     def destroy(self, linger=None):
         """Close all sockets associated with this context and then terminate
@@ -181,9 +174,8 @@ class Context(ContextBase, AttributeSetter):
             return
 
         sockets = self._sockets
-        self._sockets = set()
+        self._sockets = WeakSet()
         for s in sockets:
-            s = s()
             if s and not s.closed:
                 if linger is not None:
                     s.setsockopt(LINGER, linger)
