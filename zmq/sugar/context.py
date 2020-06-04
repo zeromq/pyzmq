@@ -7,7 +7,6 @@
 import atexit
 import os
 from threading import Lock
-from sys import stdout
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
@@ -48,10 +47,8 @@ class Context(ContextBase, AttributeSetter):
     def __del__(self):
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
 
-        # Referring sys module here conceals issue #1167 on at least CPython
-        # 3.5.4 on Windows. Without this, occurrence probability of the issue
-        # increases to approx. 30 ~ 50 % from 0 % (0 out of 240).
-        stdout.write("")
+        # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
+        locals()
 
         if not self._shadow and not _exiting:
             self.term()
