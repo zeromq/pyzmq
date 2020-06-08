@@ -383,6 +383,7 @@ class Socket(SocketBase, AttributeSetter):
             If the send does not succeed for any reason (including
             if NOBLOCK is set and the outgoing queue is full).
 
+
         .. versionchanged:: 17.0
 
             DRAFT support for routing_id and group arguments.

@@ -1,3 +1,5 @@
-cython>=0.25
-sphinx>=1.7
+cython>=0.29
 gevent
+pygments==2.4.2
+sphinx>=3.0.4
+tornado

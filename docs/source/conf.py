@@ -108,6 +108,9 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
+# List of Sphinx warnings that will not be raised
+suppress_warnings = ['epub.unknown_project_files']
+
 
 # -- Options for HTML output ---------------------------------------------------
 

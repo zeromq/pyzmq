@@ -1,0 +1,16 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+formats: all
+
+sphinx:
+  configuration: docs/source/conf.py
+  fail_on_warning: true
+
+python:
+  # https://docs.readthedocs.io/en/stable/config-file/v2.html#build-image
+  version: 3.7
+  install:
+    - requirements: docs/requirements.txt
+    - path: .
