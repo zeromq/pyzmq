@@ -76,6 +76,10 @@ class Poller(object):
 
     def poll(self, timeout=None):
         """Poll the registered 0MQ or native fds for I/O.
+        
+        If there are currently events ready to be processed, this function will return immediately.
+        Otherwise, this function will return as soon as events are available or after timeout 
+        milliseconds have elapsed.
 
         Parameters
         ----------
