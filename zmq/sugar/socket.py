@@ -677,7 +677,7 @@ class Socket(SocketBase, AttributeSetter):
     _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):
-        """Poll the socket for events.
+        """Poll the socket for an event.
         See :class:`Poller` to wait for multiple sockets at once.
 
         Parameters
@@ -690,9 +690,9 @@ class Socket(SocketBase, AttributeSetter):
 
         Returns
         -------
-        events : int
-            The events that are ready and waiting,
-            0 if the timeout was reached with no events.
+        event : int
+            The poll event mask (POLLIN, POLLOUT),
+            0 if the timeout was reached without an event.
         """
 
         if self.closed:
