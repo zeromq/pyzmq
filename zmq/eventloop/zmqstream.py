@@ -402,7 +402,7 @@ class ZMQStream(object):
             if self.socket.closed:
                 # fallback on raw fd for closed sockets
                 # hopefully this happened promptly after close,
-                # otherwise somebody else may have
+                # otherwise somebody else may have the FD
                 warnings.warn(
                     "Unregistering FD %s after closing socket. "
                     "This could result in unregistering handlers for the wrong socket. "
@@ -413,7 +413,7 @@ class ZMQStream(object):
                 self.io_loop.remove_handler(self._fd)
             else:
                 self.io_loop.remove_handler(self.socket)
-            self.socket.close(linger)
+                self.socket.close(linger)
             self.socket = None
             if self._close_callback:
                 self._run_callback(self._close_callback)
@@ -427,7 +427,13 @@ class ZMQStream(object):
         return not self._send_queue.empty()
 
     def closed(self):
-        return self.socket is None
+        if self.socket is None:
+            return True
+        if self.socket.closed:
+            # underlying socket has been closed, but not by us!
+            # trigger our cleanup
+            self.close()
+            return True
 
     def _run_callback(self, callback, *args, **kwargs):
         """Wrap running callbacks in try/except to allow us to
