@@ -690,7 +690,7 @@ class Socket(SocketBase, AttributeSetter):
 
         Returns
         -------
-        event : int
+        event_mask : int
             The poll event mask (POLLIN, POLLOUT),
             0 if the timeout was reached without an event.
         """
