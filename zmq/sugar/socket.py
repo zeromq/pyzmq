@@ -677,7 +677,7 @@ class Socket(SocketBase, AttributeSetter):
     _poller_class = Poller
 
     def poll(self, timeout=None, flags=POLLIN):
-        """Poll the socket for an event.
+        """Poll the socket for events.
         See :class:`Poller` to wait for multiple sockets at once.
 
         Parameters
