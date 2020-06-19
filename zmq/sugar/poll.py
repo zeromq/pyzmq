@@ -76,6 +76,10 @@ class Poller(object):
 
     def poll(self, timeout=None):
         """Poll the registered 0MQ or native fds for I/O.
+        
+        If there are currently events ready to be processed, this function will return immediately.
+        Otherwise, this function will return as soon the first event is available or after timeout 
+        milliseconds have elapsed.
 
         Parameters
         ----------
@@ -87,10 +91,10 @@ class Poller(object):
         -------
         events : list of tuples
             The list of events that are ready to be processed.
-            This is a list of tuples of the form ``(socket, event)``, where the 0MQ Socket
+            This is a list of tuples of the form ``(socket, event_mask)``, where the 0MQ Socket
             or integer fd is the first element, and the poll event mask (POLLIN, POLLOUT) is the second.
             It is common to call ``events = dict(poller.poll())``,
-            which turns the list of tuples into a mapping of ``socket : event``.
+            which turns the list of tuples into a mapping of ``socket : event_mask``.
         """
         if timeout is None or timeout < 0:
             timeout = -1
