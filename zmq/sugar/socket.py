@@ -101,6 +101,21 @@ class Socket(SocketBase, AttributeSetter):
         return cls(shadow=address)
 
     def close(self, linger=None):
+        """
+        Close the socket.
+
+        If linger is specified, LINGER sockopt will be set prior to closing.
+
+        Note: closing a zmq Socket may not close the underlying sockets
+        if there are undelivered messages.
+        Only after all messages are delivered or discarded by reaching the socket's LINGER timeout
+        (default: forever)
+        will the underlying sockets be closed.
+
+        This can be called to close the socket by hand. If this is not
+        called, the socket will automatically be closed when it is
+        garbage collected.
+        """
         if self.context:
             self.context._rm_socket(self)
         super(Socket, self).close(linger=linger)
