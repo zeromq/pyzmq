@@ -131,6 +131,28 @@ class Context(ContextBase, AttributeSetter):
                     cls._instance_pid = os.getpid()
         return cls._instance
 
+    def term(self):
+        """Close or terminate the context.
+
+        Context termination is performed in the following steps:
+
+        - Any blocking operations currently in progress on sockets open within context shall
+          raise :class:`zmq.ContextTerminated`.
+          With the exception of socket.close(), any further operations on sockets open within this context
+          shall raise :class:`zmq.ContextTerminated`.
+        - After interrupting all blocking calls, term shall block until the following conditions are satisfied:
+            - All sockets open within context have been closed.
+            - For each socket within context, all messages sent on the socket have either been
+              physically transferred to a network peer,
+              or the socket's linger period set with the zmq.LINGER socket option has expired.
+
+        For further details regarding socket linger behaviour refer to libzmq documentation for ZMQ_LINGER.
+
+        This can be called to close the context by hand. If this is not called,
+        the context will automatically be closed when it is garbage collected.
+        """
+        return super(Context, self).term()
+
     #-------------------------------------------------------------------------
     # Hooks for ctxopt completion
     #-------------------------------------------------------------------------
