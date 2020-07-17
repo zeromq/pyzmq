@@ -40,6 +40,7 @@ before_install:
       export ZMQ_DRAFT_API=1
     fi
   - pip install -r test-requirements.txt
+  - pip install invoke requests
   - |
     # install pinned tornado
     if [[ "$TORNADO" == "master" ]]; then
@@ -59,12 +60,30 @@ matrix:
     - python: pypy3
       env: ZMQ=bundled
     - python: 3.8
+      env: ZMQ=bundled
+      script:
+        - cd tools && invoke release 19.0.2
+        - cd ../ && travis_retry python setup.py test
+    - python: 3.8
+      arch: arm64
+      env: ZMQ=bundled
+      script:
+        - cd tools && invoke release 19.0.2
+        - cd ../ && travis_retry python setup.py test
+    - python: 3.8
+      arch: arm64
       env: ZMQ=
     - python: 3.8
-      env: ZMQ=bundled
+      env: ZMQ=
     - python: 3.7
       env: ZMQ=
     - python: 3.7
+      env: ZMQ=bundled
+    - python: 3.7
+      arch: arm64
+      env: ZMQ=
+    - python: 3.7
+      arch: arm64
       env: ZMQ=bundled
     - python: 3.6
       env:
@@ -78,6 +97,10 @@ matrix:
       env:
         - ZMQ=
         - TORNADO=4.5.*
+    - python: 2.7
+      env:
+        - ZMQ=
+        - TORNADO=4.5.*
     - python: 3.5
       env: ZMQ=
     - python: nightly
@@ -88,4 +111,5 @@ matrix:
     - env: ZMQ=libzmq
     - python: nightly
 
-script: travis_retry python setup.py test
+script:
+  - travis_retry python setup.py test

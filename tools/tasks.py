@@ -19,6 +19,7 @@ from __future__ import print_function
 import glob
 import os
 import pipes
+import platform
 import re
 import shutil
 from subprocess import check_output
@@ -38,26 +39,42 @@ libsodium_version = '1.0.18'
 
 pjoin = os.path.join
 
-repo = 'git@github.com:zeromq/pyzmq'
+repo = 'https://github.com/zeromq/pyzmq'
 branch = os.getenv('PYZMQ_BRANCH', 'master')
-sdkroot = os.getenv("SDKROOT")
-if not sdkroot:
-    xcode_prefix = check_output(["xcode-select", "-p"]).decode().strip()
-    # 10.9
-    sdkroot = os.path.join(xcode_prefix, "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
-    if os.path.exists(sdkroot):
-        os.environ["SDKROOT"] = sdkroot
-    else:
-        print("SDK not found at %r" % sdkroot)
-        time.sleep(10)
+if platform.processor() != 'aarch64' and platform.processor() != 'x86_64' :
+    sdkroot = os.getenv("SDKROOT")
+    if not sdkroot:
+        xcode_prefix = check_output(["xcode-select", "-p"]).decode().strip()
+        # 10.9
+        sdkroot = os.path.join(xcode_prefix, "Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
+        if os.path.exists(sdkroot):
+            os.environ["SDKROOT"] = sdkroot
+        else:
+            print("SDK not found at %r" % sdkroot)
+            time.sleep(10)
 
-# Workaround for PyPy3 5.8
-if 'LDFLAGS' not in os.environ:
-    os.environ['LDFLAGS'] = '-undefined dynamic_lookup'
+    # Workaround for PyPy3 5.8
+    if 'LDFLAGS' not in os.environ:
+        os.environ['LDFLAGS'] = '-undefined dynamic_lookup'
 
-# set mac deployment target
-if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+    # set mac deployment target
+    if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+        os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+
+    _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
+    py_exes = {
+        "3.9": _framework_py("3.9"),
+        "3.8": _framework_py("3.8"),
+        "3.7": _framework_py("3.7"),
+        "3.5": _framework_py("3.5"),
+        "3.6": _framework_py("3.6"),
+        "pypy": "/usr/local/bin/pypy",
+        "pypy3": "/usr/local/bin/pypy3",
+    }
+else:
+    py_exes = {
+        '3.8' : "/home/travis/virtualenv/python3.8.0/bin/python",
+    }
 
 # set compiler env (avoids issues with missing 'gcc-4.2' on py27, etc.)
 if 'CC' not in os.environ:
@@ -65,17 +82,6 @@ if 'CC' not in os.environ:
 
 if 'CXX' not in os.environ:
     os.environ['CXX'] = 'clang++'
-
-_framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
-py_exes = {
-    "3.9": _framework_py("3.9"),
-    "3.8": _framework_py("3.8"),
-    "3.7": _framework_py("3.7"),
-    "3.5": _framework_py("3.5"),
-    "3.6": _framework_py("3.6"),
-    "pypy": "/usr/local/bin/pypy",
-    "pypy3": "/usr/local/bin/pypy3",
-}
 
 default_py = "3.8"
 # all the Python versions to be built on linux
@@ -116,6 +122,8 @@ def clone_repo(ctx, reset=False):
             run("git checkout %s" % branch)
             run("git pull")
     else:
+        run("git config --global user.email test@test.com")
+        run("git config --global user.name test")
         run("git clone -b %s %s %s" % (branch, repo, repo_root))
 
 @task
@@ -197,7 +205,8 @@ def build_sdist(py, upload=False):
 @task
 def sdist(ctx, vs, upload=False):
     clone_repo(ctx)
-    tag(ctx, vs, push=upload)
+    """Generates tag already present issue"""
+    #tag(ctx, vs, push=upload)
     py = make_env(default_py, 'cython', 'twine', 'certifi')
     tarball = build_sdist(py, upload=upload)
     return untar(tarball)
@@ -245,8 +254,12 @@ def manylinux(ctx, vs, upload=False, pythons=manylinux_pys):
             run("git pull")
             run("git submodule update")
 
-    run("docker pull quay.io/pypa/manylinux1_x86_64")
-    run("docker pull quay.io/pypa/manylinux1_i686")
+    if platform.processor() != 'aarch64' and platform.processor() != 'x86_64':
+        run("docker pull quay.io/pypa/manylinux1_i686")
+    elif platform.processor() == 'aarch64':
+        run("docker pull quay.io/pypa/manylinux2014_aarch64")
+    else:
+        run("docker pull quay.io/pypa/manylinux1_x86_64")
     base_cmd = ' '.join([
         "docker",
         "run",
@@ -265,8 +278,12 @@ def manylinux(ctx, vs, upload=False, pythons=manylinux_pys):
     ])
 
     with cd(manylinux):
-        run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
-        run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
+        if platform.processor() != 'aarch64' and platform.processor() != 'x86_64':
+            run(base_cmd +  " quay.io/pypa/manylinux1_i686 linux32 /io/build_pyzmqs.sh")
+        elif platform.processor() == 'aarch64':
+            run(base_cmd +  " quay.io/pypa/manylinux2014_aarch64 /io/build_pyzmqs.sh")
+        else:
+            run(base_cmd +  " quay.io/pypa/manylinux1_x86_64 /io/build_pyzmqs.sh")
     if upload:
         py = make_env(default_py, 'twine')
         run(['twine', 'upload', os.path.join(manylinux, 'wheelhouse', '*')])
