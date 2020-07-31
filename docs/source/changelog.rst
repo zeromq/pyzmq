@@ -10,6 +10,18 @@ This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
 
+19.0.2
+======
+
+- Regenerate Cython sources with 0.29.21 in sdists for compatibility with Python 3.9
+- Handle underlying socket being closed in ZMQStream with warning instead of error
+- Improvements to socket cleanup during process teardown
+- Fix debug-builds on Windows
+- Avoid importing ctypes during startup on Windows
+- Documentation improvements
+- Raise ``AttributeError`` instead of ``ZMQError(EINVAL)`` on attempts to read write-only attributes,
+  for compatibility with mocking
+
 19.0.1
 ======
 
