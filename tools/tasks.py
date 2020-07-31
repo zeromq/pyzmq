@@ -344,7 +344,7 @@ def appveyor_artifacts(ctx, vs, dest='win-dist', upload=False):
                 f.write(chunk)
     if upload:
         py = make_env(default_py, 'twine')
-        run(['twine', 'upload', '{}/*'.format(dest)])
+        run(['twine', 'upload', '--skip-existing', '{}/*'.format(dest)])
     else:
         print("You can now upload these wheels with: ")
         print("  twine upload {}/*".format(dest))

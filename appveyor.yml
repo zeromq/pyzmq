@@ -102,16 +102,12 @@ test_script:
 after_test:
   # If tests are successful, create binary packages for the project.
   - ps: ls dist
-  # Upload whl files if building a tag on master branch. The latest Python 3
-  # is specified here because twine doesn't support older versions.
+  # Upload whl files if building a tag.
   - >
-    IF "%APPVEYOR_REPO_BRANCH%" == "master"
-    (
     IF "%APPVEYOR_REPO_TAG%" == "true"
     (
     python3 -m pip install twine &&
     python3 -m twine upload --verbose --skip-existing dist/*.whl
-    )
     )
 
 artifacts:
