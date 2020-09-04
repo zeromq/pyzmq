@@ -56,8 +56,9 @@ def curve_keypair():
     cdef char[64] public_key
     cdef char[64] secret_key
     _check_version((4,0), "curve_keypair")
-    with nogil:
-        rc = zmq_curve_keypair (public_key, secret_key)
+    # see huge comment in libzmq/src/random.cpp
+    # about threadsafety of random initialization
+    rc = zmq_curve_keypair(public_key, secret_key)
     _check_rc(rc)
     return public_key, secret_key
 
@@ -86,8 +87,9 @@ def curve_public(secret_key):
     cdef char[64] public_key
     cdef char* c_secret_key = secret_key
     _check_version((4,2), "curve_public")
-    with nogil:
-        rc = zmq_curve_public (public_key, c_secret_key)
+    # see huge comment in libzmq/src/random.cpp
+    # about threadsafety of random initialization
+    rc = zmq_curve_public(public_key, c_secret_key)
     _check_rc(rc)
     return public_key[:40]
 
