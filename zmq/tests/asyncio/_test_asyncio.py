@@ -13,14 +13,9 @@ from pytest import mark
 import zmq
 from zmq.utils.strtypes import u
 
-try:
-    import asyncio
-    import zmq.asyncio as zaio
-    from zmq.auth.asyncio import AsyncioAuthenticator
-except ImportError:
-    if sys.version_info >= (3,4):
-        raise
-    asyncio = None
+import asyncio
+import zmq.asyncio as zaio
+from zmq.auth.asyncio import AsyncioAuthenticator
 
 from concurrent.futures import CancelledError
 from zmq.tests import BaseZMQTestCase, SkipTest
@@ -55,12 +50,9 @@ class ProcessForTeardownTest(Process):
 
 
 class TestAsyncIOSocket(BaseZMQTestCase):
-    if asyncio is not None:
-        Context = zaio.Context
+    Context = zaio.Context
 
     def setUp(self):
-        if asyncio is None:
-            raise SkipTest()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         super(TestAsyncIOSocket, self).setUp()
@@ -426,8 +418,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 class TestAsyncioAuthentication(TestThreadAuthentication):
     """Test authentication running in a asyncio task"""
 
-    if asyncio is not None:
-        Context = zaio.Context
+    Context = zaio.Context
 
     def shortDescription(self):
         """Rewrite doc strings from TestThreadAuthentication from
@@ -441,8 +432,6 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
         return doc
 
     def setUp(self):
-        if asyncio is None:
-            raise SkipTest()
         self.loop = zaio.ZMQEventLoop()
         asyncio.set_event_loop(self.loop)
         super().setUp()

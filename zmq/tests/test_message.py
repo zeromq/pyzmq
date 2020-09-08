@@ -200,26 +200,25 @@ class TestFrame(BaseZMQTestCase):
         del m2
         self.assertTrue(mt.wait() is None)
         self.assertTrue(mt.done)
-        
-    
+
     def test_buffer_in(self):
         """test using a buffer as input"""
         ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(memoryview(ins))
-    
+
     def test_bad_buffer_in(self):
         """test using a bad object"""
         self.assertRaises(TypeError, zmq.Frame, 5)
         self.assertRaises(TypeError, zmq.Frame, object())
-        
+
     def test_buffer_out(self):
         """receiving buffered output"""
         ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(ins)
         outb = m.buffer
         self.assertTrue(isinstance(outb, memoryview))
-        self.assertTrue(outb is m.buffer)
-        self.assertTrue(m.buffer is m.buffer)
+        assert outb is m.buffer
+        assert m.buffer is m.buffer
 
     @skip_pypy
     def test_memoryview_shape(self):
@@ -237,7 +236,7 @@ class TestFrame(BaseZMQTestCase):
         self.assertEqual(view2.ndim, 1)
         self.assertEqual(view2.shape, (n,))
         self.assertEqual(view2.tobytes(), data)
-    
+
     def test_multisend(self):
         """ensure that a message remains intact after multiple sends"""
         a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)

@@ -4,11 +4,9 @@ cache:
   - apt
   - pip
 python:
-  - 2.7
   - 3.6
   - 3.8
   - 3.9-dev
-  - pypy
   - pypy3
 env:
     - ZMQ=
@@ -58,7 +56,7 @@ install:
 
 matrix:
   include:
-    - python: pypy
+    - python: pypy3
       env: ZMQ=bundled
     - python: 3.8
       env: ZMQ=
@@ -80,21 +78,8 @@ matrix:
       env:
         - ZMQ=
         - TORNADO=4.5.*
-    - python: 2.7
-      env:
-        - ZMQ=
-        - TORNADO=4.5.*
     - python: 3.5
       env: ZMQ=libzmq
-    - python: 3.4
-      env: ZMQ=zeromq4-x
-    - python: 3.4
-      env: ZMQ=zeromq4-1
-    - python: 3.4
-      env: ZMQ=zeromq3-x
-    - python: 3.3
-      dist: trusty
-      env: ZMQ=
     - python: nightly
       env: ZMQ=
     - python: nightly

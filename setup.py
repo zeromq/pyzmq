@@ -30,20 +30,15 @@ import errno
 import platform
 from traceback import print_exc
 
-# whether any kind of bdist is happening
-# do this before importing anything from distutils
-doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
+from setuptools import setup, Command
+from setuptools.command.bdist_egg import bdist_egg
+from setuptools.command.build_ext import build_ext
+from setuptools.command.sdist import sdist
+from setuptools.extension import Extension
 
-if any(bdist in sys.argv for bdist in ['sdist', 'bdist_wheel', 'bdist_egg']):
-    import setuptools
-
-import distutils
-from distutils.core import setup, Command
+import distutils.util
 from distutils.ccompiler import get_default_compiler
 from distutils.ccompiler import new_compiler
-from distutils.extension import Extension
-from distutils.command.build_ext import build_ext
-from distutils.command.sdist import sdist
 from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.version import LooseVersion as V
 
@@ -63,14 +58,16 @@ from buildutils import (
     patch_lib_paths,
     )
 
-# name of the libzmq library - can be changed by --libzmq <name>
-libzmq_name = 'libzmq'
-
 #-----------------------------------------------------------------------------
 # Flags
 #-----------------------------------------------------------------------------
 
-pypy = 'PyPy' in sys.version
+
+# name of the libzmq library - can be changed by --libzmq <name>
+libzmq_name = "libzmq"
+
+doing_bdist = any(arg.startswith("bdist") for arg in sys.argv[1:])
+pypy = "PyPy" in sys.version
 
 # reference points for zmq compatibility
 
@@ -155,11 +152,10 @@ def bundled_settings(debug):
         temp = 'temp.%s-%i.%i' % (plat, sys.version_info[0], sys.version_info[1])
         if hasattr(sys, 'gettotalrefcount'):
             temp += '-pydebug'
-        suffix = ''
-        if sys.version_info >= (3,5):
-            # Python 3.5 adds EXT_SUFFIX to libs
-            ext_suffix = distutils.sysconfig.get_config_var('EXT_SUFFIX')
-            suffix = os.path.splitext(ext_suffix)[0]
+
+        # Python 3.5 adds EXT_SUFFIX to libs
+        ext_suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
+        suffix = os.path.splitext(ext_suffix)[0]
 
         if debug:
             release = 'Debug'
@@ -292,6 +288,19 @@ class LibZMQVersionError(Exception):
 # Extra commands
 #-----------------------------------------------------------------------------
 
+class bdist_egg_disabled(bdist_egg):
+    """Disabled version of bdist_egg
+
+    Prevents setup.py install from performing setuptools' default easy_install,
+    which it should never ever do.
+    """
+
+    def run(self):
+        sys.exit(
+            "Aborting implicit building of eggs. Use `pip install .` to install from source."
+        )
+
+
 class Configure(build_ext):
     """Configure command adapted from h5py"""
 
@@ -336,9 +345,8 @@ class Configure(build_ext):
             # default bundle_msvcp=True on:
             # Windows Python 3.5 bdist *without* DISTUTILS_USE_SDK
             if os.environ.get("PYZMQ_BUNDLE_CRT") or (
-                sys.version_info >= (3,5)
-                and self.compiler_type == 'msvc'
-                and not os.environ.get('DISTUTILS_USE_SDK')
+                self.compiler_type == "msvc"
+                and not os.environ.get("DISTUTILS_USE_SDK")
                 and doing_bdist
             ):
                 cfg['bundle_msvcp'] = True
@@ -384,8 +392,6 @@ class Configure(build_ext):
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in (
             'utils',
         )]
-        if sys.platform.startswith('win') and sys.version_info < (3, 3):
-            settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
 
         settings.setdefault('libraries', [])
         # Explicitly link dependencies, not necessary if zmq is dynamic
@@ -1081,15 +1087,21 @@ class ConstantsCommand(Command):
         from buildutils.constants import render_constants
         render_constants()
 
+
+cmdclass = {
+    "bdist_egg": bdist_egg if "bdist_egg" in sys.argv else bdist_egg_disabled,
+    "clean": CleanCommand,
+    "configure": Configure,
+    "constants": ConstantsCommand,
+    "fetch_libzmq": FetchCommand,
+    "revision": GitRevisionCommand,
+    "sdist": CheckSDist,
+    "test": TestCommand,
+}
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
-
-cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'fetch_libzmq': FetchCommand,
-            'sdist': CheckSDist, 'constants': ConstantsCommand,
-        }
-
 
 def makename(path, ext):
     return os.path.abspath(pjoin('zmq', *path)) + ext
@@ -1302,12 +1314,6 @@ def find_packages():
         if '__init__.py' not in files:
             # not a package
             continue
-        if sys.version_info < (3,3) and 'asyncio' in package and 'sdist' not in sys.argv:
-            # Don't install asyncio packages on old Python
-            # avoids issues with tools like compileall, pytest, etc.
-            # that get confused by presence of Python 3-only sources,
-            # even when they are never imported.
-            continue
         packages.append(package)
     return packages
 
@@ -1319,48 +1325,47 @@ with io.open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(
-    name = "pyzmq",
-    version = extract_version(),
-    packages = find_packages(),
-    ext_modules = extensions,
-    package_data = package_data,
-    author = "Brian E. Granger, Min Ragan-Kelley",
-    author_email = "zeromq-dev@lists.zeromq.org",
-    url = 'https://pyzmq.readthedocs.org',
-    description = "Python bindings for 0MQ",
-    long_description = long_desc,
+    name="pyzmq",
+    version=extract_version(),
+    packages=find_packages(),
+    ext_modules=extensions,
+    package_data=package_data,
+    author="Brian E. Granger, Min Ragan-Kelley",
+    author_email="zeromq-dev@lists.zeromq.org",
+    url="https://pyzmq.readthedocs.org",
+    description="Python bindings for 0MQ",
+    long_description=long_desc,
     long_description_content_type="text/markdown",
-    license = "LGPL+BSD",
-    cmdclass = cmdclass,
-    classifiers = [
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: POSIX',
-        'Topic :: System :: Networking',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+    license="LGPL+BSD",
+    cmdclass=cmdclass,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX",
+        "Topic :: System :: Networking",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
+    zip_safe=False,
+    python_requires=">=3.5",
 )
-if 'setuptools' in sys.modules:
-    setup_args['zip_safe'] = False
-    # require Python 2.7, >= 3.3,
-    setup_args['python_requires'] = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 
-    if pypy:
-        setup_args['install_requires'] = [
-            'py',
-            'cffi',
-        ]
+
+if pypy:
+    setup_args["install_requires"] = [
+        "py",
+        "cffi",
+    ]
 
 setup(**setup_args)

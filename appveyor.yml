@@ -16,12 +16,12 @@ environment:
       secure: NVlc8AZi0Y/k+ZiyFs9rfCoFRbeOqG+PVGSRTM9KpwN3Zantsl9h+/mbT7M7FOkLyIZvo41njOfGKekw762uJDy2Cp/jBhBz/qNgQNHC/+ith/r+NjaRvgO4P783ItckYhG/e0lvWBs8rmdMroC2hNUmL9nGXxbtzn7vG1ZCSkOsyNHRejzTu4Xd/uksFDViLhnJmxQyaozqa5KKcuBoFv4IxkNuoqdE7TgdFEJUmZcciDF13LfWsgm/lARDIsHoze7V5CR139XV1RtGFg5W+A==
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: 32
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: 64
+    # - PYTHON: "C:\\Python39"
+    #   PYTHON_VERSION: "3.9.x"
+    #   PYTHON_ARCH: 32
+    # - PYTHON: "C:\\Python39-x64"
+    #   PYTHON_VERSION: "3.9.x"
+    #   PYTHON_ARCH: 64
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: 32
