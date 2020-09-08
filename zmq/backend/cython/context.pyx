@@ -55,15 +55,6 @@ cdef class Context:
         self.closed = False
         self._pid = getpid()
 
-    def __dealloc__(self):
-        """don't touch members in dealloc, just cleanup allocations"""
-        cdef int rc
-
-        # we can't call object methods in dealloc as it
-        # might already be partially deleted
-        if not self._shadow:
-            self._term()
-
     @property
     def underlying(self):
         """The address of the underlying libzmq context"""
