@@ -336,14 +336,6 @@ cdef class Socket:
         self._shadow = False
         self.context = None
 
-    def __dealloc__(self):
-        """remove from context's list
-
-        But be careful that context might not exist if called during gc
-        """
-        if self.handle != NULL and not self._shadow and getpid() == self._pid:
-            self._c_close()
-
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
