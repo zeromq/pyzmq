@@ -73,9 +73,9 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(s, m.bytes)
             if not PYPY:
                 # check that it copies
-                self.assert_(b is not s)
+                self.assertTrue(b is not s)
             # check that it copies only once
-            self.assert_(b is m.bytes)
+            self.assertTrue(b is m.bytes)
 
     def test_unicode(self):
         """Test the unicode representations of the Frames."""
@@ -114,8 +114,8 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(s, b(str(m)))
             self.assertEqual(s, bytes(m2))
             self.assertEqual(s, m.bytes)
-            # self.assert_(s is str(m))
-            # self.assert_(s is str(m2))
+            # self.assertTrue(s is str(m))
+            # self.assertTrue(s is str(m2))
             del m2
             rc -= 1
             self.assertEqual(grc(s), rc)
@@ -149,8 +149,8 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(s, bytes(m2))
             self.assertEqual(s, m2.bytes)
             self.assertEqual(s, m.bytes)
-            # self.assert_(s is str(m))
-            # self.assert_(s is str(m2))
+            # self.assertTrue(s is str(m))
+            # self.assertTrue(s is str(m2))
             del buf
             self.assertEqual(grc(s), rc)
             del m
@@ -218,9 +218,9 @@ class TestFrame(BaseZMQTestCase):
         m = zmq.Frame(ins)
         outb = m.buffer
         self.assertTrue(isinstance(outb, memoryview))
-        self.assert_(outb is m.buffer)
-        self.assert_(m.buffer is m.buffer)
-    
+        self.assertTrue(outb is m.buffer)
+        self.assertTrue(m.buffer is m.buffer)
+
     @skip_pypy
     def test_memoryview_shape(self):
         """memoryview shape info"""

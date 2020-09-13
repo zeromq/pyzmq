@@ -187,10 +187,10 @@ class TestSelect(PollZMQTestCase):
         wait()
 
         rlist, wlist, xlist = zmq.select([s1, s2], [s1, s2], [s1, s2])
-        self.assert_(s1 in wlist)
-        self.assert_(s2 in wlist)
-        self.assert_(s1 not in rlist)
-        self.assert_(s2 not in rlist)
+        self.assertTrue(s1 in wlist)
+        self.assertTrue(s2 in wlist)
+        self.assertTrue(s1 not in rlist)
+        self.assertTrue(s2 not in rlist)
 
     def test_timeout(self):
         """make sure select timeout has the right units (seconds)."""
