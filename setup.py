@@ -176,10 +176,11 @@ def check_pkgconfig():
     pcfg = None
     zmq_config = None
     try:
-        check_call(['pkg-config', '--exists', 'libzmq'])
+        pkg_config = os.environ.get('PKG_CONFIG', 'pkg-config')
+        check_call([pkg_config, '--exists', 'libzmq'])
         # this would arguably be better with --variable=libdir /
         # --variable=includedir, but would require multiple calls
-        pcfg = Popen(['pkg-config', '--libs', '--cflags', 'libzmq'],
+        pcfg = Popen([pkg_config, '--libs', '--cflags', 'libzmq'],
                      stdout=subprocess.PIPE)
     except OSError as osexception:
         if osexception.errno == errno.ENOENT:
