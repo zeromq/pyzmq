@@ -40,13 +40,13 @@ class TestContext(BaseZMQTestCase):
 
     def test_init(self):
         c1 = self.Context()
-        self.assert_(isinstance(c1, self.Context))
+        self.assertTrue(isinstance(c1, self.Context))
         del c1
         c2 = self.Context()
-        self.assert_(isinstance(c2, self.Context))
+        self.assertTrue(isinstance(c2, self.Context))
         del c2
         c3 = self.Context()
-        self.assert_(isinstance(c3, self.Context))
+        self.assertTrue(isinstance(c3, self.Context))
         del c3
 
     def test_dir(self):
@@ -64,12 +64,12 @@ class TestContext(BaseZMQTestCase):
     def test_term(self):
         c = self.Context()
         c.term()
-        self.assert_(c.closed)
+        self.assertTrue(c.closed)
 
     def test_context_manager(self):
         with self.Context() as c:
             pass
-        self.assert_(c.closed)
+        self.assertTrue(c.closed)
 
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
@@ -312,8 +312,8 @@ class TestContext(BaseZMQTestCase):
         c2 = copy.copy(c1)
         c2b = copy.deepcopy(c1)
         c3 = copy.deepcopy(c2)
-        self.assert_(c2._shadow)
-        self.assert_(c3._shadow)
+        self.assertTrue(c2._shadow)
+        self.assertTrue(c3._shadow)
         self.assertEqual(c1.underlying, c2.underlying)
         self.assertEqual(c1.underlying, c3.underlying)
         self.assertEqual(c1.underlying, c2b.underlying)
