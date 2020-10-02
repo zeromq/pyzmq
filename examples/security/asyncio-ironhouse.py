@@ -20,7 +20,7 @@ import asyncio
 import zmq
 import zmq.auth
 from zmq.auth.asyncio import AsyncioAuthenticator
-from zmq.asyncio import Context, Poller, ZMQEventLoop
+from zmq.asyncio import Context, Poller
 
 
 @asyncio.coroutine
@@ -100,7 +100,11 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
-    loop = ZMQEventLoop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(run())
-    loop.close()
+    asyncio.run(run())
+
+    # Note: asyncio.run() was added in Python 3.7.
+    # For earlier Python versions, you can use:
+    #
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(run())
+    # loop.close()
