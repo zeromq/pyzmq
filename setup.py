@@ -1139,27 +1139,18 @@ submodules = {
     },
 }
 
-if sys.version_info >= (3, 7):
-    # require cython 0.29 on Python >= 3.7
-    min_cython_version = '0.29'
-    cython_language_level = '3str'
-else:
-    # be more lenient on old versions of Python
-    min_cython_version = '0.20'
-    cython_language_level = None
+# require cython 0.29
+min_cython_version = "0.29"
+cython_language_level = "3str"
 
 try:
     import Cython
     if V(Cython.__version__) < V(min_cython_version):
         raise ImportError("Cython >= %s required for cython build, found %s" % (
             min_cython_version, Cython.__version__))
-    from Cython.Distutils import build_ext as build_ext_c
-    from Cython.Distutils import Extension
+    from Cython.Build import build_ext as build_ext_c
+    from Cython.Build import cythonize
     cython = True
-    # 3str was added in Cython 0.29
-    # use it if available
-    if V(Cython.__version__) >= V('0.29'):
-        cython_language_level = '3str'
 except Exception:
     cython = False
     suffix = '.c'
@@ -1229,21 +1220,18 @@ ext_include_dirs = [pjoin('zmq', sub) for sub in ('utils',)]
 ext_kwargs = {
     'include_dirs': ext_include_dirs,
 }
-if cython:
-    # set binding so that compiled methods can be inspected
-    ext_kwargs['cython_directives'] = {'binding': True}
-    if cython_language_level:
-        ext_kwargs['cython_directives']['language_level'] = cython_language_level
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
-        sources = [pjoin('zmq', submod.replace('.', os.path.sep), pkg+suffix)]
-        ext = Extension(
-            'zmq.%s.%s'%(submod, pkg),
-            sources = sources,
-            **ext_kwargs
-        )
+        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
+        ext = Extension("zmq.%s.%s" % (submod, pkg), sources=sources, **ext_kwargs)
         extensions.append(ext)
+
+if cython:
+    # set binding so that compiled methods can be inspected
+    # set language-level to 3str, requires Cython 0.29
+    cython_directives = {"binding": True, "language_level": "3str"}
+    extensions = cythonize(extensions, compiler_directives=cython_directives)
 
 if pypy:
     # add dummy extension, to ensure build_ext runs
