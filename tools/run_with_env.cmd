@@ -58,7 +58,13 @@ IF %MAJOR_PYTHON_VERSION% == 2 (
             SET SET_SDK_64=Y
         ) ELSE (
             SET SET_SDK_64=N
-            SET PYZMQ_BUNDLE_CRT=1
+            IF %MINOR_PYTHON_VERSION% LEQ 8 (
+                :: This may not work for CPython >= 3.8.3
+                :: but it's still required to run on 3.8.2!
+                :: IF EXIST "%PYTHON%\vcruntime*.dll" (
+                ECHO "bundling msvc runtime"
+                SET PYZMQ_BUNDLE_CRT=1
+            )
             IF EXIST "%WIN_WDK%" (
                 :: See: https://connect.microsoft.com/VisualStudio/feedback/details/1610302/
                 REN "%WIN_WDK%" 0wdf

@@ -345,9 +345,10 @@ class Configure(build_ext):
             # default bundle_msvcp=True on:
             # Windows Python 3.5 bdist *without* DISTUTILS_USE_SDK
             if os.environ.get("PYZMQ_BUNDLE_CRT") or (
-                self.compiler_type == "msvc"
+                doing_bdist
+                and self.compiler_type == "msvc"
+                and sys.version_info < (3, 9)
                 and not os.environ.get("DISTUTILS_USE_SDK")
-                and doing_bdist
             ):
                 cfg['bundle_msvcp'] = True
 
@@ -618,7 +619,7 @@ class Configure(build_ext):
                     # fatal error if env set, warn otherwise
                     msg = fatal if os.environ.get("PYZMQ_BUNDLE_CRT") else warn
                     msg("Failed to get cc._vcruntime via private API, not bundling CRT")
-                if cc._vcruntime_redist:
+                if getattr(cc, "_vcruntime_redist", False):
                     redist_dir, dll = os.path.split(cc._vcruntime_redist)
                     to_bundle = [
                         pjoin(redist_dir, dll.replace('vcruntime', name))
