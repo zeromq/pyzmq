@@ -165,8 +165,7 @@
 /* Define to 1 if the system has the type `_Bool'. */
 /* #undef HAVE__BOOL */
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -179,7 +178,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 4.3.2"
+#define PACKAGE_STRING "zeromq 4.3.3"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -188,7 +187,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.3.2"
+#define PACKAGE_VERSION "4.3.3"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -200,7 +199,7 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "4.3.2"
+#define VERSION "4.3.3"
 
 /* Enable militant API assertions */
 /* #undef ZMQ_ACT_MILITANT */
@@ -239,7 +238,7 @@
 /* Whether EFD_CLOEXEC is defined and functioning. */
 /* #undef ZMQ_HAVE_EVENTFD_CLOEXEC */
 
-/* Have FreeBSD OS */
+/* Have DragonFly OS */
 /* #undef ZMQ_HAVE_FREEBSD */
 
 /* Whether getrandom is supported. */
@@ -256,6 +255,12 @@
 
 /* Have ifaddrs.h header. */
 #define ZMQ_HAVE_IFADDRS 1
+
+/* Have AF_UNIX sockets for ipc transport */
+#define ZMQ_HAVE_IPC 1
+
+/* The libbsd library is to be used */
+/* #undef ZMQ_HAVE_LIBBSD */
 
 /* Have Linux OS */
 #define ZMQ_HAVE_LINUX 1
@@ -341,6 +346,12 @@
 /* Have Windows OS */
 /* #undef ZMQ_HAVE_WINDOWS */
 
+/* Using websocket */
+/* #undef ZMQ_HAVE_WS */
+
+/* WSS enabled */
+/* #undef ZMQ_HAVE_WSS */
+
 /* Use 'devpoll' I/O thread polling system */
 /* #undef ZMQ_IOTHREAD_POLLER_USE_DEVPOLL */
 
@@ -368,6 +379,9 @@
 /* Use 'select' zmq_poll(er)_* API polling system */
 /* #undef ZMQ_POLL_BASED_ON_SELECT */
 
+/* Using built-in sha1 */
+/* #undef ZMQ_USE_BUILTIN_SHA1 */
+
 /* Use no condition variable implementation. */
 /* #undef ZMQ_USE_CV_IMPL_NONE */
 
@@ -380,8 +394,17 @@
 /* Use vxworks condition variable implementation. */
 /* #undef ZMQ_USE_CV_IMPL_VXWORKS */
 
+/* fuzz tests will be built with fuzzing engine */
+/* #undef ZMQ_USE_FUZZING_ENGINE */
+
+/* Use GNUTLS for TLS */
+/* #undef ZMQ_USE_GNUTLS */
+
 /* Using libsodium for curve encryption */
 /* #undef ZMQ_USE_LIBSODIUM */
+
+/* Using NSS */
+/* #undef ZMQ_USE_NSS */
 
 /* Use radix tree implementation to manage subscriptions */
 /* #undef ZMQ_USE_RADIX_TREE */

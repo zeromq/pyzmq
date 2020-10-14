@@ -534,7 +534,11 @@ class Configure(build_ext):
         stage_platform_hpp(pjoin(bundledir, 'zeromq'))
 
         sources = [pjoin('buildutils', 'initlibzmq.cpp')]
-        sources += glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp'))
+        sources.extend([
+            src for src in glob(pjoin(bundledir, 'zeromq', 'src', '*.cpp'))
+            # exclude draft ws transport files
+            if not os.path.basename(src).startswith(("ws_", "wss_"))
+        ])
 
         includes = [
             pjoin(bundledir, 'zeromq', 'include')
