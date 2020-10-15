@@ -39,7 +39,9 @@ libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}"
     vs=vs,
     libzmq=libzmq,
 )
-libzmq_checksum = "sha256:9d9285db37ae942ed0780c016da87060497877af45094ff9e1a1ca736e3875a2"
+libzmq_checksum = (
+    "sha256:9d9285db37ae942ed0780c016da87060497877af45094ff9e1a1ca736e3875a2"
+)
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -127,10 +129,13 @@ def stage_platform_hpp(zmqroot):
     else:
         info("attempting ./configure to generate platform.hpp")
 
-        p = Popen('./configure', cwd=zmqroot, shell=True,
-            stdout=PIPE, stderr=PIPE,
+        p = Popen(
+            ["./configure", "--disable-drafts"],
+            cwd=zmqroot,
+            stdout=PIPE,
+            stderr=PIPE,
         )
-        o,e = p.communicate()
+        o, e = p.communicate()
         if p.returncode:
             warn("failed to configure libzmq:\n%s" % e)
             if sys.platform == 'darwin':
