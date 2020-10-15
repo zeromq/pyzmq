@@ -312,13 +312,12 @@ class Configure(build_ext):
 
     ]
     def initialize_options(self):
-        build_ext.initialize_options(self)
+        super().initialize_options()
         self.zmq = None
         self.build_base = 'build'
 
-    # DON'T REMOVE: distutils demands these be here even if they do nothing.
     def finalize_options(self):
-        build_ext.finalize_options(self)
+        super().finalize_options()
         self.tempdir = pjoin(self.build_temp, 'scratch')
         self.has_run = False
         self.config = discover_settings(self.build_base)
@@ -1061,7 +1060,7 @@ class CheckingBuildExt(build_ext):
 
     def build_extension(self, ext):
         with fix_cxx(self.compiler, ext):
-            build_ext.build_extension(self, ext)
+            super().build_extension(ext)
 
         ext_path = self.get_ext_fullpath(ext.name)
         patch_lib_paths(ext_path, self.compiler.library_dirs)
@@ -1069,7 +1068,7 @@ class CheckingBuildExt(build_ext):
     def run(self):
         # check version, to prevent confusing undefined constant errors
         self.distribution.run_command('configure')
-        build_ext.run(self)
+        return super().run()
 
 
 class ConstantsCommand(Command):
@@ -1150,7 +1149,7 @@ try:
         raise ImportError("Cython >= %s required for cython build, found %s" % (
             min_cython_version, Cython.__version__))
     from Cython.Build import cythonize
-    from Cython.Distutils.build_ext import new_build_ext as build_ext_c
+    from Cython.Distutils.build_ext import new_build_ext as build_ext_cython
     cython = True
 except Exception:
     cython = False
@@ -1185,7 +1184,7 @@ else:
 
     suffix = '.pyx'
 
-    class CythonCommand(build_ext_c):
+    class CythonCommand(build_ext_cython):
         """Custom distutils command subclassed from Cython.Distutils.build_ext
         to compile pyx->c, and stop there. All this does is override the
         C-compile method build_extension() with a no-op."""
@@ -1195,26 +1194,25 @@ else:
         def build_extension(self, ext):
             pass
 
-    class zbuild_ext(build_ext_c):
+    class zbuild_ext(build_ext_cython):
 
         def build_extensions(self):
             if self.compiler.compiler_type == 'mingw32':
                 customize_mingw(self.compiler)
-            return build_ext_c.build_extensions(self)
+            return super().build_extensions()
 
         def build_extension(self, ext):
             with fix_cxx(self.compiler, ext):
-                build_ext.build_extension(self, ext)
+                super().build_extension(ext)
             ext_path = self.get_ext_fullpath(ext.name)
             patch_lib_paths(ext_path, self.compiler.library_dirs)
 
         def run(self):
             self.distribution.run_command('configure')
+            return super().run()
 
-            return build_ext_c.run(self)
-
-    cmdclass['cython'] = CythonCommand
-    cmdclass['build_ext'] =  zbuild_ext
+    cmdclass["cython"] = CythonCommand
+    cmdclass["build_ext"] = zbuild_ext
 
 extensions = []
 ext_include_dirs = [pjoin('zmq', sub) for sub in ('utils',)]
