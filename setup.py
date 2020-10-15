@@ -1149,8 +1149,8 @@ try:
     if V(Cython.__version__) < V(min_cython_version):
         raise ImportError("Cython >= %s required for cython build, found %s" % (
             min_cython_version, Cython.__version__))
-    from Cython.Build import build_ext as build_ext_c
     from Cython.Build import cythonize
+    from Cython.Distutils.build_ext import new_build_ext as build_ext_c
     cython = True
 except Exception:
     cython = False
