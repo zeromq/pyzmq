@@ -79,7 +79,7 @@ matrix:
         - ZMQ=
         - TORNADO=4.5.*
     - python: 3.5
-      env: ZMQ=libzmq
+      env: ZMQ=
     - python: nightly
       env: ZMQ=
     - python: nightly
