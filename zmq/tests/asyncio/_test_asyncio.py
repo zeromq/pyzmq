@@ -453,9 +453,11 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
             client.connect("%s:%i" % (iface, port))
             msg = [b"Hello World"]
             if (yield from server.poll(1000, zmq.POLLOUT)):
-                yield from server.send_multipart(msg)
+                yield from server.send_multipart(msg, zmq.NOBLOCK)
+            else:
+                return False
             if (yield from client.poll(1000)):
-                rcvd_msg = yield from client.recv_multipart()
+                rcvd_msg = yield from client.recv_multipart(zmq.NOBLOCK)
                 self.assertEqual(rcvd_msg, msg)
                 result = True
             return result
