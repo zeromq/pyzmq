@@ -565,6 +565,8 @@ class Configure(build_ext):
         )
 
         # register the extension:
+        # doing this here means we must be run
+        # before finalize_options in build_ext
         self.distribution.ext_modules.insert(0, libzmq)
 
         # use tweetnacl to provide CURVE support
@@ -572,7 +574,7 @@ class Configure(build_ext):
         libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
 
         # select polling subsystem based on platform
-        if sys.platform  == 'darwin' or 'bsd' in sys.platform:
+        if sys.platform == "darwin" or "bsd" in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
             libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_KQUEUE', 1))
             libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_POLL', 1))
@@ -981,6 +983,7 @@ class CheckSDist(sdist):
             for f in files:
                 if f.endswith('.pyx'):
                     self._pyxfiles.append(pjoin(root, f))
+
     def run(self):
         self.run_command('fetch_libzmq')
         if 'cython' in cmdclass:
@@ -1065,10 +1068,10 @@ class CheckingBuildExt(build_ext):
         ext_path = self.get_ext_fullpath(ext.name)
         patch_lib_paths(ext_path, self.compiler.library_dirs)
 
-    def run(self):
+    def finalize_options(self):
         # check version, to prevent confusing undefined constant errors
-        self.distribution.run_command('configure')
-        return super().run()
+        self.distribution.run_command("configure")
+        return super().finalize_options()
 
 
 class ConstantsCommand(Command):
@@ -1207,9 +1210,9 @@ else:
             ext_path = self.get_ext_fullpath(ext.name)
             patch_lib_paths(ext_path, self.compiler.library_dirs)
 
-        def run(self):
-            self.distribution.run_command('configure')
-            return super().run()
+        def finalize_options(self):
+            self.distribution.run_command("configure")
+            return super().finalize_options()
 
     cmdclass["cython"] = CythonCommand
     cmdclass["build_ext"] = zbuild_ext
@@ -1234,20 +1237,30 @@ if cython:
 
 if pypy:
     # add dummy extension, to ensure build_ext runs
-    dummy_ext = Extension('dummy', sources=[])
+    dummy_ext = Extension("dummy", sources=[])
     extensions = [dummy_ext]
 
     bld_ext = cmdclass['build_ext']
+
     class pypy_build_ext(bld_ext):
         """hack to build pypy extension only after building bundled libzmq
 
         otherwise it will fail when libzmq is bundled.
         """
-        def build_extensions(self):
-            self.extensions.remove(dummy_ext)
-            bld_ext.build_extensions(self)
+
+        def finalize_options(self):
+            super().finalize_options()
+            if dummy_ext in self.extensions:
+                self.extensions.remove(dummy_ext)
+
+        def run(self):
+            if self.extensions:
+                # have libzmq extension, build it first!
+                super().run()
+
             # build ffi extension after bundled libzmq,
             # because it may depend on linking it
+            # we can't import the verifier until libzmq is built!
             if self.inplace:
                 sys.path.insert(0, '')
             else:
@@ -1260,11 +1273,13 @@ if pypy:
                 ext = ffi.verifier.get_extension()
                 if not ext.name.startswith('zmq.'):
                     ext.name = 'zmq.backend.cffi.' + ext.name
-                self.extensions.append(ext)
-                self.build_extension(ext)
+                # re-run initialization, this time with cffi extension
+                self.distribution.ext_modules = [ext]
+                self.distribution.reinitialize_command("build_ext")
+                self.finalize_options()
+                super().run()
             finally:
                 sys.path.pop(0)
-
 
     # How many build_ext subclasses is this? 5? Gross.
     cmdclass['build_ext'] = pypy_build_ext
@@ -1346,13 +1361,14 @@ setup_args = dict(
     ],
     zip_safe=False,
     python_requires=">=3.5",
+    install_requires=[
+        "py; implementation_name === 'pypy'",
+        "cffi; implementation_name === 'pypy'",
+    ],
+    setup_requires=[
+        "cffi; implementation_name === 'pypy'",
+    ],
 )
 
-
-if pypy:
-    setup_args["install_requires"] = [
-        "py",
-        "cffi",
-    ]
 
 setup(**setup_args)
