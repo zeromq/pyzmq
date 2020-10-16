@@ -13,10 +13,11 @@ from zmq import _future
 
 import asyncio
 from asyncio import SelectorEventLoop, Future
+
 try:
     import selectors
 except ImportError:
-    from asyncio import selectors # py33
+    from asyncio import selectors  # py33
 
 
 class _AsyncIO(object):
@@ -27,8 +28,10 @@ class _AsyncIO(object):
     def _default_loop(self):
         return asyncio.get_event_loop()
 
+
 class Poller(_AsyncIO, _future._AsyncPoller):
     """Poller returning asyncio.Future for poll results."""
+
     def _watch_raw_socket(self, loop, socket, evt, f):
         """Schedule callback for a raw socket"""
         if evt & self._READ:
@@ -50,7 +53,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_reader(self._fd, lambda : self._handle_events(0, 0))
+        self.io_loop.add_reader(self._fd, lambda: self._handle_events(0, 0))
 
     def _clear_io_state(self):
         """clear any ioloop event handler
@@ -59,10 +62,13 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         """
         self.io_loop.remove_reader(self._fd)
 
+
 Poller._socket_class = Socket
+
 
 class Context(_zmq.Context):
     """Context for creating asyncio-compatible Sockets"""
+
     _socket_class = Socket
 
     # avoid sharing instance with base Context class
@@ -74,6 +80,7 @@ class ZMQEventLoop(SelectorEventLoop):
 
     pyzmq sockets should work with any asyncio event loop as of pyzmq 17.
     """
+
     def __init__(self, selector=None):
         _deprecated()
         return super(ZMQEventLoop, self).__init__(selector)
@@ -87,7 +94,14 @@ def _deprecated():
         return
     _deprecated.called = True
     import warnings
-    warnings.warn("ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.", DeprecationWarning, stacklevel=3)
+
+    warnings.warn(
+        "ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+
+
 _deprecated.called = False
 
 
@@ -97,9 +111,9 @@ def install():
 
 
 __all__ = [
-    'Context',
-    'Socket',
-    'Poller',
-    'ZMQEventLoop',
-    'install',
+    "Context",
+    "Socket",
+    "Poller",
+    "ZMQEventLoop",
+    "install",
 ]

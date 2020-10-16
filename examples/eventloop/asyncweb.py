@@ -17,7 +17,6 @@ import time
 import zmq
 from zmq.eventloop.future import Context as FutureContext
 
-import tornado
 from tornado import gen
 from tornado import ioloop
 from tornado import web
@@ -43,26 +42,24 @@ def dot():
     sys.stdout.flush()
 
 class TestHandler(web.RequestHandler):
-    
-    @gen.coroutine
-    def get(self):
+    async def get(self):
         ctx = FutureContext.instance()
         s = ctx.socket(zmq.DEALER)
 
         s.connect('tcp://127.0.0.1:5555')
         # send request to worker
-        yield s.send(b'hello')
+        await s.send(b"hello")
 
         # finish web request with worker's reply
-        reply = yield s.recv_string()
+        reply = await s.recv_string()
         print("\nfinishing with %r\n" % reply)
         self.write(reply)
 
 def main():
     worker = threading.Thread(target=slow_responder)
-    worker.daemon=True
+    worker.daemon = True
     worker.start()
-    
+
     application = web.Application([(r"/", TestHandler)])
     beat = ioloop.PeriodicCallback(dot, 100)
     beat.start()

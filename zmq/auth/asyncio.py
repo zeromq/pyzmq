@@ -10,7 +10,7 @@ import asyncio
 
 import zmq
 from zmq.asyncio import Poller
-from ..base import Authenticator
+from .base import Authenticator
 
 
 class AsyncioAuthenticator(Authenticator):
@@ -22,12 +22,11 @@ class AsyncioAuthenticator(Authenticator):
         self.__poller = None
         self.__task = None
 
-    @asyncio.coroutine
-    def __handle_zap(self):
+    async def __handle_zap(self):
         while True:
-            events = yield from self.__poller.poll()
+            events = await self.__poller.poll()
             if self.zap_socket in dict(events):
-                msg = yield from self.zap_socket.recv_multipart()
+                msg = await self.zap_socket.recv_multipart()
                 self.handle_zap_message(msg)
 
     def start(self):
@@ -47,4 +46,4 @@ class AsyncioAuthenticator(Authenticator):
         super().stop()
 
 
-__all__ = ['AsyncioAuthenticator']
+__all__ = ["AsyncioAuthenticator"]

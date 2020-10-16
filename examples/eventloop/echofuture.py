@@ -2,14 +2,14 @@
 """A basic ZMQ echo server with zmq.eventloop.future"""
 
 import zmq
-from tornado import gen, ioloop
+from tornado import ioloop
 from zmq.eventloop.future import Context
 
-@gen.coroutine
-def echo(sock):
+
+async def echo(sock):
     while True:
-        msg = yield sock.recv_multipart()
-        yield sock.send_multipart(msg)
+        msg = await sock.recv_multipart()
+        await sock.send_multipart(msg)
 
 ctx = Context.instance()
 s = ctx.socket(zmq.ROUTER)
