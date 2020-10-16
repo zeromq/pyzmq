@@ -4,13 +4,15 @@ from cpython cimport PyErr_CheckSignals
 from .libzmq cimport zmq_errno, ZMQ_ETERM
 
 
-cdef inline int _check_rc(int rc) except -1:
+cdef inline int _check_rc(int rc, bint error_without_errno=True) except -1:
     """internal utility for checking zmq return condition
 
     and raising the appropriate Exception class
     """
     cdef int errno = zmq_errno()
     PyErr_CheckSignals()
+    if errno == 0 and not error_without_errno:
+        return 0
     if rc == -1: # if rc < -1, it's a bug in libzmq. Should we warn?
         if errno == EINTR:
             from zmq.error import InterruptedSystemCall

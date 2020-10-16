@@ -44,7 +44,7 @@ class Context(object):
 
     def set(self, option, value):
         """set a context option
-        
+
         see zmq_ctx_set
         """
         rc = C.zmq_ctx_set(self._zmq_ctx, option, value)
@@ -52,11 +52,11 @@ class Context(object):
 
     def get(self, option):
         """get context option
-        
+
         see zmq_ctx_get
         """
         rc = C.zmq_ctx_get(self._zmq_ctx, option)
-        _check_rc(rc)
+        _check_rc(rc, error_without_errno=False)
         return rc
 
     def term(self):
