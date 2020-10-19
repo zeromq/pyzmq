@@ -27,7 +27,12 @@ def _load_libzmq():
     try:
         from . import libzmq
     except ImportError:
-        pass
+        # raise on failure to load if libzmq is present
+        from importlib.util import find_spec
+        if find_spec(".libzmq", "zmq"):
+            # found libzmq, but failed to load it!
+            # raise instead of silently moving on
+            raise
     else:
         # store libzmq as zmq._libzmq for backward-compat
         globals()['_libzmq'] = libzmq
