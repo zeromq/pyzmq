@@ -30,20 +30,15 @@ import errno
 import platform
 from traceback import print_exc
 
-# whether any kind of bdist is happening
-# do this before importing anything from distutils
-doing_bdist = any(arg.startswith('bdist') for arg in sys.argv[1:])
+from setuptools import setup, Command
+from setuptools.command.bdist_egg import bdist_egg
+from setuptools.command.build_ext import build_ext
+from setuptools.command.sdist import sdist
+from setuptools.extension import Extension
 
-if any(bdist in sys.argv for bdist in ['sdist', 'bdist_wheel', 'bdist_egg']):
-    import setuptools
-
-import distutils
-from distutils.core import setup, Command
+import distutils.util
 from distutils.ccompiler import get_default_compiler
 from distutils.ccompiler import new_compiler
-from distutils.extension import Extension
-from distutils.command.build_ext import build_ext
-from distutils.command.sdist import sdist
 from distutils.sysconfig import customize_compiler, get_config_var
 from distutils.version import LooseVersion as V
 
@@ -63,14 +58,16 @@ from buildutils import (
     patch_lib_paths,
     )
 
-# name of the libzmq library - can be changed by --libzmq <name>
-libzmq_name = 'libzmq'
-
 #-----------------------------------------------------------------------------
 # Flags
 #-----------------------------------------------------------------------------
 
-pypy = 'PyPy' in sys.version
+
+# name of the libzmq library - can be changed by --libzmq <name>
+libzmq_name = "libzmq"
+
+doing_bdist = any(arg.startswith("bdist") for arg in sys.argv[1:])
+pypy = "PyPy" in sys.version
 
 # reference points for zmq compatibility
 
@@ -155,11 +152,10 @@ def bundled_settings(debug):
         temp = 'temp.%s-%i.%i' % (plat, sys.version_info[0], sys.version_info[1])
         if hasattr(sys, 'gettotalrefcount'):
             temp += '-pydebug'
-        suffix = ''
-        if sys.version_info >= (3,5):
-            # Python 3.5 adds EXT_SUFFIX to libs
-            ext_suffix = distutils.sysconfig.get_config_var('EXT_SUFFIX')
-            suffix = os.path.splitext(ext_suffix)[0]
+
+        # Python 3.5 adds EXT_SUFFIX to libs
+        ext_suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
+        suffix = os.path.splitext(ext_suffix)[0]
 
         if debug:
             release = 'Debug'
@@ -292,6 +288,19 @@ class LibZMQVersionError(Exception):
 # Extra commands
 #-----------------------------------------------------------------------------
 
+class bdist_egg_disabled(bdist_egg):
+    """Disabled version of bdist_egg
+
+    Prevents setup.py install from performing setuptools' default easy_install,
+    which it should never ever do.
+    """
+
+    def run(self):
+        sys.exit(
+            "Aborting implicit building of eggs. Use `pip install .` to install from source."
+        )
+
+
 class Configure(build_ext):
     """Configure command adapted from h5py"""
 
@@ -303,13 +312,12 @@ class Configure(build_ext):
 
     ]
     def initialize_options(self):
-        build_ext.initialize_options(self)
+        super().initialize_options()
         self.zmq = None
         self.build_base = 'build'
 
-    # DON'T REMOVE: distutils demands these be here even if they do nothing.
     def finalize_options(self):
-        build_ext.finalize_options(self)
+        super().finalize_options()
         self.tempdir = pjoin(self.build_temp, 'scratch')
         self.has_run = False
         self.config = discover_settings(self.build_base)
@@ -336,10 +344,10 @@ class Configure(build_ext):
             # default bundle_msvcp=True on:
             # Windows Python 3.5 bdist *without* DISTUTILS_USE_SDK
             if os.environ.get("PYZMQ_BUNDLE_CRT") or (
-                sys.version_info >= (3,5)
-                and self.compiler_type == 'msvc'
-                and not os.environ.get('DISTUTILS_USE_SDK')
-                and doing_bdist
+                doing_bdist
+                and self.compiler_type == "msvc"
+                and sys.version_info < (3, 9)
+                and not os.environ.get("DISTUTILS_USE_SDK")
             ):
                 cfg['bundle_msvcp'] = True
 
@@ -384,8 +392,6 @@ class Configure(build_ext):
         settings['include_dirs'] += [pjoin('zmq', sub) for sub in (
             'utils',
         )]
-        if sys.platform.startswith('win') and sys.version_info < (3, 3):
-            settings['include_dirs'].insert(0, pjoin('buildutils', 'include_win32'))
 
         settings.setdefault('libraries', [])
         # Explicitly link dependencies, not necessary if zmq is dynamic
@@ -559,6 +565,8 @@ class Configure(build_ext):
         )
 
         # register the extension:
+        # doing this here means we must be run
+        # before finalize_options in build_ext
         self.distribution.ext_modules.insert(0, libzmq)
 
         # use tweetnacl to provide CURVE support
@@ -566,7 +574,7 @@ class Configure(build_ext):
         libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
 
         # select polling subsystem based on platform
-        if sys.platform  == 'darwin' or 'bsd' in sys.platform:
+        if sys.platform == "darwin" or "bsd" in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
             libzmq.define_macros.append(('ZMQ_IOTHREADS_USE_KQUEUE', 1))
             libzmq.define_macros.append(('ZMQ_POLL_BASED_ON_POLL', 1))
@@ -612,7 +620,7 @@ class Configure(build_ext):
                     # fatal error if env set, warn otherwise
                     msg = fatal if os.environ.get("PYZMQ_BUNDLE_CRT") else warn
                     msg("Failed to get cc._vcruntime via private API, not bundling CRT")
-                if cc._vcruntime_redist:
+                if getattr(cc, "_vcruntime_redist", False):
                     redist_dir, dll = os.path.split(cc._vcruntime_redist)
                     to_bundle = [
                         pjoin(redist_dir, dll.replace('vcruntime', name))
@@ -975,6 +983,7 @@ class CheckSDist(sdist):
             for f in files:
                 if f.endswith('.pyx'):
                     self._pyxfiles.append(pjoin(root, f))
+
     def run(self):
         self.run_command('fetch_libzmq')
         if 'cython' in cmdclass:
@@ -1054,15 +1063,15 @@ class CheckingBuildExt(build_ext):
 
     def build_extension(self, ext):
         with fix_cxx(self.compiler, ext):
-            build_ext.build_extension(self, ext)
+            super().build_extension(ext)
 
         ext_path = self.get_ext_fullpath(ext.name)
         patch_lib_paths(ext_path, self.compiler.library_dirs)
 
-    def run(self):
+    def finalize_options(self):
         # check version, to prevent confusing undefined constant errors
-        self.distribution.run_command('configure')
-        build_ext.run(self)
+        self.distribution.run_command("configure")
+        return super().finalize_options()
 
 
 class ConstantsCommand(Command):
@@ -1081,15 +1090,21 @@ class ConstantsCommand(Command):
         from buildutils.constants import render_constants
         render_constants()
 
+
+cmdclass = {
+    "bdist_egg": bdist_egg if "bdist_egg" in sys.argv else bdist_egg_disabled,
+    "clean": CleanCommand,
+    "configure": Configure,
+    "constants": ConstantsCommand,
+    "fetch_libzmq": FetchCommand,
+    "revision": GitRevisionCommand,
+    "sdist": CheckSDist,
+    "test": TestCommand,
+}
+
 #-----------------------------------------------------------------------------
 # Extensions
 #-----------------------------------------------------------------------------
-
-cmdclass = {'test':TestCommand, 'clean':CleanCommand, 'revision':GitRevisionCommand,
-            'configure': Configure, 'fetch_libzmq': FetchCommand,
-            'sdist': CheckSDist, 'constants': ConstantsCommand,
-        }
-
 
 def makename(path, ext):
     return os.path.abspath(pjoin('zmq', *path)) + ext
@@ -1127,27 +1142,18 @@ submodules = {
     },
 }
 
-if sys.version_info >= (3, 7):
-    # require cython 0.29 on Python >= 3.7
-    min_cython_version = '0.29'
-    cython_language_level = '3str'
-else:
-    # be more lenient on old versions of Python
-    min_cython_version = '0.20'
-    cython_language_level = None
+# require cython 0.29
+min_cython_version = "0.29"
+cython_language_level = "3str"
 
 try:
     import Cython
     if V(Cython.__version__) < V(min_cython_version):
         raise ImportError("Cython >= %s required for cython build, found %s" % (
             min_cython_version, Cython.__version__))
-    from Cython.Distutils import build_ext as build_ext_c
-    from Cython.Distutils import Extension
+    from Cython.Build import cythonize
+    from Cython.Distutils.build_ext import new_build_ext as build_ext_cython
     cython = True
-    # 3str was added in Cython 0.29
-    # use it if available
-    if V(Cython.__version__) >= V('0.29'):
-        cython_language_level = '3str'
 except Exception:
     cython = False
     suffix = '.c'
@@ -1181,7 +1187,7 @@ else:
 
     suffix = '.pyx'
 
-    class CythonCommand(build_ext_c):
+    class CythonCommand(build_ext_cython):
         """Custom distutils command subclassed from Cython.Distutils.build_ext
         to compile pyx->c, and stop there. All this does is override the
         C-compile method build_extension() with a no-op."""
@@ -1191,64 +1197,70 @@ else:
         def build_extension(self, ext):
             pass
 
-    class zbuild_ext(build_ext_c):
+    class zbuild_ext(build_ext_cython):
 
         def build_extensions(self):
             if self.compiler.compiler_type == 'mingw32':
                 customize_mingw(self.compiler)
-            return build_ext_c.build_extensions(self)
+            return super().build_extensions()
 
         def build_extension(self, ext):
             with fix_cxx(self.compiler, ext):
-                build_ext.build_extension(self, ext)
+                super().build_extension(ext)
             ext_path = self.get_ext_fullpath(ext.name)
             patch_lib_paths(ext_path, self.compiler.library_dirs)
 
-        def run(self):
-            self.distribution.run_command('configure')
+        def finalize_options(self):
+            self.distribution.run_command("configure")
+            return super().finalize_options()
 
-            return build_ext_c.run(self)
-
-    cmdclass['cython'] = CythonCommand
-    cmdclass['build_ext'] =  zbuild_ext
+    cmdclass["cython"] = CythonCommand
+    cmdclass["build_ext"] = zbuild_ext
 
 extensions = []
 ext_include_dirs = [pjoin('zmq', sub) for sub in ('utils',)]
 ext_kwargs = {
     'include_dirs': ext_include_dirs,
 }
-if cython:
-    # set binding so that compiled methods can be inspected
-    ext_kwargs['cython_directives'] = {'binding': True}
-    if cython_language_level:
-        ext_kwargs['cython_directives']['language_level'] = cython_language_level
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
-        sources = [pjoin('zmq', submod.replace('.', os.path.sep), pkg+suffix)]
-        ext = Extension(
-            'zmq.%s.%s'%(submod, pkg),
-            sources = sources,
-            **ext_kwargs
-        )
+        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
+        ext = Extension("zmq.%s.%s" % (submod, pkg), sources=sources, **ext_kwargs)
         extensions.append(ext)
+
+if cython:
+    # set binding so that compiled methods can be inspected
+    # set language-level to 3str, requires Cython 0.29
+    cython_directives = {"binding": True, "language_level": "3str"}
+    extensions = cythonize(extensions, compiler_directives=cython_directives)
 
 if pypy:
     # add dummy extension, to ensure build_ext runs
-    dummy_ext = Extension('dummy', sources=[])
+    dummy_ext = Extension("dummy", sources=[])
     extensions = [dummy_ext]
 
     bld_ext = cmdclass['build_ext']
+
     class pypy_build_ext(bld_ext):
         """hack to build pypy extension only after building bundled libzmq
 
         otherwise it will fail when libzmq is bundled.
         """
-        def build_extensions(self):
-            self.extensions.remove(dummy_ext)
-            bld_ext.build_extensions(self)
+
+        def finalize_options(self):
+            super().finalize_options()
+            if dummy_ext in self.extensions:
+                self.extensions.remove(dummy_ext)
+
+        def run(self):
+            if self.extensions:
+                # have libzmq extension, build it first!
+                super().run()
+
             # build ffi extension after bundled libzmq,
             # because it may depend on linking it
+            # we can't import the verifier until libzmq is built!
             if self.inplace:
                 sys.path.insert(0, '')
             else:
@@ -1261,11 +1273,13 @@ if pypy:
                 ext = ffi.verifier.get_extension()
                 if not ext.name.startswith('zmq.'):
                     ext.name = 'zmq.backend.cffi.' + ext.name
-                self.extensions.append(ext)
-                self.build_extension(ext)
+                # re-run initialization, this time with cffi extension
+                self.distribution.ext_modules = [ext]
+                self.distribution.reinitialize_command("build_ext")
+                self.finalize_options()
+                super().run()
             finally:
                 sys.path.pop(0)
-
 
     # How many build_ext subclasses is this? 5? Gross.
     cmdclass['build_ext'] = pypy_build_ext
@@ -1302,12 +1316,6 @@ def find_packages():
         if '__init__.py' not in files:
             # not a package
             continue
-        if sys.version_info < (3,3) and 'asyncio' in package and 'sdist' not in sys.argv:
-            # Don't install asyncio packages on old Python
-            # avoids issues with tools like compileall, pytest, etc.
-            # that get confused by presence of Python 3-only sources,
-            # even when they are never imported.
-            continue
         packages.append(package)
     return packages
 
@@ -1319,48 +1327,48 @@ with io.open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(
-    name = "pyzmq",
-    version = extract_version(),
-    packages = find_packages(),
-    ext_modules = extensions,
-    package_data = package_data,
-    author = "Brian E. Granger, Min Ragan-Kelley",
-    author_email = "zeromq-dev@lists.zeromq.org",
-    url = 'https://pyzmq.readthedocs.org',
-    description = "Python bindings for 0MQ",
-    long_description = long_desc,
+    name="pyzmq",
+    version=extract_version(),
+    packages=find_packages(),
+    ext_modules=extensions,
+    package_data=package_data,
+    author="Brian E. Granger, Min Ragan-Kelley",
+    author_email="zeromq-dev@lists.zeromq.org",
+    url="https://pyzmq.readthedocs.org",
+    description="Python bindings for 0MQ",
+    long_description=long_desc,
     long_description_content_type="text/markdown",
-    license = "LGPL+BSD",
-    cmdclass = cmdclass,
-    classifiers = [
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: POSIX',
-        'Topic :: System :: Networking',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+    license="LGPL+BSD",
+    cmdclass=cmdclass,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX",
+        "Topic :: System :: Networking",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+    ],
+    zip_safe=False,
+    python_requires=">=3.5",
+    install_requires=[
+        "py; implementation_name === 'pypy'",
+        "cffi; implementation_name === 'pypy'",
+    ],
+    setup_requires=[
+        "cffi; implementation_name === 'pypy'",
     ],
 )
-if 'setuptools' in sys.modules:
-    setup_args['zip_safe'] = False
-    # require Python 2.7, >= 3.3,
-    setup_args['python_requires'] = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
 
-    if pypy:
-        setup_args['install_requires'] = [
-            'py',
-            'cffi',
-        ]
 
 setup(**setup_args)

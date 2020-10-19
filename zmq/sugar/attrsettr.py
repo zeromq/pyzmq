@@ -52,7 +52,7 @@ class AttributeSetter(object):
                 # EINVAL will be raised on access for write-only attributes.
                 # Turn that into an AttributeError
                 # necessary for mocking
-                if e.errno == errno.EINVAL:
+                if e.errno in {errno.EINVAL, errno.EFAULT}:
                     raise AttributeError("{} attribute is write-only".format(key))
                 else:
                     raise

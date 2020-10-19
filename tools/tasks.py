@@ -68,19 +68,18 @@ if 'CXX' not in os.environ:
 
 _framework_py = lambda xy: "/Library/Frameworks/Python.framework/Versions/{0}/bin/python{0}".format(xy)
 py_exes = {
-    '3.8' : _framework_py('3.8'),
-    '3.7' : _framework_py('3.7'),
-    '2.7' : _framework_py('2.7'),
-    '3.5' : _framework_py('3.5'),
-    '3.6' : _framework_py('3.6'),
-    'pypy': "/usr/local/bin/pypy",
-    'pypy3': "/usr/local/bin/pypy3",
+    "3.9": _framework_py("3.9"),
+    "3.8": _framework_py("3.8"),
+    "3.7": _framework_py("3.7"),
+    "3.5": _framework_py("3.5"),
+    "3.6": _framework_py("3.6"),
+    "pypy": "/usr/local/bin/pypy",
+    "pypy3": "/usr/local/bin/pypy3",
 }
-egg_pys = {} # no more eggs!
 
-default_py = '3.7'
+default_py = "3.8"
 # all the Python versions to be built on linux
-manylinux_pys = '3.8 3.7 2.7 3.5 3.6'
+manylinux_pys = "3.9 3.8 3.7 3.5 3.6"
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')
@@ -224,13 +223,11 @@ def untar(tarball):
     return glob.glob(pjoin(sdist_root, '*'))[0]
 
 @task
-def bdist(ctx, py, wheel=True, egg=False):
+def bdist(ctx, py, wheel=True):
     py = make_env(py, 'wheel')
     cmd = [py, 'setup.py']
     if wheel:
         cmd.append('bdist_wheel')
-    if egg:
-        cmd.append('bdist_egg')
     cmd.append('--zmq=bundled')
 
     run(cmd)
@@ -292,7 +289,7 @@ def release(ctx, vs, upload=False):
 
     with cd(path):
         for v in py_exes:
-            bdist(ctx, v, wheel=True, egg=(v in egg_pys))
+            bdist(ctx, v, wheel=True)
         if upload:
             py = make_env(default_py, 'twine')
             run(['twine', 'upload', 'dist/*'])

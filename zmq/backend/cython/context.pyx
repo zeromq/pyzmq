@@ -154,8 +154,7 @@ cdef class Context:
             raise RuntimeError("Context has been destroyed")
 
         rc = zmq_ctx_get(self.handle, option)
-        _check_rc(rc)
-
+        _check_rc(rc, error_without_errno=False)
         return rc
 
 

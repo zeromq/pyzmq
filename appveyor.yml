@@ -16,11 +16,8 @@ environment:
       secure: NVlc8AZi0Y/k+ZiyFs9rfCoFRbeOqG+PVGSRTM9KpwN3Zantsl9h+/mbT7M7FOkLyIZvo41njOfGKekw762uJDy2Cp/jBhBz/qNgQNHC/+ith/r+NjaRvgO4P783ItckYhG/e0lvWBs8rmdMroC2hNUmL9nGXxbtzn7vG1ZCSkOsyNHRejzTu4Xd/uksFDViLhnJmxQyaozqa5KKcuBoFv4IxkNuoqdE7TgdFEJUmZcciDF13LfWsgm/lARDIsHoze7V5CR139XV1RtGFg5W+A==
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: 32
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x"
+    - PYTHON: "C:\\Python39-x64"
+      PYTHON_VERSION: "3.9.0"
       PYTHON_ARCH: 64
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8.x"
@@ -64,6 +61,32 @@ install:
   - ECHO "Installed SDKs:"
   - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
 
+  - ps: |
+      # from https://github.com/appveyor/build-images/blob/27bde614bc60d7ef7a8bc46182f4d7582fa11b56/scripts/Windows/install_python.ps1#L88-L108
+      function InstallPythonEXE($version, $platform, $targetPath) {
+        $urlPlatform = ""
+        if ($platform -eq 'x64') {
+            $urlPlatform = "-amd64"
+        }
+
+        Write-Host "Installing Python $version $platform to $($targetPath)..." -ForegroundColor Cyan
+
+        $downloadUrl = "https://www.python.org/ftp/python/$version/python-$version$urlPlatform.exe"
+        Write-Host "Downloading $($downloadUrl)..."
+        $exePath = "$env:TEMP\python-$version.exe"
+        (New-Object Net.WebClient).DownloadFile($downloadUrl, $exePath)
+
+        Write-Host "Installing..."
+        cmd /c start /wait $exePath /quiet TargetDir="$targetPath" Shortcuts=0 Include_launcher=1 InstallLauncherAllUsers=1 Include_debug=1
+        Remove-Item $exePath
+
+        Write-Host "Installed Python $version" -ForegroundColor Green
+      }
+
+      if ( -not ( Test-Path -Path $env:PYTHON -PathType Container ) ) {
+        InstallPythonEXE $env:PYTHON_VERSION "x64" $env:PYTHON
+      }
+
   # Prepend newly installed Python to the PATH of this build (this cannot be
   # done from inside the powershell script as it would require to restart
   # the parent CMD process).
@@ -84,6 +107,10 @@ build_script:
   - "%CMD_IN_ENV% python setup.py bdist_wheel --zmq=bundled"
   - ps: "ls dist"
   - forfiles /p dist /m *.whl /c "cmd /c pip install @path"
+
+# uncomment to block RDP for debugging
+# on_finish:
+#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 test_script:
   # Run the project tests

@@ -6,20 +6,19 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import time
 import logging
 from threading import Thread, Event
 
 import zmq
 from zmq.utils import jsonapi
-from zmq.utils.strtypes import bytes, unicode, b, u
+from zmq.utils.strtypes import b, u
 import sys
 
 from .base import Authenticator
 
 class AuthenticationThread(Thread):
     """A Thread for running a zmq Authenticator
-    
+
     This is run in the background by ThreadedAuthenticator
     """
 

@@ -14,33 +14,31 @@ url = 'tcp://127.0.0.1:5555'
 
 ctx = Context.instance()
 
-@gen.coroutine
-def ping():
+
+async def ping():
     """print dots to indicate idleness"""
     while True:
-        yield gen.sleep(0.25)
+        await gen.sleep(0.25)
         print('.')
 
 
-@gen.coroutine
-def receiver():
+async def receiver():
     """receive messages with poll and timeout"""
     pull = ctx.socket(zmq.PULL)
     pull.connect(url)
     poller = Poller()
     poller.register(pull, zmq.POLLIN)
     while True:
-        events = yield poller.poll(timeout=500)
+        events = await poller.poll(timeout=500)
         if pull in dict(events):
             print("recving", events)
-            msg = yield pull.recv_multipart()
+            msg = await pull.recv_multipart()
             print('recvd', msg)
         else:
             print("nothing to recv")
 
 
-@gen.coroutine
-def sender():
+async def sender():
     """send a message every second"""
     tic = time.time()
     push = ctx.socket(zmq.PUSH)
@@ -49,8 +47,8 @@ def sender():
     poller.register(push, zmq.POLLOUT)
     while True:
         print("sending")
-        yield push.send_multipart([str(time.time() - tic).encode('ascii')])
-        yield gen.sleep(1)
+        await push.send_multipart([str(time.time() - tic).encode("ascii")])
+        await gen.sleep(1)
 
 loop = IOLoop.instance()
 

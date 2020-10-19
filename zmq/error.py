@@ -124,7 +124,7 @@ class InterruptedSystemCall(ZMQError, InterruptedError):
         return s + ": This call should have been retried. Please report this to pyzmq."
 
 
-def _check_rc(rc, errno=None):
+def _check_rc(rc, errno=None, error_without_errno=True):
     """internal utility for checking zmq return condition
     
     and raising the appropriate Exception class
@@ -133,6 +133,8 @@ def _check_rc(rc, errno=None):
         if errno is None:
             from zmq.backend import zmq_errno
             errno = zmq_errno()
+        if errno == 0 and not error_without_errno:
+            return
         from zmq import EAGAIN, ETERM
         if errno == EINTR:
             raise InterruptedSystemCall(errno)
