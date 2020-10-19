@@ -2,7 +2,7 @@ Format: 3.0 (native)
 Source: pyzmq
 Binary: python-zmq, python-zmq-dbg, python3-zmq, python3-zmq-dbg, pypy-zmq
 Architecture: any
-Version: 17.1.2
+Version: 19.0.2-0.1
 Maintainer: pyzmq developers <zeromq-dev@lists.zeromq.org>
 Homepage: http://www.zeromq.org/bindings:python
 Standards-Version: 3.9.8
