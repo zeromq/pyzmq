@@ -75,6 +75,7 @@ class TestSocket(BaseZMQTestCase):
                     a.send(msg, flags=zmq.DONTWAIT)
                 with pytest.raises(zmq.Again):
                     b.recv(flags=zmq.DONTWAIT)
+                a.unbind(url)
             # Test bind() context manager
             with ctx.socket(zmq.PUSH) as a, ctx.socket(zmq.PULL) as b:
                 # unbind() just stops accepting of new connections, so we have to disconnect to test that
