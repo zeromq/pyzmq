@@ -121,6 +121,68 @@ class Socket(SocketBase, AttributeSetter):
         super(Socket, self).close(linger=linger)
 
     #-------------------------------------------------------------------------
+    # Connect/Bind context managers
+    #-------------------------------------------------------------------------
+
+    class _ConnectBindManager:
+        """ContextManager for connect() and bind() that automatically unbinds or disconnects on exit"""
+        def __init__(self, sock, addr, bind):
+            self.sock = sock
+            self.addr = addr
+            self.bind = bind
+            if self.bind:
+                SocketBase.bind(self.sock, addr)
+            else:
+                SocketBase.connect(self.sock, addr)
+
+        def __enter__(self):
+            return self.sock
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            if self.bind:
+                SocketBase.unbind(self.sock, self.addr)
+            else:
+                SocketBase.disconnect(self.sock, self.addr)
+
+    def bind(self, addr):
+        """s.bind(addr)
+
+        Bind the socket to an address.
+
+        This causes the socket to listen on a network port. Sockets on the
+        other side of this connection will use ``Socket.connect(addr)`` to
+        connect to this socket.
+
+        Returns a context manager that may be used to automatically unbind in a `with` block.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported include
+            tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+        """
+        return Socket._ConnectBindManager(self, addr, True)
+
+    def connect(self, addr):
+        """s.connect(addr)
+
+        Connect to a remote 0MQ socket.
+
+        Returns a context manager that may be used to automatically disconnect in a `with` block.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
+            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+        """
+        return Socket._ConnectBindManager(self, addr, False)
+
+    #-------------------------------------------------------------------------
     # Deprecated aliases
     #-------------------------------------------------------------------------
 
