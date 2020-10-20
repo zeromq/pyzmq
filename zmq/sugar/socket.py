@@ -131,9 +131,9 @@ class Socket(SocketBase, AttributeSetter):
             self.addr = addr
             self.bind = bind
             if self.bind:
-                SocketBase.bind(self.sock, addr)
+                SocketBase.bind(self.sock, self.addr)
             else:
-                SocketBase.connect(self.sock, addr)
+                SocketBase.connect(self.sock, self.addr)
 
         def __enter__(self):
             return self.sock
