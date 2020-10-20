@@ -21,19 +21,22 @@
 
 #define _missing (-1)
 
-
-// define fd type (from libzmq's fd.hpp)
-#ifdef _WIN32
-  #if defined(_MSC_VER) && _MSC_VER <= 1400
-    #define ZMQ_FD_T UINT_PTR
-  #else
-    #define ZMQ_FD_T SOCKET
-  #endif
+#if (ZMQ_VERSION >= 40303)
+    // libzmq >= 4.3.3 defines zmq_fd_t for us
+    #define ZMQ_FD_T zmq_fd_t
 #else
-    #define ZMQ_FD_T int
+    #ifdef _WIN32
+        #if defined(_MSC_VER) && _MSC_VER <= 1400
+            #define ZMQ_FD_T UINT_PTR
+        #else
+            #define ZMQ_FD_T SOCKET
+        #endif
+    #else
+        #define ZMQ_FD_T int
+    #endif
 #endif
 
-#if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 2
+#if (ZMQ_VERSION >= 40200)
     // Nothing to remove
 #else
     #define zmq_curve_public(z85_public_key, z85_secret_key) _missing
@@ -43,7 +46,7 @@
 
 #if ZMQ_VERSION_MAJOR >= 4
 // nothing to remove
-    #if ZMQ_VERSION_MINOR == 0
+    #if ZMQ_VERSION_MAJOR == 4 && ZMQ_VERSION_MINOR == 0
         // zmq 4.1 deprecates zmq_utils.h
         // we only get zmq_curve_keypair from it
         #include "zmq_utils.h"
@@ -54,7 +57,7 @@
 
 // libzmq 4.2 draft API
 #ifdef ZMQ_BUILD_DRAFT_API
-    #if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 2
+    #if ZMQ_VERSION >= 40200
         #define PYZMQ_DRAFT_42
     #endif
 #endif
@@ -67,7 +70,7 @@
     #define zmq_msg_group(msg) NULL
 #endif
 
-#if ZMQ_VERSION_MAJOR >= 4 && ZMQ_VERSION_MINOR >= 1
+#if ZMQ_VERSION >= 40100
 // nothing to remove
 #else
     #define zmq_msg_gets(msg, prop) _missing
@@ -94,13 +97,13 @@
 
     #define zmq_disconnect(s, addr) _missing
     #define zmq_unbind(s, addr) _missing
-    
+
     #define zmq_msg_more(msg) _missing
     #define zmq_msg_get(msg, opt) _missing
     #define zmq_msg_set(msg, opt, val) _missing
     #define zmq_msg_send(msg, s, flags) zmq_send(s, msg, flags)
     #define zmq_msg_recv(msg, s, flags) zmq_recv(s, msg, flags)
-    
+
     #define zmq_sendbuf(s, buf, len, flags) _missing
     #define zmq_recvbuf(s, buf, len, flags) _missing
 
