@@ -9,6 +9,7 @@ import errno
 import random
 import sys
 import warnings
+from contextlib import contextmanager
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -124,25 +125,21 @@ class Socket(SocketBase, AttributeSetter):
     # Connect/Bind context managers
     #-------------------------------------------------------------------------
 
-    class _ConnectBindManager:
-        """ContextManager for connect() and bind() that automatically unbinds or disconnects on exit"""
-        def __init__(self, sock, addr, bind):
-            self.sock = sock
-            self.addr = addr
-            self.bind = bind
-            if self.bind:
-                SocketBase.bind(self.sock, self.addr)
-            else:
-                SocketBase.connect(self.sock, self.addr)
+    @contextmanager
+    def _connect_cm(self, addr):
+        """Context manager to disconnect on exit"""
+        try:
+            yield
+        finally:
+            self.disconnect(addr)
 
-        def __enter__(self):
-            return self.sock
-
-        def __exit__(self, exc_type, exc_value, traceback):
-            if self.bind:
-                SocketBase.unbind(self.sock, self.addr)
-            else:
-                SocketBase.disconnect(self.sock, self.addr)
+    @contextmanager
+    def _bind_cm(self, addr):
+        """Context manager to unbind on exit"""
+        try:
+            yield
+        finally:
+            self.unbind(addr)
 
     def bind(self, addr):
         """s.bind(addr)
@@ -163,7 +160,8 @@ class Socket(SocketBase, AttributeSetter):
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        return Socket._ConnectBindManager(self, addr, True)
+        SocketBase.bind(self, addr)
+        return self._bind_cm(addr)
 
     def connect(self, addr):
         """s.connect(addr)
@@ -180,7 +178,8 @@ class Socket(SocketBase, AttributeSetter):
             tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        return Socket._ConnectBindManager(self, addr, False)
+        SocketBase.connect(self, addr)
+        return self._connect_cm(addr)
 
     #-------------------------------------------------------------------------
     # Deprecated aliases
