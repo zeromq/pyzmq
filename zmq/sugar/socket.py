@@ -127,7 +127,10 @@ class Socket(SocketBase, AttributeSetter):
 
     @contextmanager
     def _connect_cm(self, addr):
-        """Context manager to disconnect on exit"""
+        """Context manager to disconnect on exit
+        
+        .. versionadded:: 20.0
+        """
         try:
             yield
         finally:
@@ -135,7 +138,10 @@ class Socket(SocketBase, AttributeSetter):
 
     @contextmanager
     def _bind_cm(self, addr):
-        """Context manager to unbind on exit"""
+        """Context manager to unbind on exit
+        
+        .. versionadded:: 20.0
+        """
         try:
             yield
         finally:
@@ -159,8 +165,10 @@ class Socket(SocketBase, AttributeSetter):
             for example 'tcp://127.0.0.1:5555'. Protocols supported include
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
+            
+        .. versionadded:: 20.0
         """
-        SocketBase.bind(self, addr)
+        super().bind(addr)
         return self._bind_cm(addr)
 
     def connect(self, addr):
@@ -177,8 +185,10 @@ class Socket(SocketBase, AttributeSetter):
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
+            
+        .. versionadded:: 20.0
         """
-        SocketBase.connect(self, addr)
+        super().connect(addr)
         return self._connect_cm(addr)
 
     #-------------------------------------------------------------------------
