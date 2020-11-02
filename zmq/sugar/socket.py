@@ -9,6 +9,7 @@ import errno
 import random
 import sys
 import warnings
+from contextlib import contextmanager
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -119,6 +120,76 @@ class Socket(SocketBase, AttributeSetter):
         if self.context:
             self.context._rm_socket(self)
         super(Socket, self).close(linger=linger)
+
+    #-------------------------------------------------------------------------
+    # Connect/Bind context managers
+    #-------------------------------------------------------------------------
+
+    @contextmanager
+    def _connect_cm(self, addr):
+        """Context manager to disconnect on exit
+        
+        .. versionadded:: 20.0
+        """
+        try:
+            yield
+        finally:
+            self.disconnect(addr)
+
+    @contextmanager
+    def _bind_cm(self, addr):
+        """Context manager to unbind on exit
+        
+        .. versionadded:: 20.0
+        """
+        try:
+            yield
+        finally:
+            self.unbind(addr)
+
+    def bind(self, addr):
+        """s.bind(addr)
+
+        Bind the socket to an address.
+
+        This causes the socket to listen on a network port. Sockets on the
+        other side of this connection will use ``Socket.connect(addr)`` to
+        connect to this socket.
+
+        Returns a context manager that may be used to automatically unbind in a `with` block.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported include
+            tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+            
+        .. versionadded:: 20.0
+        """
+        super().bind(addr)
+        return self._bind_cm(addr)
+
+    def connect(self, addr):
+        """s.connect(addr)
+
+        Connect to a remote 0MQ socket.
+
+        Returns a context manager that may be used to automatically disconnect in a `with` block.
+
+        Parameters
+        ----------
+        addr : str
+            The address string. This has the form 'protocol://interface:port',
+            for example 'tcp://127.0.0.1:5555'. Protocols supported are
+            tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
+            encoded to utf-8 first.
+            
+        .. versionadded:: 20.0
+        """
+        super().connect(addr)
+        return self._connect_cm(addr)
 
     #-------------------------------------------------------------------------
     # Deprecated aliases

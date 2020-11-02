@@ -59,6 +59,40 @@ class TestSocket(BaseZMQTestCase):
             self.assertEqual(a.closed, True)
         self.assertEqual(ctx.closed, True)
 
+    def test_connectbind_context_managers(self):
+        url = 'inproc://a'
+        msg = b'hi'
+        with self.Context() as ctx:
+            # Test connect() context manager
+            with ctx.socket(zmq.PUSH) as a, ctx.socket(zmq.PULL) as b:
+                a.bind(url)
+                with b.connect(url):
+                    a.send(msg)
+                    rcvd = self.recv(b)
+                    self.assertEqual(rcvd, msg)
+                # b should now be disconnected, so sending and receiving don't work
+                with pytest.raises(zmq.Again):
+                    a.send(msg, flags=zmq.DONTWAIT)
+                with pytest.raises(zmq.Again):
+                    b.recv(flags=zmq.DONTWAIT)
+                a.unbind(url)
+            # Test bind() context manager
+            with ctx.socket(zmq.PUSH) as a, ctx.socket(zmq.PULL) as b:
+                # unbind() just stops accepting of new connections, so we have to disconnect to test that
+                # unbind happened.
+                with a.bind(url):
+                    b.connect(url)
+                    a.send(msg)
+                    rcvd = self.recv(b)
+                    self.assertEqual(rcvd, msg)
+                    b.disconnect(url)
+                b.connect(url)
+                # Since a is unbound from url, b is not connected to anything
+                with pytest.raises(zmq.Again):
+                    a.send(msg, flags=zmq.DONTWAIT)
+                with pytest.raises(zmq.Again):
+                    b.recv(flags=zmq.DONTWAIT)
+
     def test_dir(self):
         ctx = self.Context()
         s = ctx.socket(zmq.PUB)
