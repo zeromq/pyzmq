@@ -156,7 +156,10 @@ class Socket(SocketBase, AttributeSetter):
         other side of this connection will use ``Socket.connect(addr)`` to
         connect to this socket.
 
-        Returns a context manager that may be used to automatically unbind in a `with` block.
+        Returns a context manager which will call unbind on exit.
+
+        .. versionadded:: 20.0
+            Can be used as a context manager.
 
         Parameters
         ----------
@@ -166,7 +169,6 @@ class Socket(SocketBase, AttributeSetter):
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
             
-        .. versionadded:: 20.0
         """
         super().bind(addr)
         return self._bind_cm(addr)
@@ -176,7 +178,10 @@ class Socket(SocketBase, AttributeSetter):
 
         Connect to a remote 0MQ socket.
 
-        Returns a context manager that may be used to automatically disconnect in a `with` block.
+        Returns a context manager which will call disconnect on exit.
+
+        .. versionadded:: 20.0
+            Can be used as a context manager.
 
         Parameters
         ----------
@@ -186,7 +191,6 @@ class Socket(SocketBase, AttributeSetter):
             tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
             
-        .. versionadded:: 20.0
         """
         super().connect(addr)
         return self._connect_cm(addr)

@@ -9,6 +9,29 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+20.0
+====
+
+20.0 is a major version bump because of dropped support for old Pythons and some changes in packaging,
+but there are only small changes for users with relatively recent versions of Python.
+
+Packaging updates:
+
+- Update bundled libzmq to 4.3.3
+- Drop support for Python < 3.5 (all versions of Python < 3.6 are EOL at time of release)
+- Require setuptools to build from source
+- Require Cython 0.29 to build from version control (sdists still ship .c files, so will never need Cython)
+- Respect $PKG_CONFIG env for finding libzmq when building from source
+
+
+New features:
+
+- :meth:`.Socket.bind` and :meth:`.Socket.connect` can now be used as context managers.
+
+Fixes:
+
+- Better error when libzmq is bundled and fails to be loaded.
+- Hold GIL while calling ``zmq_curve_`` functions, which may fix apparent threadsafety issues.
 
 19.0.2
 ======
@@ -751,4 +774,3 @@ set in stone, and may be removed or changed in incompatible ways in later releas
 * First version with binary distribution support
 * Added :meth:`~Context.instance()` method for using a single Context throughout an application
   without passing references around.
-
