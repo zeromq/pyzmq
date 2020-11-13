@@ -128,15 +128,20 @@ def stage_platform_hpp(zmqroot):
         platform_dir = pjoin(HERE, 'include_win32')
     else:
         info("attempting ./configure to generate platform.hpp")
-
-        p = Popen(
-            ["./configure", "--disable-drafts"],
-            cwd=zmqroot,
-            stdout=PIPE,
-            stderr=PIPE,
-        )
-        o, e = p.communicate()
-        if p.returncode:
+        failed = False
+        try:
+            p = Popen(
+                ["./configure", "--disable-drafts"],
+                cwd=zmqroot,
+                stdout=PIPE,
+                stderr=PIPE,
+            )
+        except OSError:
+            failed = True
+        else:
+            o, e = p.communicate()
+            failed = bool(p.returncode)
+        if failed:
             warn("failed to configure libzmq:\n%s" % e)
             if sys.platform == 'darwin':
                 platform_dir = pjoin(HERE, 'include_darwin')
