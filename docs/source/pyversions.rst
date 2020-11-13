@@ -31,7 +31,7 @@ symbols are defined to prevent compiler warnings and linking errors. Everywhere 
 C-API functions that may not be available in a supported version, at the top of the file
 is the code:
 
-.. sourcecode:: guess
+.. sourcecode:: cython
 
     cdef extern from "pyversion_compat.h":
         pass
