@@ -1280,7 +1280,7 @@ if pypy:
                 # re-run initialization, this time with cffi extension
                 self.distribution.ext_modules = [ext]
                 self.distribution.reinitialize_command("build_ext")
-                self.finalize_options()
+                self.ensure_finalized()
                 super().run()
             finally:
                 sys.path.pop(0)
