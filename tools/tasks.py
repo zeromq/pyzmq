@@ -73,7 +73,6 @@ py_exes = {
     "3.7": _framework_py("3.7"),
     "3.5": _framework_py("3.5"),
     "3.6": _framework_py("3.6"),
-    "pypy": "/usr/local/bin/pypy",
     "pypy3": "/usr/local/bin/pypy3",
 }
 
@@ -105,6 +104,12 @@ def cd(path):
         yield
     finally:
         os.chdir(cwd)
+
+@task
+def check_pythons(ctx):
+    for version, exe in py_exes.items():
+        print(version, end=": ")
+        ctx.run(f"'{exe}' --version")
 
 @task
 def clone_repo(ctx, reset=False):
@@ -280,7 +285,7 @@ def release(ctx, vs, upload=False):
         if not os.path.exists(path):
             raise ValueError("Need %s at %s" % (v, path))
 
-    # start from scrach with clone and envs
+    # start from scratch with clone and envs
     clone_repo(ctx, reset=True)
     if os.path.exists(env_root):
         shutil.rmtree(env_root)
@@ -345,4 +350,3 @@ def appveyor_artifacts(ctx, vs, dest='win-dist', upload=False):
     else:
         print("You can now upload these wheels with: ")
         print("  twine upload {}/*".format(dest))
-
