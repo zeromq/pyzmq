@@ -20,6 +20,9 @@ environment:
     - PYTHON: "C:\\Python39-x64"
       PYTHON_VERSION: "3.9.0"
       PYTHON_ARCH: 64
+    - PYTHON: "C:\\Python39-x86"
+      PYTHON_VERSION: "3.9.0"
+      PYTHON_ARCH: 32
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: 32
@@ -66,7 +69,7 @@ install:
       # from https://github.com/appveyor/build-images/blob/27bde614bc60d7ef7a8bc46182f4d7582fa11b56/scripts/Windows/install_python.ps1#L88-L108
       function InstallPythonEXE($version, $platform, $targetPath) {
         $urlPlatform = ""
-        if ($platform -eq 'x64') {
+        if ($platform -eq '64') {
             $urlPlatform = "-amd64"
         }
 
@@ -85,7 +88,7 @@ install:
       }
 
       if ( -not ( Test-Path -Path $env:PYTHON -PathType Container ) ) {
-        InstallPythonEXE $env:PYTHON_VERSION "x64" $env:PYTHON
+        InstallPythonEXE $env:PYTHON_VERSION $env:PYTHON_ARCH $env:PYTHON
       }
 
   # Prepend newly installed Python to the PATH of this build (this cannot be
