@@ -136,10 +136,12 @@ def stage_platform_hpp(zmqroot):
                 stdout=PIPE,
                 stderr=PIPE,
             )
-        except OSError:
+        except OSError as err:
             failed = True
+            e = str(err)
         else:
             o, e = p.communicate()
+            e = e.decode("utf8", "replace")
             failed = bool(p.returncode)
         if failed:
             warn("failed to configure libzmq:\n%s" % e)
