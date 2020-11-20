@@ -1,0 +1,62 @@
+name: manylinux wheels
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+
+env:
+  cython: "0.29.21"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+
+    env:
+      ZMQ_PREFIX: /usr/local
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            tag: "cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+          - arch: i686
+            tag: "cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build manylinux Python wheels (x86_64)
+        if: matrix.arch == 'x86_64'
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2010_x86_64"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pre-build-command: sh tools/install_libzmq.sh
+          pip-wheel-args: "-v -w ./dist --no-deps"
+
+      - name: Build manylinux Python wheels (x86)
+        if: matrix.arch == 'i686'
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2010_i686"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pre-build-command: sh tools/install_libzmq.sh
+          pip-wheel-args: "-v -w ./dist --no-deps"
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        if: github.event.type == 'release'
+        with:
+          python-version: "3.8"
+
+      - name: Publish wheels to PyPI
+        if: github.event.type == 'release'
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install twine
+          twine upload dist/*-manylinux*.whl
