@@ -75,6 +75,12 @@ jobs:
           pre-build-command: sh tools/install_libzmq.sh
           pip-wheel-args: "-v -w ./dist --no-deps"
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheel
+          path: "dist/*manylinux*.whl"
+          if-no-files-found: error
+
       - name: setup python
         uses: actions/setup-python@v2
         if: startsWith(github.ref, 'refs/tags/')
