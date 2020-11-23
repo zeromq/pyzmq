@@ -77,7 +77,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: wheel
+          name: wheels-manylinux${{ matrix.manylinux }}_${{ matrix.arch }}
           path: "dist/*manylinux*.whl"
           if-no-files-found: error
 
