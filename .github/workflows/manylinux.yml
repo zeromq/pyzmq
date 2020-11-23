@@ -3,8 +3,6 @@ name: manylinux wheels
 on:
   push:
   pull_request:
-  release:
-    types: [created]
 
 env:
   cython: "0.29.21"
@@ -21,15 +19,46 @@ jobs:
       matrix:
         include:
           - arch: x86_64
-            tag: "cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+            manylinux: "1"
+            tag: "cp36-cp36m cp37-cp37m"
+
           - arch: i686
-            tag: "cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+            manylinux: "1"
+            tag: "cp36-cp36m cp37-cp37m"
+
+          - arch: x86_64
+            manylinux: "2010"
+            tag: "cp38-cp38 cp39-cp39"
+
+          - arch: i686
+            manylinux: "2010"
+            tag: "cp38-cp38 cp39-cp39"
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build manylinux Python wheels (x86_64)
-        if: matrix.arch == 'x86_64'
+      # Note: it would be *really super nice* if `uses` supported matrix expansion
+
+      - name: Build manylinux1 Python wheels (x86_64)
+        if: matrix.arch == 'x86_64' && matrix.manylinux == '1'
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux1_x86_64"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pre-build-command: sh tools/install_libzmq.sh
+          pip-wheel-args: "-v -w ./dist --no-deps"
+
+      - name: Build manylinux1 Python wheels (x86)
+        if: matrix.arch == 'i686' && matrix.manylinux == '1'
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux1_i686"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pre-build-command: sh tools/install_libzmq.sh
+          pip-wheel-args: "-v -w ./dist --no-deps"
+
+      - name: Build manylinux2010 Python wheels (x86_64)
+        if: matrix.arch == 'x86_64' && matrix.manylinux == '2010'
         uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2010_x86_64"
         with:
           python-versions: ${{ matrix.tag }}
@@ -37,8 +66,8 @@ jobs:
           pre-build-command: sh tools/install_libzmq.sh
           pip-wheel-args: "-v -w ./dist --no-deps"
 
-      - name: Build manylinux Python wheels (x86)
-        if: matrix.arch == 'i686'
+      - name: Build manylinux2010 Python wheels (x86)
+        if: matrix.arch == 'i686' && matrix.manylinux == '2010'
         uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2010_i686"
         with:
           python-versions: ${{ matrix.tag }}
@@ -48,12 +77,18 @@ jobs:
 
       - name: setup python
         uses: actions/setup-python@v2
-        if: github.event.type == 'release'
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           python-version: "3.8"
 
+      - name: install twine
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade twine
+
       - name: Publish wheels to PyPI
-        if: github.event.type == 'release'
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

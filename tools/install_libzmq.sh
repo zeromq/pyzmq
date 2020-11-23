@@ -12,7 +12,7 @@ curl -L -O "https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION
 tar -xzf libsodium-${LIBSODIUM_VERSION}.tar.gz
 cd libsodium-${LIBSODIUM_VERSION}
 ./configure --prefix="$PREFIX"
-make -j
+make -j4
 make install
 
 cd ..
@@ -22,7 +22,7 @@ ldconfig
 tar -xzf zeromq-${LIBZMQ_VERSION}.tar.gz
 cd zeromq-${LIBZMQ_VERSION}
 ./configure --prefix="$PREFIX" --with-libsodium
-make -j
+make -j4
 make install
 
 ldconfig
