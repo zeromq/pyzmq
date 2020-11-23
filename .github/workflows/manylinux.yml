@@ -8,7 +8,7 @@ env:
   cython: "0.29.21"
 
 jobs:
-  deploy:
+  wheel:
     runs-on: ubuntu-20.04
 
     env:
@@ -34,8 +34,17 @@ jobs:
             manylinux: "2010"
             tag: "cp38-cp38 cp39-cp39"
 
+          - arch: aarch64
+            manylinux: "2014"
+            tag: "cp37-cp37m cp38-cp38 cp39-cp39"
+
     steps:
       - uses: actions/checkout@v2
+
+      - name: register qemu for aarch64
+        if: matrix.arch == 'aarch64'
+        run: |
+          docker run --rm --privileged hypriot/qemu-register:v4.2.0
 
       # Note: it would be *really super nice* if `uses` supported matrix expansion
 
@@ -55,7 +64,6 @@ jobs:
           python-versions: ${{ matrix.tag }}
           build-requirements: "cython==${{ env.cython }}"
           pre-build-command: sh tools/install_libzmq.sh
-          pip-wheel-args: "-v -w ./dist --no-deps"
 
       - name: Build manylinux2010 Python wheels (x86_64)
         if: matrix.arch == 'x86_64' && matrix.manylinux == '2010'
@@ -64,7 +72,6 @@ jobs:
           python-versions: ${{ matrix.tag }}
           build-requirements: "cython==${{ env.cython }}"
           pre-build-command: sh tools/install_libzmq.sh
-          pip-wheel-args: "-v -w ./dist --no-deps"
 
       - name: Build manylinux2010 Python wheels (x86)
         if: matrix.arch == 'i686' && matrix.manylinux == '2010'
@@ -73,7 +80,14 @@ jobs:
           python-versions: ${{ matrix.tag }}
           build-requirements: "cython==${{ env.cython }}"
           pre-build-command: sh tools/install_libzmq.sh
-          pip-wheel-args: "-v -w ./dist --no-deps"
+
+      - name: Build manylinux2014 Python wheels (aarch64)
+        if: matrix.arch == 'aarch64' && matrix.manylinux == '2014'
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_aarch64"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pre-build-command: sh tools/install_libzmq.sh
 
       - uses: actions/upload-artifact@v2
         with:
