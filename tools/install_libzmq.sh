@@ -17,7 +17,7 @@ make install
 
 cd ..
 
-ldconfig
+which ldconfig && ldconfig || true
 
 tar -xzf zeromq-${LIBZMQ_VERSION}.tar.gz
 cd zeromq-${LIBZMQ_VERSION}
@@ -25,4 +25,4 @@ cd zeromq-${LIBZMQ_VERSION}
 make -j4
 make install
 
-ldconfig
+which ldconfig && ldconfig || true
