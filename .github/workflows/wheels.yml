@@ -1,0 +1,122 @@
+name: Build wheels
+
+on:
+  push:
+  pull_request:
+
+env:
+  cython: "0.29.21"
+  cibuildwheel: "1.6.4"
+
+jobs:
+  wheel:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CIBW_BEFORE_ALL: ${{ matrix.cibw.before_all || 'bash tools/install_libzmq.sh' }}
+      CIBW_ENVIRONMENT: ${{ matrix.cibw.environment || 'ZMQ_PREFIX=/usr/local' }}
+
+      CIBW_TEST_REQUIRES: "pytest"
+      CIBW_TEST_COMMAND: "pytest --pyargs zmq.tests.test_wheel"
+      CIBW_SKIP: "cp2* cp35* pp2*"
+      CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
+      CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
+      CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-10.15
+            name: mac
+
+          - os: ubuntu-20.04
+            name: manylinux1
+            cibw:
+              build: "cp36* cp37*"
+              manylinux_image: manylinux1
+
+          - os: ubuntu-20.04
+            name: manylinux2010
+            cibw:
+              build: "cp38* cp39*"
+              manylinux_image: manylinux2010
+
+          - os: windows-2019
+            name: win32
+            cibw:
+              build: "*win32"
+              before_all: "true"
+              environment: "ZMQ_PREFIX="
+
+
+          - os: windows-2019
+            name: win_amd64
+            cibw:
+              build: "*win_amd64"
+              before_all: "true"
+              environment: "ZMQ_PREFIX="
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade pip wheel
+          pip install cibuildwheel=="${{ env.cibuildwheel }}" cython=="${{ env.cython }}"
+
+      - name: install mac dependencies
+        if: startsWith(matrix.os, 'mac')
+        run: |
+          pip install delocate
+
+      - name: install linux dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          pip install auditwheel
+
+      - name: show environment
+        run: |
+          pip freeze
+
+      - name: register qemu for aarch64
+        if: matrix.arch == 'aarch64'
+        run: |
+          docker run --rm --privileged hypriot/qemu-register:v4.2.0 "${{ matrix.arch }}"
+
+      - name: list target wheels
+        run: |
+          python -m cibuildwheel . --print-build-identifiers
+
+      - name: compile Cython sources
+        run: |
+          python setup.py cython
+
+      - name: build wheels
+        run: |
+          python -m cibuildwheel .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheels-${{ matrix.name }}
+          path: "wheelhouse/*"
+          if-no-files-found: error
+
+      - name: install twine
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          pip install --upgrade twine
+
+      - name: Publish wheels to PyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install twine
+          twine upload wheelhouse/*
