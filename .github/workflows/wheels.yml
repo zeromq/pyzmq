@@ -183,7 +183,18 @@ jobs:
         with:
           python-versions: ${{ matrix.tag }}
           build-requirements: "cython==${{ env.cython }}"
-          system-packages: zeromq-devel
+          pip-wheel-args: "-v -w ./dist --no-deps"
+          # what we really want is:
+          # system-packages: zeromq-devel
+          # but zeromq-devel not available on aarch64 by default...
+          # it is is epel7, but can't load that early enough
+          # loading rpms by full url seems to work, but we need to specify
+          # all dependencies to do so
+          system-packages: >
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-devel-4.1.4-6.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-4.1.4-6.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/l/libsodium-1.0.18-1.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/o/openpgm-5.2.122-2.el7.aarch64.rpm
 
       - uses: actions/upload-artifact@v2
         with:
