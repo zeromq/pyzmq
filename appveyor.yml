@@ -11,6 +11,7 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\tools\\run_with_env.cmd"
     TWINE_NON_INTERACTIVE: "1"
     TWINE_REPOSITORY: https://upload.pypi.org/legacy/
+    TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
     TWINE_USERNAME: __token__
     TWINE_PASSWORD:
       secure: NVlc8AZi0Y/k+ZiyFs9rfCoFRbeOqG+PVGSRTM9KpwN3Zantsl9h+/mbT7M7FOkLyIZvo41njOfGKekw762uJDy2Cp/jBhBz/qNgQNHC/+ith/r+NjaRvgO4P783ItckYhG/e0lvWBs8rmdMroC2hNUmL9nGXxbtzn7vG1ZCSkOsyNHRejzTu4Xd/uksFDViLhnJmxQyaozqa5KKcuBoFv4IxkNuoqdE7TgdFEJUmZcciDF13LfWsgm/lARDIsHoze7V5CR139XV1RtGFg5W+A==
@@ -19,6 +20,9 @@ environment:
     - PYTHON: "C:\\Python39-x64"
       PYTHON_VERSION: "3.9.0"
       PYTHON_ARCH: 64
+    - PYTHON: "C:\\Python39-x86"
+      PYTHON_VERSION: "3.9.0"
+      PYTHON_ARCH: 32
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8.x"
       PYTHON_ARCH: 32
@@ -65,7 +69,7 @@ install:
       # from https://github.com/appveyor/build-images/blob/27bde614bc60d7ef7a8bc46182f4d7582fa11b56/scripts/Windows/install_python.ps1#L88-L108
       function InstallPythonEXE($version, $platform, $targetPath) {
         $urlPlatform = ""
-        if ($platform -eq 'x64') {
+        if ($platform -eq '64') {
             $urlPlatform = "-amd64"
         }
 
@@ -84,7 +88,7 @@ install:
       }
 
       if ( -not ( Test-Path -Path $env:PYTHON -PathType Container ) ) {
-        InstallPythonEXE $env:PYTHON_VERSION "x64" $env:PYTHON
+        InstallPythonEXE $env:PYTHON_VERSION $env:PYTHON_ARCH $env:PYTHON
       }
 
   # Prepend newly installed Python to the PATH of this build (this cannot be
@@ -133,8 +137,8 @@ after_test:
   - >
     IF "%APPVEYOR_REPO_TAG%" == "true"
     (
-    python3 -m pip install twine &&
-    python3 -m twine upload --verbose --skip-existing dist/*.whl
+    python -m pip install twine &&
+    python -m twine upload --verbose --skip-existing dist/*.whl
     )
 
 artifacts:
