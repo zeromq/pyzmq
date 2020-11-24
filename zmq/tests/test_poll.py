@@ -192,6 +192,7 @@ class TestSelect(PollZMQTestCase):
         self.assertTrue(s1 not in rlist)
         self.assertTrue(s2 not in rlist)
 
+    @mark.flaky(reruns=3)
     def test_timeout(self):
         """make sure select timeout has the right units (seconds)."""
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
@@ -235,4 +236,3 @@ if have_gevent:
             r.join()
             toc = time.time()
             self.assertTrue(toc-tic < 1)
-
