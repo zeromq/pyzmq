@@ -3,6 +3,11 @@ name: Build wheels
 on:
   push:
   pull_request:
+    paths:
+      - setup.py
+      - buildutils/**
+      - .github/workflows/wheels.yml
+      - tools/install_libzmq.sh
 
 env:
   cython: "0.29.21"

@@ -119,7 +119,6 @@ class TestFutureSocket(BaseZMQTestCase):
 
         self.loop.run_sync(test)
     
-    @pytest.mark.now
     def test_send_noblock(self):
         async def test():
             s = self.socket(zmq.PUSH)
@@ -128,7 +127,6 @@ class TestFutureSocket(BaseZMQTestCase):
 
         self.loop.run_sync(test)
 
-    @pytest.mark.now
     def test_send_multipart_noblock(self):
         async def test():
             s = self.socket(zmq.PUSH)
