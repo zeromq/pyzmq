@@ -1,0 +1,153 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+env:
+  FORCE_COLOR: "1"
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.14"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-10.15
+            python: 3.6
+
+          - os: macos-10.15
+            python: 3.9
+            zmq: bundled
+
+          - os: macos-10.15
+            python: pypy3
+            zmq: bundled
+
+          - os: macos-10.15
+            python: pypy3
+
+          - os: ubuntu-18.04
+            python: 3.6
+            zmq: bundled
+            tornado: none
+
+          - os: ubuntu-20.04
+            python: 3.7
+            tornado: 4.5.*
+
+          - os: ubuntu-20.04
+            python: 3.9
+            tornado: head
+
+          - os: ubuntu-20.04
+            python: 3.8
+            zmq: head
+
+          - os: windows-2019
+            python: 3.6
+            arch: x86
+
+          - os: windows-2019
+            python: 3.9
+            arch: x64
+
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.arch || 'x64' }}
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade pip wheel
+          pip install -r test-requirements.txt
+
+      - name: install cython
+        if: "! startsWith(matrix.python, 'pypy')"
+        run: |
+          pip install cython
+
+      - name: remove tornado
+        if: matrix.tornado == 'none'
+        run: |
+          pip uninstall -y tornado
+
+      - name: install tornado-head
+        if: matrix.tornado == 'head'
+        run: |
+          pip install https://github.com/tornadoweb/tornado/archive/HEAD.zip
+
+      - name: install pinned tornado
+        if: matrix.tornado && matrix.tornado != 'none' && matrix.tornado != 'head'
+        run: |
+          pip install tornado=="${{ matrix.tornado }}"
+
+      - name: show environment
+        run: |
+          pip freeze
+
+      # preserve pip cache to speed up installation
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-pip-${{ runner.python }}-${{ hashFiles('*requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: install mac dependencies
+        if: startsWith(matrix.os, 'mac') && matrix.zmq != 'bundled'
+        run: |
+          brew install libsodium zeromq
+
+      - name: install linux dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq libzmq3-dev libsodium-dev
+
+      - name: install libzmq-dev
+        if: matrix.zmq == 'head'
+        run: |
+          wget https://github.com/zeromq/libzmq/archive/HEAD.zip -O libzmq.zip
+          unzip libzmq.zip
+          pushd libzmq-*
+          ./autogen.sh
+          ./configure --enable-drafts
+          make -j4
+          sudo make install
+          sudo ldconfig
+          popd
+          echo "ZMQ_PREFIX=/usr/local" >> "$GITHUB_ENV"
+          export ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
+
+      - name: build pyzmq
+        run: |
+          pip install -v -e . --global-option=--zmq=${{ matrix.zmq }}
+
+      - name: import zmq
+        run: |
+          python -c "import zmq"
+
+      - name: run tests
+        run: |
+          python -m pytest -m "not new_console" -v zmq/tests
+
+      # FIXME: what's the right incantation to call this?
+      # the same line from appveyor doesn't work here
+      # - name: run extra windows tests
+      #   if: startsWith(matrix.os, 'win')
+      #   run: |
+      #     cmd /c start /wait test pytest -vsx -m new_console --pyargs zmq.tests --junit-xml=./results.xml
+      #     python tools/check_junit_result.py ./results.xml

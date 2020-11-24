@@ -1364,7 +1364,7 @@ setup_args = dict(
         "Programming Language :: Python :: 3.9",
     ],
     zip_safe=False,
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     install_requires=[
         "py; implementation_name === 'pypy'",
         "cffi; implementation_name === 'pypy'",

@@ -27,7 +27,7 @@ from zmq.utils.strtypes import unicode
 
 pypy = platform.python_implementation().lower() == 'pypy'
 windows = platform.platform().lower().startswith('windows')
-on_travis = bool(os.environ.get('TRAVIS_PYTHON_VERSION'))
+on_ci = bool(os.environ.get('CI'))
 
 # polling on windows is slow
 POLL_TIMEOUT = 1000 if windows else 100
@@ -545,16 +545,16 @@ class TestSocket(BaseZMQTestCase):
         events = p.poll(1000)
         self.assertEqual(events, [])
 
-    # Travis can't handle how much memory PyPy uses on this test
+    # CI often can't handle how much memory PyPy uses on this test
     @mark.skipif(
         (
-            pypy and on_travis
+            pypy and on_ci
         ) or (
             sys.maxsize < 2**32
         ) or (
             windows
         ),
-        reason="only run on 64b and not on Travis."
+        reason="only run on 64b and not on CI."
     )
     @mark.large
     def test_large_send(self):

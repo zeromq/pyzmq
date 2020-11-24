@@ -1,3 +1,4 @@
-gevent; platform_python_implementation != "PyPy" and sys_platform != 'win32'
+# gevent wheels on mac cause Illegal Instruction
+gevent; platform_python_implementation != "PyPy" and sys_platform != "win32" and sys_platform != "darwin"
 pytest
 tornado
