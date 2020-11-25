@@ -149,8 +149,10 @@ class _AsyncSocket(_zmq.Socket):
         return cls(_from_socket=socket, io_loop=io_loop)
 
     def close(self, linger=None):
-        if not self.closed:
-            for event in list(chain(self._recv_futures, self._send_futures)):
+        if not self.closed and self._fd is not None:
+            for event in list(
+                chain(self._recv_futures or [], self._send_futures or [])
+            ):
                 if not event.future.done():
                     try:
                         event.future.cancel()
@@ -541,5 +543,3 @@ class _AsyncSocket(_zmq.Socket):
         if self._shadow_sock.closed:
             fd = self._fd
         self.io_loop.remove_handler(fd)
-
-
