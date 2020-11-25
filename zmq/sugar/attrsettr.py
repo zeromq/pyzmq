@@ -7,8 +7,8 @@
 import errno
 from . import constants
 
-class AttributeSetter(object):
 
+class AttributeSetter(object):
     def __setattr__(self, key, value):
         """set zmq options by attribute"""
 
@@ -25,8 +25,8 @@ class AttributeSetter(object):
         try:
             opt = getattr(constants, upper_key)
         except AttributeError:
-            raise AttributeError("%s has no such option: %s" % (
-                self.__class__.__name__, upper_key)
+            raise AttributeError(
+                "%s has no such option: %s" % (self.__class__.__name__, upper_key)
             )
         else:
             self._set_attr_opt(upper_key, opt, value)
@@ -41,11 +41,12 @@ class AttributeSetter(object):
         try:
             opt = getattr(constants, upper_key)
         except AttributeError:
-            raise AttributeError("%s has no such option: %s" % (
-                self.__class__.__name__, upper_key)
+            raise AttributeError(
+                "%s has no such option: %s" % (self.__class__.__name__, upper_key)
             )
         else:
             from zmq import ZMQError
+
             try:
                 return self._get_attr_opt(upper_key, opt)
             except ZMQError as e:
@@ -56,7 +57,6 @@ class AttributeSetter(object):
                     raise AttributeError("{} attribute is write-only".format(key))
                 else:
                     raise
-
 
     def _get_attr_opt(self, name, opt):
         """override if getattr should do something other than call self.get"""

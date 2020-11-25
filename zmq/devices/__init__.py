@@ -24,6 +24,6 @@ for submod in (
     proxydevice,
     proxysteerabledevice,
     monitoredqueue,
-    monitoredqueuedevice
+    monitoredqueuedevice,
 ):
-    __all__.extend(submod.__all__)
+    __all__.extend(submod.__all__)  # type: ignore

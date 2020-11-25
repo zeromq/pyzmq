@@ -10,6 +10,7 @@ from .constants import EINVAL, IO_THREADS, LINGER
 
 from zmq.error import ZMQError, InterruptedSystemCall, _check_rc
 
+
 class Context(object):
     _zmq_ctx = None
     _iothreads = None
@@ -17,7 +18,7 @@ class Context(object):
     _shadow = False
 
     def __init__(self, io_threads=1, shadow=None):
-        
+
         if shadow:
             self._zmq_ctx = ffi.cast("void *", shadow)
             self._shadow = True
@@ -25,19 +26,19 @@ class Context(object):
             self._shadow = False
             if not io_threads >= 0:
                 raise ZMQError(EINVAL)
-        
+
             self._zmq_ctx = C.zmq_ctx_new()
         if self._zmq_ctx == ffi.NULL:
             raise ZMQError(C.zmq_errno())
         if not shadow:
             C.zmq_ctx_set(self._zmq_ctx, IO_THREADS, io_threads)
         self._closed = False
-    
+
     @property
     def underlying(self):
         """The address of the underlying libzmq context"""
         return int(ffi.cast('size_t', self._zmq_ctx))
-    
+
     @property
     def closed(self):
         return self._closed
@@ -73,5 +74,6 @@ class Context(object):
 
         self._zmq_ctx = None
         self._closed = True
+
 
 __all__ = ['Context']

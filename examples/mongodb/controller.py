@@ -1,9 +1,9 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Justin Riley
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from __future__ import print_function
 import json
@@ -11,6 +11,7 @@ import sys
 import zmq
 import pymongo
 import pymongo.json_util
+
 
 class MongoZMQ(object):
     """
@@ -33,7 +34,7 @@ class MongoZMQ(object):
         self._table = self._db[self._table_name]
 
     def _doc_to_json(self, doc):
-        return json.dumps(doc,default=pymongo.json_util.default)
+        return json.dumps(doc, default=pymongo.json_util.default)
 
     def add_document(self, doc):
         """
@@ -63,7 +64,7 @@ class MongoZMQ(object):
         while True:
             msg = socket.recv_multipart()
             print("Received msg: ", msg)
-            if  len(msg) != 3:
+            if len(msg) != 3:
                 error_msg = 'invalid message received: %s' % msg
                 print(error_msg)
                 reply = [msg[0], error_msg]
@@ -85,8 +86,10 @@ class MongoZMQ(object):
                 print('unknown request')
             socket.send_multipart(reply)
 
+
 def main():
-    MongoZMQ('ipcontroller','jobs').start()
+    MongoZMQ('ipcontroller', 'jobs').start()
+
 
 if __name__ == "__main__":
-   main()
+    main()

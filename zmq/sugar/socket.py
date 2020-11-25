@@ -22,18 +22,15 @@ from zmq.utils.strtypes import bytes, unicode, basestring
 
 
 from .constants import (
-    SNDMORE, ENOTSUP, POLLIN,
+    SNDMORE,
+    ENOTSUP,
+    POLLIN,
     int64_sockopt_names,
     int_sockopt_names,
     bytes_sockopt_names,
     fd_sockopt_names,
 )
-try:
-    import cPickle
-    pickle = cPickle
-except:
-    cPickle = None
-    import pickle
+import pickle
 
 try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
@@ -53,6 +50,7 @@ class Socket(SocketBase, AttributeSetter):
         s = ctx.socket(zmq.ROUTER)
 
     """
+
     _shadow = False
     _monitor_socket = None
 
@@ -70,17 +68,17 @@ class Socket(SocketBase, AttributeSetter):
     # socket as context manager:
     def __enter__(self):
         """Sockets are context managers
-        
+
         .. versionadded:: 14.4
         """
         return self
-    
+
     def __exit__(self, *args, **kwargs):
         self.close()
-    
-    #-------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------
     # Socket creation
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __copy__(self, memo=None):
         """Copying a Socket creates a shadow copy"""
@@ -98,6 +96,7 @@ class Socket(SocketBase, AttributeSetter):
         .. versionadded:: 14.1
         """
         from zmq.utils.interop import cast_int_addr
+
         address = cast_int_addr(address)
         return cls(shadow=address)
 
@@ -121,14 +120,14 @@ class Socket(SocketBase, AttributeSetter):
             self.context._rm_socket(self)
         super(Socket, self).close(linger=linger)
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Connect/Bind context managers
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     @contextmanager
     def _connect_cm(self, addr):
         """Context manager to disconnect on exit
-        
+
         .. versionadded:: 20.0
         """
         try:
@@ -139,7 +138,7 @@ class Socket(SocketBase, AttributeSetter):
     @contextmanager
     def _bind_cm(self, addr):
         """Context manager to unbind on exit
-        
+
         .. versionadded:: 20.0
         """
         try:
@@ -168,7 +167,7 @@ class Socket(SocketBase, AttributeSetter):
             for example 'tcp://127.0.0.1:5555'. Protocols supported include
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
-            
+
         """
         super().bind(addr)
         return self._bind_cm(addr)
@@ -190,25 +189,25 @@ class Socket(SocketBase, AttributeSetter):
             for example 'tcp://127.0.0.1:5555'. Protocols supported are
             tcp, upd, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
-            
+
         """
         super().connect(addr)
         return self._connect_cm(addr)
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Deprecated aliases
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     @property
-    def socket_type(self):
-        warnings.warn("Socket.socket_type is deprecated, use Socket.type",
-            DeprecationWarning
+    def socket_type(self) -> int:
+        warnings.warn(
+            "Socket.socket_type is deprecated, use Socket.type", DeprecationWarning
         )
         return self.type
-    
-    #-------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------
     # Hooks for sockopt completion
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def __dir__(self):
         keys = dir(self.__class__)
@@ -221,9 +220,9 @@ class Socket(SocketBase, AttributeSetter):
             keys.extend(collection)
         return keys
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Getting/Setting options
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     setsockopt = SocketBase.set
     getsockopt = SocketBase.get
 
@@ -265,7 +264,7 @@ class Socket(SocketBase, AttributeSetter):
         if isinstance(topic, unicode):
             topic = topic.encode('utf8')
         self.set(zmq.SUBSCRIBE, topic)
-    
+
     def unsubscribe(self, topic):
         """Unsubscribe from a topic
 
@@ -276,18 +275,18 @@ class Socket(SocketBase, AttributeSetter):
         if isinstance(topic, unicode):
             topic = topic.encode('utf8')
         self.set(zmq.UNSUBSCRIBE, topic)
-    
+
     def set_string(self, option, optval, encoding='utf-8'):
         """Set socket options with a unicode object.
-        
+
         This is simply a wrapper for setsockopt to protect from encoding ambiguity.
 
         See the 0MQ documentation for details on specific options.
-        
+
         Parameters
         ----------
         option : int
-            The name of the option to set. Can be any of: SUBSCRIBE, 
+            The name of the option to set. Can be any of: SUBSCRIBE,
             UNSUBSCRIBE, IDENTITY
         optval : unicode string (unicode on py2, str on py3)
             The value of the option to set.
@@ -297,9 +296,9 @@ class Socket(SocketBase, AttributeSetter):
         if not isinstance(optval, unicode):
             raise TypeError("unicode strings only")
         return self.set(option, optval.encode(encoding))
-    
+
     setsockopt_unicode = setsockopt_string = set_string
-    
+
     def get_string(self, option, encoding='utf-8'):
         """Get the value of a socket option.
 
@@ -315,13 +314,13 @@ class Socket(SocketBase, AttributeSetter):
         optval : unicode string (unicode on py2, str on py3)
             The value of the option as a unicode string.
         """
-    
+
         if option not in constants.bytes_sockopts:
-            raise TypeError("option %i will not return a string to be decoded"%option)
+            raise TypeError("option %i will not return a string to be decoded" % option)
         return self.getsockopt(option).decode(encoding)
-    
+
     getsockopt_unicode = getsockopt_string = get_string
-    
+
     def bind_to_random_port(self, addr, min_port=49152, max_port=65536, max_tries=100):
         """Bind this socket to a random port in a range.
 
@@ -342,20 +341,24 @@ class Socket(SocketBase, AttributeSetter):
         -------
         port : int
             The port the socket was bound to.
-    
+
         Raises
         ------
         ZMQBindError
             if `max_tries` reached before successful bind
         """
-        if hasattr(constants, 'LAST_ENDPOINT') and min_port == 49152 and max_port == 65536:
+        if (
+            hasattr(constants, 'LAST_ENDPOINT')
+            and min_port == 49152
+            and max_port == 65536
+        ):
             # if LAST_ENDPOINT is supported, and min_port / max_port weren't specified,
             # we can bind to port 0 and let the OS do the work
             self.bind("%s:*" % addr)
             url = self.last_endpoint.decode('ascii', 'replace')
             _, port_s = url.rsplit(':', 1)
             return int(port_s)
-        
+
         for i in range(max_tries):
             try:
                 port = random.randrange(min_port, max_port)
@@ -371,10 +374,10 @@ class Socket(SocketBase, AttributeSetter):
             else:
                 return port
         raise ZMQBindError("Could not bind socket to random port.")
-    
+
     def get_hwm(self):
         """Get the High Water Mark.
-        
+
         On libzmq ≥ 3, this gets SNDHWM if available, otherwise RCVHWM
         """
         major = zmq.zmq_version_info()[0]
@@ -384,14 +387,14 @@ class Socket(SocketBase, AttributeSetter):
                 return self.getsockopt(zmq.SNDHWM)
             except zmq.ZMQError:
                 pass
-            
+
             return self.getsockopt(zmq.RCVHWM)
         else:
             return self.getsockopt(zmq.HWM)
-    
+
     def set_hwm(self, value):
         """Set the High Water Mark.
-        
+
         On libzmq ≥ 3, this sets both SNDHWM and RCVHWM
 
 
@@ -411,24 +414,27 @@ class Socket(SocketBase, AttributeSetter):
                 self.rcvhwm = value
             except Exception as e:
                 raised = e
-            
+
             if raised:
                 raise raised
         else:
             return self.setsockopt(zmq.HWM, value)
-    
-    hwm = property(get_hwm, set_hwm,
+
+    hwm = property(
+        get_hwm,
+        set_hwm,
+        None,
         """Property for High Water Mark.
         
         Setting hwm sets both SNDHWM and RCVHWM as appropriate.
         It gets SNDHWM if available, otherwise RCVHWM.
-        """
+        """,
     )
-    
-    #-------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------
     # Sending and receiving messages
-    #-------------------------------------------------------------------------
-    
+    # -------------------------------------------------------------------------
+
     def send(self, data, flags=0, copy=True, track=False, routing_id=None, group=None):
         """Send a single zmq message frame on this socket.
 
@@ -480,13 +486,21 @@ class Socket(SocketBase, AttributeSetter):
         """
         if routing_id is not None:
             if not isinstance(data, zmq.Frame):
-                data = zmq.Frame(data, track=track, copy=copy or None,
-                                 copy_threshold=self.copy_threshold)
+                data = zmq.Frame(
+                    data,
+                    track=track,
+                    copy=copy or None,
+                    copy_threshold=self.copy_threshold,
+                )
             data.routing_id = routing_id
         if group is not None:
             if not isinstance(data, zmq.Frame):
-                data = zmq.Frame(data, track=track, copy=copy or None,
-                                 copy_threshold=self.copy_threshold)
+                data = zmq.Frame(
+                    data,
+                    track=track,
+                    copy=copy or None,
+                    copy_threshold=self.copy_threshold,
+                )
             data.group = group
         return super(Socket, self).send(data, flags=flags, copy=copy, track=track)
 
@@ -510,7 +524,7 @@ class Socket(SocketBase, AttributeSetter):
         track : bool, optional
             Should the frame(s) be tracked for notification that ZMQ has
             finished with it (ignored if copy=True).
-    
+
         Returns
         -------
         None : if copy or not track
@@ -519,7 +533,7 @@ class Socket(SocketBase, AttributeSetter):
             be True until the last send is completed.
         """
         # typecheck parts before sending:
-        for i,msg in enumerate(msg_parts):
+        for i, msg in enumerate(msg_parts):
             if isinstance(msg, (zmq.Frame, bytes, memoryview)):
                 continue
             try:
@@ -529,11 +543,14 @@ class Socket(SocketBase, AttributeSetter):
                 if len(rmsg) > 32:
                     rmsg = rmsg[:32] + '...'
                 raise TypeError(
-                    "Frame %i (%s) does not support the buffer interface." % (
-                    i, rmsg,
-                ))
+                    "Frame %i (%s) does not support the buffer interface."
+                    % (
+                        i,
+                        rmsg,
+                    )
+                )
         for msg in msg_parts[:-1]:
-            self.send(msg, SNDMORE|flags, copy=copy, track=track)
+            self.send(msg, SNDMORE | flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
         return self.send(msg_parts[-1], flags, copy=copy, track=track)
 
@@ -551,7 +568,7 @@ class Socket(SocketBase, AttributeSetter):
         track : bool, optional
             Should the message frame(s) be tracked for notification that ZMQ has
             finished with it? (ignored if copy=True)
-        
+
         Returns
         -------
         msg_parts : list
@@ -568,7 +585,7 @@ class Socket(SocketBase, AttributeSetter):
         while self.getsockopt(zmq.RCVMORE):
             part = self.recv(flags, copy=copy, track=track)
             parts.append(part)
-    
+
         return parts
 
     def _deserialize(self, recvd, load):
@@ -641,10 +658,10 @@ class Socket(SocketBase, AttributeSetter):
 
     def send_string(self, u, flags=0, copy=True, encoding='utf-8', **kwargs):
         """Send a Python unicode string as a message with an encoding.
-    
+
         0MQ communicates with raw bytes, so you must encode/decode
         text (unicode on py2, str on py3) around 0MQ.
-        
+
         Parameters
         ----------
         u : Python unicode string (unicode on py2, str on py3)
@@ -657,12 +674,12 @@ class Socket(SocketBase, AttributeSetter):
         if not isinstance(u, basestring):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy, **kwargs)
-    
+
     send_unicode = send_string
-    
+
     def recv_string(self, flags=0, encoding='utf-8'):
         """Receive a unicode string, as sent by send_string.
-    
+
         Parameters
         ----------
         flags : int
@@ -682,9 +699,9 @@ class Socket(SocketBase, AttributeSetter):
         """
         msg = self.recv(flags=flags)
         return self._deserialize(msg, lambda buf: buf.decode(encoding))
-    
+
     recv_unicode = recv_string
-    
+
     def send_pyobj(self, obj, flags=0, protocol=DEFAULT_PROTOCOL, **kwargs):
         """Send a Python object as a message using pickle to serialize.
 
@@ -724,9 +741,9 @@ class Socket(SocketBase, AttributeSetter):
 
     def send_json(self, obj, flags=0, **kwargs):
         """Send a Python object as a message using json to serialize.
-        
+
         Keyword arguments are passed on to json.dumps
-        
+
         Parameters
         ----------
         obj : Python object
@@ -745,7 +762,7 @@ class Socket(SocketBase, AttributeSetter):
         """Receive a Python object as a message using json to serialize.
 
         Keyword arguments are passed on to json.loads
-        
+
         Parameters
         ----------
         flags : int
@@ -814,7 +831,9 @@ class Socket(SocketBase, AttributeSetter):
         """
         # safe-guard, method only available on libzmq >= 4
         if zmq.zmq_version_info() < (4,):
-            raise NotImplementedError("get_monitor_socket requires libzmq >= 4, have %s" % zmq.zmq_version())
+            raise NotImplementedError(
+                "get_monitor_socket requires libzmq >= 4, have %s" % zmq.zmq_version()
+            )
 
         # if already monitoring, return existing socket
         if self._monitor_socket:
@@ -839,7 +858,7 @@ class Socket(SocketBase, AttributeSetter):
     def disable_monitor(self):
         """Shutdown the PAIR socket (created using get_monitor_socket)
         that is serving socket events.
-        
+
         .. versionadded:: 14.4
         """
         self._monitor_socket = None

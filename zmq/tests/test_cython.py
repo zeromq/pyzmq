@@ -4,6 +4,7 @@ import sys
 import pytest
 import zmq
 
+
 @pytest.mark.skipif(
     'zmq.backend.cython' not in sys.modules, reason="Requires cython backend"
 )
@@ -32,6 +33,7 @@ def test_cython(language_level, request, tmpdir):
 
     # this import tests the compilation
     from . import cython_ext
+
     assert hasattr(cython_ext, 'send_recv_test')
 
     # call the compiled function

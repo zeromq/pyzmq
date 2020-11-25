@@ -16,6 +16,7 @@ from .certs import load_certificates
 CURVE_ALLOW_ANY = '*'
 VERSION = b'1.0'
 
+
 class Authenticator(object):
     """Implementation of ZAP authentication for zmq connections.
 
@@ -29,7 +30,7 @@ class Authenticator(object):
     """
 
     def __init__(self, context=None, encoding='utf-8', log=None):
-        _check_version((4,0), "security")
+        _check_version((4, 0), "security")
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
@@ -44,7 +45,7 @@ class Authenticator(object):
         # of dicts keyed by the public keys from the specified location.
         self.certs = {}
         self.log = log or logging.getLogger('zmq.auth')
-    
+
     def start(self):
         """Create and bind the ZAP socket"""
         self.zap_socket = self.context.socket(zmq.REP)
@@ -60,12 +61,12 @@ class Authenticator(object):
 
     def allow(self, *addresses):
         """Allow (whitelist) IP address(es).
-        
+
         Connections from addresses not in the whitelist will be rejected.
-        
+
         - For NULL, all clients from this address will be accepted.
         - For real auth setups, they will be allowed to continue with authentication.
-        
+
         whitelist is mutually exclusive with blacklist.
         """
         if self.blacklist:
@@ -75,9 +76,9 @@ class Authenticator(object):
 
     def deny(self, *addresses):
         """Deny (blacklist) IP address(es).
-        
+
         Addresses not in the blacklist will be allowed to continue with authentication.
-        
+
         Blacklist is mutually exclusive with whitelist.
         """
         if self.whitelist:
@@ -87,7 +88,7 @@ class Authenticator(object):
 
     def configure_plain(self, domain='*', passwords=None):
         """Configure PLAIN authentication for a given domain.
-        
+
         PLAIN authentication uses a plain-text password file.
         To cover all domains, use "*".
         You can modify the password file at any time; it is reloaded automatically.
@@ -98,15 +99,15 @@ class Authenticator(object):
 
     def configure_curve(self, domain='*', location=None):
         """Configure CURVE authentication for a given domain.
-        
+
         CURVE authentication uses a directory that holds all public client certificates,
         i.e. their public keys.
-        
+
         To cover all domains, use "*".
-        
-        You can add and remove certificates in that directory at any time. configure_curve must be called 
-        every time certificates are added or removed, in order to update the Authenticator's state 
-        
+
+        You can add and remove certificates in that directory at any time. configure_curve must be called
+        every time certificates are added or removed, in order to update the Authenticator's state
+
         To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
         # If location is CURVE_ALLOW_ANY then allow all clients. Otherwise
@@ -153,22 +154,22 @@ class Authenticator(object):
         if credentials_provider is not None:
             self.credentials_providers[domain] = credentials_provider
         else:
-            self.log.error("None credentials_provider provided for domain:%s",domain)
+            self.log.error("None credentials_provider provided for domain:%s", domain)
 
     def curve_user_id(self, client_public_key):
         """Return the User-Id corresponding to a CURVE client's public key
-        
+
         Default implementation uses the z85-encoding of the public key.
-        
+
         Override to define a custom mapping of public key : user-id
-        
+
         This is only called on successful authentication.
-        
+
         Parameters
         ----------
         client_public_key: bytes
             The client public key used for the given message
-        
+
         Returns
         -------
         user_id: unicode
@@ -178,7 +179,7 @@ class Authenticator(object):
 
     def configure_gssapi(self, domain='*', location=None):
         """Configure GSSAPI authentication
-        
+
         Currently this is a no-op because there is nothing to configure with GSSAPI.
         """
         pass
@@ -192,24 +193,28 @@ class Authenticator(object):
             else:
                 self._send_zap_reply(msg[1], b"400", b"Not enough frames")
             return
-        
+
         version, request_id, domain, address, identity, mechanism = msg[:6]
         credentials = msg[6:]
-        
+
         domain = u(domain, self.encoding, 'replace')
         address = u(address, self.encoding, 'replace')
 
-        if (version != VERSION):
+        if version != VERSION:
             self.log.error("Invalid ZAP version: %r", msg)
             self._send_zap_reply(request_id, b"400", b"Invalid version")
             return
 
-        self.log.debug("version: %r, request_id: %r, domain: %r,"
-                      " address: %r, identity: %r, mechanism: %r",
-                      version, request_id, domain,
-                      address, identity, mechanism,
+        self.log.debug(
+            "version: %r, request_id: %r, domain: %r,"
+            " address: %r, identity: %r, mechanism: %r",
+            version,
+            request_id,
+            domain,
+            address,
+            identity,
+            mechanism,
         )
-
 
         # Is address is explicitly whitelisted or blacklisted?
         allowed = False
@@ -249,7 +254,9 @@ class Authenticator(object):
                     self.log.error("Invalid PLAIN credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
-                username, password = [ u(c, self.encoding, 'replace') for c in credentials ]
+                username, password = [
+                    u(c, self.encoding, 'replace') for c in credentials
+                ]
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
             elif mechanism == b'CURVE':
@@ -262,7 +269,7 @@ class Authenticator(object):
                 allowed, reason = self._authenticate_curve(domain, key)
                 if allowed:
                     username = self.curve_user_id(key)
-                    
+
             elif mechanism == b'GSSAPI':
                 if len(credentials) != 1:
                     self.log.error("Invalid GSSAPI credentials: %r", credentials)
@@ -298,8 +305,11 @@ class Authenticator(object):
                 reason = b"Invalid domain"
 
             if allowed:
-                self.log.debug("ALLOWED (PLAIN) domain=%s username=%s password=%s",
-                    domain, username, password,
+                self.log.debug(
+                    "ALLOWED (PLAIN) domain=%s username=%s password=%s",
+                    domain,
+                    username,
+                    password,
                 )
             else:
                 self.log.debug("DENIED %s", reason)
@@ -326,15 +336,18 @@ class Authenticator(object):
             if domain in self.credentials_providers:
                 z85_client_key = z85.encode(client_key)
                 # Callback to check if key is Allowed
-                if (self.credentials_providers[domain].callback(domain, z85_client_key)):
+                if self.credentials_providers[domain].callback(domain, z85_client_key):
                     allowed = True
                     reason = b"OK"
                 else:
                     reason = b"Unknown key"
 
                 status = "ALLOWED" if allowed else "DENIED"
-                self.log.debug("%s (CURVE auth_callback) domain=%s client_key=%s",
-                    status, domain, z85_client_key,
+                self.log.debug(
+                    "%s (CURVE auth_callback) domain=%s client_key=%s",
+                    status,
+                    domain,
+                    z85_client_key,
                 )
             else:
                 reason = b"Unknown domain"
@@ -353,8 +366,11 @@ class Authenticator(object):
                     reason = b"Unknown key"
 
                 status = "ALLOWED" if allowed else "DENIED"
-                self.log.debug("%s (CURVE) domain=%s client_key=%s",
-                    status, domain, z85_client_key,
+                self.log.debug(
+                    "%s (CURVE) domain=%s client_key=%s",
+                    status,
+                    domain,
+                    z85_client_key,
                 )
             else:
                 reason = b"Unknown domain"
@@ -366,7 +382,9 @@ class Authenticator(object):
         self.log.debug("ALLOWED (GSSAPI) domain=%s principal=%s", domain, principal)
         return True, b'OK'
 
-    def _send_zap_reply(self, request_id, status_code, status_text, user_id='anonymous'):
+    def _send_zap_reply(
+        self, request_id, status_code, status_text, user_id='anonymous'
+    ):
         """Send a ZAP reply to finish the authentication."""
         user_id = user_id if status_code == b'200' else b''
         if isinstance(user_id, unicode):
@@ -375,5 +393,6 @@ class Authenticator(object):
         self.log.debug("ZAP reply code=%s text=%s", status_code, status_text)
         reply = [VERSION, request_id, status_code, status_text, user_id, metadata]
         self.zap_socket.send_multipart(reply)
+
 
 __all__ = ['Authenticator', 'CURVE_ALLOW_ANY']

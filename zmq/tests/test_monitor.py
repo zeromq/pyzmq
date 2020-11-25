@@ -16,7 +16,6 @@ from zmq.utils.monitor import recv_monitor_message
 
 
 class TestSocketMonitor(BaseZMQTestCase):
-
     @require_zmq_4
     def test_monitor(self):
         """Test monitoring interface for sockets."""
@@ -25,8 +24,11 @@ class TestSocketMonitor(BaseZMQTestCase):
         self.sockets.extend([s_rep, s_req])
         s_req.bind("tcp://127.0.0.1:6666")
         # try monitoring the REP socket
-        
-        s_rep.monitor("inproc://monitor.rep", zmq.EVENT_CONNECT_DELAYED | zmq.EVENT_CONNECTED | zmq.EVENT_MONITOR_STOPPED)
+
+        s_rep.monitor(
+            "inproc://monitor.rep",
+            zmq.EVENT_CONNECT_DELAYED | zmq.EVENT_CONNECTED | zmq.EVENT_MONITOR_STOPPED,
+        )
         # create listening socket for monitor
         s_event = self.context.socket(zmq.PAIR)
         self.sockets.append(s_event)

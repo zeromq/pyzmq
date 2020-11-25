@@ -6,22 +6,18 @@ Just CFFI pointer casting for now.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
-try:
-    long
-except NameError:
-    long = int # Python 3
+from typing import Any
 
 
-def cast_int_addr(n):
+def cast_int_addr(n: Any) -> int:
     """Cast an address to a Python int
-    
+
     This could be a Python integer or a CFFI pointer
     """
-    if isinstance(n, (int, long)):
+    if isinstance(n, int):
         return n
     try:
-        import cffi
+        import cffi  # type: ignore
     except ImportError:
         pass
     else:
@@ -29,5 +25,5 @@ def cast_int_addr(n):
         ffi = cffi.FFI()
         if isinstance(n, ffi.CData):
             return int(ffi.cast("size_t", n))
-    
+
     raise ValueError("Cannot cast %r to int" % n)

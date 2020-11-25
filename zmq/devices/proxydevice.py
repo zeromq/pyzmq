@@ -9,9 +9,9 @@ from zmq.devices.basedevice import Device, ThreadDevice, ProcessDevice
 
 class ProxyBase(object):
     """Base class for overriding methods."""
-    
+
     def __init__(self, in_type, out_type, mon_type=zmq.PUB):
-        
+
         Device.__init__(self, in_type=in_type, out_type=out_type)
         self.mon_type = mon_type
         self._mon_binds = []
@@ -54,25 +54,26 @@ class ProxyBase(object):
         self._mon_sockopts.append((opt, value))
 
     def _setup_sockets(self):
-        ins,outs = Device._setup_sockets(self)
+        ins, outs = Device._setup_sockets(self)
         ctx = self._context
         mons = ctx.socket(self.mon_type)
-        
+
         # set sockopts (must be done first, in case of zmq.IDENTITY)
-        for opt,value in self._mon_sockopts:
+        for opt, value in self._mon_sockopts:
             mons.setsockopt(opt, value)
-        
+
         for iface in self._mon_binds:
             mons.bind(iface)
-        
+
         for iface in self._mon_connects:
             mons.connect(iface)
-        
-        return ins,outs,mons
-    
+
+        return ins, outs, mons
+
     def run_device(self):
-        ins,outs,mons = self._setup_sockets()
+        ins, outs, mons = self._setup_sockets()
         zmq.proxy(ins, outs, mons)
+
 
 class Proxy(ProxyBase, Device):
     """Threadsafe Proxy object.
@@ -86,14 +87,19 @@ class Proxy(ProxyBase, Device):
 
     A PUB socket is the most logical choice for the mon_socket, but it is not required.
     """
+
     pass
+
 
 class ThreadProxy(ProxyBase, ThreadDevice):
     """Proxy in a Thread. See Proxy for more."""
+
     pass
+
 
 class ProcessProxy(ProxyBase, ProcessDevice):
     """Proxy in a Process. See Proxy for more."""
+
     pass
 
 

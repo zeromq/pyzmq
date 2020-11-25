@@ -3,8 +3,10 @@
 Just import things
 """
 
+
 def test_wheel():
     import zmq
+
     ctx = zmq.Context()
     s = ctx.socket(zmq.PUSH)
     s.close()

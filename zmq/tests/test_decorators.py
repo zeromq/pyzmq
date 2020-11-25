@@ -14,6 +14,7 @@ def test_ctx():
     @context()
     def test(ctx):
         assert isinstance(ctx, zmq.Context), ctx
+
     test()
 
 
@@ -32,6 +33,7 @@ def test_ctx_arg_naming():
     @context('myctx')
     def test(myctx):
         assert isinstance(myctx, zmq.Context), myctx
+
     test()
 
 
@@ -40,6 +42,7 @@ def test_ctx_args():
     def test(ctx):
         assert isinstance(ctx, zmq.Context), ctx
         assert ctx.IO_THREADS == 5, ctx.IO_THREADS
+
     test()
 
 
@@ -48,6 +51,7 @@ def test_ctx_arg_kwarg():
     def test(ctx):
         assert isinstance(ctx, zmq.Context), ctx
         assert ctx.IO_THREADS == 5, ctx.IO_THREADS
+
     test()
 
 
@@ -55,6 +59,7 @@ def test_ctx_kw_naming():
     @context(name='myctx')
     def test(myctx):
         assert isinstance(myctx, zmq.Context), myctx
+
     test()
 
 
@@ -63,6 +68,7 @@ def test_ctx_kwargs():
     def test(ctx):
         assert isinstance(ctx, zmq.Context), ctx
         assert ctx.IO_THREADS == 5, ctx.IO_THREADS
+
     test()
 
 
@@ -71,6 +77,7 @@ def test_ctx_kwargs_default():
     def test(ctx=None):
         assert isinstance(ctx, zmq.Context), ctx
         assert ctx.IO_THREADS == 5, ctx.IO_THREADS
+
     test()
 
 
@@ -78,6 +85,7 @@ def test_ctx_keyword_miss():
     @context(name='ctx')
     def test(other_name):
         pass  # the keyword ``ctx`` not found
+
     with raises(TypeError):
         test()
 
@@ -86,6 +94,7 @@ def test_ctx_multi_assign():
     @context(name='ctx')
     def test(ctx):
         pass  # explosion
+
     with raises(TypeError):
         test('mock')
 
@@ -138,6 +147,7 @@ def test_ctx_skt():
         assert isinstance(ctx, zmq.Context), ctx
         assert isinstance(skt, zmq.Socket), skt
         assert skt.type == zmq.PUB
+
     test()
 
 
@@ -148,6 +158,7 @@ def test_skt_name():
         assert isinstance(myskt, zmq.Socket), myskt
         assert isinstance(ctx, zmq.Context), ctx
         assert myskt.type == zmq.PUB
+
     test()
 
 
@@ -158,6 +169,7 @@ def test_skt_kwarg():
         assert isinstance(myskt, zmq.Socket), myskt
         assert isinstance(ctx, zmq.Context), ctx
         assert myskt.type == zmq.PUB
+
     test()
 
 
@@ -168,6 +180,7 @@ def test_ctx_skt_name():
         assert isinstance(skt, zmq.Socket), skt
         assert isinstance(ctx, zmq.Context), ctx
         assert skt.type == zmq.PUB
+
     test()
 
 
@@ -177,6 +190,7 @@ def test_skt_default_ctx():
         assert isinstance(skt, zmq.Socket), skt
         assert skt.context is zmq.Context.instance()
         assert skt.type == zmq.PUB
+
     test()
 
 
@@ -204,8 +218,7 @@ def test_skt_reinit():
 
 
 def test_ctx_skt_reinit():
-    result = {'foo': {'ctx': None, 'skt': None},
-              'bar': {'ctx': None, 'skt': None}}
+    result = {'foo': {'ctx': None, 'skt': None}, 'bar': {'ctx': None, 'skt': None}}
 
     @context()
     @socket(zmq.PUB)
@@ -238,6 +251,7 @@ def test_skt_type_miss():
     @socket('myskt')
     def f(ctx, myskt):
         pass  # the socket type is missing
+
     with raises(TypeError):
         f()
 
@@ -258,6 +272,7 @@ def test_multi_skts():
         assert pub.type == zmq.PUB
         assert sub.type == zmq.SUB
         assert push.type == zmq.PUSH
+
     test()
 
 
@@ -279,6 +294,7 @@ def test_multi_skts_single_ctx():
         assert pub.type == zmq.PUB
         assert sub.type == zmq.SUB
         assert push.type == zmq.PUSH
+
     test()
 
 
@@ -298,7 +314,9 @@ def test_multi_skts_with_name():
         assert foo.type == zmq.PUSH
         assert bar.type == zmq.SUB
         assert baz.type == zmq.PUB
+
     test()
+
 
 def test_func_return():
     @context()
@@ -333,7 +351,7 @@ def test_skt_multi_thread():
     [t.join() for t in threads]
 
 
-class TestMethodDecorators():
+class TestMethodDecorators:
     @context()
     @socket(zmq.PUB)
     @socket(zmq.SUB)
@@ -349,7 +367,7 @@ class TestMethodDecorators():
 
         assert pub.type is zmq.PUB
         assert sub.type is zmq.SUB
-    
+
     def test_multi_skts_method(self):
         self.multi_skts_method()
 
@@ -370,6 +388,6 @@ class TestMethodDecorators():
             assert sub.type is zmq.SUB
 
         f('mock', bar='fake')
-    
+
     def test_multi_skts_method_other_args(self):
         self.multi_skts_method_other_args()

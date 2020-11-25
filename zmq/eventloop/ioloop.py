@@ -13,17 +13,22 @@ and tornado itself should be used.
 from __future__ import absolute_import, division, with_statement
 
 import time
+import types
 import warnings
+from typing import Any
 
 try:
     import tornado
     from tornado.log import gen_log
     from tornado import ioloop
+
     if not hasattr(ioloop.IOLoop, 'configurable_default'):
-        raise ImportError("Tornado too old: %s" % getattr(tornado, 'version', 'unknown'))
+        raise ImportError(
+            "Tornado too old: %s" % getattr(tornado, 'version', 'unknown')
+        )
 except ImportError:
-    from .minitornado import ioloop
-    from .minitornado.log import gen_log
+    from .minitornado import ioloop  # type: ignore
+    from .minitornado.log import gen_log  # type: ignore
 
 PeriodicCallback = ioloop.PeriodicCallback
 
@@ -34,25 +39,30 @@ class DelayedCallback(PeriodicCallback):
     The callback is called once, after callback_time milliseconds.
 
     `start` must be called after the DelayedCallback is created.
-    
+
     The timeout is calculated from when `start` is called.
     """
+
     def __init__(self, callback, callback_time, io_loop=None):
         # PeriodicCallback require callback_time to be positive
-        warnings.warn("""DelayedCallback is deprecated.
-        Use loop.add_timeout instead.""", DeprecationWarning)
+        warnings.warn(
+            """DelayedCallback is deprecated.
+        Use loop.add_timeout instead.""",
+            DeprecationWarning,
+        )
         callback_time = max(callback_time, 1e-3)
         super(DelayedCallback, self).__init__(callback, callback_time, io_loop)
-    
+
     def start(self):
         """Starts the timer."""
         self._running = True
         self._firstrun = True
         self._next_timeout = time.time() + self.callback_time / 1000.0
         self.io_loop.add_timeout(self._next_timeout, self._run)
-    
+
     def _run(self):
-        if not self._running: return
+        if not self._running:
+            return
         self._running = False
         try:
             self.callback()
@@ -61,18 +71,23 @@ class DelayedCallback(PeriodicCallback):
 
 
 def _deprecated():
-    if _deprecated.called:
+    if _deprecated.called:  # type: ignore
         return
-    _deprecated.called = True
-    warnings.warn("zmq.eventloop.ioloop is deprecated in pyzmq 17."
+    _deprecated.called = True  # type: ignore
+    warnings.warn(
+        "zmq.eventloop.ioloop is deprecated in pyzmq 17."
         " pyzmq now works with default tornado and asyncio eventloops.",
-        DeprecationWarning, stacklevel=3)
-_deprecated.called = False
+        DeprecationWarning,
+        stacklevel=3,
+    )
 
 
+_deprecated.called = False  # type: ignore
+
+_IOLoop: Any
 # resolve 'true' default loop
 if '.minitornado.' in ioloop.__name__:
-    from ._deprecated import ZMQIOLoop as _IOLoop
+    from ._deprecated import ZMQIOLoop as _IOLoop  # type: ignore
 else:
     _IOLoop = ioloop.IOLoop
     while _IOLoop.configurable_default() is not _IOLoop:
@@ -107,8 +122,7 @@ class ZMQIOLoop(_IOLoop):
 
     @classmethod
     def current(cls, *args, **kwargs):
-        """Returns the current thread’s IOLoop.
-        """
+        """Returns the current thread’s IOLoop."""
         # install ZMQIOLoop as the active IOLoop implementation
         # when using tornado 3
         ioloop.IOLoop.configure(cls)
@@ -132,5 +146,4 @@ def install():
 
 # if minitornado is used, fallback on deprecated ZMQIOLoop, install implementations
 if '.minitornado.' in ioloop.__name__:
-    from ._deprecated import ZMQIOLoop, install, IOLoop
-
+    from ._deprecated import ZMQIOLoop, install, IOLoop  # type: ignore

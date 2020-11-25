@@ -1,11 +1,12 @@
 """Win32 compatibility utilities."""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import os
+from typing import Type
 
 # No-op implementation for other platforms.
 class _allow_interrupt(object):
@@ -65,11 +66,11 @@ class _allow_interrupt(object):
         ``action`` is a callable that takes no arguments and returns no
         value (returned value is ignored).  It must *NEVER* raise an
         exception.
-        
+
         If unspecified, a no-op will be used.
         """
         self._init_action(action)
-    
+
     def _init_action(self, action):
         pass
 
@@ -79,9 +80,12 @@ class _allow_interrupt(object):
     def __exit__(self, *args):
         return
 
+
+allow_interrupt: Type[_allow_interrupt]
+
 if os.name == 'nt':
-    from ctypes import WINFUNCTYPE, windll
-    from ctypes.wintypes import BOOL, DWORD
+    from ctypes import WINFUNCTYPE, windll  # type: ignore
+    from ctypes.wintypes import BOOL, DWORD  # type: ignore
 
     kernel32 = windll.LoadLibrary('kernel32')
 
@@ -91,13 +95,14 @@ if os.name == 'nt':
     SetConsoleCtrlHandler.argtypes = (PHANDLER_ROUTINE, BOOL)
     SetConsoleCtrlHandler.restype = BOOL
 
-    class allow_interrupt(_allow_interrupt):
+    class _real_allow_interrupt(_allow_interrupt):
         __doc__ = _allow_interrupt.__doc__
 
         def _init_action(self, action):
             if action is None:
                 action = lambda: None
             self.action = action
+
             @PHANDLER_ROUTINE
             def handle(event):
                 if event == 0:  # CTRL_C_EVENT
@@ -109,6 +114,7 @@ if os.name == 'nt':
                     # CTRL-C to a `KeyboardInterrupt` exception, so we pretend
                     # that we didn't handle it.
                 return 0
+
             self.handle = handle
 
         def __enter__(self):
@@ -126,7 +132,7 @@ if os.name == 'nt':
                 # Have standard library automatically call `GetLastError()` and
                 # `FormatMessage()` into a nice exception object :-)
                 raise WindowsError()
+
+    allow_interrupt = _real_allow_interrupt
 else:
-    class allow_interrupt(_allow_interrupt):
-        __doc__ = _allow_interrupt.__doc__
-        pass
+    allow_interrupt = _allow_interrupt

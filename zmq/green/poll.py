@@ -11,7 +11,8 @@ class _Poller(_original_Poller):
     Ensures that the greened Poller below is used in calls to
     :meth:`zmq.Poller.poll`.
     """
-    _gevent_bug_timeout = 1.33 # minimum poll interval, for working around gevent bug
+
+    _gevent_bug_timeout = 1.33  # minimum poll interval, for working around gevent bug
 
     def _get_descriptors(self):
         """Returns three elements tuple with socket descriptors ready
@@ -33,8 +34,10 @@ class _Poller(_original_Poller):
                 except:
                     raise ValueError('fileno() must return an valid integer fd')
             else:
-                raise TypeError('Socket must be a 0MQ socket, an integer fd '
-                                'or have a fileno() method: %r' % socket)
+                raise TypeError(
+                    'Socket must be a 0MQ socket, an integer fd '
+                    'or have a fileno() method: %r' % socket
+                )
 
             if flags & zmq.POLLIN:
                 rlist.append(fd)
@@ -63,7 +66,7 @@ class _Poller(_original_Poller):
         xlist = None
 
         if timeout > 0:
-            tout = gevent.Timeout.start_new(timeout/1000.0)
+            tout = gevent.Timeout.start_new(timeout / 1000.0)
         else:
             tout = None
 
@@ -94,4 +97,3 @@ class _Poller(_original_Poller):
         finally:
             if timeout > 0:
                 tout.cancel()
-

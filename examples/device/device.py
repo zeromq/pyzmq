@@ -12,6 +12,7 @@ import zmq
 MSGS = 10
 PRODUCERS = 2
 
+
 def produce(url, ident):
     """Produce messages"""
     ctx = zmq.Context.instance()
@@ -24,6 +25,7 @@ def produce(url, ident):
     print("Producer %s done" % ident)
     s.close()
 
+
 def consume(url):
     """Consume messages"""
     ctx = zmq.Context.instance()
@@ -35,6 +37,7 @@ def consume(url):
         print(msg.decode('ascii'))
     print("Consumer done")
     s.close()
+
 
 def proxy(in_url, out_url):
     ctx = zmq.Context.instance()
@@ -49,15 +52,19 @@ def proxy(in_url, out_url):
         in_s.close()
         out_s.close()
 
+
 in_url = 'tcp://127.0.0.1:5555'
 out_url = 'tcp://127.0.0.1:5556'
 
 consumer = Thread(target=consume, args=(out_url,))
 proxy_thread = Thread(target=proxy, args=(in_url, out_url))
-producers = [ Thread(target=produce, args=(in_url, i)) for i in range(PRODUCERS) ]
+producers = [Thread(target=produce, args=(in_url, i)) for i in range(PRODUCERS)]
 
 consumer.start()
 proxy_thread.start()
-[ p.start() for p in producers ]
+
+for p in producers:
+    p.start()
+
 consumer.join()
 zmq.Context.instance().term()

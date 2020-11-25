@@ -9,7 +9,6 @@ from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
 
 
 class TestMultipart(BaseZMQTestCase):
-
     def test_router_dealer(self):
         router, dealer = self.create_bound_pair(zmq.ROUTER, zmq.DEALER)
 
@@ -22,14 +21,16 @@ class TestMultipart(BaseZMQTestCase):
         self.assertEqual(msg1, msg2)
         more = router.rcvmore
         self.assertEqual(more, False)
-    
+
     def test_basic_multipart(self):
-        a,b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        msg = [ b'hi', b'there', b'b']
+        a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        msg = [b'hi', b'there', b'b']
         a.send_multipart(msg)
         recvd = b.recv_multipart()
         self.assertEqual(msg, recvd)
 
+
 if have_gevent:
+
     class TestMultipartGreen(GreenTest, TestMultipart):
         pass

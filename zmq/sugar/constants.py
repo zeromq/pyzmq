@@ -16,9 +16,9 @@ from zmq.utils.constant_names import (
     msg_opt_names,
 )
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Python module level constants
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 __all__ = [
@@ -35,12 +35,12 @@ if constants.VERSION < 40200:
 else:
     DRAFT_API = bool(has('draft') and constants.DRAFT_API)
 
-int_sockopts    = set()
-int64_sockopts  = set()
-bytes_sockopts  = set()
-fd_sockopts     = set()
-ctx_opts        = set()
-msg_opts        = set()
+int_sockopts = set()
+int64_sockopts = set()
+bytes_sockopts = set()
+fd_sockopts = set()
+ctx_opts = set()
+msg_opts = set()
 
 
 if constants.VERSION < 30000:
@@ -64,6 +64,7 @@ def _add_constant(name, container=None):
     if container is not None:
         container.add(c)
     return c
+
 
 for name in base_names:
     _add_constant(name)

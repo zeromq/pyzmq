@@ -32,8 +32,14 @@ async def run():
     public_keys_dir = base_dir / 'public_keys'
     secret_keys_dir = base_dir / 'private_keys'
 
-    if not keys_dir.is_dir() or not public_keys_dir.is_dir() or not secret_keys_dir.is_dir():
-        logging.critical("Certificates are missing - run generate_certificates.py script first")
+    if (
+        not keys_dir.is_dir()
+        or not public_keys_dir.is_dir()
+        or not secret_keys_dir.is_dir()
+    ):
+        logging.critical(
+            "Certificates are missing - run generate_certificates.py script first"
+        )
         sys.exit(1)
 
     ctx = Context.instance()
@@ -87,8 +93,12 @@ async def run():
 
 
 if __name__ == '__main__':
-    if zmq.zmq_version_info() < (4,0):
-        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
+    if zmq.zmq_version_info() < (4, 0):
+        raise RuntimeError(
+            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+                zmq.zmq_version()
+            )
+        )
 
     if '-v' in sys.argv:
         level = logging.DEBUG

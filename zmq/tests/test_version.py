@@ -8,7 +8,6 @@ from zmq.sugar import version
 
 
 class TestVersion(TestCase):
-
     def test_pyzmq_version(self):
         vs = zmq.pyzmq_version()
         vs2 = zmq.__version__
@@ -41,4 +40,3 @@ class TestVersion(TestCase):
     def test_zmq_version(self):
         v = zmq.zmq_version()
         self.assertTrue(isinstance(v, str))
-

@@ -14,11 +14,11 @@ from zmq.utils.strtypes import unicode
 
 def has(capability):
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
-    
+
     .. versionadded:: libzmq-4.1
     .. versionadded:: 14.1
     """
-    _check_version((4,1), 'zmq.has')
+    _check_version((4, 1), 'zmq.has')
     if isinstance(capability, unicode):
         capability = capability.encode('utf8')
     return bool(C.zmq_has(capability))
@@ -26,15 +26,15 @@ def has(capability):
 
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
-    
+
     Requires libzmq (≥ 4.0) to have been built with CURVE support.
-    
+
     Returns
     -------
     (public, secret) : two bytestrings
         The public and private keypair as 40 byte z85-encoded bytestrings.
     """
-    _check_version((3,2), "curve_keypair")
+    _check_version((3, 2), "curve_keypair")
     public = ffi.new('char[64]')
     private = ffi.new('char[64]')
     rc = C.zmq_curve_keypair(public, private)
@@ -43,7 +43,7 @@ def curve_keypair():
 
 
 def curve_public(private):
-    """ Compute the public key corresponding to a private key for use
+    """Compute the public key corresponding to a private key for use
     with zmq.CURVE security
 
     Requires libzmq (≥ 4.2) to have been built with CURVE support.
@@ -59,7 +59,7 @@ def curve_public(private):
     """
     if isinstance(private, unicode):
         private = private.encode('utf8')
-    _check_version((4,2), "curve_public")
+    _check_version((4, 2), "curve_public")
     public = ffi.new('char[64]')
     rc = C.zmq_curve_public(public, private)
     _check_rc(rc)

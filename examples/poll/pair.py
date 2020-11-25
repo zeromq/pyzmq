@@ -1,11 +1,11 @@
 """A thorough test of polling PAIR sockets."""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Brian Granger
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import time
 import zmq
@@ -24,8 +24,8 @@ s2.connect(addr)
 time.sleep(1.0)
 
 poller = zmq.Poller()
-poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
-poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
+poller.register(s2, zmq.POLLIN | zmq.POLLOUT)
 
 # Now make sure that both are send ready.
 socks = dict(poller.poll())
@@ -37,8 +37,8 @@ s1.send('msg1')
 s2.send('msg2')
 time.sleep(1.0)
 socks = dict(poller.poll())
-assert socks[s1] == zmq.POLLOUT|zmq.POLLIN
-assert socks[s2] == zmq.POLLOUT|zmq.POLLIN
+assert socks[s1] == zmq.POLLOUT | zmq.POLLIN
+assert socks[s2] == zmq.POLLOUT | zmq.POLLIN
 
 # Make sure that both are in POLLOUT after recv.
 s1.recv()

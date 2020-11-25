@@ -3,3 +3,6 @@ gevent; platform_python_implementation != "PyPy" and sys_platform != "win32" and
 pytest
 pytest-rerunfailures
 tornado
+mypy; platform_python_implementation != "PyPy"
+black; platform_python_implementation != "PyPy"
+flake8

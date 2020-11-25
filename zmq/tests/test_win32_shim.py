@@ -18,17 +18,15 @@ def count_calls(f):
             return f(*args, **kwds)
         finally:
             _.__calls__ += 1
+
     _.__calls__ = 0
     return _
 
 
 @mark.new_console
 class TestWindowsConsoleControlHandler(BaseZMQTestCase):
-
     @mark.new_console
-    @mark.skipif(
-        not sys.platform.startswith('win'),
-        reason='Windows only test')
+    @mark.skipif(not sys.platform.startswith('win'), reason='Windows only test')
     def test_handler(self):
         @count_calls
         def interrupt_polling():

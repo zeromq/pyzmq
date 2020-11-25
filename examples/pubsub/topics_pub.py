@@ -10,12 +10,12 @@ Topic filtering is done simply on the start of the string, e.g. listening to
 catch 'weather'.
 """
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Brian Granger
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import itertools
 import sys
@@ -23,16 +23,23 @@ import time
 
 import zmq
 
+
 def main():
-    if len (sys.argv) != 2:
+    if len(sys.argv) != 2:
         print('usage: publisher <bind-to>')
-        sys.exit (1)
+        sys.exit(1)
 
     bind_to = sys.argv[1]
 
-    all_topics = ['sports.general','sports.football','sports.basketball',
-                  'stocks.general','stocks.GOOG','stocks.AAPL',
-                  'weather']
+    all_topics = [
+        'sports.general',
+        'sports.football',
+        'sports.basketball',
+        'stocks.general',
+        'stocks.GOOG',
+        'stocks.AAPL',
+        'weather',
+    ]
 
     ctx = zmq.Context()
     s = ctx.socket(zmq.PUB)
@@ -59,6 +66,7 @@ def main():
     print("Waiting for message queues to flush...")
     time.sleep(0.5)
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

@@ -37,6 +37,8 @@ class TestPubSub(BaseZMQTestCase):
         msg2 = s2.recv()
         self.assertEqual(msg1, msg2)
 
+
 if have_gevent:
+
     class TestPubSubGreen(GreenTest, TestPubSub):
         pass

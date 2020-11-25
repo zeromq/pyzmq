@@ -9,13 +9,12 @@ from threading import Thread
 from pytest import mark
 
 import zmq
-from zmq.tests import (
-    BaseZMQTestCase, SkipTest, skip_pypy
-)
+from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
 from zmq.utils.strtypes import b
 
 
 # Partially based on EINTRBaseTest from CPython 3.5 eintr_tester
+
 
 class TestEINTRSysCall(BaseZMQTestCase):
     """ Base class for EINTR tests. """
@@ -23,12 +22,12 @@ class TestEINTRSysCall(BaseZMQTestCase):
     # delay for initial signal delivery
     signal_delay = 0.1
     # timeout for tests. Must be > signal_delay
-    timeout = .25
+    timeout = 0.25
     timeout_ms = int(timeout * 1e3)
 
     def alarm(self, t=None):
         """start a timer to fire only once
-        
+
         like signal.alarm, but with better resolution than integer seconds.
         """
         if not hasattr(signal, 'setitimer'):
@@ -39,12 +38,12 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.orig_handler = signal.signal(signal.SIGALRM, self.stop_timer)
         # signal_period ignored, since only one timer event is allowed to fire
         signal.setitimer(signal.ITIMER_REAL, t, 1000)
-    
+
     def stop_timer(self, *args):
         self.timer_fired = True
         signal.setitimer(signal.ITIMER_REAL, 0, 0)
         signal.signal(signal.SIGALRM, self.orig_handler)
-    
+
     @mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
     def test_retry_recv(self):
         pull = self.socket(zmq.PULL)
@@ -60,16 +59,18 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.alarm()
         self.assertRaises(zmq.Again, push.send, b('buf'))
         assert self.timer_fired
-    
+
     @mark.flaky(reruns=3)
     def test_retry_poll(self):
         x, y = self.create_bound_pair()
         poller = zmq.Poller()
         poller.register(x, zmq.POLLIN)
         self.alarm()
+
         def send():
             time.sleep(2 * self.signal_delay)
             y.send(b('ping'))
+
         t = Thread(target=send)
         t.start()
         evts = dict(poller.poll(2 * self.timeout_ms))
@@ -77,7 +78,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         assert x in evts
         assert self.timer_fired
         x.recv()
-    
+
     def test_retry_term(self):
         push = self.socket(zmq.PUSH)
         push.linger = self.timeout_ms
@@ -88,9 +89,9 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.context.destroy()
         assert self.timer_fired
         assert self.context.closed
-    
+
     def test_retry_getsockopt(self):
         raise SkipTest("TODO: find a way to interrupt getsockopt")
-    
+
     def test_retry_setsockopt(self):
         raise SkipTest("TODO: find a way to interrupt setsockopt")

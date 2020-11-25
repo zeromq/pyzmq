@@ -8,10 +8,14 @@ from .attrsettr import AttributeSetter
 from zmq.backend import Frame as FrameBase
 import zmq
 
+
 def _draft(v, feature):
     zmq.error._check_version(v, feature)
     if not zmq.DRAFT_API:
-        raise RuntimeError("libzmq and pyzmq must be built with draft support for %s" % feature)
+        raise RuntimeError(
+            "libzmq and pyzmq must be built with draft support for %s" % feature
+        )
+
 
 class Frame(FrameBase, AttributeSetter):
     """Frame(data=None, track=False, copy=None, copy_threshold=zmq.COPY_THRESHOLD)
@@ -19,8 +23,8 @@ class Frame(FrameBase, AttributeSetter):
     A zmq message Frame class for non-copy send/recvs.
 
     This class is only needed if you want to do non-copying send and recvs.
-    When you pass a string to this class, like ``Frame(s)``, the 
-    ref-count of `s` is increased by two: once because the Frame saves `s` as 
+    When you pass a string to this class, like ``Frame(s)``, the
+    ref-count of `s` is increased by two: once because the Frame saves `s` as
     an instance attribute and another because a ZMQ message is created that
     points to the buffer of `s`. This second ref-count increase makes sure
     that `s` lives until all messages that use it have been sent. Once 0MQ
@@ -58,12 +62,12 @@ class Frame(FrameBase, AttributeSetter):
 
         .. versionadded:: 17
         """
-        _draft((4,2), "RADIO-DISH")
+        _draft((4, 2), "RADIO-DISH")
         return self.get('group')
 
     @group.setter
     def group(self, group):
-        _draft((4,2), "RADIO-DISH")
+        _draft((4, 2), "RADIO-DISH")
         self.set('group', group)
 
     @property
@@ -74,12 +78,12 @@ class Frame(FrameBase, AttributeSetter):
 
         .. versionadded:: 17
         """
-        _draft((4,2), "CLIENT-SERVER")
+        _draft((4, 2), "CLIENT-SERVER")
         return self.get('routing_id')
 
     @routing_id.setter
     def routing_id(self, routing_id):
-        _draft((4,2), "CLIENT-SERVER")
+        _draft((4, 2), "CLIENT-SERVER")
         self.set('routing_id', routing_id)
 
 

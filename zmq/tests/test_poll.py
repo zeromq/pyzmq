@@ -11,8 +11,9 @@ import zmq
 
 from zmq.tests import PollZMQTestCase, have_gevent, GreenTest
 
+
 def wait():
-    time.sleep(.25)
+    time.sleep(0.25)
 
 
 class TestPoll(PollZMQTestCase):
@@ -26,8 +27,8 @@ class TestPoll(PollZMQTestCase):
         wait()
 
         poller = self.Poller()
-        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
-        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN | zmq.POLLOUT)
         # Poll result should contain both sockets
         socks = dict(poller.poll())
         # Now make sure that both are send ready.
@@ -38,8 +39,8 @@ class TestPoll(PollZMQTestCase):
         s2.send(b'msg2')
         wait()
         socks = dict(poller.poll())
-        self.assertEqual(socks[s1], zmq.POLLOUT|zmq.POLLIN)
-        self.assertEqual(socks[s2], zmq.POLLOUT|zmq.POLLIN)
+        self.assertEqual(socks[s1], zmq.POLLOUT | zmq.POLLIN)
+        self.assertEqual(socks[s2], zmq.POLLOUT | zmq.POLLIN)
         # Make sure that both are in POLLOUT after recv.
         s1.recv()
         s2.recv()
@@ -50,7 +51,6 @@ class TestPoll(PollZMQTestCase):
         poller.unregister(s1)
         poller.unregister(s2)
 
-
     def test_reqrep(self):
         s1, s2 = self.create_bound_pair(zmq.REP, zmq.REQ)
 
@@ -58,8 +58,8 @@ class TestPoll(PollZMQTestCase):
         wait()
 
         poller = self.Poller()
-        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
-        poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
+        poller.register(s2, zmq.POLLIN | zmq.POLLOUT)
 
         # Make sure that s1 is in state 0 and s2 is in POLLOUT
         socks = dict(poller.poll())
@@ -102,7 +102,7 @@ class TestPoll(PollZMQTestCase):
     def test_no_events(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         poller = self.Poller()
-        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
         poller.register(s2, 0)
         self.assertTrue(s1 in poller)
         self.assertFalse(s2 in poller)
@@ -117,7 +117,7 @@ class TestPoll(PollZMQTestCase):
         wait()
 
         poller = self.Poller()
-        poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
+        poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
         poller.register(s2, zmq.POLLIN)
 
         # Now make sure that both are send ready.
@@ -164,22 +164,22 @@ class TestPoll(PollZMQTestCase):
         poller = self.Poller()
         poller.register(s1, zmq.POLLIN)
         tic = time.time()
-        evt = poller.poll(.005)
+        evt = poller.poll(0.005)
         toc = time.time()
-        self.assertTrue(toc-tic < 0.1)
+        self.assertTrue(toc - tic < 0.1)
         tic = time.time()
         evt = poller.poll(5)
         toc = time.time()
-        self.assertTrue(toc-tic < 0.1)
-        self.assertTrue(toc-tic > .001)
+        self.assertTrue(toc - tic < 0.1)
+        self.assertTrue(toc - tic > 0.001)
         tic = time.time()
         evt = poller.poll(500)
         toc = time.time()
-        self.assertTrue(toc-tic < 1)
-        self.assertTrue(toc-tic > 0.1)
+        self.assertTrue(toc - tic < 1)
+        self.assertTrue(toc - tic > 0.1)
+
 
 class TestSelect(PollZMQTestCase):
-
     def test_pair(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
@@ -197,15 +197,15 @@ class TestSelect(PollZMQTestCase):
         """make sure select timeout has the right units (seconds)."""
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         tic = time.time()
-        r,w,x = zmq.select([s1,s2],[],[],.005)
+        r, w, x = zmq.select([s1, s2], [], [], 0.005)
         toc = time.time()
-        self.assertTrue(toc-tic < 1)
-        self.assertTrue(toc-tic > 0.001)
+        self.assertTrue(toc - tic < 1)
+        self.assertTrue(toc - tic > 0.001)
         tic = time.time()
-        r,w,x = zmq.select([s1,s2],[],[],.25)
+        r, w, x = zmq.select([s1, s2], [], [], 0.25)
         toc = time.time()
-        self.assertTrue(toc-tic < 1)
-        self.assertTrue(toc-tic > 0.1)
+        self.assertTrue(toc - tic < 1)
+        self.assertTrue(toc - tic > 0.1)
 
 
 if have_gevent:
@@ -225,8 +225,8 @@ if have_gevent:
             s = gevent.spawn(lambda: s1.send(b'msg1'))
             r.join()
             toc = time.time()
-            self.assertTrue(toc-tic < 1)
-        
+            self.assertTrue(toc - tic < 1)
+
         def test_socket_poll(self):
             s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
@@ -235,4 +235,4 @@ if have_gevent:
             s = gevent.spawn(lambda: s1.send(b'msg1'))
             r.join()
             toc = time.time()
-            self.assertTrue(toc-tic < 1)
+            self.assertTrue(toc - tic < 1)

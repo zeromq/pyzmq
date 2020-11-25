@@ -22,10 +22,16 @@ else:
 
 def customize_mingw(cc):
     # strip -mno-cygwin from mingw32 (Python Issue #12641)
-    for cmd in [cc.compiler, cc.compiler_cxx, cc.compiler_so, cc.linker_exe, cc.linker_so]:
+    for cmd in [
+        cc.compiler,
+        cc.compiler_cxx,
+        cc.compiler_so,
+        cc.linker_exe,
+        cc.linker_so,
+    ]:
         if '-mno-cygwin' in cmd:
             cmd.remove('-mno-cygwin')
-    
+
     # remove problematic msvcr90
     if 'msvcr90' in cc.dll_libraries:
         cc.dll_libraries.remove('msvcr90')
@@ -40,10 +46,10 @@ def get_compiler(compiler, **compiler_attrs):
             customize_mingw(cc)
     else:
         cc = compiler
-    
+
     for name, val in compiler_attrs.items():
         setattr(cc, name, val)
-    
+
     return cc
 
 
@@ -60,6 +66,5 @@ def get_output_error(cmd):
     # unicode:
     so = so.decode('utf8', 'replace')
     se = se.decode('utf8', 'replace')
-    
-    return result.returncode, so, se
 
+    return result.returncode, so, se

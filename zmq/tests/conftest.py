@@ -11,4 +11,5 @@ def win_py38_asyncio():
     if sys.version_info < (3, 8) or not sys.platform.startswith('win'):
         return
     import asyncio
+
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

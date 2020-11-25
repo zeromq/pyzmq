@@ -2,10 +2,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 from __future__ import absolute_import
-try:
-    import asyncio
-except ImportError:
-    asyncio = None
+
+import asyncio
 import time
 import os
 import threading
@@ -14,33 +12,36 @@ import pytest
 
 import zmq
 from zmq.tests import BaseZMQTestCase, have_gevent
+
 try:
     from tornado.ioloop import IOLoop as BaseIOLoop
     from zmq.eventloop import ioloop
-    _tornado = True
 except ImportError:
     _tornado = False
-
+else:
+    _tornado = True
 
 # tornado 5 with asyncio disables custom IOLoop implementations
 t5asyncio = False
 if _tornado:
     import tornado
+
     if tornado.version_info >= (5,) and asyncio:
         t5asyncio = True
+
 
 def printer():
     os.system("say hello")
     raise Exception
-    print (time.time())
+    print(time.time())
 
 
 class Delay(threading.Thread):
     def __init__(self, f, delay=1):
-        self.f=f
-        self.delay=delay
-        self.aborted=False
-        self.cond=threading.Condition()
+        self.f = f
+        self.delay = delay
+        self.aborted = False
+        self.cond = threading.Condition()
         super(Delay, self).__init__()
 
     def run(self):
@@ -51,7 +52,7 @@ class Delay(threading.Thread):
             self.f()
 
     def abort(self):
-        self.aborted=True
+        self.aborted = True
         self.cond.acquire()
         self.cond.notify()
         self.cond.release()
@@ -78,10 +79,10 @@ class TestIOLoop(BaseZMQTestCase):
         loop = self.IOLoop()
         loop.make_current()
         dc = ioloop.PeriodicCallback(loop.stop, 200)
-        pc = ioloop.PeriodicCallback(lambda : None, 10)
+        pc = ioloop.PeriodicCallback(lambda: None, 10)
         pc.start()
         dc.start()
-        t = Delay(loop.stop,1)
+        t = Delay(loop.stop, 1)
         t.start()
         loop.start()
         if t.is_alive():
@@ -108,7 +109,7 @@ class TestIOLoop(BaseZMQTestCase):
     def test_close_all(self):
         """Test close(all_fds=True)"""
         loop = self.IOLoop.current()
-        req,rep = self.create_bound_pair(zmq.REQ, zmq.REP)
+        req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
         loop.add_handler(req, lambda msg: msg, ioloop.IOLoop.READ)
         loop.add_handler(rep, lambda msg: msg, ioloop.IOLoop.READ)
         self.assertEqual(req.closed, False)
@@ -123,6 +124,7 @@ if have_gevent and _tornado:
 
     class TestIOLoopGreen(TestIOLoop):
         IOLoop = green_ioloop.IOLoop
+
         def xtest_instance(self):
             """Green IOLoop.instance returns the right object"""
             loop = self.IOLoop.instance()
@@ -138,4 +140,3 @@ if have_gevent and _tornado:
                 assert isinstance(loop, self.IOLoop)
             base_loop = BaseIOLoop.current()
             assert base_loop is loop
-

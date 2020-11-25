@@ -1,4 +1,4 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) 2011-2012 Travis Cline
 #
 #  This file is part of pyzmq
@@ -6,7 +6,7 @@
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 """This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
 """
@@ -16,6 +16,7 @@ from __future__ import print_function
 import sys
 import time
 import warnings
+from typing import Tuple
 
 import zmq
 
@@ -28,9 +29,10 @@ from gevent.event import AsyncResult
 from gevent.hub import get_hub
 
 if hasattr(zmq, 'RCVTIMEO'):
-    TIMEOS = (zmq.RCVTIMEO, zmq.SNDTIMEO)
+    TIMEOS: Tuple = (zmq.RCVTIMEO, zmq.SNDTIMEO)
 else:
     TIMEOS = ()
+
 
 def _stop(evt):
     """simple wrapper for stopping an Event, allowing for method rename in gevent 1.0"""
@@ -39,6 +41,7 @@ def _stop(evt):
     except AttributeError as e:
         # gevent<1.0 compat
         evt.cancel()
+
 
 class _Socket(_original_Socket):
     """Green version of :class:`zmq.Socket`
@@ -50,7 +53,7 @@ class _Socket(_original_Socket):
 
     To ensure that the ``zmq.NOBLOCK`` flag is set and that sending or receiving
     is deferred to the hub if a ``zmq.EAGAIN`` (retry) error is raised.
-    
+
     The `__state_changed` method is triggered when the zmq.FD for the socket is
     marked as readable and triggers the necessary read and write events (which
     are waited for in the recv and send methods).
@@ -58,21 +61,21 @@ class _Socket(_original_Socket):
     Some double underscore prefixes are used to minimize pollution of
     :class:`zmq.Socket`'s namespace.
     """
+
     __in_send_multipart = False
     __in_recv_multipart = False
     __writable = None
     __readable = None
     _state_event = None
-    _gevent_bug_timeout = 11.6 # timeout for not trusting gevent
-    _debug_gevent = False # turn on if you think gevent is missing events
+    _gevent_bug_timeout = 11.6  # timeout for not trusting gevent
+    _debug_gevent = False  # turn on if you think gevent is missing events
     _poller_class = _Poller
-    
+
     def __init__(self, *a, **kw):
         super(_Socket, self).__init__(*a, **kw)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
-        
 
     def __del__(self):
         self.close()
@@ -95,14 +98,19 @@ class _Socket(_original_Socket):
         self.__writable = AsyncResult()
         self.__readable.set()
         self.__writable.set()
-        
+
         try:
-            self._state_event = get_hub().loop.io(self.getsockopt(zmq.FD), 1) # read state watcher
+            self._state_event = get_hub().loop.io(
+                self.getsockopt(zmq.FD), 1
+            )  # read state watcher
             self._state_event.start(self.__state_changed)
         except AttributeError:
             # for gevent<1.0 compatibility
             from gevent.core import read_event
-            self._state_event = read_event(self.getsockopt(zmq.FD), self.__state_changed, persist=True)
+
+            self._state_event = read_event(
+                self.getsockopt(zmq.FD), self.__state_changed, persist=True
+            )
 
     def __state_changed(self, event=None, _evtype=None):
         if self.closed:
@@ -141,9 +149,16 @@ class _Socket(_original_Socket):
             toc = time.time()
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
-            if self._debug_gevent and timeout and toc-tic > dt and \
-                    self.getsockopt(zmq.EVENTS) & zmq.POLLOUT:
-                print("BUG: gevent may have missed a libzmq send event on %i!" % self.FD, file=sys.stderr)
+            if (
+                self._debug_gevent
+                and timeout
+                and toc - tic > dt
+                and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT
+            ):
+                print(
+                    "BUG: gevent may have missed a libzmq send event on %i!" % self.FD,
+                    file=sys.stderr,
+                )
         finally:
             if timeout:
                 timeout.cancel()
@@ -172,9 +187,16 @@ class _Socket(_original_Socket):
             toc = time.time()
             # gevent bug: get can raise timeout even on clean return
             # don't display zmq bug warning for gevent bug (this is getting ridiculous)
-            if self._debug_gevent and timeout and toc-tic > dt and \
-                    self.getsockopt(zmq.EVENTS) & zmq.POLLIN:
-                print("BUG: gevent may have missed a libzmq recv event on %i!" % self.FD, file=sys.stderr)
+            if (
+                self._debug_gevent
+                and timeout
+                and toc - tic > dt
+                and self.getsockopt(zmq.EVENTS) & zmq.POLLIN
+            ):
+                print(
+                    "BUG: gevent may have missed a libzmq recv event on %i!" % self.FD,
+                    file=sys.stderr,
+                )
         finally:
             if timeout:
                 timeout.cancel()
@@ -182,11 +204,11 @@ class _Socket(_original_Socket):
 
     def send(self, data, flags=0, copy=True, track=False, **kwargs):
         """send, which will only block current greenlet
-        
+
         state_changed always fires exactly once (success or fail) at the
         end of this method.
         """
-        
+
         # if we're given the NOBLOCK flag act as normal and let the EAGAIN get raised
         if flags & zmq.NOBLOCK:
             try:
@@ -197,7 +219,9 @@ class _Socket(_original_Socket):
             return msg
         # ensure the zmq.NOBLOCK flag is part of flags
         flags |= zmq.NOBLOCK
-        while True: # Attempt to complete this operation indefinitely, blocking the current greenlet
+        while (
+            True
+        ):  # Attempt to complete this operation indefinitely, blocking the current greenlet
             try:
                 # attempt the actual call
                 msg = super(_Socket, self).send(data, flags, copy, track)
@@ -216,7 +240,7 @@ class _Socket(_original_Socket):
 
     def recv(self, flags=0, copy=True, track=False):
         """recv, which will only block current greenlet
-        
+
         state_changed always fires exactly once (success or fail) at the
         end of this method.
         """
@@ -227,7 +251,7 @@ class _Socket(_original_Socket):
                 if not self.__in_recv_multipart:
                     self.__state_changed()
             return msg
-        
+
         flags |= zmq.NOBLOCK
         while True:
             try:
@@ -242,7 +266,7 @@ class _Socket(_original_Socket):
                     self.__state_changed()
                 return msg
             self._wait_read()
-    
+
     def send_multipart(self, *args, **kwargs):
         """wrap send_multipart to prevent state_changed on each partial send"""
         self.__in_send_multipart = True
@@ -252,7 +276,7 @@ class _Socket(_original_Socket):
             self.__in_send_multipart = False
             self.__state_changed()
         return msg
-    
+
     def recv_multipart(self, *args, **kwargs):
         """wrap recv_multipart to prevent state_changed on each partial recv"""
         self.__in_recv_multipart = True
@@ -266,7 +290,9 @@ class _Socket(_original_Socket):
     def get(self, opt):
         """trigger state_changed on getsockopt(EVENTS)"""
         if opt in TIMEOS:
-            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
+            warnings.warn(
+                "TIMEO socket options have no effect in zmq.green", UserWarning
+            )
         optval = super(_Socket, self).get(opt)
         if opt == zmq.EVENTS:
             self.__state_changed()
@@ -275,7 +301,9 @@ class _Socket(_original_Socket):
     def set(self, opt, val):
         """set socket option"""
         if opt in TIMEOS:
-            warnings.warn("TIMEO socket options have no effect in zmq.green", UserWarning)
+            warnings.warn(
+                "TIMEO socket options have no effect in zmq.green", UserWarning
+            )
         return super(_Socket, self).set(opt, val)
 
 
@@ -284,6 +312,7 @@ class _Context(_original_Context):
 
     Ensures that the greened Socket above is used in calls to `socket`.
     """
+
     _socket_class = _Socket
 
     # avoid sharing instance with base Context class

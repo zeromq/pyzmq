@@ -8,19 +8,24 @@ from unittest import TestCase
 from zmq.tests import BaseZMQTestCase, SkipTest
 
 try:
-    from zmq.backend.cffi import (
+    from zmq.backend.cffi import (  # type: ignore
         zmq_version_info,
-        PUSH, PULL, IDENTITY,
-        REQ, REP, POLLIN, POLLOUT,
+        PUSH,
+        PULL,
+        IDENTITY,
+        REQ,
+        REP,
+        POLLIN,
+        POLLOUT,
     )
     from zmq.backend.cffi._cffi import ffi, C
+
     have_ffi_backend = True
 except ImportError:
     have_ffi_backend = False
 
 
 class TestCFFIBackend(TestCase):
-    
     def setUp(self):
         if not have_ffi_backend:
             raise SkipTest('CFFI not available')
@@ -28,7 +33,7 @@ class TestCFFIBackend(TestCase):
     def test_zmq_version_info(self):
         version = zmq_version_info()
 
-        assert version[0] in range(2,11)
+        assert version[0] in range(2, 11)
 
     def test_zmq_ctx_new_destroy(self):
         ctx = C.zmq_ctx_new()
@@ -68,10 +73,7 @@ class TestCFFIBackend(TestCase):
 
         option_len = ffi.new('size_t*', 3)
         option = ffi.new('char[3]')
-        ret = C.zmq_getsockopt(socket,
-                            IDENTITY,
-                            ffi.cast('void*', option),
-                            option_len)
+        ret = C.zmq_getsockopt(socket, IDENTITY, ffi.cast('void*', option), option_len)
 
         assert ret == 0
         assert ffi.string(ffi.cast('char*', option))[0:1] == b"z"
@@ -125,11 +127,9 @@ class TestCFFIBackend(TestCase):
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[5]', b'Hello')
 
-        assert 0 == C.zmq_msg_init_data(zmq_msg,
-                                        ffi.cast('void*', message),
-                                        5,
-                                        ffi.NULL,
-                                        ffi.NULL)
+        assert 0 == C.zmq_msg_init_data(
+            zmq_msg, ffi.cast('void*', message), 5, ffi.NULL, ffi.NULL
+        )
 
         assert ffi.NULL != zmq_msg
         assert 0 == C.zmq_msg_close(zmq_msg)
@@ -137,18 +137,15 @@ class TestCFFIBackend(TestCase):
     def test_zmq_msg_data(self):
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[]', b'Hello')
-        assert 0 == C.zmq_msg_init_data(zmq_msg,
-                                        ffi.cast('void*', message),
-                                        5,
-                                        ffi.NULL,
-                                        ffi.NULL)
+        assert 0 == C.zmq_msg_init_data(
+            zmq_msg, ffi.cast('void*', message), 5, ffi.NULL, ffi.NULL
+        )
 
         data = C.zmq_msg_data(zmq_msg)
 
         assert ffi.NULL != zmq_msg
         assert ffi.string(ffi.cast("char*", data)) == b'Hello'
         assert 0 == C.zmq_msg_close(zmq_msg)
-
 
     def test_zmq_send(self):
         ctx = C.zmq_ctx_new()
@@ -164,11 +161,13 @@ class TestCFFIBackend(TestCase):
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[5]', b'Hello')
 
-        C.zmq_msg_init_data(zmq_msg,
-                            ffi.cast('void*', message),
-                            ffi.cast('size_t', 5),
-                            ffi.NULL,
-                            ffi.NULL)
+        C.zmq_msg_init_data(
+            zmq_msg,
+            ffi.cast('void*', message),
+            ffi.cast('size_t', 5),
+            ffi.NULL,
+            ffi.NULL,
+        )
 
         assert 5 == C.zmq_msg_send(zmq_msg, sender, 0)
         assert 0 == C.zmq_msg_close(zmq_msg)
@@ -190,11 +189,13 @@ class TestCFFIBackend(TestCase):
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[5]', b'Hello')
 
-        C.zmq_msg_init_data(zmq_msg,
-                            ffi.cast('void*', message),
-                            ffi.cast('size_t', 5),
-                            ffi.NULL,
-                            ffi.NULL)
+        C.zmq_msg_init_data(
+            zmq_msg,
+            ffi.cast('void*', message),
+            ffi.cast('size_t', 5),
+            ffi.NULL,
+            ffi.NULL,
+        )
 
         zmq_msg2 = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg2)
@@ -202,8 +203,10 @@ class TestCFFIBackend(TestCase):
         assert 5 == C.zmq_msg_send(zmq_msg, sender, 0)
         assert 5 == C.zmq_msg_recv(zmq_msg2, receiver, 0)
         assert 5 == C.zmq_msg_size(zmq_msg2)
-        assert b"Hello" == ffi.buffer(C.zmq_msg_data(zmq_msg2),
-                                      C.zmq_msg_size(zmq_msg2))[:]
+        assert (
+            b"Hello"
+            == ffi.buffer(C.zmq_msg_data(zmq_msg2), C.zmq_msg_size(zmq_msg2))[:]
+        )
         assert C.zmq_close(sender) == 0
         assert C.zmq_close(receiver) == 0
         assert C.zmq_ctx_destroy(ctx) == 0
@@ -220,11 +223,13 @@ class TestCFFIBackend(TestCase):
         zmq_msg = ffi.new('zmq_msg_t*')
         message = ffi.new('char[5]', b'Hello')
 
-        C.zmq_msg_init_data(zmq_msg,
-                            ffi.cast('void*', message),
-                            ffi.cast('size_t', 5),
-                            ffi.NULL,
-                            ffi.NULL)
+        C.zmq_msg_init_data(
+            zmq_msg,
+            ffi.cast('void*', message),
+            ffi.cast('size_t', 5),
+            ffi.NULL,
+            ffi.NULL,
+        )
 
         receiver_pollitem = ffi.new('zmq_pollitem_t*')
         receiver_pollitem.socket = receiver
@@ -257,8 +262,10 @@ class TestCFFIBackend(TestCase):
         assert ret_recv == 5
 
         assert 5 == C.zmq_msg_size(zmq_msg2)
-        assert b"Hello" == ffi.buffer(C.zmq_msg_data(zmq_msg2),
-                                    C.zmq_msg_size(zmq_msg2))[:]
+        assert (
+            b"Hello"
+            == ffi.buffer(C.zmq_msg_data(zmq_msg2), C.zmq_msg_size(zmq_msg2))[:]
+        )
 
         sender_pollitem = ffi.new('zmq_pollitem_t*')
         sender_pollitem.socket = sender
@@ -272,11 +279,13 @@ class TestCFFIBackend(TestCase):
         zmq_msg_again = ffi.new('zmq_msg_t*')
         message_again = ffi.new('char[11]', b'Hello Again')
 
-        C.zmq_msg_init_data(zmq_msg_again,
-                            ffi.cast('void*', message_again),
-                            ffi.cast('size_t', 11),
-                            ffi.NULL,
-                            ffi.NULL)
+        C.zmq_msg_init_data(
+            zmq_msg_again,
+            ffi.cast('void*', message_again),
+            ffi.cast('size_t', 11),
+            ffi.NULL,
+            ffi.NULL,
+        )
 
         assert 11 == C.zmq_msg_send(zmq_msg_again, receiver, 0)
 
@@ -286,12 +295,13 @@ class TestCFFIBackend(TestCase):
         assert int(sender_pollitem.revents) & POLLIN
         assert 11 == C.zmq_msg_recv(zmq_msg2, sender, 0)
         assert 11 == C.zmq_msg_size(zmq_msg2)
-        assert b"Hello Again" == ffi.buffer(C.zmq_msg_data(zmq_msg2),
-                                            int(C.zmq_msg_size(zmq_msg2)))[:]
+        assert (
+            b"Hello Again"
+            == ffi.buffer(C.zmq_msg_data(zmq_msg2), int(C.zmq_msg_size(zmq_msg2)))[:]
+        )
         assert 0 == C.zmq_close(sender)
         assert 0 == C.zmq_close(receiver)
         assert 0 == C.zmq_ctx_destroy(ctx)
         assert 0 == C.zmq_msg_close(zmq_msg)
         assert 0 == C.zmq_msg_close(zmq_msg2)
         assert 0 == C.zmq_msg_close(zmq_msg_again)
-

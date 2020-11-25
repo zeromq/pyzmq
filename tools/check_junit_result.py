@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import argparse
+
 try:
     from xml.etree import cElementTree as ET
 except ImportError:
@@ -37,10 +38,9 @@ def main(filename):
             print("{name}{classname}".format(**attributes))
         exit(0)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "filename",
-        help="The filename of the junit xml result file")
+    parser.add_argument("filename", help="The filename of the junit xml result file")
     args = parser.parse_args()
     main(args.filename)

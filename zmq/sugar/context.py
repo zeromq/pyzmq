@@ -7,6 +7,7 @@
 import atexit
 import os
 from threading import Lock
+from typing import TypeVar, Type
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
@@ -18,16 +19,25 @@ from zmq.error import ZMQError
 
 # notice when exiting, to avoid triggering term on exit
 _exiting = False
+
+
 def _notice_atexit():
     global _exiting
     _exiting = True
+
+
 atexit.register(_notice_atexit)
+
+
+T = TypeVar('T', bound='Context')
+
 
 class Context(ContextBase, AttributeSetter):
     """Create a zmq Context
 
     A zmq Context creates sockets via its ``ctx.socket`` method.
     """
+
     sockopts = None
     _instance = None
     _instance_lock = Lock()
@@ -52,50 +62,51 @@ class Context(ContextBase, AttributeSetter):
 
         if not self._shadow and not _exiting:
             self.term()
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *args, **kwargs):
         self.term()
-    
+
     def __copy__(self, memo=None):
         """Copying a Context creates a shadow copy"""
         return self.__class__.shadow(self.underlying)
-    
+
     __deepcopy__ = __copy__
-    
+
     @classmethod
     def shadow(cls, address):
         """Shadow an existing libzmq context
-        
+
         address is the integer address of the libzmq context
         or an FFI pointer to it.
-        
+
         .. versionadded:: 14.1
         """
         from zmq.utils.interop import cast_int_addr
+
         address = cast_int_addr(address)
         return cls(shadow=address)
-    
+
     @classmethod
     def shadow_pyczmq(cls, ctx):
         """Shadow an existing pyczmq context
-        
+
         ctx is the FFI `zctx_t *` pointer
-        
+
         .. versionadded:: 14.1
         """
-        from pyczmq import zctx
+        from pyczmq import zctx  # type: ignore
         from zmq.utils.interop import cast_int_addr
-        
+
         underlying = zctx.underlying(ctx)
         address = cast_int_addr(underlying)
         return cls(shadow=address)
 
     # static method copied from tornado IOLoop.instance
     @classmethod
-    def instance(cls, io_threads=1):
+    def instance(cls: Type[T], io_threads=1) -> T:
         """Returns a global Context instance.
 
         Most single-threaded applications have a single, global Context.
@@ -153,22 +164,20 @@ class Context(ContextBase, AttributeSetter):
         """
         return super(Context, self).term()
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Hooks for ctxopt completion
-    #-------------------------------------------------------------------------
-    
+    # -------------------------------------------------------------------------
+
     def __dir__(self):
         keys = dir(self.__class__)
 
-        for collection in (
-            ctx_opt_names,
-        ):
+        for collection in (ctx_opt_names,):
             keys.extend(collection)
         return keys
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Creating Sockets
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def _add_socket(self, socket):
         self._sockets.add(socket)
@@ -248,14 +257,14 @@ class Context(ContextBase, AttributeSetter):
         .. versionadded:: 13.0
         """
         return self.sockopts[opt]
-    
+
     def _set_attr_opt(self, name, opt, value):
         """set default sockopts as attributes"""
         if name in constants.ctx_opt_names:
             return self.set(opt, value)
         else:
             self.sockopts[opt] = value
-    
+
     def _get_attr_opt(self, name, opt):
         """get default sockopts as attributes"""
         if name in constants.ctx_opt_names:
@@ -265,7 +274,7 @@ class Context(ContextBase, AttributeSetter):
                 raise AttributeError(name)
             else:
                 return self.sockopts[opt]
-    
+
     def __delattr__(self, key):
         """delete default sockopts as attributes"""
         key = key.upper()
@@ -278,5 +287,6 @@ class Context(ContextBase, AttributeSetter):
                 raise AttributeError(key)
             else:
                 del self.sockopts[opt]
+
 
 __all__ = ['Context']

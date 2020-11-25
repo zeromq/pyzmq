@@ -50,10 +50,10 @@ async def sender():
         await push.send_multipart([str(time.time() - tic).encode("ascii")])
         await gen.sleep(1)
 
+
 loop = IOLoop.instance()
 
 loop.spawn_callback(ping)
 loop.spawn_callback(receiver)
 loop.spawn_callback(sender)
 loop.start()
-

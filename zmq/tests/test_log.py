@@ -15,21 +15,21 @@ from zmq.tests import BaseZMQTestCase
 
 
 class TestPubLog(BaseZMQTestCase):
-    
+
     iface = 'inproc://zmqlog'
-    topic= 'zmq'
-    
+    topic = 'zmq'
+
     @property
     def logger(self):
         # print dir(self)
         logger = logging.getLogger('zmqtest')
         logger.setLevel(logging.DEBUG)
         return logger
-    
+
     def connect_handler(self, topic=None):
         topic = self.topic if topic is None else topic
         logger = self.logger
-        pub,sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        pub, sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
         handler.root_topic = topic
@@ -37,7 +37,7 @@ class TestPubLog(BaseZMQTestCase):
         sub.setsockopt(zmq.SUBSCRIBE, b(topic))
         time.sleep(0.1)
         return logger, handler, sub
-    
+
     def test_init_iface(self):
         logger = self.logger
         ctx = self.context
@@ -55,36 +55,40 @@ class TestPubLog(BaseZMQTestCase):
         self.sockets.append(sub)
         sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
         sub.connect(self.iface)
-        import time; time.sleep(0.25)
+        import time
+
+        time.sleep(0.25)
         msg1 = 'message'
         logger.info(msg1)
-        
+
         (topic, msg2) = sub.recv_multipart()
         self.assertEqual(topic, b'zmq.INFO')
-        self.assertEqual(msg2, b(msg1)+b'\n')
+        self.assertEqual(msg2, b(msg1) + b'\n')
         logger.removeHandler(handler)
-    
+
     def test_init_socket(self):
-        pub,sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        pub, sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
         logger = self.logger
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
         handler.root_topic = self.topic
         logger.addHandler(handler)
-        
+
         self.assertTrue(handler.socket is pub)
         self.assertTrue(handler.ctx is pub.context)
         self.assertTrue(handler.ctx is self.context)
         sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
-        import time; time.sleep(0.1)
+        import time
+
+        time.sleep(0.1)
         msg1 = 'message'
         logger.info(msg1)
-        
+
         (topic, msg2) = sub.recv_multipart()
         self.assertEqual(topic, b'zmq.INFO')
-        self.assertEqual(msg2, b(msg1)+b'\n')
+        self.assertEqual(msg2, b(msg1) + b'\n')
         logger.removeHandler(handler)
-    
+
     def test_root_topic(self):
         logger, handler, sub = self.connect_handler()
         handler.socket.bind(self.iface)
@@ -96,12 +100,12 @@ class TestPubLog(BaseZMQTestCase):
         msg1 = 'ignored'
         logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
-        topic,msg2 = sub2.recv_multipart()
+        topic, msg2 = sub2.recv_multipart()
         self.assertEqual(topic, b'twoonly.INFO')
-        self.assertEqual(msg2, b(msg1)+b'\n')
-        
+        self.assertEqual(msg2, b(msg1) + b'\n')
+
         logger.removeHandler(handler)
-    
+
     def test_blank_root_topic(self):
         logger, handler, sub_everything = self.connect_handler()
         sub_everything.setsockopt(zmq.SUBSCRIBE, b'')

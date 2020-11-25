@@ -19,12 +19,7 @@ def proxy(frontend, backend, capture=None):
     else:
         capture = ffi.NULL
 
-    _retry_sys_call(
-            C.zmq_proxy,
-            frontend._zmq_socket,
-            backend._zmq_socket,
-            capture
-        )
+    _retry_sys_call(C.zmq_proxy, frontend._zmq_socket, backend._zmq_socket, capture)
 
 
 def proxy_steerable(frontend, backend, capture=None, control=None):
@@ -57,12 +52,12 @@ def proxy_steerable(frontend, backend, capture=None, control=None):
         control = ffi.NULL
 
     _retry_sys_call(
-            C.zmq_proxy_steerable,
-            frontend._zmq_socket,
-            backend._zmq_socket,
-            capture,
-            control
-        )
+        C.zmq_proxy_steerable,
+        frontend._zmq_socket,
+        backend._zmq_socket,
+        capture,
+        control,
+    )
 
 
 __all__ = ['device', 'proxy', 'proxy_steerable']

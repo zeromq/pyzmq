@@ -10,12 +10,12 @@ Topic filtering is done simply on the start of the string, e.g. listening to
 catch 'weather'.
 """
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Brian Granger, Fernando Perez
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import sys
 import time
@@ -23,10 +23,11 @@ import time
 import zmq
 import numpy
 
+
 def main():
-    if len (sys.argv) < 2:
+    if len(sys.argv) < 2:
         print('usage: subscriber <connect_to> [topic topic ...]')
-        sys.exit (1)
+        sys.exit(1)
 
     connect_to = sys.argv[1]
     topics = sys.argv[2:]
@@ -38,11 +39,11 @@ def main():
     # manage subscriptions
     if not topics:
         print("Receiving messages on ALL topics...")
-        s.setsockopt(zmq.SUBSCRIBE,'')
+        s.setsockopt(zmq.SUBSCRIBE, '')
     else:
         print("Receiving messages on topics: %s ..." % topics)
         for t in topics:
-            s.setsockopt(zmq.SUBSCRIBE,t)
+            s.setsockopt(zmq.SUBSCRIBE, t)
     print
     try:
         while True:
@@ -51,6 +52,7 @@ def main():
     except KeyboardInterrupt:
         pass
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

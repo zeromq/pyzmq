@@ -9,9 +9,9 @@ import os
 import sys
 import logging
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Logging (adapted from h5py: https://www.h5py.org/)
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 logger = logging.getLogger()
@@ -21,19 +21,23 @@ else:
     logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stderr))
 
+
 def debug(msg):
     logger.debug(msg)
 
+
 def info(msg):
     logger.info(msg)
+
 
 def fatal(msg, code=1):
     logger.error("Fatal: " + msg)
     exit(code)
 
+
 def warn(msg):
     logger.error("Warning: " + msg)
 
+
 def line(c='*', width=48):
     print(c * (width // len(c)))
-
