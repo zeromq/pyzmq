@@ -1,4 +1,4 @@
-name: Build wheels
+name: Release
 
 on:
   push:
@@ -12,8 +12,46 @@ on:
 env:
   cython: "0.29.21"
   cibuildwheel: "1.6.4"
+  TWINE_NONINTERACTIVE: "1"
 
 jobs:
+  sdist:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade pip build
+          pip install cython=="${{ env.cython }}"
+
+      - name: build sdist
+        run: |
+          python setup.py fetch_libzmq
+          python setup.py cython
+          python -m build --sdist .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: sdist
+          path: "dist/*.tar.gz"
+          if-no-files-found: error
+
+      - name: Publish to PyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install twine
+          twine upload --skip-existing dist/*.tar.gz
+
   wheel:
     runs-on: ${{ matrix.os }}
 
@@ -89,11 +127,6 @@ jobs:
         run: |
           pip freeze
 
-      - name: register qemu for aarch64
-        if: matrix.arch == 'aarch64'
-        run: |
-          docker run --rm --privileged hypriot/qemu-register:v4.2.0 "${{ matrix.arch }}"
-
       - name: list target wheels
         run: |
           python -m cibuildwheel . --print-build-identifiers
@@ -112,10 +145,68 @@ jobs:
           path: "wheelhouse/*"
           if-no-files-found: error
 
-      - name: install twine
+      - name: Publish wheels to PyPI
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          pip install --upgrade twine
+          pip install twine
+          twine upload --skip-existing wheelhouse/*
+
+  cross-wheels:
+    # separate build for aarch64 since cibuildwheel can't do arm on GHA fr now
+    runs-on: ubuntu-20.04
+
+    env:
+      ZMQ_PREFIX: /usr/local
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            manylinux: "2014"
+            tag: "cp37-cp37m cp38-cp38 cp39-cp39"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: register qemu
+        run: |
+          docker run --rm --privileged hypriot/qemu-register:v4.2.0
+
+      - name: Build manylinux2014 Python wheels (aarch64)
+        if: matrix.arch == 'aarch64' && matrix.manylinux == '2014'
+        # uses should really support ${{ matrix.arch }} expansion, but it doesn't
+        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_aarch64"
+        with:
+          python-versions: ${{ matrix.tag }}
+          build-requirements: "cython==${{ env.cython }}"
+          pip-wheel-args: "-v -w ./dist --no-deps"
+          # what we really want is:
+          # system-packages: zeromq-devel
+          # but zeromq-devel not available on aarch64 by default...
+          # it is is epel7, but can't load that early enough
+          # loading rpms by full url seems to work, but we need to specify
+          # all dependencies to do so
+          system-packages: >
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-devel-4.1.4-6.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-4.1.4-6.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/l/libsodium-1.0.18-1.el7.aarch64.rpm
+            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/o/openpgm-5.2.122-2.el7.aarch64.rpm
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheels-manylinux${{ matrix.manylinux }}_${{ matrix.arch }}
+          path: "dist/*manylinux*.whl"
+          if-no-files-found: error
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          python-version: "3.8"
 
       - name: Publish wheels to PyPI
         if: startsWith(github.ref, 'refs/tags/')
@@ -124,4 +215,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           pip install twine
-          twine upload wheelhouse/*
+          twine upload --skip-existing dist/*manylinux*.whl
