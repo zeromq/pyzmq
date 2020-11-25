@@ -61,6 +61,7 @@ class TestEINTRSysCall(BaseZMQTestCase):
         self.assertRaises(zmq.Again, push.send, b('buf'))
         assert self.timer_fired
     
+    @mark.flaky(reruns=3)
     def test_retry_poll(self):
         x, y = self.create_bound_pair()
         poller = zmq.Poller()
