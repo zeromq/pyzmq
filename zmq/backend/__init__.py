@@ -25,20 +25,11 @@ else:
 
     try:
         _ns = select_backend(first)
-    except Exception:
-        exc_info = sys.exc_info()
-        exc = exc_info[1]
+    except Exception as original_error:
         try:
             _ns = select_backend(second)
         except ImportError:
-            # prevent 'During handling of the above exception...' on py3
-            # can't use `raise ... from` on Python 2
-            if hasattr(exc, '__cause__'):
-                exc.__cause__ = None
-            # raise the *first* error, not the fallback
-            from zmq.utils.sixcerpt import reraise
-
-            reraise(*exc_info)
+            raise original_error from None
 
 globals().update(_ns)
 

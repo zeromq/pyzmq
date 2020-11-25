@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from typing import Dict
+from importlib import import_module
 
 public_api = [
     'Context',
@@ -28,19 +29,11 @@ public_api = [
 def select_backend(name: str) -> Dict:
     """Select the pyzmq backend"""
     try:
-        mod = __import__(name, fromlist=public_api)
+        mod = import_module(name)
     except ImportError:
         raise
     except Exception as e:
-        import sys
-        from zmq.utils.sixcerpt import reraise
-
-        exc_info = sys.exc_info()
-        reraise(
-            ImportError,
-            ImportError("Importing %s failed with %s" % (name, e)),
-            exc_info[2],
-        )
+        raise ImportError(f"Importing {name} failed with {e}") from e
 
     ns = {}
     for key in public_api:
