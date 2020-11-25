@@ -76,6 +76,7 @@ jobs:
         if: "! startsWith(matrix.python, 'pypy')"
         run: |
           pip install cython
+          python setup.py cython
 
       - name: remove tornado
         if: matrix.tornado == 'none'
