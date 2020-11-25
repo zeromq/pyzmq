@@ -10,6 +10,7 @@ env:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.14"
