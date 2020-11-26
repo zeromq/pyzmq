@@ -20,16 +20,30 @@ def _draft(v, feature):
 class Frame(FrameBase, AttributeSetter):
     """Frame(data=None, track=False, copy=None, copy_threshold=zmq.COPY_THRESHOLD)
 
-    A zmq message Frame class for non-copy send/recvs.
+    A zmq message Frame class for non-copying send/recvs and access to message properties.
 
-    This class is only needed if you want to do non-copying send and recvs.
-    When you pass a string to this class, like ``Frame(s)``, the
-    ref-count of `s` is increased by two: once because the Frame saves `s` as
+    A ``zmq.Frame`` wraps an underlying ``zmq_msg_t``.
+
+    Message *properties* can be accessed by treating a Frame like a dictionary (``frame["User-Id"]``).
+
+    .. versionadded:: 14.4, libzmq 4
+
+        Frames created by ``recv(copy=False)`` can be used to access message properties and attributes,
+        such as the CURVE User-Id.
+
+        For example::
+
+            frames = socket.recv_multipart(copy=False)
+            user_id = frames[0]["User-Id"]
+
+    This class is used if you want to do non-copying send and recvs.
+    When you pass a chunk of bytes to this class, e.g. ``Frame(buf)``, the
+    ref-count of `buf` is increased by two: once because the Frame saves `buf` as
     an instance attribute and another because a ZMQ message is created that
-    points to the buffer of `s`. This second ref-count increase makes sure
-    that `s` lives until all messages that use it have been sent. Once 0MQ
-    sends all the messages and it doesn't need the buffer of s, 0MQ will call
-    ``Py_DECREF(s)``.
+    points to the buffer of `buf`. This second ref-count increase makes sure
+    that `buf` lives until all messages that use it have been sent.
+    Once 0MQ sends all the messages and it doesn't need the buffer of ``buf``,
+    0MQ will call ``Py_DECREF(s)``.
 
     Parameters
     ----------
