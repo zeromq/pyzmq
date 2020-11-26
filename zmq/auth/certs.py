@@ -12,21 +12,28 @@ import zmq
 from zmq.utils.strtypes import bytes, unicode, b, u
 
 
-_cert_secret_banner = u("""#   ****  Generated on {0} by pyzmq  ****
+_cert_secret_banner = u(
+    """#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE **Secret** Certificate
 #   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
 
-""")
+"""
+)
 
-_cert_public_banner = u("""#   ****  Generated on {0} by pyzmq  ****
+_cert_public_banner = u(
+    """#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE Public Certificate
 #   Exchange securely, or use a secure mechanism to verify the contents
 #   of this file after exchange. Store public certificates in your home
 #   directory, in the .curve subdirectory.
 
-""")
+"""
+)
 
-def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=None, encoding='utf-8'):
+
+def _write_key_file(
+    key_filename, banner, public_key, secret_key=None, metadata=None, encoding='utf-8'
+):
     """Create a certificate file"""
     if isinstance(public_key, bytes):
         public_key = public_key.decode(encoding)
@@ -53,7 +60,7 @@ def _write_key_file(key_filename, banner, public_key, secret_key=None, metadata=
 
 def create_certificates(key_dir, name, metadata=None):
     """Create zmq certificates.
-    
+
     Returns the file paths to the public and secret certificate files.
     """
     public_key, secret_key = zmq.curve_keypair()
@@ -62,27 +69,27 @@ def create_certificates(key_dir, name, metadata=None):
     public_key_file = "{0}.key".format(base_filename)
     now = datetime.datetime.now()
 
-    _write_key_file(public_key_file,
-                    _cert_public_banner.format(now),
-                    public_key)
+    _write_key_file(public_key_file, _cert_public_banner.format(now), public_key)
 
-    _write_key_file(secret_key_file,
-                    _cert_secret_banner.format(now),
-                    public_key,
-                    secret_key=secret_key,
-                    metadata=metadata)
+    _write_key_file(
+        secret_key_file,
+        _cert_secret_banner.format(now),
+        public_key,
+        secret_key=secret_key,
+        metadata=metadata,
+    )
 
     return public_key_file, secret_key_file
 
 
 def load_certificate(filename):
     """Load public and secret key from a zmq certificate.
-    
+
     Returns (public_key, secret_key)
-    
+
     If the certificate file only contains the public key,
     secret_key will be None.
-    
+
     If there is no public key found in the file, ValueError will be raised.
     """
     public_key = None
@@ -101,10 +108,10 @@ def load_certificate(filename):
                 secret_key = line.split(b"=", 1)[1].strip(b' \t\'"')
             if public_key and secret_key:
                 break
-    
+
     if public_key is None:
         raise ValueError("No public key found in %s" % filename)
-    
+
     return public_key, secret_key
 
 
@@ -115,12 +122,13 @@ def load_certificates(directory='.'):
         raise IOError("Invalid certificate directory: {0}".format(directory))
     # Follow czmq pattern of public keys stored in *.key files.
     glob_string = os.path.join(directory, "*.key")
-    
+
     cert_files = glob.glob(glob_string)
     for cert_file in cert_files:
         public_key, _ = load_certificate(cert_file)
         if public_key:
             certs[public_key] = True
     return certs
+
 
 __all__ = ['create_certificates', 'load_certificate', 'load_certificates']

@@ -36,7 +36,7 @@ class _Decorator(object):
         self._target = target
 
     def __call__(self, *dec_args, **dec_kwargs):
-        '''
+        """
         The main logic of decorator
 
         Here is how those arguments works::
@@ -47,13 +47,15 @@ class _Decorator(object):
 
         And in the ``wrapper``, we simply create ``self.target`` instance via
         ``with``::
-            
+
             target = self.get_target(*args, **kwargs)
             with target(*dec_args, **dec_kwargs) as obj:
                 ...
 
-        '''
-        kw_name, dec_args, dec_kwargs = self.process_decorator_args(*dec_args, **dec_kwargs)
+        """
+        kw_name, dec_args, dec_kwargs = self.process_decorator_args(
+            *dec_args, **dec_kwargs
+        )
 
         def decorator(func):
             @wraps(func)
@@ -67,8 +69,8 @@ class _Decorator(object):
                     elif kw_name and kw_name in kwargs:
                         raise TypeError(
                             "{0}() got multiple values for"
-                            " argument '{1}'".format(
-                                func.__name__, kw_name))
+                            " argument '{1}'".format(func.__name__, kw_name)
+                        )
                     else:
                         args = args + (obj,)
 
@@ -77,17 +79,17 @@ class _Decorator(object):
             return wrapper
 
         return decorator
-    
+
     def get_target(self, *args, **kwargs):
         """Return the target function
-        
+
         Allows modifying args/kwargs to be passed.
         """
         return self._target
-    
+
     def process_decorator_args(self, *args, **kwargs):
         """Process args passed to the decorator.
-        
+
         args not consumed by the decorator will be passed to the target factory
         (Context/Socket constructor).
         """
@@ -104,29 +106,32 @@ class _Decorator(object):
 
 class _ContextDecorator(_Decorator):
     """Decorator subclass for Contexts"""
+
     def __init__(self):
         super(_ContextDecorator, self).__init__(zmq.Context)
 
 
 class _SocketDecorator(_Decorator):
     """Decorator subclass for sockets
-    
+
     Gets the context from other args.
     """
-    
+
     def process_decorator_args(self, *args, **kwargs):
         """Also grab context_name out of kwargs"""
-        kw_name, args, kwargs = super(_SocketDecorator, self).process_decorator_args(*args, **kwargs)
+        kw_name, args, kwargs = super(_SocketDecorator, self).process_decorator_args(
+            *args, **kwargs
+        )
         self.context_name = kwargs.pop('context_name', 'context')
         return kw_name, args, kwargs
-    
+
     def get_target(self, *args, **kwargs):
         """Get context, based on call-time args"""
         context = self._get_context(*args, **kwargs)
         return context.socket
 
     def _get_context(self, *args, **kwargs):
-        '''
+        """
         Find the ``zmq.Context`` from ``args`` and ``kwargs`` at call time.
 
         First, if there is an keyword argument named ``context`` and it is a
@@ -138,7 +143,7 @@ class _SocketDecorator(_Decorator):
         Finally, we will provide default Context -- ``zmq.Context.instance``
 
         :return: a ``zmq.Context`` instance
-        '''
+        """
         if self.context_name in kwargs:
             ctx = kwargs[self.context_name]
 
@@ -153,10 +158,10 @@ class _SocketDecorator(_Decorator):
 
 
 def context(*args, **kwargs):
-    '''Decorator for adding a Context to a function.
-    
+    """Decorator for adding a Context to a function.
+
     Usage::
-    
+
         @context()
         def foo(ctx):
             ...
@@ -164,25 +169,23 @@ def context(*args, **kwargs):
     .. versionadded:: 15.3
 
     :param str name: the keyword argument passed to decorated function
-    '''
+    """
     return _ContextDecorator()(*args, **kwargs)
 
 
 def socket(*args, **kwargs):
-    '''Decorator for adding a socket to a function.
-    
+    """Decorator for adding a socket to a function.
+
     Usage::
-    
+
         @socket(zmq.PUSH)
         def foo(push):
             ...
-    
+
     .. versionadded:: 15.3
 
     :param str name: the keyword argument passed to decorated function
     :param str context_name: the keyword only argument to identify context
                              object
-    '''
+    """
     return _SocketDecorator()(*args, **kwargs)
-
-

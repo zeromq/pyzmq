@@ -20,16 +20,16 @@ ctx = zmq.Context()
 req = ctx.socket(zmq.REQ)
 req.connect('tcp://127.0.0.1:10111')
 
-#wait for connects
+# wait for connects
 time.sleep(1)
-n=0
+n = 0
 while True:
     time.sleep(numpy.random.random())
     for i in range(4):
-        n+=1
+        n += 1
         msg = 'ping %i' % n
         tic = time.time()
         req.send_string(msg)
         resp = req.recv_string()
-        print("%s: %.2f ms" % (msg, 1000*(time.time()-tic)))
+        print("%s: %.2f ms" % (msg, 1000 * (time.time() - tic)))
         assert msg == resp

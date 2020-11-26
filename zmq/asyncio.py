@@ -6,18 +6,13 @@ Requires asyncio and Python 3.
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-import zmq as _zmq
-from zmq import _future
-
-# TODO: support trollius for Legacy Python? (probably not)
-
 import asyncio
 from asyncio import SelectorEventLoop, Future
+import selectors
+import warnings
 
-try:
-    import selectors
-except ImportError:
-    from asyncio import selectors  # py33
+import zmq as _zmq
+from zmq import _future
 
 
 class _AsyncIO(object):
@@ -90,10 +85,9 @@ _loop = None
 
 
 def _deprecated():
-    if _deprecated.called:
+    if _deprecated.called:  # type: ignore
         return
-    _deprecated.called = True
-    import warnings
+    _deprecated.called = True  # type: ignore
 
     warnings.warn(
         "ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.",
@@ -102,7 +96,7 @@ def _deprecated():
     )
 
 
-_deprecated.called = False
+_deprecated.called = False  # type: ignore
 
 
 def install():

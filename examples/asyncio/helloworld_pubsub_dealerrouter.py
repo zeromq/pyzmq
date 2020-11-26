@@ -56,14 +56,17 @@ class HelloWorldMessage:
         # init hello world publisher obj
         self.hello_world = HelloWorld()
 
-
         # activate publishers / subscribers
-        asyncio.get_event_loop().run_until_complete(asyncio.wait([
-            self.hello_world_pub(),
-            self.hello_world_sub(),
-            self.lang_changer_router(),  # less restrictions than REP
-            self.lang_changer_dealer(),  # less restrictions than REQ
-        ]))
+        asyncio.get_event_loop().run_until_complete(
+            asyncio.wait(
+                [
+                    self.hello_world_pub(),
+                    self.hello_world_sub(),
+                    self.lang_changer_router(),  # less restrictions than REP
+                    self.lang_changer_dealer(),  # less restrictions than REQ
+                ]
+            )
+        )
 
     # generates message "Hello World" and publish to topic 'world'
     async def hello_world_pub(self):
@@ -71,10 +74,10 @@ class HelloWorldMessage:
         pub.connect(self.url)
 
         # give time to subscribers to initialize; wait time >.2 sec
-        await asyncio.sleep(.3)
+        await asyncio.sleep(0.3)
         # send setup connection message
-        #await pub.send_multipart([b'world', "init".encode('utf-8')])
-        #await pub.send_json([b'world', "init".encode('utf-8')])
+        # await pub.send_multipart([b'world', "init".encode('utf-8')])
+        # await pub.send_json([b'world', "init".encode('utf-8')])
 
         # without try statement, no error output
         try:
@@ -85,7 +88,7 @@ class HelloWorldMessage:
                 print("world pub: {}".format(msg))
 
                 # slow down message publication
-                await asyncio.sleep(.5)
+                await asyncio.sleep(0.5)
 
                 # publish message to topic 'world'
                 # multipart: topic, message; async always needs `send_multipart()`?
@@ -93,7 +96,7 @@ class HelloWorldMessage:
 
         except Exception as e:
             print("Error with pub world")
-            #print(e)
+            # print(e)
             logging.error(traceback.format_exc())
             print()
 
@@ -120,15 +123,15 @@ class HelloWorldMessage:
                 # process message
                 obj.msg_sub(msg.decode('utf-8'))
 
-                #await asyncio.sleep(.2)
+                # await asyncio.sleep(.2)
 
                 # publish message to topic 'sekai'
                 # async always needs `send_multipart()`
-                #await pub.send_multipart([b'sekai', msg_publish.encode('ascii')])
+                # await pub.send_multipart([b'sekai', msg_publish.encode('ascii')])
 
         except Exception as e:
             print("Error with sub world")
-            #print(e)
+            # print(e)
             logging.error(traceback.format_exc())
             print()
 
@@ -145,7 +148,7 @@ class HelloWorldMessage:
         print("Command dealer initialized")
 
         # give time to router to initialize; wait time >.2 sec
-        await asyncio.sleep(.3)
+        await asyncio.sleep(0.3)
         msg = "Change that language!"
 
         # without try statement, no error output
@@ -184,10 +187,16 @@ class HelloWorldMessage:
             # keep listening to all published message on topic 'world'
             while True:
                 [id_dealer, msg] = await rout.recv_multipart()
-                print("Command rout; Sender ID: {};\tmessage: {}".format(id_dealer, msg))
+                print(
+                    "Command rout; Sender ID: {};\tmessage: {}".format(id_dealer, msg)
+                )
 
                 self.hello_world.change_language()
-                print("Changed language! New language is: {}\n".format(self.hello_world.lang))
+                print(
+                    "Changed language! New language is: {}\n".format(
+                        self.hello_world.lang
+                    )
+                )
 
         except Exception as e:
             print("Error with sub world")

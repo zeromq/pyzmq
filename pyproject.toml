@@ -1,0 +1,3 @@
+[tool.black]
+skip-string-normalization = true
+exclude = "zmq/eventloop/minitornado|docs/source/conf.py"

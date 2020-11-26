@@ -6,10 +6,19 @@
 
 import errno as errno_mod
 
-from ._cffi import (C, ffi, new_uint64_pointer, new_int64_pointer,
-                    new_int_pointer, new_binary_data, value_uint64_pointer,
-                    value_int64_pointer, value_int_pointer, value_binary_data,
-                    IPC_PATH_MAX_LEN)
+from ._cffi import (
+    C,
+    ffi,
+    new_uint64_pointer,
+    new_int64_pointer,
+    new_int_pointer,
+    new_binary_data,
+    value_uint64_pointer,
+    value_int64_pointer,
+    value_int_pointer,
+    value_binary_data,
+    IPC_PATH_MAX_LEN,
+)
 
 from .message import Frame
 from .constants import RCVMORE
@@ -22,8 +31,10 @@ from zmq.utils.strtypes import unicode
 
 def new_pointer_from_opt(option, length=0):
     from zmq.sugar.constants import (
-        int64_sockopts, bytes_sockopts,
+        int64_sockopts,
+        bytes_sockopts,
     )
+
     if option in int64_sockopts:
         return new_int64_pointer()
     elif option in bytes_sockopts:
@@ -32,10 +43,13 @@ def new_pointer_from_opt(option, length=0):
         # default
         return new_int_pointer()
 
+
 def value_from_opt_pointer(option, opt_pointer, length=0):
     from zmq.sugar.constants import (
-        int64_sockopts, bytes_sockopts,
+        int64_sockopts,
+        bytes_sockopts,
     )
+
     if option in int64_sockopts:
         return int(opt_pointer[0])
     elif option in bytes_sockopts:
@@ -43,10 +57,13 @@ def value_from_opt_pointer(option, opt_pointer, length=0):
     else:
         return int(opt_pointer[0])
 
+
 def initialize_opt_pointer(option, value, length=0):
     from zmq.sugar.constants import (
-        int64_sockopts, bytes_sockopts,
+        int64_sockopts,
+        bytes_sockopts,
     )
+
     if option in int64_sockopts:
         return value_int64_pointer(value)
     elif option in bytes_sockopts:
@@ -77,7 +94,7 @@ class Socket(object):
         if self._zmq_socket == ffi.NULL:
             raise ZMQError()
         self._closed = False
-    
+
     @property
     def underlying(self):
         """The address of the underlying libzmq socket"""
@@ -128,23 +145,25 @@ class Socket(object):
                 if str is unicode:
                     address = address.decode('utf-8', 'replace')
                 path = address.split('://', 1)[-1]
-                msg = ('ipc path "{0}" is longer than {1} '
-                                'characters (sizeof(sockaddr_un.sun_path)).'
-                                .format(path, IPC_PATH_MAX_LEN))
+                msg = (
+                    'ipc path "{0}" is longer than {1} '
+                    'characters (sizeof(sockaddr_un.sun_path)).'.format(
+                        path, IPC_PATH_MAX_LEN
+                    )
+                )
                 raise ZMQError(C.zmq_errno(), msg=msg)
             elif C.zmq_errno() == errno_mod.ENOENT:
                 # py3compat: address is bytes, but msg wants str
                 if str is unicode:
                     address = address.decode('utf-8', 'replace')
                 path = address.split('://', 1)[-1]
-                msg = ('No such file or directory for ipc path "{0}".'.format(
-                       path))
+                msg = 'No such file or directory for ipc path "{0}".'.format(path)
                 raise ZMQError(C.zmq_errno(), msg=msg)
             else:
                 _check_rc(rc)
 
     def unbind(self, address):
-        _check_version((3,2), "unbind")
+        _check_version((3, 2), "unbind")
         if isinstance(address, unicode):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
@@ -157,7 +176,7 @@ class Socket(object):
         _check_rc(rc)
 
     def disconnect(self, address):
-        _check_version((3,2), "disconnect")
+        _check_version((3, 2), "disconnect")
         if isinstance(address, unicode):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
@@ -167,22 +186,24 @@ class Socket(object):
         length = None
         if isinstance(value, unicode):
             raise TypeError("unicode not allowed, use bytes")
-        
+
         if isinstance(value, bytes):
             if option not in zmq.constants.bytes_sockopts:
                 raise TypeError("not a bytes sockopt: %s" % option)
             length = len(value)
-        
+
         c_data = initialize_opt_pointer(option, value, length)
 
         c_value_pointer = c_data[0]
         c_sizet = c_data[1]
 
-        _retry_sys_call(C.zmq_setsockopt,
-                        self._zmq_socket,
-                        option,
-                        ffi.cast('void*', c_value_pointer),
-                        c_sizet)
+        _retry_sys_call(
+            C.zmq_setsockopt,
+            self._zmq_socket,
+            option,
+            ffi.cast('void*', c_value_pointer),
+            c_sizet,
+        )
 
     def get(self, option):
         c_data = new_pointer_from_opt(option, length=255)
@@ -190,15 +211,17 @@ class Socket(object):
         c_value_pointer = c_data[0]
         c_sizet_pointer = c_data[1]
 
-        _retry_sys_call(C.zmq_getsockopt,
-                        self._zmq_socket,
-                        option,
-                        c_value_pointer,
-                        c_sizet_pointer)
-        
+        _retry_sys_call(
+            C.zmq_getsockopt, self._zmq_socket, option, c_value_pointer, c_sizet_pointer
+        )
+
         sz = c_sizet_pointer[0]
         v = value_from_opt_pointer(option, c_value_pointer, sz)
-        if option != zmq.IDENTITY and option in zmq.constants.bytes_sockopts and v.endswith(b'\0'):
+        if (
+            option != zmq.IDENTITY
+            and option in zmq.constants.bytes_sockopts
+            and v.endswith(b'\0')
+        ):
             v = v[:-1]
         return v
 
@@ -228,7 +251,7 @@ class Socket(object):
     def recv(self, flags=0, copy=True, track=False):
         zmq_msg = ffi.new('zmq_msg_t*')
         C.zmq_msg_init(zmq_msg)
-        
+
         try:
             _retry_sys_call(C.zmq_msg_recv, zmq_msg, self._zmq_socket, flags)
         except Exception:
@@ -247,15 +270,15 @@ class Socket(object):
             return frame.bytes
         else:
             return frame
-    
+
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)
 
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
-        
+
         Note: requires libzmq >= 3.2
-        
+
         Parameters
         ----------
         addr : str
@@ -266,7 +289,7 @@ class Socket(object):
             The zmq event bitmask for which events will be sent to the monitor.
         """
 
-        _check_version((3,2), "monitor")
+        _check_version((3, 2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
         if addr is None:

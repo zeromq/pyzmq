@@ -8,9 +8,7 @@ import time
 
 import pytest
 import zmq
-from zmq.tests import (
-    BaseZMQTestCase, skip_pypy
-)
+from zmq.tests import BaseZMQTestCase, skip_pypy
 
 
 class TestDraftSockets(BaseZMQTestCase):
@@ -18,7 +16,6 @@ class TestDraftSockets(BaseZMQTestCase):
         if not zmq.DRAFT_API:
             raise pytest.skip("draft api unavailable")
         super(TestDraftSockets, self).setUp()
-    
 
     def test_client_server(self):
         client, server = self.create_bound_pair(zmq.CLIENT, zmq.SERVER)

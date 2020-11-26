@@ -33,7 +33,9 @@ if PY3:
             raise value.with_traceback(tb)
         raise value
 
+
 else:
+
     def exec_(_code_, _globs_=None, _locs_=None):
         """Execute code in a namespace."""
         if _globs_ is None:
@@ -46,7 +48,8 @@ else:
             _locs_ = _globs_
         exec("""exec _code_ in _globs_, _locs_""")
 
-
-    exec_("""def reraise(tp, value, tb=None):
+    exec_(
+        """def reraise(tp, value, tb=None):
     raise tp, value, tb
-""")
+"""
+    )

@@ -29,37 +29,45 @@ from __future__ import print_function
 
 import logging
 import select
-try:  # Python 3
-    import socketserver
-except ImportError:  # Python 2
-    import SocketServer as socketserver
+import socketserver
 
 logger = logging.getLogger('ssh')
 
-class ForwardServer (socketserver.ThreadingTCPServer):
+
+class ForwardServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
     allow_reuse_address = True
-    
 
-class Handler (socketserver.BaseRequestHandler):
 
+class Handler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
-            chan = self.ssh_transport.open_channel('direct-tcpip',
-                                                   (self.chain_host, self.chain_port),
-                                                   self.request.getpeername())
+            chan = self.ssh_transport.open_channel(
+                'direct-tcpip',
+                (self.chain_host, self.chain_port),
+                self.request.getpeername(),
+            )
         except Exception as e:
-            logger.debug('Incoming request to %s:%d failed: %s' % (self.chain_host,
-                                                              self.chain_port,
-                                                              repr(e)))
+            logger.debug(
+                'Incoming request to %s:%d failed: %s'
+                % (self.chain_host, self.chain_port, repr(e))
+            )
             return
         if chan is None:
-            logger.debug('Incoming request to %s:%d was rejected by the SSH server.' %
-                    (self.chain_host, self.chain_port))
+            logger.debug(
+                'Incoming request to %s:%d was rejected by the SSH server.'
+                % (self.chain_host, self.chain_port)
+            )
             return
 
-        logger.debug('Connected!  Tunnel open %r -> %r -> %r' % (self.request.getpeername(),
-                                                            chan.getpeername(), (self.chain_host, self.chain_port)))
+        logger.debug(
+            'Connected!  Tunnel open %r -> %r -> %r'
+            % (
+                self.request.getpeername(),
+                chan.getpeername(),
+                (self.chain_host, self.chain_port),
+            )
+        )
         while True:
             r, w, x = select.select([self.request, chan], [], [])
             if self.request in r:
@@ -81,10 +89,11 @@ def forward_tunnel(local_port, remote_host, remote_port, transport):
     # this is a little convoluted, but lets me configure things for the Handler
     # object.  (SocketServer doesn't give Handlers any way to access the outer
     # server normally.)
-    class SubHander (Handler):
+    class SubHander(Handler):
         chain_host = remote_host
         chain_port = remote_port
         ssh_transport = transport
+
     ForwardServer(('127.0.0.1', local_port), SubHander).serve_forever()
 
 

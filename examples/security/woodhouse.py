@@ -17,6 +17,7 @@ import zmq
 import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 
+
 def run():
     '''Run woodhouse example'''
 
@@ -50,7 +51,6 @@ def run():
 
     client.close()
 
-
     # now use invalid credentials - expect no msg received
     client2 = ctx.socket(zmq.PULL)
     client2.plain_username = b'admin'
@@ -77,8 +77,12 @@ def run():
 
 
 if __name__ == '__main__':
-    if zmq.zmq_version_info() < (4,0):
-        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
+    if zmq.zmq_version_info() < (4, 0):
+        raise RuntimeError(
+            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+                zmq.zmq_version()
+            )
+        )
 
     if '-v' in sys.argv:
         level = logging.DEBUG

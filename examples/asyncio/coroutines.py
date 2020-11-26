@@ -45,8 +45,12 @@ async def sender():
         await asyncio.sleep(1)
 
 
-asyncio.get_event_loop().run_until_complete(asyncio.wait([
-    ping(),
-    receiver(),
-    sender(),
-]))
+asyncio.get_event_loop().run_until_complete(
+    asyncio.wait(
+        [
+            ping(),
+            receiver(),
+            sender(),
+        ]
+    )
+)

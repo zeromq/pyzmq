@@ -1,5 +1,6 @@
 from zmq.ssh.tunnel import select_random_ports
 
+
 def test_random_ports():
     for i in range(4096):
         ports = select_random_ports(10)

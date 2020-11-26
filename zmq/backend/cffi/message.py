@@ -10,13 +10,13 @@ from zmq.utils.strtypes import unicode
 
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
 
+
 class Frame(object):
     _data = None
     tracker = None
     closed = False
     more = False
     buffer = None
-
 
     def __init__(self, data, track=False, copy=None, copy_threshold=None):
         try:
@@ -27,8 +27,9 @@ class Frame(object):
         self._data = data
 
         if isinstance(data, unicode):
-            raise TypeError("Unicode objects not allowed. Only: str/bytes, " +
-                            "buffer interfaces.")
+            raise TypeError(
+                "Unicode objects not allowed. Only: str/bytes, " + "buffer interfaces."
+            )
 
         self.more = False
         self.tracker = None
@@ -58,6 +59,7 @@ class Frame(object):
     @property
     def done(self):
         return True
+
 
 Message = Frame
 

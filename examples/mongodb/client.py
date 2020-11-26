@@ -1,17 +1,18 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Justin Riley
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from __future__ import print_function
 import json
 import zmq
 
+
 class MongoZMQClient(object):
     """
-    Client that connects with MongoZMQ server to add/fetch docs 
+    Client that connects with MongoZMQ server to add/fetch docs
     """
 
     def __init__(self, connect_addr='tcp://127.0.0.1:5000'):
@@ -32,6 +33,7 @@ class MongoZMQClient(object):
         msg = ['add', json.dumps(doc)]
         return self._send_recv_msg(msg)
 
+
 def main():
     client = MongoZMQClient()
     for i in range(10):
@@ -42,6 +44,7 @@ def main():
         query = {'job': str(i)}
         print("Getting doc matching query:", query)
         print(client.get_doc(query))
+
 
 if __name__ == "__main__":
     main()

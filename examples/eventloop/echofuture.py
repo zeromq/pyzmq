@@ -11,6 +11,7 @@ async def echo(sock):
         msg = await sock.recv_multipart()
         await sock.send_multipart(msg)
 
+
 ctx = Context.instance()
 s = ctx.socket(zmq.ROUTER)
 s.bind('tcp://127.0.0.1:5555')

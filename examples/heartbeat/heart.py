@@ -22,12 +22,12 @@ dev.connect_in('tcp://127.0.0.1:5555')
 dev.connect_out('tcp://127.0.0.1:5556')
 dev.start()
 
-#wait for connections
+# wait for connections
 time.sleep(1)
 
-A = numpy.random.random((2**11,2**11))
+A = numpy.random.random((2 ** 11, 2 ** 11))
 print("starting blocking loop")
 while True:
     tic = time.time()
-    numpy.dot(A,A.transpose())
-    print("blocked for %.3f s"%(time.time()-tic))
+    numpy.dot(A, A.transpose())
+    print("blocked for %.3f s" % (time.time() - tic))

@@ -5,17 +5,13 @@
 
 import time
 
-try:
-    # below 3.3
-    from threading import _Event as Event
-except (ImportError, AttributeError):
-    # python throws ImportError, cython throws AttributeError
-    from threading import Event
+from threading import Event
 
 from zmq.error import NotDone
 from zmq.backend import Frame
 
-class MessageTracker(object):
+
+class MessageTracker:
     """MessageTracker(*towatch)
 
     A class for tracking if 0MQ is done using one or more messages.
@@ -33,6 +29,7 @@ class MessageTracker(object):
         Events used by the Message class, other MessageTrackers or
         actual Messages.
     """
+
     events = None
     peers = None
 
@@ -45,7 +42,7 @@ class MessageTracker(object):
         ----------
         *towatch : tuple of Event, MessageTracker, Message instances.
             This list of objects to track. This class can track the low-level
-            Events used by the Message class, other MessageTrackers or 
+            Events used by the Message class, other MessageTrackers or
             actual Messages.
         """
         self.events = set()
@@ -60,8 +57,8 @@ class MessageTracker(object):
                     raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
-                raise TypeError("Require Events or Message Frames, not %s"%type(obj))
-    
+                raise TypeError("Require Events or Message Frames, not %s" % type(obj))
+
     @property
     def done(self):
         """Is 0MQ completely done with the message(s) being tracked?"""
@@ -72,7 +69,7 @@ class MessageTracker(object):
             if not pm.done:
                 return False
         return True
-    
+
     def wait(self, timeout=-1):
         """mt.wait(timeout=-1)
 
@@ -87,7 +84,7 @@ class MessageTracker(object):
         -------
         None
             if done before `timeout`
-        
+
         Raises
         ------
         NotDone
@@ -95,7 +92,7 @@ class MessageTracker(object):
         """
         tic = time.time()
         if timeout is False or timeout < 0:
-            remaining = 3600*24*7 # a week
+            remaining = 3600 * 24 * 7  # a week
         else:
             remaining = timeout
         done = False
@@ -106,16 +103,17 @@ class MessageTracker(object):
             if not evt.is_set():
                 raise NotDone
             toc = time.time()
-            remaining -= (toc-tic)
+            remaining -= toc - tic
             tic = toc
-        
+
         for peer in self.peers:
             if remaining < 0:
                 raise NotDone
             peer.wait(timeout=remaining)
             toc = time.time()
-            remaining -= (toc-tic)
+            remaining -= toc - tic
             tic = toc
+
 
 _FINISHED_TRACKER = MessageTracker()
 

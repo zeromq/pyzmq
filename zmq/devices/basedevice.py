@@ -7,13 +7,14 @@
 import time
 from threading import Thread
 from multiprocessing import Process
+from typing import Any
 
 from zmq import device, QUEUE, REQ, Context, ETERM, ZMQBindError, ZMQError
 
 
 class Device:
     """A 0MQ Device to be run in the background.
-    
+
     You do not pass Socket instances to this, but rather Socket types::
 
         Device(device_type, in_socket_type, out_socket_type)
@@ -27,7 +28,7 @@ class Device:
     with thread safety. As a result, additional bind_{in|out} and
     connect_{in|out} methods and setsockopt_{in|out} allow users to specify
     connections for the sockets.
-    
+
     Parameters
     ----------
     device_type : int
@@ -36,7 +37,7 @@ class Device:
         zmq socket types, to be passed later to context.socket(). e.g.
         zmq.PUB, zmq.SUB, zmq.REQ. If out_type is < 0, then in_socket is used
         for both in_socket and out_socket.
-        
+
     Methods
     -------
     bind_{in_out}(iface)
@@ -47,7 +48,7 @@ class Device:
     setsockopt_{in_out}(opt,value)
         passthrough for ``{in|out}_socket.setsockopt(opt, value)``, to be called in
         the thread
-    
+
     Attributes
     ----------
     daemon : int
@@ -61,7 +62,7 @@ class Device:
         Context instance already initialized, and the forked environment
         should *never* try to use it.
     """
-    
+
     context_factory = Context.instance
     """Callable that returns a context. Typically either Context.instance or Context,
     depending on whether the device should share the global instance or not.
@@ -84,14 +85,14 @@ class Device:
         self._random_addrs = []
         self.daemon = True
         self.done = False
-    
+
     def bind_in(self, addr):
         """Enqueue ZMQ address for binding on in_socket.
 
         See zmq.Socket.bind for details.
         """
         self._in_binds.append(addr)
-    
+
     def bind_in_to_random_port(self, addr, *args, **kwargs):
         """Enqueue a random port on the given interface for binding on
         in_socket.
@@ -112,21 +113,21 @@ class Device:
         See zmq.Socket.connect for details.
         """
         self._in_connects.append(addr)
-    
+
     def setsockopt_in(self, opt, value):
         """Enqueue setsockopt(opt, value) for in_socket
 
         See zmq.Socket.setsockopt for details.
         """
         self._in_sockopts.append((opt, value))
-    
+
     def bind_out(self, addr):
         """Enqueue ZMQ address for binding on out_socket.
 
         See zmq.Socket.bind for details.
         """
         self._out_binds.append(addr)
-    
+
     def bind_out_to_random_port(self, addr, *args, **kwargs):
         """Enqueue a random port on the given interface for binding on
         out_socket.
@@ -147,14 +148,14 @@ class Device:
         See zmq.Socket.connect for details.
         """
         self._out_connects.append(addr)
-    
+
     def setsockopt_out(self, opt, value):
         """Enqueue setsockopt(opt, value) for out_socket
 
         See zmq.Socket.setsockopt for details.
         """
         self._out_sockopts.append((opt, value))
-    
+
     def _reserve_random_port(self, addr, *args, **kwargs):
         ctx = Context()
 
@@ -180,42 +181,42 @@ class Device:
 
     def _setup_sockets(self):
         ctx = self.context_factory()
-        
+
         self._context = ctx
-        
+
         # create the sockets
         ins = ctx.socket(self.in_type)
         if self.out_type < 0:
             outs = ins
         else:
             outs = ctx.socket(self.out_type)
-        
+
         # set sockopts (must be done first, in case of zmq.IDENTITY)
-        for opt,value in self._in_sockopts:
+        for opt, value in self._in_sockopts:
             ins.setsockopt(opt, value)
-        for opt,value in self._out_sockopts:
+        for opt, value in self._out_sockopts:
             outs.setsockopt(opt, value)
-        
+
         for iface in self._in_binds:
             ins.bind(iface)
         for iface in self._out_binds:
             outs.bind(iface)
-        
+
         for iface in self._in_connects:
             ins.connect(iface)
         for iface in self._out_connects:
             outs.connect(iface)
-        
-        return ins,outs
-    
+
+        return ins, outs
+
     def run_device(self):
         """The runner method.
 
         Do not call me directly, instead call ``self.start()``, just like a Thread.
         """
-        ins,outs = self._setup_sockets()
+        ins, outs = self._setup_sockets()
         device(self.device_type, ins, outs)
-    
+
     def run(self):
         """wrap run_device in try/catch ETERM"""
         try:
@@ -228,27 +229,27 @@ class Device:
                 raise
         finally:
             self.done = True
-    
+
     def start(self):
         """Start the device. Override me in subclass for other launchers."""
         return self.run()
 
-    def join(self,timeout=None):
+    def join(self, timeout=None):
         """wait for me to finish, like Thread.join.
-        
+
         Reimplemented appropriately by subclasses."""
         tic = time.time()
         toc = tic
-        while not self.done and not (timeout is not None and toc-tic > timeout):
-            time.sleep(.001)
+        while not self.done and not (timeout is not None and toc - tic > timeout):
+            time.sleep(0.001)
             toc = time.time()
 
 
 class BackgroundDevice(Device):
     """Base class for launching Devices in background processes and threads."""
 
-    launcher=None
-    _launch_class=None
+    launcher: Any = None
+    _launch_class: Any = None
 
     def start(self):
         self.launcher = self._launch_class(target=self.run)
@@ -264,14 +265,17 @@ class ThreadDevice(BackgroundDevice):
 
     See Device for details.
     """
-    _launch_class=Thread
+
+    _launch_class = Thread
+
 
 class ProcessDevice(BackgroundDevice):
     """A Device that will be run in a background Process.
 
     See Device for details.
     """
-    _launch_class=Process
+
+    _launch_class = Process
     context_factory = Context
     """Callable that returns a context. Typically either Context.instance or Context,
     depending on whether the device should share the global instance or not.

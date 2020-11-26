@@ -8,8 +8,31 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
+  lint:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade pip wheel
+          pip install cython -r test-requirements.txt
+
+      - name: flake8
+        run: flake8 zmq
+
+      - name: mypy
+        run: mypy zmq
+
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.14"
@@ -57,7 +80,6 @@ jobs:
             python: 3.9
             arch: x64
 
-
     steps:
       - uses: actions/checkout@v2
 
@@ -76,6 +98,7 @@ jobs:
         if: "! startsWith(matrix.python, 'pypy')"
         run: |
           pip install cython
+          python setup.py cython
 
       - name: remove tornado
         if: matrix.tornado == 'none'

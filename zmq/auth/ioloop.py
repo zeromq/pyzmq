@@ -32,4 +32,5 @@ class IOLoopAuthenticator(Authenticator):
             self.zap_stream = None
         super(IOLoopAuthenticator, self).stop()
 
+
 __all__ = ['IOLoopAuthenticator']

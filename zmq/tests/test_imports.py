@@ -6,6 +6,7 @@ from unittest import TestCase
 
 import pytest
 
+
 class TestImports(TestCase):
     """Test Imports - the quickest test to ensure that we haven't
     introduced version-incompatible syntax errors."""
@@ -64,5 +65,3 @@ class TestImports(TestCase):
     def test_decorators(self):
         """test decorators imports"""
         from zmq.decorators import context, socket
-
-

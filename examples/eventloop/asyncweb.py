@@ -32,14 +32,16 @@ def slow_responder():
     while True:
         frame, msg = socket.recv_multipart()
         print("\nworker received %r\n" % msg, end='')
-        time.sleep(random.randint(1,5))
+        time.sleep(random.randint(1, 5))
         socket.send_multipart([frame, msg + b" to you too, #%i" % i])
         i += 1
+
 
 def dot():
     """callback for showing that IOLoop is still responsive while we wait"""
     sys.stdout.write('.')
     sys.stdout.flush()
+
 
 class TestHandler(web.RequestHandler):
     async def get(self):
@@ -54,6 +56,7 @@ class TestHandler(web.RequestHandler):
         reply = await s.recv_string()
         print("\nfinishing with %r\n" % reply)
         self.write(reply)
+
 
 def main():
     worker = threading.Thread(target=slow_responder)
@@ -72,4 +75,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

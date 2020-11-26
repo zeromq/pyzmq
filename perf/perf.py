@@ -17,29 +17,57 @@ except AttributeError:
     now = time.time
 
 import zmq
+
 # disable copy threshold for benchmarking
 zmq.COPY_THRESHOLD = 0
+
 
 def parse_args(argv=None):
 
     parser = argparse.ArgumentParser(description='Run a zmq performance test')
-    parser.add_argument('-p', '--poll', action='store_true',
-                       help='use a zmq Poller instead of raw send/recv')
-    parser.add_argument('--no-copy', action='store_false', dest='copy',
-                       help='enable zero-copy transfer (potentially faster for large messages)')
-    parser.add_argument('-s', '--size', type=int, default=1024,
-                       help='size (in bytes) of the test message')
-    parser.add_argument('-n', '--count', type=int, default=1024,
-                       help='number of test messages to send')
-    parser.add_argument('--url', dest='url', type=str, default='tcp://127.0.0.1:5555',
-                       help='the zmq URL on which to run the test')
-    parser.add_argument(dest='test', nargs='?', type=str, default='lat', choices=['lat', 'thr'],
-                       help='which test to run')
+    parser.add_argument(
+        '-p',
+        '--poll',
+        action='store_true',
+        help='use a zmq Poller instead of raw send/recv',
+    )
+    parser.add_argument(
+        '--no-copy',
+        action='store_false',
+        dest='copy',
+        help='enable zero-copy transfer (potentially faster for large messages)',
+    )
+    parser.add_argument(
+        '-s',
+        '--size',
+        type=int,
+        default=1024,
+        help='size (in bytes) of the test message',
+    )
+    parser.add_argument(
+        '-n', '--count', type=int, default=1024, help='number of test messages to send'
+    )
+    parser.add_argument(
+        '--url',
+        dest='url',
+        type=str,
+        default='tcp://127.0.0.1:5555',
+        help='the zmq URL on which to run the test',
+    )
+    parser.add_argument(
+        dest='test',
+        nargs='?',
+        type=str,
+        default='lat',
+        choices=['lat', 'thr'],
+        help='which test to run',
+    )
     return parser.parse_args(argv)
+
 
 def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
     """echo messages on a REP socket
-    
+
     Should be started before `latency`
     """
     ctx = zmq.Context()
@@ -50,9 +78,9 @@ def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
         p.register(s)
 
     s.bind(url)
-    
+
     block = zmq.NOBLOCK if poll else 0
-    
+
     for i in range(count + 1):
         if poll:
             res = p.poll()
@@ -61,13 +89,14 @@ def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
         if poll:
             res = p.poll()
         s.send(msg, block, copy=copy)
-    
+
     msg = s.recv()
     assert msg == b'done'
-    
+
     s.close()
     ctx.term()
-    
+
+
 def latency(url, count, size, poll=False, copy=True, quiet=False):
     """Perform a latency test"""
     ctx = zmq.Context()
@@ -86,32 +115,33 @@ def latency(url, count, size, poll=False, copy=True, quiet=False):
     s.recv()
     start = now()
 
-    for i in range (0, count):
+    for i in range(0, count):
         if poll:
             res = p.poll()
-            assert(res[0][1] & zmq.POLLOUT)
+            assert res[0][1] & zmq.POLLOUT
         s.send(msg, block, copy=copy)
 
         if poll:
             res = p.poll()
-            assert(res[0][1] & zmq.POLLIN)
+            assert res[0][1] & zmq.POLLIN
         msg = s.recv(block, copy=copy)
-        
+
         assert len(msg) == size
 
     elapsed = now() - start
 
     s.send(b'done')
 
-    latency = 1e6 * elapsed / (count * 2.)
-    
+    latency = 1e6 * elapsed / (count * 2.0)
+
     if not quiet:
-        print ("message size   : %8i     [B]" % (size, ))
-        print ("roundtrip count: %8i     [msgs]" % (count, ))
-        print ("mean latency   : %12.3f [µs]" % (latency, ))
-        print ("test time      : %12.3f [s]" % (elapsed, ))
+        print("message size   : %8i     [B]" % (size,))
+        print("roundtrip count: %8i     [msgs]" % (count,))
+        print("mean latency   : %12.3f [µs]" % (latency,))
+        print("test time      : %12.3f [s]" % (elapsed,))
     ctx.destroy()
     return latency
+
 
 def thr_sink(url, count, size, poll=False, copy=True, quiet=False):
     """send a bunch of messages on a PUSH socket"""
@@ -137,7 +167,7 @@ def thr_sink(url, count, size, poll=False, copy=True, quiet=False):
     for i in range(count):
         if poll:
             res = p.poll()
-            assert(res[0][1] & zmq.POLLIN)
+            assert res[0][1] & zmq.POLLIN
         msg = s.recv_multipart(flags=flags, copy=copy)
 
     s.send_multipart([msg[0], b'DONE'])
@@ -145,9 +175,10 @@ def thr_sink(url, count, size, poll=False, copy=True, quiet=False):
     s.close()
     ctx.term()
 
+
 def throughput(url, count, size, poll=False, copy=True, quiet=False):
     """recv a bunch of messages on a PULL socket
-    
+
     Should be started before `pusher`
     """
     ctx = zmq.Context()
@@ -173,7 +204,7 @@ def throughput(url, count, size, poll=False, copy=True, quiet=False):
     for i in range(count):
         if poll:
             res = p.poll()
-            assert(res[0][1] & zmq.POLLOUT)
+            assert res[0][1] & zmq.POLLOUT
         s.send(data, flags=flags, copy=copy)
     sent = now()
     # wait for receiver
@@ -187,14 +218,15 @@ def throughput(url, count, size, poll=False, copy=True, quiet=False):
     megabits = throughput * size * 8 / 1e6
 
     if not quiet:
-        print ("message size   : %8i     [B]" % size)
-        print ("message count  : %8i     [msgs]" % count)
-        print ("send only      : %8.0f     [msg/s]" % send_throughput)
-        print ("mean throughput: %8.0f     [msg/s]" % throughput)
-        print ("mean throughput: %12.3f [Mb/s]" % megabits)
-        print ("test time      : %12.3f [s]" % elapsed)
+        print("message size   : %8i     [B]" % size)
+        print("message count  : %8i     [msgs]" % count)
+        print("send only      : %8.0f     [msg/s]" % send_throughput)
+        print("mean throughput: %8.0f     [msg/s]" % throughput)
+        print("mean throughput: %12.3f [Mb/s]" % megabits)
+        print("test time      : %12.3f [s]" % elapsed)
     ctx.destroy()
     return (send_throughput, throughput)
+
 
 def do_run(test, **kwargs):
     """Do a single run"""
@@ -210,14 +242,22 @@ def do_run(test, **kwargs):
     bg.join()
     return result
 
+
 def main():
     args = parse_args()
     tic = time.time()
-    do_run(args.test, url=args.url, size=args.size, count=args.count,
-           poll=args.poll, copy=args.copy)
+    do_run(
+        args.test,
+        url=args.url,
+        size=args.size,
+        count=args.count,
+        poll=args.poll,
+        copy=args.copy,
+    )
     toc = time.time()
     if (toc - tic) < 3:
-        print ("For best results, tests should take at least a few seconds.")
+        print("For best results, tests should take at least a few seconds.")
+
 
 if __name__ == '__main__':
     main()

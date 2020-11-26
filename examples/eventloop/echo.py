@@ -7,6 +7,7 @@ without relying on tornado integration (see echostream, echofuture).
 import zmq
 from tornado import ioloop
 
+
 def echo(sock, events):
     # We don't know how many recv's we can do?
     if not sock.EVENTS & zmq.POLLIN:
@@ -19,6 +20,7 @@ def echo(sock, events):
     # if there is more than one read event waiting
     if sock.EVENTS & zmq.POLLIN:
         ioloop.IOLoop.current().add_callback(echo, sock, events)
+
 
 ctx = zmq.Context.instance()
 s = ctx.socket(zmq.ROUTER)

@@ -21,4 +21,3 @@ for i in range(10):
 
 server.close()
 ctx.term()
-

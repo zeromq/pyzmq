@@ -3,39 +3,41 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import zmq
 from zmq.backend import zmq_poll
 from .constants import POLLIN, POLLOUT, POLLERR
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Polling related methods
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
-class Poller(object):
+class Poller:
     """A stateful poll interface that mirrors Python's built-in poll."""
-    sockets = None
-    _map = {}
+
+    sockets: List[Tuple[Any, int]]
+    _map: Dict
 
     def __init__(self):
         self.sockets = []
         self._map = {}
-    
+
     def __contains__(self, socket):
         return socket in self._map
 
-    def register(self, socket, flags=POLLIN|POLLOUT):
+    def register(self, socket, flags: int = POLLIN | POLLOUT):
         """p.register(socket, flags=POLLIN|POLLOUT)
 
         Register a 0MQ socket or native fd for I/O monitoring.
-        
+
         register(s,0) is equivalent to unregister(s).
 
         Parameters
         ----------
         socket : zmq.Socket or native socket
-            A zmq.Socket or any Python object having a ``fileno()`` 
+            A zmq.Socket or any Python object having a ``fileno()``
             method that returns a valid file descriptor.
         flags : int
             The events to watch for.  Can be POLLIN, POLLOUT or POLLIN|POLLOUT.
@@ -56,7 +58,7 @@ class Poller(object):
             # ignore new sockets with no events
             pass
 
-    def modify(self, socket, flags=POLLIN|POLLOUT):
+    def modify(self, socket, flags=POLLIN | POLLOUT):
         """Modify the flags for an already registered 0MQ socket or native fd."""
         self.register(socket, flags)
 
@@ -74,11 +76,11 @@ class Poller(object):
         for socket, flags in self.sockets[idx:]:
             self._map[socket] -= 1
 
-    def poll(self, timeout=None):
+    def poll(self, timeout: Optional[int] = None):
         """Poll the registered 0MQ or native fds for I/O.
-        
+
         If there are currently events ready to be processed, this function will return immediately.
-        Otherwise, this function will return as soon the first event is available or after timeout 
+        Otherwise, this function will return as soon the first event is available or after timeout
         milliseconds have elapsed.
 
         Parameters
@@ -103,7 +105,7 @@ class Poller(object):
         return zmq_poll(self.sockets, timeout=timeout)
 
 
-def select(rlist, wlist, xlist, timeout=None):
+def select(rlist: List, wlist: List, xlist: List, timeout: Optional[int] = None):
     """select(rlist, wlist, xlist, timeout=None) -> (rlist, wlist, xlist)
 
     Return the result of poll as a lists of sockets ready for r/w/exception.
@@ -121,7 +123,7 @@ def select(rlist, wlist, xlist, timeout=None):
         sockets/FDs to be polled for write events
     xlist : list of sockets/FDs
         sockets/FDs to be polled for error events
-    
+
     Returns
     -------
     (rlist, wlist, xlist) : tuple of lists of sockets (length 3)
@@ -131,7 +133,7 @@ def select(rlist, wlist, xlist, timeout=None):
         timeout = -1
     # Convert from sec -> us for zmq_poll.
     # zmq_poll accepts 3.x style timeout in ms
-    timeout = int(timeout*1000.0)
+    timeout = int(timeout * 1000.0)
     if timeout < 0:
         timeout = -1
     sockets = []
@@ -155,8 +157,9 @@ def select(rlist, wlist, xlist, timeout=None):
             xlist.append(s)
     return rlist, wlist, xlist
 
-#-----------------------------------------------------------------------------
-# Symbols to export
-#-----------------------------------------------------------------------------
 
-__all__ = [ 'Poller', 'select' ]
+# -----------------------------------------------------------------------------
+# Symbols to export
+# -----------------------------------------------------------------------------
+
+__all__ = ['Poller', 'select']

@@ -8,6 +8,7 @@ import json
 import sys
 
 import pytest
+
 gen = pytest.importorskip('tornado.gen')
 
 import zmq
@@ -62,6 +63,7 @@ class TestFutureSocket(BaseZMQTestCase):
             await a.send(b"hi")
             recvd = await f
             self.assertEqual(recvd, [b'hi'])
+
         self.loop.run_sync(test)
 
     def test_recv(self):
@@ -76,6 +78,7 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f1.done()
             self.assertEqual(f1.result(), b'hi')
             self.assertEqual(recvd, b'there')
+
         self.loop.run_sync(test)
 
     def test_recv_cancel(self):
@@ -91,6 +94,7 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f1.cancelled()
             assert f2.done()
             self.assertEqual(recvd, [b'hi', b'there'])
+
         self.loop.run_sync(test)
 
     @pytest.mark.skipif(not hasattr(zmq, 'RCVTIMEO'), reason="requires RCVTIMEO")
@@ -107,6 +111,7 @@ class TestFutureSocket(BaseZMQTestCase):
             recvd = await f2
             assert f2.done()
             self.assertEqual(recvd, [b'hi', b'there'])
+
         self.loop.run_sync(test)
 
     @pytest.mark.skipif(not hasattr(zmq, 'SNDTIMEO'), reason="requires SNDTIMEO")
@@ -118,7 +123,7 @@ class TestFutureSocket(BaseZMQTestCase):
                 await s.send(b"not going anywhere")
 
         self.loop.run_sync(test)
-    
+
     def test_send_noblock(self):
         async def test():
             s = self.socket(zmq.PUSH)
@@ -146,6 +151,7 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), msg)
             self.assertEqual(recvd, msg)
+
         self.loop.run_sync(test)
 
     def test_recv_json(self):
@@ -159,6 +165,7 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), obj)
             self.assertEqual(recvd, obj)
+
         self.loop.run_sync(test)
 
     def test_recv_json_cancelled(self):
@@ -181,6 +188,7 @@ class TestFutureSocket(BaseZMQTestCase):
             # make sure cancelled recv didn't eat up event
             recvd = await gen.with_timeout(timedelta(seconds=5), b.recv_json())
             assert recvd == obj
+
         self.loop.run_sync(test)
 
     def test_recv_pyobj(self):
@@ -194,6 +202,7 @@ class TestFutureSocket(BaseZMQTestCase):
             assert f.done()
             self.assertEqual(f.result(), obj)
             self.assertEqual(recvd, obj)
+
         self.loop.run_sync(test)
 
     def test_custom_serialize(self):
@@ -230,6 +239,7 @@ class TestFutureSocket(BaseZMQTestCase):
             r2 = await a.recv_serialized(deserialize)
             assert r2['content'] == msg['content']
             assert not r2['identities']
+
         self.loop.run_sync(test)
 
     def test_custom_serialize_error(self):
@@ -248,6 +258,7 @@ class TestFutureSocket(BaseZMQTestCase):
             await a.send(b"not json")
             with pytest.raises(TypeError):
                 recvd = await b.recv_serialized(json.loads)
+
         self.loop.run_sync(test)
 
     def test_poll(self):
@@ -269,11 +280,12 @@ class TestFutureSocket(BaseZMQTestCase):
             self.assertEqual(evt, zmq.POLLIN)
             recvd = await b.recv_multipart()
             self.assertEqual(recvd, [b'hi', b'there'])
+
         self.loop.run_sync(test)
 
     @pytest.mark.skipif(
-        sys.platform.startswith('win'),
-        reason='Windows unsupported socket type')
+        sys.platform.startswith('win'), reason='Windows unsupported socket type'
+    )
     def test_poll_base_socket(self):
         async def test():
             ctx = zmq.Context()
@@ -297,17 +309,19 @@ class TestFutureSocket(BaseZMQTestCase):
             a.close()
             b.close()
             ctx.term()
+
         self.loop.run_sync(test)
 
     def test_close_all_fds(self):
         s = self.socket(zmq.PUB)
         self.loop.close(all_fds=True)
-        self.loop = None # avoid second close later
+        self.loop = None  # avoid second close later
         assert s.closed
 
     @pytest.mark.skipif(
         sys.platform.startswith('win'),
-        reason='Windows does not support polling on files')
+        reason='Windows does not support polling on files',
+    )
     def test_poll_raw(self):
         async def test():
             p = future.Poller()
@@ -336,4 +350,5 @@ class TestFutureSocket(BaseZMQTestCase):
             assert r.read(1) == b'x'
             r.close()
             w.close()
+
         self.loop.run_sync(test)

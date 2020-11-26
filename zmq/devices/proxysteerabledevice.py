@@ -12,9 +12,7 @@ class ProxySteerableBase(object):
 
     def __init__(self, in_type, out_type, mon_type=zmq.PUB, ctrl_type=None):
         super(ProxySteerableBase, self).__init__(
-            in_type=in_type,
-            out_type=out_type,
-            mon_type=mon_type
+            in_type=in_type, out_type=out_type, mon_type=mon_type
         )
         self.ctrl_type = ctrl_type
         self._ctrl_binds = []
@@ -92,16 +90,19 @@ class ProxySteerable(ProxySteerableBase, Proxy):
     .. versionadded:: libzmq-4.1
     .. versionadded:: 18.0
     """
+
     pass
 
 
 class ThreadProxySteerable(ProxySteerableBase, ThreadProxy):
     """ProxySteerable in a Thread. See ProxySteerable for details."""
+
     pass
 
 
 class ProcessProxySteerable(ProxySteerableBase, ProcessProxy):
     """ProxySteerable in a Process. See ProxySteerable for details."""
+
     pass
 
 

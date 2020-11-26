@@ -16,26 +16,32 @@ from zmq._future import _AsyncPoller, _AsyncSocket
 from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
 
+
 class CancelledError(Exception):
     pass
 
+
 class _TornadoFuture(Future):
     """Subclass Tornado Future, reinstating cancellation."""
+
     def cancel(self):
         if self.done():
             return False
         self.set_exception(CancelledError())
         return True
-    
+
     def cancelled(self):
         return self.done() and isinstance(self.exception(), CancelledError)
 
+
 # mixin for tornado/asyncio compatibility
+
 
 class _AsyncTornado(object):
     _Future = _TornadoFuture
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
+
     def _default_loop(self):
         return IOLoop.current()
 
@@ -54,7 +60,9 @@ class Poller(_AsyncTornado, _AsyncPoller):
 class Socket(_AsyncTornado, _AsyncSocket):
     _poller_class = Poller
 
+
 Poller._socket_class = Socket
+
 
 class Context(_zmq.Context):
 
@@ -62,6 +70,7 @@ class Context(_zmq.Context):
     _instance = None
 
     io_loop = None
+
     @staticmethod
     def _socket_class(self, socket_type):
         return Socket(self, socket_type, io_loop=self.io_loop)
@@ -70,4 +79,3 @@ class Context(_zmq.Context):
         io_loop = kwargs.pop('io_loop', None)
         super(Context, self).__init__(*args, **kwargs)
         self.io_loop = io_loop or IOLoop.current()
-

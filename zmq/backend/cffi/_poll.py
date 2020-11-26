@@ -13,6 +13,7 @@ import warnings
 from ._cffi import C, ffi
 from zmq.error import InterruptedSystemCall, _check_rc
 
+
 def _make_zmq_pollitem(socket, flags):
     zmq_socket = socket._zmq_socket
     zmq_pollitem = ffi.new('zmq_pollitem_t*')
@@ -22,6 +23,7 @@ def _make_zmq_pollitem(socket, flags):
     zmq_pollitem.revents = 0
     return zmq_pollitem[0]
 
+
 def _make_zmq_pollitem_fromfd(socket_fd, flags):
     zmq_pollitem = ffi.new('zmq_pollitem_t*')
     zmq_pollitem.socket = ffi.NULL
@@ -30,10 +32,12 @@ def _make_zmq_pollitem_fromfd(socket_fd, flags):
     zmq_pollitem.revents = 0
     return zmq_pollitem[0]
 
+
 def zmq_poll(sockets, timeout):
     cffi_pollitem_list = []
     low_level_to_socket_obj = {}
     from zmq import Socket
+
     for item in sockets:
         if isinstance(item[0], Socket):
             low_level_to_socket_obj[item[0]._zmq_socket] = item
@@ -61,7 +65,8 @@ def zmq_poll(sockets, timeout):
                     warnings.warn(
                         "Negative elapsed time for interrupted poll: %s."
                         "  Did the clock change?" % ms_passed,
-                        RuntimeWarning)
+                        RuntimeWarning,
+                    )
                     ms_passed = 0
                 timeout = max(0, timeout - ms_passed)
             continue
@@ -71,10 +76,15 @@ def zmq_poll(sockets, timeout):
     for index in range(len(items)):
         if items[index].revents > 0:
             if not items[index].socket == ffi.NULL:
-                result.append((low_level_to_socket_obj[items[index].socket][0],
-                            items[index].revents))
+                result.append(
+                    (
+                        low_level_to_socket_obj[items[index].socket][0],
+                        items[index].revents,
+                    )
+                )
             else:
                 result.append((items[index].fd, items[index].revents))
     return result
+
 
 __all__ = ['zmq_poll']

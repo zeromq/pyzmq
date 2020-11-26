@@ -51,15 +51,15 @@ def run():
 
     # Part 2 - demonstrate denying clients based on IP address
     auth.stop()
-    
+
     auth = ThreadAuthenticator(ctx)
     auth.start()
-    
+
     auth.deny('127.0.0.1')
 
     client_deny = ctx.socket(zmq.PULL)
     client_deny.connect('tcp://127.0.0.1:9000')
-    
+
     if server.poll(50, zmq.POLLOUT):
         server.send(b"Hello")
 
@@ -81,8 +81,12 @@ def run():
 
 
 if __name__ == '__main__':
-    if zmq.zmq_version_info() < (4,0):
-        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
+    if zmq.zmq_version_info() < (4, 0):
+        raise RuntimeError(
+            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+                zmq.zmq_version()
+            )
+        )
 
     if '-v' in sys.argv:
         level = logging.DEBUG

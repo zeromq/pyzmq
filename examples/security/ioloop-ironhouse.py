@@ -22,12 +22,14 @@ import zmq.auth
 from zmq.auth.ioloop import IOLoopAuthenticator
 from zmq.eventloop import ioloop, zmqstream
 
+
 def echo(server, msg):
     logging.debug("server recvd %s", msg)
     reply = msg + [b'World']
     logging.debug("server sending %s", reply)
     server.send_multipart(reply)
-    
+
+
 def setup_server(server_secret_file, endpoint='tcp://127.0.0.1:9000'):
     """setup a simple echo server with CURVE auth"""
     server = zmq.Context.instance().socket(zmq.ROUTER)
@@ -37,11 +39,12 @@ def setup_server(server_secret_file, endpoint='tcp://127.0.0.1:9000'):
     server.curve_publickey = server_public
     server.curve_server = True  # must come before bind
     server.bind(endpoint)
-    
+
     server_stream = zmqstream.ZMQStream(server)
     # simple echo
     server_stream.on_recv_stream(echo)
     return server_stream
+
 
 def client_msg_recvd(msg):
     logging.debug("client recvd %s", msg)
@@ -49,9 +52,12 @@ def client_msg_recvd(msg):
     # stop the loop when we get the reply
     ioloop.IOLoop.instance().stop()
 
-def setup_client(client_secret_file, server_public_file, endpoint='tcp://127.0.0.1:9000'):
+
+def setup_client(
+    client_secret_file, server_public_file, endpoint='tcp://127.0.0.1:9000'
+):
     """setup a simple client with CURVE auth"""
-    
+
     client = zmq.Context.instance().socket(zmq.DEALER)
 
     # We need two certificates, one for the client and one for
@@ -65,11 +71,11 @@ def setup_client(client_secret_file, server_public_file, endpoint='tcp://127.0.0
     # The client must know the server's public key to make a CURVE connection.
     client.curve_serverkey = server_public
     client.connect(endpoint)
-    
+
     client_stream = zmqstream.ZMQStream(client)
     client_stream.on_recv(client_msg_recvd)
     return client_stream
-    
+
 
 def run():
     '''Run Ironhouse example'''
@@ -80,10 +86,14 @@ def run():
     public_keys_dir = os.path.join(base_dir, 'public_keys')
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
-    if not (os.path.exists(keys_dir) and
-            os.path.exists(public_keys_dir) and
-            os.path.exists(secret_keys_dir)):
-        logging.critical("Certificates are missing - run generate_certificates script first")
+    if not (
+        os.path.exists(keys_dir)
+        and os.path.exists(public_keys_dir)
+        and os.path.exists(secret_keys_dir)
+    ):
+        logging.critical(
+            "Certificates are missing - run generate_certificates script first"
+        )
         sys.exit(1)
 
     # Start an authenticator for this context.
@@ -91,20 +101,25 @@ def run():
     auth.allow('127.0.0.1')
     # Tell authenticator to use the certificate in a directory
     auth.configure_curve(domain='*', location=public_keys_dir)
-    
+
     server_secret_file = os.path.join(secret_keys_dir, "server.key_secret")
     server = setup_server(server_secret_file)
     server_public_file = os.path.join(public_keys_dir, "server.key")
     client_secret_file = os.path.join(secret_keys_dir, "client.key_secret")
     client = setup_client(client_secret_file, server_public_file)
     client.send(b'Hello')
-    
+
     auth.start()
     ioloop.IOLoop.instance().start()
 
+
 if __name__ == '__main__':
-    if zmq.zmq_version_info() < (4,0):
-        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
+    if zmq.zmq_version_info() < (4, 0):
+        raise RuntimeError(
+            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+                zmq.zmq_version()
+            )
+        )
 
     if '-v' in sys.argv:
         level = logging.DEBUG

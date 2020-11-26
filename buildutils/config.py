@@ -1,5 +1,5 @@
 """Config functions"""
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (C) PyZMQ Developers
 #
 #  This file is part of pyzmq, copied and adapted from h5py.
@@ -9,23 +9,20 @@
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import sys
 import os
 import json
 
-try:
-    from configparser import ConfigParser
-except:
-    from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 pjoin = os.path.join
 from .msg import debug, fatal, warn
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Utility functions (adapted from h5py: https://www.h5py.org/)
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 def load_config(name, base='conf'):
@@ -46,7 +43,7 @@ def save_config(name, data, base='conf'):
     """Save config dict to JSON"""
     if not os.path.exists(base):
         os.mkdir(base)
-    fname = pjoin(base, name+'.json')
+    fname = pjoin(base, name + '.json')
     with open(fname, 'w') as f:
         json.dump(data, f, indent=2)
 
@@ -54,6 +51,7 @@ def save_config(name, data, base='conf'):
 def v_str(v_tuple):
     """turn (2,0,1) into '2.0.1'."""
     return ".".join(str(x) for x in v_tuple)
+
 
 def get_env_args():
     """ Look for options in environment vars """
@@ -71,15 +69,17 @@ def get_env_args():
 
     return settings
 
+
 def cfg2dict(cfg):
     """turn a ConfigParser into a nested dict
-    
+
     because ConfigParser objects are dumb.
     """
     d = {}
     for section in cfg.sections():
         d[section] = dict(cfg.items(section))
     return d
+
 
 def get_cfg_args():
     """ Look for options in setup.cfg """
@@ -92,19 +92,21 @@ def get_cfg_args():
 
     g = cfg.setdefault('global', {})
     # boolean keys:
-    for key in ['libzmq_extension',
-                'bundle_libzmq_dylib',
-                'no_libzmq_extension',
-                'have_sys_un_h',
-                'skip_check_zmq',
-                'bundle_msvcp',
-                ]:
+    for key in [
+        'libzmq_extension',
+        'bundle_libzmq_dylib',
+        'no_libzmq_extension',
+        'have_sys_un_h',
+        'skip_check_zmq',
+        'bundle_msvcp',
+    ]:
         if key in g:
             g[key] = eval(g[key])
 
     # globals go to top level
     cfg.update(cfg.pop('global'))
     return cfg
+
 
 def config_from_prefix(prefix):
     """Get config from zmq prefix"""
@@ -121,12 +123,13 @@ def config_from_prefix(prefix):
         settings['zmq_prefix'] = prefix
         settings['libzmq_extension'] = False
         settings['no_libzmq_extension'] = True
-        settings['allow_legacy_libzmq'] = True # explicit zmq prefix allows legacy
+        settings['allow_legacy_libzmq'] = True  # explicit zmq prefix allows legacy
     return settings
+
 
 def merge(into, d):
     """merge two containers
-    
+
     into is updated, d has priority
     """
     if isinstance(into, dict):
@@ -140,6 +143,7 @@ def merge(into, d):
         return into + d
     else:
         return d
+
 
 def discover_settings(conf_base=None):
     """ Discover custom settings for ZMQ path"""
@@ -156,11 +160,11 @@ def discover_settings(conf_base=None):
     }
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False
-    
+
     if conf_base:
         # lowest priority
         merge(settings, load_config('config', conf_base))
     merge(settings, get_cfg_args())
     merge(settings, get_env_args())
-    
+
     return settings

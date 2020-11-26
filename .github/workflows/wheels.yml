@@ -92,7 +92,6 @@ jobs:
               before_all: "true"
               environment: "ZMQ_PREFIX="
 
-
           - os: windows-2019
             name: win_amd64
             cibw:

@@ -41,7 +41,7 @@ class HeartBeater(object):
 
     def beat(self):
         toc = time.time()
-        self.lifetime += toc-self.tic
+        self.lifetime += toc - self.tic
         self.tic = toc
         print(self.lifetime)
         # self.message = str(self.lifetime)
@@ -52,15 +52,15 @@ class HeartBeater(object):
         map(self.handle_new_heart, newhearts)
         map(self.handle_heart_failure, heartfailures)
         self.responses = set()
-        print("%i beating hearts: %s"%(len(self.hearts),self.hearts))
+        print("%i beating hearts: %s" % (len(self.hearts), self.hearts))
         self.pingstream.send(str(self.lifetime))
 
     def handle_new_heart(self, heart):
-        print("yay, got new heart %s!"%heart)
+        print("yay, got new heart %s!" % heart)
         self.hearts.add(heart)
 
     def handle_heart_failure(self, heart):
-        print("Heart %s failed :("%heart)
+        print("Heart %s failed :(" % heart)
         self.hearts.remove(heart)
 
     def handle_pong(self, msg):
@@ -68,7 +68,8 @@ class HeartBeater(object):
         if msg[1] == str(self.lifetime):
             self.responses.add(msg[0])
         else:
-            print("got bad heartbeat (possibly old?): %s"%msg[1])
+            print("got bad heartbeat (possibly old?): %s" % msg[1])
+
 
 # sub.setsockopt(zmq.SUBSCRIBE)
 

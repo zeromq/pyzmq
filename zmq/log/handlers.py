@@ -31,7 +31,7 @@ import zmq
 from zmq.utils.strtypes import bytes, unicode, cast_bytes
 
 
-TOPIC_DELIM="::" # delimiter for splitting topics on the receiving end.
+TOPIC_DELIM = "::"  # delimiter for splitting topics on the receiving end.
 
 
 class PUBHandler(logging.Handler):
@@ -58,21 +58,25 @@ class PUBHandler(logging.Handler):
     """
 
     socket = None
-    
-    
+
     def __init__(self, interface_or_socket, context=None, root_topic=''):
         logging.Handler.__init__(self)
         self._root_topic = root_topic
         self.formatters = {
             logging.DEBUG: logging.Formatter(
-            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
+                "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
+            ),
             logging.INFO: logging.Formatter("%(message)s\n"),
             logging.WARN: logging.Formatter(
-            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"),
+                "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
+            ),
             logging.ERROR: logging.Formatter(
-            "%(levelname)s %(filename)s:%(lineno)d - %(message)s - %(exc_info)s\n"),
+                "%(levelname)s %(filename)s:%(lineno)d - %(message)s - %(exc_info)s\n"
+            ),
             logging.CRITICAL: logging.Formatter(
-            "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n")}
+                "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
+            ),
+        }
         if isinstance(interface_or_socket, zmq.Socket):
             self.socket = interface_or_socket
             self.ctx = self.socket.context
@@ -110,20 +114,20 @@ class PUBHandler(logging.Handler):
         If no level is provided, the same format is used for all levels. This
         will overwrite all selective formatters set in the object constructor.
         """
-        if level==logging.NOTSET:
+        if level == logging.NOTSET:
             for fmt_level in self.formatters.keys():
                 self.formatters[fmt_level] = fmt
         else:
             self.formatters[level] = fmt
 
-    def format(self,record):
+    def format(self, record):
         """Format a record."""
         return self.formatters[record.levelno].format(record)
 
     def emit(self, record):
         """Emit a log message on my socket."""
         try:
-            topic, record.msg = record.msg.split(TOPIC_DELIM,1)
+            topic, record.msg = record.msg.split(TOPIC_DELIM, 1)
         except Exception:
             topic = ""
         try:
@@ -131,7 +135,7 @@ class PUBHandler(logging.Handler):
         except Exception:
             self.handleError(record)
             return
-        
+
         topic_list = []
 
         if self.root_topic:
@@ -161,22 +165,27 @@ class TopicLogger(logging.Logger):
 
         logger.debug('topic.sub', 'msg')
     """
+
     def log(self, level, topic, msg, *args, **kwargs):
         """Log 'msg % args' with level and topic.
 
         To pass exception information, use the keyword argument exc_info
         with a True value::
 
-            logger.log(level, "zmq.fun", "We have a %s", 
+            logger.log(level, "zmq.fun", "We have a %s",
                     "mysterious problem", exc_info=1)
         """
-        logging.Logger.log(self, level, '%s::%s'%(topic,msg), *args, **kwargs)
+        logging.Logger.log(self, level, '%s::%s' % (topic, msg), *args, **kwargs)
+
 
 # Generate the methods of TopicLogger, since they are just adding a
 # topic prefix to a message.
 for name in "debug warn warning error critical fatal".split():
-    meth = getattr(logging.Logger,name)
-    setattr(TopicLogger, name, 
-            lambda self, level, topic, msg, *args, **kwargs: 
-                meth(self, level, topic+TOPIC_DELIM+msg,*args, **kwargs))
-    
+    meth = getattr(logging.Logger, name)
+    setattr(
+        TopicLogger,
+        name,
+        lambda self, level, topic, msg, *args, **kwargs: meth(
+            self, level, topic + TOPIC_DELIM + msg, *args, **kwargs
+        ),
+    )

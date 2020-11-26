@@ -4,9 +4,10 @@
 import zmq
 from zmq.green import Poller
 
+
 def device(device_type, isocket, osocket):
     """Start a zeromq device (gevent-compatible).
-    
+
     Unlike the true zmq.device, this does not release the GIL.
 
     Parameters
@@ -23,7 +24,7 @@ def device(device_type, isocket, osocket):
         osocket = isocket
     p.register(isocket, zmq.POLLIN)
     p.register(osocket, zmq.POLLIN)
-    
+
     while True:
         events = dict(p.poll())
         if isocket in events:

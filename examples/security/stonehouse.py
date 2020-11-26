@@ -30,10 +30,14 @@ def run():
     public_keys_dir = os.path.join(base_dir, 'public_keys')
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
 
-    if not (os.path.exists(keys_dir) and
-            os.path.exists(public_keys_dir) and
-            os.path.exists(secret_keys_dir)):
-        logging.critical("Certificates are missing: run generate_certificates.py script first")
+    if not (
+        os.path.exists(keys_dir)
+        and os.path.exists(public_keys_dir)
+        and os.path.exists(secret_keys_dir)
+    ):
+        logging.critical(
+            "Certificates are missing: run generate_certificates.py script first"
+        )
         sys.exit(1)
 
     ctx = zmq.Context.instance()
@@ -81,9 +85,14 @@ def run():
     # stop auth thread
     auth.stop()
 
+
 if __name__ == '__main__':
-    if zmq.zmq_version_info() < (4,0):
-        raise RuntimeError("Security is not supported in libzmq version < 4.0. libzmq version {0}".format(zmq.zmq_version()))
+    if zmq.zmq_version_info() < (4, 0):
+        raise RuntimeError(
+            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+                zmq.zmq_version()
+            )
+        )
 
     if '-v' in sys.argv:
         level = logging.DEBUG

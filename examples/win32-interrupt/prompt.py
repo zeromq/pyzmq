@@ -20,11 +20,6 @@
 
 import zmq
 
-try:
-    raw_input          # Python 2
-except NameError:
-    raw_input = input  # Python 3
-
 
 def main(addr, account):
 
@@ -33,12 +28,13 @@ def main(addr, account):
     socket.bind(addr)
 
     while True:
-        message = raw_input("%s> " % account)
+        message = input("%s> " % account)
         socket.send_multipart((account, message))
 
 
 if __name__ == '__main__':
     import sys
+
     if len(sys.argv) != 3:
         print("usage: prompt.py <address> <username>")
         raise SystemExit

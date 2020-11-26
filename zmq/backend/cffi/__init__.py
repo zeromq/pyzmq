@@ -3,12 +3,19 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq.backend.cffi import (constants, error, message, context, socket,
-                           _poll, devices, utils)
+from zmq.backend.cffi import (
+    constants,
+    error,
+    message,
+    context,
+    socket,
+    _poll,
+    devices,
+    utils,
+)
 
 __all__ = []
-for submod in (constants, error, message, context, socket,
-               _poll, devices, utils):
+for submod in (constants, error, message, context, socket, _poll, devices, utils):
     __all__.extend(submod.__all__)
 
 from .constants import *

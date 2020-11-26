@@ -16,8 +16,13 @@ import time
 import zmq
 from zmq.log.handlers import PUBHandler
 
-LOG_LEVELS = (logging.DEBUG, logging.INFO,
-              logging.WARN, logging.ERROR, logging.CRITICAL)
+LOG_LEVELS = (
+    logging.DEBUG,
+    logging.INFO,
+    logging.WARN,
+    logging.ERROR,
+    logging.CRITICAL,
+)
 
 
 def sub_logger(port, level=logging.DEBUG):
@@ -53,6 +58,7 @@ def log_worker(port, interval=1, level=logging.DEBUG):
         logger.log(level, "Hello from %i!" % os.getpid())
         time.sleep(interval)
 
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         n = int(sys.argv[1])
@@ -65,9 +71,17 @@ if __name__ == '__main__':
         port = 5558
 
     # start the log generators
-    workers = [Process(target=log_worker, args=(port,), kwargs=dict(level=random.choice(LOG_LEVELS)))
-               for i in range(n)]
-    [w.start() for w in workers]
+    workers = [
+        Process(
+            target=log_worker,
+            args=(port,),
+            kwargs=dict(level=random.choice(LOG_LEVELS)),
+        )
+        for i in range(n)
+    ]
+
+    for w in workers:
+        w.start()
 
     # start the log watcher
     try:
@@ -75,4 +89,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         pass
     finally:
-        [w.terminate() for w in workers]
+        for w in workers:
+            w.terminate()

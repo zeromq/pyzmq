@@ -6,11 +6,11 @@
 # dictionaries of constants new or removed in particular versions
 
 new_in = {
-    (2,2,0) : [
+    (2, 2, 0): [
         'RCVTIMEO',
         'SNDTIMEO',
     ],
-    (3,2,2) : [
+    (3, 2, 2): [
         # errnos
         'EMSGSIZE',
         'EAFNOSUPPORT',
@@ -21,13 +21,11 @@ new_in = {
         'ETIMEDOUT',
         'EHOSTUNREACH',
         'ENETRESET',
-
         # ctx opts
         'IO_THREADS',
         'MAX_SOCKETS',
         'IO_THREADS_DFLT',
         'MAX_SOCKETS_DFLT',
-
         # socket opts
         'IPV4ONLY',
         'LAST_ENDPOINT',
@@ -40,10 +38,8 @@ new_in = {
         'TCP_KEEPALIVE_INTVL',
         'DELAY_ATTACH_ON_CONNECT',
         'XPUB_VERBOSE',
-
         # msg opts
         'MORE',
-
         'EVENT_CONNECTED',
         'EVENT_CONNECT_DELAYED',
         'EVENT_CONNECT_RETRIED',
@@ -56,10 +52,9 @@ new_in = {
         'EVENT_DISCONNECTED',
         'EVENT_ALL',
     ],
-    (4,0,0) : [
+    (4, 0, 0): [
         # socket types
         'STREAM',
-
         # socket opts
         'IMMEDIATE',
         'ROUTER_RAW',
@@ -77,23 +72,20 @@ new_in = {
         'REQ_CORRELATE',
         'CONFLATE',
         'ZAP_DOMAIN',
-
         # security
         'NULL',
         'PLAIN',
         'CURVE',
-
         # events
         'EVENT_MONITOR_STOPPED',
     ],
-    (4,1,0) : [
+    (4, 1, 0): [
         # ctx opts
         'SOCKET_LIMIT',
         'THREAD_PRIORITY',
         'THREAD_PRIORITY_DFLT',
         'THREAD_SCHED_POLICY',
         'THREAD_SCHED_POLICY_DFLT',
-
         # socket opts
         'ROUTER_HANDOVER',
         'TOS',
@@ -108,45 +100,39 @@ new_in = {
         'HANDSHAKE_IVL',
         'XPUB_NODROP',
         'SOCKS_PROXY',
-
         # msg opts
         'SRCFD',
         'SHARED',
-
         # security
         'GSSAPI',
     ],
-    (4,2,0): [
+    (4, 2, 0): [
         # polling
         'POLLPRI',
     ],
-    (4,2,3): [
+    (4, 2, 3): [
         'ROUTING_ID',
         'CONNECT_ROUTING_ID',
     ],
-    (4,3,0): [
+    (4, 3, 0): [
         # context options
         'MSG_T_SIZE',
         'THREAD_AFFINITY_CPU_ADD',
         'THREAD_AFFINITY_CPU_REMOVE',
         'THREAD_NAME_PREFIX',
-
         # socket options
         'GSSAPI_PRINCIPAL_NAMETYPE',
         'GSSAPI_SERVICE_PRINCIPAL_NAMETYPE',
         'BINDTODEVICE',
-
         # GSSAPI principal name types
         'GSSAPI_NT_HOSTBASED',
         'GSSAPI_NT_USER_NAME',
         'GSSAPI_NT_KRB5_PRINCIPAL',
-
         # events
         'EVENT_HANDSHAKE_FAILED_NO_DETAIL',
         'EVENT_HANDSHAKE_SUCCEEDED',
         'EVENT_HANDSHAKE_FAILED_PROTOCOL',
         'EVENT_HANDSHAKE_FAILED_AUTH',
-
         'PROTOCOL_ERROR_ZMTP_UNSPECIFIED',
         'PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND',
         'PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE',
@@ -161,18 +147,17 @@ new_in = {
         'PROTOCOL_ERROR_ZMTP_INVALID_METADATA',
         'PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC',
         'PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH',
-
         'PROTOCOL_ERROR_ZAP_UNSPECIFIED',
         'PROTOCOL_ERROR_ZAP_MALFORMED_REPLY',
         'PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID',
         'PROTOCOL_ERROR_ZAP_BAD_VERSION',
         'PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE',
         'PROTOCOL_ERROR_ZAP_INVALID_METADATA',
-    ]
+    ],
 }
 
 draft_in = {
-    (4,2,0): [
+    (4, 2, 0): [
         # socket types
         'SERVER',
         'CLIENT',
@@ -181,10 +166,8 @@ draft_in = {
         'GATHER',
         'SCATTER',
         'DGRAM',
-
         # ctx options
         'BLOCKY',
-
         # socket options
         'XPUB_MANUAL',
         'XPUB_WELCOME_MSG',
@@ -204,18 +187,17 @@ draft_in = {
         'VMCI_CONNECT_TIMEOUT',
         'USE_FD',
     ],
-    (4,2,4): [
+    (4, 2, 4): [
         # socket options
         'ZAP_ENFORCE_DOMAIN',
         'LOOPBACK_FASTPATH',
         'METADATA',
         'ZERO_COPY_RECV',
     ],
-    (4,3,0): [
+    (4, 3, 0): [
         # socket options
         'ROUTER_NOTIFY',
         'MULTICAST_LOOP',
-
         'NOTIFY_CONNECT',
         'NOTIFY_DISCONNECT',
     ],
@@ -223,10 +205,9 @@ draft_in = {
 
 
 removed_in = {
-    (3,2,2) : [
+    (3, 2, 2): [
         'UPSTREAM',
         'DOWNSTREAM',
-
         'HWM',
         'SWAP',
         'MCAST_LOOP',
@@ -246,24 +227,19 @@ base_names = [
     'VERSION_PATCH',
     'NOBLOCK',
     'DONTWAIT',
-
     'POLLIN',
     'POLLOUT',
     'POLLERR',
     'POLLPRI',
-
     'SNDMORE',
-
     'STREAMER',
     'FORWARDER',
     'QUEUE',
-
     'IO_THREADS_DFLT',
     'MAX_SOCKETS_DFLT',
     'POLLITEMS_DFLT',
     'THREAD_PRIORITY_DFLT',
     'THREAD_SCHED_POLICY_DFLT',
-
     # socktypes
     'PAIR',
     'PUB',
@@ -288,7 +264,6 @@ base_names = [
     'GATHER',
     'SCATTER',
     'DGRAM',
-
     # events
     'EVENT_CONNECTED',
     'EVENT_CONNECT_DELAYED',
@@ -306,7 +281,6 @@ base_names = [
     'EVENT_HANDSHAKE_SUCCEEDED',
     'EVENT_HANDSHAKE_FAILED_PROTOCOL',
     'EVENT_HANDSHAKE_FAILED_AUTH',
-
     'PROTOCOL_ERROR_ZMTP_UNSPECIFIED',
     'PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND',
     'PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE',
@@ -321,17 +295,14 @@ base_names = [
     'PROTOCOL_ERROR_ZMTP_INVALID_METADATA',
     'PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC',
     'PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH',
-
     'PROTOCOL_ERROR_ZAP_UNSPECIFIED',
     'PROTOCOL_ERROR_ZAP_MALFORMED_REPLY',
     'PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID',
     'PROTOCOL_ERROR_ZAP_BAD_VERSION',
     'PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE',
     'PROTOCOL_ERROR_ZAP_INVALID_METADATA',
-
     'NOTIFY_CONNECT',
     'NOTIFY_DISCONNECT',
-
     # security
     'NULL',
     'PLAIN',
@@ -340,8 +311,7 @@ base_names = [
     'GSSAPI_NT_HOSTBASED',
     'GSSAPI_NT_USER_NAME',
     'GSSAPI_NT_KRB5_PRINCIPAL',
-
-    ## ERRNO
+    # ERRNO
     # Often used (these are else in errno.)
     'EAGAIN',
     'EINVAL',
@@ -357,7 +327,6 @@ base_names = [
     'ETIMEDOUT',
     'EHOSTUNREACH',
     'ENETRESET',
-
     # For Windows compatibility
     'HAUSNUMERO',
     'ENOTSUP',
@@ -369,7 +338,6 @@ base_names = [
     'ECONNREFUSED',
     'EINPROGRESS',
     'ENOTSOCK',
-
     # 0MQ Native
     'EFSM',
     'ENOCOMPATPROTO',
@@ -380,13 +348,11 @@ base_names = [
 int64_sockopt_names = [
     'AFFINITY',
     'MAXMSGSIZE',
-
     # sockopts removed in 3.0.0
     'HWM',
     'SWAP',
     'MCAST_LOOP',
     'RECOVERY_IVL_MSEC',
-
     # new in 4.2
     'VMCI_BUFFER_SIZE',
     'VMCI_BUFFER_MIN_SIZE',
@@ -399,10 +365,8 @@ bytes_sockopt_names = [
     'UNSUBSCRIBE',
     'LAST_ENDPOINT',
     'TCP_ACCEPT_FILTER',
-
     'PLAIN_USERNAME',
     'PLAIN_PASSWORD',
-
     'CURVE_PUBLICKEY',
     'CURVE_SECRETKEY',
     'CURVE_SERVERKEY',
@@ -411,13 +375,10 @@ bytes_sockopt_names = [
     'GSSAPI_PRINCIPAL',
     'GSSAPI_SERVICE_PRINCIPAL',
     'SOCKS_PROXY',
-
     'XPUB_WELCOME_MSG',
-
     # new in 4.2.3
     'ROUTING_ID',
     'CONNECT_ROUTING_ID',
-
     # new in 4.3.0
     'BINDTODEVICE',
 ]
@@ -429,17 +390,14 @@ fd_sockopt_names = [
 int_sockopt_names = [
     # sockopts
     'RECONNECT_IVL_MAX',
-
     # sockopts new in 2.2.0
     'SNDTIMEO',
     'RCVTIMEO',
-
     # new in 3.x
     'SNDHWM',
     'RCVHWM',
     'MULTICAST_HOPS',
     'IPV4ONLY',
-
     'ROUTER_BEHAVIOR',
     'TCP_KEEPALIVE',
     'TCP_KEEPALIVE_CNT',
@@ -447,16 +405,13 @@ int_sockopt_names = [
     'TCP_KEEPALIVE_INTVL',
     'DELAY_ATTACH_ON_CONNECT',
     'XPUB_VERBOSE',
-
     'EVENTS',
     'TYPE',
     'LINGER',
     'RECONNECT_IVL',
     'BACKLOG',
-
     'ROUTER_MANDATORY',
     'FAIL_UNROUTABLE',
-
     'ROUTER_RAW',
     'IMMEDIATE',
     'IPV6',
@@ -476,7 +431,6 @@ int_sockopt_names = [
     'GSSAPI_PLAINTEXT',
     'HANDSHAKE_IVL',
     'XPUB_NODROP',
-
     # new in 4.2
     'XPUB_MANUAL',
     'STREAM_NOTIFY',
@@ -491,7 +445,6 @@ int_sockopt_names = [
     'MULTICAST_MAXTPDU',
     'VMCI_CONNECT_TIMEOUT',
     'USE_FD',
-
     # new in 4.3
     'GSSAPI_PRINCIPAL_NAMETYPE',
     'GSSAPI_SERVICE_PRINCIPAL_NAMETYPE',
@@ -515,7 +468,6 @@ ctx_opt_names = [
     'THREAD_PRIORITY',
     'THREAD_SCHED_POLICY',
     'BLOCKY',
-
     # new in 4.3
     'MSG_T_SIZE',
     'THREAD_AFFINITY_CPU_ADD',
@@ -531,20 +483,22 @@ msg_opt_names = [
 
 from itertools import chain
 
-all_names = list(chain(
-    base_names,
-    ctx_opt_names,
-    bytes_sockopt_names,
-    fd_sockopt_names,
-    int_sockopt_names,
-    int64_sockopt_names,
-    switched_sockopt_names,
-    msg_opt_names,
-))
+all_names = list(
+    chain(
+        base_names,
+        ctx_opt_names,
+        bytes_sockopt_names,
+        fd_sockopt_names,
+        int_sockopt_names,
+        int64_sockopt_names,
+        switched_sockopt_names,
+        msg_opt_names,
+    )
+)
 
 del chain
+
 
 def no_prefix(name):
     """does the given constant have a ZMQ_ prefix?"""
     return name.startswith('E') and not name.startswith('EVENT')
-

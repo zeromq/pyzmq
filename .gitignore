@@ -32,3 +32,4 @@ win-dist
 venv
 *.code-workspace
 .vscode
+.mypy_cache

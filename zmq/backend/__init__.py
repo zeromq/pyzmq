@@ -37,6 +37,7 @@ else:
                 exc.__cause__ = None
             # raise the *first* error, not the fallback
             from zmq.utils.sixcerpt import reraise
+
             reraise(*exc_info)
 
 globals().update(_ns)

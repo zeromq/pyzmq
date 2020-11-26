@@ -5,12 +5,14 @@
 
 from ._cffi import C, ffi
 
+
 def strerror(errno):
     s = ffi.string(C.zmq_strerror(errno))
     if not isinstance(s, str):
         # py3
         s = s.decode()
     return s
+
 
 zmq_errno = C.zmq_errno
 

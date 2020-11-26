@@ -1,11 +1,11 @@
 """A thorough test of polling PUB/SUB sockets."""
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Copyright (c) 2010 Brian Granger
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
 #  the file COPYING.BSD, distributed as part of this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import time
 import zmq
@@ -25,13 +25,13 @@ s2.connect(addr)
 time.sleep(1.0)
 
 poller = zmq.Poller()
-poller.register(s1, zmq.POLLIN|zmq.POLLOUT)
-poller.register(s2, zmq.POLLIN|zmq.POLLOUT)
+poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
+poller.register(s2, zmq.POLLIN | zmq.POLLOUT)
 
 # Now make sure that both are send ready.
 socks = dict(poller.poll())
 assert socks[s1] == zmq.POLLOUT
-assert not socks.has_key(s2)
+assert s2 not in socks
 
 # Make sure that s1 stays in POLLOUT after a send.
 s1.send('msg1')
@@ -46,7 +46,7 @@ assert socks[s2] == zmq.POLLIN
 # Make sure that s2 goes into 0 after recv.
 s2.recv()
 socks = dict(poller.poll())
-assert not socks.has_key(s2)
+assert s2 not in socks
 
 poller.unregister(s1)
 poller.unregister(s2)

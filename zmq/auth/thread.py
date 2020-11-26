@@ -16,19 +16,24 @@ import sys
 
 from .base import Authenticator
 
+
 class AuthenticationThread(Thread):
     """A Thread for running a zmq Authenticator
 
     This is run in the background by ThreadedAuthenticator
     """
 
-    def __init__(self, context, endpoint, encoding='utf-8', log=None, authenticator=None):
+    def __init__(
+        self, context, endpoint, encoding='utf-8', log=None, authenticator=None
+    ):
         super(AuthenticationThread, self).__init__()
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.log = log = log or logging.getLogger('zmq.auth')
         self.started = Event()
-        self.authenticator = authenticator or Authenticator(context, encoding=encoding, log=log)
+        self.authenticator = authenticator or Authenticator(
+            context, encoding=encoding, log=log
+        )
 
         # create a socket to communicate back to main thread.
         self.pipe = context.socket(zmq.PAIR)
@@ -75,7 +80,8 @@ class AuthenticationThread(Thread):
         Handle a message from the ZAP socket.
         """
         msg = self.authenticator.zap_socket.recv_multipart()
-        if not msg: return
+        if not msg:
+            return
         self.authenticator.handle_zap_message(msg)
 
     def _handle_pipe(self, msg):
@@ -127,6 +133,7 @@ class AuthenticationThread(Thread):
 
         return terminate
 
+
 def _inherit_docstrings(cls):
     """inherit docstrings from Authenticator, so we don't duplicate them"""
     for name, method in cls.__dict__.items():
@@ -137,9 +144,11 @@ def _inherit_docstrings(cls):
             method.__doc__ = upstream_method.__doc__
     return cls
 
+
 @_inherit_docstrings
 class ThreadAuthenticator(object):
     """Run ZAP authentication in a background thread"""
+
     context = None
     log = None
     encoding = None
@@ -178,7 +187,9 @@ class ThreadAuthenticator(object):
         self.pipe.send_multipart([b'DENY'] + [b(a, self.encoding) for a in addresses])
 
     def configure_plain(self, domain='*', passwords=None):
-        self.pipe.send_multipart([b'PLAIN', b(domain, self.encoding), jsonapi.dumps(passwords or {})])
+        self.pipe.send_multipart(
+            [b'PLAIN', b(domain, self.encoding), jsonapi.dumps(passwords or {})]
+        )
 
     def configure_curve(self, domain='*', location=''):
         domain = b(domain, self.encoding)
@@ -186,7 +197,9 @@ class ThreadAuthenticator(object):
         self.pipe.send_multipart([b'CURVE', domain, location])
 
     def configure_curve_callback(self, domain='*', credentials_provider=None):
-        self.thread.authenticator.configure_curve_callback(domain, credentials_provider=credentials_provider)
+        self.thread.authenticator.configure_curve_callback(
+            domain, credentials_provider=credentials_provider
+        )
 
     def start(self):
         """Start the authentication thread"""
@@ -194,10 +207,12 @@ class ThreadAuthenticator(object):
         self.pipe = self.context.socket(zmq.PAIR)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
-        self.thread = AuthenticationThread(self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log)
+        self.thread = AuthenticationThread(
+            self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log
+        )
         self.thread.start()
         # Event.wait:Changed in version 2.7: Previously, the method always returned None.
-        if sys.version_info < (2,7):
+        if sys.version_info < (2, 7):
             self.thread.started.wait(timeout=10)
         else:
             if not self.thread.started.wait(timeout=10):
@@ -221,5 +236,6 @@ class ThreadAuthenticator(object):
 
     def __del__(self):
         self.stop()
+
 
 __all__ = ['ThreadAuthenticator']

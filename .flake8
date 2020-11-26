@@ -1,0 +1,3 @@
+[flake8]
+exclude = .git,dist,docs,zmq/eventloop/minitornado
+ignore = E, F401, F403, F811, F841, W
