@@ -51,7 +51,7 @@ async def run():
     # Tell authenticator to use the certificate in a directory
     auth.configure_curve(domain='*', location=public_keys_dir)
 
-    server = ctx.socket(zmq.PUSH)
+    server = ctx.socket(zmq.ROUTER)
 
     server_secret_file = secret_keys_dir / "server.key_secret"
     server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
@@ -60,7 +60,7 @@ async def run():
     server.curve_server = True  # must come before bind
     server.bind('tcp://*:9000')
 
-    client = ctx.socket(zmq.PULL)
+    client = ctx.socket(zmq.DEALER)
 
     # We need two certificates, one for the client and one for
     # the server. The client must know the server's public key
@@ -76,11 +76,14 @@ async def run():
     client.curve_serverkey = server_public
     client.connect('tcp://127.0.0.1:9000')
 
-    await server.send(b"Hello")
+    await client.send(b"Hello")
 
-    if await client.poll(1000):
-        msg = await client.recv()
-        if msg == b"Hello":
+    if await server.poll(1000):
+        # use copy=False to allow access to message properties via the zmq.Frame API
+        # default recv(copy=True) returns only bytes, discarding properties
+        identity, msg = await server.recv_multipart(copy=False)
+        logging.info(f"Received {msg.bytes} from {msg['User-Id']!r}")
+        if msg.bytes == b"Hello":
             logging.info("Ironhouse test OK")
     else:
         logging.error("Ironhouse test FAIL")

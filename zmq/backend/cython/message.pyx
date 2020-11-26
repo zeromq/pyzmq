@@ -375,6 +375,8 @@ cdef class Frame:
 
         .. versionchanged:: 14.3
             add support for zmq_msg_gets (requires libzmq-4.1)
+            All message properties are strings.
+
         .. versionchanged:: 17.0
             Added support for `routing_id` and `group`.
             Only available if draft API is enabled
