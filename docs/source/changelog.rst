@@ -9,6 +9,39 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+21.0
+====
+
+pyzmq 21 is a major version bump because of dropped support for old Pythons and some changes in packaging.
+Users should not face major compatibility issues if installation works at all :)
+
+The big changes are:
+
+- drop support for Python 3.5. Python >= 3.6 is required
+- mypy type stubs, which should improve static analysis of pyzmq,
+  especially for dynamically defined attributes such as zmq constants.
+  These are new! Let us know if you find any issues.
+
+We've totally redone the wheel-building setup, so let us know if you start seeing instalation issues!
+
+Packaging updates:
+
+- Require Python >= 3.6, required for good type annotation support
+- Wheels for macOS no longer build libzmq as a Python Extension,
+  instead 'real' libzmq is built and linked to libsodium,
+  bundled with delocate.
+  This matches the longstanding behavior of Linux wheels,
+  and should result in better performance.
+- Add manylinux wheels for linux-aarch64. These bundle an older version of libzmq than the rest.
+- Build wheels for python3.8, 3.9 with manylinux2010 instead of manylinux1.
+  Wheels for older Pythons will still be built on manylinux1.
+- All wheels are built on GitHub Actions (most with cibuildwheel) instead of Min's laptop (finally!).
+
+
+Bugs fixed:
+
+- Errors during teardown of asyncio Sockets
+
 20.0
 ====
 
