@@ -6,6 +6,7 @@ on:
 
 env:
   FORCE_COLOR: "1"
+  PYZMQ_CYTHON_COVERAGE: "1"
 
 jobs:
   lint:
@@ -89,6 +90,12 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch || 'x64' }}
 
+      - name: setup coverage
+        if: startsWith(matrix.python, 'pypy')
+        run: |
+          grep -v plugins .coveragerc > .coveragerc-pypy
+          mv .coveragerc-pypy .coveragerc
+
       - name: install dependencies
         run: |
           pip install --upgrade pip wheel
@@ -165,7 +172,10 @@ jobs:
 
       - name: run tests
         run: |
-          python -m pytest -m "not new_console" -v zmq/tests
+          python -m pytest --cov zmq -m "not new_console" -v zmq/tests
+
+      - name: upload coverage
+        run: codecov
 
       # FIXME: what's the right incantation to call this?
       # the same line from appveyor doesn't work here

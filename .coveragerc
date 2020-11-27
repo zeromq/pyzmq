@@ -1,0 +1,12 @@
+[run]
+plugins = Cython.Coverage
+parallel = True
+branch = False
+omit =
+    zmq/eventloop/minitornado/*
+    zmq/tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+ignore_errors = True
