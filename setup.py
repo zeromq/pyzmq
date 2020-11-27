@@ -297,7 +297,7 @@ def settings_from_prefix(prefix=None, bundle_libzmq_dylib=False):
             # bdist should link against bundled libzmq
             settings['library_dirs'].append('zmq')
             _add_rpath(settings, '$ORIGIN/..')
-            if sys.platform == 'darwin' and is_pypy:
+            if sys.platform == 'darwin' and pypy:
                 settings['extra_link_args'].extend(['-undefined', 'dynamic_lookup'])
         else:
             for path in settings['library_dirs']:
@@ -1266,7 +1266,7 @@ try:
 
     cython = True
 except Exception:
-    use_cython = False
+    cython = False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
 

@@ -4,11 +4,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno
-try:
-    from threading import Event
-except ImportError:
-    # 2.7
-    from threading import _Event as Event
+
+from threading import Event
 
 from ._cffi import ffi, lib as C
 from .constants import ETERM
@@ -25,6 +22,7 @@ except ImportError:
     maybe_bufferable = object
 
 _content = lambda x: x.tobytes() if type(x) == memoryview else x
+
 
 def _check_rc(rc):
     err = C.zmq_errno()
@@ -58,7 +56,6 @@ class Frame(maybe_bufferable):
         # except in the case where we are sharing memory with libzmq
         if track:
             self.tracker = zmq._FINISHED_TRACKER
-
 
         if isinstance(data, unicode):
             raise TypeError(
@@ -116,9 +113,11 @@ class Frame(maybe_bufferable):
 
         # calls zmq_wrap_msg_init_data with the C.free_python_msg callback
         rc = C.zmq_wrap_msg_init_data(
-                self.zmq_msg, data, data_len_c,
-                hint,
-            )
+            self.zmq_msg,
+            data,
+            data_len_c,
+            hint,
+        )
         if rc != 0:
             _check_rc(rc)
         self._failed_init = False
