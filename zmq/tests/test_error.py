@@ -10,9 +10,6 @@ import zmq
 from zmq import ZMQError, strerror, Again, ContextTerminated
 from zmq.tests import BaseZMQTestCase
 
-if sys.version_info[0] >= 3:
-    long = int
-
 
 class TestZMQError(BaseZMQTestCase):
     def test_strerror(self):

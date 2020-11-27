@@ -18,7 +18,7 @@ from . import constants
 from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
-from zmq.utils.strtypes import bytes, unicode, basestring
+from zmq.utils.strtypes import bytes, unicode
 
 
 from .constants import (
@@ -288,7 +288,7 @@ class Socket(SocketBase, AttributeSetter):
         option : int
             The name of the option to set. Can be any of: SUBSCRIBE,
             UNSUBSCRIBE, IDENTITY
-        optval : unicode string (unicode on py2, str on py3)
+        optval : str
             The value of the option to set.
         encoding : str
             The encoding to be used, default is utf8
@@ -311,7 +311,7 @@ class Socket(SocketBase, AttributeSetter):
 
         Returns
         -------
-        optval : unicode string (unicode on py2, str on py3)
+        optval : str
             The value of the option as a unicode string.
         """
 
@@ -660,19 +660,19 @@ class Socket(SocketBase, AttributeSetter):
         """Send a Python unicode string as a message with an encoding.
 
         0MQ communicates with raw bytes, so you must encode/decode
-        text (unicode on py2, str on py3) around 0MQ.
+        text (str) around 0MQ.
 
         Parameters
         ----------
-        u : Python unicode string (unicode on py2, str on py3)
+        u : str
             The unicode string to send.
         flags : int, optional
             Any valid flags for :func:`Socket.send`.
         encoding : str [default: 'utf-8']
             The encoding to be used
         """
-        if not isinstance(u, basestring):
-            raise TypeError("unicode/str objects only")
+        if not isinstance(u, str):
+            raise TypeError("str objects only")
         return self.send(u.encode(encoding), flags=flags, copy=copy, **kwargs)
 
     send_unicode = send_string
@@ -689,7 +689,7 @@ class Socket(SocketBase, AttributeSetter):
 
         Returns
         -------
-        s : unicode string (unicode on py2, str on py3)
+        s : str
             The Python unicode string that arrives as encoded bytes.
 
         Raises

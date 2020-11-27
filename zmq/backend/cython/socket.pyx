@@ -511,17 +511,18 @@ cdef class Socket:
         cdef char* c_addr
 
         _check_closed(self)
+        addr_b = addr
         if isinstance(addr, unicode):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
+            addr_b = addr.encode('utf-8')
+        elif isinstance(addr_b, bytes):
+            addr = addr_b.decode('utf-8')
+
+        if not isinstance(addr_b, bytes):
             raise TypeError('expected str, got: %r' % addr)
-        c_addr = addr
+        c_addr = addr_b
         rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
             if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
-                # py3compat: addr is bytes, but msg wants str
-                if str is unicode:
-                    addr = addr.decode('utf-8', 'replace')
                 path = addr.split('://', 1)[-1]
                 msg = ('ipc path "{0}" is longer than {1} '
                                 'characters (sizeof(sockaddr_un.sun_path)). '
@@ -530,9 +531,6 @@ cdef class Socket:
                                 .format(path, IPC_PATH_MAX_LEN))
                 raise ZMQError(msg=msg)
             elif zmq_errno() == ENOENT:
-                # py3compat: address is bytes, but msg wants str
-                if str is unicode:
-                    addr = addr.decode('utf-8', 'replace')
                 path = addr.split('://', 1)[-1]
                 msg = ('No such file or directory for ipc path "{0}".'.format(
                        path))

@@ -10,14 +10,9 @@ Authors
 
 import sys
 
-if sys.version_info[0] >= 3:
-    bytes = bytes
-    unicode = str
-    basestring = (bytes, unicode)
-else:
-    unicode = unicode
-    bytes = str
-    basestring = basestring
+bytes = bytes
+unicode = str
+basestring = (str,)
 
 
 def cast_bytes(s, encoding='utf8', errors='strict'):
