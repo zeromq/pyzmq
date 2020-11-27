@@ -227,8 +227,6 @@ class TestFrame(BaseZMQTestCase):
     @skip_pypy
     def test_memoryview_shape(self):
         """memoryview shape info"""
-        if sys.version_info < (3,):
-            raise SkipTest("only test memoryviews on Python 3")
         data = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         n = len(data)
         f = zmq.Frame(data)
@@ -267,10 +265,6 @@ class TestFrame(BaseZMQTestCase):
 
     def test_memoryview(self):
         """test messages from memoryview"""
-        major, minor = sys.version_info[:2]
-        if not (major >= 3 or (major == 2 and minor >= 7)):
-            raise SkipTest("memoryviews only in python >= 2.7")
-
         s = b'carrotjuice'
         v = memoryview(s)
         m = zmq.Frame(s)
@@ -308,8 +302,6 @@ class TestFrame(BaseZMQTestCase):
             from numpy.testing import assert_array_equal
         except ImportError:
             raise SkipTest("requires numpy")
-        if sys.version_info < (2, 7):
-            raise SkipTest("requires new-style buffer interface (py >= 2.7)")
         rand = numpy.random.randint
         shapes = [rand(2, 5) for i in range(5)]
         a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)

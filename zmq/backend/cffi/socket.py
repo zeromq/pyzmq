@@ -137,13 +137,14 @@ class Socket(object):
 
     def bind(self, address):
         if isinstance(address, unicode):
-            address = address.encode('utf8')
-        rc = C.zmq_bind(self._zmq_socket, address)
+            address_b = address.encode('utf8')
+        else:
+            address_b = address
+        if isinstance(address, bytes):
+            address = address_b.decode('utf8')
+        rc = C.zmq_bind(self._zmq_socket, address_b)
         if rc < 0:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
-                # py3compat: address is bytes, but msg wants str
-                if str is unicode:
-                    address = address.decode('utf-8', 'replace')
                 path = address.split('://', 1)[-1]
                 msg = (
                     'ipc path "{0}" is longer than {1} '
@@ -153,9 +154,6 @@ class Socket(object):
                 )
                 raise ZMQError(C.zmq_errno(), msg=msg)
             elif C.zmq_errno() == errno_mod.ENOENT:
-                # py3compat: address is bytes, but msg wants str
-                if str is unicode:
-                    address = address.decode('utf-8', 'replace')
                 path = address.split('://', 1)[-1]
                 msg = 'No such file or directory for ipc path "{0}".'.format(path)
                 raise ZMQError(C.zmq_errno(), msg=msg)

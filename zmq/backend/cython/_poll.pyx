@@ -43,12 +43,6 @@ from zmq.error import InterruptedSystemCall
 # Polling related methods
 #-----------------------------------------------------------------------------
 
-# version-independent typecheck for int/long
-if sys.version_info[0] >= 3:
-    int_t = int
-else:
-    int_t = (int,long)
-
 
 def zmq_poll(sockets, long timeout=-1):
     """zmq_poll(sockets, timeout=-1)
@@ -90,7 +84,7 @@ def zmq_poll(sockets, long timeout=-1):
             pollitems[i].fd = 0
             pollitems[i].events = events
             pollitems[i].revents = 0
-        elif isinstance(s, int_t):
+        elif isinstance(s, int):
             pollitems[i].socket = NULL
             pollitems[i].fd = s
             pollitems[i].events = events

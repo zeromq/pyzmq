@@ -26,7 +26,6 @@ __all__ = (
 from functools import wraps
 
 import zmq
-from zmq.utils.strtypes import basestring
 
 
 class _Decorator(object):
@@ -95,9 +94,9 @@ class _Decorator(object):
         """
         kw_name = None
 
-        if isinstance(kwargs.get('name'), basestring):
+        if isinstance(kwargs.get('name'), str):
             kw_name = kwargs.pop('name')
-        elif len(args) >= 1 and isinstance(args[0], basestring):
+        elif len(args) >= 1 and isinstance(args[0], str):
             kw_name = args[0]
             args = args[1:]
 

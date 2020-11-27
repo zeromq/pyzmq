@@ -1,6 +1,7 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+import platform
 import sys
 import time
 from threading import Thread
@@ -20,7 +21,7 @@ except ImportError:
     have_gevent = False
 
 
-PYPY = 'PyPy' in sys.version
+PYPY = platform.python_implementation() == 'PyPy'
 
 # -----------------------------------------------------------------------------
 # skip decorators (directly from unittest)

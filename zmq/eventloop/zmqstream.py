@@ -27,6 +27,7 @@ from __future__ import with_statement
 import pickle
 import sys
 import warnings
+from queue import Queue
 
 import zmq
 from zmq.utils import jsonapi
@@ -44,11 +45,6 @@ except ImportError:
         # tornado 6 removes it
         def stack_context_wrap(callback):
             return callback
-
-
-from queue import Queue
-
-from zmq.utils.strtypes import basestring
 
 
 class ZMQStream(object):
@@ -274,7 +270,7 @@ class ZMQStream(object):
         """Send a unicode message with an encoding.
         See zmq.socket.send_unicode for details.
         """
-        if not isinstance(u, basestring):
+        if not isinstance(u, str):
             raise TypeError("unicode/str objects only")
         return self.send(u.encode(encoding), flags=flags, callback=callback, **kwargs)
 

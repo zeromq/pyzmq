@@ -577,9 +577,7 @@ class TestSocket(BaseZMQTestCase):
             raise SkipTest("Not enough memory: %s" % e)
         # sample the front and back of the received message
         # without checking the whole content
-        # Python 2: items in memoryview are bytes
-        # Python 3: items im memoryview are int
-        byte = c if sys.version_info < (3,) else ord(c)
+        byte = ord(c)
         view = memoryview(rcvd)
         assert len(view) == N
         assert view[0] == byte

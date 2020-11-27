@@ -211,12 +211,8 @@ class ThreadAuthenticator(object):
             self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log
         )
         self.thread.start()
-        # Event.wait:Changed in version 2.7: Previously, the method always returned None.
-        if sys.version_info < (2, 7):
-            self.thread.started.wait(timeout=10)
-        else:
-            if not self.thread.started.wait(timeout=10):
-                raise RuntimeError("Authenticator thread failed to start")
+        if not self.thread.started.wait(timeout=10):
+            raise RuntimeError("Authenticator thread failed to start")
 
     def stop(self):
         """Stop the authentication thread"""
