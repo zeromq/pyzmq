@@ -33,7 +33,7 @@ cdef extern from "zmq_compat.h":
     ctypedef signed long long int64_t "pyzmq_int64_t"
     ctypedef unsigned int uint32_t "pyzmq_uint32_t"
 
-include "./constant_enums.pxi"
+include "constant_enums.pxi"
 
 cdef extern from "zmq.h" nogil:
 
