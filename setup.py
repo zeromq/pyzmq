@@ -84,7 +84,7 @@ from buildutils import (
 libzmq_name = "libzmq"
 
 doing_bdist = any(arg.startswith("bdist") for arg in sys.argv[1:])
-pypy = platform.python_implementation == 'PyPy'
+pypy = platform.python_implementation() == 'PyPy'
 
 # reference points for zmq compatibility
 
@@ -1347,6 +1347,9 @@ if cython:
     if os.environ.get("PYZMQ_CYTHON_COVERAGE"):
         cython_directives["linetrace"] = True
     extensions = cythonize(extensions, compiler_directives=cython_directives)
+
+if pypy:
+    extensions = []
 
 if pypy or os.environ.get("PYZMQ_BACKEND_CFFI"):
     cffi_modules = ['buildutils/build_cffi.py:ffi']
