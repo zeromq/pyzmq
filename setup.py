@@ -1348,7 +1348,7 @@ if cython:
         cython_directives["linetrace"] = True
     extensions = cythonize(extensions, compiler_directives=cython_directives)
 
-if pypy:
+if pypy or os.environ.get("PYZMQ_BACKEND_CFFI"):
     cffi_modules = ['buildutils/build_cffi.py:ffi']
 else:
     cffi_modules = []
@@ -1404,6 +1404,7 @@ setup_args = dict(
     version=extract_version(),
     packages=find_packages(),
     ext_modules=extensions,
+    cffi_modules=cffi_modules,
     package_data=package_data,
     author="Brian E. Granger, Min Ragan-Kelley",
     author_email="zeromq-dev@lists.zeromq.org",
@@ -1445,9 +1446,5 @@ if not os.path.exists(os.path.join("zmq", "backend", "cython", "socket.c")):
     setup_args["setup_requires"].append(
         f"cython>={min_cython_version}; implementation_name == 'cpython'"
     )
-
-if cffi_modules:
-    setup_args['install_requires'] = ['cffi']
-    setup_args['cffi_modules'] = cffi_modules
 
 setup(**setup_args)
