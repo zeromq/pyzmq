@@ -33,3 +33,7 @@ venv
 *.code-workspace
 .vscode
 .mypy_cache
+.coverage
+htmlcov
+coverage.xml
+env
