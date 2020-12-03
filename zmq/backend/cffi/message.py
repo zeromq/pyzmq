@@ -123,6 +123,10 @@ class Frame(maybe_bufferable):
         self._failed_init = False
 
     @property
+    def buffer(self):
+        return self._buffer
+
+    @property
     def bytes(self):
         data = _content(self._data)
         return data
@@ -139,8 +143,9 @@ class Frame(maybe_bufferable):
         else:
             return self.bytes
 
+    @property
     def done(self):
-        return True
+        return self.tracker.done()
 
     def __buffer__(self, flags):
         return self._buffer

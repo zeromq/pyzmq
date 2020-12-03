@@ -204,8 +204,8 @@ class TestFrame(BaseZMQTestCase):
         del m2
         for i in range(3):
             gc.collect()
-        self.assertTrue(mt.wait() is None)
-        self.assertTrue(mt.done)
+        assert mt.wait(0.1) is None
+        assert mt.done
 
     def test_buffer_in(self):
         """test using a buffer as input"""
