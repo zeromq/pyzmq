@@ -13,7 +13,7 @@ import zmq as _zmq
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
 
 # These are incomplete classes and need a Mixin for compatibility with an eventloop
-# defining the followig attributes:
+# defining the following attributes:
 #
 # _Future
 # _READ
