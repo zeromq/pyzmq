@@ -82,18 +82,22 @@ def create_certificates(key_dir, name, metadata=None):
     return public_key_file, secret_key_file
 
 
-def load_certificate(filename):
-    """Load public and secret key from a zmq certificate.
+def load_certificate(filename, load_metadata=False):
+    """Load public and secret key from a zmq certificate. Optionally, also the metadata
+    from the key is returned.
 
-    Returns (public_key, secret_key)
+    Returns (public_key, secret_key, [metadata])
 
     If the certificate file only contains the public key,
     secret_key will be None.
+    If there is not metadata in the certificate,
+    an empty dictionary will be returned.
 
     If there is no public key found in the file, ValueError will be raised.
     """
     public_key = None
     secret_key = None
+    metadata = {}
     if not os.path.exists(filename):
         raise IOError("Invalid certificate file: {0}".format(filename))
 
@@ -102,6 +106,11 @@ def load_certificate(filename):
             line = line.strip()
             if line.startswith(b'#'):
                 continue
+            if load_metadata and line.startswith(b'metadata'):
+                while not (line := next(f)).startswith(b'curve'):
+                    k = line.split(b"=", 1)[0].strip(b' \t\'"\r\n').decode()
+                    v = line.split(b"=", 1)[1].strip(b' \t\'"\r\n').decode()
+                    metadata[k] = v
             if line.startswith(b'public-key'):
                 public_key = line.split(b"=", 1)[1].strip(b' \t\'"')
             if line.startswith(b'secret-key'):
@@ -112,7 +121,10 @@ def load_certificate(filename):
     if public_key is None:
         raise ValueError("No public key found in %s" % filename)
 
-    return public_key, secret_key
+    if not load_metadata:
+        return public_key, secret_key
+    else:
+        return public_key, secret_key, metadata
 
 
 def load_certificates(directory='.'):
