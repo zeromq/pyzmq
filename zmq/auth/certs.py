@@ -107,10 +107,11 @@ def load_certificate(filename, load_metadata=False):
             if line.startswith(b'#'):
                 continue
             if load_metadata and line.startswith(b'metadata'):
-                while not (line := next(f)).startswith(b'curve'):
-                    k = line.split(b"=", 1)[0].strip(b' \t\'"\r\n').decode()
-                    v = line.split(b"=", 1)[1].strip(b' \t\'"\r\n').decode()
+                line = next(f)
+                while not line.startswith(b'curve'):
+                    k, v = [element.strip(b' \t\'"\r\n').decode() for element in line.split(b"=", 1)]
                     metadata[k] = v
+                    line = next(f)
             if line.startswith(b'public-key'):
                 public_key = line.split(b"=", 1)[1].strip(b' \t\'"')
             if line.startswith(b'secret-key'):
