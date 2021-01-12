@@ -56,15 +56,20 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      CIBW_BEFORE_ALL: ${{ matrix.cibw.before_all || 'bash tools/install_libzmq.sh' }}
-      CIBW_ENVIRONMENT: ${{ matrix.cibw.environment || 'ZMQ_PREFIX=/usr/local' }}
+      CIBW_BEFORE_ALL_MACOS: 'bash tools/install_libzmq.sh'
+      CIBW_BEFORE_ALL_LINUX: 'bash tools/install_libzmq.sh'
+
+      CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
+      CIBW_ENVIRONMENT_LINUX: "ZMQ_PREFIX=/usr/local"
+      CIBW_ENVIRONMENT_WINDOWS: "PYZMQ_BUNDLE_CRT=1"
 
       CIBW_TEST_REQUIRES: "pytest"
-      CIBW_TEST_COMMAND: "pytest --pyargs zmq.tests.test_wheel"
+      CIBW_TEST_COMMAND: "pytest -vsx --pyargs zmq.tests.test_wheel"
       CIBW_SKIP: "cp2* cp35* pp2*"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
+
 
     strategy:
       fail-fast: false
@@ -89,15 +94,11 @@ jobs:
             name: win32
             cibw:
               build: "*win32"
-              before_all: "true"
-              environment: "ZMQ_PREFIX="
 
           - os: windows-2019
             name: win_amd64
             cibw:
               build: "*win_amd64"
-              before_all: "true"
-              environment: "ZMQ_PREFIX="
 
     steps:
       - uses: actions/checkout@v2
