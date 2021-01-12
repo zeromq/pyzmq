@@ -47,6 +47,11 @@ def await_gc(obj, rc):
 
 
 class TestFrame(BaseZMQTestCase):
+    def tearDown(self):
+        super().tearDown()
+        for i in range(3):
+            gc.collect()
+
     @skip_pypy
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
@@ -176,6 +181,8 @@ class TestFrame(BaseZMQTestCase):
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
         del m
+        for i in range(3):
+            gc.collect()
         for i in range(10):
             if pm.done:
                 break
@@ -326,6 +333,7 @@ class TestFrame(BaseZMQTestCase):
             B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
             assert_array_equal(A, B)
 
+    @skip_pypy
     def test_frame_more(self):
         """test Frame.more attribute"""
         frame = zmq.Frame(b"hello")

@@ -12,6 +12,7 @@ backend_dir = os.path.join(zmq_dir, 'backend', 'cffi')
 # load constant names without zmq being importable
 sys.path.insert(0, os.path.join(zmq_dir, "utils"))
 from constant_names import all_names, no_prefix
+
 sys.path = sys.path[1:]
 
 ffi = cffi.FFI()

@@ -127,6 +127,8 @@ class GarbageCollector(object):
         self._stop()
 
     def _stop(self):
+        self._stopping = True
+
         push = self.context.socket(zmq.PUSH)
         push.connect(self.url)
         push.send(b'DIE')
@@ -143,6 +145,8 @@ class GarbageCollector(object):
     @property
     def _push_socket(self):
         """The PUSH socket for use in the zmq message destructor callback."""
+        if getattr(self, "_stopping", False):
+            raise RuntimeError()
         if not self.is_alive() or self._push is None:
             self._push = self.context.socket(zmq.PUSH)
             self._push.connect(self.url)
