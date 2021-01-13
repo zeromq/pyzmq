@@ -28,6 +28,7 @@ import sys
 import time
 import errno
 import platform
+from pprint import pprint
 from traceback import print_exc
 
 from setuptools import setup, Command
@@ -373,7 +374,6 @@ class Configure(build_ext):
             if os.environ.get("PYZMQ_BUNDLE_CRT") or (
                 doing_bdist
                 and self.compiler_type == "msvc"
-                and sys.version_info < (3, 9)
                 and not os.environ.get("DISTUTILS_USE_SDK")
             ):
                 cfg['bundle_msvcp'] = True
@@ -672,26 +672,31 @@ class Configure(build_ext):
 
             # bundle MSCVP redist
             if self.config['bundle_msvcp']:
-                cc = new_compiler(compiler=self.compiler_type)
-                cc.initialize()
-                # get vc_redist location via private API
+                from setuptools import msvc
+                from setuptools._distutils.util import get_platform
+
+                vcvars = msvc.msvc14_get_vc_env(get_platform())
                 try:
-                    cc._vcruntime_redist
-                except AttributeError:
+                    vcruntime = vcvars["py_vcruntime_redist"]
+                except KeyError:
+                    warn(f"platform={get_platform()}, vcvars=")
+                    pprint.pprint(vcvars, stream=sys.stderr)
+
                     # fatal error if env set, warn otherwise
                     msg = fatal if os.environ.get("PYZMQ_BUNDLE_CRT") else warn
-                    msg("Failed to get cc._vcruntime via private API, not bundling CRT")
-                if getattr(cc, "_vcruntime_redist", False):
-                    redist_dir, dll = os.path.split(cc._vcruntime_redist)
-                    to_bundle = [
-                        pjoin(redist_dir, dll.replace('vcruntime', name))
-                        for name in ('msvcp', 'concrt')
-                    ]
-                    for src in to_bundle:
-                        dest = localpath('zmq', basename(src))
-                        info("Copying %s -> %s" % (src, dest))
-                        # copyfile to avoid permission issues
-                        shutil.copyfile(src, dest)
+                    msg(
+                        "Failed to get py_vcruntime_redist via vcvars, not bundling MSVCP"
+                    )
+                redist_dir, dll = os.path.split(vcruntime)
+                to_bundle = [
+                    pjoin(redist_dir, dll.replace('vcruntime', name))
+                    for name in ('msvcp', 'concrt')
+                ]
+                for src in to_bundle:
+                    dest = localpath('zmq', basename(src))
+                    info("Copying %s -> %s" % (src, dest))
+                    # copyfile to avoid permission issues
+                    shutil.copyfile(src, dest)
 
         else:
             libzmq.include_dirs.append(bundledir)
