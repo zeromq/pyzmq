@@ -28,6 +28,7 @@ import sys
 import time
 import errno
 import platform
+from pprint import pprint
 from traceback import print_exc
 
 from setuptools import setup, Command
@@ -678,6 +679,9 @@ class Configure(build_ext):
                 try:
                     vcruntime = vcvars["py_vcruntime_redist"]
                 except KeyError:
+                    warn(f"platform={get_platform()}, vcvars=")
+                    pprint.pprint(vcvars, stream=sys.stderr)
+
                     # fatal error if env set, warn otherwise
                     msg = fatal if os.environ.get("PYZMQ_BUNDLE_CRT") else warn
                     msg(

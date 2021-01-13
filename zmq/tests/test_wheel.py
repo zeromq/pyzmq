@@ -9,6 +9,7 @@ import sys
 import pytest
 
 
+@pytest.mark.wheel
 def test_wheel():
     import zmq
 
@@ -19,6 +20,7 @@ def test_wheel():
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="only on Windows")
+@pytest.mark.wheel
 def test_bundle_msvcp():
     import zmq
 

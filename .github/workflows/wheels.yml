@@ -127,6 +127,11 @@ jobs:
         run: |
           pip freeze
 
+      - name: show vcvars
+        if: startsWith(matrix.os, 'win')
+        run: |
+          python tools/showvcvars.py
+
       - name: list target wheels
         run: |
           python -m cibuildwheel . --print-build-identifiers
