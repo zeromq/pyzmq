@@ -6,19 +6,28 @@
 
 import errno as errno_mod
 
-from ._cffi import (
-    C,
-    ffi,
-    new_uint64_pointer,
-    new_int64_pointer,
-    new_int_pointer,
-    new_binary_data,
-    value_uint64_pointer,
-    value_int64_pointer,
-    value_int_pointer,
-    value_binary_data,
-    IPC_PATH_MAX_LEN,
+from ._cffi import lib as C, ffi
+
+
+nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
+
+new_uint64_pointer = lambda: (ffi.new('uint64_t*'), nsp(ffi.sizeof('uint64_t')))
+new_int64_pointer = lambda: (ffi.new('int64_t*'), nsp(ffi.sizeof('int64_t')))
+new_int_pointer = lambda: (ffi.new('int*'), nsp(ffi.sizeof('int')))
+new_binary_data = lambda length: (
+    ffi.new('char[%d]' % (length)),
+    nsp(ffi.sizeof('char') * length),
 )
+
+value_uint64_pointer = lambda val: (ffi.new('uint64_t*', val), ffi.sizeof('uint64_t'))
+value_int64_pointer = lambda val: (ffi.new('int64_t*', val), ffi.sizeof('int64_t'))
+value_int_pointer = lambda val: (ffi.new('int*', val), ffi.sizeof('int'))
+value_binary_data = lambda val, length: (
+    ffi.new('char[%d]' % (length + 1), val),
+    ffi.sizeof('char') * length,
+)
+
+IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 from .message import Frame
 from .constants import RCVMORE
@@ -223,51 +232,82 @@ class Socket(object):
             v = v[:-1]
         return v
 
-    def send(self, message, flags=0, copy=False, track=False):
-        if isinstance(message, unicode):
-            raise TypeError("Message must be in bytes, not an unicode Object")
-
-        if isinstance(message, Frame):
-            message = message.bytes
-
+    def _send_copy(self, buf, flags):
+        """Send a copy of a bufferable"""
         zmq_msg = ffi.new('zmq_msg_t*')
-        if not isinstance(message, bytes):
+        if not isinstance(buf, bytes):
             # cast any bufferable data to bytes via memoryview
-            message = memoryview(message).tobytes()
+            buf = memoryview(buf).tobytes()
 
-        c_message = ffi.new('char[]', message)
-        rc = C.zmq_msg_init_size(zmq_msg, len(message))
+        c_message = ffi.new('char[]', buf)
+        rc = C.zmq_msg_init_size(zmq_msg, len(buf))
         _check_rc(rc)
-        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(message))
+        C.memcpy(C.zmq_msg_data(zmq_msg), c_message, len(buf))
         _retry_sys_call(C.zmq_msg_send, zmq_msg, self._zmq_socket, flags)
         rc2 = C.zmq_msg_close(zmq_msg)
         _check_rc(rc2)
 
-        if track:
-            return zmq.MessageTracker()
+    def _send_frame(self, frame, flags):
+        """Send a Frame on this socket in a non-copy manner."""
+        # Always copy the Frame so the original message isn't garbage collected.
+        # This doesn't do a real copy, just a reference.
+        frame_copy = frame.fast_copy()
+        zmq_msg = frame_copy.zmq_msg
+        _retry_sys_call(C.zmq_msg_send, zmq_msg, self._zmq_socket, flags)
+        tracker = frame_copy.tracker
+        frame_copy.close()
+        return tracker
+
+    def send(self, data, flags=0, copy=False, track=False):
+        if isinstance(data, unicode):
+            raise TypeError("Message must be in bytes, not a unicode object")
+
+        if copy and not isinstance(data, Frame):
+            return self._send_copy(data, flags)
+        else:
+            close_frame = False
+            if isinstance(data, Frame):
+                if track and not data.tracker:
+                    raise ValueError('Not a tracked message')
+                frame = data
+            else:
+                if self.copy_threshold:
+                    buf = memoryview(data)
+                    # always copy messages smaller than copy_threshold
+                    if buf.nbytes < self.copy_threshold:
+                        self._send_copy(buf, flags)
+                        return zmq._FINISHED_TRACKER
+                frame = Frame(data, track=track, copy_threshold=self.copy_threshold)
+                close_frame = True
+
+            tracker = self._send_frame(frame, flags)
+            if close_frame:
+                frame.close()
+            return tracker
 
     def recv(self, flags=0, copy=True, track=False):
-        zmq_msg = ffi.new('zmq_msg_t*')
-        C.zmq_msg_init(zmq_msg)
+        if copy:
+            zmq_msg = ffi.new('zmq_msg_t*')
+            C.zmq_msg_init(zmq_msg)
+        else:
+            frame = zmq.Frame(track=track)
+            zmq_msg = frame.zmq_msg
 
         try:
             _retry_sys_call(C.zmq_msg_recv, zmq_msg, self._zmq_socket, flags)
         except Exception:
-            C.zmq_msg_close(zmq_msg)
+            if copy:
+                C.zmq_msg_close(zmq_msg)
             raise
 
+        if not copy:
+            return frame
+
         _buffer = ffi.buffer(C.zmq_msg_data(zmq_msg), C.zmq_msg_size(zmq_msg))
-        value = _buffer[:]
+        _bytes = _buffer[:]
         rc = C.zmq_msg_close(zmq_msg)
         _check_rc(rc)
-
-        frame = Frame(value, track=track)
-        frame.more = self.getsockopt(RCVMORE)
-
-        if copy:
-            return frame.bytes
-        else:
-            return frame
+        return _bytes
 
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)

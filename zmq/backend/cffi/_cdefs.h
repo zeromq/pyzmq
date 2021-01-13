@@ -43,6 +43,7 @@ size_t zmq_msg_size(zmq_msg_t *msg);
 void *zmq_msg_data(zmq_msg_t *msg);
 int zmq_msg_close(zmq_msg_t *msg);
 
+int zmq_msg_copy(zmq_msg_t *dst, zmq_msg_t *src);
 int zmq_msg_send(zmq_msg_t *msg, void *socket, int flags);
 int zmq_msg_recv(zmq_msg_t *msg, void *socket, int flags);
 
@@ -67,4 +68,20 @@ int zmq_poll(zmq_pollitem_t *items, int nitems, long timeout);
 
 // miscellany
 void * memcpy(void *restrict s1, const void *restrict s2, size_t n);
+void * malloc(size_t sz);
+void free(void *p);
 int get_ipc_path_max_len(void);
+
+typedef struct _zhint {
+    void *sock;
+    void *mutex;
+    size_t id;
+} zhint;
+
+typedef ... mutex_t;
+mutex_t* mutex_allocate();
+
+int zmq_wrap_msg_init_data(zmq_msg_t *msg,
+                      void *data,
+                      size_t size,
+                      void *hint);

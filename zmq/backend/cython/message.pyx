@@ -248,7 +248,7 @@ cdef class Frame:
         return data_len_c
     
     # end buffer interface
-    
+
     def __copy__(self):
         """Create a shallow copy of the message.
 

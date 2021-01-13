@@ -31,6 +31,11 @@ import platform
 from pprint import pprint
 from traceback import print_exc
 
+try:
+    import cffi
+except ImportError:
+    cffi = None
+
 from setuptools import setup, Command
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.build_ext import build_ext
@@ -80,7 +85,7 @@ from buildutils import (
 libzmq_name = "libzmq"
 
 doing_bdist = any(arg.startswith("bdist") for arg in sys.argv[1:])
-pypy = "PyPy" in sys.version
+pypy = platform.python_implementation() == 'PyPy'
 
 # reference points for zmq compatibility
 
@@ -1334,7 +1339,6 @@ ext_kwargs = {
     'include_dirs': ext_include_dirs,
 }
 
-
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
         sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
@@ -1350,54 +1354,12 @@ if cython:
     extensions = cythonize(extensions, compiler_directives=cython_directives)
 
 if pypy:
-    # add dummy extension, to ensure build_ext runs
-    dummy_ext = Extension("dummy", sources=[])
-    extensions = [dummy_ext]
+    extensions = []
 
-    bld_ext = cmdclass['build_ext']
-
-    class pypy_build_ext(bld_ext):
-        """hack to build pypy extension only after building bundled libzmq
-
-        otherwise it will fail when libzmq is bundled.
-        """
-
-        def finalize_options(self):
-            super().finalize_options()
-            if dummy_ext in self.extensions:
-                self.extensions.remove(dummy_ext)
-
-        def run(self):
-            if self.extensions:
-                # have libzmq extension, build it first!
-                super().run()
-
-            # build ffi extension after bundled libzmq,
-            # because it may depend on linking it
-            # we can't import the verifier until libzmq is built!
-            if self.inplace:
-                sys.path.insert(0, '')
-            else:
-                sys.path.insert(0, self.build_lib)
-            try:
-                from zmq.backend.cffi import ffi
-            except ImportError as e:
-                warn("Couldn't get CFFI extension: %s" % e)
-            else:
-                ext = ffi.verifier.get_extension()
-                if not ext.name.startswith('zmq.'):
-                    ext.name = 'zmq.backend.cffi.' + ext.name
-                # re-run initialization, this time with cffi extension
-                self.distribution.ext_modules = [ext]
-                self.distribution.reinitialize_command("build_ext")
-                self.ensure_finalized()
-                super().run()
-            finally:
-                sys.path.pop(0)
-
-    # How many build_ext subclasses is this? 5? Gross.
-    cmdclass['build_ext'] = pypy_build_ext
-
+if pypy or os.environ.get("PYZMQ_BACKEND_CFFI"):
+    cffi_modules = ['buildutils/build_cffi.py:ffi']
+else:
+    cffi_modules = []
 
 package_data = {
     'zmq': ['*.pxd', '*.pyi', '*' + lib_ext],
@@ -1450,6 +1412,7 @@ setup_args = dict(
     version=extract_version(),
     packages=find_packages(),
     ext_modules=extensions,
+    cffi_modules=cffi_modules,
     package_data=package_data,
     author="Brian E. Granger, Min Ragan-Kelley",
     author_email="zeromq-dev@lists.zeromq.org",
@@ -1491,6 +1454,5 @@ if not os.path.exists(os.path.join("zmq", "backend", "cython", "socket.c")):
     setup_args["setup_requires"].append(
         f"cython>={min_cython_version}; implementation_name == 'cpython'"
     )
-
 
 setup(**setup_args)

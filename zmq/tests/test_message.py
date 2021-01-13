@@ -4,6 +4,7 @@
 
 
 import copy
+import gc
 import sys
 
 try:
@@ -46,6 +47,11 @@ def await_gc(obj, rc):
 
 
 class TestFrame(BaseZMQTestCase):
+    def tearDown(self):
+        super().tearDown()
+        for i in range(3):
+            gc.collect()
+
     @skip_pypy
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
@@ -169,13 +175,14 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(rc, 2)
             del s
 
-    @skip_pypy
     def test_tracker(self):
         m = zmq.Frame(b'asdf', copy=False, track=True)
         self.assertFalse(m.tracker.done)
         pm = zmq.MessageTracker(m)
         self.assertFalse(pm.done)
         del m
+        for i in range(3):
+            gc.collect()
         for i in range(10):
             if pm.done:
                 break
@@ -189,7 +196,6 @@ class TestFrame(BaseZMQTestCase):
         self.assertEqual(m2.tracker, None)
         self.assertRaises(ValueError, zmq.MessageTracker, m)
 
-    @skip_pypy
     def test_multi_tracker(self):
         m = zmq.Frame(b'asdf', copy=False, track=True)
         m2 = zmq.Frame(b'whoda', copy=False, track=True)
@@ -198,12 +204,15 @@ class TestFrame(BaseZMQTestCase):
         self.assertFalse(mt.done)
         self.assertRaises(zmq.NotDone, mt.wait, 0.1)
         del m
-        time.sleep(0.1)
+        for i in range(3):
+            gc.collect()
         self.assertRaises(zmq.NotDone, mt.wait, 0.1)
         self.assertFalse(mt.done)
         del m2
-        self.assertTrue(mt.wait() is None)
-        self.assertTrue(mt.done)
+        for i in range(3):
+            gc.collect()
+        assert mt.wait(0.1) is None
+        assert mt.done
 
     def test_buffer_in(self):
         """test using a buffer as input"""
@@ -224,7 +233,6 @@ class TestFrame(BaseZMQTestCase):
         assert outb is m.buffer
         assert m.buffer is m.buffer
 
-    @skip_pypy
     def test_memoryview_shape(self):
         """memoryview shape info"""
         data = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
@@ -294,7 +302,6 @@ class TestFrame(BaseZMQTestCase):
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
 
-    @skip_pypy
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
         try:
@@ -326,6 +333,7 @@ class TestFrame(BaseZMQTestCase):
             B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
             assert_array_equal(A, B)
 
+    @skip_pypy
     def test_frame_more(self):
         """test Frame.more attribute"""
         frame = zmq.Frame(b"hello")
