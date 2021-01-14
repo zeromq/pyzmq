@@ -13,7 +13,9 @@ For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/comm
 ====
 
 pyzmq 21 is a major version bump because of dropped support for old Pythons and some changes in packaging.
-Users should not face major compatibility issues if installation works at all :)
+CPython users should not face major compatibility issues if installation works at all :)
+PyPy users may see issues with the new implementation of send/recv.
+If you do, please report them!
 
 The big changes are:
 
@@ -21,6 +23,8 @@ The big changes are:
 - mypy type stubs, which should improve static analysis of pyzmq,
   especially for dynamically defined attributes such as zmq constants.
   These are new! Let us know if you find any issues.
+- support for zero-copy and sending bufferables with cffi backend.
+  This is experimental! Please report issues.
 
 We've totally redone the wheel-building setup, so let us know if you start seeing instalation issues!
 
@@ -35,12 +39,19 @@ Packaging updates:
 - Add manylinux wheels for linux-aarch64. These bundle an older version of libzmq than the rest.
 - Build wheels for python3.8, 3.9 with manylinux2010 instead of manylinux1.
   Wheels for older Pythons will still be built on manylinux1.
+- rework cffi backend in setup.py
 - All wheels are built on GitHub Actions (most with cibuildwheel) instead of Min's laptop (finally!).
 
+New features:
+
+- zero-copy support in CFFI backend (``send(copy=False)`` now does something).
+- Support sending any buffer-interface-providing objects in CFFI backend.
 
 Bugs fixed:
 
 - Errors during teardown of asyncio Sockets
+- Missing MSVCP140.dll in Python 3.9 wheels on Windows,
+  causing vcruntime-redist package to be required to use the Python 3.9 wheels for pyzmq 20.0
 
 20.0
 ====
