@@ -90,12 +90,12 @@ jobs:
               build: "cp38* cp39*"
               manylinux_image: manylinux2010
 
-          - os: windows-2019
+          - os: windows-2016
             name: win32
             cibw:
               build: "*win32"
 
-          - os: windows-2019
+          - os: windows-2016
             name: win_amd64
             cibw:
               build: "*win_amd64"
