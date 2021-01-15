@@ -9,6 +9,18 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+21.0.1
+======
+
+pyzmq-21.0.1 only changes CI configuration for Windows wheels (built with VS2017 instead of VS2019),
+fixing compatibility with some older Windows on all Pythons
+and removing requirement of VC++ redistributable package on latest Windows and Python < 3.8.
+
+There still appears to be a compatibility issue with Windows 7 that will be fixed ASAP.
+Until then, you can pin ``pip install pyzmq<21``.
+
+There are no changes from 21.0.0 for other platforms.
+
 21.0
 ====
 
@@ -25,6 +37,9 @@ The big changes are:
   These are new! Let us know if you find any issues.
 - support for zero-copy and sending bufferables with cffi backend.
   This is experimental! Please report issues.
+- More wheels!
+    - linux-aarch64 on Python 3.7-3.9
+    - wheels for pypy36, 37 on Linux and Windows (previously just mac)
 
 We've totally redone the wheel-building setup, so let us know if you start seeing instalation issues!
 
