@@ -241,12 +241,10 @@ rm -rf zmq/tests/test_auth.py
 %{python_sitearch}/zmq/
 %{python_sitearch}/pyzmq-*-py*.egg-info
 %exclude %{python_sitearch}/zmq/utils/*.h
-%exclude %{python_sitearch}/zmq/backend/cffi/_verify.c
 %exclude %{python_sitearch}/zmq/backend/cffi/_cdefs.h
 
 %files %{python_files devel}
 %{python_sitearch}/zmq/utils/*.h
-%{python_sitearch}/zmq/backend/cffi/_verify.c
 %{python_sitearch}/zmq/backend/cffi/_cdefs.h
 
 %endif
