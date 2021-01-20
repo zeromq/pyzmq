@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "pyversion_compat.h"
 #include "mutex.h"
 #include "ipcmaxlen.h"
 #include "zmq_compat.h"

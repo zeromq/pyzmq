@@ -8,6 +8,7 @@ on:
       - buildutils/**
       - .github/workflows/wheels.yml
       - tools/install_libzmq.sh
+      - zmq/utils/*.h
 
 env:
   cython: "0.29.21"

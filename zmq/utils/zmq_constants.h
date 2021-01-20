@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _PYZMQ_CONSTANT_DEFS
 #define _PYZMQ_CONSTANT_DEFS
 

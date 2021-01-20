@@ -8,6 +8,8 @@ Distributed under the terms of the New BSD License.  The full license is in
 the file COPYING.BSD, distributed as part of this software.
  */
 
+#pragma once
+
 #if defined(HAVE_SYS_UN_H)
 #include "sys/un.h"
 int get_ipc_path_max_len(void) {
