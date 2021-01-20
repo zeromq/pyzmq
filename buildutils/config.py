@@ -157,9 +157,21 @@ def discover_settings(conf_base=None):
         'bundle_msvcp': None,
         'build_ext': {},
         'bdist_egg': {},
+        'win_ver': None,
     }
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False
+        # target Windows version, sets WINVER, _WIN32_WINNT macros
+        # see https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt for reference
+        # see https://github.com/python/cpython/blob/v3.9.1/PC/pyconfig.h#L137-L159
+        # for CPython's own values
+        if sys.version_info >= (3, 9):
+            # CPython 3.9 targets Windows 8 (0x0602)
+            settings["win_ver"] = "0x0602"
+        else:
+            # older Python, target Windows 7 (0x0601)
+            # CPython itself targets Vista (0x0600)
+            settings["win_ver"] = "0x0601"
 
     if conf_base:
         # lowest priority

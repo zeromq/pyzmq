@@ -411,6 +411,13 @@ class Configure(build_ext):
         if cfg['have_sys_un_h']:
             settings['define_macros'].append(('HAVE_SYS_UN_H', 1))
 
+        if cfg['win_ver']:
+            # set target minimum Windows version
+            settings['define_macros'].extend([
+                ('WINVER', cfg['win_ver']),
+                ('_WIN32_WINNT', cfg['win_ver']),
+            ])
+
         if cfg.get('zmq_draft_api'):
             settings['define_macros'].append(('ZMQ_BUILD_DRAFT_API', 1))
 
