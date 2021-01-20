@@ -5,6 +5,8 @@
 //  the file COPYING.BSD, distributed as part of this software.
 //-----------------------------------------------------------------------------
 
+#pragma once
+
 #if defined(_MSC_VER)
 #define pyzmq_int64_t __int64
 #define pyzmq_uint32_t unsigned __int32
@@ -110,4 +112,3 @@
     #define zmq_socket_monitor(s, addr, flags) _missing
 
 #endif
-
