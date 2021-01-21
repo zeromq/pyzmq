@@ -57,6 +57,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      CIBW_BUILD_VERBOSITY: "1"
       CIBW_BEFORE_ALL_MACOS: 'bash tools/install_libzmq.sh'
       CIBW_BEFORE_ALL_LINUX: 'bash tools/install_libzmq.sh'
 
