@@ -63,7 +63,13 @@ jobs:
 
       CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
       CIBW_ENVIRONMENT_LINUX: "ZMQ_PREFIX=/usr/local"
-      CIBW_ENVIRONMENT_WINDOWS: "PYZMQ_BUNDLE_CRT=1"
+      CIBW_ENVIRONMENT_WINDOWS: "ZMQ_PREFIX=libzmq-dll"
+      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >-
+        delvewheel repair
+        --add-path=C:/libzmq-dll
+        --no-dll=vcruntime140.dll
+        --wheel-dir={dest_dir}
+        {wheel}
 
       CIBW_TEST_REQUIRES: "pytest"
       CIBW_TEST_COMMAND: "pytest -vsx --pyargs zmq.tests.test_wheel"
@@ -94,11 +100,13 @@ jobs:
 
           - os: windows-2019
             name: win32
+            architecture: x86
             cibw:
               build: "*win32"
 
           - os: windows-2019
             name: win_amd64
+            architecture: x64
             cibw:
               build: "*win_amd64"
 
@@ -109,10 +117,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.8"
+          architecture: ${{ matrix.architecture }}
 
       - name: install dependencies
         run: |
-          pip install --upgrade pip wheel
+          pip install --upgrade setuptools pip wheel
           pip install cibuildwheel=="${{ env.cibuildwheel }}" cython=="${{ env.cython }}"
 
       - name: install mac dependencies
@@ -124,6 +133,13 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           pip install auditwheel
+
+      - name: install windows dependencies
+        if: startsWith(matrix.os, 'win')
+        run: |
+          pip install delvewheel
+          python setup.py fetch_libzmq --dll
+          xcopy /i libzmq-dll C:\\libzmq-dll
 
       - name: show environment
         run: |

@@ -11,18 +11,13 @@
 
 import os
 import shutil
-import stat
-import sys
 import tarfile
 import hashlib
+import platform
+import zipfile
 from subprocess import Popen, PIPE
 
-try:
-    # py2
-    from urllib2 import urlopen
-except ImportError:
-    # py3
-    from urllib.request import urlopen
+from urllib.request import urlopen
 
 from .msg import fatal, debug, info, warn
 
@@ -34,6 +29,7 @@ pjoin = os.path.join
 
 bundled_version = (4, 3, 3)
 vs = '%i.%i.%i' % bundled_version
+x, y, z = bundled_version
 libzmq = "zeromq-%s.tar.gz" % vs
 libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}".format(
     vs=vs,
@@ -45,6 +41,21 @@ libzmq_checksum = (
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
+
+vcversion = 140
+
+if platform.architecture()[0] == '64bit':
+    msarch = '-x64'
+else:
+    msarch = ''
+
+libzmq_dll = f"libzmq-v{vcversion}{msarch}-{x}_{y}_{z}.zip"
+libzmq_dll_url = f"https://dl.bintray.com/zeromq/generic/{libzmq_dll}"
+
+libzmq_dll_checksum = {
+    "libzmq-v140-x64-4_3_3.zip": "sha256:ed7ed0235e1af1dbb7cc481e3be4a187f04a259b5bbe5ae8da1279365839d400",
+    "libzmq-v140-4_3_3.zip": "sha256:3b683f983a875c2fa0f6a5ec5a362f420cb5d8fbab63cc74f1c23584c298e26b",
+}.get(libzmq_dll)
 
 # -----------------------------------------------------------------------------
 # Utilities
@@ -169,44 +180,23 @@ def stage_platform_hpp(zmqroot):
     shutil.copy(pjoin(platform_dir, 'platform.hpp'), platform_hpp)
 
 
-def copy_and_patch_libzmq(ZMQ, libzmq):
-    """copy libzmq into source dir, and patch it if necessary.
+def fetch_libzmq_dll(savedir):
+    """Download binary release of libzmq for windows
 
-    This command is necessary prior to running a bdist on Linux or OS X.
+    vcversion specifies the MSVC runtime version to use
     """
-    if sys.platform.startswith('win'):
-        return
-    # copy libzmq into zmq for bdist
-    local = localpath('zmq', libzmq)
-    if not ZMQ and not os.path.exists(local):
-        fatal(
-            "Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
-            "or copy libzmq into zmq/ manually prior to running bdist."
-        )
-    try:
-        # resolve real file through symlinks
-        lib = os.path.realpath(pjoin(ZMQ, 'lib', libzmq))
-        print("copying %s -> %s" % (lib, local))
-        shutil.copy(lib, local)
-    except Exception:
-        if not os.path.exists(local):
-            fatal(
-                "Could not copy libzmq into zmq/, which is necessary for bdist. "
-                "Please specify zmq prefix via `setup.py configure --zmq=/path/to/zmq` "
-                "or copy libzmq into zmq/ manually."
-            )
 
-    if sys.platform == 'darwin':
-        # chmod u+w on the lib,
-        # which can be user-read-only for some reason
-        mode = os.stat(local).st_mode
-        os.chmod(local, mode | stat.S_IWUSR)
-        # patch install_name on darwin, instead of using rpath
-        cmd = ['install_name_tool', '-id', '@loader_path/../%s' % libzmq, local]
-        try:
-            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        except OSError:
-            fatal("install_name_tool not found, cannot patch libzmq for bundling.")
-        out, err = p.communicate()
-        if p.returncode:
-            fatal("Could not patch bundled libzmq install_name: %s" % err, p.returncode)
+    dest = pjoin(savedir, 'zmq.h')
+    if os.path.exists(dest):
+        info("already have %s" % dest)
+        return
+    path = fetch_archive(
+        savedir, libzmq_dll_url, fname=libzmq_dll, checksum=libzmq_dll_checksum
+    )
+    archive = zipfile.ZipFile(path)
+    to_extract = []
+    for name in archive.namelist():
+        if not name.endswith(".exe"):
+            to_extract.append(name)
+    archive.extractall(savedir, members=to_extract)
+    archive.close()

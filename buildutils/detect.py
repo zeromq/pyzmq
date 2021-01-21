@@ -129,7 +129,12 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
     efile = test_compilation(cfile, compiler=cc, **compiler_attrs)
     patch_lib_paths(efile, cc.library_dirs)
 
-    rc, so, se = get_output_error([efile])
+    # add library dirs to %PATH% for windows
+    env = os.environ.copy()
+    if sys.platform.startswith("win"):
+        env["PATH"] = os.pathsep.join([env["PATH"]] + cc.library_dirs)
+
+    rc, so, se = get_output_error([efile], env=env)
     if rc:
         msg = "Error running version detection script:\n%s\n%s" % (so, se)
         logging.error(msg)

@@ -120,7 +120,7 @@ def config_from_prefix(prefix):
         settings['libzmq_extension'] = True
         settings['no_libzmq_extension'] = False
     else:
-        settings['zmq_prefix'] = prefix
+        settings['zmq_prefix'] = os.path.abspath(prefix)
         settings['libzmq_extension'] = False
         settings['no_libzmq_extension'] = True
         settings['allow_legacy_libzmq'] = True  # explicit zmq prefix allows legacy
