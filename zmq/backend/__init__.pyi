@@ -23,13 +23,13 @@ class Socket:
     def send(
         self,
         data: Any,
-        flags: Optional[int],
+        flags: Optional[int] = 0,
         copy: Optional[bool] = True,
         track: Optional[bool] = False,
     ) -> Optional[Frame]: ...
     def recv(
         self,
-        flags: Optional[int],
+        flags: Optional[int] = 0,
         copy: Optional[bool] = True,
         track: Optional[bool] = False,
     ) -> Union[Frame, ByteString]: ...
