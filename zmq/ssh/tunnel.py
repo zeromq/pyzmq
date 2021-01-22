@@ -28,7 +28,7 @@ try:
 
         SSHException = paramiko.ssh_exception.SSHException
 except ImportError:
-    paramiko = None
+    paramiko = None  # type: ignore
 
     class SSHException(Exception):  # type: ignore
         pass
