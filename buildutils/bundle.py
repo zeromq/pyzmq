@@ -11,6 +11,7 @@
 
 import os
 import shutil
+import sys
 import tarfile
 import hashlib
 import platform
@@ -42,7 +43,7 @@ libzmq_checksum = (
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
 
-vcversion = 140
+vcversion = 141
 
 if platform.architecture()[0] == '64bit':
     msarch = '-x64'
@@ -52,10 +53,14 @@ else:
 libzmq_dll = f"libzmq-v{vcversion}{msarch}-{x}_{y}_{z}.zip"
 libzmq_dll_url = f"https://dl.bintray.com/zeromq/generic/{libzmq_dll}"
 
-libzmq_dll_checksum = {
+libzmq_dll_checksums = {
     "libzmq-v140-x64-4_3_3.zip": "sha256:ed7ed0235e1af1dbb7cc481e3be4a187f04a259b5bbe5ae8da1279365839d400",
     "libzmq-v140-4_3_3.zip": "sha256:3b683f983a875c2fa0f6a5ec5a362f420cb5d8fbab63cc74f1c23584c298e26b",
-}.get(libzmq_dll)
+    "libzmq-v141-x64-4_3_3.zip": "sha256:1da914ce9ef000bbcc1f541a8cda35ba29a52d78c02b88044bb5381f5532b198",
+    "libzmq-v141-4_3_3.zip": "sha256:8a5198417675681979a20d0beeee26ae4178752bd11356da9e586ffaeaffa58c",
+}
+
+libzmq_dll_checksum = libzmq_dll_checksums.get(libzmq_dll)
 
 # -----------------------------------------------------------------------------
 # Utilities
@@ -87,12 +92,16 @@ def checksum_file(scheme, path):
 def fetch_archive(savedir, url, fname, checksum, force=False):
     """download an archive to a specific location"""
     dest = pjoin(savedir, fname)
-    scheme, digest_ref = checksum.split(':')
+    if checksum:
+        scheme, digest_ref = checksum.split(':')
+    else:
+        scheme = "sha256"
+        digest_ref = None
 
     if os.path.exists(dest) and not force:
         info("already have %s" % dest)
         digest = checksum_file(scheme, fname)
-        if digest == digest_ref:
+        if digest == digest_ref or not digest_ref:
             return dest
         else:
             warn("but checksum %s != %s, redownloading." % (digest, digest_ref))
@@ -105,11 +114,13 @@ def fetch_archive(savedir, url, fname, checksum, force=False):
     with open(dest, 'wb') as f:
         f.write(req.read())
     digest = checksum_file(scheme, dest)
-    if digest != digest_ref:
+    if digest_ref and digest != digest_ref:
         fatal(
             "%s %s mismatch:\nExpected: %s\nActual  : %s"
             % (dest, scheme, digest_ref, digest)
         )
+    elif not digest_ref:
+        warn(f"No digest to check, got: {scheme}:{digest}")
     return dest
 
 
