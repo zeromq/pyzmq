@@ -102,7 +102,13 @@ jobs:
             name: win32
             architecture: x86
             cibw:
-              build: "*win32"
+              build: "cp*win32"
+
+          - os: windows-2016
+            name: win32-pypy
+            architecture: x86
+            cibw:
+              build: "pp*win32"
 
           - os: windows-2019
             name: win_amd64
@@ -118,6 +124,14 @@ jobs:
         with:
           python-version: "3.8"
           architecture: ${{ matrix.architecture }}
+
+      - name: set Windows extra env
+        uses: combined
+        shell: bash
+        if: name == 'win32-pypy'
+        run: |
+          echo 'CIBW_ENVIRONMENT_WINDOWS="ZMQ_PREFIX=bundled"' >> "$GITHUB_ENV"
+          echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
 
       - name: install dependencies
         run: |
