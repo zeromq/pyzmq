@@ -25,7 +25,7 @@ class ZMQError(ZMQBaseError):
         Description of the error or None.
     """
 
-    errno = None
+    errno: Optional[int] = None
 
     def __init__(self, errno: Optional[int] = None, msg: Optional[str] = None):
         """Wrap an errno style error.
@@ -59,10 +59,10 @@ class ZMQError(ZMQBaseError):
         # libzmq call will raise a *catchable* KeyboardInterrupt
         # PyErr_CheckSignals()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.strerror
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "%s('%s')" % (self.__class__.__name__, str(self))
 
 

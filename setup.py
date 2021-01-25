@@ -1362,7 +1362,7 @@ else:
     cffi_modules = []
 
 package_data = {
-    'zmq': ['*.pxd', '*.pyi', '*' + lib_ext],
+    'zmq': ['*.pxd', '*.pyi', '*' + lib_ext, 'py.typed'],
     'zmq.backend': ['*.pyi'],
     'zmq.backend.cython': ['*.pxd', '*.pxi'],
     'zmq.backend.cffi': ['*.h', '*.c'],
