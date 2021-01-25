@@ -9,15 +9,12 @@ import logging
 from distutils import ccompiler
 from distutils.sysconfig import customize_compiler
 from pipes import quote
+from pprint import pprint
 from subprocess import Popen, PIPE
 
+from .msg import warn
+
 pjoin = os.path.join
-
-
-if sys.version_info[0] >= 3:
-    u = lambda x: x
-else:
-    u = lambda x: x.decode('utf8', 'replace')
 
 
 def customize_mingw(cc):
@@ -53,18 +50,48 @@ def get_compiler(compiler, **compiler_attrs):
     return cc
 
 
-def get_output_error(cmd):
+def get_output_error(cmd, **kwargs):
     """Return the exit status, stdout, stderr of a command"""
     if not isinstance(cmd, list):
         cmd = [cmd]
     logging.debug("Running: %s", ' '.join(map(quote, cmd)))
     try:
-        result = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        result = Popen(cmd, stdout=PIPE, stderr=PIPE, **kwargs)
     except IOError as e:
-        return -1, u(''), u('Failed to run %r: %r' % (cmd, e))
+        return -1, '', 'Failed to run %r: %r' % (cmd, e)
     so, se = result.communicate()
     # unicode:
     so = so.decode('utf8', 'replace')
     se = se.decode('utf8', 'replace')
 
     return result.returncode, so, se
+
+
+def locate_vcredist_dir():
+    """Locate vcredist directory and add it to $PATH
+
+    Adding it to $PATH is required to run
+    executables that link libzmq to find e.g. msvcp140.dll
+    """
+    from setuptools import msvc
+
+    try:
+        from setuptools._distutils.util import get_platform
+    except ImportError:
+        from distutils.util import get_platform
+
+    vcvars = msvc.msvc14_get_vc_env(get_platform())
+    try:
+        vcruntime = vcvars["py_vcruntime_redist"]
+    except KeyError:
+        warn(f"platform={get_platform()}, vcvars=")
+        pprint(vcvars, stream=sys.stderr)
+
+        warn(
+            "Failed to get py_vcruntime_redist via vcvars, may need to set it in %PATH%"
+        )
+        return None
+    redist_dir, dll = os.path.split(vcruntime)
+    # add redist dir to $PATH so that it can be found
+    os.environ["PATH"] += os.pathsep + redist_dir
+    return redist_dir

@@ -8,6 +8,7 @@ on:
       - buildutils/**
       - .github/workflows/wheels.yml
       - tools/install_libzmq.sh
+      - zmq/utils/*.h
 
 env:
   cython: "0.29.21"
@@ -56,12 +57,19 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      CIBW_BUILD_VERBOSITY: "1"
       CIBW_BEFORE_ALL_MACOS: 'bash tools/install_libzmq.sh'
       CIBW_BEFORE_ALL_LINUX: 'bash tools/install_libzmq.sh'
 
       CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
       CIBW_ENVIRONMENT_LINUX: "ZMQ_PREFIX=/usr/local"
-      CIBW_ENVIRONMENT_WINDOWS: "PYZMQ_BUNDLE_CRT=1"
+      CIBW_ENVIRONMENT_WINDOWS: "ZMQ_PREFIX=libzmq-dll"
+      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >-
+        delvewheel repair
+        --add-path=C:/libzmq-dll
+        --no-dll=vcruntime140.dll
+        --wheel-dir={dest_dir}
+        {wheel}
 
       CIBW_TEST_REQUIRES: "pytest"
       CIBW_TEST_COMMAND: "pytest -vsx --pyargs zmq.tests.test_wheel"
@@ -90,13 +98,21 @@ jobs:
               build: "cp38* cp39*"
               manylinux_image: manylinux2010
 
-          - os: windows-2016
+          - os: windows-2019
             name: win32
+            architecture: x86
             cibw:
-              build: "*win32"
+              build: "cp*win32"
 
-          - os: windows-2016
+#           - os: windows-2016
+#             name: win32-pypy
+#             architecture: x86
+#             cibw:
+#               build: "pp*win32"
+#
+          - os: windows-2019
             name: win_amd64
+            architecture: x64
             cibw:
               build: "*win_amd64"
 
@@ -107,10 +123,19 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.8"
+          architecture: ${{ matrix.architecture }}
 
+#       - name: set Windows extra env
+#         uses: combined
+#         shell: bash
+#         if: name == 'win32-pypy'
+#         run: |
+#           echo 'CIBW_ENVIRONMENT_WINDOWS="ZMQ_PREFIX=bundled"' >> "$GITHUB_ENV"
+#           echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
+#
       - name: install dependencies
         run: |
-          pip install --upgrade pip wheel
+          pip install --upgrade setuptools pip wheel
           pip install cibuildwheel=="${{ env.cibuildwheel }}" cython=="${{ env.cython }}"
 
       - name: install mac dependencies
@@ -122,6 +147,13 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           pip install auditwheel
+
+      - name: install windows dependencies
+        if: startsWith(matrix.os, 'win')
+        run: |
+          pip install delvewheel
+          python setup.py fetch_libzmq --dll
+          xcopy /i libzmq-dll C:\\libzmq-dll
 
       - name: show environment
         run: |

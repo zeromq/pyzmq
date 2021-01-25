@@ -146,7 +146,9 @@ class Frame(maybe_bufferable):
         for Frames created by recv
         """
         if self._data is None:
-            self._data = ffi.buffer(C.zmq_msg_data(self.zmq_msg), C.zmq_msg_size(self.zmq_msg))
+            self._data = ffi.buffer(
+                C.zmq_msg_data(self.zmq_msg), C.zmq_msg_size(self.zmq_msg)
+            )
         if self._buffer is None:
             self._buffer = memoryview(self._data)
 

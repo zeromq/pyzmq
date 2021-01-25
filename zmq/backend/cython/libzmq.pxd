@@ -27,6 +27,11 @@
 # Import the C header files
 #-----------------------------------------------------------------------------
 
+# common includes, such as zmq compat, pyversion_compat
+# make sure we load pyversion compat in every Cython module
+cdef extern from "pyversion_compat.h":
+    pass
+
 # were it not for Windows,
 # we could cimport these from libc.stdint
 cdef extern from "zmq_compat.h":
