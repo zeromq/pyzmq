@@ -79,6 +79,8 @@ jobs:
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
+      CIBW_MANYLINUX_AARCH64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
+      CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
 
     strategy:
       fail-fast: false
@@ -98,6 +100,27 @@ jobs:
             cibw:
               build: "cp38* cp39*"
               manylinux_image: manylinux2010
+
+          - os: ubuntu-20.04
+            name: cp37-manylinux_aarch64
+            cibw:
+              build: "cp37*"
+              manylinux_image: manylinux2014
+              arch: aarch64
+
+          - os: ubuntu-20.04
+            name: cp38-manylinux_aarch64
+            cibw:
+              build: "cp38*"
+              manylinux_image: manylinux2014
+              arch: aarch64
+
+          - os: ubuntu-20.04
+            name: cp39-manylinux_aarch64
+            cibw:
+              build: "cp39*"
+              manylinux_image: manylinux2014
+              arch: aarch64
 
           - os: windows-2019
             name: win32
@@ -135,6 +158,19 @@ jobs:
         run: |
          echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
          echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
+
+      - name: register qemu
+        if: contains(matrix.cibw.arch, 'aarch64')
+        run: |
+          docker run --rm --privileged hypriot/qemu-register:v4.2.0
+
+      - name: customize aarch64
+        if: contains(matrix.cibw.arch, 'aarch64')
+        # install zeromq-devel because building libzmq for arm takes too long
+        # it's not in default packages, but it is in epel-7
+        # this will be an older release than than other wheels
+        run: |
+          echo 'CIBW_BEFORE_ALL_LINUX=yum -y install epel-release && yum -y install zeromq-devel' >> "$GITHUB_ENV"
 
       - name: install dependencies
         run: |
@@ -193,66 +229,3 @@ jobs:
         run: |
           pip install twine
           twine upload --skip-existing wheelhouse/*
-
-  cross-wheels:
-    # separate build for aarch64 since cibuildwheel can't do arm on GHA fr now
-    runs-on: ubuntu-20.04
-
-    env:
-      ZMQ_PREFIX: /usr/local
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: aarch64
-            manylinux: "2014"
-            tag: "cp37-cp37m cp38-cp38 cp39-cp39"
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: register qemu
-        run: |
-          docker run --rm --privileged hypriot/qemu-register:v4.2.0
-
-      - name: Build manylinux2014 Python wheels (aarch64)
-        if: matrix.arch == 'aarch64' && matrix.manylinux == '2014'
-        # uses should really support ${{ matrix.arch }} expansion, but it doesn't
-        uses: "RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_aarch64"
-        with:
-          python-versions: ${{ matrix.tag }}
-          build-requirements: "cython==${{ env.cython }}"
-          pip-wheel-args: "-v -w ./dist --no-deps"
-          # what we really want is:
-          # system-packages: zeromq-devel
-          # but zeromq-devel not available on aarch64 by default...
-          # it is is epel7, but can't load that early enough
-          # loading rpms by full url seems to work, but we need to specify
-          # all dependencies to do so
-          system-packages: >
-            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-devel-4.1.4-6.el7.aarch64.rpm
-            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/z/zeromq-4.1.4-6.el7.aarch64.rpm
-            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/l/libsodium-1.0.18-1.el7.aarch64.rpm
-            https://download-ib01.fedoraproject.org/pub/epel/7/aarch64/Packages/o/openpgm-5.2.122-2.el7.aarch64.rpm
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: wheels-manylinux${{ matrix.manylinux }}_${{ matrix.arch }}
-          path: "dist/*manylinux*.whl"
-          if-no-files-found: error
-
-      - name: setup python
-        uses: actions/setup-python@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          python-version: "3.8"
-
-      - name: Publish wheels to PyPI
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          pip install twine
-          twine upload --skip-existing dist/*manylinux*.whl
