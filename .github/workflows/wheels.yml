@@ -66,13 +66,14 @@ jobs:
       CIBW_ENVIRONMENT_WINDOWS: "ZMQ_PREFIX=libzmq-dll"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >-
         delvewheel repair
+        -v
         --add-path=C:/libzmq-dll
         --no-dll=vcruntime140.dll
         --wheel-dir={dest_dir}
         {wheel}
 
       CIBW_TEST_REQUIRES: "pytest"
-      CIBW_TEST_COMMAND: "pytest -vsx --pyargs zmq.tests.test_wheel"
+      CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
       CIBW_SKIP: "cp2* cp35* pp2*"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
@@ -104,12 +105,12 @@ jobs:
             cibw:
               build: "cp*win32"
 
-#           - os: windows-2016
-#             name: win32-pypy
-#             architecture: x86
-#             cibw:
-#               build: "pp*win32"
-#
+          - os: windows-2016
+            name: win32-pypy
+            architecture: x86
+            cibw:
+              build: "pp*win32"
+
           - os: windows-2019
             name: win_amd64
             architecture: x64
@@ -125,14 +126,16 @@ jobs:
           python-version: "3.8"
           architecture: ${{ matrix.architecture }}
 
-#       - name: set Windows extra env
-#         uses: combined
-#         shell: bash
-#         if: name == 'win32-pypy'
-#         run: |
-#           echo 'CIBW_ENVIRONMENT_WINDOWS="ZMQ_PREFIX=bundled"' >> "$GITHUB_ENV"
-#           echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
-#
+      - name: set Windows extra env for pypy
+        shell: bash
+        if: matrix.name == 'win32-pypy'
+        # pypy builds libzmq as an Extension,
+        # doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
+        # bundling external libzmq doesn't seem to work
+        run: |
+         echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
+         echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
+
       - name: install dependencies
         run: |
           pip install --upgrade setuptools pip wheel
