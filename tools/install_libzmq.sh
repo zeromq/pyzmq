@@ -2,7 +2,9 @@
 # script to install libzmq/libsodium for use in wheels
 set -ex
 LIBSODIUM_VERSION="1.0.18"
-LIBZMQ_VERSION="4.3.3"
+
+LIBZMQ_VERSION="$(python3 -m buildutils.bundle)"
+
 PREFIX="${PREFIX:-/usr/local}"
 
 curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_VERSION}.tar.gz"

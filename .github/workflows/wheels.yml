@@ -12,7 +12,7 @@ on:
 
 env:
   cython: "0.29.21"
-  cibuildwheel: "1.6.4"
+  cibuildwheel: "1.8.0"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:

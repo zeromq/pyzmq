@@ -28,7 +28,7 @@ pjoin = os.path.join
 # Constants
 # -----------------------------------------------------------------------------
 
-bundled_version = (4, 3, 3)
+bundled_version = (4, 3, 4)
 vs = '%i.%i.%i' % bundled_version
 x, y, z = bundled_version
 libzmq = "zeromq-%s.tar.gz" % vs
@@ -37,7 +37,7 @@ libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}"
     libzmq=libzmq,
 )
 libzmq_checksum = (
-    "sha256:9d9285db37ae942ed0780c016da87060497877af45094ff9e1a1ca736e3875a2"
+    "sha256:c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336295c3e5"
 )
 
 HERE = os.path.dirname(__file__)
@@ -54,10 +54,10 @@ libzmq_dll = f"libzmq-v{vcversion}{msarch}-{x}_{y}_{z}.zip"
 libzmq_dll_url = f"https://dl.bintray.com/zeromq/generic/{libzmq_dll}"
 
 libzmq_dll_checksums = {
-    "libzmq-v140-x64-4_3_3.zip": "sha256:ed7ed0235e1af1dbb7cc481e3be4a187f04a259b5bbe5ae8da1279365839d400",
-    "libzmq-v140-4_3_3.zip": "sha256:3b683f983a875c2fa0f6a5ec5a362f420cb5d8fbab63cc74f1c23584c298e26b",
-    "libzmq-v141-x64-4_3_3.zip": "sha256:1da914ce9ef000bbcc1f541a8cda35ba29a52d78c02b88044bb5381f5532b198",
-    "libzmq-v141-4_3_3.zip": "sha256:8a5198417675681979a20d0beeee26ae4178752bd11356da9e586ffaeaffa58c",
+    "libzmq-v140-4_3_4.zip": "sha256:a43b5aebc6238add32326851b714ba11531c7f6790710d7e8936af94d4420002",
+    "libzmq-v140-x64-4_3_4.zip": "sha256:073a974635effb10a329e3aef75f0d2ffb517b92f85218a8ec531c54fc8a1f8d",
+    "libzmq-v141-4_3_4.zip": "sha256:2be7c8e3e1f48a8fa3daae2511e98b7149de4d58a6bd68a83eddd0d423c98c6b",
+    "libzmq-v141-x64-4_3_4.zip": "sha256:6520beb3bc2f455e205f62492e8081f81aa46f369fa0d8bd7723ec8b77161d04",
 }
 
 libzmq_dll_checksum = libzmq_dll_checksums.get(libzmq_dll)
@@ -211,3 +211,7 @@ def fetch_libzmq_dll(savedir):
             to_extract.append(name)
     archive.extractall(savedir, members=to_extract)
     archive.close()
+
+if __name__ == "__main__":
+    # allow python -m buildutils.bundle to get bundled version
+    print(vs)
