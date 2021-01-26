@@ -9,6 +9,27 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.0.0
+======
+
+This is a major release due to changes in wheels and building on Windows.
+Code changes from 21.0 are minimal.
+
+- Some typing fixes
+- Bump bundled libzmq to 4.3.4
+- Strip unused symbols in manylinux wheels, resulting in dramatically smaller binaries.
+  This matches behavior in v20 and earlier.
+- Windows CPython wheels bundle public libzmq binary builds,
+  instead of building libzmq as a Python Extension.
+  This means they include libsodium for the first time.
+- Our own implementation of bundling libzmq into pyzmq on Windows is removed,
+  instead relying on delvewheel (or installations putting dlls on %PATH%) to bundle dependency dlls.
+- The (new in 21.0) Windows wheels for PyPy likely require the Windows vcredist package.
+  This may have always been the case, but the delvewheel approach doesn't seem to work.
+- Windows + PyPy is now the only remaining case where a wheel has libzmq built as an Extension.
+  All other builds ship libzmq built using its own tooling,
+  which should result in better, more stable builds.
+
 21.0.2
 ======
 
