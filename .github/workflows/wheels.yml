@@ -101,7 +101,7 @@ jobs:
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
-              build: "cp38* cp39*"
+              build: "cp38* cp39* pp3*"
               manylinux_image: manylinux2010
 
           - os: ubuntu-20.04
