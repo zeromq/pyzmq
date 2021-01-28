@@ -63,7 +63,10 @@ jobs:
       CIBW_BEFORE_ALL_LINUX: 'bash tools/install_libzmq.sh'
 
       CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
-      CIBW_ENVIRONMENT_LINUX: "ZMQ_PREFIX=/usr/local"
+      CIBW_ENVIRONMENT_LINUX: >-
+        ZMQ_PREFIX=/usr/local
+        CFLAGS=-Wl,-strip-all
+        CXXFLAGS=-Wl,-strip-all
       CIBW_ENVIRONMENT_WINDOWS: "ZMQ_PREFIX=libzmq-dll"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >-
         delvewheel repair
