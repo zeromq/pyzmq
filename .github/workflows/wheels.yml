@@ -102,6 +102,13 @@ jobs:
               manylinux_image: manylinux2010
 
           - os: ubuntu-20.04
+            name: cp36-manylinux_aarch64
+            cibw:
+              build: "cp36*"
+              manylinux_image: manylinux2014
+              arch: aarch64
+
+          - os: ubuntu-20.04
             name: cp37-manylinux_aarch64
             cibw:
               build: "cp37*"
