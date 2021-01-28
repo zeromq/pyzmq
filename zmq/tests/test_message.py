@@ -301,6 +301,7 @@ class TestFrame(BaseZMQTestCase):
                 self.assertEqual(b, null)
                 self.assertEqual(mb, null)
                 self.assertEqual(m2.bytes, ff)
+                assert type(m2.bytes) is bytes
 
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""

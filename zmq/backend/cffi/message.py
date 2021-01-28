@@ -21,7 +21,14 @@ try:
 except ImportError:
     maybe_bufferable = object
 
-_content = lambda x: x.tobytes() if type(x) == memoryview else x
+
+def _content(obj):
+    """Return content of obj as bytes"""
+    if type(obj) is bytes:
+        return obj
+    if not isinstance(obj, memoryview):
+        obj = memoryview(obj)
+    return obj.tobytes()
 
 
 def _check_rc(rc):
@@ -44,6 +51,7 @@ class Frame(maybe_bufferable):
     closed = False
     more = False
     _buffer = None
+    _bytes = None
     _failed_init = False
     tracker_event = None
     zmq_msg = None
@@ -70,6 +78,9 @@ class Frame(maybe_bufferable):
             return
 
         self._data = data
+        if type(data) is bytes:
+            # avoid unnecessary copy on .bytes access
+            self._bytes = data
 
         self._buffer = memoryview(data)
         c_data = ffi.from_buffer(self._buffer)
@@ -160,9 +171,9 @@ class Frame(maybe_bufferable):
 
     @property
     def bytes(self):
-        if self._data is None:
-            self._buffer_from_zmq_msg()
-        return _content(self._data)
+        if self._bytes is None:
+            self._bytes = self.buffer.tobytes()
+        return self._bytes
 
     def __len__(self):
         return self.buffer.nbytes
