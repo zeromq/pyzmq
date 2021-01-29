@@ -9,6 +9,11 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.0.2
+======
+
+- Add workaround for bug in DLL loading for Windows wheels with conda Python >= 3.8
+
 22.0.1
 ======
 
