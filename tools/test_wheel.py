@@ -43,7 +43,8 @@ def test_bundle_msvcp():
     if platform.python_implementation() == 'PyPy':
         should_bundle = []
     else:
-        shouldnt_bundle.append(vcruntime)
+        # do we want this?
+        should_bundle.append(vcruntime)
 
     for dll in shouldnt_bundle:
         assert dll not in dlls
