@@ -5,10 +5,14 @@
 
 # load bundled libzmq, if there is one:
 
+import os
+import sys
+from contextlib import contextmanager
+
 
 def _load_libzmq():
     """load bundled libzmq if there is one"""
-    import sys, platform, os
+    import platform
 
     dlopen = hasattr(sys, 'getdlopenflags')  # unix-only
     # RTLD flags are added to os in Python 3
@@ -57,9 +61,47 @@ def _load_libzmq():
 _load_libzmq()
 
 
+@contextmanager
+def _libs_on_path():
+    """context manager for libs directory on $PATH
+
+    Works around mysterious issue where os.add_dll_directory
+    does not resolve imports (conda-forge Python >= 3.8)
+    """
+
+    if not sys.platform.startswith("win"):
+        yield
+        return
+
+    libs_dir = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            os.pardir,
+            "pyzmq.libs",
+        )
+    )
+    if not os.path.exists(libs_dir):
+        # no bundled libs
+        yield
+        return
+
+    path_before = os.environ.get("PATH")
+    try:
+        os.environ["PATH"] = os.pathsep.join([path_before or "", libs_dir])
+        yield
+    finally:
+        if path_before is None:
+            os.environ.pop("PATH")
+        else:
+            os.environ["PATH"] = path_before
+
+
 # zmq top-level imports
 
-from zmq import backend
+# workaround for Windows
+with _libs_on_path():
+    from zmq import backend
+
 from zmq.backend import *
 from zmq import sugar
 from zmq.sugar import *
