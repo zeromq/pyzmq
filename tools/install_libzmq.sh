@@ -5,6 +5,33 @@ LIBSODIUM_VERSION="1.0.18"
 
 LIBZMQ_VERSION="$(python3 -m buildutils.bundle)"
 
+if [[ "$(uname)" == "Darwin" ]]; then
+    ARCHS="x86_64"
+    case "${CIBW_ARCHS_MACOS:-auto}" in
+        "universal2")
+            ARCHS="x86_64 arm64"
+            ;;
+        "arm64")
+            ARCHS="arm64"
+            ;;
+        "x86_64")
+            ARCHS="x86_64"
+            ;;
+        "auto")
+            ;;
+        *)
+            echo "Unexpected arch: ${CIBW_ARCHS_MACOS}"
+            exit 1
+            ;;
+    esac
+    echo "building libzmq for mac ${ARCHS}"
+    for arch in ${ARCHS}; do
+        export CFLAGS="-arch ${arch} ${CFLAGS:-}"
+        export CXXFLAGS="-arch ${arch} ${CXXFLAGS:-}"
+        export LDFLAGS="-arch ${arch} ${LDFLAGS:-}"
+    done
+fi
+
 PREFIX="${PREFIX:-/usr/local}"
 
 curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_VERSION}.tar.gz"
