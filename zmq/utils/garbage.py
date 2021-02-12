@@ -126,27 +126,33 @@ class GarbageCollector(object):
             return
         self._stop()
 
-    def _stop(self):
-        self._stopping = True
+    def _clear(self):
+        """Clear state
 
+        called after stop or when setting up a new subprocess
+        """
+        self._push = None
+        self._push_mutex = None
+        self.thread = None
+        self.refs.clear()
+        self.context = None
+
+    def _stop(self):
         push = self.context.socket(zmq.PUSH)
         push.connect(self.url)
         push.send(b'DIE')
         push.close()
         if self._push:
             self._push.close()
-            self._push = None
-        self._push_mutex = None
         self.thread.join()
         self.context.term()
-        self.refs.clear()
-        self.context = None
+        self._clear()
 
     @property
     def _push_socket(self):
         """The PUSH socket for use in the zmq message destructor callback."""
-        if getattr(self, "_stopping", False):
-            raise RuntimeError()
+        if getattr(self, "_stay_down", False):
+            raise RuntimeError("zmq gc socket requested during shutdown")
         if not self.is_alive() or self._push is None:
             self._push = self.context.socket(zmq.PUSH)
             self._push.connect(self.url)
@@ -161,7 +167,7 @@ class GarbageCollector(object):
         if self.thread is not None and self.pid != getpid():
             # It's re-starting, must free earlier thread's context
             # since a fork probably broke it
-            self._stop()
+            self._clear()
         self.pid = getpid()
         self.refs = {}
         self.thread = GarbageCollectorThread(self)
