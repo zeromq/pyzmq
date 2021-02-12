@@ -9,6 +9,12 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.0.3
+======
+
+- Fix fork-safety bug in garbage collection thread (regression in 20.0)
+  when using subprocesses.
+
 22.0.2
 ======
 
