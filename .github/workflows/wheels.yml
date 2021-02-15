@@ -12,7 +12,7 @@ on:
 
 env:
   cython: "0.29.21"
-  cibuildwheel: "1.8.0"
+  cibuildwheel: "1.9.0"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -59,8 +59,8 @@ jobs:
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
       CIBW_BUILD_VERBOSITY: "1"
-      CIBW_BEFORE_ALL_MACOS: 'bash tools/install_libzmq.sh'
-      CIBW_BEFORE_ALL_LINUX: 'bash tools/install_libzmq.sh'
+      CIBW_BEFORE_ALL_MACOS: "bash tools/install_libzmq.sh"
+      CIBW_BEFORE_ALL_LINUX: "bash tools/install_libzmq.sh"
 
       CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
       CIBW_ENVIRONMENT_LINUX: >-
@@ -78,12 +78,12 @@ jobs:
 
       CIBW_TEST_REQUIRES: "pytest"
       CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
-      CIBW_SKIP: "cp2* cp35* pp2*"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_AARCH64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
+      CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
 
     strategy:
       fail-fast: false
@@ -91,6 +91,12 @@ jobs:
         include:
           - os: macos-10.15
             name: mac
+
+          - os: macos-10.15
+            name: mac-arm
+            cibw:
+              arch: universal2
+              build: "cp39*"
 
           - os: ubuntu-20.04
             name: manylinux1
@@ -166,8 +172,8 @@ jobs:
         # doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
         # bundling external libzmq doesn't seem to work
         run: |
-         echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
-         echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
+          echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
+          echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
 
       - name: register qemu
         if: contains(matrix.cibw.arch, 'aarch64')
@@ -181,6 +187,13 @@ jobs:
         # this will be an older release than than other wheels
         run: |
           echo 'CIBW_BEFORE_ALL_LINUX=yum -y install epel-release && yum -y install zeromq-devel' >> "$GITHUB_ENV"
+
+      - name: customize mac-arm-64
+        if: contains(matrix.os, 'macos') && matrix.cibw.arch
+        run: |
+          sudo xcode-select -switch /Applications/Xcode_12.2.app
+          echo 'SDKROOT=/Applications/Xcode_12.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk' >> "$GITHUB_ENV"
+          echo 'MACOSX_DEPLOYMENT_TARGET=10.15' >> "$GITHUB_ENV"
 
       - name: install dependencies
         run: |
@@ -207,11 +220,6 @@ jobs:
       - name: show environment
         run: |
           pip freeze
-
-      - name: show vcvars
-        if: startsWith(matrix.os, 'win')
-        run: |
-          python tools/showvcvars.py
 
       - name: list target wheels
         run: |
