@@ -57,7 +57,7 @@ class ThreadMonitoredQueue(MonitoredQueueBase, ThreadProxy):
 
 
 class ProcessMonitoredQueue(MonitoredQueueBase, ProcessProxy):
-    """Run zmq.monitored_queue in a background thread.
+    """Run zmq.monitored_queue in a separate process.
 
     See MonitoredQueue and Proxy for details.
     """
