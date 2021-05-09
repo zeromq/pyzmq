@@ -7,12 +7,67 @@ Requires asyncio and Python 3.
 # Distributed under the terms of the Modified BSD License.
 
 import asyncio
-from asyncio import SelectorEventLoop, Future
 import selectors
+import sys
 import warnings
+from asyncio import SelectorEventLoop, Future
+from typing import Union
+from weakref import WeakKeyDictionary
 
 import zmq as _zmq
 from zmq import _future
+
+# registry of asyncio loop : selector thread
+_selectors: WeakKeyDictionary[
+    asyncio.AbstractEventLoop, "_zmq._asyncio_selector.SelectorThread"
+] = WeakKeyDictionary()
+
+
+def _get_selector_windows(
+    io_loop,
+) -> Union[asyncio.AbstractEventLoop, "_zmq._asyncio_selector.SelectorThread"]:
+    """Get selector-compatible loop
+
+    Returns an object with ``add_reader`` family of methods,
+    either the loop itself or a SelectorThread instance.
+
+    Workaround Windows proactor removal of
+    *reader methods, which we need for zmq sockets.
+    """
+
+    if io_loop in _selectors:
+        return _selectors[io_loop]
+
+    # detect add_reader instead of checking for proactor?
+    if hasattr(asyncio, "ProactorEventLoop") and isinstance(
+        io_loop, asyncio.ProactorEventLoop  # type: ignore
+    ):
+        from ._asyncio_selector import SelectorThread
+
+        warnings.warn(
+            "Proactor event loop does not implement add_reader family of methods required for zmq."
+            " Registering an additional selector thread for add_reader support."
+            " Use `asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())`"
+            " to avoid this warning.",
+            RuntimeWarning,
+            # stacklevel 5 matches most likely zmq.asyncio.Context().socket()
+            stacklevel=5,
+        )
+        selector = _selectors[io_loop] = SelectorThread(io_loop)
+        return selector
+    else:
+        return io_loop
+
+
+def _get_selector_noop(loop) -> asyncio.AbstractEventLoop:
+    """no-op on non-Windows"""
+    return loop
+
+
+if sys.platform == "win32":
+    _get_selector = _get_selector_windows
+else:
+    _get_selector = _get_selector_noop
 
 
 class _AsyncIO(object):
@@ -29,16 +84,18 @@ class Poller(_AsyncIO, _future._AsyncPoller):
 
     def _watch_raw_socket(self, loop, socket, evt, f):
         """Schedule callback for a raw socket"""
+        selector = _get_selector(loop)
         if evt & self._READ:
-            loop.add_reader(socket, lambda *args: f())
+            selector.add_reader(socket, lambda *args: f())
         if evt & self._WRITE:
-            loop.add_writer(socket, lambda *args: f())
+            selector.add_writer(socket, lambda *args: f())
 
     def _unwatch_raw_sockets(self, loop, *sockets):
         """Unschedule callback for a raw socket"""
+        selector = _get_selector(loop)
         for socket in sockets:
-            loop.remove_reader(socket)
-            loop.remove_writer(socket)
+            selector.remove_reader(socket)
+            selector.remove_writer(socket)
 
 
 class Socket(_AsyncIO, _future._AsyncSocket):
@@ -46,16 +103,24 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     _poller_class = Poller
 
+    __selector = None
+
+    @property
+    def _selector(self):
+        if self.__selector is None:
+            self.__selector = _get_selector(self.io_loop)
+        return self.__selector
+
     def _init_io_state(self):
         """initialize the ioloop event handler"""
-        self.io_loop.add_reader(self._fd, lambda: self._handle_events(0, 0))
+        self._selector.add_reader(self._fd, lambda: self._handle_events(0, 0))
 
     def _clear_io_state(self):
         """clear any ioloop event handler
 
         called once at close
         """
-        self.io_loop.remove_reader(self._fd)
+        self._selector.remove_reader(self._fd)
 
 
 Poller._socket_class = Socket
