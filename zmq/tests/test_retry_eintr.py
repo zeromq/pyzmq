@@ -17,7 +17,7 @@ from zmq.utils.strtypes import b
 
 
 class TestEINTRSysCall(BaseZMQTestCase):
-    """ Base class for EINTR tests. """
+    """Base class for EINTR tests."""
 
     # delay for initial signal delivery
     signal_delay = 0.1

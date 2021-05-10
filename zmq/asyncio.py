@@ -18,9 +18,7 @@ import zmq as _zmq
 from zmq import _future
 
 # registry of asyncio loop : selector thread
-_selectors: WeakKeyDictionary[
-    asyncio.AbstractEventLoop, "_zmq._asyncio_selector.SelectorThread"
-] = WeakKeyDictionary()
+_selectors: WeakKeyDictionary = WeakKeyDictionary()
 
 
 def _get_selector_windows(
@@ -53,7 +51,18 @@ def _get_selector_windows(
             # stacklevel 5 matches most likely zmq.asyncio.Context().socket()
             stacklevel=5,
         )
+
         selector = _selectors[io_loop] = SelectorThread(io_loop)
+
+        # patch loop.close to also close the selector thread
+        loop_close = io_loop.close
+
+        def _close_selector_and_loop():
+            _selectors.pop(io_loop, None)
+            selector.close()
+            loop_close()
+
+        io_loop.close = _close_selector_and_loop
         return selector
     else:
         return io_loop
@@ -120,7 +129,8 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
         called once at close
         """
-        self._selector.remove_reader(self._fd)
+        if not self.io_loop.is_closed():
+            self._selector.remove_reader(self._fd)
 
 
 Poller._socket_class = Socket
