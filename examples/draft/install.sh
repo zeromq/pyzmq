@@ -3,7 +3,7 @@
 # example script for installing libzmq and pyzmq with draft support
 
 # 1. install libzmq with draft enabled
-export ZMQ_VERSION=4.2.2
+export ZMQ_VERSION=4.3.4
 export PREFIX=${PREFIX:-/usr/local}
 export PYZMQ=${PYZMQ:-pyzmq}
 
@@ -20,11 +20,12 @@ make -j && make install
 # which do not have draft support
 
 echo "installing ${PYZMQ}"
-pip install -v --pre ${PYZMQ} \
-  --install-option=--enable-drafts \
-  --install-option=--zmq=${PREFIX}
+export ZMQ_PREFIX=${PREFIX}
+export ZMQ_DRAFT_API=1
 
-cat << END | python
+pip install -v --no-binary pyzmq --pre ${PYZMQ}
+
+cat << END | python3
 import sys
 import zmq
 print('python: %s' % sys.executable)
