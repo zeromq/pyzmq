@@ -149,7 +149,8 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y -qq libzmq3-dev libsodium-dev
+          sudo apt-get -y remove libzmq5 || true # workaround https://github.com/actions/virtual-environments/issues/3317
+          sudo apt-get -y install libzmq3-dev libsodium-dev
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
