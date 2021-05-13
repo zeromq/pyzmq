@@ -57,8 +57,12 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         super(TestAsyncIOSocket, self).setUp()
 
     def tearDown(self):
-        self.loop.close()
         super().tearDown()
+        self.loop.close()
+        # verify cleanup of references to selectors
+        assert zaio._selectors == {}
+        if 'zmq._asyncio_selector' in sys.modules:
+            assert zmq._asyncio_selector._selector_loops == set()
 
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
@@ -432,7 +436,7 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
         return doc
 
     def setUp(self):
-        self.loop = zaio.ZMQEventLoop()
+        self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         super().setUp()
 
