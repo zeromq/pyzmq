@@ -34,6 +34,15 @@ class _TornadoFuture(Future):
         return self.done() and isinstance(self.exception(), CancelledError)
 
 
+class _CancellableTornadoTimeout:
+    def __init__(self, loop, timeout):
+        self.loop = loop
+        self.timeout = timeout
+
+    def cancel(self):
+        self.loop.remove_timeout(self.timeout)
+
+
 # mixin for tornado/asyncio compatibility
 
 
@@ -44,6 +53,11 @@ class _AsyncTornado(object):
 
     def _default_loop(self):
         return IOLoop.current()
+
+    def _call_later(self, delay, callback):
+        timeout = self.io_loop.call_later(delay, callback)
+        return _CancellableTornadoTimeout(self.io_loop, timeout)
+
 
 
 class Poller(_AsyncTornado, _AsyncPoller):
