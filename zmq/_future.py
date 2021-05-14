@@ -10,7 +10,7 @@ from typing import Type
 from zmq import EVENTS, POLLOUT, POLLIN
 import zmq as _zmq
 
-_FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg'))
+_FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg', 'timer'))
 
 # These are incomplete classes and need a Mixin for compatibility with an eventloop
 # defining the following attributes:
@@ -117,6 +117,12 @@ class _AsyncPoller(_zmq.Poller):
         future.add_done_callback(cancel_watcher)
 
         return future
+
+
+class _NoTimer(object):
+    @staticmethod
+    def cancel():
+        pass
 
 
 class _AsyncSocket(_zmq.Socket):
@@ -300,7 +306,7 @@ class _AsyncSocket(_zmq.Socket):
             # raise EAGAIN
             future.set_exception(_zmq.Again())
 
-        self._call_later(timeout, future_timeout)
+        return self._call_later(timeout, future_timeout)
 
     def _call_later(self, delay, callback):
         """Schedule a function to be called later
@@ -310,7 +316,7 @@ class _AsyncSocket(_zmq.Socket):
         Tornado and asyncio happen to both have ioloop.call_later
         with the same signature.
         """
-        self.io_loop.call_later(delay, callback)
+        return self.io_loop.call_later(delay, callback)
 
     @staticmethod
     def _remove_finished_future(future, event_list):
@@ -342,19 +348,22 @@ class _AsyncSocket(_zmq.Socket):
                 f.set_result(r)
             return f
 
+        timer = _NoTimer
+        if hasattr(_zmq, 'RCVTIMEO'):
+            timeout_ms = self._shadow_sock.rcvtimeo
+            if timeout_ms >= 0:
+                timer = self._add_timeout(f, timeout_ms * 1e-3)
+
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
-        self._recv_futures.append(_FutureEvent(f, kind, kwargs, msg=None))
+        self._recv_futures.append(
+            _FutureEvent(f, kind, kwargs, msg=None, timer=timer)
+        )
 
         # Don't let the Future sit in _recv_events after it's done
         f.add_done_callback(
             lambda f: self._remove_finished_future(f, self._recv_futures)
         )
-
-        if hasattr(_zmq, 'RCVTIMEO'):
-            timeout_ms = self._shadow_sock.rcvtimeo
-            if timeout_ms >= 0:
-                self._add_timeout(f, timeout_ms * 1e-3)
 
         if self._shadow_sock.get(EVENTS) & POLLIN:
             # recv immediately, if we can
@@ -400,18 +409,21 @@ class _AsyncSocket(_zmq.Socket):
                     self._schedule_remaining_events()
                 return f
 
+        timer = _NoTimer
+        if hasattr(_zmq, 'SNDTIMEO'):
+            timeout_ms = self._shadow_sock.get(_zmq.SNDTIMEO)
+            if timeout_ms >= 0:
+                timer = self._add_timeout(f, timeout_ms * 1e-3)
+
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
-        self._send_futures.append(_FutureEvent(f, kind, kwargs=kwargs, msg=msg))
+        self._send_futures.append(
+            _FutureEvent(f, kind, kwargs=kwargs, msg=msg, timer=timer)
+        )
         # Don't let the Future sit in _send_futures after it's done
         f.add_done_callback(
             lambda f: self._remove_finished_future(f, self._send_futures)
         )
-
-        if hasattr(_zmq, 'SNDTIMEO'):
-            timeout_ms = self._shadow_sock.get(_zmq.SNDTIMEO)
-            if timeout_ms >= 0:
-                self._add_timeout(f, timeout_ms * 1e-3)
 
         self._add_io_state(POLLOUT)
         return f
@@ -423,7 +435,7 @@ class _AsyncSocket(_zmq.Socket):
             return
         f = None
         while self._recv_futures:
-            f, kind, kwargs, _ = self._recv_futures.popleft()
+            f, kind, kwargs, _, timer = self._recv_futures.popleft()
             # skip any cancelled futures
             if f.done():
                 f = None
@@ -435,6 +447,8 @@ class _AsyncSocket(_zmq.Socket):
 
         if f is None:
             return
+
+        timer.cancel()
 
         if kind == 'poll':
             # on poll event, just signal ready, nothing else.
@@ -461,7 +475,7 @@ class _AsyncSocket(_zmq.Socket):
             return
         f = None
         while self._send_futures:
-            f, kind, kwargs, msg = self._send_futures.popleft()
+            f, kind, kwargs, msg, timer = self._send_futures.popleft()
             # skip any cancelled futures
             if f.done():
                 f = None
@@ -473,6 +487,8 @@ class _AsyncSocket(_zmq.Socket):
 
         if f is None:
             return
+
+        timer.cancel()
 
         if kind == 'poll':
             # on poll event, just signal ready, nothing else.
