@@ -19,17 +19,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
-      - name: install dependencies
-        run: |
-          pip install --upgrade pip wheel
-          pip install cython -r test-requirements.txt
-
-      - name: flake8
-        run: flake8 zmq
-
-      - name: mypy
-        run: mypy zmq
+      - uses: pre-commit/action@v2.0.2
 
   test:
     runs-on: ${{ matrix.os }}
