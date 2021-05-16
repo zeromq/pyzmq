@@ -325,8 +325,8 @@ class _AsyncSocket(_zmq.Socket):
         Avoids delaying cleanup until the next send/recv event,
         which may never come.
         """
-        for f_idx, (f, kind, kwargs, _) in enumerate(event_list):
-            if f is future:
+        for f_idx, event in enumerate(event_list):
+            if event.future is future:
                 break
         else:
             return
