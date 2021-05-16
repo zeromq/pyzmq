@@ -17,4 +17,3 @@ Module: :mod:`eventloop.zmqstream`
   :members:
   :undoc-members:
   :inherited-members:
-

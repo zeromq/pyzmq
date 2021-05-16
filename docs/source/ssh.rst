@@ -72,4 +72,3 @@ rather than the remote one that wouldn't actually work.
 .. _pexpect: http://www.noah.org/wiki/pexpect
 .. _pexpect-u: http://pypi.python.org/pypi/pexpect-u
 .. _paramiko: http://www.lag.net/paramiko/
-

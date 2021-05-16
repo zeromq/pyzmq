@@ -278,4 +278,3 @@ though using two eventloops simultaneously (tornado + gevent) is not recommended
 
 :mod:`zmq.green` is simply `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_,
 merged into the pyzmq project.
-

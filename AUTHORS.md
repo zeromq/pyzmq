@@ -83,7 +83,7 @@ The following people have contributed to the project:
 - Vadim Markovtsev (v DOT markovtsev AT samsung DOT com)
 - Yannick Hold (yannickhold AT gmail DOT com)
 - Zbigniew Jędrzejewski-Szmek (zbyszek AT in DOT waw DOT pl)
-- hugo  shi (hugoshi AT bleb2 DOT (none))
+- hugo shi (hugoshi AT bleb2 DOT (none))
 - jdgleeson (jdgleeson AT mac DOT com)
 - kyledj (kyle AT bucebuce DOT com)
 - spez (steve AT hipmunk DOT com)
@@ -102,9 +102,8 @@ with some adjustments.
 - Eugene Chernyshov (chernyshov DOT eugene AT gmail DOT com)
 - Craig Austin (craig DOT austin AT gmail DOT com)
 
-### gevent\_zeromq, now zmq.green
+### gevent_zeromq, now zmq.green
 
 - Travis Cline (travis DOT cline AT gmail DOT com)
 - Ryan Kelly (ryan AT rfk DOT id DOT au)
 - Zachary Voase (z AT zacharyvoase DOT com)
-

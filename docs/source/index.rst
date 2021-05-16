@@ -96,4 +96,3 @@ Links
 .. _ØMQ Manual: http://www.zeromq.org/intro:read-the-manual
 .. _PyZMQ Installation: http://www.zeromq.org/bindings:python
 .. _tracker: https://www.github.com/zeromq/pyzmq/issues
-

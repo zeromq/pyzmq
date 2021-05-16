@@ -30,10 +30,10 @@ except ImportError:
     from .minitornado import ioloop  # type: ignore
     from .minitornado.log import gen_log  # type: ignore
 
-PeriodicCallback = ioloop.PeriodicCallback
+PeriodicCallback = ioloop.PeriodicCallback  # type: ignore
 
 
-class DelayedCallback(PeriodicCallback):
+class DelayedCallback(PeriodicCallback):  # type: ignore
     """Schedules the given callback to be called once.
 
     The callback is called once, after callback_time milliseconds.

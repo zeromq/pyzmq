@@ -8,8 +8,8 @@ BDFL (Benevolent Dictator for Life).
 
 A portion of the commits made by the GitHub handle "minrk", with
 commit author "Min RK benjaminrk@gmail.com", are copyright of Min Ragan-Kelley.
-This document hereby grants the libzmq project team to relicense libzmq, 
+This document hereby grants the libzmq project team to relicense libzmq,
 including all past, present and future contributions of the author listed above.
 
-Min Ragan-Kelley 
+Min Ragan-Kelley
 2017/07/17

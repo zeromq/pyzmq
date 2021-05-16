@@ -17,4 +17,3 @@ Functions
 
 
 .. autofunction:: zmq.utils.jsonapi.loads
-

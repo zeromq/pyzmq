@@ -27,7 +27,6 @@ python setup.py build_ext --inplace
 python example.py -n 100000
 ```
 
-
 which will give measurements of throughput with the Python API and calling
 the underlying API via Cython, e.g.
 

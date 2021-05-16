@@ -10,4 +10,3 @@
 # Edit these to add any paths you need to include (e.g. where libzmq is defined)
 library_dirs = /usr/local/lib
 include_dirs = /usr/local/include
-

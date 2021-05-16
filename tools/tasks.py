@@ -45,10 +45,6 @@ env_root = os.path.join(tmp, 'envs')
 repo_root = pjoin(tmp, 'pyzmq-release')
 
 
-def _py(py):
-    return py_exes[py]
-
-
 def run(cmd, **kwargs):
     """wrapper around invoke.run that accepts a Popen list"""
     if isinstance(cmd, list):

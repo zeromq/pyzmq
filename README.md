@@ -71,13 +71,12 @@ via homebrew, apt, yum, etc:
     # RHEL-based
     sudo yum install libzmq3-devel
 
-If this is not available, pyzmq will *try* to build libzmq as a Python Extension,
+If this is not available, pyzmq will _try_ to build libzmq as a Python Extension,
 though this is not guaranteed to work.
 
 Building pyzmq from the git repo (including release tags on GitHub) requires Cython.
 
 ## Old versions
-
 
 pyzmq 16 drops support Python 2.6 and 3.2.
 If you need to use one of those Python versions, you can pin your pyzmq version to before 16:
@@ -93,4 +92,3 @@ pyzmq-13.0.0 introduces PyPy support via CFFI, which only supports libzmq-3.2.2 
 PyZMQ releases ≤ 2.2.0 matched libzmq versioning, but this is no longer the case,
 starting with PyZMQ 13.0.0 (it was the thirteenth release, so why not?).
 PyZMQ ≥ 13.0 follows semantic versioning conventions accounting only for PyZMQ itself.
-

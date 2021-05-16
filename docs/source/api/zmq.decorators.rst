@@ -16,4 +16,3 @@ Decorators
 .. autofunction:: zmq.decorators.context
 
 .. autofunction:: zmq.decorators.socket
-

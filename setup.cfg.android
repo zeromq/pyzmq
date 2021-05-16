@@ -14,4 +14,3 @@ include_dirs = ../python-lib/include/python2.6
 
 [bdist_egg]
 plat-name = linux-armv
-

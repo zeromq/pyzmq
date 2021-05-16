@@ -212,6 +212,7 @@ def fetch_libzmq_dll(savedir):
     archive.extractall(savedir, members=to_extract)
     archive.close()
 
+
 if __name__ == "__main__":
     # allow python -m buildutils.bundle to get bundled version
     print(vs)

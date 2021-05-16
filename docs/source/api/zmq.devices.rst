@@ -104,5 +104,3 @@ MonitoredQueue Devices
 
 .. autoclass:: ProcessMonitoredQueue
   :members:
-
-
