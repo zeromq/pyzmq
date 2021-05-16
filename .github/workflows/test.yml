@@ -177,7 +177,7 @@ jobs:
 
       - name: run tests
         run: |
-          python -m pytest --cov zmq -m "not wheel and not new_console" -v zmq/tests
+          python -m pytest --maxfail 2 --cov zmq -m "not wheel and not new_console" -v zmq/tests
 
       - name: upload coverage
         run: codecov
