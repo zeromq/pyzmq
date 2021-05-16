@@ -15,5 +15,3 @@ Module: :mod:`zmq.utils.win32`
 
 
 .. autoclass:: allow_interrupt
-
-

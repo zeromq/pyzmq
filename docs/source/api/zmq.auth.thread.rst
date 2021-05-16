@@ -21,4 +21,3 @@ Classes
   :members:
   :undoc-members:
   :inherited-members:
-

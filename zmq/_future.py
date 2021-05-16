@@ -356,9 +356,7 @@ class _AsyncSocket(_zmq.Socket):
 
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
-        self._recv_futures.append(
-            _FutureEvent(f, kind, kwargs, msg=None, timer=timer)
-        )
+        self._recv_futures.append(_FutureEvent(f, kind, kwargs, msg=None, timer=timer))
 
         # Don't let the Future sit in _recv_events after it's done
         f.add_done_callback(

@@ -100,4 +100,3 @@ def proxy(cSocket frontend, cSocket backend, cSocket capture=None):
     return rc
 
 __all__ = ['device', 'proxy']
-

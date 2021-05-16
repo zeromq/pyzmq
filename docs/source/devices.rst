@@ -78,5 +78,3 @@ received the message.
 Or for launching an MQ in the background, there are :class:`.ThreadMonitoredQueue` and
 :class:`.ProcessMonitoredQueue`, which function just like the base
 BackgroundDevice objects, but add :meth:`foo_mon` methods for configuring the monitor socket.
-
-

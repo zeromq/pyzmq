@@ -40,4 +40,3 @@ def zmq_version_info():
 
 
 __all__ = ['zmq_version_info']
-

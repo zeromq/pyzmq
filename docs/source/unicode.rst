@@ -185,4 +185,3 @@ Overview of the relevant methods:
         
         note that `zmq.IDENTITY` is the only `sockopt` with a string value 
         that can be queried with `getsockopt`
-

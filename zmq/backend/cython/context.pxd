@@ -32,4 +32,3 @@ cdef class Context:
 
     cdef public bint closed   # bool property for a closed context.
     cdef inline int _term(self)
-

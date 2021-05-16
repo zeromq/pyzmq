@@ -44,4 +44,3 @@ global-exclude .DS_Store
 global-exclude .mailmap
 global-exclude Makefile.am
 global-exclude Makefile.in
-

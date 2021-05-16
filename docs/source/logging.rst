@@ -266,5 +266,3 @@ and added to the topic tree::
     >>> logger.warn(msg)
     >>> print sub.recv_multipart()
     ['myprogram.WARN.sub.topic', 'hello there']
-
-

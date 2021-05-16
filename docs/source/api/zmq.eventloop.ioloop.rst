@@ -24,4 +24,3 @@ Function
 
 
 .. autofunction:: zmq.eventloop.ioloop.install
-

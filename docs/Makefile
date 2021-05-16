@@ -114,4 +114,3 @@ doctest:
 
 gh-pages: html
 	sh update_ghpages.sh
-

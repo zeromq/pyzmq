@@ -1,12 +1,12 @@
+black; platform_python_implementation != "PyPy"
 # gevent wheels on mac cause Illegal Instruction
 codecov
 # coverage 5 has issues with Cython: https://github.com/cython/cython/issues/3515
 coverage<5
+flake8
 gevent; platform_python_implementation != "PyPy" and sys_platform != "win32" and sys_platform != "darwin"
+mypy; platform_python_implementation != "PyPy"
 pytest
 pytest-cov
 pytest-rerunfailures
 tornado
-mypy; platform_python_implementation != "PyPy"
-black; platform_python_implementation != "PyPy"
-flake8

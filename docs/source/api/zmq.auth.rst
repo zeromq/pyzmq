@@ -27,4 +27,3 @@ Functions
 .. autofunction:: load_certificate
 
 .. autofunction:: load_certificates
-

@@ -59,7 +59,6 @@ class _AsyncTornado(object):
         return _CancellableTornadoTimeout(self.io_loop, timeout)
 
 
-
 class Poller(_AsyncTornado, _AsyncPoller):
     def _watch_raw_socket(self, loop, socket, evt, f):
         """Schedule callback for a raw socket"""
