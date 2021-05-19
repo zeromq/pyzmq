@@ -17,10 +17,11 @@ import hashlib
 import platform
 import zipfile
 from subprocess import Popen, PIPE
-
+from tempfile import TemporaryDirectory
+from unittest import mock
 from urllib.request import urlopen
 
-from .msg import fatal, debug, info, warn
+from .msg import fatal, info, warn
 
 pjoin = os.path.join
 
@@ -32,10 +33,9 @@ bundled_version = (4, 3, 4)
 vs = '%i.%i.%i' % bundled_version
 x, y, z = bundled_version
 libzmq = "zeromq-%s.tar.gz" % vs
-libzmq_url = "https://github.com/zeromq/libzmq/releases/download/v{vs}/{libzmq}".format(
-    vs=vs,
-    libzmq=libzmq,
-)
+download_url = f"https://github.com/zeromq/libzmq/releases/download/v{vs}"
+
+libzmq_url = f"{download_url}/{libzmq}"
 libzmq_checksum = (
     "sha256:c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336295c3e5"
 )
@@ -51,13 +51,13 @@ else:
     msarch = ''
 
 libzmq_dll = f"libzmq-v{vcversion}{msarch}-{x}_{y}_{z}.zip"
-libzmq_dll_url = f"https://dl.bintray.com/zeromq/generic/{libzmq_dll}"
+libzmq_dll_url = f"{download_url}/{libzmq_dll}"
 
 libzmq_dll_checksums = {
-    "libzmq-v140-4_3_4.zip": "sha256:a43b5aebc6238add32326851b714ba11531c7f6790710d7e8936af94d4420002",
-    "libzmq-v140-x64-4_3_4.zip": "sha256:073a974635effb10a329e3aef75f0d2ffb517b92f85218a8ec531c54fc8a1f8d",
-    "libzmq-v141-4_3_4.zip": "sha256:2be7c8e3e1f48a8fa3daae2511e98b7149de4d58a6bd68a83eddd0d423c98c6b",
-    "libzmq-v141-x64-4_3_4.zip": "sha256:6520beb3bc2f455e205f62492e8081f81aa46f369fa0d8bd7723ec8b77161d04",
+    "libzmq-v140-4_3_4.zip": "sha256:05b7c42fe8d5feb2795d32f71f7d900083530ee6fdd15575bfc8d1b3fb8643f7",
+    "libzmq-v140-x64-4_3_4.zip": "sha256:d5d75bd502d7935af3cf80734f81069be78420331c54814d0aab6d64adf450ae",
+    "libzmq-v141-4_3_4.zip": "sha256:acfc997f036018b8dc8ab5b3a1d1444bba6ba5621e91c756d07cd9447db19672",
+    "libzmq-v141-x64-4_3_4.zip": "sha256:4bb29d6fed20bd175a82317676c7e940356cd358b624efae8569c7ee11c45636",
 }
 
 libzmq_dll_checksum = libzmq_dll_checksums.get(libzmq_dll)
@@ -213,6 +213,42 @@ def fetch_libzmq_dll(savedir):
     archive.close()
 
 
+def check_checksums():
+    """Check all the checksums!"""
+    _failed = False
+
+    def less_fatal(msg):
+        """Mock fatal log message to set failed flag instead of exiting
+
+        So we can see multiple failures in one run,
+        e.g. when updating the bundled libzmq version.
+        """
+        warn(msg)
+        nonlocal _failed
+        _failed = True
+
+    with TemporaryDirectory() as savedir, mock.patch.dict(globals(), fatal=less_fatal):
+        fetch_archive(
+            savedir,
+            libzmq_url,
+            fname=libzmq,
+            checksum=libzmq_checksum,
+        )
+        for dll, checksum in libzmq_dll_checksums.items():
+            fetch_archive(
+                savedir,
+                f"{download_url}/{dll}",
+                fname=dll,
+                checksum=checksum,
+            )
+    if not _failed:
+        print("All ok!")
+    return _failed
+
+
 if __name__ == "__main__":
     # allow python -m buildutils.bundle to get bundled version
-    print(vs)
+    if len(sys.argv) > 1 and sys.argv[1] == "checksums":
+        sys.exit(check_checksums())
+    else:
+        print(vs)
