@@ -85,7 +85,6 @@ jobs:
         delvewheel repair
         -v
         --add-path=C:/libzmq-dll
-        --no-dll=vcruntime140.dll
         --wheel-dir={dest_dir}
         {wheel}
 
@@ -226,7 +225,7 @@ jobs:
       - name: install windows dependencies
         if: startsWith(matrix.os, 'win')
         run: |
-          pip install delvewheel
+          pip install delvewheel==0.0.12
           python setup.py fetch_libzmq --dll
           xcopy /i libzmq-dll C:\\libzmq-dll
 
