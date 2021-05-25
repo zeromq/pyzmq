@@ -27,7 +27,7 @@ value_binary_data = lambda val, length: (
     ffi.sizeof('char') * length,
 )
 
-ZMQ_FD_64BIT = ffi.sizeof("zmq_fd_t") == 8
+ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
