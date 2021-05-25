@@ -1,13 +1,19 @@
 import threading
 import zmq
 
-from pytest import raises
+from pytest import fixture, raises
 from zmq.decorators import context, socket
+from zmq.tests import BaseZMQTestCase, term_context
 
 
 ##############################################
 #  Test cases for @context
 ##############################################
+
+
+@fixture(autouse=True)
+def term_context_instance(request):
+    request.addfinalizer(lambda: term_context(zmq.Context.instance(), timeout=10))
 
 
 def test_ctx():
@@ -351,7 +357,7 @@ def test_skt_multi_thread():
     [t.join() for t in threads]
 
 
-class TestMethodDecorators:
+class TestMethodDecorators(BaseZMQTestCase):
     @context()
     @socket(zmq.PUB)
     @socket(zmq.SUB)
@@ -371,7 +377,7 @@ class TestMethodDecorators:
     def test_multi_skts_method(self):
         self.multi_skts_method()
 
-    def multi_skts_method_other_args(self):
+    def test_multi_skts_method_other_args(self):
         @socket(zmq.PUB)
         @socket(zmq.SUB)
         def f(foo, pub, sub, bar=None):
@@ -388,6 +394,3 @@ class TestMethodDecorators:
             assert sub.type is zmq.SUB
 
         f('mock', bar='fake')
-
-    def test_multi_skts_method_other_args(self):
-        self.multi_skts_method_other_args()

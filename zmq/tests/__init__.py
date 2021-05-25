@@ -37,6 +37,20 @@ require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq 
 # -----------------------------------------------------------------------------
 
 
+def term_context(ctx, timeout):
+    """Terminate a context with a timeout"""
+    t = Thread(target=ctx.term)
+    t.daemon = True
+    t.start()
+    t.join(timeout=timeout)
+    if t.is_alive():
+        # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
+        zmq.sugar.context.Context._instance = None
+        raise RuntimeError(
+            "context could not terminate, open sockets likely remain in test"
+        )
+
+
 class BaseZMQTestCase(TestCase):
     green = False
     teardown_timeout = 10
@@ -68,16 +82,13 @@ class BaseZMQTestCase(TestCase):
             contexts.add(sock.context)  # in case additional contexts are created
             sock.close(0)
         for ctx in contexts:
-            t = Thread(target=ctx.term)
-            t.daemon = True
-            t.start()
-            t.join(timeout=self.teardown_timeout)
-            if t.is_alive():
+            try:
+                term_context(ctx, self.teardown_timeout)
+            except Exception:
                 # reset Context.instance, so the failure to term doesn't corrupt subsequent tests
                 zmq.sugar.context.Context._instance = None
-                raise RuntimeError(
-                    "context could not terminate, open sockets likely remain in test"
-                )
+                raise
+
         super(BaseZMQTestCase, self).tearDown()
 
     def create_bound_pair(
