@@ -37,7 +37,8 @@ def test_bundle_msvcp():
             [name for name in os.listdir(pyzmq_lib_dir) if name.endswith(".dll")]
         )
     print(dlls)
-    should_bundle = ["concrt140.dll", "msvcp140.dll"]
+    # Is concrt140 needed? delvewheel doesn't detect it anymore
+    should_bundle = ["msvcp140.dll"]
     vcruntime = "vcruntime140.dll"
     shouldnt_bundle = []
     if platform.python_implementation() == 'PyPy':
