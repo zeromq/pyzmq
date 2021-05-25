@@ -27,6 +27,8 @@ value_binary_data = lambda val, length: (
     ffi.sizeof('char') * length,
 )
 
+ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
+
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 from .message import Frame
@@ -42,9 +44,10 @@ def new_pointer_from_opt(option, length=0):
     from zmq.sugar.constants import (
         int64_sockopts,
         bytes_sockopts,
+        fd_sockopts,
     )
 
-    if option in int64_sockopts:
+    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
         return new_int64_pointer()
     elif option in bytes_sockopts:
         return new_binary_data(length)
@@ -57,9 +60,10 @@ def value_from_opt_pointer(option, opt_pointer, length=0):
     from zmq.sugar.constants import (
         int64_sockopts,
         bytes_sockopts,
+        fd_sockopts,
     )
 
-    if option in int64_sockopts:
+    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
         return int(opt_pointer[0])
     elif option in bytes_sockopts:
         return ffi.buffer(opt_pointer, length)[:]
@@ -71,9 +75,10 @@ def initialize_opt_pointer(option, value, length=0):
     from zmq.sugar.constants import (
         int64_sockopts,
         bytes_sockopts,
+        fd_sockopts,
     )
 
-    if option in int64_sockopts:
+    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
         return value_int64_pointer(value)
     elif option in bytes_sockopts:
         return value_binary_data(value, length)
