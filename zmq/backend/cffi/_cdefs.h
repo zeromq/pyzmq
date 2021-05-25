@@ -57,12 +57,12 @@ int zmq_setsockopt(void *socket,
                    const void *option_value,
                    size_t option_len);
 
-typedef int... zmq_fd_t;
+typedef int... ZMQ_FD_T;
 
 typedef struct
 {
     void *socket;
-    zmq_fd_t fd;
+    ZMQ_FD_T fd;
     short events;
     short revents;
 } zmq_pollitem_t;
