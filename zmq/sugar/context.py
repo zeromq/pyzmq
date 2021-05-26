@@ -180,10 +180,13 @@ class Context(ContextBase, AttributeSetter):
     # -------------------------------------------------------------------------
 
     def _add_socket(self, socket):
+        """Add a weakref to a socket for Context.destroy / reference counting"""
         self._sockets.add(socket)
 
     def _rm_socket(self, socket):
-        if self._sockets:
+        """Remove a socket for Context.destroy / reference counting"""
+        # allow _sockets to be None in case of process teardown
+        if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
     def destroy(self, linger=None):
