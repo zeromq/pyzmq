@@ -96,7 +96,7 @@ cdef extern from "zmq.h" nogil:
 
     ctypedef struct zmq_pollitem_t:
         void *socket
-        int fd
+        fd_t fd
         short events
         short revents
 
