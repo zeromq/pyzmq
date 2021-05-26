@@ -1,8 +1,6 @@
 # PyZMQ: Python bindings for ØMQ
 
-[![Build Status](https://travis-ci.org/zeromq/pyzmq.svg?branch=master)](https://travis-ci.org/zeromq/pyzmq)
-
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/ugoid0r2fnq8sr56/branch/master?svg=true)](https://ci.appveyor.com/project/minrk/pyzmq/branch/master)
+[![Build Status](https://github.com/zeromq/pyzmq/actions/workflows/test.yml/badge.svg)](https://github.com/zeromq/pyzmq/actions/workflows/test.yml)
 
 This package contains Python bindings for [ØMQ](http://www.zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
@@ -48,12 +46,12 @@ building from the repository will require that you install recent Cython.
 
 For more detail on building pyzmq, see [our Wiki](https://github.com/zeromq/pyzmq/wiki/Building-and-Installing-PyZMQ).
 
-We build wheels for OS X, Windows, and Linux, so you can get a binary on those platforms with:
+We build wheels for macOS, Windows, and Linux, so you can get a binary on those platforms with:
 
     pip install pyzmq
 
 but compiling from source with `pip install pyzmq` should work in most environments.
-Especially on OS X, make sure you are using the latest pip (≥ 8), or it may not find the right wheels.
+Especially on macOS, make sure you are using the latest pip (≥ 8), or it may not find the right wheels.
 
 If the wheel doesn't work for some reason, or you want to force pyzmq to be compiled
 (this is often preferable if you already have libzmq installed and configured the way you want it),

@@ -1,5 +1,3 @@
-.. PyZMQ changelog summary, started by Min Ragan-Kelley, 2011
-
 .. _changelog:
 
 ================
@@ -9,11 +7,33 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.1.0
+======
+
+New featurs:
+
+- asyncio: experimental support for Proactor eventloop if tornado 6.1 is available
+  by running a selector in a background thread.
+
+Fixes:
+
+- Windows: fix type of `socket.FD` option in win-amd64
+- asyncio: Cancel timers when using HWM with async Sockets
+
+Other changes:
+
+- Windows: update bundled libzmq dll URLs for Windows.
+  Windows wheels no longer include concrt140.dll.
+- adopt pre-commit for formatting, linting
+
+
+
 22.0.3
 ======
 
 - Fix fork-safety bug in garbage collection thread (regression in 20.0)
   when using subprocesses.
+- Start uploading universal wheels for ARM Macs.
 
 22.0.2
 ======
@@ -623,7 +643,7 @@ New Stuff
   - :class:`zmq.devices.Proxy`
   - Exceptions for common zmq errnos: :class:`zmq.Again`, :class:`zmq.ContextTerminated`
     (subclass :class:`ZMQError`, so fully backward-compatible).
-  
+
 
 * Setting and getting :attr:`.Socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 * Implementation splits core Cython bindings from pure-Python subclasses
@@ -701,7 +721,7 @@ Bugs Fixed
 2.2.0
 =====
 
-Some effort has gone into refining the pyzmq API in this release to make it a model for 
+Some effort has gone into refining the pyzmq API in this release to make it a model for
 other language bindings.  This is principally made in a few renames of objects and methods,
 all of which leave the old name for backwards compatibility.
 
@@ -737,10 +757,10 @@ Other Changes and Removals
 * Python 2.5 compatibility has been dropped, and some code has been cleaned up to reflect
   no-longer-needed hacks.
 
-* Some Cython files in :mod:`zmq.core` have been split, to reduce the amount of 
+* Some Cython files in :mod:`zmq.core` have been split, to reduce the amount of
   Cython-compiled code.  Much of the body of these files were pure Python, and thus did
   not benefit from the increased compile time.  This change also aims to ease maintaining
-  feature parity in other projects, such as 
+  feature parity in other projects, such as
   `pyzmq-ctypes <https://github.com/svpcom/pyzmq-ctypes>`_.
 
 
@@ -774,10 +794,10 @@ set in stone, and may be removed or changed in incompatible ways in later releas
 
 * remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
   prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.
-  
+
   * The prefix argument to :meth:`~.Socket.send_multipart` remains, but it continue to behave in
     exactly the same way as it always has on 2.1.x, simply prepending message parts.
-  
+
   * :meth:`~.Socket.recv_multipart` will always return a list, because prefixes are once
     again indistinguishable from regular message parts.
 
@@ -844,7 +864,7 @@ set in stone, and may be removed or changed in incompatible ways in later releas
     s.identity = b'whoda'
     s.linger
     # -1
-    
+
 * Terminating a :class:`~Context` closes the sockets it created, matching the behavior in
   `czmq <http://czmq.zeromq.org/>`_.
 * :class:`ThreadDevices` use :meth:`Context.instance` to create sockets, so they can use

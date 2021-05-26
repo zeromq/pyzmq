@@ -49,7 +49,7 @@ Unicode Buffers
 
 Since unicode objects have a wide range of representations, they are not stored
 as the bytes according to their encoding, but rather in a format called UCS (an
-older fixed-width Unicode format). On some platforms (OS X, Windows), the storage
+older fixed-width Unicode format). On some platforms (macOS, Windows), the storage
 is UCS-2, which is 2 bytes per character. On most \*ix systems, it is UCS-4, or
 4 bytes per character. The contents of the *buffer* of a ``unicode`` object are
 not encoding dependent (always UCS-2 or UCS-4), but they are *platform*
@@ -107,9 +107,9 @@ these methods.
 
 .. note::
 
-    For cross-language symmetry (including Python 3), the ``_unicode`` methods 
-    are now ``_string``. Many languages have a notion of native strings, and 
-    the use of ``_unicode`` was wedded too closely to the name of such objects 
+    For cross-language symmetry (including Python 3), the ``_unicode`` methods
+    are now ``_string``. Many languages have a notion of native strings, and
+    the use of ``_unicode`` was wedded too closely to the name of such objects
     in Python 2.  For the time being, anywhere you see ``_string``, ``_unicode``
     also works, and is the only option in pyzmq ≤ 2.1.11.
 
@@ -120,68 +120,68 @@ The Methods
 Overview of the relevant methods:
 
 .. py:function::    socket.bind(self, addr)
-    
-        `addr` is ``bytes`` or ``unicode``. If ``unicode``, 
+
+        `addr` is ``bytes`` or ``unicode``. If ``unicode``,
         encoded to utf-8 ``bytes``
 
 .. py:function::    socket.connect(self, addr)
 
-        `addr` is ``bytes`` or ``unicode``. If ``unicode``, 
+        `addr` is ``bytes`` or ``unicode``. If ``unicode``,
         encoded to utf-8 ``bytes``
 
 .. py:function::    socket.send(self, object obj, flags=0, copy=True)
 
-        `obj` is ``bytes`` or provides buffer interface. 
-        
+        `obj` is ``bytes`` or provides buffer interface.
+
         if `obj` is ``unicode``, raise ``TypeError``
 
 .. py:function::    socket.recv(self, flags=0, copy=True)
 
         returns ``bytes`` if `copy=True`
-        
+
         returns ``zmq.Message`` if `copy=False`:
-        
+
             `message.buffer` is a buffer view of the ``bytes``
-            
+
             `str(message)` provides the ``bytes``
-            
+
             `unicode(message)` decodes `message.buffer` with utf-8
-    
+
 .. py:function::    socket.send_string(self, unicode s, flags=0, encoding='utf-8')
 
-        takes a ``unicode`` string `s`, and sends the ``bytes`` 
+        takes a ``unicode`` string `s`, and sends the ``bytes``
         after encoding without an extra copy, via:
-        
+
         `socket.send(s.encode(encoding), flags, copy=False)`
-    
+
 .. py:function::    socket.recv_string(self, flags=0, encoding='utf-8')
 
         always returns ``unicode`` string
-        
+
         there will be a ``UnicodeError`` if it cannot decode the buffer
-        
+
         performs non-copying `recv`, and decodes the buffer with `encoding`
-    
+
 .. py:function::    socket.setsockopt(self, opt, optval)
 
         only accepts ``bytes``  for `optval` (or ``int``, depending on `opt`)
-        
+
         ``TypeError`` if ``unicode`` or anything else
-    
+
 .. py:function::    socket.getsockopt(self, opt)
 
         returns ``bytes`` (or ``int``), never ``unicode``
-    
+
 .. py:function::    socket.setsockopt_string(self, opt, unicode optval, encoding='utf-8')
 
         accepts ``unicode`` string for `optval`
-        
-        encodes `optval` with `encoding` before passing the ``bytes`` to 
+
+        encodes `optval` with `encoding` before passing the ``bytes`` to
         `setsockopt`
-    
+
 .. py:function::    socket.getsockopt_string(self, opt, encoding='utf-8')
 
         always returns ``unicode`` string, after decoding with `encoding`
-        
-        note that `zmq.IDENTITY` is the only `sockopt` with a string value 
+
+        note that `zmq.IDENTITY` is the only `sockopt` with a string value
         that can be queried with `getsockopt`
