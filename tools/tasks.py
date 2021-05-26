@@ -15,30 +15,23 @@ releases are built and uploaded from CI, following the published tag
 
 from __future__ import print_function
 
-import glob
 import os
 import pipes
 import re
 import shutil
-from subprocess import check_output
 import sys
-import time
 
 from contextlib import contextmanager
 
 from invoke import task, run as invoke_run
-import requests
 
 PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PYZMQ_ROOT)
-from buildutils.bundle import vs as libzmq_vs
-
-libsodium_version = '1.0.18'
 
 pjoin = os.path.join
 
 repo = 'git@github.com:zeromq/pyzmq'
-branch = os.getenv('PYZMQ_BRANCH', 'master')
+branch = os.getenv('PYZMQ_BRANCH', 'main')
 
 tmp = "/tmp"
 env_root = os.path.join(tmp, 'envs')
