@@ -47,9 +47,14 @@ For pyzmq-|release|, this is |target_libzmq|.
 Using PyZMQ
 ===========
 
+To get started with ZeroMQ, read `the ZeroMQ guide <https://zguide.zeromq.org>`_,
+which has every example implemented using PyZMQ.
+
+You can also check out the `examples in the pyzmq repo <https://github.com/zeromq/pyzmq/tree/HEAD/examples>`_.
+
 .. toctree::
     :maxdepth: 2
-    
+
     api/index.rst
     changelog.rst
     draft.rst
@@ -66,7 +71,7 @@ Notes from developing PyZMQ
 
 .. toctree::
     :maxdepth: 2
-    
+
     pyversions.rst
     unicode.rst
 
