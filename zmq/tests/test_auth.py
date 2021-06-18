@@ -109,9 +109,9 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.connect("%s:%i" % (iface, port))
         msg = [b"Hello World"]
         if server.poll(1000, zmq.POLLOUT):
-            server.send_multipart(msg, zmq.NOBLOCK)
+            server.send_multipart(msg)
         if client.poll(1000):
-            rcvd_msg = client.recv_multipart(zmq.NOBLOCK)
+            rcvd_msg = client.recv_multipart()
             self.assertEqual(rcvd_msg, msg)
             result = True
         return result

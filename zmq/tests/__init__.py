@@ -1,9 +1,12 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+import os
 import platform
 import sys
 import time
+import signal
+from functools import partial
 from threading import Thread
 from typing import List
 from unittest import SkipTest, TestCase
@@ -54,7 +57,20 @@ def term_context(ctx, timeout):
 class BaseZMQTestCase(TestCase):
     green = False
     teardown_timeout = 10
+    test_timeout_seconds = int(os.environ.get("ZMQ_TEST_TIMEOUT") or 60)
     sockets: List[zmq.Socket]
+
+    @property
+    def _is_pyzmq_test(self):
+        return self.__class__.__module__.split(".", 1)[0] == __name__.split(".", 1)[0]
+
+    @property
+    def _should_test_timeout(self):
+        return (
+            self._is_pyzmq_test
+            and hasattr(signal, 'SIGALRM')
+            and self.test_timeout_seconds
+        )
 
     @property
     def Context(self):
@@ -68,14 +84,27 @@ class BaseZMQTestCase(TestCase):
         self.sockets.append(s)
         return s
 
+    def _alarm_timeout(self, timeout, *args):
+        raise TimeoutError(f"Test did not complete in {timeout} seconds")
+
     def setUp(self):
         super(BaseZMQTestCase, self).setUp()
         if self.green and not have_gevent:
             raise SkipTest("requires gevent")
+
         self.context = self.Context.instance()
         self.sockets = []
+        if self._should_test_timeout:
+            # use SIGALRM to avoid test hangs
+            signal.signal(
+                signal.SIGALRM, partial(self._alarm_timeout, self.test_timeout_seconds)
+            )
+            signal.alarm(self.test_timeout_seconds)
 
     def tearDown(self):
+        if self._should_test_timeout:
+            # cancel the timeout alarm, if there was one
+            signal.alarm(0)
         contexts = set([self.context])
         while self.sockets:
             sock = self.sockets.pop()
