@@ -1,61 +1,38 @@
-"""Priority based json library imports.
+"""JSON serialize to/from utf8 bytes
 
-Always serializes to bytes instead of unicode for zeromq compatibility
-on Python 2 and 3.
-
-Use ``jsonapi.loads()`` and ``jsonapi.dumps()`` for guaranteed symmetry.
-
-Priority: ``simplejson`` > ``jsonlib2`` > stdlib ``json``
-
-``jsonapi.loads/dumps`` provide kwarg-compatibility with stdlib json.
-
-``jsonapi.jsonmod`` will be the module of the actual underlying implementation.
+..versionchanged:: 22.2
+    Remove optional imports of different JSON implementations.
+    Now that we require recent Python, unconditionally use the standard library.
+    Custom JSON libraries can be used via custom serialization functions.
 """
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq.utils.strtypes import bytes, unicode
+import json
 
-jsonmod = None
+from typing import Any, Dict, List, Union
 
-priority = ['simplejson', 'jsonlib2', 'json']
-for mod in priority:
-    try:
-        jsonmod = __import__(mod)
-    except ImportError:
-        pass
-    else:
-        break
+# backward-compatibility, unused
+jsonmod = json
 
 
-def dumps(o, **kwargs):
+def dumps(o: Any, **kwargs) -> bytes:
     """Serialize object to JSON bytes (utf-8).
 
-    See jsonapi.jsonmod.dumps for details on kwargs.
+    Keyword arguments are passed along to :py:func:`json.dumps`.
     """
-
-    if 'separators' not in kwargs:
-        kwargs['separators'] = (',', ':')
-
-    s = jsonmod.dumps(o, **kwargs)
-
-    if isinstance(s, unicode):
-        s = s.encode('utf8')
-
-    return s
+    return json.dumps(o, **kwargs).encode("utf8")
 
 
-def loads(s, **kwargs):
+def loads(s: Union[bytes, str], **kwargs) -> Union[Dict, List, str, int, float]:
     """Load object from JSON bytes (utf-8).
 
-    See jsonapi.jsonmod.loads for details on kwargs.
+    Keyword arguments are passed along to :py:func:`json.loads`.
     """
-
-    if str is unicode and isinstance(s, bytes):
-        s = s.decode('utf8')
-
-    return jsonmod.loads(s, **kwargs)
+    if isinstance(s, bytes):
+        s = s.decode("utf8")
+    return json.loads(s, **kwargs)
 
 
-__all__ = ['jsonmod', 'dumps', 'loads']
+__all__ = ['dumps', 'loads']

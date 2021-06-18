@@ -280,11 +280,8 @@ class ZMQStream(object):
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
         """
-        if jsonapi is None:
-            raise ImportError('jsonlib{1,2}, json or simplejson library is required.')
-        else:
-            msg = jsonapi.dumps(obj)
-            return self.send(msg, flags=flags, callback=callback, **kwargs)
+        msg = jsonapi.dumps(obj)
+        return self.send(msg, flags=flags, callback=callback, **kwargs)
 
     def send_pyobj(self, obj, flags=0, protocol=-1, callback=None, **kwargs):
         """Send a Python object as a message using pickle to serialize.
