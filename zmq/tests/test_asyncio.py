@@ -395,6 +395,19 @@ class TestAsyncIOSocket(BaseZMQTestCase):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(test())
 
+    def test_multiple_loops(self):
+        a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+
+        async def test():
+            await a.send(b'buf')
+            msg = await b.recv()
+            assert msg == b'buf'
+
+        for i in range(3):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(asyncio.wait_for(test(), timeout=10))
+
     def test_shadow(self):
         async def test():
             ctx = zmq.Context()

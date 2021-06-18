@@ -3,6 +3,7 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+import warnings
 from collections import namedtuple, deque
 from itertools import chain
 from typing import Type
@@ -21,7 +22,36 @@ _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg', 't
 # _default_loop()
 
 
-class _AsyncPoller(_zmq.Poller):
+class _Async:
+    """Mixin for common async logic"""
+
+    _current_loop = None
+
+    def _get_loop(self):
+        """Get event loop
+
+        Notice if event loop has changed,
+        and register init_io_state on activation of a new event loop
+        """
+        if self._current_loop is None:
+            self._current_loop = self._default_loop()
+            self._init_io_state(self._current_loop)
+            return self._current_loop
+        current_loop = self._default_loop()
+        if current_loop is not self._current_loop:
+            # warn? This means a socket is being used in multiple loops!
+            self._current_loop = current_loop
+            self._init_io_state(current_loop)
+        return current_loop
+
+    def _default_loop(self):
+        raise NotImplementedError("Must be implemented in a subclass")
+
+    def _init_io_state(self, loop=None):
+        pass
+
+
+class _AsyncPoller(_Async, _zmq.Poller):
     """Poller that returns a Future on poll, instead of blocking."""
 
     _socket_class = None  # type: Type[_AsyncSocket]
@@ -38,7 +68,7 @@ class _AsyncPoller(_zmq.Poller):
                 future.set_result(result)
             return future
 
-        loop = self._default_loop()
+        loop = self._get_loop()
 
         # register Future to be called as soon as any event is available on any socket
         watcher = self._Future()
@@ -119,13 +149,13 @@ class _AsyncPoller(_zmq.Poller):
         return future
 
 
-class _NoTimer(object):
+class _NoTimer:
     @staticmethod
     def cancel():
         pass
 
 
-class _AsyncSocket(_zmq.Socket):
+class _AsyncSocket(_Async, _zmq.Socket):
 
     # Warning : these class variables are only here to allow to call super().__setattr__.
     # They be overridden at instance initialization and not shared in the whole class
@@ -134,7 +164,6 @@ class _AsyncSocket(_zmq.Socket):
     _state = 0
     _shadow_sock = None
     _poller_class = _AsyncPoller
-    io_loop = None
     _fd = None
 
     def __init__(self, context=None, socket_type=-1, io_loop=None, **kwargs):
@@ -148,12 +177,18 @@ class _AsyncSocket(_zmq.Socket):
         else:
             super(_AsyncSocket, self).__init__(context, socket_type, **kwargs)
             self._shadow_sock = _zmq.Socket.shadow(self.underlying)
-        self.io_loop = io_loop or self._default_loop()
+
+        if io_loop is not None:
+            warnings.warn(
+                f"{self.__class__.__name__}(io_loop) argument is deprecated in pyzmq 22.2."
+                " The currently active loop will always be used.",
+                DeprecationWarning,
+                stacklevel=3,
+            )
         self._recv_futures = deque()
         self._send_futures = deque()
         self._state = 0
         self._fd = self._shadow_sock.FD
-        self._init_io_state()
 
     @classmethod
     def from_socket(cls, socket, io_loop=None):
@@ -316,7 +351,7 @@ class _AsyncSocket(_zmq.Socket):
         Tornado and asyncio happen to both have ioloop.call_later
         with the same signature.
         """
-        return self.io_loop.call_later(delay, callback)
+        return self._get_loop().call_later(delay, callback)
 
     @staticmethod
     def _remove_finished_future(future, event_list):
@@ -550,11 +585,17 @@ class _AsyncSocket(_zmq.Socket):
 
         zmq FD is always read-only.
         """
+        # ensure loop is registered and init_io has been called
+        # if there are any events to watch for
+        if state:
+            self._get_loop()
         self._schedule_remaining_events()
 
-    def _init_io_state(self):
+    def _init_io_state(self, loop=None):
         """initialize the ioloop event handler"""
-        self.io_loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
+        if loop is None:
+            loop = self._get_loop()
+        loop.add_handler(self._shadow_sock, self._handle_events, self._READ)
         self._call_later(0, self._handle_events)
 
     def _clear_io_state(self):
@@ -565,4 +606,5 @@ class _AsyncSocket(_zmq.Socket):
         fd = self._shadow_sock
         if self._shadow_sock.closed:
             fd = self._fd
-        self.io_loop.remove_handler(fd)
+        if self._current_loop is not None:
+            self._current_loop.remove_handler(fd)
