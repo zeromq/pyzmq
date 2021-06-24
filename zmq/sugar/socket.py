@@ -9,7 +9,6 @@ import errno
 import random
 import sys
 import warnings
-from contextlib import contextmanager
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -36,6 +35,30 @@ try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
 except AttributeError:
     DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
+
+class _SocketContext:
+    """Context Manager for socket bind/unbind"""
+
+    def __repr__(self):
+        return f"<SocketContext({self.kind}={self.addr!r})>"
+
+    def __init__(self, socket, kind, addr):
+        assert kind in {"bind", "connect"}
+        self.socket = socket
+        self.kind = kind
+        self.addr = addr
+
+    def __enter__(self):
+        return self.socket
+
+    def __exit__(self, *args):
+        if self.socket.closed:
+            return
+        if self.kind == "bind":
+            self.socket.unbind(self.addr)
+        elif self.kind == "connect":
+            self.socket.disconnect(self.addr)
 
 
 class Socket(SocketBase, AttributeSetter):
@@ -124,27 +147,19 @@ class Socket(SocketBase, AttributeSetter):
     # Connect/Bind context managers
     # -------------------------------------------------------------------------
 
-    @contextmanager
     def _connect_cm(self, addr):
         """Context manager to disconnect on exit
 
         .. versionadded:: 20.0
         """
-        try:
-            yield
-        finally:
-            self.disconnect(addr)
+        return _SocketContext(self, 'connect', addr)
 
-    @contextmanager
     def _bind_cm(self, addr):
         """Context manager to unbind on exit
 
         .. versionadded:: 20.0
         """
-        try:
-            yield
-        finally:
-            self.unbind(addr)
+        return _SocketContext(self, 'bind', addr)
 
     def bind(self, addr):
         """s.bind(addr)
@@ -425,7 +440,7 @@ class Socket(SocketBase, AttributeSetter):
         set_hwm,
         None,
         """Property for High Water Mark.
-        
+
         Setting hwm sets both SNDHWM and RCVHWM as appropriate.
         It gets SNDHWM if available, otherwise RCVHWM.
         """,
