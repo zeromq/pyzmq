@@ -6,8 +6,8 @@
 import logging
 import os
 import shutil
-import sys
 import tempfile
+import warnings
 
 import pytest
 
@@ -108,12 +108,27 @@ class TestThreadAuthentication(BaseAuthTestCase):
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
         msg = [b"Hello World"]
+        # run poll on server twice
+        # to flush spurious events
+        server.poll(100, zmq.POLLOUT)
+
         if server.poll(1000, zmq.POLLOUT):
-            server.send_multipart(msg, zmq.NOBLOCK)
+            try:
+                server.send_multipart(msg, zmq.NOBLOCK)
+            except zmq.Again:
+                warnings.warn("server set POLLOUT, but cannot send", RuntimeWarning)
+                return False
+        else:
+            return False
+
         if client.poll(1000):
-            rcvd_msg = client.recv_multipart(zmq.NOBLOCK)
-            self.assertEqual(rcvd_msg, msg)
-            result = True
+            try:
+                rcvd_msg = client.recv_multipart(zmq.NOBLOCK)
+            except zmq.Again:
+                warnings.warn("client set POLLIN, but cannot recv", RuntimeWarning)
+            else:
+                self.assertEqual(rcvd_msg, msg)
+                result = True
         return result
 
     def test_null(self):
