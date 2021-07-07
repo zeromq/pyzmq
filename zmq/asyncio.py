@@ -11,7 +11,6 @@ import selectors
 import sys
 import warnings
 from asyncio import SelectorEventLoop, Future
-from typing import Union
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq
@@ -95,7 +94,7 @@ else:
     _get_selector = _get_selector_noop
 
 
-class _AsyncIO(object):
+class _AsyncIO:
     _Future = Future
     _WRITE = selectors.EVENT_WRITE
     _READ = selectors.EVENT_READ
@@ -128,25 +127,25 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     _poller_class = Poller
 
-    __selector = None
+    def _get_selector(self, io_loop=None):
+        if io_loop is None:
+            io_loop = self._get_loop()
+        return _get_selector(io_loop)
 
-    @property
-    def _selector(self):
-        if self.__selector is None:
-            self.__selector = _get_selector(self.io_loop)
-        return self.__selector
-
-    def _init_io_state(self):
+    def _init_io_state(self, io_loop=None):
         """initialize the ioloop event handler"""
-        self._selector.add_reader(self._fd, lambda: self._handle_events(0, 0))
+        self._get_selector(io_loop).add_reader(
+            self._fd, lambda: self._handle_events(0, 0)
+        )
 
     def _clear_io_state(self):
         """clear any ioloop event handler
 
         called once at close
         """
-        if not self.io_loop.is_closed():
-            self._selector.remove_reader(self._fd)
+        loop = self._current_loop
+        if loop and not loop.is_closed() and self._fd != -1:
+            self._get_selector(loop).remove_reader(self._fd)
 
 
 Poller._socket_class = Socket

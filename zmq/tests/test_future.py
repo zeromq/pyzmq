@@ -314,6 +314,7 @@ class TestFutureSocket(BaseZMQTestCase):
 
     def test_close_all_fds(self):
         s = self.socket(zmq.PUB)
+        s._get_loop()
         self.loop.close(all_fds=True)
         self.loop = None  # avoid second close later
         assert s.closed

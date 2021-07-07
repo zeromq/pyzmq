@@ -9,6 +9,8 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
+import warnings
+
 import zmq as _zmq
 
 from zmq._future import _AsyncPoller, _AsyncSocket
@@ -46,7 +48,7 @@ class _CancellableTornadoTimeout:
 # mixin for tornado/asyncio compatibility
 
 
-class _AsyncTornado(object):
+class _AsyncTornado:
     _Future = _TornadoFuture
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
@@ -55,8 +57,9 @@ class _AsyncTornado(object):
         return IOLoop.current()
 
     def _call_later(self, delay, callback):
-        timeout = self.io_loop.call_later(delay, callback)
-        return _CancellableTornadoTimeout(self.io_loop, timeout)
+        io_loop = self._get_loop()
+        timeout = io_loop.call_later(delay, callback)
+        return _CancellableTornadoTimeout(io_loop, timeout)
 
 
 class Poller(_AsyncTornado, _AsyncPoller):
@@ -86,9 +89,15 @@ class Context(_zmq.Context):
 
     @staticmethod
     def _socket_class(self, socket_type):
-        return Socket(self, socket_type, io_loop=self.io_loop)
+        return Socket(self, socket_type)
 
     def __init__(self, *args, **kwargs):
         io_loop = kwargs.pop('io_loop', None)
+        if io_loop is not None:
+            warnings.warn(
+                f"{self.__class__.__name__}(io_loop) argument is deprecated in pyzmq 22.2."
+                " The currently active loop will always be used.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         super(Context, self).__init__(*args, **kwargs)
-        self.io_loop = io_loop or IOLoop.current()
