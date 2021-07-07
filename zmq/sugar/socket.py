@@ -28,6 +28,7 @@ from .constants import (
     int_sockopt_names,
     bytes_sockopt_names,
     fd_sockopt_names,
+    socket_types,
 )
 import pickle
 
@@ -76,17 +77,37 @@ class Socket(SocketBase, AttributeSetter):
 
     _shadow = False
     _monitor_socket = None
+    _type_name = 'UNKNOWN'
 
     def __init__(self, *a, **kw):
-        super(Socket, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         if 'shadow' in kw:
             self._shadow = True
         else:
             self._shadow = False
+        try:
+            socket_type = self.get(zmq.TYPE)
+        except Exception:
+            pass
+        else:
+            self._type_name = socket_types.get(socket_type, str(socket_type))
 
     def __del__(self):
         if not self._shadow:
             self.close()
+
+    _repr_cls = "zmq.Socket"
+
+    def __repr__(self):
+        cls = self.__class__
+        # look up _repr_cls on exact class, not inherited
+        _repr_cls = cls.__dict__.get("_repr_cls", None)
+        if _repr_cls is None:
+            _repr_cls = f"{cls.__module__}.{cls.__name__}"
+
+        closed = ' closed' if self._closed else ''
+
+        return f"<{_repr_cls}(zmq.{self._type_name}) at {hex(id(self))}{closed}>"
 
     # socket as context manager:
     def __enter__(self):

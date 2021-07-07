@@ -47,6 +47,19 @@ class TestContext(BaseZMQTestCase):
         self.assertTrue(isinstance(c3, self.Context))
         del c3
 
+    _repr_cls = "zmq.Context"
+
+    def test_repr(self):
+        with self.Context() as ctx:
+            assert f'{self._repr_cls}()' in repr(ctx)
+            assert 'closed' not in repr(ctx)
+            with ctx.socket(zmq.PUSH) as push:
+                assert f'{self._repr_cls}(1 socket)' in repr(ctx)
+                with ctx.socket(zmq.PULL) as pull:
+                    assert f'{self._repr_cls}(2 sockets)' in repr(ctx)
+        assert f'{self._repr_cls}()' in repr(ctx)
+        assert 'closed' in repr(ctx)
+
     def test_dir(self):
         ctx = self.Context()
         self.assertTrue('socket' in dir(ctx))
@@ -395,3 +408,4 @@ if False:  # disable green context tests
         test_gc = GreenTest.skip_green
         test_term_thread = GreenTest.skip_green
         test_destroy_linger = GreenTest.skip_green
+        _repr_cls = "zmq.green.Context"

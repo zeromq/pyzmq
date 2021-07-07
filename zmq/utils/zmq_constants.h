@@ -85,98 +85,6 @@
     #define ZMQ_THREAD_SCHED_POLICY_DFLT (_PYZMQ_UNDEFINED)
 #endif
 
-#ifndef ZMQ_PAIR
-    #define ZMQ_PAIR (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_PUB
-    #define ZMQ_PUB (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_SUB
-    #define ZMQ_SUB (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_REQ
-    #define ZMQ_REQ (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_REP
-    #define ZMQ_REP (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_DEALER
-    #define ZMQ_DEALER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_ROUTER
-    #define ZMQ_ROUTER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_XREQ
-    #define ZMQ_XREQ (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_XREP
-    #define ZMQ_XREP (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_PULL
-    #define ZMQ_PULL (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_PUSH
-    #define ZMQ_PUSH (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_XPUB
-    #define ZMQ_XPUB (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_XSUB
-    #define ZMQ_XSUB (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_UPSTREAM
-    #define ZMQ_UPSTREAM (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_DOWNSTREAM
-    #define ZMQ_DOWNSTREAM (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_STREAM
-    #define ZMQ_STREAM (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_SERVER
-    #define ZMQ_SERVER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_CLIENT
-    #define ZMQ_CLIENT (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_RADIO
-    #define ZMQ_RADIO (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_DISH
-    #define ZMQ_DISH (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_GATHER
-    #define ZMQ_GATHER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_SCATTER
-    #define ZMQ_SCATTER (_PYZMQ_UNDEFINED)
-#endif
-
-#ifndef ZMQ_DGRAM
-    #define ZMQ_DGRAM (_PYZMQ_UNDEFINED)
-#endif
-
 #ifndef ZMQ_EVENT_CONNECTED
     #define ZMQ_EVENT_CONNECTED (_PYZMQ_UNDEFINED)
 #endif
@@ -467,6 +375,106 @@
 
 #ifndef EMTHREAD
     #define EMTHREAD (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_PAIR
+    #define ZMQ_PAIR (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_PUB
+    #define ZMQ_PUB (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_SUB
+    #define ZMQ_SUB (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_REQ
+    #define ZMQ_REQ (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_REP
+    #define ZMQ_REP (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DEALER
+    #define ZMQ_DEALER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_ROUTER
+    #define ZMQ_ROUTER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_PULL
+    #define ZMQ_PULL (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_PUSH
+    #define ZMQ_PUSH (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XPUB
+    #define ZMQ_XPUB (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XSUB
+    #define ZMQ_XSUB (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_STREAM
+    #define ZMQ_STREAM (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XREP
+    #define ZMQ_XREP (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_XREQ
+    #define ZMQ_XREQ (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_UPSTREAM
+    #define ZMQ_UPSTREAM (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DOWNSTREAM
+    #define ZMQ_DOWNSTREAM (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_SERVER
+    #define ZMQ_SERVER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_CLIENT
+    #define ZMQ_CLIENT (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_RADIO
+    #define ZMQ_RADIO (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DISH
+    #define ZMQ_DISH (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_GATHER
+    #define ZMQ_GATHER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_SCATTER
+    #define ZMQ_SCATTER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_DGRAM
+    #define ZMQ_DGRAM (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_PEER
+    #define ZMQ_PEER (_PYZMQ_UNDEFINED)
+#endif
+
+#ifndef ZMQ_CHANNEL
+    #define ZMQ_CHANNEL (_PYZMQ_UNDEFINED)
 #endif
 
 #ifndef ZMQ_IO_THREADS
