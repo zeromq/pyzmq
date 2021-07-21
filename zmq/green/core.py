@@ -161,7 +161,7 @@ class _Socket(_original_Socket):
                 )
         finally:
             if timeout:
-                timeout.cancel()
+                timeout.close()
             self.__writable.set()
 
     def _wait_read(self):
@@ -199,7 +199,7 @@ class _Socket(_original_Socket):
                 )
         finally:
             if timeout:
-                timeout.cancel()
+                timeout.close()
             self.__readable.set()
 
     def send(self, data, flags=0, copy=True, track=False, **kwargs):
