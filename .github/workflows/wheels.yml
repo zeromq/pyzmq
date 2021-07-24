@@ -11,8 +11,8 @@ on:
       - zmq/utils/*.h
 
 env:
-  cython: "0.29.21"
-  cibuildwheel: "1.9.0"
+  cython: "0.29.24"
+  cibuildwheel: "2.0.1"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -211,16 +211,6 @@ jobs:
         run: |
           pip install --upgrade setuptools pip wheel
           pip install cibuildwheel=="${{ env.cibuildwheel }}" cython=="${{ env.cython }}"
-
-      - name: install mac dependencies
-        if: startsWith(matrix.os, 'mac')
-        run: |
-          pip install delocate
-
-      - name: install linux dependencies
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          pip install auditwheel
 
       - name: install windows dependencies
         if: startsWith(matrix.os, 'win')
