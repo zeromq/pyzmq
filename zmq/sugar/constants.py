@@ -8,6 +8,7 @@ from zmq.backend import has
 from zmq.utils.constant_names import (
     base_names,
     switched_sockopt_names,
+    socket_type_names,
     int_sockopt_names,
     int64_sockopt_names,
     bytes_sockopt_names,
@@ -41,6 +42,7 @@ bytes_sockopts = set()
 fd_sockopts = set()
 ctx_opts = set()
 msg_opts = set()
+socket_types = dict()
 
 
 if constants.VERSION < 30000:
@@ -62,12 +64,18 @@ def _add_constant(name, container=None):
     globals()[name] = c
     __all__.append(name)
     if container is not None:
-        container.add(c)
+        if isinstance(container, set):
+            container.add(c)
+        elif isinstance(container, dict):
+            container[c] = name
     return c
 
 
 for name in base_names:
     _add_constant(name)
+
+for name in socket_type_names:
+    _add_constant(name, socket_types)
 
 for name in int_sockopt_names:
     _add_constant(name, int_sockopts)

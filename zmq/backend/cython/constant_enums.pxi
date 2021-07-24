@@ -19,29 +19,6 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_POLLITEMS_DFLT
     enum: ZMQ_THREAD_PRIORITY_DFLT
     enum: ZMQ_THREAD_SCHED_POLICY_DFLT
-    enum: ZMQ_PAIR
-    enum: ZMQ_PUB
-    enum: ZMQ_SUB
-    enum: ZMQ_REQ
-    enum: ZMQ_REP
-    enum: ZMQ_DEALER
-    enum: ZMQ_ROUTER
-    enum: ZMQ_XREQ
-    enum: ZMQ_XREP
-    enum: ZMQ_PULL
-    enum: ZMQ_PUSH
-    enum: ZMQ_XPUB
-    enum: ZMQ_XSUB
-    enum: ZMQ_UPSTREAM
-    enum: ZMQ_DOWNSTREAM
-    enum: ZMQ_STREAM
-    enum: ZMQ_SERVER
-    enum: ZMQ_CLIENT
-    enum: ZMQ_RADIO
-    enum: ZMQ_DISH
-    enum: ZMQ_GATHER
-    enum: ZMQ_SCATTER
-    enum: ZMQ_DGRAM
     enum: ZMQ_EVENT_CONNECTED
     enum: ZMQ_EVENT_CONNECT_DELAYED
     enum: ZMQ_EVENT_CONNECT_RETRIED
@@ -115,6 +92,31 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_ENOCOMPATPROTO "ENOCOMPATPROTO"
     enum: ZMQ_ETERM "ETERM"
     enum: ZMQ_EMTHREAD "EMTHREAD"
+    enum: ZMQ_PAIR
+    enum: ZMQ_PUB
+    enum: ZMQ_SUB
+    enum: ZMQ_REQ
+    enum: ZMQ_REP
+    enum: ZMQ_DEALER
+    enum: ZMQ_ROUTER
+    enum: ZMQ_PULL
+    enum: ZMQ_PUSH
+    enum: ZMQ_XPUB
+    enum: ZMQ_XSUB
+    enum: ZMQ_STREAM
+    enum: ZMQ_XREP
+    enum: ZMQ_XREQ
+    enum: ZMQ_UPSTREAM
+    enum: ZMQ_DOWNSTREAM
+    enum: ZMQ_SERVER
+    enum: ZMQ_CLIENT
+    enum: ZMQ_RADIO
+    enum: ZMQ_DISH
+    enum: ZMQ_GATHER
+    enum: ZMQ_SCATTER
+    enum: ZMQ_DGRAM
+    enum: ZMQ_PEER
+    enum: ZMQ_CHANNEL
     enum: ZMQ_IO_THREADS
     enum: ZMQ_MAX_SOCKETS
     enum: ZMQ_SOCKET_LIMIT

@@ -1,4 +1,4 @@
-from typing import Set, List
+from typing import Dict, Set, List
 
 ctx_opts: Set[int]
 bytes_sockopts: Set[int]
@@ -11,6 +11,8 @@ bytes_sockopt_names: List[str]
 fd_sockopt_names: List[str]
 int_sockopt_names: List[str]
 int64_sockopt_names: List[str]
+
+socket_types: Dict[int, str]
 
 DRAFT_API: bool
 

@@ -70,6 +70,7 @@ class _Socket(_original_Socket):
     _gevent_bug_timeout = 11.6  # timeout for not trusting gevent
     _debug_gevent = False  # turn on if you think gevent is missing events
     _poller_class = _Poller
+    _repr_cls = "zmq.green.Socket"
 
     def __init__(self, *a, **kw):
         super(_Socket, self).__init__(*a, **kw)
@@ -314,6 +315,7 @@ class _Context(_original_Context):
     """
 
     _socket_class = _Socket
+    _repr_cls = "zmq.green.Context"
 
     # avoid sharing instance with base Context class
     _instance = None

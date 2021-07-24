@@ -1,4 +1,4 @@
-from typing import Set, List
+from typing import Dict, Set, List
 
 ctx_opts: Set[int]
 bytes_sockopts: Set[int]
@@ -11,6 +11,8 @@ bytes_sockopt_names: List[str]
 fd_sockopt_names: List[str]
 int_sockopt_names: List[str]
 int64_sockopt_names: List[str]
+
+socket_types: Dict[int, str]
 
 DRAFT_API: bool
 
@@ -33,29 +35,6 @@ MAX_SOCKETS_DFLT: int
 POLLITEMS_DFLT: int
 THREAD_PRIORITY_DFLT: int
 THREAD_SCHED_POLICY_DFLT: int
-PAIR: int
-PUB: int
-SUB: int
-REQ: int
-REP: int
-DEALER: int
-ROUTER: int
-XREQ: int
-XREP: int
-PULL: int
-PUSH: int
-XPUB: int
-XSUB: int
-UPSTREAM: int
-DOWNSTREAM: int
-STREAM: int
-SERVER: int
-CLIENT: int
-RADIO: int
-DISH: int
-GATHER: int
-SCATTER: int
-DGRAM: int
 EVENT_CONNECTED: int
 EVENT_CONNECT_DELAYED: int
 EVENT_CONNECT_RETRIED: int
@@ -129,6 +108,31 @@ EFSM: int
 ENOCOMPATPROTO: int
 ETERM: int
 EMTHREAD: int
+PAIR: int
+PUB: int
+SUB: int
+REQ: int
+REP: int
+DEALER: int
+ROUTER: int
+PULL: int
+PUSH: int
+XPUB: int
+XSUB: int
+STREAM: int
+XREP: int
+XREQ: int
+UPSTREAM: int
+DOWNSTREAM: int
+SERVER: int
+CLIENT: int
+RADIO: int
+DISH: int
+GATHER: int
+SCATTER: int
+DGRAM: int
+PEER: int
+CHANNEL: int
 IO_THREADS: int
 MAX_SOCKETS: int
 SOCKET_LIMIT: int

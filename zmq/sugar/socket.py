@@ -9,7 +9,6 @@ import errno
 import random
 import sys
 import warnings
-from contextlib import contextmanager
 
 import zmq
 from zmq.backend import Socket as SocketBase
@@ -29,6 +28,7 @@ from .constants import (
     int_sockopt_names,
     bytes_sockopt_names,
     fd_sockopt_names,
+    socket_types,
 )
 import pickle
 
@@ -36,6 +36,30 @@ try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
 except AttributeError:
     DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
+
+class _SocketContext:
+    """Context Manager for socket bind/unbind"""
+
+    def __repr__(self):
+        return f"<SocketContext({self.kind}={self.addr!r})>"
+
+    def __init__(self, socket, kind, addr):
+        assert kind in {"bind", "connect"}
+        self.socket = socket
+        self.kind = kind
+        self.addr = addr
+
+    def __enter__(self):
+        return self.socket
+
+    def __exit__(self, *args):
+        if self.socket.closed:
+            return
+        if self.kind == "bind":
+            self.socket.unbind(self.addr)
+        elif self.kind == "connect":
+            self.socket.disconnect(self.addr)
 
 
 class Socket(SocketBase, AttributeSetter):
@@ -53,17 +77,37 @@ class Socket(SocketBase, AttributeSetter):
 
     _shadow = False
     _monitor_socket = None
+    _type_name = 'UNKNOWN'
 
     def __init__(self, *a, **kw):
-        super(Socket, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         if 'shadow' in kw:
             self._shadow = True
         else:
             self._shadow = False
+        try:
+            socket_type = self.get(zmq.TYPE)
+        except Exception:
+            pass
+        else:
+            self._type_name = socket_types.get(socket_type, str(socket_type))
 
     def __del__(self):
         if not self._shadow:
             self.close()
+
+    _repr_cls = "zmq.Socket"
+
+    def __repr__(self):
+        cls = self.__class__
+        # look up _repr_cls on exact class, not inherited
+        _repr_cls = cls.__dict__.get("_repr_cls", None)
+        if _repr_cls is None:
+            _repr_cls = f"{cls.__module__}.{cls.__name__}"
+
+        closed = ' closed' if self._closed else ''
+
+        return f"<{_repr_cls}(zmq.{self._type_name}) at {hex(id(self))}{closed}>"
 
     # socket as context manager:
     def __enter__(self):
@@ -124,27 +168,19 @@ class Socket(SocketBase, AttributeSetter):
     # Connect/Bind context managers
     # -------------------------------------------------------------------------
 
-    @contextmanager
     def _connect_cm(self, addr):
         """Context manager to disconnect on exit
 
         .. versionadded:: 20.0
         """
-        try:
-            yield
-        finally:
-            self.disconnect(addr)
+        return _SocketContext(self, 'connect', addr)
 
-    @contextmanager
     def _bind_cm(self, addr):
         """Context manager to unbind on exit
 
         .. versionadded:: 20.0
         """
-        try:
-            yield
-        finally:
-            self.unbind(addr)
+        return _SocketContext(self, 'bind', addr)
 
     def bind(self, addr):
         """s.bind(addr)
@@ -425,7 +461,7 @@ class Socket(SocketBase, AttributeSetter):
         set_hwm,
         None,
         """Property for High Water Mark.
-        
+
         Setting hwm sets both SNDHWM and RCVHWM as appropriate.
         It gets SNDHWM if available, otherwise RCVHWM.
         """,

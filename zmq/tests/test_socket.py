@@ -62,7 +62,9 @@ class TestSocket(BaseZMQTestCase):
             # Test connect() context manager
             with ctx.socket(zmq.PUSH) as a, ctx.socket(zmq.PULL) as b:
                 a.bind(url)
-                with b.connect(url):
+                connect_context = b.connect(url)
+                assert f'connect={url!r}' in repr(connect_context)
+                with connect_context:
                     a.send(msg)
                     rcvd = self.recv(b)
                     self.assertEqual(rcvd, msg)
@@ -76,7 +78,9 @@ class TestSocket(BaseZMQTestCase):
             with ctx.socket(zmq.PUSH) as a, ctx.socket(zmq.PULL) as b:
                 # unbind() just stops accepting of new connections, so we have to disconnect to test that
                 # unbind happened.
-                with a.bind(url):
+                bind_context = a.bind(url)
+                assert f'bind={url!r}' in repr(bind_context)
+                with bind_context:
                     b.connect(url)
                     a.send(msg)
                     rcvd = self.recv(b)
@@ -88,6 +92,15 @@ class TestSocket(BaseZMQTestCase):
                     a.send(msg, flags=zmq.DONTWAIT)
                 with pytest.raises(zmq.Again):
                     b.recv(flags=zmq.DONTWAIT)
+
+    _repr_cls = "zmq.Socket"
+
+    def test_repr(self):
+        with self.context.socket(zmq.PUSH) as s:
+            assert f'{self._repr_cls}(zmq.PUSH)' in repr(s)
+            assert 'closed' not in repr(s)
+        assert f'{self._repr_cls}(zmq.PUSH)' in repr(s)
+        assert 'closed' in repr(s)
 
     def test_dir(self):
         ctx = self.Context()
@@ -624,6 +637,7 @@ if have_gevent and not windows:
     class TestSocketGreen(GreenTest, TestSocket):
         test_bad_attr = GreenTest.skip_green
         test_close_after_destroy = GreenTest.skip_green
+        _repr_cls = "zmq.green.Socket"
 
         def test_timeout(self):
             a, b = self.create_bound_pair()

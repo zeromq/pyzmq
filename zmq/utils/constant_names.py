@@ -240,30 +240,6 @@ base_names = [
     'POLLITEMS_DFLT',
     'THREAD_PRIORITY_DFLT',
     'THREAD_SCHED_POLICY_DFLT',
-    # socktypes
-    'PAIR',
-    'PUB',
-    'SUB',
-    'REQ',
-    'REP',
-    'DEALER',
-    'ROUTER',
-    'XREQ',
-    'XREP',
-    'PULL',
-    'PUSH',
-    'XPUB',
-    'XSUB',
-    'UPSTREAM',
-    'DOWNSTREAM',
-    'STREAM',
-    'SERVER',
-    'CLIENT',
-    'RADIO',
-    'DISH',
-    'GATHER',
-    'SCATTER',
-    'DGRAM',
     # events
     'EVENT_CONNECTED',
     'EVENT_CONNECT_DELAYED',
@@ -343,6 +319,36 @@ base_names = [
     'ENOCOMPATPROTO',
     'ETERM',
     'EMTHREAD',
+]
+
+socket_type_names = [
+    'PAIR',
+    'PUB',
+    'SUB',
+    'REQ',
+    'REP',
+    'DEALER',
+    'ROUTER',
+    'PULL',
+    'PUSH',
+    'XPUB',
+    'XSUB',
+    'STREAM',
+    # deprecated
+    'XREP',
+    'XREQ',
+    'UPSTREAM',
+    'DOWNSTREAM',
+    # draft
+    'SERVER',
+    'CLIENT',
+    'RADIO',
+    'DISH',
+    'GATHER',
+    'SCATTER',
+    'DGRAM',
+    'PEER',
+    'CHANNEL',
 ]
 
 int64_sockopt_names = [
@@ -486,6 +492,7 @@ from itertools import chain
 all_names = list(
     chain(
         base_names,
+        socket_type_names,
         ctx_opt_names,
         bytes_sockopt_names,
         fd_sockopt_names,

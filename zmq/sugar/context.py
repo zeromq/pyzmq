@@ -63,6 +63,24 @@ class Context(ContextBase, AttributeSetter):
         if not self._shadow and not _exiting:
             self.term()
 
+    _repr_cls = "zmq.Context"
+
+    def __repr__(self):
+        cls = self.__class__
+        # look up _repr_cls on exact class, not inherited
+        _repr_cls = cls.__dict__.get("_repr_cls", None)
+        if _repr_cls is None:
+            _repr_cls = f"{cls.__module__}.{cls.__name__}"
+
+        closed = ' closed' if self.closed else ''
+        if self._sockets:
+            n_sockets = len(self._sockets)
+            s = 's' if n_sockets > 1 else ''
+            sockets = f"{n_sockets} socket{s}"
+        else:
+            sockets = ""
+        return f"<{_repr_cls}({sockets}) at {hex(id(self))}{closed}>"
+
     def __enter__(self):
         return self
 
