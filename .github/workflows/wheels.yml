@@ -157,16 +157,16 @@ jobs:
               build: "cp*win32"
 
           - os: windows-2016
-            name: win32-pypy
-            architecture: x86
+            name: win-pypy
+            architecture: x64
             cibw:
-              build: "pp*win32"
+              build: "pp*win_amd64"
 
           - os: windows-2019
             name: win_amd64
             architecture: x64
             cibw:
-              build: "*win_amd64"
+              build: "cp*win_amd64"
 
     steps:
       - uses: actions/checkout@v2
@@ -179,7 +179,7 @@ jobs:
 
       - name: set Windows extra env for pypy
         shell: bash
-        if: matrix.name == 'win32-pypy'
+        if: matrix.name == 'win-pypy'
         # pypy builds libzmq as an Extension,
         # doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
         # bundling external libzmq doesn't seem to work
