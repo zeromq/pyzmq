@@ -303,6 +303,24 @@ class TestFrame(BaseZMQTestCase):
                 self.assertEqual(m2.bytes, ff)
                 assert type(m2.bytes) is bytes
 
+    def test_noncopying_memoryview(self):
+        """test non-copying memmoryview messages"""
+        null = b'\0' * 64
+        sa, sb = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
+        for i in range(32):
+            # try a few times
+            sb.send(memoryview(null), copy=False)
+            m = sa.recv(copy=False)
+            buf = memoryview(m)
+            for i in range(5):
+                ff = b'\xff' * (40 + i * 10)
+                sb.send(memoryview(ff), copy=False)
+                m2 = sa.recv(copy=False)
+                buf2 = memoryview(m2)
+                self.assertEqual(buf.tobytes(), null)
+                self.assertEqual(buf2.tobytes(), ff)
+                assert type(buf) is memoryview
+
     def test_buffer_numpy(self):
         """test non-copying numpy array messages"""
         try:
