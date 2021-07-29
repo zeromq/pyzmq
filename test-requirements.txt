@@ -7,6 +7,7 @@ flake8
 gevent; platform_python_implementation != "PyPy" and sys_platform != "win32" and sys_platform != "darwin"
 mypy; platform_python_implementation != "PyPy"
 pytest
-pytest-cov
+# pytest-cov 2.11 requires coverage 5, which still doesn't work with Cython
+pytest-cov==2.10.*
 pytest-rerunfailures
 tornado
