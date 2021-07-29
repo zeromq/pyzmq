@@ -318,7 +318,9 @@ class TestFrame(BaseZMQTestCase):
                 m2 = sa.recv(copy=False)
                 buf2 = memoryview(m2)
                 self.assertEqual(buf.tobytes(), null)
+                self.assertFalse(buf.readonly)
                 self.assertEqual(buf2.tobytes(), ff)
+                self.assertFalse(buf2.readonly)
                 assert type(buf) is memoryview
 
     def test_buffer_numpy(self):
