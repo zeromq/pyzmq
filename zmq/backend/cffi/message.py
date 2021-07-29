@@ -189,7 +189,7 @@ class Frame(maybe_bufferable):
         return self.tracker.done()
 
     def __buffer__(self, flags):
-        return self._buffer
+        return self.buffer
 
     def __copy__(self):
         """Create a shallow copy of the message.
