@@ -23,7 +23,8 @@ def generate_certificates(base_dir):
 
     # Create directories for certificates, remove old content if necessary
     for d in [keys_dir, public_keys_dir, secret_keys_dir]:
-        if os.path.exists(d):
+        # Could get wild if folder is a symlink to / and ran as root accidentally...
+        if os.path.exists(d) and os.path.realpath(d) != '/':
             shutil.rmtree(d)
         os.mkdir(d)
 
