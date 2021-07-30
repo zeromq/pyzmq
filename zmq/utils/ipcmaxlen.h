@@ -11,7 +11,11 @@ the file COPYING.BSD, distributed as part of this software.
 #pragma once
 
 #if defined(HAVE_SYS_UN_H)
-#include "sys/un.h"
+#if defined _MSC_VER
+#include <afunix.h>
+#else
+#include <sys/un.h>
+#endif
 int get_ipc_path_max_len(void) {
     struct sockaddr_un *dummy;
     return sizeof(dummy->sun_path) - 1;

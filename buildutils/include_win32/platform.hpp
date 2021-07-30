@@ -17,8 +17,10 @@
 
 // additional defines required for 4.3 after this file was removed
 #define ZMQ_USE_SELECT 1
-#define ZMQ_IOTHREAD_POLLER_USE_SELECT 1
 #define ZMQ_POLL_BASED_ON_SELECT 1
 #define ZMQ_USE_CV_IMPL_WIN32API 1
+#define ZMQ_IOTHREAD_POLLER_USE_EPOLL 1
 
+/* Have AF_UNIX sockets for ipc transport */
+#define ZMQ_HAVE_IPC 1
 #endif
