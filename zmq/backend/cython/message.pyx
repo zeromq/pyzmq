@@ -218,7 +218,7 @@ cdef class Frame:
         buffer.len = zmq_msg_size(&self.zmq_msg)
         
         buffer.obj = self
-        buffer.readonly = 1
+        buffer.readonly = 0
         buffer.format = "B"
         buffer.ndim = 1
         buffer.shape = &(buffer.len)
