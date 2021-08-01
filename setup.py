@@ -568,7 +568,9 @@ class Configure(build_ext):
                 if not os.path.basename(src).startswith(("ws_", "wss_"))
             ]
         )
-        sources.append(pjoin('externals','wepoll','wepoll.c'))
+
+        if sys.platform.startswith("win"):  # only compile wepoll on windows...
+            sources.append(pjoin('externals', 'wepoll', 'wepoll.c'))
         includes = [pjoin(bundledir, 'zeromq', 'include')]
 
         if bundled_version < (4, 2, 0):
