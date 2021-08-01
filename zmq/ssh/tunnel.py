@@ -122,8 +122,16 @@ def _try_passwordless_paramiko(server, keyfile):
         raise ImportError(msg)
     username, server, port = _split_server(server)
     client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+    known_hosts = os.path.expanduser("~/.ssh/known_hosts")
+    try:
+        client.load_host_keys(known_hosts)
+    except FileNotFoundError:
+        pass
+
+    policy_name = os.environ.get("PYZMQ_PARAMIKO_HOST_KEY_POLICY", None)
+    if policy_name:
+        policy = getattr(paramiko, f"{policy_name}Policy")
+        client.set_missing_host_key_policy(policy())
     try:
         client.connect(
             server, port, username=username, key_filename=keyfile, look_for_keys=True
