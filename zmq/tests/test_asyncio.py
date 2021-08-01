@@ -407,6 +407,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             loop.run_until_complete(asyncio.wait_for(test(), timeout=10))
+            loop.close()
 
     def test_shadow(self):
         async def test():
