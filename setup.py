@@ -28,7 +28,6 @@ import sys
 import time
 import errno
 import platform
-from pprint import pprint
 from traceback import print_exc
 
 try:
@@ -570,7 +569,7 @@ class Configure(build_ext):
         )
 
         if sys.platform.startswith("win"):  # only compile wepoll on windows...
-            sources.append(pjoin('externals', 'wepoll', 'wepoll.c'))
+            sources.append(pjoin('bundled', 'wepoll', 'wepoll.c'))
         includes = [pjoin(bundledir, 'zeromq', 'include')]
 
         if bundled_version < (4, 2, 0):
@@ -857,8 +856,6 @@ class FetchCommand(Command):
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
         fetch_libzmq(bundledir)
-        for tarball in glob(pjoin(bundledir, '*.tar.gz')):
-            os.remove(tarball)
 
 
 class TestCommand(Command):
