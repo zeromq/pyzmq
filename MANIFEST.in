@@ -24,6 +24,8 @@ graft bundled/zeromq/tweetnacl
 exclude bundled/zeromq/src/Makefile*
 exclude bundled/zeromq/src/platform.hpp
 
+graft bundled/wepoll
+
 graft buildutils
 graft examples
 graft zmq

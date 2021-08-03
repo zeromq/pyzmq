@@ -12,7 +12,6 @@
 import os
 import shutil
 import sys
-import tarfile
 import hashlib
 import platform
 import zipfile
@@ -32,13 +31,22 @@ pjoin = os.path.join
 bundled_version = (4, 3, 4)
 vs = '%i.%i.%i' % bundled_version
 x, y, z = bundled_version
-libzmq = "zeromq-%s.tar.gz" % vs
+libzmq = "zeromq-%s.zip" % vs
 download_url = f"https://github.com/zeromq/libzmq/releases/download/v{vs}"
 
 libzmq_url = f"{download_url}/{libzmq}"
 libzmq_checksum = (
-    "sha256:c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336295c3e5"
+    "sha256:622bf650f7dab6de098c84d491052ad5a6d3e57550cd09cc259e0ab24ec83ec3"
 )
+
+wepoll_version = "v1.5.8"
+wepoll_url = (
+    f"https://github.com/piscisaureus/wepoll/archive/refs/tags/{wepoll_version}.zip"
+)
+wepoll_checksum = (
+    "sha256:2a2af790d41bff218704a7da5b28c0edbeb7db28ece2e703f33a442a7954b341"
+)
+
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -131,19 +139,30 @@ def fetch_archive(savedir, url, fname, checksum, force=False):
 # -----------------------------------------------------------------------------
 
 
-def fetch_libzmq(savedir):
-    """download and extract libzmq"""
-    dest = pjoin(savedir, 'zeromq')
+def fetch_and_extract(savedir, extract_to, url, fname, checksum):
+    """Download and extract an archive"""
+    dest = pjoin(savedir, extract_to)
     if os.path.exists(dest):
         info("already have %s" % dest)
         return
-    path = fetch_archive(savedir, libzmq_url, fname=libzmq, checksum=libzmq_checksum)
-    tf = tarfile.open(path)
-    with_version = pjoin(savedir, tf.firstmember.path)
-    tf.extractall(savedir)
-    tf.close()
+    archive = fetch_archive(savedir, url, fname=fname, checksum=checksum)
+    with zipfile.ZipFile(archive) as zf:
+        zf.extractall(savedir)
+        with_version = pjoin(savedir, zf.namelist()[0])
     # remove version suffix:
     shutil.move(with_version, dest)
+    # remove archive when we are done
+    os.remove(archive)
+
+
+def fetch_libzmq(savedir):
+    """download and extract libzmq"""
+    fetch_and_extract(
+        savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
+    )
+    fetch_and_extract(
+        savedir, 'wepoll', url=wepoll_url, fname='wepoll.zip', checksum=wepoll_checksum
+    )
 
 
 def stage_platform_hpp(zmqroot):
