@@ -9,19 +9,6 @@ env:
   PYZMQ_CYTHON_COVERAGE: "1"
 
 jobs:
-  lint:
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
-      - uses: pre-commit/action@v2.0.2
-
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
