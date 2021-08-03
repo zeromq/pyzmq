@@ -1,5 +1,9 @@
 #include <stdio.h>
-#include "sys/un.h"
+#if defined _MSC_VER
+#include <afunix.h>
+#else
+#include <sys/un.h>
+#endif
 
 int main(int argc, char **argv) {
     struct sockaddr_un *dummy;
