@@ -6,12 +6,25 @@ Just import things
 import os
 import platform
 import sys
+from unittest import SkipTest
 
 import pytest
 
 
-@pytest.mark.wheel
-def test_wheel():
+@pytest.mark.parametrize("feature", ["curve", "ipc"])
+def test_has(feature):
+    import zmq
+
+    if (
+        feature == 'ipc'
+        and sys.platform == 'win32'
+        and platform.architecture()[0] == '32bit'
+    ):
+        raise SkipTest("32b Windows doesn't have ipc")
+    assert zmq.has(feature)
+
+
+def test_simple_socket():
     import zmq
 
     ctx = zmq.Context()
@@ -24,7 +37,6 @@ def test_wheel():
     sys.platform != "win32" or platform.python_implementation() != "CPython",
     reason="only on CPython + Windows",
 )
-@pytest.mark.wheel
 def test_bundle_msvcp():
     import zmq
 
