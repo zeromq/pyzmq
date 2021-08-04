@@ -2,4 +2,5 @@ cython>=0.29
 gevent
 pygments==2.4.2
 sphinx>=3.0.4
+sphinx-rtd-theme==0.5.*
 tornado

@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
+    'sphinx_rtd_theme',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,8 +56,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyZMQ'
-copyright = u"""Brian E. Granger & Min Ragan-Kelley.  
-ØMQ logo © iMatix Corportation, used under the Creative Commons Attribution-Share Alike 3.0 License.  
+copyright = u"""Brian E. Granger & Min Ragan-Kelley.
+ØMQ logo © iMatix Corporation, used under the Creative Commons Attribution-Share Alike 3.0 License.
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
 intersphinx_mapping = {
@@ -92,7 +93,7 @@ release = zmq.__version__
 exclude_trees = ['build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
-# default_role = None
+default_role = 'literal'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -119,7 +120,7 @@ suppress_warnings = ['epub.unknown_project_files']
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-# html_theme = 'default'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
