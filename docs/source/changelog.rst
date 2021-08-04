@@ -7,10 +7,38 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.2.0
+======
+
+New features:
+
+- IPC support on Windows:
+  where available (64bit Windows wheels and bundled libzmq when compiling from source, via wepoll),
+  IPC should work on appropriate Windows versions.
+- Nicer reprs of contexts and sockets
+- Memory allocated by `recv(copy=False)` is no longer read-only
+- asyncio: Always reference current loop instead of attaching to the current loop at instantiation time.
+  This fixes e.g. contexts and/or sockets instantiated prior to a call to `asyncio.run`.
+- ssh: `$PYZMQ_PARAMIKO_HOST_KEY_POLICY` can be used to set the missing host key policy,
+  e.g. `AutoAdd`.
+
+Fixes:
+
+- Fix memory corruption in gevent integration
+- Fix `memoryview(zmq.Frame)` with cffi backend
+- Fix threadsafety issue when closing sockets
+
+Changes:
+
+- pypy Windows wheels are 64b-only, following an update in cibuildwheel 2.0
+- deprecate `zmq.utils.jsonapi` and remove support for non-stdlib json implementations in `send/recv_json`.
+  Custom serialization methods should be used instead.
+
+
 22.1.0
 ======
 
-New featurs:
+New features:
 
 - asyncio: experimental support for Proactor eventloop if tornado 6.1 is available
   by running a selector in a background thread.
