@@ -21,10 +21,9 @@ include bundled/zeromq/COPYING
 graft bundled/zeromq/include
 graft bundled/zeromq/src
 graft bundled/zeromq/tweetnacl
+graft bundled/zeromq/external/wepoll
 exclude bundled/zeromq/src/Makefile*
 exclude bundled/zeromq/src/platform.hpp
-
-graft bundled/wepoll
 
 graft buildutils
 graft examples
