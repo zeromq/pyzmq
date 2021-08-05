@@ -39,14 +39,6 @@ libzmq_checksum = (
     "sha256:622bf650f7dab6de098c84d491052ad5a6d3e57550cd09cc259e0ab24ec83ec3"
 )
 
-wepoll_version = "v1.5.8"
-wepoll_url = (
-    f"https://github.com/piscisaureus/wepoll/archive/refs/tags/{wepoll_version}.zip"
-)
-wepoll_checksum = (
-    "sha256:2a2af790d41bff218704a7da5b28c0edbeb7db28ece2e703f33a442a7954b341"
-)
-
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
@@ -159,9 +151,6 @@ def fetch_libzmq(savedir):
     """download and extract libzmq"""
     fetch_and_extract(
         savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
-    )
-    fetch_and_extract(
-        savedir, 'wepoll', url=wepoll_url, fname='wepoll.zip', checksum=wepoll_checksum
     )
 
 

@@ -7,6 +7,11 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.2.1
+======
+
+Fix bundling of wepoll on Windows.
+
 22.2.0
 ======
 
