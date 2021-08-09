@@ -11,7 +11,7 @@ The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x an
 but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2 (including 4.x).
 
 For a summary of changes to pyzmq, see our
-[changelog](https://pyzmq.readthedocs.org/en/latest/changelog.html).
+[changelog](https://pyzmq.readthedocs.io/en/latest/changelog.html).
 
 ### ØMQ 3.x, 4.x
 
@@ -25,7 +25,7 @@ PyZMQ does not support the old libzmq 2 API on PyPy.
 ## Documentation
 
 See PyZMQ's Sphinx-generated
-documentation [on GitHub](https://zeromq.github.io/pyzmq) or [on Read the Docs](https://pyzmq.readthedocs.io/) for API
+documentation [on Read the Docs](https://pyzmq.readthedocs.io) for API
 details, and some notes on Python and Cython development. If you want to
 learn about using ØMQ in general, the excellent [ØMQ
 Guide](http://zguide.zeromq.org/py:all) is the place to start, which has a
