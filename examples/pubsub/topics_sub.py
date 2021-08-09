@@ -47,10 +47,7 @@ def main():
     try:
         while True:
             topic, msg = s.recv_multipart()
-            print(
-                '   Topic: %s, msg:%s'
-                % (topic.decode('utf-8'), msg.decode('utf-8'))
-            )
+            print('   Topic: %s, msg:%s' % (topic.decode('utf-8'), msg.decode('utf-8')))
     except KeyboardInterrupt:
         pass
     print("Done.")
