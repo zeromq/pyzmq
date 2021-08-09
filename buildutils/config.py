@@ -54,7 +54,7 @@ def v_str(v_tuple):
 
 
 def get_env_args():
-    """ Look for options in environment vars """
+    """Look for options in environment vars"""
 
     settings = {}
 
@@ -82,7 +82,7 @@ def cfg2dict(cfg):
 
 
 def get_cfg_args():
-    """ Look for options in setup.cfg """
+    """Look for options in setup.cfg"""
 
     if not os.path.exists('setup.cfg'):
         return {}
@@ -146,7 +146,7 @@ def merge(into, d):
 
 
 def discover_settings(conf_base=None):
-    """ Discover custom settings for ZMQ path"""
+    """Discover custom settings for ZMQ path"""
     settings = {
         'zmq_prefix': '',
         'zmq_draft_api': False,

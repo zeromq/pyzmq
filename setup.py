@@ -191,7 +191,7 @@ def bundled_settings(debug):
 
 
 def check_pkgconfig():
-    """ pull compile / link flags from pkg-config if present. """
+    """pull compile / link flags from pkg-config if present."""
     pcfg = None
     zmq_config = None
     try:

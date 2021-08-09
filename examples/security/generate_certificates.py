@@ -16,7 +16,7 @@ import zmq.auth
 
 
 def generate_certificates(base_dir):
-    ''' Generate client and server CURVE certificate files'''
+    '''Generate client and server CURVE certificate files'''
     keys_dir = os.path.join(base_dir, 'certificates')
     public_keys_dir = os.path.join(base_dir, 'public_keys')
     secret_keys_dir = os.path.join(base_dir, 'private_keys')
