@@ -25,7 +25,7 @@ PyZMQ does not support the old libzmq 2 API on PyPy.
 ## Documentation
 
 See PyZMQ's Sphinx-generated
-[documentation](https://zeromq.github.io/pyzmq) on GitHub for API
+documentation [on GitHub](https://zeromq.github.io/pyzmq) or [on Read the Docs](https://pyzmq.readthedocs.io/) for API
 details, and some notes on Python and Cython development. If you want to
 learn about using ØMQ in general, the excellent [ØMQ
 Guide](http://zguide.zeromq.org/py:all) is the place to start, which has a
