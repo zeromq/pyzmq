@@ -55,7 +55,7 @@ def test_bundle_msvcp():
     shouldnt_bundle = []
     if platform.python_implementation() == 'PyPy':
         should_bundle = []
-    else:
+    elif sys.version_info < (3, 10):
         shouldnt_bundle.append(vcruntime)
 
     for dll in shouldnt_bundle:
