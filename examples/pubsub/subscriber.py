@@ -26,7 +26,7 @@ def sync(connect_to):
     ctx = zmq.Context.instance()
     s = ctx.socket(zmq.REQ)
     s.connect(sync_with)
-    s.send('READY')
+    s.send('READY'.encode('utf-8'))
     s.recv()
 
 
@@ -45,23 +45,23 @@ def main():
     ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
-    s.setsockopt(zmq.SUBSCRIBE, '')
+    s.setsockopt(zmq.SUBSCRIBE, ''.encode('utf-8'))
 
     sync(connect_to)
 
-    start = time.clock()
+    start = time.process_time()
 
     print("Receiving arrays...")
     for i in range(array_count):
         a = s.recv_pyobj()
     print("   Done.")
 
-    end = time.clock()
+    end = time.process_time()
 
-    elapsed = (end - start) * 1000000
-    if elapsed == 0:
-        elapsed = 1
-    throughput = (1000000.0 * float(array_count)) / float(elapsed)
+    elapsed = end - start
+
+    throughput = float(array_count) / elapsed
+
     message_size = a.nbytes
     megabits = float(throughput * message_size * 8) / 1000000
 

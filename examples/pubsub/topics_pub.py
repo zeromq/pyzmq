@@ -55,9 +55,9 @@ def main():
     msg_counter = itertools.count()
     try:
         for topic in itertools.cycle(all_topics):
-            msg_body = str(msg_counter.next())
+            msg_body = str(next(msg_counter))
             print('   Topic: %s, msg:%s' % (topic, msg_body))
-            s.send_multipart([topic, msg_body])
+            s.send_multipart([topic.encode('utf-8'), msg_body.encode('utf-8')])
             # short wait so we don't hog the cpu
             time.sleep(0.1)
     except KeyboardInterrupt:
