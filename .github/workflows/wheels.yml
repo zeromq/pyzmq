@@ -12,7 +12,7 @@ on:
 
 env:
   cython: "0.29.24"
-  cibuildwheel: "2.0.1"
+  cibuildwheel: "2.1.1"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -108,7 +108,7 @@ jobs:
             name: mac-arm
             cibw:
               arch: universal2
-              build: "cp39*"
+              build: "cp39* cp310*"
 
           - os: ubuntu-20.04
             name: manylinux1
@@ -119,7 +119,7 @@ jobs:
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
-              build: "cp38* cp39* pp3*"
+              build: "cp38* cp39* cp310* pp3*"
               manylinux_image: manylinux2010
 
           - os: ubuntu-20.04
@@ -147,6 +147,13 @@ jobs:
             name: cp39-manylinux_aarch64
             cibw:
               build: "cp39*"
+              manylinux_image: manylinux2014
+              arch: aarch64
+
+          - os: ubuntu-20.04
+            name: cp310-manylinux_aarch64
+            cibw:
+              build: "cp310*"
               manylinux_image: manylinux2014
               arch: aarch64
 
