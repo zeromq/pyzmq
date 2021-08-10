@@ -38,7 +38,7 @@ def main():
     # manage subscriptions
     if not topics:
         print("Receiving messages on ALL topics...")
-        s.setsockopt(zmq.SUBSCRIBE, ''.encode('utf-8'))
+        s.setsockopt(zmq.SUBSCRIBE, b'')
     else:
         print("Receiving messages on topics: %s ..." % topics)
         for t in topics:

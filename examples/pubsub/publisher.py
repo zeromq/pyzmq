@@ -28,7 +28,7 @@ def sync(bind_to):
     print("Waiting for subscriber to connect...")
     s.recv()
     print("   Done.")
-    s.send('GO'.encode('utf-8'))
+    s.send(b'GO')
 
 
 def main():

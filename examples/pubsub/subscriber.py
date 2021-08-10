@@ -26,7 +26,7 @@ def sync(connect_to):
     ctx = zmq.Context.instance()
     s = ctx.socket(zmq.REQ)
     s.connect(sync_with)
-    s.send('READY'.encode('utf-8'))
+    s.send(b'READY')
     s.recv()
 
 
@@ -45,7 +45,7 @@ def main():
     ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
-    s.setsockopt(zmq.SUBSCRIBE, ''.encode('utf-8'))
+    s.setsockopt(zmq.SUBSCRIBE, b'')
 
     sync(connect_to)
 
