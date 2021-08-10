@@ -116,21 +116,22 @@ class TestFrame(BaseZMQTestCase):
             m2 = copy.copy(m)
             rc += 1
             self.assertEqual(grc(s), rc)
+            # no increase in refcount for accessing buffer
+            # which references m2 directly
             buf = m2.buffer
-
-            rc += view_rc
             self.assertEqual(grc(s), rc)
 
             self.assertEqual(s, b(str(m)))
             self.assertEqual(s, bytes(m2))
             self.assertEqual(s, m.bytes)
+            self.assertEqual(s, bytes(buf))
             # self.assertTrue(s is str(m))
             # self.assertTrue(s is str(m2))
             del m2
-            rc -= 1
             self.assertEqual(grc(s), rc)
-            rc -= view_rc
+            # buf holds direct reference to m2 which holds
             del buf
+            rc -= 1
             self.assertEqual(grc(s), rc)
             del m
             rc -= 2
@@ -152,20 +153,20 @@ class TestFrame(BaseZMQTestCase):
             m2 = copy.copy(m)
             rc += 1
             self.assertEqual(grc(s), rc)
+            # no increase in refcount for accessing buffer
+            # which references m directly
             buf = m.buffer
-            rc += view_rc
             self.assertEqual(grc(s), rc)
             self.assertEqual(s, b(str(m)))
             self.assertEqual(s, bytes(m2))
             self.assertEqual(s, m2.bytes)
             self.assertEqual(s, m.bytes)
+            self.assertEqual(s, bytes(buf))
             # self.assertTrue(s is str(m))
             # self.assertTrue(s is str(m2))
             del buf
             self.assertEqual(grc(s), rc)
             del m
-            # m.buffer is kept until m is del'd
-            rc -= view_rc
             rc -= 1
             self.assertEqual(grc(s), rc)
             del m2

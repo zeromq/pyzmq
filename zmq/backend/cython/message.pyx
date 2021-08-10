@@ -30,7 +30,7 @@ cdef extern from "pyversion_compat.h":
 
 from cpython cimport Py_DECREF, Py_INCREF
 
-from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
+from zmq.utils.buffers cimport asbuffer_r
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -50,6 +50,7 @@ from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy
 
 import time
+from weakref import ref
 
 try:
     # below 3.3
@@ -73,15 +74,15 @@ ctypedef struct zhint:
 
 cdef void free_python_msg(void *data, void *vhint) nogil:
     """A pure-C function for DECREF'ing Python-owned message data.
-    
+
     Sends a message on a PUSH socket
-    
+
     The hint is a `zhint` struct with two values:
-    
+
     sock (void *): pointer to the Garbage Collector's PUSH socket
     id (size_t): the id to be used to construct a zmq_msg_t that should be sent on a PUSH socket,
        signaling the Garbage Collector to remove its reference to the object.
-    
+
     When the Garbage Collector's PULL socket receives the message,
     it deletes its reference to the object,
     allowing Python to free the memory.
@@ -187,16 +188,16 @@ cdef class Frame:
         else:
             hint.mutex = <mutex_t *> <size_t> gc._push_mutex
         hint.sock = <void *> <size_t> gc._push_socket.underlying
-        
+
         rc = zmq_msg_init_data(
-                &self.zmq_msg, <void *>data_c, data_len_c, 
+                &self.zmq_msg, <void *>data_c, data_len_c,
                 <zmq_free_fn *>free_python_msg, <void *>hint
             )
         if rc != 0:
             free(hint)
             _check_rc(rc)
         self._failed_init = False
-    
+
     def __init__(self, object data=None, track=False, copy=False, copy_threshold=None):
         """Enforce signature"""
         pass
@@ -209,14 +210,14 @@ cdef class Frame:
         with nogil:
             rc = zmq_msg_close(&self.zmq_msg)
         _check_rc(rc)
-    
+
     # buffer interface code adapted from petsc4py by Lisandro Dalcin, a BSD project
-    
+
     def __getbuffer__(self, Py_buffer* buffer, int flags):
         # new-style (memoryview) buffer interface
         buffer.buf = zmq_msg_data(&self.zmq_msg)
         buffer.len = zmq_msg_size(&self.zmq_msg)
-        
+
         buffer.obj = self
         buffer.readonly = 0
         buffer.format = "B"
@@ -226,13 +227,13 @@ cdef class Frame:
         buffer.suboffsets = NULL
         buffer.itemsize = 1
         buffer.internal = NULL
-    
+
     def __getsegcount__(self, Py_ssize_t *lenp):
         # required for getreadbuffer
         if lenp != NULL:
             lenp[0] = zmq_msg_size(&self.zmq_msg)
         return 1
-    
+
     def __getreadbuffer__(self, Py_ssize_t idx, void **p):
         # old-style (buffer) interface
         cdef char *data_c = NULL
@@ -246,7 +247,7 @@ cdef class Frame:
         if p != NULL:
             p[0] = <void*>data_c
         return data_len_c
-    
+
     # end buffer interface
 
     def __copy__(self):
@@ -263,7 +264,7 @@ cdef class Frame:
         """Fast, cdef'd version of shallow copy of the Frame."""
         cdef Frame new_msg
         new_msg = Frame()
-        # This does not copy the contents, but just increases the ref-count 
+        # This does not copy the contents, but just increases the ref-count
         # of the zmq_msg by one.
         zmq_msg_copy(&new_msg.zmq_msg, &self.zmq_msg)
         # Copy the ref to data so the copy won't create a copy when str is
@@ -300,43 +301,39 @@ cdef class Frame:
             return b
 
     cdef inline object _getbuffer(self):
-        """Create a Python buffer/view of the message data.
+        """Deprecated alias for memoryview(self)"""
+        return memoryview(self)
 
-        This will be called only once, the first time the `buffer` property
-        is accessed. Subsequent calls use a cached copy.
-        """
-        if self._data is None:
-            return viewfromobject_r(self)
-        else:
-            return viewfromobject_r(self._data)
-    
     @property
     def buffer(self):
-        """A read-only buffer view of the message contents."""
-        if self._buffer is None:
-            self._buffer = self._getbuffer()
-        return self._buffer
+        """A memoryview of the message contents."""
+        _buffer = self._buffer and self._buffer()
+        if _buffer is not None:
+            return _buffer
+        _buffer = memoryview(self)
+        self._buffer = ref(_buffer)
+        return _buffer
 
     @property
     def bytes(self):
         """The message content as a Python bytes object.
 
-        The first time this property is accessed, a copy of the message 
+        The first time this property is accessed, a copy of the message
         contents is made. From then on that same copy of the message is
         returned.
         """
         if self._bytes is None:
             self._bytes = copy_zmq_msg_bytes(&self.zmq_msg)
         return self._bytes
-    
+
     def set(self, option, value):
         """Frame.set(option, value)
-        
+
         Set a Frame option.
-        
+
         See the 0MQ API documentation for zmq_msg_set
         for details on specific options.
-        
+
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
         .. versionchanged:: 17.0
@@ -392,7 +389,7 @@ cdef class Frame:
             rc = zmq_msg_get(&self.zmq_msg, option)
             _check_rc(rc)
             return rc
-        
+
         if option == 'routing_id':
             routing_id = zmq_msg_routing_id(&self.zmq_msg)
             if (routing_id == 0):
@@ -408,12 +405,12 @@ cdef class Frame:
         _check_version((4,1), "get string properties")
         if isinstance(option, unicode):
             option = option.encode('utf8')
-        
+
         if not isinstance(option, bytes):
             raise TypeError("expected str, got: %r" % option)
-        
+
         property_c = option
-        
+
         cdef const char *result = <char *>zmq_msg_gets(&self.zmq_msg, property_c)
         if result == NULL:
             _check_rc(-1)

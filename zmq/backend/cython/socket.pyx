@@ -34,7 +34,7 @@ from cpython cimport PyBytes_FromStringAndSize
 from cpython cimport PyBytes_AsString, PyBytes_Size
 from cpython cimport Py_DECREF, Py_INCREF, PY_VERSION_HEX
 
-from zmq.utils.buffers cimport asbuffer_r, viewfromobject_r
+from zmq.utils.buffers cimport asbuffer_r
 
 from .libzmq cimport (
     fd_t,
@@ -128,7 +128,7 @@ cdef inline Py_ssize_t nbytes(buf) except -1:
 
 cdef inline _check_closed(Socket s):
     """raise ENOTSUP if socket is closed
-    
+
     Does not do a deep check
     """
     if s._closed:
@@ -137,9 +137,9 @@ cdef inline _check_closed(Socket s):
 cdef inline _check_closed_deep(Socket s):
     """thorough check of whether the socket has been closed,
     even if by another entity (e.g. ctx.destroy).
-    
+
     Only used by the `closed` property.
-    
+
     returns True if closed, False otherwise
     """
     cdef int rc
@@ -162,7 +162,7 @@ cdef inline Frame _recv_frame(void *handle, int flags=0, track=False):
     cdef int rc
     msg = zmq.Frame(track=track)
     cdef Frame cmsg = msg
-    
+
     while True:
         with nogil:
             rc = zmq_msg_recv(&cmsg.zmq_msg, handle, flags)
@@ -191,7 +191,7 @@ cdef inline object _recv_copy(void *handle, int flags=0):
             raise
         else:
             break
-    
+
     msg_bytes = copy_zmq_msg_bytes(&zmq_msg)
     zmq_msg_close(&zmq_msg)
     return msg_bytes
@@ -204,7 +204,7 @@ cdef inline object _send_frame(void *handle, Frame msg, int flags=0):
     # Always copy so the original message isn't garbage collected.
     # This doesn't do a real copy, just a reference.
     msg_copy = msg.fast_copy()
-    
+
     while True:
         with nogil:
             rc = zmq_msg_send(&msg_copy.zmq_msg, handle, flags)
@@ -233,7 +233,7 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
     rc = zmq_msg_init_size(&data, msg_c_len)
     _check_rc(rc)
-    
+
     while True:
         with nogil:
             memcpy(zmq_msg_data(&data), msg_c, zmq_msg_size(&data))
@@ -252,7 +252,7 @@ cdef inline object _send_copy(void *handle, object msg, int flags=0):
 
 cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *sz):
     """getsockopt, retrying interrupted calls
-    
+
     checks rc, raising ZMQError on failure.
     """
     cdef int rc=0
@@ -267,7 +267,7 @@ cdef inline object _getsockopt(void *handle, int option, void *optval, size_t *s
 
 cdef inline object _setsockopt(void *handle, int option, void *optval, size_t sz):
     """setsockopt, retrying interrupted calls
-    
+
     checks rc, raising ZMQError on failure.
     """
     cdef int rc=0
@@ -287,17 +287,17 @@ cdef class Socket:
     A 0MQ socket.
 
     These objects will generally be constructed via the socket() method of a Context object.
-    
+
     Note: 0MQ Sockets are *not* threadsafe. **DO NOT** share them across threads.
-    
+
     Parameters
     ----------
     context : Context
         The 0MQ Context this Socket belongs to.
     socket_type : int
-        The socket type, which can be any of the 0MQ socket types: 
+        The socket type, which can be any of the 0MQ socket types:
         REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, XPUB, XSUB.
-    
+
     See Also
     --------
     .Context.socket : method for creating a socket bound to a Context.
@@ -446,7 +446,7 @@ cdef class Socket:
         option : int
             The option to get.  Available values will depend on your
             version of libzmq.  Examples include::
-            
+
                 zmq.IDENTITY, HWM, LINGER, FD, EVENTS
 
         Returns
@@ -489,7 +489,7 @@ cdef class Socket:
             result = optval_int_c
 
         return result
-    
+
     def bind(self, addr):
         """s.bind(addr)
 
@@ -566,7 +566,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        
+
         while True:
             try:
                 rc = zmq_connect(self.handle, c_addr)
@@ -579,9 +579,9 @@ cdef class Socket:
 
     def unbind(self, addr):
         """s.unbind(addr)
-        
+
         Unbind from an address (undoes a call to bind).
-        
+
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -603,7 +603,7 @@ cdef class Socket:
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
         c_addr = addr
-        
+
         rc = zmq_unbind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
@@ -612,7 +612,7 @@ cdef class Socket:
         """s.disconnect(addr)
 
         Disconnect from a remote 0MQ socket (undoes a call to connect).
-        
+
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -709,7 +709,7 @@ cdef class Socket:
             raise RuntimeError("libzmq must be built with draft support")
         cdef int rc = zmq_leave(self.handle, group)
         _check_rc(rc)
-        
+
 
     #-------------------------------------------------------------------------
     # Sending and receiving messages
@@ -744,7 +744,7 @@ cdef class Socket:
         MessageTracker : if track and not copy
             a MessageTracker object, whose `pending` property will
             be True until the send is completed.
-        
+
         Raises
         ------
         TypeError
@@ -754,7 +754,7 @@ cdef class Socket:
         ZMQError
             for any of the reasons zmq_msg_send might fail (including
             if NOBLOCK is set and the outgoing queue is full).
-        
+
         """
         _check_closed(self)
 
@@ -812,13 +812,13 @@ cdef class Socket:
             NOBLOCK is set and no new messages have arrived).
         """
         _check_closed(self)
-        
+
         if copy:
             return _recv_copy(self.handle, flags)
         else:
             frame = _recv_frame(self.handle, flags, track)
             frame.more = self.get(zmq.RCVMORE)
             return frame
-    
+
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']
