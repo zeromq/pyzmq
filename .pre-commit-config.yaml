@@ -22,6 +22,8 @@ repos:
         # no idea why
         pass_filenames: false
         args: [zmq]
+        additional_dependencies:
+          - types-paramiko
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:
