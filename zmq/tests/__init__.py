@@ -222,6 +222,9 @@ got '%s'"
             self.fail("Function did not raise any error")
 
     def tearDown(self):
+        if self._should_test_timeout:
+            # cancel the timeout alarm, if there was one
+            signal.alarm(0)
         contexts = set([self.context])
         while self.sockets:
             sock = self.sockets.pop()
