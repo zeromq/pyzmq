@@ -63,9 +63,10 @@ class Context(ContextBase, AttributeSetter):
 
         if not self._shadow and not _exiting and not self.closed:
             warnings.warn(
-                f"Implicitly terminating {self}. Make sure to call Context.term().",
+                f"unclosed context {self}",
                 ResourceWarning,
                 stacklevel=2,
+                source=self,
             )
             self.term()
 
@@ -259,7 +260,9 @@ class Context(ContextBase, AttributeSetter):
         """
         if self.closed:
             raise ZMQError(ENOTSUP)
-        s = self._socket_class(self, socket_type, **kwargs)
+        s = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+            self, socket_type, **kwargs
+        )
         for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)

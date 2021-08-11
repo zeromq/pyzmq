@@ -95,9 +95,10 @@ class Socket(SocketBase, AttributeSetter):
     def __del__(self):
         if not self._shadow and not self.closed:
             warnings.warn(
-                f"Implicitly closing {self}. Make sure to call Socket.close().",
+                f"unclosed socket {self}",
                 ResourceWarning,
                 stacklevel=2,
+                source=self,
             )
             self.close()
 
