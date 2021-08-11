@@ -93,7 +93,13 @@ class Socket(SocketBase, AttributeSetter):
             self._type_name = socket_types.get(socket_type, str(socket_type))
 
     def __del__(self):
-        if not self._shadow:
+        if not self._shadow and not self.closed:
+            warnings.warn(
+                f"unclosed socket {self}",
+                ResourceWarning,
+                stacklevel=2,
+                source=self,
+            )
             self.close()
 
     _repr_cls = "zmq.Socket"

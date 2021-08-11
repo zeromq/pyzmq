@@ -9,6 +9,7 @@ import os
 from threading import Lock
 from typing import TypeVar, Type
 from weakref import WeakSet
+import warnings
 
 from zmq.backend import Context as ContextBase
 from . import constants
@@ -60,7 +61,13 @@ class Context(ContextBase, AttributeSetter):
         # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
         locals()
 
-        if not self._shadow and not _exiting:
+        if not self._shadow and not _exiting and not self.closed:
+            warnings.warn(
+                f"unclosed context {self}",
+                ResourceWarning,
+                stacklevel=2,
+                source=self,
+            )
             self.term()
 
     _repr_cls = "zmq.Context"
@@ -253,7 +260,9 @@ class Context(ContextBase, AttributeSetter):
         """
         if self.closed:
             raise ZMQError(ENOTSUP)
-        s = self._socket_class(self, socket_type, **kwargs)
+        s = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+            self, socket_type, **kwargs
+        )
         for opt, value in self.sockopts.items():
             try:
                 s.setsockopt(opt, value)
