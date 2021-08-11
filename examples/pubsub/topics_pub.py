@@ -32,13 +32,13 @@ def main():
     bind_to = sys.argv[1]
 
     all_topics = [
-        'sports.general',
-        'sports.football',
-        'sports.basketball',
-        'stocks.general',
-        'stocks.GOOG',
-        'stocks.AAPL',
-        'weather',
+        b'sports.general',
+        b'sports.football',
+        b'sports.basketball',
+        b'stocks.general',
+        b'stocks.GOOG',
+        b'stocks.AAPL',
+        b'weather',
     ]
 
     ctx = zmq.Context()
@@ -55,7 +55,7 @@ def main():
     msg_counter = itertools.count()
     try:
         for topic in itertools.cycle(all_topics):
-            msg_body = str(msg_counter.next())
+            msg_body = str(next(msg_counter)).encode('utf-8')
             print('   Topic: %s, msg:%s' % (topic, msg_body))
             s.send_multipart([topic, msg_body])
             # short wait so we don't hog the cpu

@@ -31,7 +31,6 @@ def main():
 
     connect_to = sys.argv[1]
     topics = sys.argv[2:]
-
     ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
     s.connect(connect_to)
@@ -39,16 +38,16 @@ def main():
     # manage subscriptions
     if not topics:
         print("Receiving messages on ALL topics...")
-        s.setsockopt(zmq.SUBSCRIBE, '')
+        s.setsockopt(zmq.SUBSCRIBE, b'')
     else:
         print("Receiving messages on topics: %s ..." % topics)
         for t in topics:
-            s.setsockopt(zmq.SUBSCRIBE, t)
+            s.setsockopt(zmq.SUBSCRIBE, t.encode('utf-8'))
     print
     try:
         while True:
             topic, msg = s.recv_multipart()
-            print('   Topic: %s, msg:%s' % (topic, msg))
+            print('   Topic: %s, msg:%s' % (topic.decode('utf-8'), msg.decode('utf-8')))
     except KeyboardInterrupt:
         pass
     print("Done.")
