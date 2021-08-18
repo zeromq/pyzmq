@@ -54,6 +54,9 @@
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
 
+/* if_nametoindex is available */
+#define HAVE_IF_NAMETOINDEX 1
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
@@ -178,7 +181,7 @@
 #define PACKAGE_NAME "zeromq"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "zeromq 4.3.3"
+#define PACKAGE_STRING "zeromq 4.3.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "zeromq"
@@ -187,7 +190,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.3.3"
+#define PACKAGE_VERSION "4.3.4"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -199,7 +202,7 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "4.3.3"
+#define VERSION "4.3.4"
 
 /* Enable militant API assertions */
 /* #undef ZMQ_ACT_MILITANT */
@@ -238,11 +241,11 @@
 /* Whether EFD_CLOEXEC is defined and functioning. */
 /* #undef ZMQ_HAVE_EVENTFD_CLOEXEC */
 
-/* Have FreeBSD OS */
+/* Have DragonFly OS */
 #define ZMQ_HAVE_FREEBSD 1
 
 /* Whether getrandom is supported. */
-/* #undef ZMQ_HAVE_GETRANDOM */
+#define ZMQ_HAVE_GETRANDOM 1
 
 /* Have GNU/Hurd OS */
 /* #undef ZMQ_HAVE_GNU */
@@ -293,7 +296,7 @@
 /* #undef ZMQ_HAVE_PTHREAD_SETNAME_1 */
 
 /* Whether pthread_setname_np() has 2 arguments */
-/* #undef ZMQ_HAVE_PTHREAD_SETNAME_2 */
+#define ZMQ_HAVE_PTHREAD_SETNAME_2 1
 
 /* Whether pthread_setname_np() has 3 arguments */
 /* #undef ZMQ_HAVE_PTHREAD_SETNAME_3 */
@@ -321,6 +324,12 @@
 
 /* Have SO_PEERCRED socket option */
 /* #undef ZMQ_HAVE_SO_PEERCRED */
+
+/* Whether SO_PRIORITY is supported. */
+/* #undef ZMQ_HAVE_SO_PRIORITY */
+
+/* strlcpy is available */
+#define ZMQ_HAVE_STRLCPY 1
 
 /* Whether TCP_KEEPALIVE is supported. */
 /* #undef ZMQ_HAVE_TCP_KEEPALIVE */
