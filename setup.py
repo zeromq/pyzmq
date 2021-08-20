@@ -1392,13 +1392,11 @@ setup_args = dict(
         "py; implementation_name == 'pypy'",
         "cffi; implementation_name == 'pypy'",
     ],
-    setup_requires=[
-        "cffi; implementation_name == 'pypy'",
-        "packaging",
-    ],
 )
 if not os.path.exists(os.path.join("zmq", "backend", "cython", "socket.c")):
-    setup_args["setup_requires"].append(
+    # this generally means pip install from git
+    # which requires Cython
+    setup_args.setdefault("setup_requires", []).append(
         f"cython>={min_cython_version}; implementation_name == 'cpython'",
     )
 
