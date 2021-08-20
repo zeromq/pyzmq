@@ -53,6 +53,7 @@ BuildRequires:  zeromq-devel
 BuildRequires:  gcc
 BuildRequires:  chrpath
 BuildRequires:  python3-devel
+BuildRequires:  python3-packaging
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-Cython
 %if %{with tests}
@@ -76,6 +77,7 @@ BuildRequires:  %{python_module py}
 BuildRequires:  %{python_module simplejson}
 BuildRequires:  %{python_module tornado}
 %endif
+BuildRequires:  %{python_module packaging}
 BuildRequires:  %{python_module setuptools}
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
