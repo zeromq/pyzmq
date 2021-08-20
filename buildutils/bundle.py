@@ -193,7 +193,14 @@ def stage_platform_hpp(zmqroot):
             elif sys.platform.startswith('linux-armv'):
                 platform_dir = pjoin(HERE, 'include_linux-armv')
             else:
-                platform_dir = pjoin(HERE, 'include_linux')
+                # check for musl (alpine)
+                from packaging import tags
+
+                if any('musllinux' in tag.platform for tag in tags.sys_tags()):
+                    info("Detected musllinux (likely alpine)")
+                    platform_dir = pjoin(HERE, 'include_linux-musl')
+                else:
+                    platform_dir = pjoin(HERE, 'include_linux')
         else:
             return
 

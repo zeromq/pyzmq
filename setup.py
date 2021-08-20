@@ -53,6 +53,8 @@ from os.path import splitext, basename, join as pjoin
 from subprocess import Popen, PIPE, check_call, CalledProcessError
 
 # local script imports:
+sys.path.insert(0, os.path.dirname(__file__))
+
 from buildutils import (
     discover_settings,
     v_str,
@@ -503,7 +505,7 @@ class Configure(build_ext):
             if vers >= min_legacy_zmq:
 
                 msg.append(
-                    "    Explicitly allow legacy zmq by specifying `--zmq=/zmq/prefix`"
+                    "    Explicitly allow legacy zmq by specifying `ZMQ_PREFIX=/zmq/prefix`"
                 )
 
             raise LibZMQVersionError('\n'.join(msg))
@@ -537,7 +539,7 @@ class Configure(build_ext):
             local_dll = localpath('zmq', libzmq_name + '.dll')
             if not zmq_prefix and not os.path.exists(local_dll):
                 fatal(
-                    "ZMQ directory must be specified on Windows via setup.cfg or 'python setup.py configure --zmq=/path/to/libzmq'"
+                    "ZMQ directory must be specified on Windows via setup.cfg or 'ZMQ_PREFIX=/path/to/libzmq' env"
                 )
 
     def bundle_libzmq_extension(self):
@@ -691,10 +693,10 @@ class Configure(build_ext):
                     "    * A development version of Python is installed (including headers)",
                     "    * A development version of ZMQ >= %s is installed (including headers)"
                     % v_str(min_good_zmq),
-                    "    * If ZMQ is not in a default location, supply the argument --zmq=<path>",
+                    "    * If ZMQ is not in a default location, specify the env  ZMQ_PREFIX=<path>",
                     "    * If you did recently install ZMQ to a default location,",
                     "      try rebuilding the ld cache with `sudo ldconfig`",
-                    "      or specify zmq's location with `--zmq=/usr/local`",
+                    "      or specify zmq's location with `ZMQ_PREFIX=/usr/local`",
                     "",
                 ]
             )
@@ -706,7 +708,7 @@ class Configure(build_ext):
                     "You can skip all this detection/waiting nonsense if you know",
                     "you want pyzmq to bundle libzmq as an extension by passing:",
                     "",
-                    "    `--zmq=bundled`",
+                    "    `ZMQ_PREFIX=bundled`",
                     "",
                     "I will now try to build libzmq as a Python extension",
                     "unless you interrupt me (^C) in the next 10 seconds...",
@@ -1392,11 +1394,12 @@ setup_args = dict(
     ],
     setup_requires=[
         "cffi; implementation_name == 'pypy'",
+        "packaging",
     ],
 )
 if not os.path.exists(os.path.join("zmq", "backend", "cython", "socket.c")):
     setup_args["setup_requires"].append(
-        f"cython>={min_cython_version}; implementation_name == 'cpython'"
+        f"cython>={min_cython_version}; implementation_name == 'cpython'",
     )
 
 setup(**setup_args)

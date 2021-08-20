@@ -1,3 +1,12 @@
 [tool.black]
 skip-string-normalization = true
 exclude = "zmq/eventloop/minitornado|docs/source/conf.py"
+
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "packaging",
+    "cffi; implementation_name == 'pypy'",
+]
+build-backend = "setuptools.build_meta"

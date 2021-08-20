@@ -38,3 +38,4 @@ venv
 htmlcov
 coverage.xml
 env
+.eggs

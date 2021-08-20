@@ -2,7 +2,7 @@
 /* src/platform.hpp.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the `accept4' function. */
-/* #undef HAVE_ACCEPT4 */
+#define HAVE_ACCEPT4 1
 
 /* Define to 1 if you have the <alloca.h> header file. */
 #define HAVE_ALLOCA_H 1
@@ -25,7 +25,7 @@
 
 /* Define to 1 if you have the declaration of `SO_PEERCRED', and to 0 if you
    don't. */
-#define HAVE_DECL_SO_PEERCRED 0
+#define HAVE_DECL_SO_PEERCRED 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -34,7 +34,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the `fork' function. */
-#define HAVE_FORK 1
+/* #undef HAVE_FORK */
 
 /* Define to 1 if you have the `freeifaddrs' function. */
 #define HAVE_FREEIFADDRS 1
@@ -79,7 +79,7 @@
 /* #undef HAVE_LIBRPCRT4 */
 
 /* Define to 1 if you have the `rt' library (-lrt). */
-/* #undef HAVE_LIBRT */
+#define HAVE_LIBRT 1
 
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
@@ -97,7 +97,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `memset' function. */
-#define HAVE_MEMSET 1
+/* #undef HAVE_MEMSET */
 
 /* Define to 1 if you have the `mkdtemp' function. */
 #define HAVE_MKDTEMP 1
@@ -139,7 +139,7 @@
 #define HAVE_STRNLEN 1
 
 /* Define to 1 if you have the <sys/eventfd.h> header file. */
-/* #undef HAVE_SYS_EVENTFD_H */
+#define HAVE_SYS_EVENTFD_H 1
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #define HAVE_SYS_SOCKET_H 1
@@ -236,16 +236,16 @@
 /* #undef ZMQ_HAVE_DRAGONFLY */
 
 /* Have eventfd extension */
-/* #undef ZMQ_HAVE_EVENTFD */
+#define ZMQ_HAVE_EVENTFD 1
 
 /* Whether EFD_CLOEXEC is defined and functioning. */
-/* #undef ZMQ_HAVE_EVENTFD_CLOEXEC */
+#define ZMQ_HAVE_EVENTFD_CLOEXEC 1
 
 /* Have DragonFly OS */
 /* #undef ZMQ_HAVE_FREEBSD */
 
 /* Whether getrandom is supported. */
-/* #undef ZMQ_HAVE_GETRANDOM */
+#define ZMQ_HAVE_GETRANDOM 1
 
 /* Have GNU/Hurd OS */
 /* #undef ZMQ_HAVE_GNU */
@@ -266,7 +266,7 @@
 /* #undef ZMQ_HAVE_LIBBSD */
 
 /* Have Linux OS */
-/* #undef ZMQ_HAVE_LINUX */
+#define ZMQ_HAVE_LINUX 1
 
 /* Have LOCAL_PEERCRED socket option */
 /* #undef ZMQ_HAVE_LOCAL_PEERCRED */
@@ -287,22 +287,22 @@
 /* #undef ZMQ_HAVE_OPENPGM */
 
 /* Have DarwinOSX OS */
-#define ZMQ_HAVE_OSX 1
+/* #undef ZMQ_HAVE_OSX */
 
 /* Whether O_CLOEXEC is defined and functioning. */
 #define ZMQ_HAVE_O_CLOEXEC 1
 
 /* Whether pthread_setname_np() has 1 argument */
-#define ZMQ_HAVE_PTHREAD_SETNAME_1 1
+/* #undef ZMQ_HAVE_PTHREAD_SETNAME_1 */
 
 /* Whether pthread_setname_np() has 2 arguments */
-/* #undef ZMQ_HAVE_PTHREAD_SETNAME_2 */
+#define ZMQ_HAVE_PTHREAD_SETNAME_2 1
 
 /* Whether pthread_setname_np() has 3 arguments */
 /* #undef ZMQ_HAVE_PTHREAD_SETNAME_3 */
 
 /* Whether pthread_setaffinity_np() exists */
-/* #undef ZMQ_HAVE_PTHREAD_SET_AFFINITY */
+#define ZMQ_HAVE_PTHREAD_SET_AFFINITY 1
 
 /* Whether pthread_set_name_np() exists */
 /* #undef ZMQ_HAVE_PTHREAD_SET_NAME */
@@ -311,34 +311,34 @@
 /* #undef ZMQ_HAVE_QNXNTO */
 
 /* Whether SOCK_CLOEXEC is defined and functioning. */
-/* #undef ZMQ_HAVE_SOCK_CLOEXEC */
+#define ZMQ_HAVE_SOCK_CLOEXEC 1
 
 /* Have Solaris OS */
 /* #undef ZMQ_HAVE_SOLARIS */
 
 /* Whether SO_BINDTODEVICE is supported. */
-/* #undef ZMQ_HAVE_SO_BINDTODEVICE */
+#define ZMQ_HAVE_SO_BINDTODEVICE 1
 
 /* Whether SO_KEEPALIVE is supported. */
 #define ZMQ_HAVE_SO_KEEPALIVE 1
 
 /* Have SO_PEERCRED socket option */
-/* #undef ZMQ_HAVE_SO_PEERCRED */
+#define ZMQ_HAVE_SO_PEERCRED 1
 
 /* Whether SO_PRIORITY is supported. */
-/* #undef ZMQ_HAVE_SO_PRIORITY */
+#define ZMQ_HAVE_SO_PRIORITY 1
 
 /* strlcpy is available */
 #define ZMQ_HAVE_STRLCPY 1
 
 /* Whether TCP_KEEPALIVE is supported. */
-#define ZMQ_HAVE_TCP_KEEPALIVE 1
+/* #undef ZMQ_HAVE_TCP_KEEPALIVE */
 
 /* Whether TCP_KEEPCNT is supported. */
 #define ZMQ_HAVE_TCP_KEEPCNT 1
 
 /* Whether TCP_KEEPIDLE is supported. */
-/* #undef ZMQ_HAVE_TCP_KEEPIDLE */
+#define ZMQ_HAVE_TCP_KEEPIDLE 1
 
 /* Whether TCP_KEEPINTVL is supported. */
 #define ZMQ_HAVE_TCP_KEEPINTVL 1
@@ -365,13 +365,13 @@
 /* #undef ZMQ_IOTHREAD_POLLER_USE_DEVPOLL */
 
 /* Use 'epoll' I/O thread polling system */
-/* #undef ZMQ_IOTHREAD_POLLER_USE_EPOLL */
+#define ZMQ_IOTHREAD_POLLER_USE_EPOLL 1
 
 /* Use 'epoll' I/O thread polling system with CLOEXEC */
-/* #undef ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC */
+#define ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC 1
 
 /* Use 'kqueue' I/O thread polling system */
-#define ZMQ_IOTHREAD_POLLER_USE_KQUEUE 1
+/* #undef ZMQ_IOTHREAD_POLLER_USE_KQUEUE */
 
 /* Use 'poll' I/O thread polling system */
 /* #undef ZMQ_IOTHREAD_POLLER_USE_POLL */
