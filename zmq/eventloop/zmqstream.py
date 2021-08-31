@@ -439,9 +439,13 @@ class ZMQStream(object):
         """This method is the actual handler for IOLoop, that gets called whenever
         an event on my socket is posted. It dispatches to _handle_recv, etc."""
         if not self.socket:
-            gen_log.warning("Got events for closed stream %s", fd)
+            gen_log.warning("Got events for closed stream %s", self)
             return
-        zmq_events = self.socket.EVENTS
+        try:
+            zmq_events = self.socket.EVENTS
+        except zmq.ContextTerminated:
+            gen_log.warning("Got events for stream %s after terminating context", self)
+            return
         try:
             # dispatch events:
             if zmq_events & zmq.POLLIN and self.receiving():
