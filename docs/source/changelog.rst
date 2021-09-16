@@ -7,6 +7,23 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+22.3.0
+======
+
+Fixes:
+
+- Fix `strlcpy` compilation issues on alpine, freebsd.
+  Adds new build-time dependency on `packaging`.
+- In event-loop integration: warn instead of raise when triggering callback on a socket whose context has been closed.
+- Bundled libzmq in wheels backport a patch to avoid crashes
+  due to inappropriate closing of libsodium's random generator
+  when using CurveZMQ.
+
+Changes:
+
+- New ResourceWarnings when contexts and sockets are closed by garbage collection,
+  which can be a source of hangs and leaks (matches open files)
+
 22.2.1
 ======
 
