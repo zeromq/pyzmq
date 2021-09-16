@@ -18,6 +18,7 @@
     zmq.asyncio
     zmq.eventloop.zmqstream
     zmq.auth
+    zmq.auth.asyncio
     zmq.auth.thread
     zmq.auth.ioloop
     zmq.log.handlers
