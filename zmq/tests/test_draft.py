@@ -2,19 +2,17 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import os
-import platform
 import time
 
 import pytest
 import zmq
-from zmq.tests import BaseZMQTestCase, skip_pypy
+from zmq.tests import BaseZMQTestCase
 
 
 class TestDraftSockets(BaseZMQTestCase):
     def setUp(self):
         if not zmq.DRAFT_API:
-            raise pytest.skip("draft api unavailable")
+            pytest.skip("draft api unavailable")
         super(TestDraftSockets, self).setUp()
 
     def test_client_server(self):

@@ -6,8 +6,7 @@
 
 from ._cffi import lib as C, ffi
 
-from .constants import EINVAL, IO_THREADS, LINGER
-
+from zmq.constants import EINVAL, IO_THREADS, LINGER
 from zmq.error import ZMQError, InterruptedSystemCall, _check_rc
 
 

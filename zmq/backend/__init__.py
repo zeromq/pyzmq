@@ -6,7 +6,6 @@
 
 import os
 import platform
-import sys
 
 from .select import public_api, select_backend
 

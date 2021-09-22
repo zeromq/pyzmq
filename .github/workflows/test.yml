@@ -150,7 +150,7 @@ jobs:
           sudo ldconfig
           popd
           echo "ZMQ_PREFIX=/usr/local" >> "$GITHUB_ENV"
-          export ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
+          echo ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
 
       - name: build pyzmq
         run: |

@@ -32,24 +32,20 @@ ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 from .message import Frame
-from .constants import RCVMORE
 from .utils import _retry_sys_call
 
 import zmq
+from zmq.constants import RCVMORE, SocketOption, _OptType
 from zmq.error import ZMQError, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
 
 
 def new_pointer_from_opt(option, length=0):
-    from zmq.sugar.constants import (
-        int64_sockopts,
-        bytes_sockopts,
-        fd_sockopts,
-    )
+    opt_type = getattr(option, "_opt_type", _OptType.int)
 
-    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
+    if opt_type == _OptType.int64 or (ZMQ_FD_64BIT and opt_type == _OptType.fd):
         return new_int64_pointer()
-    elif option in bytes_sockopts:
+    elif opt_type == _OptType.bytes:
         return new_binary_data(length)
     else:
         # default
@@ -57,30 +53,28 @@ def new_pointer_from_opt(option, length=0):
 
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
-    from zmq.sugar.constants import (
-        int64_sockopts,
-        bytes_sockopts,
-        fd_sockopts,
-    )
 
-    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
-        return int(opt_pointer[0])
-    elif option in bytes_sockopts:
+    try:
+        option = SocketOption(option)
+    except ValueError:
+        # unrecognized option,
+        # assume from the future,
+        # let EINVAL raise
+        opt_type = _OptType.int
+    else:
+        opt_type = option._opt_type
+
+    if opt_type == _OptType.bytes:
         return ffi.buffer(opt_pointer, length)[:]
     else:
         return int(opt_pointer[0])
 
 
 def initialize_opt_pointer(option, value, length=0):
-    from zmq.sugar.constants import (
-        int64_sockopts,
-        bytes_sockopts,
-        fd_sockopts,
-    )
-
-    if option in int64_sockopts or (ZMQ_FD_64BIT and option in fd_sockopts):
+    opt_type = getattr(option, "_opt_type", _OptType.int)
+    if opt_type == _OptType.int64 or (ZMQ_FD_64BIT and opt_type == _OptType.fd):
         return value_int64_pointer(value)
-    elif option in bytes_sockopts:
+    elif opt_type == _OptType.bytes:
         return value_binary_data(value, length)
     else:
         return value_int_pointer(value)
@@ -199,15 +193,22 @@ class Socket(object):
         if isinstance(value, unicode):
             raise TypeError("unicode not allowed, use bytes")
 
+        try:
+            option = SocketOption(option)
+        except ValueError:
+            # unrecognized option,
+            # assume from the future,
+            # let EINVAL raise
+            opt_type = _OptType.int
+        else:
+            opt_type = option._opt_type
+
         if isinstance(value, bytes):
-            if option not in zmq.constants.bytes_sockopts:
+            if opt_type != _OptType.bytes:
                 raise TypeError("not a bytes sockopt: %s" % option)
             length = len(value)
 
-        c_data = initialize_opt_pointer(option, value, length)
-
-        c_value_pointer = c_data[0]
-        c_sizet = c_data[1]
+        c_value_pointer, c_sizet = initialize_opt_pointer(option, value, length)
 
         _retry_sys_call(
             C.zmq_setsockopt,
@@ -218,10 +219,17 @@ class Socket(object):
         )
 
     def get(self, option):
-        c_data = new_pointer_from_opt(option, length=255)
+        try:
+            option = SocketOption(option)
+        except ValueError:
+            # unrecognized option,
+            # assume from the future,
+            # let EINVAL raise
+            opt_type = _OptType.int
+        else:
+            opt_type = option._opt_type
 
-        c_value_pointer = c_data[0]
-        c_sizet_pointer = c_data[1]
+        c_value_pointer, c_sizet_pointer = new_pointer_from_opt(option, length=255)
 
         _retry_sys_call(
             C.zmq_getsockopt, self._zmq_socket, option, c_value_pointer, c_sizet_pointer
@@ -230,8 +238,8 @@ class Socket(object):
         sz = c_sizet_pointer[0]
         v = value_from_opt_pointer(option, c_value_pointer, sz)
         if (
-            option != zmq.IDENTITY
-            and option in zmq.constants.bytes_sockopts
+            option != zmq.SocketOption.ROUTING_ID
+            and opt_type == _OptType.bytes
             and v.endswith(b'\0')
         ):
             v = v[:-1]

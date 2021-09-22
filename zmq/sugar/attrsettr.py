@@ -5,7 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno
-from . import constants
+from .. import constants
 
 
 class AttributeSetter(object):
@@ -43,7 +43,7 @@ class AttributeSetter(object):
         except AttributeError:
             raise AttributeError(
                 "%s has no such option: %s" % (self.__class__.__name__, upper_key)
-            )
+            ) from None
         else:
             from zmq import ZMQError
 

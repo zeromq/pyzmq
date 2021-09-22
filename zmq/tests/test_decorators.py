@@ -371,8 +371,8 @@ class TestMethodDecorators(BaseZMQTestCase):
         assert pub.context is ctx
         assert sub.context is ctx
 
-        assert pub.type is zmq.PUB
-        assert sub.type is zmq.SUB
+        assert pub.type == zmq.PUB
+        assert sub.type == zmq.SUB
 
     def test_multi_skts_method(self):
         self.multi_skts_method()
@@ -390,7 +390,7 @@ class TestMethodDecorators(BaseZMQTestCase):
             assert pub.context is zmq.Context.instance()
             assert sub.context is zmq.Context.instance()
 
-            assert pub.type is zmq.PUB
-            assert sub.type is zmq.SUB
+            assert pub.type == zmq.PUB
+            assert sub.type == zmq.SUB
 
         f('mock', bar='fake')

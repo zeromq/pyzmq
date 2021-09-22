@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import zmq
 from zmq.backend import zmq_poll
-from .constants import POLLIN, POLLOUT, POLLERR
+from zmq.constants import POLLIN, POLLOUT, POLLERR
 
 # -----------------------------------------------------------------------------
 # Polling related methods

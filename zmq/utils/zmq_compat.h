@@ -18,8 +18,6 @@
 
 
 #include "zmq.h"
-// version compatibility for constants:
-#include "zmq_constants.h"
 
 #define _missing (-1)
 

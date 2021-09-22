@@ -4,23 +4,22 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-from zmq.sugar import constants, context, frame, poll, socket, tracker, version
+from zmq.sugar import context, frame, poll, socket, tracker, version
 from zmq import error
 
-__all__ = ['constants']
-for submod in (constants, context, error, frame, poll, socket, tracker, version):
+__all__ = []
+for submod in (context, error, frame, poll, socket, tracker, version):
     __all__.extend(submod.__all__)
 
-from zmq.error import *
-from zmq.sugar.context import *
-from zmq.sugar.tracker import *
-from zmq.sugar.socket import *
-from zmq.sugar.constants import *
-from zmq.sugar.frame import *
-from zmq.sugar.poll import *
-from zmq.sugar.version import *
+from zmq.error import *  # noqa
+from zmq.sugar.context import *  # noqa
+from zmq.sugar.tracker import *  # noqa
+from zmq.sugar.socket import *  # noqa
+from zmq.sugar.frame import *  # noqa
+from zmq.sugar.poll import *  # noqa
+from zmq.sugar.version import *  # noqa
 
 # deprecated:
-from zmq.sugar.stopwatch import Stopwatch
+from zmq.sugar.stopwatch import Stopwatch  # noqa
 
 __all__.append('Stopwatch')
