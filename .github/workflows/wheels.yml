@@ -205,7 +205,8 @@ jobs:
         # it's not in default packages, but it is in epel-7
         # this will be an older release than than other wheels
         run: |
-          echo 'CIBW_BEFORE_ALL_LINUX=yum -y install epel-release && yum -y install zeromq-devel' >> "$GITHUB_ENV"
+
+          echo 'CIBW_BEFORE_ALL_LINUX=curl -L -o /etc/yum.repos.d/zeromq-obs.repo https://download.opensuse.org/repositories/network:messaging:zeromq:git-stable/CentOS_7/network:messaging:zeromq:git-stable.repo; yum -y install zeromq-devel' >> "$GITHUB_ENV"
 
       - name: customize mac-arm-64
         if: contains(matrix.os, 'macos') && matrix.cibw.arch
