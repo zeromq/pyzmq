@@ -1,4 +1,4 @@
-# PyZMQ: Python bindings for ØMQ
+# PyZMQ: Python bindings for ØMQ TEST
 
 [![Build Status](https://github.com/zeromq/pyzmq/actions/workflows/test.yml/badge.svg)](https://github.com/zeromq/pyzmq/actions/workflows/test.yml)
 
