@@ -29,7 +29,7 @@ class Authenticator(object):
         while True:
             auth.handle_zap_msg(auth.zap_socket.recv_multipart()
 
-    Alternatively, you can register `auth.zap_socket` with a poller. 
+    Alternatively, you can register `auth.zap_socket` with a poller.
 
     Since many users will want to run ZAP in a way that does not block the
     main thread, other authentication classes (such as :mod:`zmq.auth.thread`)
