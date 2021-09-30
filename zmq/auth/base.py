@@ -20,6 +20,21 @@ VERSION = b'1.0'
 class Authenticator(object):
     """Implementation of ZAP authentication for zmq connections.
 
+    This authenticator class does not register with an event loop. As a result,
+    you will need to manually call `handle_zap_message`::
+
+        auth = zmq.Authenticator()
+        auth.allow("127.0.0.1")
+        auth.start()
+        while True:
+            auth.handle_zap_msg(auth.zap_socket.recv_multipart()
+
+    Alternatively, you can register `auth.zap_socket` with a poller. 
+
+    Since many users will want to run ZAP in a way that does not block the
+    main thread, other authentication classes (such as :mod:`zmq.auth.thread`)
+    are provided.
+
     Note:
 
     - libzmq provides four levels of security: default NULL (which the Authenticator does
