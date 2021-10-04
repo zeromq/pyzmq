@@ -67,7 +67,7 @@ def get_output_error(cmd, **kwargs):
     return result.returncode, so, se
 
 
-def locate_vcredist_dir():
+def locate_vcredist_dir(plat):
     """Locate vcredist directory and add it to $PATH
 
     Adding it to $PATH is required to run
@@ -75,16 +75,11 @@ def locate_vcredist_dir():
     """
     from setuptools import msvc
 
-    try:
-        from setuptools._distutils.util import get_platform
-    except ImportError:
-        from distutils.util import get_platform
-
-    vcvars = msvc.msvc14_get_vc_env(get_platform())
+    vcvars = msvc.msvc14_get_vc_env(plat)
     try:
         vcruntime = vcvars["py_vcruntime_redist"]
     except KeyError:
-        warn(f"platform={get_platform()}, vcvars=")
+        warn(f"platform={plat}, vcvars=")
         pprint(vcvars, stream=sys.stderr)
 
         warn(
