@@ -12,7 +12,7 @@ on:
 
 env:
   cython: "0.29.24"
-  cibuildwheel: "2.1.2"
+  cibuildwheel: "2.2.2"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -91,6 +91,7 @@ jobs:
       CIBW_TEST_REQUIRES: "pytest"
       CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
+      CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_AARCH64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
@@ -114,18 +115,26 @@ jobs:
             name: manylinux1
             cibw:
               build: "cp36* cp37*"
+              skip: "*musllinux*"
               manylinux_image: manylinux1
 
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
               build: "cp38* cp39* cp310* pp3*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2010
+
+          - os: ubuntu-20.04
+            name: musslinux
+            cibw:
+              skip: "*manylinux*"
 
           - os: ubuntu-20.04
             name: cp36-manylinux_aarch64
             cibw:
               build: "cp36*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2014
               arch: aarch64
 
@@ -133,6 +142,7 @@ jobs:
             name: cp37-manylinux_aarch64
             cibw:
               build: "cp37*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2014
               arch: aarch64
 
@@ -140,6 +150,7 @@ jobs:
             name: cp38-manylinux_aarch64
             cibw:
               build: "cp38*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2014
               arch: aarch64
 
@@ -147,6 +158,7 @@ jobs:
             name: cp39-manylinux_aarch64
             cibw:
               build: "cp39*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2014
               arch: aarch64
 
@@ -154,6 +166,7 @@ jobs:
             name: cp310-manylinux_aarch64
             cibw:
               build: "cp310*"
+              skip: "*musllinux*"
               manylinux_image: manylinux2014
               arch: aarch64
 
