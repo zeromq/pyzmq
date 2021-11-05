@@ -16,66 +16,58 @@
 #  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 # -----------------------------------------------------------------------------
 
-from __future__ import with_statement, print_function
-
-from contextlib import contextmanager
 import copy
+import errno
 import io
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import time
-import errno
-import platform
+from contextlib import contextmanager
+from distutils.ccompiler import get_default_compiler, new_compiler
+from distutils.sysconfig import customize_compiler
+from glob import glob
+from os.path import basename
+from os.path import join as pjoin
+from os.path import splitext
+from subprocess import PIPE, CalledProcessError, Popen, check_call
+from sysconfig import get_config_var
 from traceback import print_exc
 
-try:
-    import cffi
-except ImportError:
-    cffi = None
-
 from packaging.version import Version as V
-from setuptools import setup, Command
+from setuptools import Command, setup
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
 from setuptools.extension import Extension
 
-from distutils.ccompiler import get_default_compiler
-from distutils.ccompiler import new_compiler
-from distutils.sysconfig import customize_compiler
-from sysconfig import get_config_var
-
-from glob import glob
-from os.path import splitext, basename, join as pjoin
-
-from subprocess import Popen, PIPE, check_call, CalledProcessError
 
 # local script imports:
 sys.path.insert(0, os.path.dirname(__file__))
 
 from buildutils import (
-    discover_settings,
-    v_str,
-    save_config,
-    detect_zmq,
-    merge,
+    bundled_version,
+    compile_and_forget,
     config_from_prefix,
-    info,
-    warn,
-    fatal,
+    customize_mingw,
     debug,
+    detect_zmq,
+    discover_settings,
+    fatal,
+    fetch_libzmq,
+    fetch_libzmq_dll,
+    info,
     line,
     localpath,
     locate_vcredist_dir,
-    fetch_libzmq,
-    fetch_libzmq_dll,
-    stage_platform_hpp,
-    bundled_version,
-    customize_mingw,
-    compile_and_forget,
+    merge,
     patch_lib_paths,
+    save_config,
+    stage_platform_hpp,
+    v_str,
+    warn,
 )
 
 # -----------------------------------------------------------------------------
