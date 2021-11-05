@@ -137,6 +137,11 @@ jobs:
           sudo apt-get -y remove libzmq5 || true # workaround https://github.com/actions/virtual-environments/issues/3317
           sudo apt-get -y install libzmq3-dev libsodium-dev
 
+      - name: set $ZMQ_PREFIX
+        if: matrix.zmq
+        run: |
+          echo "ZMQ_PREFIX=${{ matrix.zmq }}" >> "$GITHUB_ENV"
+
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
         run: |
@@ -154,7 +159,7 @@ jobs:
 
       - name: build pyzmq
         run: |
-          pip install -v -e . --global-option=--zmq=${{ matrix.zmq }}
+          pip install -v -e .
 
       - name: import zmq
         run: |

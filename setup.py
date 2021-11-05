@@ -16,66 +16,56 @@
 #  pyzmq-static: <https://github.com/brandon-rhodes/pyzmq-static>
 # -----------------------------------------------------------------------------
 
-from __future__ import with_statement, print_function
-
-from contextlib import contextmanager
 import copy
+import errno
 import io
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import time
-import errno
-import platform
+from contextlib import contextmanager
+from glob import glob
+from os.path import basename
+from os.path import join as pjoin
+from os.path import splitext
+from subprocess import PIPE, CalledProcessError, Popen, check_call
+from sysconfig import get_config_var
 from traceback import print_exc
 
-try:
-    import cffi
-except ImportError:
-    cffi = None
-
-from setuptools import setup, Command
+from packaging.version import Version as V
+from setuptools import Command, setup
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
 from setuptools.extension import Extension
 
-import distutils.util
-from distutils.ccompiler import get_default_compiler
-from distutils.ccompiler import new_compiler
-from distutils.sysconfig import customize_compiler, get_config_var
-from distutils.version import LooseVersion as V
-
-from glob import glob
-from os.path import splitext, basename, join as pjoin
-
-from subprocess import Popen, PIPE, check_call, CalledProcessError
 
 # local script imports:
 sys.path.insert(0, os.path.dirname(__file__))
 
 from buildutils import (
-    discover_settings,
-    v_str,
-    save_config,
-    detect_zmq,
-    merge,
+    bundled_version,
+    compile_and_forget,
     config_from_prefix,
-    info,
-    warn,
-    fatal,
+    customize_mingw,
     debug,
+    detect_zmq,
+    discover_settings,
+    fatal,
+    fetch_libzmq,
+    fetch_libzmq_dll,
+    info,
     line,
     localpath,
     locate_vcredist_dir,
-    fetch_libzmq,
-    fetch_libzmq_dll,
-    stage_platform_hpp,
-    bundled_version,
-    customize_mingw,
-    compile_and_forget,
+    merge,
     patch_lib_paths,
+    save_config,
+    stage_platform_hpp,
+    v_str,
+    warn,
 )
 
 # -----------------------------------------------------------------------------
@@ -136,10 +126,7 @@ for idx, arg in enumerate(list(sys.argv)):
         os.environ['ZMQ_DRAFT_API'] = '1'
 
 
-if sys.platform.startswith('win'):
-    # ensure vcredist is on PATH
-    locate_vcredist_dir()
-else:
+if not sys.platform.startswith('win'):
     cxx_flags = os.getenv("CXXFLAGS", "")
     if "-std" not in cxx_flags:
         cxx_flags = "-std=c++11 " + cxx_flags
@@ -159,7 +146,7 @@ else:
 # --- compiler settings -------------------------------------------------
 
 
-def bundled_settings(debug):
+def bundled_settings(cmd):
     """settings for linking extensions against bundled libzmq"""
     settings = {}
     settings['libraries'] = []
@@ -172,22 +159,18 @@ def bundled_settings(debug):
         settings['libraries'].append('pthread')
     elif sys.platform.startswith('win'):
         # link against libzmq in build dir:
-        plat = distutils.util.get_platform()
-        temp = 'temp.%s-%i.%i' % (plat, sys.version_info[0], sys.version_info[1])
-        if hasattr(sys, 'gettotalrefcount'):
-            temp += '-pydebug'
+        if sys.version_info < (3, 9, 2):
+            # bpo-39825: EXT_SUFFIX is wrong from sysconfig prior to 3.9.2 / 3.8.7
+            import distutils.sysconfig
 
-        # Python 3.5 adds EXT_SUFFIX to libs
-        ext_suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
-        suffix = os.path.splitext(ext_suffix)[0]
-
-        if debug:
-            release = 'Debug'
+            ext_suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
         else:
-            release = 'Release'
+            ext_suffix = get_config_var("EXT_SUFFIX")
+        suffix = os.path.splitext(ext_suffix)[0]
+        print(f"DEBUG EXT_SUFFIX {suffix!r} {ext_suffix!r}")
 
         settings['libraries'].append(libzmq_name + suffix)
-        settings['library_dirs'].append(pjoin('build', temp, release, 'buildutils'))
+        settings['library_dirs'].append(pjoin(cmd.build_temp, 'buildutils'))
 
     return settings
 
@@ -232,7 +215,7 @@ def check_pkgconfig():
 def _add_rpath(settings, path):
     """Add rpath to settings
 
-    Implemented here because distutils runtime_library_dirs doesn't do anything on darwin
+    Implemented here because setuptools runtime_library_dirs doesn't do anything on darwin
     """
     if sys.platform == 'darwin':
         settings['extra_link_args'].extend(['-Wl,-rpath', '-Wl,%s' % path])
@@ -375,7 +358,12 @@ class Configure(build_ext):
         self.config = discover_settings(self.build_base)
         if self.zmq is not None:
             merge(self.config, config_from_prefix(self.zmq))
-        self.init_settings_from_config()
+
+        # ensure vcredist is on PATH
+        if sys.platform.startswith("win"):
+            locate_vcredist_dir(self.plat_name)
+        # need a dummy extension for run to set up a compiler
+        self.extensions = [Extension("fake", ["unused.c"])]
 
     def save_config(self, name, cfg):
         """write config to JSON"""
@@ -393,7 +381,7 @@ class Configure(build_ext):
         cfg = self.config
 
         if cfg['libzmq_extension']:
-            settings = bundled_settings(self.debug)
+            settings = bundled_settings(self)
         else:
             settings = settings_from_prefix(cfg['zmq_prefix'])
 
@@ -406,7 +394,10 @@ class Configure(build_ext):
                 pass
             try:
                 compile_and_forget(
-                    self.tempdir, pjoin('buildutils', 'check_sys_un.c'), **minus_zmq
+                    self.tempdir,
+                    pjoin('buildutils', 'check_sys_un.c'),
+                    compiler=self.compiler,
+                    **minus_zmq,
                 )
             except Exception as e:
                 warn("No sys/un.h, IPC_PATH_MAX_LEN will be undefined: %s" % e)
@@ -469,13 +460,7 @@ class Configure(build_ext):
 
     @property
     def compiler_type(self):
-        compiler = self.compiler
-        if compiler is None:
-            return get_default_compiler()
-        elif isinstance(compiler, str):
-            return compiler
-        else:
-            return compiler.compiler_type
+        return self.compiler.compiler_type
 
     @property
     def cross_compiling(self):
@@ -635,9 +620,9 @@ class Configure(build_ext):
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
-            if self.compiler_type == 'msvc':
+            if self.compiler.compiler_type == 'msvc':
                 libzmq.extra_compile_args.append('/EHsc')
-            elif self.compiler_type == 'mingw32':
+            elif self.compiler.compiler_type == 'mingw32':
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
@@ -647,13 +632,10 @@ class Configure(build_ext):
             libzmq.include_dirs.append(bundledir)
 
             # check if we need to link against Realtime Extensions library
-            cc = new_compiler(compiler=self.compiler_type)
-            customize_compiler(cc)
-            cc.output_dir = self.build_temp
             if not sys.platform.startswith(('darwin', 'freebsd')):
                 line()
                 info("checking for timer_create")
-                if not cc.has_function('timer_create'):
+                if not self.compiler.has_function('timer_create'):
                     info("no timer_create, linking librt")
                     libzmq.libraries.append('rt')
                 else:
@@ -734,7 +716,7 @@ class Configure(build_ext):
         info("Configure: Autodetecting ZMQ settings...")
         info("    Custom ZMQ dir:       %s" % prefix)
         try:
-            detected = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
+            detected = detect_zmq(self.tempdir, compiler=self.compiler, **settings)
         finally:
             self.erase_tempdir()
 
@@ -746,7 +728,14 @@ class Configure(build_ext):
         self.save_config('config', self.config)
         line()
 
+    def build_extensions(self):
+        """Need an empty build_extensions so that .run() gives us a configured compiler"""
+
     def run(self):
+        # super().run() is what sets up self.compiler
+        super().run()
+        self.init_settings_from_config()
+
         cfg = self.config
 
         if cfg['libzmq_extension']:
@@ -779,7 +768,7 @@ class Configure(build_ext):
         except LibZMQVersionError as e:
             info("\nBad libzmq version: %s\n" % e)
         except Exception as e:
-            # print the error as distutils would if we let it raise:
+            # print the error as setuptools would if we let it raise:
             info("\nerror: %s\n" % e)
         else:
             self.finish_run()
@@ -796,7 +785,7 @@ class Configure(build_ext):
             except LibZMQVersionError as e:
                 info("\nBad libzmq version: %s\n" % e)
             except Exception as e:
-                # print the error as distutils would if we let it raise:
+                # print the error as setuptools would if we let it raise:
                 info("\nerror: %s\n" % e)
             else:
                 # if we get here the second run succeeded, so we need to update compiler
@@ -861,7 +850,7 @@ class FetchCommand(Command):
 
 
 class TestCommand(Command):
-    """Custom distutils command to run the test suite."""
+    """Custom setuptools command to run the test suite."""
 
     description = (
         "Test PyZMQ (must have been built inplace: `setup.py build_ext --inplace`)"
@@ -946,7 +935,7 @@ class GitRevisionCommand(Command):
 
 
 class CleanCommand(Command):
-    """Custom distutils command to clean the .so and .pyc files."""
+    """Custom setuptools command to clean the .so and .pyc files."""
 
     user_options = [
         ('all', 'a', "remove all build output, not just temporary by-products")
@@ -1251,7 +1240,7 @@ else:
     suffix = '.pyx'
 
     class CythonCommand(build_ext_cython):
-        """Custom distutils command subclassed from Cython.Distutils.build_ext
+        """Custom setuptools command subclassed from Cython.Distutils.build_ext
         to compile pyx->c, and stop there. All this does is override the
         C-compile method build_extension() with a no-op."""
 

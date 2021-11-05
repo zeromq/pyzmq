@@ -11,13 +11,12 @@
 #  the file COPYING.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
+import copy
 import shutil
 import sys
 import os
 import logging
 import platform
-from distutils import ccompiler
-from distutils.sysconfig import customize_compiler
 
 from .misc import get_compiler, get_output_error
 from .msg import info
@@ -30,9 +29,8 @@ pjoin = os.path.join
 # -----------------------------------------------------------------------------
 
 
-def test_compilation(cfile, compiler=None, **compiler_attrs):
+def test_compilation(cfile, compiler, **compiler_attrs):
     """Test simple compilation with given settings"""
-    cc = get_compiler(compiler, **compiler_attrs)
 
     efile, ext = os.path.splitext(cfile)
 
@@ -58,12 +56,12 @@ def test_compilation(cfile, compiler=None, **compiler_attrs):
     extra_link = compiler_attrs.get('extra_link_args', [])
     lpreargs.extend(extra_link)
 
-    objs = cc.compile([cfile], extra_preargs=cpreargs, extra_postargs=extra)
-    cc.link_executable(objs, efile, extra_preargs=lpreargs)
+    objs = compiler.compile([cfile], extra_preargs=cpreargs, extra_postargs=extra)
+    compiler.link_executable(objs, efile, extra_preargs=lpreargs)
     return efile
 
 
-def compile_and_forget(basedir, src, compiler=None, **compiler_attrs):
+def compile_and_forget(basedir, src, compiler, **compiler_attrs):
     """Make sure src compiles and links successfully.
 
     The resulting binary is deleted without being run.
@@ -73,13 +71,12 @@ def compile_and_forget(basedir, src, compiler=None, **compiler_attrs):
     cfile = pjoin(basedir, os.path.basename(src))
     shutil.copy(src, cfile)
     try:
-        cc = get_compiler(compiler, **compiler_attrs)
-        efile = test_compilation(cfile, compiler=cc, **compiler_attrs)
+        efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
     finally:
         shutil.rmtree(basedir)
 
 
-def detect_zmq(basedir, compiler=None, **compiler_attrs):
+def detect_zmq(basedir, compiler, **compiler_attrs):
     """Compile, link & execute a test program, in empty directory `basedir`.
 
     The C compiler will be updated with any keywords given via setattr.
@@ -111,14 +108,11 @@ def detect_zmq(basedir, compiler=None, **compiler_attrs):
 
     # check if we need to link against Realtime Extensions library
     if sys.platform.startswith('linux'):
-        cc = ccompiler.new_compiler(compiler=compiler)
-        customize_compiler(cc)
-        cc.output_dir = basedir
         info("Checking for timer_create")
         info(
             "** Errors about missing timer_create are a normal part of this process **"
         )
-        if not cc.has_function('timer_create'):
+        if not compiler.has_function('timer_create'):
             compiler_attrs['libraries'].append('rt')
             info(
                 "** The above error about timer_create is normal and not a problem! **"
