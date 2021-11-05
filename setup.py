@@ -159,22 +159,12 @@ def bundled_settings(cmd):
         settings['libraries'].append('pthread')
     elif sys.platform.startswith('win'):
         # link against libzmq in build dir:
-        plat = cmd.plat_name
-        temp = 'temp.%s-%i.%i' % (plat, sys.version_info[0], sys.version_info[1])
-        if hasattr(sys, 'gettotalrefcount'):
-            temp += '-pydebug'
-
         # Python 3.5 adds EXT_SUFFIX to libs
         ext_suffix = get_config_var("EXT_SUFFIX")
         suffix = os.path.splitext(ext_suffix)[0]
 
-        if cmd.debug:
-            release = 'Debug'
-        else:
-            release = 'Release'
-
         settings['libraries'].append(libzmq_name + suffix)
-        settings['library_dirs'].append(pjoin('build', temp, release, 'buildutils'))
+        settings['library_dirs'].append(pjoin(cmd.build_temp, 'buildutils'))
 
     return settings
 
