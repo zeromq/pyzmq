@@ -26,8 +26,6 @@ import subprocess
 import sys
 import time
 from contextlib import contextmanager
-from distutils.ccompiler import get_default_compiler, new_compiler
-from distutils.sysconfig import customize_compiler
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
@@ -170,7 +168,7 @@ def bundled_settings(cmd):
         ext_suffix = get_config_var("EXT_SUFFIX")
         suffix = os.path.splitext(ext_suffix)[0]
 
-        if debug:
+        if cmd.debug:
             release = 'Debug'
         else:
             release = 'Release'
@@ -368,7 +366,8 @@ class Configure(build_ext):
         # ensure vcredist is on PATH
         if sys.platform.startswith("win"):
             locate_vcredist_dir(self.plat_name)
-        self.init_settings_from_config()
+        # need a dummy extension for run to set up a compiler
+        self.extensions = [Extension("fake", ["unused.c"])]
 
     def save_config(self, name, cfg):
         """write config to JSON"""
@@ -399,7 +398,10 @@ class Configure(build_ext):
                 pass
             try:
                 compile_and_forget(
-                    self.tempdir, pjoin('buildutils', 'check_sys_un.c'), **minus_zmq
+                    self.tempdir,
+                    pjoin('buildutils', 'check_sys_un.c'),
+                    compiler=self.compiler,
+                    **minus_zmq,
                 )
             except Exception as e:
                 warn("No sys/un.h, IPC_PATH_MAX_LEN will be undefined: %s" % e)
@@ -462,13 +464,7 @@ class Configure(build_ext):
 
     @property
     def compiler_type(self):
-        compiler = self.compiler
-        if compiler is None:
-            return get_default_compiler()
-        elif isinstance(compiler, str):
-            return compiler
-        else:
-            return compiler.compiler_type
+        return self.compiler.compiler_type
 
     @property
     def cross_compiling(self):
@@ -628,9 +624,9 @@ class Configure(build_ext):
             # When compiling the C++ code inside of libzmq itself, we want to
             # avoid "warning C4530: C++ exception handler used, but unwind
             # semantics are not enabled. Specify /EHsc".
-            if self.compiler_type == 'msvc':
+            if self.compiler.compiler_type == 'msvc':
                 libzmq.extra_compile_args.append('/EHsc')
-            elif self.compiler_type == 'mingw32':
+            elif self.compiler.compiler_type == 'mingw32':
                 libzmq.define_macros.append(('ZMQ_HAVE_MINGW32', 1))
 
             # And things like sockets come from libraries that must be named.
@@ -640,13 +636,10 @@ class Configure(build_ext):
             libzmq.include_dirs.append(bundledir)
 
             # check if we need to link against Realtime Extensions library
-            cc = new_compiler(compiler=self.compiler_type)
-            customize_compiler(cc)
-            cc.output_dir = self.build_temp
             if not sys.platform.startswith(('darwin', 'freebsd')):
                 line()
                 info("checking for timer_create")
-                if not cc.has_function('timer_create'):
+                if not self.compiler.has_function('timer_create'):
                     info("no timer_create, linking librt")
                     libzmq.libraries.append('rt')
                 else:
@@ -727,7 +720,7 @@ class Configure(build_ext):
         info("Configure: Autodetecting ZMQ settings...")
         info("    Custom ZMQ dir:       %s" % prefix)
         try:
-            detected = detect_zmq(self.tempdir, compiler=self.compiler_type, **settings)
+            detected = detect_zmq(self.tempdir, compiler=self.compiler, **settings)
         finally:
             self.erase_tempdir()
 
@@ -739,7 +732,14 @@ class Configure(build_ext):
         self.save_config('config', self.config)
         line()
 
+    def build_extensions(self):
+        """Need an empty build_extensions so that .run() gives us a configured compiler"""
+
     def run(self):
+        # super().run() is what sets up self.compiler
+        super().run()
+        self.init_settings_from_config()
+
         cfg = self.config
 
         if cfg['libzmq_extension']:

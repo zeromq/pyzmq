@@ -3,11 +3,10 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import copy
 import os
 import sys
 import logging
-from distutils import ccompiler
-from distutils.sysconfig import customize_compiler
 from pipes import quote
 from pprint import pprint
 from subprocess import Popen, PIPE
@@ -36,13 +35,7 @@ def customize_mingw(cc):
 
 def get_compiler(compiler, **compiler_attrs):
     """get and customize a compiler"""
-    if compiler is None or isinstance(compiler, str):
-        cc = ccompiler.new_compiler(compiler=compiler)
-        customize_compiler(cc)
-        if cc.compiler_type == 'mingw32':
-            customize_mingw(cc)
-    else:
-        cc = compiler
+    cc = copy.deepcopy(compiler)
 
     for name, val in compiler_attrs.items():
         setattr(cc, name, val)
