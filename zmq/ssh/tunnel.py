@@ -8,8 +8,6 @@ zeromq connections.
 # Redistributed from IPython under the terms of the BSD License.
 
 
-from __future__ import print_function
-
 import atexit
 import os
 import re
@@ -18,8 +16,8 @@ import socket
 import sys
 import warnings
 from getpass import getpass, getuser
-from typing import Type
 from multiprocessing import Process
+from typing import Type
 
 try:
     with warnings.catch_warnings():
@@ -248,7 +246,7 @@ def openssh_tunnel(
         server, port = server.split(':')
         ssh += " -p %s" % port
 
-    cmd = "%s -O check %s" % (ssh, server)
+    cmd = f"{ssh} -O check {server}"
     (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
     if not exitstatus:
         pid = int(output[output.find(b"(pid=") + 5 : output.find(b")")])

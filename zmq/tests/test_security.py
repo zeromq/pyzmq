@@ -1,18 +1,16 @@
 """Test libzmq security (libzmq >= 3.3.0)"""
-# -*- coding: utf8 -*-
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import os
 import contextlib
+import os
 import time
 from threading import Thread
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest, PYPY
+from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
 from zmq.utils import z85
-
 
 USER = b"admin"
 PASS = b"password"
@@ -26,7 +24,7 @@ class TestSecurity(BaseZMQTestCase):
             zmq.curve_keypair()
         except zmq.ZMQError:
             raise SkipTest("security requires libzmq to be built with CURVE support")
-        super(TestSecurity, self).setUp()
+        super().setUp()
 
     def zap_handler(self):
         socket = self.context.socket(zmq.REP)
@@ -177,7 +175,7 @@ class TestSecurity(BaseZMQTestCase):
         self.assertEqual(len(public), 40)
 
         # verify that it is indeed Z85
-        bsecret, bpublic = [z85.decode(key) for key in (public, secret)]
+        bsecret, bpublic = (z85.decode(key) for key in (public, secret))
         self.assertEqual(type(bsecret), bytes)
         self.assertEqual(type(bpublic), bytes)
         self.assertEqual(len(bsecret), 32)

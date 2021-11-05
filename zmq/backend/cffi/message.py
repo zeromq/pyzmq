@@ -4,15 +4,15 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno
-
 from threading import Event
 
-from ._cffi import ffi, lib as C
-
 import zmq
+import zmq.error
 from zmq.constants import ETERM
 from zmq.utils.strtypes import unicode
-import zmq.error
+
+from ._cffi import ffi
+from ._cffi import lib as C
 
 zmq_gc = None
 

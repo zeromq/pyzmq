@@ -12,15 +12,15 @@ Author: Steven Armstrong
 Based on ./ironhouse.py by Chris Laws
 '''
 
-import logging
-from pathlib import Path
-import sys
 import asyncio
+import logging
+import sys
+from pathlib import Path
 
 import zmq
 import zmq.auth
-from zmq.auth.asyncio import AsyncioAuthenticator
 from zmq.asyncio import Context, Poller
+from zmq.auth.asyncio import AsyncioAuthenticator
 
 
 async def run():
@@ -98,7 +98,7 @@ async def run():
 if __name__ == '__main__':
     if zmq.zmq_version_info() < (4, 0):
         raise RuntimeError(
-            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+            "Security is not supported in libzmq version < 4.0. libzmq version {}".format(
                 zmq.zmq_version()
             )
         )

@@ -12,6 +12,7 @@ Author: Chris Laws
 
 import os
 import shutil
+
 import zmq.auth
 
 
@@ -53,7 +54,7 @@ def generate_certificates(base_dir):
 if __name__ == '__main__':
     if zmq.zmq_version_info() < (4, 0):
         raise RuntimeError(
-            "Security is not supported in libzmq version < 4.0. libzmq version {0}".format(
+            "Security is not supported in libzmq version < 4.0. libzmq version {}".format(
                 zmq.zmq_version()
             )
         )

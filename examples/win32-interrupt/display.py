@@ -2,7 +2,6 @@
 
 # This file has been placed in the public domain.
 
-from __future__ import print_function
 import zmq
 from zmq.utils.win32 import allow_interrupt
 
@@ -34,7 +33,7 @@ def main(addrs):
             if message == 'quit':
                 print('Killed by "%s".' % account)
                 break
-            print('%s: %s' % (account, message))
+            print(f'{account}: {message}')
 
 
 if __name__ == '__main__':

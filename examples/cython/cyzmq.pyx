@@ -3,10 +3,11 @@
 """Using pyzmq from Cython"""
 
 
-from libc.string cimport memcpy
-from cpython cimport array
 cimport numpy as np
-from zmq cimport libzmq, Socket
+from cpython cimport array
+from libc.string cimport memcpy
+
+from zmq cimport Socket, libzmq
 
 import array
 import sys
@@ -14,6 +15,7 @@ import time
 from threading import Thread
 
 import zmq
+
 
 cpdef cython_sender(str url, int n):
     """Use entirely low-level libzmq APIs to send messages"""

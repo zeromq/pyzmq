@@ -3,7 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from ._cffi import lib as C, ffi
+from ._cffi import ffi
+from ._cffi import lib as C
 
 
 def strerror(errno):

@@ -1,12 +1,11 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import
 
 import asyncio
-import time
 import os
 import threading
+import time
 
 import pytest
 
@@ -15,6 +14,7 @@ from zmq.tests import BaseZMQTestCase, have_gevent
 
 try:
     from tornado.ioloop import IOLoop as BaseIOLoop
+
     from zmq.eventloop import ioloop
 except ImportError:
     _tornado = False
@@ -42,7 +42,7 @@ class Delay(threading.Thread):
         self.delay = delay
         self.aborted = False
         self.cond = threading.Condition()
-        super(Delay, self).__init__()
+        super().__init__()
 
     def run(self):
         self.cond.acquire()
@@ -65,12 +65,12 @@ class TestIOLoop(BaseZMQTestCase):
     def setUp(self):
         if not _tornado:
             pytest.skip("tornado required")
-        super(TestIOLoop, self).setUp()
+        super().setUp()
         if asyncio:
             asyncio.set_event_loop(asyncio.new_event_loop())
 
     def tearDown(self):
-        super(TestIOLoop, self).tearDown()
+        super().tearDown()
         BaseIOLoop.clear_current()
         BaseIOLoop.clear_instance()
 

@@ -1,4 +1,4 @@
-from zmq cimport Context, Socket, Frame, libzmq
+from zmq cimport Context, Frame, Socket, libzmq
 
 
 cdef inline Frame c_send_recv(Socket a, Socket b, bytes to_send):

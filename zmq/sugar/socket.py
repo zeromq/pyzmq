@@ -1,4 +1,3 @@
-# coding: utf-8
 """0MQ Socket pure Python methods."""
 
 # Copyright (C) PyZMQ Developers
@@ -6,22 +5,20 @@
 
 
 import errno
+import pickle
 import random
 import sys
 import warnings
 
 import zmq
 from zmq.backend import Socket as SocketBase
-from .poll import Poller
-
-from .attrsettr import AttributeSetter
-from zmq.error import ZMQError, ZMQBindError
+from zmq.error import ZMQBindError, ZMQError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes, unicode
 
-
 from ..constants import SocketOption, SocketType, _OptType
-import pickle
+from .attrsettr import AttributeSetter
+from .poll import Poller
 
 try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
@@ -164,7 +161,7 @@ class Socket(SocketBase, AttributeSetter):
         """
         if self.context:
             self.context._rm_socket(self)
-        super(Socket, self).close(linger=linger)
+        super().close(linger=linger)
 
     # -------------------------------------------------------------------------
     # Connect/Bind context managers
@@ -273,7 +270,7 @@ class Socket(SocketBase, AttributeSetter):
             else:
                 self.set(zmq.UNSUBSCRIBE, value)
             return
-        super(Socket, self).__setattr__(key, value)
+        super().__setattr__(key, value)
 
     def fileno(self):
         """Return edge-triggered file descriptor for this socket.
@@ -394,7 +391,7 @@ class Socket(SocketBase, AttributeSetter):
         for i in range(max_tries):
             try:
                 port = random.randrange(min_port, max_port)
-                self.bind('%s:%s' % (addr, port))
+                self.bind(f'{addr}:{port}')
             except ZMQError as exception:
                 en = exception.errno
                 if en == zmq.EADDRINUSE:
@@ -534,7 +531,7 @@ class Socket(SocketBase, AttributeSetter):
                     copy_threshold=self.copy_threshold,
                 )
             data.group = group
-        return super(Socket, self).send(data, flags=flags, copy=copy, track=track)
+        return super().send(data, flags=flags, copy=copy, track=track)
 
     def send_multipart(self, msg_parts, flags=0, copy=True, track=False, **kwargs):
         """Send a sequence of buffers as a multipart message.

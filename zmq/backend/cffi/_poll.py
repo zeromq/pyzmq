@@ -1,4 +1,3 @@
-# coding: utf-8
 """zmq poll function"""
 
 # Copyright (C) PyZMQ Developers
@@ -8,10 +7,13 @@ try:
     from time import monotonic
 except ImportError:
     from time import clock as monotonic
+
 import warnings
 
-from ._cffi import lib as C, ffi
 from zmq.error import InterruptedSystemCall, _check_rc
+
+from ._cffi import ffi
+from ._cffi import lib as C
 
 
 def _make_zmq_pollitem(socket, flags):

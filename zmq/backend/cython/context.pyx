@@ -8,12 +8,13 @@ from libc.stdlib cimport free, malloc, realloc
 
 from .libzmq cimport *
 
+
 cdef extern from "getpid_compat.h":
     int getpid()
 
-from zmq.error import ZMQError, InterruptedSystemCall
-from .checkrc cimport _check_rc
+from zmq.error import InterruptedSystemCall, ZMQError
 
+from .checkrc cimport _check_rc
 
 _instance = None
 

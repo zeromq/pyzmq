@@ -3,9 +3,7 @@
 
 
 import zmq
-
-
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest
+from zmq.tests import BaseZMQTestCase, GreenTest, SkipTest, have_gevent
 
 
 class TestMultipart(BaseZMQTestCase):

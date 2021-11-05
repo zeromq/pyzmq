@@ -28,7 +28,7 @@ from functools import wraps
 import zmq
 
 
-class _Decorator(object):
+class _Decorator:
     '''The mini decorator factory'''
 
     def __init__(self, target=None):
@@ -67,8 +67,8 @@ class _Decorator(object):
                         kwargs[kw_name] = obj
                     elif kw_name and kw_name in kwargs:
                         raise TypeError(
-                            "{0}() got multiple values for"
-                            " argument '{1}'".format(func.__name__, kw_name)
+                            "{}() got multiple values for"
+                            " argument '{}'".format(func.__name__, kw_name)
                         )
                     else:
                         args = args + (obj,)
@@ -107,7 +107,7 @@ class _ContextDecorator(_Decorator):
     """Decorator subclass for Contexts"""
 
     def __init__(self):
-        super(_ContextDecorator, self).__init__(zmq.Context)
+        super().__init__(zmq.Context)
 
 
 class _SocketDecorator(_Decorator):
@@ -118,9 +118,7 @@ class _SocketDecorator(_Decorator):
 
     def process_decorator_args(self, *args, **kwargs):
         """Also grab context_name out of kwargs"""
-        kw_name, args, kwargs = super(_SocketDecorator, self).process_decorator_args(
-            *args, **kwargs
-        )
+        kw_name, args, kwargs = super().process_decorator_args(*args, **kwargs)
         self.context_name = kwargs.pop('context_name', 'context')
         return kw_name, args, kwargs
 

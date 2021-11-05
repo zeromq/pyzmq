@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """A basic ZMQ echo server with zmq.eventloop.future"""
 
-import zmq
 from tornado import ioloop
+
+import zmq
 from zmq.eventloop.future import Context
 
 

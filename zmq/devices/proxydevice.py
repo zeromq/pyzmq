@@ -4,10 +4,10 @@
 # Distributed under the terms of the Modified BSD License.
 
 import zmq
-from zmq.devices.basedevice import Device, ThreadDevice, ProcessDevice
+from zmq.devices.basedevice import Device, ProcessDevice, ThreadDevice
 
 
-class ProxyBase(object):
+class ProxyBase:
     """Base class for overriding methods."""
 
     def __init__(self, in_type, out_type, mon_type=zmq.PUB):

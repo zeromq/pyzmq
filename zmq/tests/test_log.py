@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -10,8 +8,8 @@ from unittest import TestCase
 
 import zmq
 from zmq.log import handlers
-from zmq.utils.strtypes import b, u
 from zmq.tests import BaseZMQTestCase
+from zmq.utils.strtypes import b, u
 
 
 class TestPubLog(BaseZMQTestCase):

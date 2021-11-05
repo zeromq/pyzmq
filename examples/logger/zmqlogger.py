@@ -7,11 +7,11 @@ which aggregates and logs all of the messages to the root logger.
 """
 
 import logging
-from multiprocessing import Process
 import os
 import random
 import sys
 import time
+from multiprocessing import Process
 
 import zmq
 from zmq.log.handlers import PUBHandler

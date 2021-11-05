@@ -10,7 +10,7 @@ import asyncio
 import selectors
 import sys
 import warnings
-from asyncio import SelectorEventLoop, Future
+from asyncio import Future, SelectorEventLoop
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq
@@ -168,7 +168,7 @@ class ZMQEventLoop(SelectorEventLoop):
 
     def __init__(self, selector=None):
         _deprecated()
-        return super(ZMQEventLoop, self).__init__(selector)
+        return super().__init__(selector)
 
 
 _loop = None

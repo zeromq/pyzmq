@@ -7,12 +7,12 @@
 # Distributed under the terms of the Modified BSD License.
 
 import logging
-from threading import Thread, Event
+import sys
+from threading import Event, Thread
 
 import zmq
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import b, u
-import sys
 
 from .base import Authenticator
 
@@ -26,7 +26,7 @@ class AuthenticationThread(Thread):
     def __init__(
         self, context, endpoint, encoding='utf-8', log=None, authenticator=None
     ):
-        super(AuthenticationThread, self).__init__()
+        super().__init__()
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.log = log = log or logging.getLogger('zmq.auth')
@@ -146,7 +146,7 @@ def _inherit_docstrings(cls):
 
 
 @_inherit_docstrings
-class ThreadAuthenticator(object):
+class ThreadAuthenticator:
     """Run ZAP authentication in a background thread"""
 
     context = None
@@ -162,7 +162,7 @@ class ThreadAuthenticator(object):
         self.log = log
         self.encoding = encoding
         self.pipe = None
-        self.pipe_endpoint = "inproc://{0}.inproc".format(id(self))
+        self.pipe_endpoint = f"inproc://{id(self)}.inproc"
         self.thread = None
 
     # proxy base Authenticator attributes

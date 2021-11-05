@@ -23,7 +23,6 @@ using tornado.
 
 """
 
-from __future__ import with_statement
 import pickle
 import sys
 import warnings
@@ -32,14 +31,15 @@ from queue import Queue
 import zmq
 from zmq.utils import jsonapi
 
-
 from .ioloop import IOLoop, gen_log
 
 try:
     from tornado.stack_context import wrap as stack_context_wrap  # type: ignore
 except ImportError:
     if "zmq.eventloop.minitornado" in sys.modules:
-        from .minitornado.stack_context import wrap as stack_context_wrap  # type: ignore
+        from .minitornado.stack_context import (
+            wrap as stack_context_wrap,  # type: ignore
+        )
     else:
         # tornado 5 deprecates stack_context,
         # tornado 6 removes it
@@ -47,7 +47,7 @@ except ImportError:
             return callback
 
 
-class ZMQStream(object):
+class ZMQStream:
     """A utility class to register callbacks when a zmq socket sends and receives
 
     For use with zmq.eventloop.ioloop
@@ -500,7 +500,7 @@ class ZMQStream(object):
 
     def _check_closed(self):
         if not self.socket:
-            raise IOError("Stream is closed")
+            raise OSError("Stream is closed")
 
     def _rebuild_io_state(self):
         """rebuild io state based on self.sending() and receiving()"""

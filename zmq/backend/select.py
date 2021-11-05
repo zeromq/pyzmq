@@ -3,8 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from typing import Dict
 from importlib import import_module
+from typing import Dict
 
 public_api = [
     'Context',

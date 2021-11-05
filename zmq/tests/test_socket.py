@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -7,18 +6,17 @@ import errno
 import json
 import os
 import platform
-import time
-import warnings
 import socket
 import sys
-
+import time
+import warnings
 from unittest import mock
 
 import pytest
 from pytest import mark
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest, skip_pypy
+from zmq.tests import BaseZMQTestCase, GreenTest, SkipTest, have_gevent, skip_pypy
 from zmq.utils.strtypes import unicode
 
 pypy = platform.python_implementation().lower() == 'pypy'
@@ -413,7 +411,7 @@ class TestSocket(BaseZMQTestCase):
 
             def __init__(self, *a, **kw):
                 self.a = -1
-                super(S, self).__init__(*a, **kw)
+                super().__init__(*a, **kw)
 
         s = S(self.context, zmq.REP)
         self.sockets.append(s)
@@ -474,7 +472,7 @@ class TestSocket(BaseZMQTestCase):
         s = self.context.socket(zmq.PUB)
         self.sockets.append(s)
         try:
-            s.bind('ipc://{0}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
+            s.bind('ipc://{}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
             self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
 
@@ -485,7 +483,7 @@ class TestSocket(BaseZMQTestCase):
         self.sockets.append(s)
         invalid_path = '/foo/bar'
         with pytest.raises(zmq.ZMQError) as error:
-            s.bind('ipc://{0}'.format(invalid_path))
+            s.bind(f'ipc://{invalid_path}')
         assert error.value.errno == errno.ENOENT
         error_message = str(error.value)
         assert invalid_path in error_message

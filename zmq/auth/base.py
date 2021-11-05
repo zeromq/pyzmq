@@ -6,18 +6,17 @@
 import logging
 
 import zmq
-from zmq.utils import z85
-from zmq.utils.strtypes import bytes, unicode, b, u
 from zmq.error import _check_version
+from zmq.utils import z85
+from zmq.utils.strtypes import b, bytes, u, unicode
 
 from .certs import load_certificates
-
 
 CURVE_ALLOW_ANY = '*'
 VERSION = b'1.0'
 
 
-class Authenticator(object):
+class Authenticator:
     """Implementation of ZAP authentication for zmq connections.
 
     This authenticator class does not register with an event loop. As a result,
@@ -269,9 +268,9 @@ class Authenticator(object):
                     self.log.error("Invalid PLAIN credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
-                username, password = [
+                username, password = (
                     u(c, self.encoding, 'replace') for c in credentials
-                ]
+                )
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
             elif mechanism == b'CURVE':

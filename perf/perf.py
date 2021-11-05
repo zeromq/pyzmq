@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
@@ -8,8 +7,8 @@
 #  Used under LGPLv3
 
 import argparse
-from multiprocessing import Process
 import time
+from multiprocessing import Process
 
 try:
     now = time.monotonic
@@ -137,8 +136,8 @@ def latency(url, count, size, poll=False, copy=True, quiet=False):
     if not quiet:
         print("message size   : %8i     [B]" % (size,))
         print("roundtrip count: %8i     [msgs]" % (count,))
-        print("mean latency   : %12.3f [µs]" % (latency,))
-        print("test time      : %12.3f [s]" % (elapsed,))
+        print(f"mean latency   : {latency:12.3f} [µs]")
+        print(f"test time      : {elapsed:12.3f} [s]")
     ctx.destroy()
     return latency
 

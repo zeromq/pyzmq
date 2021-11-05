@@ -9,10 +9,11 @@ Authors
 -------
 * MinRK
 """
-from __future__ import print_function
 
 import time
+
 import numpy
+
 import zmq
 from zmq import devices
 

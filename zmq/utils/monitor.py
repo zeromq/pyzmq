@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """Module holding utility and convenience functions for zmq event monitoring."""
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
 import struct
+
 import zmq
 from zmq.error import _check_version
 

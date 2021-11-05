@@ -2,11 +2,11 @@
 # Copyright (c) PyZMQ Developers.
 # This example is in the public domain (CC-0)
 
+import asyncio
 import time
 
 import zmq
 from zmq.asyncio import Context, Poller
-import asyncio
 
 url = 'tcp://127.0.0.1:5555'
 

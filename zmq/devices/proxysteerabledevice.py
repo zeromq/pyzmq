@@ -4,16 +4,14 @@
 # Distributed under the terms of the Modified BSD License.
 
 import zmq
-from zmq.devices.proxydevice import Proxy, ThreadProxy, ProcessProxy
+from zmq.devices.proxydevice import ProcessProxy, Proxy, ThreadProxy
 
 
-class ProxySteerableBase(object):
+class ProxySteerableBase:
     """Base class for overriding methods."""
 
     def __init__(self, in_type, out_type, mon_type=zmq.PUB, ctrl_type=None):
-        super(ProxySteerableBase, self).__init__(
-            in_type=in_type, out_type=out_type, mon_type=mon_type
-        )
+        super().__init__(in_type=in_type, out_type=out_type, mon_type=mon_type)
         self.ctrl_type = ctrl_type
         self._ctrl_binds = []
         self._ctrl_connects = []
@@ -53,7 +51,7 @@ class ProxySteerableBase(object):
         self._ctrl_sockopts.append((opt, value))
 
     def _setup_sockets(self):
-        ins, outs, mons = super(ProxySteerableBase, self)._setup_sockets()
+        ins, outs, mons = super()._setup_sockets()
         ctx = self._context
         ctrls = ctx.socket(self.ctrl_type)
 

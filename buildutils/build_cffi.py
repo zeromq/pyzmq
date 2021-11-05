@@ -4,7 +4,6 @@ import sys
 
 import cffi
 
-
 here = os.path.dirname(os.path.abspath(__file__))
 zmq_dir = os.path.join(os.path.dirname(here), 'zmq')
 backend_dir = os.path.join(zmq_dir, 'backend', 'cffi')

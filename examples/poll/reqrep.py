@@ -8,6 +8,7 @@
 # -----------------------------------------------------------------------------
 
 import time
+
 import zmq
 
 print("Running polling tests for REQ/REP sockets...")

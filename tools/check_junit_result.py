@@ -1,7 +1,5 @@
-from __future__ import print_function
-
-import os
 import argparse
+import os
 
 try:
     from xml.etree import cElementTree as ET
@@ -32,7 +30,7 @@ def main(filename):
                     print('=' * 50)
         exit(1)
     else:
-        print('All tests {} passed'.format(tests))
+        print(f'All tests {tests} passed')
         for testcase in root:
             attributes = testcase.attrib
             print("{name}{classname}".format(**attributes))

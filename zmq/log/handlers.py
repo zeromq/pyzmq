@@ -25,11 +25,10 @@ Code adapted from StarCluster:
 
 
 import logging
-from logging import INFO, DEBUG, WARN, ERROR, FATAL
+from logging import DEBUG, ERROR, FATAL, INFO, WARN
 
 import zmq
-from zmq.utils.strtypes import bytes, unicode, cast_bytes
-
+from zmq.utils.strtypes import bytes, cast_bytes, unicode
 
 TOPIC_DELIM = "::"  # delimiter for splitting topics on the receiving end.
 
@@ -175,7 +174,7 @@ class TopicLogger(logging.Logger):
             logger.log(level, "zmq.fun", "We have a %s",
                     "mysterious problem", exc_info=1)
         """
-        logging.Logger.log(self, level, '%s::%s' % (topic, msg), *args, **kwargs)
+        logging.Logger.log(self, level, f'{topic}::{msg}', *args, **kwargs)
 
 
 # Generate the methods of TopicLogger, since they are just adding a

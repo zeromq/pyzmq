@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -13,9 +11,8 @@ import pytest
 
 import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
-
-from zmq.utils.strtypes import u
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
+from zmq.utils.strtypes import u
 
 
 class BaseAuthTestCase(BaseZMQTestCase):
@@ -26,7 +23,7 @@ class BaseAuthTestCase(BaseZMQTestCase):
             zmq.curve_keypair()
         except zmq.ZMQError:
             raise SkipTest("security requires libzmq to have curve support")
-        super(BaseAuthTestCase, self).setUp()
+        super().setUp()
         # enable debug logging while we run tests
         logging.getLogger('zmq.auth').setLevel(logging.DEBUG)
         self.auth = self.make_auth()
@@ -41,7 +38,7 @@ class BaseAuthTestCase(BaseZMQTestCase):
             self.auth.stop()
             self.auth = None
         self.remove_certs(self.base_dir)
-        super(BaseAuthTestCase, self).tearDown()
+        super().tearDown()
 
     def create_certs(self):
         """Create CURVE certificates for a test"""
@@ -281,7 +278,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
 
         # Try CURVE authentication - with callback authentication configured, connection should pass
 
-        class CredentialsProvider(object):
+        class CredentialsProvider:
             def __init__(self):
                 self.client = client_public
 
@@ -305,7 +302,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
 
         # Try CURVE authentication - with callback authentication configured with wrong key, connection should not pass
 
-        class WrongCredentialsProvider(object):
+        class WrongCredentialsProvider:
             def __init__(self):
                 self.client = "WrongCredentials"
 
@@ -357,7 +354,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
             assert user_id == u(client_public)
 
         # test custom user-id map
-        self.auth.curve_user_id = lambda client_key: u'custom'
+        self.auth.curve_user_id = lambda client_key: 'custom'
 
         client2 = self.socket(zmq.PUSH)
         client2.curve_publickey = client_public
@@ -373,7 +370,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         except zmq.ZMQVersionError:
             pass
         else:
-            assert user_id == u'custom'
+            assert user_id == 'custom'
 
 
 def with_ioloop(method, expect_success=True):
@@ -425,7 +422,7 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
 
         self.fail_msg = None
         self.io_loop = ioloop.IOLoop()
-        super(TestIOLoopAuthentication, self).setUp()
+        super().setUp()
         self.server = self.socket(zmq.PUSH)
         self.client = self.socket(zmq.PULL)
         self.pushstream = zmqstream.ZMQStream(self.server, self.io_loop)
@@ -441,7 +438,7 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
             self.auth.stop()
             self.auth = None
         self.io_loop.close(all_fds=True)
-        super(TestIOLoopAuthentication, self).tearDown()
+        super().tearDown()
 
     def attempt_connection(self):
         """Check if client can connect to server using tcp transport"""

@@ -56,7 +56,7 @@ def main():
     try:
         for topic in itertools.cycle(all_topics):
             msg_body = str(next(msg_counter)).encode('utf-8')
-            print('   Topic: %s, msg:%s' % (topic, msg_body))
+            print(f'   Topic: {topic}, msg:{msg_body}')
             s.send_multipart([topic, msg_body])
             # short wait so we don't hog the cpu
             time.sleep(0.1)

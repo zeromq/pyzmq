@@ -1,7 +1,7 @@
 """A Socket subclass that adds some serialization methods."""
 
-import zlib
 import pickle
+import zlib
 
 import numpy
 

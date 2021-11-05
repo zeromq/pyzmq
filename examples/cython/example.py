@@ -1,11 +1,10 @@
-from multiprocessing import Process
-
 import array
 import time
-
-import zmq
+from multiprocessing import Process
 
 from cyzmq_example import cython_sender, mixed_receiver
+
+import zmq
 
 
 def python_sender(url, n):

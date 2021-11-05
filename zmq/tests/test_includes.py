@@ -2,14 +2,15 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-from unittest import TestCase
-import zmq
 import os
+from unittest import TestCase
+
+import zmq
 
 
 class TestIncludes(TestCase):
     def test_get_includes(self):
-        from os.path import dirname, basename
+        from os.path import basename, dirname
 
         includes = zmq.get_includes()
         self.assertTrue(isinstance(includes, list))
@@ -22,7 +23,7 @@ class TestIncludes(TestCase):
         self.assertEqual(utils, "utils")
 
     def test_get_library_dirs(self):
-        from os.path import dirname, basename
+        from os.path import basename, dirname
 
         libdirs = zmq.get_library_dirs()
         self.assertTrue(isinstance(libdirs, list))

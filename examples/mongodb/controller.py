@@ -5,15 +5,16 @@
 #  the file COPYING.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-from __future__ import print_function
 import json
 import sys
-import zmq
+
 import pymongo
 import pymongo.json_util
 
+import zmq
 
-class MongoZMQ(object):
+
+class MongoZMQ:
     """
     ZMQ server that adds/fetches documents (ie dictionaries) to a MongoDB.
 

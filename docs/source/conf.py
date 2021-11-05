@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # PyZMQ documentation build configuration file, created by
 # sphinx-quickstart on Sat Feb 20 23:31:19 2010.
@@ -11,8 +10,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
 import string
+import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,8 +55,8 @@ source_encoding = 'utf-8'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyZMQ'
-copyright = u"""Brian E. Granger & Min Ragan-Kelley.
+project = 'PyZMQ'
+copyright = """Brian E. Granger & Min Ragan-Kelley.
 ØMQ logo © iMatix Corporation, used under the Creative Commons Attribution-Share Alike 3.0 License.
 Python logo ™ of the Python Software Foundation, used by Min RK with permission from the Foundation"""
 
@@ -204,8 +204,8 @@ latex_documents = [
     (
         'index',
         'PyZMQ.tex',
-        u'PyZMQ Documentation',
-        u'Brian E. Granger \\and Min Ragan-Kelley',
+        'PyZMQ Documentation',
+        'Brian E. Granger \\and Min Ragan-Kelley',
         'manual',
     ),
 ]

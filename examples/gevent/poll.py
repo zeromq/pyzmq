@@ -1,5 +1,7 @@
 import gevent
+
 from zmq import green as zmq
+
 
 # Connect to both receiving sockets and send 10 messages
 def sender():

@@ -1,10 +1,10 @@
 import threading
-import zmq
 
 from pytest import fixture, raises
+
+import zmq
 from zmq.decorators import context, socket
 from zmq.tests import BaseZMQTestCase, term_context
-
 
 ##############################################
 #  Test cases for @context

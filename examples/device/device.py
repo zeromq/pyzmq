@@ -2,10 +2,9 @@
 # This example is placed in the Public Domain
 # It may also be used under the Creative Commons CC-0 License, (C) PyZMQ Developers
 
-from __future__ import print_function
 
-from threading import Thread
 import time
+from threading import Thread
 
 import zmq
 
@@ -20,7 +19,7 @@ def produce(url, ident):
     s.connect(url)
     print("Producing %s" % ident)
     for i in range(MSGS):
-        s.send((u'%s: %i' % (ident, time.time())).encode('utf8'))
+        s.send(('%s: %i' % (ident, time.time())).encode('utf8'))
         time.sleep(1)
     print("Producer %s done" % ident)
     s.close()

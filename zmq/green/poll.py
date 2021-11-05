@@ -1,7 +1,7 @@
-import zmq
 import gevent
 from gevent import select
 
+import zmq
 from zmq import Poller as _original_Poller
 
 
@@ -74,7 +74,7 @@ class _Poller(_original_Poller):
             # Loop until timeout or events available
             rlist, wlist, xlist = self._get_descriptors()
             while True:
-                events = super(_Poller, self).poll(0)
+                events = super().poll(0)
                 if events or timeout == 0:
                     return events
 

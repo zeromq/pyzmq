@@ -3,10 +3,9 @@
 
 import sys
 
-import zmq
-
 from pytest import mark
 
+import zmq
 
 only_bundled = mark.skipif(not hasattr(zmq, '_libzmq'), reason="bundled libzmq")
 

@@ -4,10 +4,11 @@ Test our typing with mypy
 import glob
 import os
 import sys
-import zmq
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import PIPE, STDOUT, Popen
 
 import pytest
+
+import zmq
 
 pytest.importorskip("mypy")
 

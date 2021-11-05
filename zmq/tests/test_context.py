@@ -6,20 +6,20 @@ import gc
 import os
 import sys
 import time
-from threading import Thread, Event
 from queue import Queue
+from threading import Event, Thread
 from unittest import mock
 
 from pytest import mark
 
 import zmq
 from zmq.tests import (
-    BaseZMQTestCase,
-    have_gevent,
-    GreenTest,
-    skip_green,
     PYPY,
+    BaseZMQTestCase,
+    GreenTest,
     SkipTest,
+    have_gevent,
+    skip_green,
 )
 
 
@@ -28,7 +28,7 @@ class KwargTestSocket(zmq.Socket):
 
     def __init__(self, *args, **kwargs):
         self.test_kwarg_value = kwargs.pop('test_kwarg', None)
-        super(KwargTestSocket, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class KwargTestContext(zmq.Context):
@@ -145,7 +145,7 @@ class TestContext(BaseZMQTestCase):
         class SlowContext(self.Context):
             def __init__(self, *a, **kw):
                 time.sleep(1)
-                super(SlowContext, self).__init__(*a, **kw)
+                super().__init__(*a, **kw)
 
         def f():
             q.put(SlowContext.instance())
@@ -260,7 +260,7 @@ class TestContext(BaseZMQTestCase):
     def test_cyclic_destroy(self):
         """ctx.destroy should succeed when cyclic ref prevents gc"""
         # test credit @dln (GH #137):
-        class CyclicReference(object):
+        class CyclicReference:
             def __init__(self, parent=None):
                 self.parent = parent
 

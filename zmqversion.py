@@ -6,13 +6,11 @@ it searches for an installed header, rather than in the current dir.
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import with_statement
 
 import os
-import sys
 import re
+import sys
 import traceback
-
 from warnings import warn
 
 try:
@@ -80,7 +78,7 @@ def find_zmq_version():
         patch = int(re.findall('[0-9]+', line)[0])
         return ((major, minor, patch), zmq_h)
 
-    raise IOError("Couldn't find zmq.h")
+    raise OSError("Couldn't find zmq.h")
 
 
 def ver_str(version):
@@ -99,7 +97,7 @@ def check_zmq_version(min_version):
             print("but it appears you are building against %s" % zmq_h)
             print("which has zeromq %s" % sf)
             sys.exit(1)
-    except IOError:
+    except OSError:
         msg = '\n'.join(
             [
                 "Couldn't find zmq.h to check for version compatibility.",

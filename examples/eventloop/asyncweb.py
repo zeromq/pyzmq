@@ -9,17 +9,15 @@ the event loop.
 """
 
 
-import sys
 import random
+import sys
 import threading
 import time
 
+from tornado import gen, ioloop, web
+
 import zmq
 from zmq.eventloop.future import Context as FutureContext
-
-from tornado import gen
-from tornado import ioloop
-from tornado import web
 
 
 def slow_responder():

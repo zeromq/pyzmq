@@ -10,7 +10,9 @@ Authors
 """
 
 import time
+
 import numpy
+
 import zmq
 from zmq import devices
 

@@ -1,12 +1,12 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import time
 import struct
+import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase, SkipTest, PYPY
+from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
 
 if PYPY:
     # cleanup of shared Context doesn't work on PyPy

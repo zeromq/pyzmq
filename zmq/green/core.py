@@ -11,22 +11,21 @@
 """This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
 """
 
-from __future__ import print_function
 
 import sys
 import time
 import warnings
 from typing import Tuple
 
-import zmq
-
-from zmq import Context as _original_Context
-from zmq import Socket as _original_Socket
-from .poll import _Poller
-
 import gevent
 from gevent.event import AsyncResult
 from gevent.hub import get_hub
+
+import zmq
+from zmq import Context as _original_Context
+from zmq import Socket as _original_Socket
+
+from .poll import _Poller
 
 if hasattr(zmq, 'RCVTIMEO'):
     TIMEOS: Tuple = (zmq.RCVTIMEO, zmq.SNDTIMEO)
@@ -73,7 +72,7 @@ class _Socket(_original_Socket):
     _repr_cls = "zmq.green.Socket"
 
     def __init__(self, *a, **kw):
-        super(_Socket, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.__in_send_multipart = False
         self.__in_recv_multipart = False
         self.__setup_events()
@@ -82,7 +81,7 @@ class _Socket(_original_Socket):
         self.close()
 
     def close(self, linger=None):
-        super(_Socket, self).close(linger)
+        super().close(linger)
         self.__cleanup_events()
 
     def __cleanup_events(self):
@@ -119,7 +118,7 @@ class _Socket(_original_Socket):
             return
         try:
             # avoid triggering __state_changed from inside __state_changed
-            events = super(_Socket, self).getsockopt(zmq.EVENTS)
+            events = super().getsockopt(zmq.EVENTS)
         except zmq.ZMQError as exc:
             self.__writable.set_exception(exc)
             self.__readable.set_exception(exc)
@@ -213,7 +212,7 @@ class _Socket(_original_Socket):
         # if we're given the NOBLOCK flag act as normal and let the EAGAIN get raised
         if flags & zmq.NOBLOCK:
             try:
-                msg = super(_Socket, self).send(data, flags, copy, track, **kwargs)
+                msg = super().send(data, flags, copy, track, **kwargs)
             finally:
                 if not self.__in_send_multipart:
                     self.__state_changed()
@@ -225,7 +224,7 @@ class _Socket(_original_Socket):
         ):  # Attempt to complete this operation indefinitely, blocking the current greenlet
             try:
                 # attempt the actual call
-                msg = super(_Socket, self).send(data, flags, copy, track)
+                msg = super().send(data, flags, copy, track)
             except zmq.ZMQError as e:
                 # if the raised ZMQError is not EAGAIN, reraise
                 if e.errno != zmq.EAGAIN:
@@ -247,7 +246,7 @@ class _Socket(_original_Socket):
         """
         if flags & zmq.NOBLOCK:
             try:
-                msg = super(_Socket, self).recv(flags, copy, track)
+                msg = super().recv(flags, copy, track)
             finally:
                 if not self.__in_recv_multipart:
                     self.__state_changed()
@@ -256,7 +255,7 @@ class _Socket(_original_Socket):
         flags |= zmq.NOBLOCK
         while True:
             try:
-                msg = super(_Socket, self).recv(flags, copy, track)
+                msg = super().recv(flags, copy, track)
             except zmq.ZMQError as e:
                 if e.errno != zmq.EAGAIN:
                     if not self.__in_recv_multipart:
@@ -272,7 +271,7 @@ class _Socket(_original_Socket):
         """wrap send_multipart to prevent state_changed on each partial send"""
         self.__in_send_multipart = True
         try:
-            msg = super(_Socket, self).send_multipart(*args, **kwargs)
+            msg = super().send_multipart(*args, **kwargs)
         finally:
             self.__in_send_multipart = False
             self.__state_changed()
@@ -282,7 +281,7 @@ class _Socket(_original_Socket):
         """wrap recv_multipart to prevent state_changed on each partial recv"""
         self.__in_recv_multipart = True
         try:
-            msg = super(_Socket, self).recv_multipart(*args, **kwargs)
+            msg = super().recv_multipart(*args, **kwargs)
         finally:
             self.__in_recv_multipart = False
             self.__state_changed()
@@ -294,7 +293,7 @@ class _Socket(_original_Socket):
             warnings.warn(
                 "TIMEO socket options have no effect in zmq.green", UserWarning
             )
-        optval = super(_Socket, self).get(opt)
+        optval = super().get(opt)
         if opt == zmq.EVENTS:
             self.__state_changed()
         return optval
@@ -305,7 +304,7 @@ class _Socket(_original_Socket):
             warnings.warn(
                 "TIMEO socket options have no effect in zmq.green", UserWarning
             )
-        return super(_Socket, self).set(opt, val)
+        return super().set(opt, val)
 
 
 class _Context(_original_Context):

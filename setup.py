@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # -----------------------------------------------------------------------------
 #  Copyright (C) PyZMQ Developers
@@ -40,7 +39,6 @@ from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
 from setuptools.extension import Extension
-
 
 # local script imports:
 sys.path.insert(0, os.path.dirname(__file__))
@@ -882,9 +880,7 @@ class TestCommand(Command):
             )
             sys.exit(1)
 
-        info(
-            "Testing pyzmq-%s with libzmq-%s" % (zmq.pyzmq_version(), zmq.zmq_version())
-        )
+        info(f"Testing pyzmq-{zmq.pyzmq_version()} with libzmq-{zmq.zmq_version()}")
         p = Popen([sys.executable, '-m', 'pytest', '-v', os.path.join('zmq', 'tests')])
         p.wait()
         sys.exit(p.returncode)
@@ -903,7 +899,7 @@ class GitRevisionCommand(Command):
     def run(self):
         try:
             p = Popen('git log -1'.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        except IOError:
+        except OSError:
             warn("No git found, skipping git revision")
             return
 
@@ -1276,7 +1272,7 @@ ext_kwargs = {
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
         sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
-        ext = Extension("zmq.%s.%s" % (submod, pkg), sources=sources, **ext_kwargs)
+        ext = Extension(f"zmq.{submod}.{pkg}", sources=sources, **ext_kwargs)
         extensions.append(ext)
 
 if cython:
@@ -1338,7 +1334,7 @@ def find_packages():
 # Main setup
 # -----------------------------------------------------------------------------
 
-with io.open('README.md', encoding='utf-8') as f:
+with open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(

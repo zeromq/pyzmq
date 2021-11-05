@@ -13,17 +13,15 @@ releases are built and uploaded from CI, following the published tag
 # Distributed under the terms of the Modified BSD License.
 
 
-from __future__ import print_function
-
 import os
 import pipes
 import re
 import shutil
 import sys
-
 from contextlib import contextmanager
 
-from invoke import task, run as invoke_run
+from invoke import run as invoke_run
+from invoke import task
 
 PYZMQ_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PYZMQ_ROOT)
@@ -67,7 +65,7 @@ def clone_repo(ctx, reset=False):
             run("git checkout %s" % branch)
             run("git pull")
     else:
-        run("git clone -b %s %s %s" % (branch, repo, repo_root))
+        run(f"git clone -b {branch} {repo} {repo_root}")
 
 
 @task
@@ -75,7 +73,7 @@ def patch_version(ctx, vs):
     """Patch zmq/sugar/version.py for the current release"""
     major, minor, patch, extra = vs_to_tup(vs)
     version_py = pjoin(repo_root, 'zmq', 'sugar', 'version.py')
-    print("patching %s with %s" % (version_py, vs))
+    print(f"patching {version_py} with {vs}")
     # read version.py, minus VERSION_ constants
     with open(version_py) as f:
         pre_lines = []
@@ -104,7 +102,7 @@ def tag(ctx, vs, push=False):
     """Make the tag (don't push)"""
     patch_version(ctx, vs)
     with cd(repo_root):
-        run('git commit -a -m "release {}"'.format(vs))
+        run(f'git commit -a -m "release {vs}"')
         run('git tag -a -m "release {0}" v{0}'.format(vs))
         if push:
             run('git push --tags')

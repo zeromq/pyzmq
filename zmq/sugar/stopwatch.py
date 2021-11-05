@@ -4,7 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-class Stopwatch(object):
+class Stopwatch:
     """Deprecated zmq.Stopwatch implementation
 
     You can use Python's builtin timers (time.monotonic, etc.).

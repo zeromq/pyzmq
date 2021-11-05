@@ -5,6 +5,9 @@ exclude = "zmq/eventloop/minitornado|docs/source/conf.py"
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+skip = [
+    "zmq/__init__.py"
+]
 
 [build-system]
 requires = [

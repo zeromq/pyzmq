@@ -5,12 +5,12 @@
 #  the file COPYING.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-from __future__ import print_function
 import json
+
 import zmq
 
 
-class MongoZMQClient(object):
+class MongoZMQClient:
     """
     Client that connects with MongoZMQ server to add/fetch docs
     """

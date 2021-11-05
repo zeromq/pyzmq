@@ -3,6 +3,7 @@
 
 
 from unittest import TestCase
+
 import zmq
 from zmq.sugar import version
 

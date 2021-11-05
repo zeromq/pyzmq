@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Get the authors of the LGPL-licensed subset of pyzmq (Cython bindings)"""
 
+import re
 from collections import defaultdict
 from itertools import chain
 from os.path import abspath, dirname, join
-import re
 
 import git
 
@@ -78,7 +78,7 @@ def sort_key(email_commits):
 
 for email, commits in sorted(author_commits.items(), key=sort_key, reverse=True):
     if len(commits) <= 2:
-        msg = '%s (%s)' % (
+        msg = '{} ({})'.format(
             ' '.join(c.hexsha[:12] for c in commits),
             commits[0].authored_datetime.year,
         )

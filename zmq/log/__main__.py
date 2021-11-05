@@ -29,7 +29,7 @@ from datetime import datetime
 from typing import Dict
 
 import zmq
-from zmq.utils.strtypes import u, cast_bytes
+from zmq.utils.strtypes import cast_bytes, u
 
 parser = argparse.ArgumentParser('ZMQ Log Watcher')
 parser.add_argument('zmq_pub_url', type=str, help='URL to a ZMQ publisher socket.')

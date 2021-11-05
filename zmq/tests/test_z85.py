@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 """Test Z85 encoding
 
 confirm values and roundtrip with test values from the reference implementation.
@@ -8,6 +7,7 @@ confirm values and roundtrip with test values from the reference implementation.
 # Distributed under the terms of the Modified BSD License.
 
 from unittest import TestCase
+
 from zmq.utils import z85
 
 

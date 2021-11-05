@@ -4,12 +4,12 @@
 # Distributed under the terms of the Modified BSD License.
 
 import warnings
-from collections import namedtuple, deque
+from collections import deque, namedtuple
 from itertools import chain
 from typing import Type
 
-from zmq import EVENTS, POLLOUT, POLLIN
 import zmq as _zmq
+from zmq import EVENTS, POLLIN, POLLOUT
 
 _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg', 'timer'))
 
@@ -61,7 +61,7 @@ class _AsyncPoller(_Async, _zmq.Poller):
         future = self._Future()
         if timeout == 0:
             try:
-                result = super(_AsyncPoller, self).poll(0)
+                result = super().poll(0)
             except Exception as e:
                 future.set_exception(e)
             else:
@@ -172,10 +172,10 @@ class _AsyncSocket(_Async, _zmq.Socket):
         else:
             from_socket = kwargs.pop('_from_socket', None)
         if from_socket is not None:
-            super(_AsyncSocket, self).__init__(shadow=from_socket.underlying)
+            super().__init__(shadow=from_socket.underlying)
             self._shadow_sock = from_socket
         else:
-            super(_AsyncSocket, self).__init__(context, socket_type, **kwargs)
+            super().__init__(context, socket_type, **kwargs)
             self._shadow_sock = _zmq.Socket.shadow(self.underlying)
 
         if io_loop is not None:
@@ -207,12 +207,12 @@ class _AsyncSocket(_Async, _zmq.Socket):
                         # RuntimeError may be called during teardown
                         pass
             self._clear_io_state()
-        super(_AsyncSocket, self).close(linger=linger)
+        super().close(linger=linger)
 
     close.__doc__ = _zmq.Socket.close.__doc__
 
     def get(self, key):
-        result = super(_AsyncSocket, self).get(key)
+        result = super().get(key)
         if key == EVENTS:
             self._schedule_remaining_events(result)
         return result

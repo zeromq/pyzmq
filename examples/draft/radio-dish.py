@@ -1,4 +1,5 @@
 import time
+
 import zmq
 
 ctx = zmq.Context.instance()
@@ -18,7 +19,7 @@ for i in range(10):
     except zmq.Again:
         print('missed a message')
         continue
-    print("Received %s:%s" % (msg.group, msg.bytes.decode('utf8')))
+    print("Received {}:{}".format(msg.group, msg.bytes.decode('utf8')))
 
 dish.close()
 radio.close()

@@ -10,13 +10,13 @@ See ZMQ RFC 32 for details.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import sys
 import struct
+import sys
 
 # Z85CHARS is the base 85 symbol table
 Z85CHARS = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#"
 # Z85MAP maps integers in [0,84] to the appropriate character in Z85CHARS
-Z85MAP = dict([(c, idx) for idx, c in enumerate(Z85CHARS)])
+Z85MAP = {c: idx for idx, c in enumerate(Z85CHARS)}
 
 _85s = [85 ** i for i in range(5)][::-1]
 

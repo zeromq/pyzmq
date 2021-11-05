@@ -14,11 +14,12 @@ Authors
 """
 
 import time
+
 import zmq
 from zmq.eventloop import ioloop, zmqstream
 
 
-class HeartBeater(object):
+class HeartBeater:
     """A basic HeartBeater class
     pingstream: a PUB stream
     pongstream: an ROUTER stream"""

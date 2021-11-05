@@ -6,10 +6,8 @@ from unittest import TestCase
 
 import zmq
 from zmq import devices
-
-from zmq.tests import BaseZMQTestCase, SkipTest, PYPY
+from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
 from zmq.utils.strtypes import unicode
-
 
 if PYPY or zmq.zmq_version_info() >= (4, 1):
     # cleanup of shared Context doesn't work on PyPy

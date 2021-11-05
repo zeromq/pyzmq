@@ -12,11 +12,11 @@
 # -----------------------------------------------------------------------------
 
 import copy
+import logging
+import os
+import platform
 import shutil
 import sys
-import os
-import logging
-import platform
 
 from .misc import get_compiler, get_output_error
 from .msg import info
@@ -130,9 +130,9 @@ def detect_zmq(basedir, compiler, **compiler_attrs):
 
     rc, so, se = get_output_error([efile], env=env)
     if rc:
-        msg = "Error running version detection script:\n%s\n%s" % (so, se)
+        msg = f"Error running version detection script:\n{so}\n{se}"
         logging.error(msg)
-        raise IOError(msg)
+        raise OSError(msg)
 
     handlers = {'vers': lambda val: tuple(int(v) for v in val.split('.'))}
 

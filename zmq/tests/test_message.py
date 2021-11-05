@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -19,9 +18,8 @@ from pprint import pprint
 from unittest import TestCase
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy, PYPY
-from zmq.utils.strtypes import unicode, bytes, b, u
-
+from zmq.tests import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
+from zmq.utils.strtypes import b, bytes, u, unicode
 
 # some useful constants:
 

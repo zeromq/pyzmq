@@ -25,18 +25,22 @@
 
 from libc.stdlib cimport free, malloc
 
-from .libzmq cimport zmq_pollitem_t, ZMQ_VERSION_MAJOR
+from .libzmq cimport ZMQ_VERSION_MAJOR
 from .libzmq cimport zmq_poll as zmq_poll_c
+from .libzmq cimport zmq_pollitem_t
 from .socket cimport Socket
 
 import sys
+
 try:
     from time import monotonic
 except ImportError:
     from time import clock as monotonic
+
 import warnings
 
 from .checkrc cimport _check_rc
+
 from zmq.error import InterruptedSystemCall
 
 #-----------------------------------------------------------------------------
