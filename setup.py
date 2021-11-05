@@ -159,9 +159,15 @@ def bundled_settings(cmd):
         settings['libraries'].append('pthread')
     elif sys.platform.startswith('win'):
         # link against libzmq in build dir:
-        # Python 3.5 adds EXT_SUFFIX to libs
-        ext_suffix = get_config_var("EXT_SUFFIX")
+        if sys.version_info < (3, 9, 2):
+            # bpo-39825: EXT_SUFFIX is wrong from sysconfig prior to 3.9.2 / 3.8.7
+            import distutils.sysconfig
+
+            ext_suffix = distutils.sysconfig.get_config_var("EXT_SUFFIX")
+        else:
+            ext_suffix = get_config_var("EXT_SUFFIX")
         suffix = os.path.splitext(ext_suffix)[0]
+        print(f"DEBUG EXT_SUFFIX {suffix!r} {ext_suffix!r}")
 
         settings['libraries'].append(libzmq_name + suffix)
         settings['library_dirs'].append(pjoin(cmd.build_temp, 'buildutils'))
