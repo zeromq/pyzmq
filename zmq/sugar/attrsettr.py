@@ -8,7 +8,7 @@ import errno
 from . import constants
 
 
-class AttributeSetter(object):
+class AttributeSetter:
     def __setattr__(self, key, value):
         """set zmq options by attribute"""
 
@@ -16,8 +16,8 @@ class AttributeSetter(object):
             object.__setattr__(self, key, value)
             return
         # regular setattr only allowed for class-defined attributes
-        for obj in self.__class__.mro():
-            if key in obj.__dict__:
+        for cls in self.__class__.mro():
+            if key in cls.__dict__ or key in getattr(cls, "__annotations__", {}):
                 object.__setattr__(self, key, value)
                 return
 
