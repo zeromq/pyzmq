@@ -7,7 +7,7 @@
 import atexit
 import os
 from threading import Lock
-from typing import TypeVar, Type
+from typing import Any, Dict, Optional, Type, TypeVar
 from weakref import WeakSet
 import warnings
 
@@ -39,15 +39,15 @@ class Context(ContextBase, AttributeSetter):
     A zmq Context creates sockets via its ``ctx.socket`` method.
     """
 
-    sockopts = None
-    _instance = None
+    sockopts: Dict[int, Any]
+    _instance: Any = None
     _instance_lock = Lock()
-    _instance_pid = None
+    _instance_pid: Optional[int] = None
     _shadow = False
-    _sockets = None
+    _sockets: WeakSet
 
-    def __init__(self, io_threads=1, **kwargs):
-        super(Context, self).__init__(io_threads=io_threads, **kwargs)
+    def __init__(self, io_threads: int = 1, **kwargs):
+        super().__init__(io_threads=io_threads, **kwargs)
         if kwargs.get('shadow', False):
             self._shadow = True
         else:
@@ -115,7 +115,7 @@ class Context(ContextBase, AttributeSetter):
         return cls(shadow=address)
 
     @classmethod
-    def shadow_pyczmq(cls, ctx):
+    def shadow_pyczmq(cls: Type[T], ctx: Any) -> T:
         """Shadow an existing pyczmq context
 
         ctx is the FFI `zctx_t *` pointer
@@ -167,7 +167,7 @@ class Context(ContextBase, AttributeSetter):
                     cls._instance_pid = os.getpid()
         return cls._instance
 
-    def term(self):
+    def term(self) -> None:
         """Close or terminate the context.
 
         Context termination is performed in the following steps:
@@ -187,7 +187,7 @@ class Context(ContextBase, AttributeSetter):
         This can be called to close the context by hand. If this is not called,
         the context will automatically be closed when it is garbage collected.
         """
-        return super(Context, self).term()
+        super().term()
 
     # -------------------------------------------------------------------------
     # Hooks for ctxopt completion
@@ -204,17 +204,17 @@ class Context(ContextBase, AttributeSetter):
     # Creating Sockets
     # -------------------------------------------------------------------------
 
-    def _add_socket(self, socket):
+    def _add_socket(self, socket: Any):
         """Add a weakref to a socket for Context.destroy / reference counting"""
         self._sockets.add(socket)
 
-    def _rm_socket(self, socket):
+    def _rm_socket(self, socket: Any):
         """Remove a socket for Context.destroy / reference counting"""
         # allow _sockets to be None in case of process teardown
         if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
-    def destroy(self, linger=None):
+    def destroy(self, linger: Optional[float] = None):
         """Close all sockets associated with this context and then terminate
         the context.
 
@@ -246,7 +246,7 @@ class Context(ContextBase, AttributeSetter):
     def _socket_class(self):
         return Socket
 
-    def socket(self, socket_type, **kwargs):
+    def socket(self, socket_type: int, **kwargs):
         """Create a Socket associated with this Context.
 
         Parameters
@@ -274,28 +274,28 @@ class Context(ContextBase, AttributeSetter):
         self._add_socket(s)
         return s
 
-    def setsockopt(self, opt, value):
+    def setsockopt(self, opt: int, value):
         """set default socket options for new sockets created by this Context
 
         .. versionadded:: 13.0
         """
         self.sockopts[opt] = value
 
-    def getsockopt(self, opt):
+    def getsockopt(self, opt: int):
         """get default socket options for new sockets created by this Context
 
         .. versionadded:: 13.0
         """
         return self.sockopts[opt]
 
-    def _set_attr_opt(self, name, opt, value):
+    def _set_attr_opt(self, name: str, opt: int, value):
         """set default sockopts as attributes"""
         if name in constants.ctx_opt_names:
             return self.set(opt, value)
         else:
             self.sockopts[opt] = value
 
-    def _get_attr_opt(self, name, opt):
+    def _get_attr_opt(self, name: str, opt: int):
         """get default sockopts as attributes"""
         if name in constants.ctx_opt_names:
             return self.get(opt)
@@ -305,7 +305,7 @@ class Context(ContextBase, AttributeSetter):
             else:
                 return self.sockopts[opt]
 
-    def __delattr__(self, key):
+    def __delattr__(self, key: str):
         """delete default sockopts as attributes"""
         key = key.upper()
         try:
