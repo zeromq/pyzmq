@@ -85,7 +85,7 @@ class Poller:
 
         Parameters
         ----------
-        timeout : float, int
+        timeout : int
             The timeout in milliseconds. If None, no `timeout` (infinite). This
             is in milliseconds to be compatible with ``select.poll()``.
 
