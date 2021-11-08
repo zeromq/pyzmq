@@ -6,6 +6,7 @@
 import time
 
 from threading import Event
+from typing import Any, Set, Tuple, Union
 
 from zmq.error import NotDone
 from zmq.backend import Frame
@@ -30,10 +31,10 @@ class MessageTracker:
         actual Messages.
     """
 
-    events = None
-    peers = None
+    events: Set[Event]
+    peers: Set["MessageTracker"]
 
-    def __init__(self, *towatch):
+    def __init__(self, *towatch: Tuple[Union["MessageTracker", Event, Frame]]):
         """MessageTracker(*towatch)
 
         Create a message tracker to track a set of mesages.
@@ -70,7 +71,7 @@ class MessageTracker:
                 return False
         return True
 
-    def wait(self, timeout=-1):
+    def wait(self, timeout: Union[float, int] = -1):
         """mt.wait(timeout=-1)
 
         Wait for 0MQ to be done with the message or until `timeout`.
@@ -91,6 +92,7 @@ class MessageTracker:
             if `timeout` reached before I am done.
         """
         tic = time.time()
+        remaining: float
         if timeout is False or timeout < 0:
             remaining = 3600 * 24 * 7  # a week
         else:

@@ -24,10 +24,10 @@ class Poller:
         self.sockets = []
         self._map = {}
 
-    def __contains__(self, socket):
+    def __contains__(self, socket: Any):
         return socket in self._map
 
-    def register(self, socket, flags: int = POLLIN | POLLOUT):
+    def register(self, socket: Any, flags: int = POLLIN | POLLOUT):
         """p.register(socket, flags=POLLIN|POLLOUT)
 
         Register a 0MQ socket or native fd for I/O monitoring.
@@ -62,7 +62,7 @@ class Poller:
         """Modify the flags for an already registered 0MQ socket or native fd."""
         self.register(socket, flags)
 
-    def unregister(self, socket):
+    def unregister(self, socket: Any):
         """Remove a 0MQ socket or native fd for I/O monitoring.
 
         Parameters
