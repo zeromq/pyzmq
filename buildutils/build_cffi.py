@@ -9,12 +9,6 @@ here = os.path.dirname(os.path.abspath(__file__))
 zmq_dir = os.path.join(os.path.dirname(here), 'zmq')
 backend_dir = os.path.join(zmq_dir, 'backend', 'cffi')
 
-# load constant names without zmq being importable
-sys.path.insert(0, os.path.join(zmq_dir, "utils"))
-from constant_names import all_names, no_prefix
-
-sys.path = sys.path[1:]
-
 ffi = cffi.FFI()
 
 
@@ -51,25 +45,6 @@ cfg = load_compiler_config()
 
 with open(os.path.join(backend_dir, '_cdefs.h')) as f:
     ffi.cdef(f.read())
-
-
-def _make_defines(names):
-    _names = []
-    for name in names:
-        define_line = "#define %s ..." % (name)
-        _names.append(define_line)
-
-    return "\n".join(_names)
-
-
-c_constant_names = ['PYZMQ_DRAFT_API']
-for name in all_names:
-    if no_prefix(name):
-        c_constant_names.append(name)
-    else:
-        c_constant_names.append("ZMQ_" + name)
-
-ffi.cdef(_make_defines(c_constant_names))
 
 with open(os.path.join(here, "_cffi.c")) as f:
     _cffi_c = f.read()

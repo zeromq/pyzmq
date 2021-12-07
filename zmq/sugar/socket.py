@@ -13,23 +13,14 @@ import warnings
 import zmq
 from zmq.backend import Socket as SocketBase
 from .poll import Poller
-from . import constants
+
 from .attrsettr import AttributeSetter
 from zmq.error import ZMQError, ZMQBindError
 from zmq.utils import jsonapi
 from zmq.utils.strtypes import bytes, unicode
 
 
-from .constants import (
-    SNDMORE,
-    ENOTSUP,
-    POLLIN,
-    int64_sockopt_names,
-    int_sockopt_names,
-    bytes_sockopt_names,
-    fd_sockopt_names,
-    socket_types,
-)
+from ..constants import SocketOption, SocketType, _OptType
 import pickle
 
 try:
@@ -90,7 +81,12 @@ class Socket(SocketBase, AttributeSetter):
         except Exception:
             pass
         else:
-            self._type_name = socket_types.get(socket_type, str(socket_type))
+            try:
+                self.__dict__["type"] = stype = SocketType(socket_type)
+            except ValueError:
+                self._type_name = str(socket_type)
+            else:
+                self._type_name = stype.name
 
     def __del__(self):
         if not self._shadow and not self.closed:
@@ -253,13 +249,7 @@ class Socket(SocketBase, AttributeSetter):
 
     def __dir__(self):
         keys = dir(self.__class__)
-        for collection in (
-            bytes_sockopt_names,
-            int_sockopt_names,
-            int64_sockopt_names,
-            fd_sockopt_names,
-        ):
-            keys.extend(collection)
+        keys.extend(SocketOption.__members__)
         return keys
 
     # -------------------------------------------------------------------------
@@ -335,8 +325,8 @@ class Socket(SocketBase, AttributeSetter):
         encoding : str
             The encoding to be used, default is utf8
         """
-        if not isinstance(optval, unicode):
-            raise TypeError("unicode strings only")
+        if not isinstance(optval, str):
+            raise TypeError(f"strings only, not {type(optval)}: {optval!r}")
         return self.set(option, optval.encode(encoding))
 
     setsockopt_unicode = setsockopt_string = set_string
@@ -357,8 +347,8 @@ class Socket(SocketBase, AttributeSetter):
             The value of the option as a unicode string.
         """
 
-        if option not in constants.bytes_sockopts:
-            raise TypeError("option %i will not return a string to be decoded" % option)
+        if SocketOption(option)._opt_type != _OptType.bytes:
+            raise TypeError(f"option {option} will not return a string to be decoded")
         return self.getsockopt(option).decode(encoding)
 
     getsockopt_unicode = getsockopt_string = get_string
@@ -390,7 +380,7 @@ class Socket(SocketBase, AttributeSetter):
             if `max_tries` reached before successful bind
         """
         if (
-            hasattr(constants, 'LAST_ENDPOINT')
+            (zmq.zmq_version_info() >= (3, 2))
             and min_port == 49152
             and max_port == 65536
         ):
@@ -592,7 +582,7 @@ class Socket(SocketBase, AttributeSetter):
                     )
                 )
         for msg in msg_parts[:-1]:
-            self.send(msg, SNDMORE | flags, copy=copy, track=track)
+            self.send(msg, zmq.SNDMORE | flags, copy=copy, track=track)
         # Send the last part without the extra SNDMORE flag.
         return self.send(msg_parts[-1], flags, copy=copy, track=track)
 
@@ -825,7 +815,7 @@ class Socket(SocketBase, AttributeSetter):
 
     _poller_class = Poller
 
-    def poll(self, timeout=None, flags=POLLIN):
+    def poll(self, timeout=None, flags=zmq.POLLIN):
         """Poll the socket for events.
         See :class:`Poller` to wait for multiple sockets at once.
 
@@ -845,7 +835,7 @@ class Socket(SocketBase, AttributeSetter):
         """
 
         if self.closed:
-            raise ZMQError(ENOTSUP)
+            raise ZMQError(zmq.ENOTSUP)
 
         p = self._poller_class()
         p.register(self, flags)

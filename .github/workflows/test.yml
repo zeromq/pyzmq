@@ -24,7 +24,7 @@ jobs:
             python: 3.6
 
           - os: macos-10.15
-            python: "3.10.0-rc.2"
+            python: "3.10"
             zmq: bundled
 
           - os: macos-10.15
@@ -52,7 +52,7 @@ jobs:
             tornado: head
 
           - os: ubuntu-20.04
-            python: "3.10.0-rc.2"
+            python: "3.10"
 
           - os: ubuntu-20.04
             python: 3.8
@@ -67,7 +67,7 @@ jobs:
             arch: x64
 
           - os: windows-2019
-            python: "3.10.0-rc.2"
+            python: "3.10"
             arch: x64
 
     steps:
@@ -155,7 +155,7 @@ jobs:
           sudo ldconfig
           popd
           echo "ZMQ_PREFIX=/usr/local" >> "$GITHUB_ENV"
-          export ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
+          echo ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
 
       - name: build pyzmq
         run: |

@@ -5,6 +5,7 @@ from . import sugar
 
 from .error import *
 from .sugar import *
+from .constants import *
 
 # mypy doesn't like overwriting symbols with * so be explicit
 # about what comes from backend, not from sugar
@@ -25,6 +26,7 @@ from .backend import (
 )
 
 COPY_THRESHOLD: int
+DRAFT_API: bool
 
 def get_includes() -> List[str]: ...
 def get_library_dirs() -> List[str]: ...

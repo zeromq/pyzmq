@@ -205,9 +205,13 @@ class TestSocket(BaseZMQTestCase):
             value = getattr(constants, name)
             if isinstance(value, int):
                 backref[value] = name
-        for opt in zmq.constants.int_sockopts.union(zmq.constants.int64_sockopts):
-            sopt = backref[opt]
-            if sopt.startswith(
+        for opt in zmq.constants.SocketOption:
+            if opt._opt_type not in {
+                zmq.constants._OptType.int,
+                zmq.constants._OptType.int64,
+            }:
+                continue
+            if opt.name.startswith(
                 (
                     'ROUTER',
                     'XPUB',
@@ -223,6 +227,13 @@ class TestSocket(BaseZMQTestCase):
                     'VMCI_BUFFER_MIN_SIZE',
                     'VMCI_BUFFER_MAX_SIZE',
                     'VMCI_CONNECT_TIMEOUT',
+                    'BLOCKY',
+                    'IN_BATCH_SIZE',
+                    'OUT_BATCH_SIZE',
+                    'WSS_TRUST_SYSTEM',
+                    'ONLY_FIRST_SUBSCRIBE',
+                    'PRIORITY',
+                    'RECONNECT_STOP',
                 )
             ):
                 # some sockopts are write-only
@@ -230,12 +241,12 @@ class TestSocket(BaseZMQTestCase):
             try:
                 n = p.getsockopt(opt)
             except zmq.ZMQError as e:
-                errors.append("getsockopt(zmq.%s) raised '%s'." % (sopt, e))
+                errors.append(f"getsockopt({opt!r}) raised {e}.")
             else:
                 if n > 2 ** 31:
                     errors.append(
-                        "getsockopt(zmq.%s) returned a ridiculous value."
-                        " It is probably the wrong type." % sopt
+                        f"getsockopt({opt!r}) returned a ridiculous value."
+                        " It is probably the wrong type."
                     )
         if errors:
             self.fail('\n'.join([''] + errors))

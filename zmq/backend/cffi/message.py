@@ -8,9 +8,9 @@ import errno
 from threading import Event
 
 from ._cffi import ffi, lib as C
-from .constants import ETERM
 
 import zmq
+from zmq.constants import ETERM
 from zmq.utils.strtypes import unicode
 import zmq.error
 

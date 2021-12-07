@@ -102,9 +102,11 @@ def _libs_on_path():
 with _libs_on_path():
     from zmq import backend
 
-from zmq.backend import *
+from . import constants  # noqa
+from .constants import *  # noqa
+from zmq.backend import *  # noqa
 from zmq import sugar
-from zmq.sugar import *
+from zmq.sugar import *  # noqa
 
 
 def get_includes():
@@ -129,4 +131,13 @@ def get_library_dirs():
 
 
 COPY_THRESHOLD = 65536
-__all__ = ['get_includes', 'COPY_THRESHOLD'] + sugar.__all__ + backend.__all__
+DRAFT_API = backend.has("draft")
+__all__ = (
+    [
+        'get_includes',
+        'COPY_THRESHOLD',
+        'DRAFT_API',
+    ]
+    + sugar.__all__
+    + backend.__all__
+)

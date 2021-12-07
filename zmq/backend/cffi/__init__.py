@@ -4,7 +4,6 @@
 # Distributed under the terms of the Modified BSD License.
 
 from zmq.backend.cffi import (
-    constants,
     error,
     message,
     context,
@@ -28,10 +27,9 @@ def zmq_version_info():
 
 
 __all__ = ["zmq_version_info"]
-for submod in (constants, error, message, context, socket, _poll, devices, utils):
+for submod in (error, message, context, socket, _poll, devices, utils):
     __all__.extend(submod.__all__)
 
-from .constants import *
 from .error import *
 from .message import *
 from .context import *

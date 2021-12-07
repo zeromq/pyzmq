@@ -12,9 +12,8 @@ from weakref import WeakSet
 import warnings
 
 from zmq.backend import Context as ContextBase
-from . import constants
+from zmq.constants import Errno, SocketOption, ContextOption
 from .attrsettr import AttributeSetter
-from .constants import ENOTSUP, LINGER, ctx_opt_names
 from .socket import Socket
 from zmq.error import ZMQError
 
@@ -195,9 +194,7 @@ class Context(ContextBase, AttributeSetter):
 
     def __dir__(self):
         keys = dir(self.__class__)
-
-        for collection in (ctx_opt_names,):
-            keys.extend(collection)
+        keys.extend(ContextOption.__members__)
         return keys
 
     # -------------------------------------------------------------------------
@@ -237,7 +234,7 @@ class Context(ContextBase, AttributeSetter):
         for s in sockets:
             if s and not s.closed:
                 if linger is not None:
-                    s.setsockopt(LINGER, linger)
+                    s.setsockopt(SocketOption.LINGER, linger)
                 s.close()
 
         self.term()
@@ -259,7 +256,7 @@ class Context(ContextBase, AttributeSetter):
             will be passed to the __init__ method of the socket class.
         """
         if self.closed:
-            raise ZMQError(ENOTSUP)
+            raise ZMQError(Errno.ENOTSUP)
         s = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
             self, socket_type, **kwargs
         )
@@ -290,14 +287,16 @@ class Context(ContextBase, AttributeSetter):
 
     def _set_attr_opt(self, name: str, opt: int, value):
         """set default sockopts as attributes"""
-        if name in constants.ctx_opt_names:
+        if name in ContextOption.__members__:
             return self.set(opt, value)
-        else:
+        elif name in SocketOption.__members__:
             self.sockopts[opt] = value
+        else:
+            raise AttributeError(f"No such context or socket option: {name}")
 
     def _get_attr_opt(self, name: str, opt: int):
         """get default sockopts as attributes"""
-        if name in constants.ctx_opt_names:
+        if name in ContextOption.__members__:
             return self.get(opt)
         else:
             if opt not in self.sockopts:
@@ -309,9 +308,9 @@ class Context(ContextBase, AttributeSetter):
         """delete default sockopts as attributes"""
         key = key.upper()
         try:
-            opt = getattr(constants, key)
+            opt = getattr(SocketOption, key)
         except AttributeError:
-            raise AttributeError("no such socket option: %s" % key)
+            raise AttributeError(f"No such socket option: {key!r}")
         else:
             if opt not in self.sockopts:
                 raise AttributeError(key)

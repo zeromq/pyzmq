@@ -101,7 +101,7 @@ except:
     import pickle
 
 import zmq
-from zmq.backend.cython import constants
+from zmq.constants import _OptType, SocketOption
 from .checkrc cimport _check_rc
 from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
 
@@ -412,13 +412,23 @@ cdef class Socket:
         if isinstance(optval, unicode):
             raise TypeError("unicode not allowed, use setsockopt_string")
 
-        if option in zmq.constants.bytes_sockopts:
+        try:
+            sopt = SocketOption(option)
+        except ValueError:
+            # unrecognized option,
+            # assume from the future,
+            # let EINVAL raise
+            opt_type = _OptType.int
+        else:
+            opt_type = sopt._opt_type
+
+        if opt_type == _OptType.bytes:
             if not isinstance(optval, bytes):
                 raise TypeError('expected bytes, got: %r' % optval)
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
             _setsockopt(self.handle, option, optval_c, sz)
-        elif option in zmq.constants.int64_sockopts:
+        elif opt_type == _OptType.int64:
             if not isinstance(optval, int):
                 raise TypeError('expected int, got: %r' % optval)
             optval_int64_c = optval
@@ -463,18 +473,28 @@ cdef class Socket:
 
         _check_closed(self)
 
-        if option in zmq.constants.bytes_sockopts:
+        try:
+            sopt = SocketOption(option)
+        except ValueError:
+            # unrecognized option,
+            # assume from the future,
+            # let EINVAL raise
+            opt_type = _OptType.int
+        else:
+            opt_type = sopt._opt_type
+
+        if opt_type == _OptType.bytes:
             sz = 255
             _getsockopt(self.handle, option, <void *>identity_str_c, &sz)
             # strip null-terminated strings *except* identity
             if option != ZMQ_IDENTITY and sz > 0 and (<char *>identity_str_c)[sz-1] == b'\0':
                 sz -= 1
             result = PyBytes_FromStringAndSize(<char *>identity_str_c, sz)
-        elif option in zmq.constants.int64_sockopts:
+        elif opt_type == _OptType.int64:
             sz = sizeof(int64_t)
             _getsockopt(self.handle, option, <void *>&optval_int64_c, &sz)
             result = optval_int64_c
-        elif option in zmq.constants.fd_sockopts:
+        elif opt_type == _OptType.fd:
             sz = sizeof(fd_t)
             _getsockopt(self.handle, option, <void *>&optval_fd_c, &sz)
             result = optval_fd_c
