@@ -9,13 +9,13 @@
 # -----------------------------------------------------------------------------
 
 
+import hashlib
 import os
+import platform
 import shutil
 import sys
-import hashlib
-import platform
 import zipfile
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from tempfile import TemporaryDirectory
 from unittest import mock
 from urllib.request import urlopen
@@ -106,10 +106,10 @@ def fetch_archive(savedir, url, fname, checksum, force=False):
         if digest == digest_ref or not digest_ref:
             return dest
         else:
-            warn("but checksum %s != %s, redownloading." % (digest, digest_ref))
+            warn(f"but checksum {digest} != {digest_ref}, redownloading.")
             os.remove(fname)
 
-    info("fetching %s into %s" % (url, savedir))
+    info(f"fetching {url} into {savedir}")
     if not os.path.exists(savedir):
         os.makedirs(savedir)
     req = urlopen(url)

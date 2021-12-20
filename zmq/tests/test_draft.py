@@ -1,10 +1,10 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
 import time
 
 import pytest
+
 import zmq
 from zmq.tests import BaseZMQTestCase
 
@@ -13,7 +13,7 @@ class TestDraftSockets(BaseZMQTestCase):
     def setUp(self):
         if not zmq.DRAFT_API:
             pytest.skip("draft api unavailable")
-        super(TestDraftSockets, self).setUp()
+        super().setUp()
 
     def test_client_server(self):
         client, server = self.create_bound_pair(zmq.CLIENT, zmq.SERVER)

@@ -10,7 +10,6 @@
 # Distributed under the terms of the Modified BSD License.
 
 import json
-
 from typing import Any, Dict, List, Union
 
 # backward-compatibility, unused

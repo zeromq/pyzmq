@@ -8,11 +8,12 @@ Authors
 -------
 * MinRK
 """
-from __future__ import print_function
 
 import sys
 import time
+
 import numpy
+
 import zmq
 
 ctx = zmq.Context()
@@ -31,5 +32,5 @@ while True:
         tic = time.time()
         req.send_string(msg)
         resp = req.recv_string()
-        print("%s: %.2f ms" % (msg, 1000 * (time.time() - tic)))
+        print(f"{msg}: {1000 * (time.time() - tic):.2f} ms")
         assert msg == resp

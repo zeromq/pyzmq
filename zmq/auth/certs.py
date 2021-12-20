@@ -8,9 +8,9 @@ import datetime
 import glob
 import io
 import os
-import zmq
-from zmq.utils.strtypes import bytes, unicode, b, u
 
+import zmq
+from zmq.utils.strtypes import b, bytes, u, unicode
 
 _cert_secret_banner = u(
     """#   ****  Generated on {0} by pyzmq  ****
@@ -39,7 +39,7 @@ def _write_key_file(
         public_key = public_key.decode(encoding)
     if isinstance(secret_key, bytes):
         secret_key = secret_key.decode(encoding)
-    with io.open(key_filename, 'w', encoding='utf8') as f:
+    with open(key_filename, 'w', encoding='utf8') as f:
         f.write(banner.format(datetime.datetime.now()))
 
         f.write(u('metadata\n'))
@@ -65,8 +65,8 @@ def create_certificates(key_dir, name, metadata=None):
     """
     public_key, secret_key = zmq.curve_keypair()
     base_filename = os.path.join(key_dir, name)
-    secret_key_file = "{0}.key_secret".format(base_filename)
-    public_key_file = "{0}.key".format(base_filename)
+    secret_key_file = f"{base_filename}.key_secret"
+    public_key_file = f"{base_filename}.key"
     now = datetime.datetime.now()
 
     _write_key_file(public_key_file, _cert_public_banner.format(now), public_key)
@@ -95,7 +95,7 @@ def load_certificate(filename):
     public_key = None
     secret_key = None
     if not os.path.exists(filename):
-        raise IOError("Invalid certificate file: {0}".format(filename))
+        raise OSError(f"Invalid certificate file: {filename}")
 
     with open(filename, 'rb') as f:
         for line in f:
@@ -119,7 +119,7 @@ def load_certificates(directory='.'):
     """Load public keys from all certificates in a directory"""
     certs = {}
     if not os.path.isdir(directory):
-        raise IOError("Invalid certificate directory: {0}".format(directory))
+        raise OSError(f"Invalid certificate directory: {directory}")
     # Follow czmq pattern of public keys stored in *.key files.
     glob_string = os.path.join(directory, "*.key")
 

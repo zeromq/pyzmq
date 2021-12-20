@@ -3,20 +3,22 @@
 
 import os
 import platform
+import signal
 import sys
 import time
-import signal
 from functools import partial
 from threading import Thread
 from typing import List
 from unittest import SkipTest, TestCase
 
 from pytest import mark
+
 import zmq
 from zmq.utils import jsonapi
 
 try:
     import gevent
+
     from zmq import green as gzmq
 
     have_gevent = True
@@ -88,7 +90,7 @@ class BaseZMQTestCase(TestCase):
         raise TimeoutError(f"Test did not complete in {timeout} seconds")
 
     def setUp(self):
-        super(BaseZMQTestCase, self).setUp()
+        super().setUp()
         if self.green and not have_gevent:
             raise SkipTest("requires gevent")
 
@@ -105,7 +107,7 @@ class BaseZMQTestCase(TestCase):
         if self._should_test_timeout:
             # cancel the timeout alarm, if there was one
             signal.alarm(0)
-        contexts = set([self.context])
+        contexts = {self.context}
         while self.sockets:
             sock = self.sockets.pop()
             contexts.add(sock.context)  # in case additional contexts are created
@@ -118,7 +120,7 @@ class BaseZMQTestCase(TestCase):
                 zmq.sugar.context.Context._instance = None
                 raise
 
-        super(BaseZMQTestCase, self).tearDown()
+        super().tearDown()
 
     def create_bound_pair(
         self, type1=zmq.PAIR, type2=zmq.PAIR, interface='tcp://127.0.0.1'
@@ -129,7 +131,7 @@ class BaseZMQTestCase(TestCase):
         port = s1.bind_to_random_port(interface)
         s2 = self.context.socket(type2)
         s2.setsockopt(zmq.LINGER, 0)
-        s2.connect('%s:%s' % (interface, port))
+        s2.connect(f'{interface}:{port}')
         self.sockets.extend([s1, s2])
         return s1, s2
 
@@ -225,7 +227,7 @@ got '%s'"
         if self._should_test_timeout:
             # cancel the timeout alarm, if there was one
             signal.alarm(0)
-        contexts = set([self.context])
+        contexts = {self.context}
         while self.sockets:
             sock = self.sockets.pop()
             contexts.add(sock.context)  # in case additional contexts are created

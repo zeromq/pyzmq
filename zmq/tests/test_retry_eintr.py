@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -11,7 +10,6 @@ from pytest import mark
 import zmq
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
 from zmq.utils.strtypes import b
-
 
 # Partially based on EINTRBaseTest from CPython 3.5 eintr_tester
 

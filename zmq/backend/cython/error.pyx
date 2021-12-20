@@ -24,7 +24,10 @@
 #-----------------------------------------------------------------------------
 
 from cpython.version cimport PY_MAJOR_VERSION
-from .libzmq cimport zmq_strerror, zmq_errno as zmq_errno_c
+
+from .libzmq cimport zmq_errno as zmq_errno_c
+from .libzmq cimport zmq_strerror
+
 
 def strerror(int errno):
     """strerror(errno)

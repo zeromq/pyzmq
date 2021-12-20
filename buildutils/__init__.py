@@ -3,9 +3,9 @@
 Largely adapted from h5py
 """
 
-from .msg import *
+from .bundle import *
 from .config import *
 from .detect import *
-from .bundle import *
 from .misc import *
+from .msg import *
 from .patch import *

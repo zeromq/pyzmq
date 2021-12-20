@@ -23,9 +23,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 
-from .libzmq cimport zmq_device, zmq_proxy, ZMQ_VERSION_MAJOR
-from .socket cimport Socket as cSocket
 from .checkrc cimport _check_rc
+from .libzmq cimport ZMQ_VERSION_MAJOR, zmq_device, zmq_proxy
+from .socket cimport Socket as cSocket
 
 from zmq.error import InterruptedSystemCall
 

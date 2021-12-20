@@ -1,4 +1,3 @@
-# coding: utf-8
 """tornado IOLoop API with zmq compatibility
 
 If you have tornado ≥ 3.0, this is a subclass of tornado's IOLoop,
@@ -12,21 +11,13 @@ have tornado ≥ 3.0.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import, division, with_statement
 
 import os
 import time
 import warnings
 from typing import Tuple
 
-from zmq import (
-    Poller,
-    POLLIN,
-    POLLOUT,
-    POLLERR,
-    ZMQError,
-    ETERM,
-)
+from zmq import ETERM, POLLERR, POLLIN, POLLOUT, Poller, ZMQError
 
 tornado_version: Tuple = ()
 try:
@@ -36,7 +27,7 @@ try:
 except (ImportError, AttributeError):
     pass
 
-from .minitornado.ioloop import PollIOLoop, PeriodicCallback
+from .minitornado.ioloop import PeriodicCallback, PollIOLoop
 from .minitornado.log import gen_log
 
 
@@ -58,7 +49,7 @@ class DelayedCallback(PeriodicCallback):
             DeprecationWarning,
         )
         callback_time = max(callback_time, 1e-3)
-        super(DelayedCallback, self).__init__(callback, callback_time, io_loop)
+        super().__init__(callback, callback_time, io_loop)
 
     def start(self):
         """Starts the timer."""
@@ -77,7 +68,7 @@ class DelayedCallback(PeriodicCallback):
             gen_log.error("Error in delayed callback", exc_info=True)
 
 
-class ZMQPoller(object):
+class ZMQPoller:
     """A poller that can be used in the tornado IOLoop.
 
     This simply wraps a regular zmq.Poller, scaling the timeout
@@ -142,7 +133,7 @@ class ZMQIOLoop(PollIOLoop):
 
     def initialize(self, impl=None, **kwargs):
         impl = self._zmq_impl() if impl is None else impl
-        super(ZMQIOLoop, self).initialize(impl=impl, **kwargs)
+        super().initialize(impl=impl, **kwargs)
 
     @classmethod
     def instance(cls, *args, **kwargs):
@@ -159,7 +150,7 @@ class ZMQIOLoop(PollIOLoop):
         loop = PollIOLoop.instance(*args, **kwargs)
         if not isinstance(loop, cls):
             warnings.warn(
-                "IOLoop.current expected instance of %r, got %r" % (cls, loop),
+                f"IOLoop.current expected instance of {cls!r}, got {loop!r}",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -175,7 +166,7 @@ class ZMQIOLoop(PollIOLoop):
         loop = PollIOLoop.current(*args, **kwargs)
         if not isinstance(loop, cls):
             warnings.warn(
-                "IOLoop.current expected instance of %r, got %r" % (cls, loop),
+                f"IOLoop.current expected instance of {cls!r}, got {loop!r}",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -183,7 +174,7 @@ class ZMQIOLoop(PollIOLoop):
 
     def start(self):
         try:
-            super(ZMQIOLoop, self).start()
+            super().start()
         except ZMQError as e:
             if e.errno == ETERM:
                 # quietly return on ETERM

@@ -3,11 +3,10 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import division
 
+import logging
 import os
 import sys
-import logging
 
 # -----------------------------------------------------------------------------
 # Logging (adapted from h5py: https://www.h5py.org/)

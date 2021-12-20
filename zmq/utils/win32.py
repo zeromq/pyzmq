@@ -8,8 +8,9 @@
 import os
 from typing import Type
 
+
 # No-op implementation for other platforms.
-class _allow_interrupt(object):
+class _allow_interrupt:
     """Utility for fixing CTRL-C events on Windows.
 
     On Windows, the Python interpreter intercepts CTRL-C events in order to
@@ -123,7 +124,7 @@ if os.name == 'nt':
             if result == 0:
                 # Have standard library automatically call `GetLastError()` and
                 # `FormatMessage()` into a nice exception object :-)
-                raise WindowsError()
+                raise OSError()
 
         def __exit__(self, *args):
             """Remove the custom CTRL-C handler."""
@@ -131,7 +132,7 @@ if os.name == 'nt':
             if result == 0:
                 # Have standard library automatically call `GetLastError()` and
                 # `FormatMessage()` into a nice exception object :-)
-                raise WindowsError()
+                raise OSError()
 
     allow_interrupt = _real_allow_interrupt
 else:

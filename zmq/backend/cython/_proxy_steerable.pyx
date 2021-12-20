@@ -3,9 +3,9 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from .checkrc cimport _check_rc
 from .libzmq cimport zmq_proxy_steerable
 from .socket cimport Socket as cSocket
-from .checkrc cimport _check_rc
 
 from zmq.error import InterruptedSystemCall
 

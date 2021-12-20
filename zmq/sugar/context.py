@@ -1,4 +1,3 @@
-# coding: utf-8
 """Python bindings for 0MQ."""
 
 # Copyright (C) PyZMQ Developers
@@ -6,16 +5,17 @@
 
 import atexit
 import os
+import warnings
 from threading import Lock
 from typing import Any, Dict, Optional, Type, TypeVar
 from weakref import WeakSet
-import warnings
 
 from zmq.backend import Context as ContextBase
-from zmq.constants import Errno, SocketOption, ContextOption
+from zmq.constants import ContextOption, Errno, SocketOption
+from zmq.error import ZMQError
+
 from .attrsettr import AttributeSetter
 from .socket import Socket
-from zmq.error import ZMQError
 
 # notice when exiting, to avoid triggering term on exit
 _exiting = False
@@ -122,6 +122,7 @@ class Context(ContextBase, AttributeSetter):
         .. versionadded:: 14.1
         """
         from pyczmq import zctx  # type: ignore
+
         from zmq.utils.interop import cast_int_addr
 
         underlying = zctx.underlying(ctx)

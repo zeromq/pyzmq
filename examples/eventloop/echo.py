@@ -4,8 +4,9 @@
 without relying on tornado integration (see echostream, echofuture).
 """
 
-import zmq
 from tornado import ioloop
+
+import zmq
 
 
 def echo(sock, events):

@@ -4,10 +4,10 @@
 # Distributed under the terms of the Modified BSD License.
 
 
+import logging
+import os
 import re
 import sys
-import os
-import logging
 
 from .misc import get_output_error
 
@@ -23,7 +23,7 @@ LIB_PAT = re.compile(
 def _get_libs(fname):
     rc, so, se = get_output_error(['otool', '-L', fname])
     if rc:
-        logging.error("otool -L %s failed: %r" % (fname, se))
+        logging.error(f"otool -L {fname} failed: {se!r}")
         return
     for line in so.splitlines()[1:]:
         m = LIB_PAT.match(line)

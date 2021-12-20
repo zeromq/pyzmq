@@ -1,4 +1,3 @@
-# coding: utf-8
 """tornado IOLoop API with zmq compatibility
 
 This module is deprecated in pyzmq 17.
@@ -10,7 +9,6 @@ and tornado itself should be used.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import, division, with_statement
 
 import time
 import types
@@ -19,8 +17,8 @@ from typing import Any
 
 try:
     import tornado
-    from tornado.log import gen_log
     from tornado import ioloop
+    from tornado.log import gen_log
 
     if not hasattr(ioloop.IOLoop, 'configurable_default'):
         raise ImportError(
@@ -51,7 +49,7 @@ class DelayedCallback(PeriodicCallback):  # type: ignore
             DeprecationWarning,
         )
         callback_time = max(callback_time, 1e-3)
-        super(DelayedCallback, self).__init__(callback, callback_time, io_loop)
+        super().__init__(callback, callback_time, io_loop)
 
     def start(self):
         """Starts the timer."""
@@ -103,7 +101,7 @@ class ZMQIOLoop(_IOLoop):
     def __init__(self, *args, **kwargs):
         _deprecated()
         # super is object, which takes no args
-        return super(ZMQIOLoop, self).__init__()
+        return super().__init__()
 
     @classmethod
     def instance(cls, *args, **kwargs):
@@ -146,4 +144,4 @@ def install():
 
 # if minitornado is used, fallback on deprecated ZMQIOLoop, install implementations
 if '.minitornado.' in ioloop.__name__:
-    from ._deprecated import ZMQIOLoop, install, IOLoop  # type: ignore
+    from ._deprecated import IOLoop, ZMQIOLoop, install  # type: ignore

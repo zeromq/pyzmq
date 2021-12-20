@@ -5,11 +5,11 @@
 
 
 import time
-from threading import Thread
 from multiprocessing import Process
+from threading import Thread
 from typing import Any
 
-from zmq import device, QUEUE, REQ, Context, ETERM, ZMQBindError, ZMQError
+from zmq import ETERM, QUEUE, REQ, Context, ZMQBindError, ZMQError, device
 
 
 class Device:

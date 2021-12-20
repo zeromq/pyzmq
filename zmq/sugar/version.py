@@ -7,7 +7,6 @@ from typing import Tuple, Union
 
 from zmq.backend import zmq_version_info
 
-
 VERSION_MAJOR = 22
 VERSION_MINOR = 3
 VERSION_PATCH = 0
@@ -21,7 +20,7 @@ version_info: Union[Tuple[int, int, int], Tuple[int, int, int, float]] = (
 )
 
 if VERSION_EXTRA:
-    __version__ = "%s.%s" % (__version__, VERSION_EXTRA)
+    __version__ = f"{__version__}.{VERSION_EXTRA}"
     version_info = (
         VERSION_MAJOR,
         VERSION_MINOR,

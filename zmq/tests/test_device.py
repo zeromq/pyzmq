@@ -5,8 +5,8 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import BaseZMQTestCase, SkipTest, have_gevent, GreenTest, PYPY
-from zmq.utils.strtypes import bytes, unicode, basestring
+from zmq.tests import PYPY, BaseZMQTestCase, GreenTest, SkipTest, have_gevent
+from zmq.utils.strtypes import basestring, bytes, unicode
 
 if PYPY:
     # cleanup of shared Context doesn't work on PyPy
@@ -149,6 +149,7 @@ class TestDevice(BaseZMQTestCase):
 
 if have_gevent:
     import gevent
+
     import zmq.green
 
     class TestDeviceGreen(GreenTest, BaseZMQTestCase):

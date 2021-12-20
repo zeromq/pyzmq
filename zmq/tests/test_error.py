@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
@@ -7,7 +6,7 @@ import time
 from threading import Thread
 
 import zmq
-from zmq import ZMQError, strerror, Again, ContextTerminated
+from zmq import Again, ContextTerminated, ZMQError, strerror
 from zmq.tests import BaseZMQTestCase
 
 

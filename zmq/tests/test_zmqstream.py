@@ -1,19 +1,18 @@
-# -*- coding: utf8 -*-
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import
 
 import asyncio
-
 from unittest import TestCase
 
 import pytest
+
 import zmq
 
 try:
     import tornado
     from tornado import gen
+
     from zmq.eventloop import ioloop, zmqstream
 except ImportError:
     tornado = None  # type: ignore

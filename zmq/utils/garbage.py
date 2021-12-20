@@ -8,14 +8,12 @@ used in zero-copy sends.
 
 import atexit
 import struct
-
-from os import getpid
-from collections import namedtuple
-from threading import Thread, Event, Lock
 import warnings
+from collections import namedtuple
+from os import getpid
+from threading import Event, Lock, Thread
 
 import zmq
-
 
 gcref = namedtuple('gcref', ['obj', 'event'])
 
@@ -24,7 +22,7 @@ class GarbageCollectorThread(Thread):
     """Thread in which garbage collection actually happens."""
 
     def __init__(self, gc):
-        super(GarbageCollectorThread, self).__init__()
+        super().__init__()
         self.gc = gc
         self.daemon = True
         self.pid = getpid()
@@ -58,7 +56,7 @@ class GarbageCollectorThread(Thread):
         s.close()
 
 
-class GarbageCollector(object):
+class GarbageCollector:
     """PyZMQ Garbage Collector
 
     Used for representing the reference held by libzmq during zero-copy sends.
@@ -79,7 +77,7 @@ class GarbageCollector(object):
     url = "inproc://pyzmq.gc.01"
 
     def __init__(self, context=None):
-        super(GarbageCollector, self).__init__()
+        super().__init__()
         self.refs = {}
         self.pid = None
         self.thread = None

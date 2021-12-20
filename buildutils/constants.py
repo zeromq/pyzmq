@@ -52,7 +52,7 @@ def cython_enums():
         if no_prefix(name):
             lines.append('enum: ZMQ_{0} "{0}"'.format(name))
         else:
-            lines.append('enum: ZMQ_{0}'.format(name))
+            lines.append(f'enum: ZMQ_{name}')
 
     return dict(ZMQ_ENUMS='\n    '.join(lines))
 
@@ -105,7 +105,7 @@ def promoted_constants():
 
 def generate_file(fname, ns_func, dest_dir="."):
     """generate a constants file from its template"""
-    with open(pjoin(root, 'buildutils', 'templates', '%s' % fname), 'r') as f:
+    with open(pjoin(root, 'buildutils', 'templates', '%s' % fname)) as f:
         tpl = f.read()
     out = tpl.format(**ns_func())
     dest = pjoin(dest_dir, fname)

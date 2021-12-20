@@ -63,7 +63,7 @@ class ZMQError(ZMQBaseError):
         return self.strerror
 
     def __repr__(self) -> str:
-        return "%s('%s')" % (self.__class__.__name__, str(self))
+        return f"{self.__class__.__name__}('{str(self)}')"
 
 
 class ZMQBindError(ZMQBaseError):
@@ -97,7 +97,7 @@ class ContextTerminated(ZMQError):
     def __init__(self, errno="ignored", msg="ignored"):
         from zmq import ETERM
 
-        super(ContextTerminated, self).__init__(ETERM)
+        super().__init__(ETERM)
 
 
 class Again(ZMQError):
@@ -109,7 +109,7 @@ class Again(ZMQError):
     def __init__(self, errno="ignored", msg="ignored"):
         from zmq import EAGAIN
 
-        super(Again, self).__init__(EAGAIN)
+        super().__init__(EAGAIN)
 
 
 class InterruptedSystemCall(ZMQError, InterruptedError):
@@ -124,10 +124,10 @@ class InterruptedSystemCall(ZMQError, InterruptedError):
     errno = EINTR
 
     def __init__(self, errno="ignored", msg="ignored"):
-        super(InterruptedSystemCall, self).__init__(EINTR)
+        super().__init__(EINTR)
 
     def __str__(self):
-        s = super(InterruptedSystemCall, self).__str__()
+        s = super().__str__()
         return s + ": This call should have been retried. Please report this to pyzmq."
 
 
@@ -181,7 +181,7 @@ class ZMQVersionError(NotImplementedError):
         return "ZMQVersionError('%s')" % str(self)
 
     def __str__(self):
-        return "%s requires libzmq >= %s, have %s" % (
+        return "{} requires libzmq >= {}, have {}".format(
             self.msg,
             self.min_version,
             self.version,

@@ -11,12 +11,11 @@
 
 import warnings
 
-import zmq as _zmq
-
-from zmq._future import _AsyncPoller, _AsyncSocket
-
 from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
+
+import zmq as _zmq
+from zmq._future import _AsyncPoller, _AsyncSocket
 
 
 class CancelledError(Exception):
@@ -100,4 +99,4 @@ class Context(_zmq.Context):
                 DeprecationWarning,
                 stacklevel=2,
             )
-        super(Context, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)

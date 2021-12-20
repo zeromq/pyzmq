@@ -1,4 +1,3 @@
-# coding: utf-8
 """zmq Socket class"""
 
 # Copyright (C) PyZMQ Developers
@@ -6,8 +5,8 @@
 
 import errno as errno_mod
 
-from ._cffi import lib as C, ffi
-
+from ._cffi import ffi
+from ._cffi import lib as C
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 
@@ -31,13 +30,13 @@ ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
-from .message import Frame
-from .utils import _retry_sys_call
-
 import zmq
 from zmq.constants import RCVMORE, SocketOption, _OptType
 from zmq.error import ZMQError, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
+
+from .message import Frame
+from .utils import _retry_sys_call
 
 
 def new_pointer_from_opt(option, length=0):
@@ -80,7 +79,7 @@ def initialize_opt_pointer(option, value, length=0):
         return value_int_pointer(value)
 
 
-class Socket(object):
+class Socket:
     context = None
     socket_type = None
     _zmq_socket = None
@@ -155,7 +154,7 @@ class Socket(object):
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
                 path = address.split('://', 1)[-1]
                 msg = (
-                    'ipc path "{0}" is longer than {1} '
+                    'ipc path "{}" is longer than {} '
                     'characters (sizeof(sockaddr_un.sun_path)).'.format(
                         path, IPC_PATH_MAX_LEN
                     )
@@ -163,7 +162,7 @@ class Socket(object):
                 raise ZMQError(C.zmq_errno(), msg=msg)
             elif C.zmq_errno() == errno_mod.ENOENT:
                 path = address.split('://', 1)[-1]
-                msg = 'No such file or directory for ipc path "{0}".'.format(path)
+                msg = f'No such file or directory for ipc path "{path}".'
                 raise ZMQError(C.zmq_errno(), msg=msg)
             else:
                 _check_rc(rc)

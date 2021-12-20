@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Simple example demonstrating the use of the socket monitoring feature."""
 
 # This file is part of pyzmq.
@@ -6,7 +5,6 @@
 # Distributed under the terms of the New BSD License. The full
 # license is in the file COPYING.BSD, distributed as part of this
 # software.
-from __future__ import print_function
 
 __author__ = 'Guido Goldstein'
 
@@ -15,7 +13,6 @@ import time
 
 import zmq
 from zmq.utils.monitor import recv_monitor_message
-
 
 line = lambda: print('-' * 40)
 
@@ -37,7 +34,7 @@ def event_monitor(monitor):
     while monitor.poll():
         evt = recv_monitor_message(monitor)
         evt.update({'description': EVENT_MAP[evt['event']]})
-        print("Event: {}".format(evt))
+        print(f"Event: {evt}")
         if evt['event'] == zmq.EVENT_MONITOR_STOPPED:
             break
     monitor.close()

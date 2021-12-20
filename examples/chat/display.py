@@ -18,7 +18,6 @@
 #    You should have received a copy of the Lesser GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
 import zmq
 
 
@@ -33,7 +32,7 @@ def main(addrs):
 
     while True:
         msg = socket.recv_pyobj()
-        print("%s: %s" % (msg[1], msg[0]))
+        print(f"{msg[1]}: {msg[0]}")
 
 
 if __name__ == '__main__':

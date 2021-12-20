@@ -4,12 +4,12 @@
 # Distributed under the terms of the Modified BSD License.
 
 import copy
+import logging
 import os
 import sys
-import logging
 from pipes import quote
 from pprint import pprint
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 from .msg import warn
 
@@ -50,8 +50,8 @@ def get_output_error(cmd, **kwargs):
     logging.debug("Running: %s", ' '.join(map(quote, cmd)))
     try:
         result = Popen(cmd, stdout=PIPE, stderr=PIPE, **kwargs)
-    except IOError as e:
-        return -1, '', 'Failed to run %r: %r' % (cmd, e)
+    except OSError as e:
+        return -1, '', f'Failed to run {cmd!r}: {e!r}'
     so, se = result.communicate()
     # unicode:
     so = so.decode('utf8', 'replace')

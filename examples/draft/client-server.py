@@ -1,4 +1,5 @@
 import time
+
 import zmq
 
 ctx = zmq.Context.instance()
@@ -12,7 +13,7 @@ for i in range(10):
     client.connect(url)
     client.send(b'request %i' % i)
     msg = server.recv(copy=False)
-    print('server recvd %r from %r' % (msg.bytes, msg.routing_id))
+    print(f'server recvd {msg.bytes!r} from {msg.routing_id!r}')
     server.send_string('reply %i' % i, routing_id=msg.routing_id)
     reply = client.recv_string()
     print('client recvd %r' % reply)

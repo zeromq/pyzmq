@@ -13,8 +13,9 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 import sys
 import time
 
-import zmq
 import numpy
+
+import zmq
 
 
 def sync(bind_to):

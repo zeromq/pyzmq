@@ -46,7 +46,7 @@ def test_bundle_msvcp():
     dlls = []
     if os.path.exists(pyzmq_lib_dir):
         dlls = sorted(
-            [name for name in os.listdir(pyzmq_lib_dir) if name.endswith(".dll")]
+            name for name in os.listdir(pyzmq_lib_dir) if name.endswith(".dll")
         )
     print(dlls)
     # Is concrt140 needed? delvewheel doesn't detect it anymore

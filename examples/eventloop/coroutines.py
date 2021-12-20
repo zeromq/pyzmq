@@ -4,11 +4,11 @@
 
 import time
 
-import zmq
-from zmq.eventloop.future import Context, Poller
+from tornado import gen
 from tornado.ioloop import IOLoop
 
-from tornado import gen
+import zmq
+from zmq.eventloop.future import Context, Poller
 
 url = 'tcp://127.0.0.1:5555'
 

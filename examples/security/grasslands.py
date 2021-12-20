@@ -14,7 +14,6 @@ Author: Chris Laws
 
 import zmq
 
-
 ctx = zmq.Context.instance()
 
 server = ctx.socket(zmq.PUSH)

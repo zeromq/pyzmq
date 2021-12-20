@@ -3,10 +3,11 @@
 # This example is in the public domain (CC-0)
 
 import asyncio
-import zmq.asyncio
 
 from tornado.ioloop import IOLoop
 from tornado.platform.asyncio import AsyncIOMainLoop
+
+import zmq.asyncio
 
 # Tell tornado to use asyncio
 AsyncIOMainLoop().install()

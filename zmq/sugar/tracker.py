@@ -4,12 +4,11 @@
 # Distributed under the terms of the Modified BSD License.
 
 import time
-
 from threading import Event
 from typing import Any, Set, Tuple, Union
 
-from zmq.error import NotDone
 from zmq.backend import Frame
+from zmq.error import NotDone
 
 
 class MessageTracker:

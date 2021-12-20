@@ -1,24 +1,21 @@
-# -*- coding: utf8 -*-
-
 import sys
 import time
-
 from unittest import TestCase
 
 from zmq.tests import BaseZMQTestCase, SkipTest
 
 try:
     from zmq.backend.cffi import (  # type: ignore
-        zmq_version_info,
-        PUSH,
-        PULL,
         IDENTITY,
-        REQ,
-        REP,
         POLLIN,
         POLLOUT,
+        PULL,
+        PUSH,
+        REP,
+        REQ,
+        zmq_version_info,
     )
-    from zmq.backend.cffi._cffi import ffi, C
+    from zmq.backend.cffi._cffi import C, ffi
 
     have_ffi_backend = True
 except ImportError:

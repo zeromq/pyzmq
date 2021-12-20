@@ -9,9 +9,9 @@ which is not worth paying for small messages.
 # Distributed under the terms of the Modified BSD License.
 
 import argparse
-from contextlib import contextmanager
 import os
 import pickle
+from contextlib import contextmanager
 
 try:
     from time import monotonic
@@ -45,7 +45,7 @@ def compute_data_point(
     duration = 0
     count = 2
     results = []
-    print('copy=%s, size=%s' % (copy, size))
+    print(f'copy={copy}, size={size}')
     print('%8s %5s %7s' % ('count', 'dt', 'result'))
     while duration < t_max:
         with timer() as get_duration:
@@ -130,7 +130,7 @@ def main():
         t_max = 3
     npoints = args.points * (nmax - nmin) + 1
     sizes = np.logspace(nmin, nmax, npoints).astype(int)
-    print("Computing %s datapoints: size=%s" % (len(sizes), list(sizes)))
+    print(f"Computing {len(sizes)} datapoints: size={list(sizes)}")
     for size in np.logspace(nmin, nmax, npoints).astype(int):
         for copy in (True, False):
             if before is not None:

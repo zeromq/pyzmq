@@ -24,11 +24,10 @@ cdef extern from "Python.h":
 
 from libc.string cimport memcpy
 
-from zmq.utils.buffers cimport asbuffer_r
-from zmq.backend.cython.libzmq cimport *
-
-from zmq.backend.cython.socket cimport Socket
 from zmq.backend.cython.checkrc cimport _check_rc
+from zmq.backend.cython.libzmq cimport *
+from zmq.backend.cython.socket cimport Socket
+from zmq.utils.buffers cimport asbuffer_r
 
 from zmq import ROUTER, ZMQError
 from zmq.error import InterruptedSystemCall

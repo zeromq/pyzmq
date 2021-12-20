@@ -32,6 +32,7 @@ from cpython cimport Py_DECREF, Py_INCREF
 
 from zmq.utils.buffers cimport asbuffer_r
 
+
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
 
@@ -43,11 +44,12 @@ cdef extern from "mutex.h" nogil:
     cdef int mutex_lock(mutex_t*)
     cdef int mutex_unlock(mutex_t*)
 
-from .libzmq cimport *
-
-from libc.stdio cimport fprintf, stderr as cstderr
-from libc.stdlib cimport malloc, free
+from libc.stdio cimport fprintf
+from libc.stdio cimport stderr as cstderr
+from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
+
+from .libzmq cimport *
 
 import time
 from weakref import ref
@@ -61,6 +63,7 @@ except (ImportError, AttributeError):
 
 import zmq
 from zmq.error import _check_version
+
 from .checkrc cimport _check_rc
 
 #-----------------------------------------------------------------------------

@@ -2,24 +2,22 @@
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import asyncio
 import json
-from multiprocessing import Process
 import os
 import sys
+from concurrent.futures import CancelledError
+from multiprocessing import Process
 
 import pytest
 from pytest import mark
 
 import zmq
-from zmq.utils.strtypes import u
-
-import asyncio
 import zmq.asyncio as zaio
 from zmq.auth.asyncio import AsyncioAuthenticator
-
-from concurrent.futures import CancelledError
 from zmq.tests import BaseZMQTestCase
 from zmq.tests.test_auth import TestThreadAuthentication
+from zmq.utils.strtypes import u
 
 
 class ProcessForTeardownTest(Process):
@@ -54,7 +52,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        super(TestAsyncIOSocket, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         super().tearDown()

@@ -1,8 +1,8 @@
 """
 Complex example which is a combination of the rr* examples from the zguide.
 """
-from __future__ import print_function
 from gevent import spawn
+
 import zmq.green as zmq
 
 # server

@@ -1,10 +1,10 @@
-# coding: utf-8
 """Mixin for mapping set/getattr to self.set/get"""
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
 import errno
+
 from .. import constants
 
 
@@ -26,7 +26,7 @@ class AttributeSetter:
             opt = getattr(constants, upper_key)
         except AttributeError:
             raise AttributeError(
-                "%s has no such option: %s" % (self.__class__.__name__, upper_key)
+                f"{self.__class__.__name__} has no such option: {upper_key}"
             )
         else:
             self._set_attr_opt(upper_key, opt, value)
@@ -42,7 +42,7 @@ class AttributeSetter:
             opt = getattr(constants, upper_key)
         except AttributeError:
             raise AttributeError(
-                "%s has no such option: %s" % (self.__class__.__name__, upper_key)
+                f"{self.__class__.__name__} has no such option: {upper_key}"
             ) from None
         else:
             from zmq import ZMQError
@@ -54,7 +54,7 @@ class AttributeSetter:
                 # Turn that into an AttributeError
                 # necessary for mocking
                 if e.errno in {errno.EINVAL, errno.EFAULT}:
-                    raise AttributeError("{} attribute is write-only".format(key))
+                    raise AttributeError(f"{key} attribute is write-only")
                 else:
                     raise
 

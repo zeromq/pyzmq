@@ -20,8 +20,9 @@ catch 'weather'.
 import sys
 import time
 
-import zmq
 import numpy
+
+import zmq
 
 
 def main():
@@ -47,7 +48,11 @@ def main():
     try:
         while True:
             topic, msg = s.recv_multipart()
-            print('   Topic: %s, msg:%s' % (topic.decode('utf-8'), msg.decode('utf-8')))
+            print(
+                '   Topic: {}, msg:{}'.format(
+                    topic.decode('utf-8'), msg.decode('utf-8')
+                )
+            )
     except KeyboardInterrupt:
         pass
     print("Done.")

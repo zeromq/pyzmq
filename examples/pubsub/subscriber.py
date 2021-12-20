@@ -14,8 +14,9 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 import sys
 import time
 
-import zmq
 import numpy
+
+import zmq
 
 
 def sync(connect_to):
@@ -65,10 +66,10 @@ def main():
     message_size = a.nbytes
     megabits = float(throughput * message_size * 8) / 1000000
 
-    print("message size: %.0f [B]" % (message_size,))
-    print("array count: %.0f" % (array_count,))
-    print("mean throughput: %.0f [msg/s]" % (throughput,))
-    print("mean throughput: %.3f [Mb/s]" % (megabits,))
+    print(f"message size: {message_size:.0f} [B]")
+    print(f"array count: {array_count:.0f}")
+    print(f"mean throughput: {throughput:.0f} [msg/s]")
+    print(f"mean throughput: {megabits:.3f} [Mb/s]")
 
     time.sleep(1.0)
 

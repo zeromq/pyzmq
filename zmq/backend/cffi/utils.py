@@ -1,4 +1,3 @@
-# coding: utf-8
 """miscellaneous zmq_utils wrapping"""
 
 # Copyright (C) PyZMQ Developers
@@ -6,10 +5,11 @@
 
 from errno import EINTR
 
-from ._cffi import ffi, lib as C
-
-from zmq.error import ZMQError, InterruptedSystemCall, _check_rc, _check_version
+from zmq.error import InterruptedSystemCall, ZMQError, _check_rc, _check_version
 from zmq.utils.strtypes import unicode
+
+from ._cffi import ffi
+from ._cffi import lib as C
 
 
 def has(capability):

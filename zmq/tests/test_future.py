@@ -1,22 +1,21 @@
-# coding: utf-8
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from datetime import timedelta
-import os
 import json
+import os
 import sys
+from datetime import timedelta
 
 import pytest
 
 gen = pytest.importorskip('tornado.gen')
 
+from tornado.ioloop import IOLoop
+
 import zmq
 from zmq.eventloop import future
-from tornado.ioloop import IOLoop
-from zmq.utils.strtypes import u
-
 from zmq.tests import BaseZMQTestCase
+from zmq.utils.strtypes import u
 
 
 class TestFutureSocket(BaseZMQTestCase):
@@ -25,10 +24,10 @@ class TestFutureSocket(BaseZMQTestCase):
     def setUp(self):
         self.loop = IOLoop()
         self.loop.make_current()
-        super(TestFutureSocket, self).setUp()
+        super().setUp()
 
     def tearDown(self):
-        super(TestFutureSocket, self).tearDown()
+        super().tearDown()
         if self.loop:
             self.loop.close(all_fds=True)
         IOLoop.clear_current()

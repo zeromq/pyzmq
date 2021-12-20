@@ -3,16 +3,10 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq.backend.cffi import (
-    error,
-    message,
-    context,
-    socket,
-    _poll,
-    devices,
-    utils,
-)
-from ._cffi import ffi, lib as C
+from zmq.backend.cffi import _poll, context, devices, error, message, socket, utils
+
+from ._cffi import ffi
+from ._cffi import lib as C
 
 
 def zmq_version_info():
@@ -30,10 +24,10 @@ __all__ = ["zmq_version_info"]
 for submod in (error, message, context, socket, _poll, devices, utils):
     __all__.extend(submod.__all__)
 
+from ._poll import *
+from .context import *
+from .devices import *
 from .error import *
 from .message import *
-from .context import *
 from .socket import *
-from .devices import *
-from ._poll import *
 from .utils import *

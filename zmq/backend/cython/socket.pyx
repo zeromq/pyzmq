@@ -27,50 +27,50 @@
 cdef extern from "pyversion_compat.h":
     pass
 
+from cpython cimport (
+    PY_VERSION_HEX,
+    Py_DECREF,
+    Py_INCREF,
+    PyBytes_AsString,
+    PyBytes_FromStringAndSize,
+    PyBytes_Size,
+)
 from libc.errno cimport ENAMETOOLONG, ENOENT, ENOTSOCK
 from libc.string cimport memcpy
 
-from cpython cimport PyBytes_FromStringAndSize
-from cpython cimport PyBytes_AsString, PyBytes_Size
-from cpython cimport Py_DECREF, Py_INCREF, PY_VERSION_HEX
-
 from zmq.utils.buffers cimport asbuffer_r
 
+from .context cimport Context
 from .libzmq cimport (
-    fd_t,
-    int64_t,
-
-    zmq_errno,
-
-    zmq_msg_t,
-    zmq_msg_init,
-    zmq_msg_init_size,
-    zmq_msg_close,
-    zmq_msg_data,
-    zmq_msg_size,
-    zmq_msg_send,
-    zmq_msg_recv,
-
-    zmq_socket,
-    zmq_socket_monitor,
-    zmq_connect,
-    zmq_disconnect,
-    zmq_bind,
-    zmq_unbind,
-    zmq_setsockopt,
-    zmq_getsockopt,
-    zmq_close,
-    zmq_join,
-    zmq_leave,
-
     ZMQ_EVENT_ALL,
     ZMQ_IDENTITY,
     ZMQ_LINGER,
     ZMQ_TYPE,
+    fd_t,
+    int64_t,
+    zmq_bind,
+    zmq_close,
+    zmq_connect,
+    zmq_disconnect,
+    zmq_errno,
+    zmq_getsockopt,
+    zmq_join,
+    zmq_leave,
+    zmq_msg_close,
+    zmq_msg_data,
+    zmq_msg_init,
+    zmq_msg_init_size,
+    zmq_msg_recv,
+    zmq_msg_send,
+    zmq_msg_size,
+    zmq_msg_t,
+    zmq_setsockopt,
+    zmq_socket,
+    zmq_socket_monitor,
+    zmq_unbind,
 )
 from .message cimport Frame, copy_zmq_msg_bytes
 
-from .context cimport Context
 
 cdef extern from "Python.h":
     ctypedef int Py_ssize_t
@@ -86,12 +86,12 @@ cdef extern from "getpid_compat.h":
 # Python Imports
 #-----------------------------------------------------------------------------
 
+import codecs
 import copy as copy_mod
-import time
-import sys
 import random
 import struct
-import codecs
+import sys
+import time
 
 try:
     import cPickle
@@ -101,9 +101,11 @@ except:
     import pickle
 
 import zmq
-from zmq.constants import _OptType, SocketOption
+from zmq.constants import SocketOption, _OptType
+
 from .checkrc cimport _check_rc
-from zmq.error import ZMQError, ZMQBindError, InterruptedSystemCall, _check_version
+
+from zmq.error import InterruptedSystemCall, ZMQBindError, ZMQError, _check_version
 
 #-----------------------------------------------------------------------------
 # Code

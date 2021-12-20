@@ -4,9 +4,9 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-from zmq import ZMQError, PUB
-from zmq.devices.proxydevice import ProxyBase, Proxy, ThreadProxy, ProcessProxy
+from zmq import PUB, ZMQError
 from zmq.devices.monitoredqueue import monitored_queue
+from zmq.devices.proxydevice import ProcessProxy, Proxy, ProxyBase, ThreadProxy
 
 
 class MonitoredQueueBase(ProxyBase):

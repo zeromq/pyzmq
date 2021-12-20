@@ -19,12 +19,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from .libzmq cimport (
-    zmq_curve_keypair,
-    zmq_curve_public,
-    zmq_has,
-)
+from .libzmq cimport zmq_curve_keypair, zmq_curve_public, zmq_has
+
 from zmq.error import ZMQError, _check_rc, _check_version
+
 
 def has(capability):
     """Check for zmq capability by name (e.g. 'ipc', 'curve')

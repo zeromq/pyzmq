@@ -8,8 +8,7 @@ import time
 from pytest import mark
 
 import zmq
-
-from zmq.tests import PollZMQTestCase, have_gevent, GreenTest
+from zmq.tests import GreenTest, PollZMQTestCase, have_gevent
 
 
 def wait():
@@ -210,6 +209,7 @@ class TestSelect(PollZMQTestCase):
 
 if have_gevent:
     import gevent
+
     from zmq import green as gzmq
 
     class TestPollGreen(GreenTest, TestPoll):
