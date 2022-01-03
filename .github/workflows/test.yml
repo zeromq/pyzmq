@@ -2,6 +2,9 @@ name: Test
 
 on:
   push:
+    branches-ignore:
+      - "dependabot/**"
+      - "pre-commit-ci-update-config"
   pull_request:
 
 env:
