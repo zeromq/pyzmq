@@ -25,11 +25,9 @@ from buildutils.bundle import bundled_version
 
 target_libzmq = '%i.%i.%i' % bundled_version
 
-rst_epilog = """
+rst_epilog = f"""
 .. |target_libzmq| replace:: {target_libzmq}
-""".format(
-    **locals()
-)
+"""
 
 # -- General configuration -----------------------------------------------------
 
