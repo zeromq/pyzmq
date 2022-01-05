@@ -7,7 +7,7 @@ from cyzmq_example import cython_sender, mixed_receiver
 import zmq
 
 
-def python_sender(url, n):
+def python_sender(url: str, n: int) -> None:
     """Use entirely high-level Python APIs to send messages"""
     ctx = zmq.Context()
     s = ctx.socket(zmq.PUSH)
@@ -23,7 +23,7 @@ def python_sender(url, n):
     s.send(buf)
 
 
-def main():
+def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="send & recv messages with Cython")

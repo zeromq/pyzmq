@@ -25,7 +25,7 @@ LOG_LEVELS = (
 )
 
 
-def sub_logger(port, level=logging.DEBUG):
+def sub_logger(port: int, level: int = logging.DEBUG) -> None:
     ctx = zmq.Context()
     sub = ctx.socket(zmq.SUB)
     sub.bind('tcp://127.0.0.1:%i' % port)
@@ -33,23 +33,24 @@ def sub_logger(port, level=logging.DEBUG):
     logging.basicConfig(level=level)
 
     while True:
-        level, message = sub.recv_multipart()
+        level_name, message = sub.recv_multipart()
+        level_name = level_name.decode('ascii').lower()
         message = message.decode('ascii')
         if message.endswith('\n'):
             # trim trailing newline, which will get appended again
             message = message[:-1]
-        log = getattr(logging, level.lower().decode('ascii'))
+        log = getattr(logging, level_name)
         log(message)
 
 
-def log_worker(port, interval=1, level=logging.DEBUG):
+def log_worker(port: int, interval: float = 1, level: int = logging.DEBUG) -> None:
     ctx = zmq.Context()
     pub = ctx.socket(zmq.PUB)
     pub.connect('tcp://127.0.0.1:%i' % port)
 
     logger = logging.getLogger(str(os.getpid()))
     logger.setLevel(level)
-    handler = PUBHandler(pub)
+    handler: PUBHandler = PUBHandler(pub)
     logger.addHandler(handler)
     print("starting logger at %i with level=%s" % (os.getpid(), level))
 

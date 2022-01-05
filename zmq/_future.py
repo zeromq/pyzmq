@@ -4,14 +4,37 @@
 # Distributed under the terms of the Modified BSD License.
 
 import warnings
+from asyncio import Future
 from collections import deque, namedtuple
 from itertools import chain
-from typing import Type
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 import zmq as _zmq
 from zmq import EVENTS, POLLIN, POLLOUT
+from zmq._typing import Literal
 
-_FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg', 'timer'))
+
+class _FutureEvent(NamedTuple):
+    future: Future
+    kind: str
+    kwargs: Dict
+    msg: Any
+    timer: Any
+
 
 # These are incomplete classes and need a Mixin for compatibility with an eventloop
 # defining the following attributes:
@@ -25,9 +48,10 @@ _FutureEvent = namedtuple('_FutureEvent', ('future', 'kind', 'kwargs', 'msg', 't
 class _Async:
     """Mixin for common async logic"""
 
-    _current_loop = None
+    _current_loop: Any = None
+    _Future: Type[Future]
 
-    def _get_loop(self):
+    def _get_loop(self) -> Any:
         """Get event loop
 
         Notice if event loop has changed,
@@ -44,19 +68,30 @@ class _Async:
             self._init_io_state(current_loop)
         return current_loop
 
-    def _default_loop(self):
+    def _default_loop(self) -> Any:
         raise NotImplementedError("Must be implemented in a subclass")
 
-    def _init_io_state(self, loop=None):
+    def _init_io_state(self, loop=None) -> None:
         pass
 
 
 class _AsyncPoller(_Async, _zmq.Poller):
     """Poller that returns a Future on poll, instead of blocking."""
 
-    _socket_class = None  # type: Type[_AsyncSocket]
+    _socket_class: Type["_AsyncSocket"]
+    _READ: int
+    _WRITE: int
+    raw_sockets: List[Any]
 
-    def poll(self, timeout=-1):
+    def _watch_raw_socket(self, loop: Any, socket: Any, evt: int, f: Callable) -> None:
+        """Schedule callback for a raw socket"""
+        raise NotImplementedError()
+
+    def _unwatch_raw_sockets(self, loop: Any, *sockets: Any) -> None:
+        """Unschedule callback for a raw socket"""
+        raise NotImplementedError()
+
+    def poll(self, timeout=-1) -> Awaitable[List[Tuple[Any, int]]]:  # type: ignore
         """Return a Future for a poll event"""
         future = self._Future()
         if timeout == 0:
@@ -74,7 +109,7 @@ class _AsyncPoller(_Async, _zmq.Poller):
         watcher = self._Future()
 
         # watch raw sockets:
-        raw_sockets = []
+        raw_sockets: List[Any] = []
 
         def wake_raw(*args):
             if not watcher.done():
@@ -155,6 +190,9 @@ class _NoTimer:
         pass
 
 
+T = TypeVar("T", bound="_AsyncSocket")
+
+
 class _AsyncSocket(_Async, _zmq.Socket):
 
     # Warning : these class variables are only here to allow to call super().__setattr__.
@@ -162,18 +200,23 @@ class _AsyncSocket(_Async, _zmq.Socket):
     _recv_futures = None
     _send_futures = None
     _state = 0
-    _shadow_sock = None
+    _shadow_sock: "_zmq.Socket"
     _poller_class = _AsyncPoller
     _fd = None
 
-    def __init__(self, context=None, socket_type=-1, io_loop=None, **kwargs):
+    def __init__(
+        self,
+        context=None,
+        socket_type=-1,
+        io_loop=None,
+        _from_socket: Optional["_zmq.Socket"] = None,
+        **kwargs,
+    ) -> None:
         if isinstance(context, _zmq.Socket):
-            context, from_socket = (None, context)
-        else:
-            from_socket = kwargs.pop('_from_socket', None)
-        if from_socket is not None:
-            super().__init__(shadow=from_socket.underlying)
-            self._shadow_sock = from_socket
+            context, _from_socket = (None, context)
+        if _from_socket is not None:
+            super().__init__(shadow=_from_socket.underlying)
+            self._shadow_sock = _from_socket
         else:
             super().__init__(context, socket_type, **kwargs)
             self._shadow_sock = _zmq.Socket.shadow(self.underlying)
@@ -191,15 +234,16 @@ class _AsyncSocket(_Async, _zmq.Socket):
         self._fd = self._shadow_sock.FD
 
     @classmethod
-    def from_socket(cls, socket, io_loop=None):
+    def from_socket(cls: Type[T], socket: "_zmq.Socket", io_loop: Any = None) -> T:
         """Create an async socket from an existing Socket"""
         return cls(_from_socket=socket, io_loop=io_loop)
 
-    def close(self, linger=None):
+    def close(self, linger: Optional[int] = None) -> None:
         if not self.closed and self._fd is not None:
-            for event in list(
+            event_list: List[_FutureEvent] = list(
                 chain(self._recv_futures or [], self._send_futures or [])
-            ):
+            )
+            for event in event_list:
                 if not event.future.done():
                     try:
                         event.future.cancel()
@@ -219,7 +263,33 @@ class _AsyncSocket(_Async, _zmq.Socket):
 
     get.__doc__ = _zmq.Socket.get.__doc__
 
-    def recv_multipart(self, flags=0, copy=True, track=False):
+    @overload  # type: ignore
+    def recv_multipart(
+        self, flags: int = 0, *, track: bool = False
+    ) -> Awaitable[List[bytes]]:
+        ...
+
+    @overload
+    def recv_multipart(
+        self, flags: int = 0, *, copy: Literal[True], track: bool = False
+    ) -> Awaitable[List[bytes]]:
+        ...
+
+    @overload
+    def recv_multipart(
+        self, flags: int = 0, *, copy: Literal[False], track: bool = False
+    ) -> Awaitable[List[_zmq.Frame]]:  # type: ignore
+        ...
+
+    @overload
+    def recv_multipart(
+        self, flags: int = 0, copy: bool = True, track: bool = False
+    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]:
+        ...
+
+    def recv_multipart(
+        self, flags: int = 0, copy: bool = True, track: bool = False
+    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]:
         """Receive a complete multipart zmq message.
 
         Returns a Future whose result will be a multipart message.
@@ -228,7 +298,9 @@ class _AsyncSocket(_Async, _zmq.Socket):
             'recv_multipart', dict(flags=flags, copy=copy, track=track)
         )
 
-    def recv(self, flags=0, copy=True, track=False):
+    def recv(  # type: ignore
+        self, flags: int = 0, copy: bool = True, track: bool = False
+    ) -> Awaitable[Union[bytes, _zmq.Frame]]:
         """Receive a single zmq frame.
 
         Returns a Future, whose result will be the received frame.
@@ -237,7 +309,9 @@ class _AsyncSocket(_Async, _zmq.Socket):
         """
         return self._add_recv_event('recv', dict(flags=flags, copy=copy, track=track))
 
-    def send_multipart(self, msg, flags=0, copy=True, track=False, **kwargs):
+    def send_multipart(  # type: ignore
+        self, msg_parts: Any, flags: int = 0, copy: bool = True, track=False, **kwargs
+    ) -> Awaitable[Optional[_zmq.MessageTracker]]:
         """Send a complete multipart zmq message.
 
         Returns a Future that resolves when sending is complete.
@@ -245,9 +319,16 @@ class _AsyncSocket(_Async, _zmq.Socket):
         kwargs['flags'] = flags
         kwargs['copy'] = copy
         kwargs['track'] = track
-        return self._add_send_event('send_multipart', msg=msg, kwargs=kwargs)
+        return self._add_send_event('send_multipart', msg=msg_parts, kwargs=kwargs)
 
-    def send(self, msg, flags=0, copy=True, track=False, **kwargs):
+    def send(  # type: ignore
+        self,
+        data: Any,
+        flags: int = 0,
+        copy: bool = True,
+        track: bool = False,
+        **kwargs: Any,
+    ) -> Awaitable[Optional[_zmq.MessageTracker]]:
         """Send a single zmq frame.
 
         Returns a Future that resolves when sending is complete.
@@ -258,7 +339,7 @@ class _AsyncSocket(_Async, _zmq.Socket):
         kwargs['copy'] = copy
         kwargs['track'] = track
         kwargs.update(dict(flags=flags, copy=copy, track=track))
-        return self._add_send_event('send', msg=msg, kwargs=kwargs)
+        return self._add_send_event('send', msg=data, kwargs=kwargs)
 
     def _deserialize(self, recvd, load):
         """Deserialize with Futures"""
@@ -292,7 +373,7 @@ class _AsyncSocket(_Async, _zmq.Socket):
 
         return f
 
-    def poll(self, timeout=None, flags=_zmq.POLLIN):
+    def poll(self, timeout=None, flags=_zmq.POLLIN) -> Awaitable[int]:  # type: ignore
         """poll the socket for events
 
         returns a Future for the poll results.
@@ -303,7 +384,7 @@ class _AsyncSocket(_Async, _zmq.Socket):
 
         p = self._poller_class()
         p.register(self, flags)
-        f = p.poll(timeout)
+        f = cast(Future, p.poll(timeout))
 
         future = self._Future()
 
@@ -329,6 +410,13 @@ class _AsyncSocket(_Async, _zmq.Socket):
         else:
             f.add_done_callback(unwrap_result)
         return future
+
+    # overrides only necessary for updated types
+    def recv_string(self, *args, **kwargs) -> Awaitable[str]:  # type: ignore
+        return super().recv_string(*args, **kwargs)  # type: ignore
+
+    def send_string(self, s: str, flags: int = 0, encoding: str = 'utf-8') -> Awaitable[None]:  # type: ignore
+        return super().send_string(s, flags=flags, encoding=encoding)  # type: ignore
 
     def _add_timeout(self, future, timeout):
         """Add a timeout for a send or recv Future"""

@@ -24,7 +24,7 @@ import time
 import zmq
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 2:
         print('usage: publisher <bind-to>')
         sys.exit(1)
@@ -46,7 +46,7 @@ def main():
     s.bind(bind_to)
 
     print("Starting broadcast on topics:")
-    print("   %s" % all_topics)
+    print(f"   {all_topics}")
     print("Hit Ctrl-C to stop broadcasting.")
     print("Waiting so subscriber sockets can connect...")
     print("")
@@ -55,9 +55,9 @@ def main():
     msg_counter = itertools.count()
     try:
         for topic in itertools.cycle(all_topics):
-            msg_body = str(next(msg_counter)).encode('utf-8')
-            print(f'   Topic: {topic}, msg:{msg_body}')
-            s.send_multipart([topic, msg_body])
+            msg_body = str(next(msg_counter))
+            print(f"   Topic: {topic.decode('utf8')}, msg:{msg_body}")
+            s.send_multipart([topic, msg_body.encode("utf8")])
             # short wait so we don't hog the cpu
             time.sleep(0.1)
     except KeyboardInterrupt:

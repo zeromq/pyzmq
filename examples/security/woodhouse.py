@@ -18,7 +18,7 @@ import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 
 
-def run():
+def run() -> None:
     '''Run woodhouse example'''
 
     valid_client_test_pass = False

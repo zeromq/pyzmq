@@ -3,9 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
-import zmq
 from zmq.backend import zmq_poll
 from zmq.constants import POLLERR, POLLIN, POLLOUT
 
@@ -20,11 +19,11 @@ class Poller:
     sockets: List[Tuple[Any, int]]
     _map: Dict
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.sockets = []
         self._map = {}
 
-    def __contains__(self, socket: Any):
+    def __contains__(self, socket: Any) -> bool:
         return socket in self._map
 
     def register(self, socket: Any, flags: int = POLLIN | POLLOUT):
@@ -76,7 +75,7 @@ class Poller:
         for socket, flags in self.sockets[idx:]:
             self._map[socket] -= 1
 
-    def poll(self, timeout: Optional[int] = None):
+    def poll(self, timeout: Optional[int] = None) -> List[Tuple[Any, int]]:
         """Poll the registered 0MQ or native fds for I/O.
 
         If there are currently events ready to be processed, this function will return immediately.

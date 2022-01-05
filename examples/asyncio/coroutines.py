@@ -13,14 +13,14 @@ url = 'tcp://127.0.0.1:5555'
 ctx = Context.instance()
 
 
-async def ping():
+async def ping() -> None:
     """print dots to indicate idleness"""
     while True:
         await asyncio.sleep(0.5)
         print('.')
 
 
-async def receiver():
+async def receiver() -> None:
     """receive messages with polling"""
     pull = ctx.socket(zmq.PULL)
     pull.connect(url)
@@ -34,7 +34,7 @@ async def receiver():
             print('recvd', msg)
 
 
-async def sender():
+async def sender() -> None:
     """send a message every second"""
     tic = time.time()
     push = ctx.socket(zmq.PUSH)

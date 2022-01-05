@@ -2,6 +2,10 @@ from typing import List
 
 from . import backend, sugar
 
+COPY_THRESHOLD: int
+DRAFT_API: bool
+__version__: str
+
 # mypy doesn't like overwriting symbols with * so be explicit
 # about what comes from backend, not from sugar
 # see tools/backend_imports.py to generate this list
@@ -20,9 +24,6 @@ from .backend import zmq_poll as zmq_poll
 from .constants import *
 from .error import *
 from .sugar import *
-
-COPY_THRESHOLD: int
-DRAFT_API: bool
 
 def get_includes() -> List[str]: ...
 def get_library_dirs() -> List[str]: ...

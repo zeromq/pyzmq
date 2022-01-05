@@ -2,6 +2,7 @@
 
 import pickle
 import zlib
+from typing import Any, Dict, cast
 
 import numpy
 
@@ -18,20 +19,24 @@ class SerializingSocket(zmq.Socket):
     for reconstructing the array on the other side (dtype,shape).
     """
 
-    def send_zipped_pickle(self, obj, flags=0, protocol=-1):
+    def send_zipped_pickle(
+        self, obj: Any, flags: int = 0, protocol: int = pickle.HIGHEST_PROTOCOL
+    ) -> None:
         """pack and compress an object with pickle and zlib."""
         pobj = pickle.dumps(obj, protocol)
         zobj = zlib.compress(pobj)
         print('zipped pickle is %i bytes' % len(zobj))
         return self.send(zobj, flags=flags)
 
-    def recv_zipped_pickle(self, flags=0):
+    def recv_zipped_pickle(self, flags: int = 0) -> Any:
         """reconstruct a Python object sent with zipped_pickle"""
         zobj = self.recv(flags)
         pobj = zlib.decompress(zobj)
         return pickle.loads(pobj)
 
-    def send_array(self, A, flags=0, copy=True, track=False):
+    def send_array(
+        self, A: numpy.ndarray, flags: int = 0, copy: bool = True, track: bool = False
+    ) -> Any:
         """send a numpy array with metadata"""
         md = dict(
             dtype=str(A.dtype),
@@ -40,19 +45,21 @@ class SerializingSocket(zmq.Socket):
         self.send_json(md, flags | zmq.SNDMORE)
         return self.send(A, flags, copy=copy, track=track)
 
-    def recv_array(self, flags=0, copy=True, track=False):
+    def recv_array(
+        self, flags: int = 0, copy: bool = True, track: bool = False
+    ) -> numpy.ndarray:
         """recv a numpy array"""
-        md = self.recv_json(flags=flags)
+        md = cast(Dict[str, Any], self.recv_json(flags=flags))
         msg = self.recv(flags=flags, copy=copy, track=track)
         A = numpy.frombuffer(msg, dtype=md['dtype'])
         return A.reshape(md['shape'])
 
 
-class SerializingContext(zmq.Context):
+class SerializingContext(zmq.Context[SerializingSocket]):
     _socket_class = SerializingSocket
 
 
-def main():
+def main() -> None:
     ctx = SerializingContext()
     req = ctx.socket(zmq.REQ)
     rep = ctx.socket(zmq.REP)

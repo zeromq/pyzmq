@@ -1,12 +1,13 @@
 """The display part of a simply two process chat app."""
 
 # This file has been placed in the public domain.
+from typing import List
 
 import zmq
 from zmq.utils.win32 import allow_interrupt
 
 
-def main(addrs):
+def main(addrs: List[str]):
     context = zmq.Context()
     control = context.socket(zmq.PUB)
     control.bind('inproc://control')
@@ -24,14 +25,14 @@ def main(addrs):
     with allow_interrupt(interrupt_polling):
         message = ''
         while message != 'quit':
-            message = updates.recv_multipart()
-            if len(message) < 2:
+            recvd = updates.recv_multipart()
+            if len(recvd) < 2:
                 print('Invalid message.')
                 continue
-            account = message[0]
-            message = ' '.join(message[1:])
+            account = recvd[0].decode("utf8")
+            message = ' '.join(b.decode("utf8") for b in recvd[1:])
             if message == 'quit':
-                print('Killed by "%s".' % account)
+                print(f'Killed by {account}.')
                 break
             print(f'{account}: {message}')
 

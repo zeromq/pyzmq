@@ -307,7 +307,7 @@ class _Socket(_original_Socket):
         return super().set(opt, val)
 
 
-class _Context(_original_Context):
+class _Context(_original_Context[_Socket]):
     """Replacement for :class:`zmq.Context`
 
     Ensures that the greened Socket above is used in calls to `socket`.

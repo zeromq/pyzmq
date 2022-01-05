@@ -20,15 +20,13 @@ Code adapted from StarCluster:
     http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py
 """
 
+import logging
+
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
-
-
-import logging
-from logging import DEBUG, ERROR, FATAL, INFO, WARN
+from typing import Optional, Union
 
 import zmq
-from zmq.utils.strtypes import bytes, cast_bytes, unicode
 
 TOPIC_DELIM = "::"  # delimiter for splitting topics on the receiving end.
 
@@ -56,11 +54,17 @@ class PUBHandler(logging.Handler):
     message by: log.debug("subtopic.subsub::the real message")
     """
 
-    socket = None
+    ctx: zmq.Context
+    socket: zmq.Socket
 
-    def __init__(self, interface_or_socket, context=None, root_topic=''):
+    def __init__(
+        self,
+        interface_or_socket: Union[str, zmq.Socket],
+        context: Optional[zmq.Context] = None,
+        root_topic: str = '',
+    ) -> None:
         logging.Handler.__init__(self)
-        self._root_topic = root_topic
+        self.root_topic = root_topic
         self.formatters = {
             logging.DEBUG: logging.Formatter(
                 "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
@@ -85,14 +89,14 @@ class PUBHandler(logging.Handler):
             self.socket.bind(interface_or_socket)
 
     @property
-    def root_topic(self):
+    def root_topic(self) -> str:
         return self._root_topic
 
     @root_topic.setter
-    def root_topic(self, value):
+    def root_topic(self, value: str):
         self.setRootTopic(value)
 
-    def setRootTopic(self, root_topic):
+    def setRootTopic(self, root_topic: str):
         """Set the root topic for this handler.
 
         This value is prepended to all messages published by this handler, and it
@@ -105,6 +109,8 @@ class PUBHandler(logging.Handler):
         the binary representation of the log level string (INFO, WARN, etc.).
         Note that ZMQ SUB sockets can have multiple subscriptions.
         """
+        if isinstance(root_topic, bytes):
+            root_topic = root_topic.decode("utf8")
         self._root_topic = root_topic
 
     def setFormatter(self, fmt, level=logging.NOTSET):
@@ -125,12 +131,13 @@ class PUBHandler(logging.Handler):
 
     def emit(self, record):
         """Emit a log message on my socket."""
+
         try:
             topic, record.msg = record.msg.split(TOPIC_DELIM, 1)
-        except Exception:
+        except ValueError:
             topic = ""
         try:
-            bmsg = cast_bytes(self.format(record))
+            bmsg = self.format(record).encode("utf8")
         except Exception:
             self.handleError(record)
             return
@@ -145,7 +152,7 @@ class PUBHandler(logging.Handler):
         if topic:
             topic_list.append(topic)
 
-        btopic = b'.'.join(cast_bytes(t) for t in topic_list)
+        btopic = '.'.join(topic_list).encode("utf8")
 
         self.socket.send_multipart([btopic, bmsg])
 

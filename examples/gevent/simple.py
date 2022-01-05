@@ -1,3 +1,5 @@
+from typing import Optional
+
 from gevent import spawn, spawn_later
 
 import zmq.green as zmq
@@ -23,7 +25,7 @@ sock = ctx.socket(zmq.PULL)
 sock.connect('ipc:///tmp/zmqtest')
 
 
-def get_objs(sock):
+def get_objs(sock: zmq.Socket):
     while True:
         o = sock.recv_pyobj()
         print('received python object:', o)
@@ -32,7 +34,7 @@ def get_objs(sock):
             break
 
 
-def print_every(s, t=None):
+def print_every(s: str, t: Optional[float] = None):
     print(s)
     if t:
         spawn_later(t, print_every, s, t)

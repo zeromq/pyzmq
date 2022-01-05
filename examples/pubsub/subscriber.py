@@ -19,7 +19,7 @@ import numpy
 import zmq
 
 
-def sync(connect_to):
+def sync(connect_to: str) -> None:
     # use connect socket + 1
     sync_with = ':'.join(
         connect_to.split(':')[:-1] + [str(int(connect_to.split(':')[-1]) + 1)]
@@ -31,7 +31,7 @@ def sync(connect_to):
     s.recv()
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 3:
         print('usage: subscriber <connect_to> <array-count>')
         sys.exit(1)

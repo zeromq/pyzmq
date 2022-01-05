@@ -17,7 +17,6 @@ import sys
 import warnings
 from getpass import getpass, getuser
 from multiprocessing import Process
-from typing import Type
 
 try:
     with warnings.catch_warnings():

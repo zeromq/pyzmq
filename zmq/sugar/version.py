@@ -11,7 +11,7 @@ VERSION_MAJOR = 22
 VERSION_MINOR = 3
 VERSION_PATCH = 0
 VERSION_EXTRA = ""
-__version__ = '%i.%i.%i' % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+__version__: str = '%i.%i.%i' % (VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
 
 version_info: Union[Tuple[int, int, int], Tuple[int, int, int, float]] = (
     VERSION_MAJOR,
@@ -28,7 +28,7 @@ if VERSION_EXTRA:
         float('inf'),
     )
 
-__revision__ = ''
+__revision__: str = ''
 
 
 def pyzmq_version() -> str:

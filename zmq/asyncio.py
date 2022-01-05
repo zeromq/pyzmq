@@ -151,7 +151,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 Poller._socket_class = Socket
 
 
-class Context(_zmq.Context):
+class Context(_zmq.Context[Socket]):
     """Context for creating asyncio-compatible Sockets"""
 
     _socket_class = Socket

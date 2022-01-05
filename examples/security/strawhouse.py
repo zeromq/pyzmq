@@ -19,7 +19,7 @@ import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 
 
-def run():
+def run() -> None:
     '''Run strawhouse client'''
 
     allow_test_pass = False

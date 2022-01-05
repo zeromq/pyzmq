@@ -34,12 +34,14 @@ examples_dir = resolve_repo_dir("examples")
 mypy_dir = resolve_repo_dir("mypy_tests")
 
 
-def run_mypy(path):
+def run_mypy(*mypy_args):
     """Run mypy for a path
 
     Captures output and reports it on errors
     """
-    p = Popen([sys.executable, "-m", "mypy", path], stdout=PIPE, stderr=STDOUT)
+    p = Popen(
+        [sys.executable, "-m", "mypy"] + list(mypy_args), stdout=PIPE, stderr=STDOUT
+    )
     o, _ = p.communicate()
     out = o.decode("utf8", "replace")
     print(out)
@@ -60,7 +62,7 @@ if os.path.exists(examples_dir):
 @pytest.mark.parametrize("example", examples)
 def test_mypy_example(example):
     example_dir = os.path.join(examples_dir, example)
-    run_mypy(example_dir)
+    run_mypy("--disallow-untyped-calls", example_dir)
 
 
 if os.path.exists(mypy_dir):
@@ -69,4 +71,4 @@ if os.path.exists(mypy_dir):
 
 @pytest.mark.parametrize("filename", mypy_tests)
 def test_mypy(filename):
-    run_mypy(os.path.join(mypy_dir, filename))
+    run_mypy("--disallow-untyped-calls", os.path.join(mypy_dir, filename))

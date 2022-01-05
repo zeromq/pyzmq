@@ -8,32 +8,34 @@ import datetime
 import glob
 import io
 import os
+from typing import Dict, Optional, Tuple, Union
 
 import zmq
-from zmq.utils.strtypes import b, bytes, u, unicode
 
-_cert_secret_banner = u(
-    """#   ****  Generated on {0} by pyzmq  ****
+_cert_secret_banner = """#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE **Secret** Certificate
 #   DO NOT PROVIDE THIS FILE TO OTHER USERS nor change its permissions.
 
 """
-)
 
-_cert_public_banner = u(
-    """#   ****  Generated on {0} by pyzmq  ****
+
+_cert_public_banner = """#   ****  Generated on {0} by pyzmq  ****
 #   ZeroMQ CURVE Public Certificate
 #   Exchange securely, or use a secure mechanism to verify the contents
 #   of this file after exchange. Store public certificates in your home
 #   directory, in the .curve subdirectory.
 
 """
-)
 
 
 def _write_key_file(
-    key_filename, banner, public_key, secret_key=None, metadata=None, encoding='utf-8'
-):
+    key_filename: Union[str, os.PathLike],
+    banner: str,
+    public_key: Union[str, bytes],
+    secret_key: Optional[Union[str, bytes]] = None,
+    metadata: Optional[Dict[str, str]] = None,
+    encoding: str = 'utf-8',
+) -> None:
     """Create a certificate file"""
     if isinstance(public_key, bytes):
         public_key = public_key.decode(encoding)
@@ -42,23 +44,27 @@ def _write_key_file(
     with open(key_filename, 'w', encoding='utf8') as f:
         f.write(banner.format(datetime.datetime.now()))
 
-        f.write(u('metadata\n'))
+        f.write('metadata\n')
         if metadata:
             for k, v in metadata.items():
                 if isinstance(k, bytes):
                     k = k.decode(encoding)
                 if isinstance(v, bytes):
                     v = v.decode(encoding)
-                f.write(u("    {0} = {1}\n").format(k, v))
+                f.write(f"    {k} = {v}\n")
 
-        f.write(u('curve\n'))
-        f.write(u("    public-key = \"{0}\"\n").format(public_key))
+        f.write('curve\n')
+        f.write(f"    public-key = \"{public_key}\"\n")
 
         if secret_key:
-            f.write(u("    secret-key = \"{0}\"\n").format(secret_key))
+            f.write(f"    secret-key = \"{secret_key}\"\n")
 
 
-def create_certificates(key_dir, name, metadata=None):
+def create_certificates(
+    key_dir: Union[str, os.PathLike],
+    name: str,
+    metadata: Optional[Dict[str, str]] = None,
+) -> Tuple[str, str]:
     """Create zmq certificates.
 
     Returns the file paths to the public and secret certificate files.
@@ -82,7 +88,9 @@ def create_certificates(key_dir, name, metadata=None):
     return public_key_file, secret_key_file
 
 
-def load_certificate(filename):
+def load_certificate(
+    filename: Union[str, os.PathLike]
+) -> Tuple[bytes, Optional[bytes]]:
     """Load public and secret key from a zmq certificate.
 
     Returns (public_key, secret_key)
@@ -115,7 +123,7 @@ def load_certificate(filename):
     return public_key, secret_key
 
 
-def load_certificates(directory='.'):
+def load_certificates(directory: Union[str, os.PathLike] = '.') -> Dict[bytes, bool]:
     """Load public keys from all certificates in a directory"""
     certs = {}
     if not os.path.isdir(directory):

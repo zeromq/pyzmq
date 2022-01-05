@@ -7,32 +7,32 @@ import atexit
 import os
 import warnings
 from threading import Lock
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
 from zmq.constants import ContextOption, Errno, SocketOption
 from zmq.error import ZMQError
 
-from .attrsettr import AttributeSetter
+from .attrsettr import AttributeSetter, OptValT
 from .socket import Socket
 
 # notice when exiting, to avoid triggering term on exit
 _exiting = False
 
 
-def _notice_atexit():
+def _notice_atexit() -> None:
     global _exiting
     _exiting = True
 
 
 atexit.register(_notice_atexit)
 
-
 T = TypeVar('T', bound='Context')
+ST = TypeVar('ST', bound='Socket', covariant=True)
 
 
-class Context(ContextBase, AttributeSetter):
+class Context(ContextBase, AttributeSetter, Generic[ST]):
     """Create a zmq Context
 
     A zmq Context creates sockets via its ``ctx.socket`` method.
@@ -44,8 +44,10 @@ class Context(ContextBase, AttributeSetter):
     _instance_pid: Optional[int] = None
     _shadow = False
     _sockets: WeakSet
+    # mypy doesn't like a default value here
+    _socket_class: Type[ST] = Socket  # type: ignore
 
-    def __init__(self, io_threads: int = 1, **kwargs):
+    def __init__(self: "Context[Socket]", io_threads: int = 1, **kwargs: Any) -> None:
         super().__init__(io_threads=io_threads, **kwargs)
         if kwargs.get('shadow', False):
             self._shadow = True
@@ -54,7 +56,7 @@ class Context(ContextBase, AttributeSetter):
         self.sockopts = {}
         self._sockets = WeakSet()
 
-    def __del__(self):
+    def __del__(self) -> None:
         """deleting a Context should terminate it, without trying non-threadsafe destroy"""
 
         # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
@@ -71,7 +73,7 @@ class Context(ContextBase, AttributeSetter):
 
     _repr_cls = "zmq.Context"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         cls = self.__class__
         # look up _repr_cls on exact class, not inherited
         _repr_cls = cls.__dict__.get("_repr_cls", None)
@@ -87,20 +89,20 @@ class Context(ContextBase, AttributeSetter):
             sockets = ""
         return f"<{_repr_cls}({sockets}) at {hex(id(self))}{closed}>"
 
-    def __enter__(self):
+    def __enter__(self: T) -> T:
         return self
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         self.term()
 
-    def __copy__(self, memo=None):
+    def __copy__(self: T, memo: Any = None) -> T:
         """Copying a Context creates a shadow copy"""
         return self.__class__.shadow(self.underlying)
 
     __deepcopy__ = __copy__
 
     @classmethod
-    def shadow(cls, address):
+    def shadow(cls: Type[T], address: int) -> T:
         """Shadow an existing libzmq context
 
         address is the integer address of the libzmq context
@@ -131,7 +133,7 @@ class Context(ContextBase, AttributeSetter):
 
     # static method copied from tornado IOLoop.instance
     @classmethod
-    def instance(cls: Type[T], io_threads=1) -> T:
+    def instance(cls: Type[T], io_threads: int = 1) -> T:
         """Returns a global Context instance.
 
         Most single-threaded applications have a single, global Context.
@@ -193,7 +195,7 @@ class Context(ContextBase, AttributeSetter):
     # Hooks for ctxopt completion
     # -------------------------------------------------------------------------
 
-    def __dir__(self):
+    def __dir__(self) -> List[str]:
         keys = dir(self.__class__)
         keys.extend(ContextOption.__members__)
         return keys
@@ -202,17 +204,17 @@ class Context(ContextBase, AttributeSetter):
     # Creating Sockets
     # -------------------------------------------------------------------------
 
-    def _add_socket(self, socket: Any):
+    def _add_socket(self, socket: Any) -> None:
         """Add a weakref to a socket for Context.destroy / reference counting"""
         self._sockets.add(socket)
 
-    def _rm_socket(self, socket: Any):
+    def _rm_socket(self, socket: Any) -> None:
         """Remove a socket for Context.destroy / reference counting"""
         # allow _sockets to be None in case of process teardown
         if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
-    def destroy(self, linger: Optional[float] = None):
+    def destroy(self, linger: Optional[float] = None) -> None:
         """Close all sockets associated with this context and then terminate
         the context.
 
@@ -240,11 +242,7 @@ class Context(ContextBase, AttributeSetter):
 
         self.term()
 
-    @property
-    def _socket_class(self):
-        return Socket
-
-    def socket(self, socket_type: int, **kwargs):
+    def socket(self: T, socket_type: int, **kwargs: Any) -> ST:
         """Create a Socket associated with this Context.
 
         Parameters
@@ -258,7 +256,7 @@ class Context(ContextBase, AttributeSetter):
         """
         if self.closed:
             raise ZMQError(Errno.ENOTSUP)
-        s = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+        s: ST = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
             self, socket_type, **kwargs
         )
         for opt, value in self.sockopts.items():
@@ -272,21 +270,21 @@ class Context(ContextBase, AttributeSetter):
         self._add_socket(s)
         return s
 
-    def setsockopt(self, opt: int, value):
+    def setsockopt(self, opt: int, value: Any) -> None:
         """set default socket options for new sockets created by this Context
 
         .. versionadded:: 13.0
         """
         self.sockopts[opt] = value
 
-    def getsockopt(self, opt: int):
+    def getsockopt(self, opt: int) -> OptValT:
         """get default socket options for new sockets created by this Context
 
         .. versionadded:: 13.0
         """
         return self.sockopts[opt]
 
-    def _set_attr_opt(self, name: str, opt: int, value):
+    def _set_attr_opt(self, name: str, opt: int, value: OptValT) -> None:
         """set default sockopts as attributes"""
         if name in ContextOption.__members__:
             return self.set(opt, value)
@@ -295,7 +293,7 @@ class Context(ContextBase, AttributeSetter):
         else:
             raise AttributeError(f"No such context or socket option: {name}")
 
-    def _get_attr_opt(self, name: str, opt: int):
+    def _get_attr_opt(self, name: str, opt: int) -> OptValT:
         """get default sockopts as attributes"""
         if name in ContextOption.__members__:
             return self.get(opt)
@@ -305,7 +303,7 @@ class Context(ContextBase, AttributeSetter):
             else:
                 return self.sockopts[opt]
 
-    def __delattr__(self, key: str):
+    def __delattr__(self, key: str) -> None:
         """delete default sockopts as attributes"""
         key = key.upper()
         try:
