@@ -12,11 +12,12 @@ Author: Chris Laws
 
 import os
 import shutil
+from typing import Union
 
 import zmq.auth
 
 
-def generate_certificates(base_dir):
+def generate_certificates(base_dir: Union[str, os.PathLike]) -> None:
     '''Generate client and server CURVE certificate files'''
     keys_dir = os.path.join(base_dir, 'certificates')
     public_keys_dir = os.path.join(base_dir, 'public_keys')

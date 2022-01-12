@@ -10,11 +10,14 @@ __author__ = 'Guido Goldstein'
 
 import threading
 import time
+from typing import Any, Dict
 
 import zmq
 from zmq.utils.monitor import recv_monitor_message
 
-line = lambda: print('-' * 40)
+
+def line() -> None:
+    print('-' * 40)
 
 
 print("libzmq-%s" % zmq.zmq_version())
@@ -30,10 +33,12 @@ for name in dir(zmq):
         EVENT_MAP[value] = name
 
 
-def event_monitor(monitor):
+def event_monitor(monitor: zmq.Socket) -> None:
     while monitor.poll():
-        evt = recv_monitor_message(monitor)
-        evt.update({'description': EVENT_MAP[evt['event']]})
+        evt: Dict[str, Any] = {}
+        mon_evt = recv_monitor_message(monitor)
+        evt.update(mon_evt)
+        evt['description'] = EVENT_MAP[evt['event']]
         print(f"Event: {evt}")
         if evt['event'] == zmq.EVENT_MONITOR_STOPPED:
             break

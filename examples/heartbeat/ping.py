@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """For use with pong.py
 
-This script simply pings a process started by pong.py or tspong.py, to 
+This script simply pings a process started by pong.py or tspong.py, to
 demonstrate that zmq remains responsive while Python blocks.
 
 Authors
@@ -9,7 +9,6 @@ Authors
 * MinRK
 """
 
-import sys
 import time
 
 import numpy
@@ -25,7 +24,8 @@ req.connect('tcp://127.0.0.1:10111')
 time.sleep(1)
 n = 0
 while True:
-    time.sleep(numpy.random.random())
+    t: float = numpy.random.random()
+    time.sleep(t)
     for i in range(4):
         n += 1
         msg = 'ping %i' % n

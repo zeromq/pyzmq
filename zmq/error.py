@@ -4,7 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from errno import EINTR
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 
 class ZMQBaseError(Exception):
@@ -188,7 +188,10 @@ class ZMQVersionError(NotImplementedError):
         )
 
 
-def _check_version(min_version_info: Tuple[int, int, int], msg: str = "Feature"):
+def _check_version(
+    min_version_info: Union[Tuple[int], Tuple[int, int], Tuple[int, int, int]],
+    msg: str = "Feature",
+):
     """Check for libzmq
 
     raises ZMQVersionError if current zmq version is not at least min_version

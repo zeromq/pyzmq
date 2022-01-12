@@ -21,7 +21,7 @@
 import zmq
 
 
-def main(addr, account):
+def main(addr: str, account: str) -> None:
 
     ctx = zmq.Context()
     socket = ctx.socket(zmq.PUB)

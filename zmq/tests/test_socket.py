@@ -211,6 +211,7 @@ class TestSocket(BaseZMQTestCase):
                 continue
             if opt.name.startswith(
                 (
+                    'HWM',
                     'ROUTER',
                     'XPUB',
                     'TCP',

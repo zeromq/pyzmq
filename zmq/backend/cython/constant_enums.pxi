@@ -96,6 +96,7 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_PLAIN
     enum: ZMQ_CURVE
     enum: ZMQ_GSSAPI
+    enum: ZMQ_HWM
     enum: ZMQ_AFFINITY
     enum: ZMQ_ROUTING_ID
     enum: ZMQ_SUBSCRIBE

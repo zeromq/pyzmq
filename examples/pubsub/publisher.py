@@ -18,7 +18,7 @@ import numpy
 import zmq
 
 
-def sync(bind_to):
+def sync(bind_to: str) -> None:
     # use bind socket + 1
     sync_with = ':'.join(
         bind_to.split(':')[:-1] + [str(int(bind_to.split(':')[-1]) + 1)]
@@ -32,7 +32,7 @@ def sync(bind_to):
     s.send(b'GO')
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 4:
         print('usage: publisher <bind-to> <array-size> <array-count>')
         sys.exit(1)

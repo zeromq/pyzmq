@@ -34,11 +34,11 @@ msgcnt = 0
 while msgcnt < 10:
     socks = dict(poller.poll())
     if receiver1 in socks and socks[receiver1] == zmq.POLLIN:
-        print("Message from receiver1: %s" % receiver1.recv())
+        print(f"Message from receiver1: {receiver1.recv()!r}")
         msgcnt += 1
 
     if receiver2 in socks and socks[receiver2] == zmq.POLLIN:
-        print("Message from receiver2: %s" % receiver2.recv())
+        print(f"Message from receiver2: {receiver2.recv()!r}")
         msgcnt += 1
 
-print("%d messages received" % msgcnt)
+print(f"{msgcnt} messages received")

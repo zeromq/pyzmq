@@ -28,12 +28,12 @@ cdef class Context:
     io_threads : int
         The number of IO threads.
     """
-    
+
     # no-op for the signature
     def __init__(self, io_threads=1, shadow=0):
         pass
-    
-    def __cinit__(self, int io_threads=1, size_t shadow=0, **kwargs):
+
+    def __cinit__(self, int io_threads=1, size_t shadow=0):
         self.handle = NULL
         if shadow:
             self.handle = <void *>shadow
@@ -68,12 +68,12 @@ cdef class Context:
                 rc = zmq_ctx_destroy(self.handle)
         self.handle = NULL
         return rc
-    
+
     def term(self):
         """ctx.term()
 
         Close or terminate the context.
-        
+
         This can be called to close the context by hand. If this is not called,
         the context will automatically be closed when it is garbage collected.
         """
@@ -85,9 +85,9 @@ cdef class Context:
             # ignore interrupted term
             # see PEP 475 notes about close & EINTR for why
             pass
-        
+
         self.closed = True
-    
+
     def set(self, int option, optval):
         """ctx.set(option, optval)
 
@@ -95,7 +95,7 @@ cdef class Context:
 
         See the 0MQ API documentation for zmq_ctx_set
         for details on specific options.
-        
+
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -104,9 +104,9 @@ cdef class Context:
         option : int
             The option to set.  Available values will depend on your
             version of libzmq.  Examples include::
-            
+
                 zmq.IO_THREADS, zmq.MAX_SOCKETS
-        
+
         optval : int
             The value of the option to set.
         """
@@ -116,7 +116,7 @@ cdef class Context:
 
         if self.closed:
             raise RuntimeError("Context has been destroyed")
-        
+
         if not isinstance(optval, int):
             raise TypeError('expected int, got: %r' % optval)
         optval_int_c = optval
@@ -130,7 +130,7 @@ cdef class Context:
 
         See the 0MQ API documentation for zmq_ctx_get
         for details on specific options.
-        
+
         .. versionadded:: libzmq-3.2
         .. versionadded:: 13.0
 
@@ -139,9 +139,9 @@ cdef class Context:
         option : int
             The option to get.  Available values will depend on your
             version of libzmq.  Examples include::
-            
+
                 zmq.IO_THREADS, zmq.MAX_SOCKETS
-            
+
         Returns
         -------
         optval : int

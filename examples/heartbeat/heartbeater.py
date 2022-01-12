@@ -14,9 +14,12 @@ Authors
 """
 
 import time
+from typing import Set
+
+from tornado import ioloop
 
 import zmq
-from zmq.eventloop import ioloop, zmqstream
+from zmq.eventloop import zmqstream
 
 
 class HeartBeater:
@@ -24,7 +27,13 @@ class HeartBeater:
     pingstream: a PUB stream
     pongstream: an ROUTER stream"""
 
-    def __init__(self, loop, pingstream, pongstream, period=1000):
+    def __init__(
+        self,
+        loop: ioloop.IOLoop,
+        pingstream: zmqstream.ZMQStream,
+        pongstream: zmqstream.ZMQStream,
+        period: int = 1000,
+    ):
         self.loop = loop
         self.period = period
 
@@ -32,16 +41,16 @@ class HeartBeater:
         self.pongstream = pongstream
         self.pongstream.on_recv(self.handle_pong)
 
-        self.hearts = set()
-        self.responses = set()
+        self.hearts: Set = set()
+        self.responses: Set = set()
         self.lifetime = 0
-        self.tic = time.time()
+        self.tic = time.monotonic()
 
-        self.caller = ioloop.PeriodicCallback(self.beat, period, self.loop)
+        self.caller = ioloop.PeriodicCallback(self.beat, period)
         self.caller.start()
 
     def beat(self):
-        toc = time.time()
+        toc = time.monotonic()
         self.lifetime += toc - self.tic
         self.tic = toc
         print(self.lifetime)
@@ -50,18 +59,20 @@ class HeartBeater:
         heartfailures = self.hearts.difference(goodhearts)
         newhearts = self.responses.difference(goodhearts)
         # print(newhearts, goodhearts, heartfailures)
-        map(self.handle_new_heart, newhearts)
-        map(self.handle_heart_failure, heartfailures)
+        for heart in newhearts:
+            self.handle_new_heart(heart)
+        for heart in heartfailures:
+            self.handle_heart_failure(heart)
         self.responses = set()
-        print("%i beating hearts: %s" % (len(self.hearts), self.hearts))
+        print(f"{len(self.hearts)} beating hearts: {self.hearts}")
         self.pingstream.send(str(self.lifetime))
 
     def handle_new_heart(self, heart):
-        print("yay, got new heart %s!" % heart)
+        print(f"yay, got new heart {heart}!")
         self.hearts.add(heart)
 
     def handle_heart_failure(self, heart):
-        print("Heart %s failed :(" % heart)
+        print(f"Heart {heart} failed :(")
         self.hearts.remove(heart)
 
     def handle_pong(self, msg):

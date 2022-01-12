@@ -5,35 +5,27 @@
 import asyncio
 
 from tornado.ioloop import IOLoop
-from tornado.platform.asyncio import AsyncIOMainLoop
 
 import zmq.asyncio
 
-# Tell tornado to use asyncio
-AsyncIOMainLoop().install()
 
-# This must be instantiated after the installing the IOLoop
-queue = asyncio.Queue()  # type: ignore
-ctx = zmq.asyncio.Context()
-
-
-async def pushing():
-    server = ctx.socket(zmq.PUSH)
+async def pushing() -> None:
+    server = zmq.asyncio.Context.instance().socket(zmq.PUSH)
     server.bind('tcp://*:9000')
     while True:
         await server.send(b"Hello")
         await asyncio.sleep(1)
 
 
-async def pulling():
-    client = ctx.socket(zmq.PULL)
+async def pulling() -> None:
+    client = zmq.asyncio.Context.instance().socket(zmq.PULL)
     client.connect('tcp://127.0.0.1:9000')
     while True:
         greeting = await client.recv()
         print(greeting)
 
 
-def zmq_tornado_loop():
+def main() -> None:
     loop = IOLoop.current()
     loop.spawn_callback(pushing)
     loop.spawn_callback(pulling)
@@ -41,4 +33,4 @@ def zmq_tornado_loop():
 
 
 if __name__ == '__main__':
-    zmq_tornado_loop()
+    main()

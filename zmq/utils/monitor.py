@@ -4,12 +4,20 @@
 # Distributed under the terms of the Modified BSD License.
 
 import struct
+from typing import Any, List, Tuple, cast
 
 import zmq
+from zmq._typing import TypedDict
 from zmq.error import _check_version
 
 
-def parse_monitor_message(msg):
+class _MonitorMessage(TypedDict):
+    event: int
+    value: int
+    endpoint: bytes
+
+
+def parse_monitor_message(msg: List[bytes]) -> _MonitorMessage:
     """decode zmq_monitor event messages.
 
     Parameters
@@ -30,18 +38,18 @@ def parse_monitor_message(msg):
     event : dict
         event description as dict with the keys `event`, `value`, and `endpoint`.
     """
-
     if len(msg) != 2 or len(msg[0]) != 6:
         raise RuntimeError("Invalid event message format: %s" % msg)
-    event = {
-        'event': struct.unpack("=hi", msg[0])[0],
-        'value': struct.unpack("=hi", msg[0])[1],
+    event_id, value = struct.unpack("=hi", msg[0])
+    event: _MonitorMessage = {
+        'event': event_id,
+        'value': value,
         'endpoint': msg[1],
     }
     return event
 
 
-def recv_monitor_message(socket, flags=0):
+def recv_monitor_message(socket: zmq.Socket, flags: int = 0) -> _MonitorMessage:
     """Receive and decode the given raw message from the monitoring socket and return a dict.
 
     Requires libzmq ≥ 4.0

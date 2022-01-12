@@ -25,7 +25,7 @@ import numpy
 import zmq
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print('usage: subscriber <connect_to> [topic topic ...]')
         sys.exit(1)

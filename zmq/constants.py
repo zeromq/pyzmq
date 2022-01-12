@@ -121,6 +121,8 @@ class _OptType(Enum):
 class SocketOption(IntEnum):
     """Options for Socket.get/set"""
 
+    _opt_type: str
+
     def __new__(cls, value, opt_type=_OptType.int):
         """Attach option type as `._opt_type`"""
         obj = int.__new__(cls, value)
@@ -128,6 +130,7 @@ class SocketOption(IntEnum):
         obj._opt_type = opt_type
         return obj
 
+    HWM = 1
     AFFINITY = 4, _OptType.int64
     ROUTING_ID = 5, _OptType.bytes
     SUBSCRIBE = 6, _OptType.bytes
@@ -451,6 +454,7 @@ NULL: int = SecurityMechanism.NULL
 PLAIN: int = SecurityMechanism.PLAIN
 CURVE: int = SecurityMechanism.CURVE
 GSSAPI: int = SecurityMechanism.GSSAPI
+HWM: int = SocketOption.HWM
 AFFINITY: int = SocketOption.AFFINITY
 ROUTING_ID: int = SocketOption.ROUTING_ID
 SUBSCRIBE: int = SocketOption.SUBSCRIBE
@@ -686,6 +690,7 @@ __all__: List[str] = [
     "CURVE",
     "GSSAPI",
     "SocketOption",
+    "HWM",
     "AFFINITY",
     "ROUTING_ID",
     "SUBSCRIBE",

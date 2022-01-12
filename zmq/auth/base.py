@@ -4,6 +4,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 import logging
+import os
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import zmq
 from zmq.error import _check_version
@@ -43,13 +45,29 @@ class Authenticator:
     - GSSAPI requires no configuration.
     """
 
-    def __init__(self, context=None, encoding='utf-8', log=None):
+    context: "zmq.Context"
+    encoding: str
+    allow_any: bool
+    credentials_providers: Dict[str, Any]
+    zap_socket: "zmq.Socket"
+    whitelist: Set[str]
+    blacklist: Set[str]
+    passwords: Dict[str, Dict[str, str]]
+    certs: Dict[str, Dict[bytes, Any]]
+    log: Any
+
+    def __init__(
+        self,
+        context: Optional["zmq.Context"] = None,
+        encoding: str = 'utf-8',
+        log: Any = None,
+    ):
         _check_version((4, 0), "security")
         self.context = context or zmq.Context.instance()
         self.encoding = encoding
         self.allow_any = False
         self.credentials_providers = {}
-        self.zap_socket = None
+        self.zap_socket = None  # type: ignore
         self.whitelist = set()
         self.blacklist = set()
         # passwords is a dict keyed by domain and contains values
@@ -60,20 +78,20 @@ class Authenticator:
         self.certs = {}
         self.log = log or logging.getLogger('zmq.auth')
 
-    def start(self):
+    def start(self) -> None:
         """Create and bind the ZAP socket"""
         self.zap_socket = self.context.socket(zmq.REP)
         self.zap_socket.linger = 1
         self.zap_socket.bind("inproc://zeromq.zap.01")
         self.log.debug("Starting")
 
-    def stop(self):
+    def stop(self) -> None:
         """Close the ZAP socket"""
         if self.zap_socket:
             self.zap_socket.close()
-        self.zap_socket = None
+        self.zap_socket = None  # type: ignore
 
-    def allow(self, *addresses):
+    def allow(self, *addresses: str) -> None:
         """Allow (whitelist) IP address(es).
 
         Connections from addresses not in the whitelist will be rejected.
@@ -88,7 +106,7 @@ class Authenticator:
         self.log.debug("Allowing %s", ','.join(addresses))
         self.whitelist.update(addresses)
 
-    def deny(self, *addresses):
+    def deny(self, *addresses: str) -> None:
         """Deny (blacklist) IP address(es).
 
         Addresses not in the blacklist will be allowed to continue with authentication.
@@ -100,7 +118,9 @@ class Authenticator:
         self.log.debug("Denying %s", ','.join(addresses))
         self.blacklist.update(addresses)
 
-    def configure_plain(self, domain='*', passwords=None):
+    def configure_plain(
+        self, domain: str = '*', passwords: Dict[str, str] = None
+    ) -> None:
         """Configure PLAIN authentication for a given domain.
 
         PLAIN authentication uses a plain-text password file.
@@ -111,7 +131,9 @@ class Authenticator:
             self.passwords[domain] = passwords
         self.log.debug("Configure plain: %s", domain)
 
-    def configure_curve(self, domain='*', location=None):
+    def configure_curve(
+        self, domain: str = '*', location: Union[str, os.PathLike] = "."
+    ) -> None:
         """Configure CURVE authentication for a given domain.
 
         CURVE authentication uses a directory that holds all public client certificates,
@@ -136,7 +158,9 @@ class Authenticator:
             except Exception as e:
                 self.log.error("Failed to load CURVE certs from %s: %s", location, e)
 
-    def configure_curve_callback(self, domain='*', credentials_provider=None):
+    def configure_curve_callback(
+        self, domain: str = '*', credentials_provider: Any = None
+    ) -> None:
         """Configure CURVE authentication for a given domain.
 
         CURVE authentication using a callback function validating
@@ -170,7 +194,7 @@ class Authenticator:
         else:
             self.log.error("None credentials_provider provided for domain:%s", domain)
 
-    def curve_user_id(self, client_public_key):
+    def curve_user_id(self, client_public_key: bytes) -> str:
         """Return the User-Id corresponding to a CURVE client's public key
 
         Default implementation uses the z85-encoding of the public key.
@@ -191,14 +215,16 @@ class Authenticator:
         """
         return z85.encode(client_public_key).decode('ascii')
 
-    def configure_gssapi(self, domain='*', location=None):
+    def configure_gssapi(
+        self, domain: str = '*', location: Optional[str] = None
+    ) -> None:
         """Configure GSSAPI authentication
 
         Currently this is a no-op because there is nothing to configure with GSSAPI.
         """
         pass
 
-    def handle_zap_message(self, msg):
+    def handle_zap_message(self, msg: List[bytes]):
         """Perform ZAP authentication"""
         if len(msg) < 6:
             self.log.error("Invalid ZAP message, not enough frames: %r", msg)
@@ -298,7 +324,9 @@ class Authenticator:
         else:
             self._send_zap_reply(request_id, b"400", reason)
 
-    def _authenticate_plain(self, domain, username, password):
+    def _authenticate_plain(
+        self, domain: str, username: str, password: str
+    ) -> Tuple[bool, bytes]:
         """PLAIN ZAP authentication"""
         allowed = False
         reason = b""
@@ -334,7 +362,7 @@ class Authenticator:
 
         return allowed, reason
 
-    def _authenticate_curve(self, domain, client_key):
+    def _authenticate_curve(self, domain: str, client_key: bytes) -> Tuple[bool, bytes]:
         """CURVE ZAP authentication"""
         allowed = False
         reason = b""
@@ -391,14 +419,18 @@ class Authenticator:
 
         return allowed, reason
 
-    def _authenticate_gssapi(self, domain, principal):
+    def _authenticate_gssapi(self, domain: str, principal: bytes) -> Tuple[bool, bytes]:
         """Nothing to do for GSSAPI, which has already been handled by an external service."""
         self.log.debug("ALLOWED (GSSAPI) domain=%s principal=%s", domain, principal)
         return True, b'OK'
 
     def _send_zap_reply(
-        self, request_id, status_code, status_text, user_id='anonymous'
-    ):
+        self,
+        request_id: bytes,
+        status_code: bytes,
+        status_text: bytes,
+        user_id: str = 'anonymous',
+    ) -> None:
         """Send a ZAP reply to finish the authentication."""
         user_id = user_id if status_code == b'200' else b''
         if isinstance(user_id, unicode):
