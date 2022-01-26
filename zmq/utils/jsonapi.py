@@ -1,6 +1,6 @@
 """JSON serialize to/from utf8 bytes
 
-..versionchanged:: 22.2
+.. versionchanged:: 22.2
     Remove optional imports of different JSON implementations.
     Now that we require recent Python, unconditionally use the standard library.
     Custom JSON libraries can be used via custom serialization functions.

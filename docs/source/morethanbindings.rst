@@ -87,6 +87,46 @@ This affects the default options of any *new* sockets created after the assignme
 Socket options that do not apply to a socket (e.g. SUBSCRIBE on non-SUB sockets) will
 simply be ignored.
 
+libzmq constants as Enums
+-------------------------
+
+.. versionadded:: 23
+
+libzmq constants are now available as Python enums,
+making it easier to enumerate socket options, etc.
+
+Context managers
+----------------
+
+.. versionadded:: 14
+    Context/Sockets as context managers
+
+.. versionadded:: 20
+    bind/connect context managers
+
+For more Pythonic resource management,
+contexts and sockets can be used as context managers.
+Just like standard-library socket and file methods,
+entering a context:
+
+.. sourcecode:: python
+
+    import zmq
+    with zmq.Context() as ctx:
+        with ctx.socket(zmq.PUSH) as s:
+            s.connect(url)
+            s.send_multipart([b"message"])
+        # exiting Socket context closes socket
+    # exiting Context context terminates context
+
+In addition, each bind/connect call may be used as a context:
+
+.. sourcecode:: python
+
+    with socket.connect(url):
+        s.send_multipart([b"message"])
+    # exiting connect context calls socket.disconnect(url)
+
 
 Core Extensions
 ---------------
@@ -105,12 +145,12 @@ and any object sent via those methods can be reconstructed with the
 :meth:`~.Socket.recv_json` and :meth:`~.Socket.recv_pyobj` methods. Unicode strings are
 other objects that are not unambiguously sendable over the wire, so we include
 :meth:`~.Socket.send_string` and :meth:`~.Socket.recv_string` that simply send bytes
-after encoding the message ('utf-8' is the default). 
+after encoding the message ('utf-8' is the default).
 
 .. seealso::
 
     * :ref:`Further information <serialization>` on serialization in pyzmq.
-    
+
     * :ref:`Our Unicode discussion <unicode>` for more information on the trials and
       tribulations of working with Unicode in a C extension while supporting Python 2 and 3.
 
@@ -133,7 +173,7 @@ builtin :py:class:`~Queue.Queue` object), instantiating a MessageTracker takes a
 amount of time (10s of µs), so in situations instantiating many small messages, this can
 actually dominate performance. As a result, tracking is optional, via the ``track`` flag,
 which is optionally passed, always defaulting to ``False``, in each of the three places
-where a Frame object (the pyzmq object for wrapping a segment of a message) is 
+where a Frame object (the pyzmq object for wrapping a segment of a message) is
 instantiated: The :class:`.Frame` constructor, and non-copying sends and receives.
 
 A MessageTracker is very simple, and has just one method and one attribute. The property
@@ -156,9 +196,9 @@ included in PyZMQ itself:
 
 * :ref:`zmq.log <logging>` : Logging handlers for hooking Python logging up to the
   network
-* :ref:`zmq.devices <devices>` : Custom devices and objects for running devices in the 
+* :ref:`zmq.devices <devices>` : Custom devices and objects for running devices in the
   background
-* :ref:`zmq.eventloop <eventloop>` : The `Tornado`_ event loop, adapted for use 
+* :ref:`zmq.eventloop <eventloop>` : The `Tornado`_ event loop, adapted for use
   with ØMQ sockets.
 * :ref:`zmq.ssh <ssh>` : Simple tools for tunneling zeromq connections via ssh.
 

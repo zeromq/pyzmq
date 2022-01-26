@@ -14,11 +14,9 @@ import os
 import string
 import sys
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../sphinxext'))
-sys.path.append(os.path.abspath('../..'))
+# add repo root to sys.path
+here = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(here, os.pardir, os.pardir)))
 
 # set target libzmq version
 from buildutils.bundle import bundled_version
@@ -38,6 +36,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
+    'enum_tools.autoenum',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

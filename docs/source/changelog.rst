@@ -7,6 +7,23 @@ Changes in PyZMQ
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the `git log <https://github.com/zeromq/pyzmq/commits>`_.
 
+23.0.0
+======
+
+Changes:
+
+- all zmq constants are now available as Python enums
+  (e.g. ``zmq.SocketType.PULL``, ``zmq.SocketOption.IDENTITY``),
+  generated statically from zmq.h instead of at compile-time.
+  This means that checks for the *presence* of a constant (`hasattr(zmq, 'RADIO')`)
+  is not a valid check for the presence of a feature.
+  This practice has never been robust, but it may have worked sometimes.
+  Use direct checks via e.g. :func:`zmq.has` or :func:`zmq.zmq_version_info`.
+
+Compatibility fixes:
+
+- Remove all use of deprecated stdlib distutils
+
 22.3.0
 ======
 

@@ -22,7 +22,7 @@ methods can be reconstructed with the :meth:`~.Socket.recv_json` and
 :meth:`~.Socket.recv_pyobj` methods.
 
 
-These methods designed for convenience, not for performance, so developers who do want 
+These methods designed for convenience, not for performance, so developers who want
 to emphasize performance should use their own serialized send/recv methods.
 
 Using your own serialization
@@ -41,15 +41,16 @@ The following will send *compressed* pickles over the wire:
 
 .. sourcecode:: python
 
-    import zlib, cPickle as pickle
+    import pickle
+    import zlib
 
-    def send_zipped_pickle(socket, obj, flags=0, protocol=-1):
+    def send_zipped_pickle(socket, obj, flags=0, protocol=pickle.HIGHEST_PROTOCOL):
         """pickle an object, and zip the pickle before sending it"""
         p = pickle.dumps(obj, protocol)
         z = zlib.compress(p)
         return socket.send(z, flags=flags)
 
-    def recv_zipped_pickle(socket, flags=0, protocol=-1):
+    def recv_zipped_pickle(socket, flags=0):
         """inverse of send_zipped_pickle"""
         z = socket.recv(flags)
         p = zlib.decompress(z)

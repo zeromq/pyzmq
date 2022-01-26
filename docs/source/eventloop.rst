@@ -46,7 +46,7 @@ Sockets created by this Context will return Futures from any would-be blocking m
         zmq.asyncio.install()
 
         ctx = zmq.asyncio.Context()
-    
+
     This step is no longer needed in pyzmq 17.
 
 
@@ -66,6 +66,12 @@ with :meth:`~.ZMQStream.on_send`.
 
 Futures and coroutines
 ----------------------
+
+.. note::
+
+    With recent Python (3.6) and tornado (5),
+    there's no reason to use :mod:`zmq.eventloop.future`
+    instead of the strictly-more-compatible :mod:`zmq.asyncio`.
 
 PyZMQ 15 adds :mod:`zmq.eventloop.future`, containing a Socket subclass
 that returns :class:`~.tornado.concurrent.Future` objects for use in :mod:`tornado` coroutines.
@@ -173,7 +179,7 @@ events off of the queue. You can specify to flush only recv events, only send ev
 any events, and you can specify a limit for how many events to flush in order to prevent
 starvation.
 
-.. _Tornado: https://github.com/facebook/tornado
+.. _Tornado: https://github.com/tornadoweb/tornado
 
 :func:`install()`
 -----------------
