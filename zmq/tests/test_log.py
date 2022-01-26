@@ -40,12 +40,12 @@ class TestPubLog(BaseZMQTestCase):
         logger = self.logger
         ctx = self.context
         handler = handlers.PUBHandler(self.iface)
-        self.assertFalse(handler.ctx is ctx)
+        self.assertIsNot(handler.ctx, ctx)
         self.sockets.append(handler.socket)
         # handler.ctx.term()
         handler = handlers.PUBHandler(self.iface, self.context)
         self.sockets.append(handler.socket)
-        self.assertTrue(handler.ctx is ctx)
+        self.assertIs(handler.ctx, ctx)
         handler.setLevel(logging.DEBUG)
         handler.root_topic = self.topic
         logger.addHandler(handler)
@@ -72,9 +72,9 @@ class TestPubLog(BaseZMQTestCase):
         handler.root_topic = self.topic
         logger.addHandler(handler)
 
-        self.assertTrue(handler.socket is pub)
-        self.assertTrue(handler.ctx is pub.context)
-        self.assertTrue(handler.ctx is self.context)
+        self.assertIs(handler.socket, pub)
+        self.assertIs(handler.ctx, pub.context)
+        self.assertIs(handler.ctx, self.context)
         sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
         import time
 

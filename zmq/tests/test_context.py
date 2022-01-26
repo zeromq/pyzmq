@@ -38,13 +38,13 @@ class KwargTestContext(zmq.Context):
 class TestContext(BaseZMQTestCase):
     def test_init(self):
         c1 = self.Context()
-        self.assertTrue(isinstance(c1, self.Context))
+        self.assertIsInstance(c1, self.Context)
         del c1
         c2 = self.Context()
-        self.assertTrue(isinstance(c2, self.Context))
+        self.assertIsInstance(c2, self.Context)
         del c2
         c3 = self.Context()
-        self.assertTrue(isinstance(c3, self.Context))
+        self.assertIsInstance(c3, self.Context)
         del c3
 
     _repr_cls = "zmq.Context"
@@ -62,9 +62,9 @@ class TestContext(BaseZMQTestCase):
 
     def test_dir(self):
         ctx = self.Context()
-        self.assertTrue('socket' in dir(ctx))
+        self.assertIn('socket', dir(ctx))
         if zmq.zmq_version_info() > (3,):
-            self.assertTrue('IO_THREADS' in dir(ctx))
+            self.assertIn('IO_THREADS', dir(ctx))
         ctx.term()
 
     @mark.skipif(mock is None, reason="requires unittest.mock")
@@ -95,13 +95,13 @@ class TestContext(BaseZMQTestCase):
     def test_instance(self):
         ctx = self.Context.instance()
         c2 = self.Context.instance(io_threads=2)
-        self.assertTrue(c2 is ctx)
+        self.assertIs(c2, ctx)
         c2.term()
         c3 = self.Context.instance()
         c4 = self.Context.instance()
-        self.assertFalse(c3 is c2)
+        self.assertIsNot(c3, c2)
         self.assertFalse(c3.closed)
-        self.assertTrue(c3 is c4)
+        self.assertIs(c3, c4)
 
     def test_instance_subclass_first(self):
         self.context.term()
@@ -169,7 +169,7 @@ class TestContext(BaseZMQTestCase):
         test_kwarg_value = 'testing one two three'
         with KwargTestContext() as ctx:
             with ctx.socket(zmq.DEALER, test_kwarg=test_kwarg_value) as socket:
-                self.assertTrue(socket.test_kwarg_value is test_kwarg_value)
+                self.assertIs(socket.test_kwarg_value, test_kwarg_value)
 
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""

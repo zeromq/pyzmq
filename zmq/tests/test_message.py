@@ -81,9 +81,9 @@ class TestFrame(BaseZMQTestCase):
             self.assertEqual(s, m.bytes)
             if not PYPY:
                 # check that it copies
-                self.assertTrue(b is not s)
+                self.assertIsNot(b, s)
             # check that it copies only once
-            self.assertTrue(b is m.bytes)
+            self.assertIs(b, m.bytes)
 
     def test_unicode(self):
         """Test the unicode representations of the Frames."""
@@ -228,7 +228,7 @@ class TestFrame(BaseZMQTestCase):
         ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
         m = zmq.Frame(ins)
         outb = m.buffer
-        self.assertTrue(isinstance(outb, memoryview))
+        self.assertIsInstance(outb, memoryview)
         assert outb is m.buffer
         assert m.buffer is m.buffer
 

@@ -103,10 +103,10 @@ class TestSocket(BaseZMQTestCase):
     def test_dir(self):
         ctx = self.Context()
         s = ctx.socket(zmq.PUB)
-        self.assertTrue('send' in dir(s))
-        self.assertTrue('IDENTITY' in dir(s))
-        self.assertTrue('AFFINITY' in dir(s))
-        self.assertTrue('FD' in dir(s))
+        self.assertIn('send', dir(s))
+        self.assertIn('IDENTITY', dir(s))
+        self.assertIn('AFFINITY', dir(s))
+        self.assertIn('FD', dir(s))
         s.close()
         ctx.term()
 
@@ -463,8 +463,8 @@ class TestSocket(BaseZMQTestCase):
             raise SkipTest("IPC_PATH_MAX_LEN undefined")
 
         msg = "Surprising value for IPC_PATH_MAX_LEN: %s" % zmq.IPC_PATH_MAX_LEN
-        self.assertTrue(zmq.IPC_PATH_MAX_LEN > 30, msg)
-        self.assertTrue(zmq.IPC_PATH_MAX_LEN < 1025, msg)
+        self.assertGreater(zmq.IPC_PATH_MAX_LEN, 30, msg)
+        self.assertLess(zmq.IPC_PATH_MAX_LEN, 1025, msg)
 
     def test_ipc_path_max_length_msg(self):
         if zmq.IPC_PATH_MAX_LEN == 0:
@@ -475,7 +475,7 @@ class TestSocket(BaseZMQTestCase):
         try:
             s.bind('ipc://{}'.format('a' * (zmq.IPC_PATH_MAX_LEN + 1)))
         except zmq.ZMQError as e:
-            self.assertTrue(str(zmq.IPC_PATH_MAX_LEN) in e.strerror)
+            self.assertIn(str(zmq.IPC_PATH_MAX_LEN), e.strerror)
 
     @mark.skipif(windows, reason="ipc not supported on Windows.")
     def test_ipc_path_no_such_file_or_directory_message(self):

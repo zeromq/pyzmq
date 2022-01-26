@@ -15,7 +15,7 @@ class TestZMQError(BaseZMQTestCase):
         """test that strerror gets the right type."""
         for i in range(10):
             e = strerror(i)
-            self.assertTrue(isinstance(e, str))
+            self.assertIsInstance(e, str)
 
     def test_zmqerror(self):
         for errno in range(10):

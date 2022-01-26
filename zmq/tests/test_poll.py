@@ -103,10 +103,10 @@ class TestPoll(PollZMQTestCase):
         poller = self.Poller()
         poller.register(s1, zmq.POLLIN | zmq.POLLOUT)
         poller.register(s2, 0)
-        self.assertTrue(s1 in poller)
-        self.assertFalse(s2 in poller)
+        self.assertIn(s1, poller)
+        self.assertNotIn(s2, poller)
         poller.register(s1, 0)
-        self.assertFalse(s1 in poller)
+        self.assertNotIn(s1, poller)
 
     def test_pubsub(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
@@ -162,20 +162,23 @@ class TestPoll(PollZMQTestCase):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         poller = self.Poller()
         poller.register(s1, zmq.POLLIN)
-        tic = time.time()
+        tic = time.perf_counter()
         evt = poller.poll(0.005)
-        toc = time.time()
-        self.assertTrue(toc - tic < 0.1)
-        tic = time.time()
+        assert evt == 0
+        toc = time.perf_counter()
+        assert toc - tic < 0.1
+        tic = time.perf_counter()
         evt = poller.poll(5)
-        toc = time.time()
-        self.assertTrue(toc - tic < 0.1)
-        self.assertTrue(toc - tic > 0.001)
-        tic = time.time()
+        assert evt == 0
+        toc = time.perf_counter()
+        assert toc - tic < 0.1
+        assert toc - tic > 0.001
+        tic = time.perf_counter()
         evt = poller.poll(500)
-        toc = time.time()
-        self.assertTrue(toc - tic < 1)
-        self.assertTrue(toc - tic > 0.1)
+        assert evt == 0
+        toc = time.perf_counter()
+        assert toc - tic < 1
+        assert toc - tic > 0.1
 
 
 class TestSelect(PollZMQTestCase):
@@ -186,25 +189,25 @@ class TestSelect(PollZMQTestCase):
         wait()
 
         rlist, wlist, xlist = zmq.select([s1, s2], [s1, s2], [s1, s2])
-        self.assertTrue(s1 in wlist)
-        self.assertTrue(s2 in wlist)
-        self.assertTrue(s1 not in rlist)
-        self.assertTrue(s2 not in rlist)
+        self.assertIn(s1, wlist)
+        self.assertIn(s2, wlist)
+        self.assertNotIn(s1, rlist)
+        self.assertNotIn(s2, rlist)
 
     @mark.flaky(reruns=3)
     def test_timeout(self):
         """make sure select timeout has the right units (seconds)."""
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
-        tic = time.time()
+        tic = time.perf_counter()
         r, w, x = zmq.select([s1, s2], [], [], 0.005)
-        toc = time.time()
-        self.assertTrue(toc - tic < 1)
-        self.assertTrue(toc - tic > 0.001)
-        tic = time.time()
+        toc = time.perf_counter()
+        self.assertLess(toc - tic, 1)
+        self.assertGreater(toc - tic, 0.001)
+        tic = time.perf_counter()
         r, w, x = zmq.select([s1, s2], [], [], 0.25)
-        toc = time.time()
-        self.assertTrue(toc - tic < 1)
-        self.assertTrue(toc - tic > 0.1)
+        toc = time.perf_counter()
+        self.assertLess(toc - tic, 1)
+        self.assertGreater(toc - tic, 0.1)
 
 
 if have_gevent:
@@ -220,19 +223,19 @@ if have_gevent:
             poller = self.Poller()
             poller.register(s2, zmq.POLLIN)
 
-            tic = time.time()
+            tic = time.perf_counter()
             r = gevent.spawn(lambda: poller.poll(10000))
             s = gevent.spawn(lambda: s1.send(b'msg1'))
             r.join()
-            toc = time.time()
-            self.assertTrue(toc - tic < 1)
+            toc = time.perf_counter()
+            self.assertLess(toc - tic, 1)
 
         def test_socket_poll(self):
             s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
 
-            tic = time.time()
+            tic = time.perf_counter()
             r = gevent.spawn(lambda: s2.poll(10000))
             s = gevent.spawn(lambda: s1.send(b'msg1'))
             r.join()
-            toc = time.time()
-            self.assertTrue(toc - tic < 1)
+            toc = time.perf_counter()
+            self.assertLess(toc - tic, 1)

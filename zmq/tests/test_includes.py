@@ -13,12 +13,12 @@ class TestIncludes(TestCase):
         from os.path import basename, dirname
 
         includes = zmq.get_includes()
-        self.assertTrue(isinstance(includes, list))
-        self.assertTrue(len(includes) >= 2)
+        self.assertIsInstance(includes, list)
+        self.assertGreaterEqual(len(includes), 2)
         parent = includes[0]
-        self.assertTrue(isinstance(parent, str))
+        self.assertIsInstance(parent, str)
         utilsdir = includes[1]
-        self.assertTrue(isinstance(utilsdir, str))
+        self.assertIsInstance(utilsdir, str)
         utils = basename(utilsdir)
         self.assertEqual(utils, "utils")
 
@@ -26,9 +26,9 @@ class TestIncludes(TestCase):
         from os.path import basename, dirname
 
         libdirs = zmq.get_library_dirs()
-        self.assertTrue(isinstance(libdirs, list))
+        self.assertIsInstance(libdirs, list)
         self.assertEqual(len(libdirs), 1)
         parent = libdirs[0]
-        self.assertTrue(isinstance(parent, str))
+        self.assertIsInstance(parent, str)
         libdir = basename(parent)
         self.assertEqual(libdir, "zmq")
