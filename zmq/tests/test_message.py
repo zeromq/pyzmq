@@ -54,7 +54,7 @@ class TestFrame(BaseZMQTestCase):
     def test_above_30(self):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2 ** i) * x
+            s = (2**i) * x
             self.assertEqual(grc(s), 2)
             m = zmq.Frame(s, copy=False)
             self.assertEqual(grc(s), 4)
@@ -66,7 +66,7 @@ class TestFrame(BaseZMQTestCase):
     def test_str(self):
         """Test the str representations of the Frames."""
         for i in range(16):
-            s = (2 ** i) * x
+            s = (2**i) * x
             m = zmq.Frame(s)
             m_str = str(m)
             m_str_b = b(m_str)  # py3compat
@@ -75,7 +75,7 @@ class TestFrame(BaseZMQTestCase):
     def test_bytes(self):
         """Test the Frame.bytes property."""
         for i in range(1, 16):
-            s = (2 ** i) * x
+            s = (2**i) * x
             m = zmq.Frame(s)
             b = m.bytes
             self.assertEqual(s, m.bytes)
@@ -90,14 +90,14 @@ class TestFrame(BaseZMQTestCase):
         s = u('asdf')
         self.assertRaises(TypeError, zmq.Frame, s)
         for i in range(16):
-            s = (2 ** i) * u('§')
+            s = (2**i) * u('§')
             m = zmq.Frame(s.encode('utf8'))
             self.assertEqual(s, unicode(m.bytes, 'utf8'))
 
     def test_len(self):
         """Test the len of the Frames."""
         for i in range(16):
-            s = (2 ** i) * x
+            s = (2**i) * x
             m = zmq.Frame(s)
             self.assertEqual(len(s), len(m))
 
@@ -105,7 +105,7 @@ class TestFrame(BaseZMQTestCase):
     def test_lifecycle1(self):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2 ** i) * x
+            s = (2**i) * x
             rc = 2
             self.assertEqual(grc(s), rc)
             m = zmq.Frame(s, copy=False)
@@ -142,7 +142,7 @@ class TestFrame(BaseZMQTestCase):
     def test_lifecycle2(self):
         """Run through a different ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
-            s = (2 ** i) * x
+            s = (2**i) * x
             rc = 2
             self.assertEqual(grc(s), rc)
             m = zmq.Frame(s, copy=False)

@@ -18,7 +18,7 @@ Z85CHARS = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=
 # Z85MAP maps integers in [0,84] to the appropriate character in Z85CHARS
 Z85MAP = {c: idx for idx, c in enumerate(Z85CHARS)}
 
-_85s = [85 ** i for i in range(5)][::-1]
+_85s = [85**i for i in range(5)][::-1]
 
 
 def encode(rawbytes):

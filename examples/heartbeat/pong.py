@@ -27,7 +27,7 @@ dev.start()
 # wait for connections
 time.sleep(1)
 
-A = numpy.random.random((2 ** 11, 2 ** 12))
+A = numpy.random.random((2**11, 2**12))
 print("starting blocking loop")
 while True:
     tic = time.time()

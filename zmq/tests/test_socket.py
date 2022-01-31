@@ -189,7 +189,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertEqual(p.hwm, 11)
         # p.setsockopt(zmq.EVENTS, zmq.POLLIN)
         self.assertEqual(p.getsockopt(zmq.EVENTS), zmq.POLLOUT)
-        self.assertRaisesErrno(zmq.EINVAL, p.setsockopt, zmq.EVENTS, 2 ** 7 - 1)
+        self.assertRaisesErrno(zmq.EINVAL, p.setsockopt, zmq.EVENTS, 2**7 - 1)
         self.assertEqual(p.getsockopt(zmq.TYPE), p.socket_type)
         self.assertEqual(p.getsockopt(zmq.TYPE), zmq.PUB)
         self.assertEqual(s.getsockopt(zmq.TYPE), s.socket_type)
@@ -242,7 +242,7 @@ class TestSocket(BaseZMQTestCase):
             except zmq.ZMQError as e:
                 errors.append(f"getsockopt({opt!r}) raised {e}.")
             else:
-                if n > 2 ** 31:
+                if n > 2**31:
                     errors.append(
                         f"getsockopt({opt!r}) returned a ridiculous value."
                         " It is probably the wrong type."
@@ -581,13 +581,13 @@ class TestSocket(BaseZMQTestCase):
 
     # CI often can't handle how much memory PyPy uses on this test
     @mark.skipif(
-        (pypy and on_ci) or (sys.maxsize < 2 ** 32) or (windows),
+        (pypy and on_ci) or (sys.maxsize < 2**32) or (windows),
         reason="only run on 64b and not on CI.",
     )
     @mark.large
     def test_large_send(self):
         c = os.urandom(1)
-        N = 2 ** 31 + 1
+        N = 2**31 + 1
         try:
             buf = c * N
         except MemoryError as e:
