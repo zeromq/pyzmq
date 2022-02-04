@@ -12,16 +12,18 @@ Contributed by github:jcpinto54 and github:frobnitzem
 
 import asyncio
 
+from aiowire import EventLoop
+
 import zmq
 from zmq.asyncio import Context
-from aiowire import EventLoop
+
 
 class Server:
     def __init__(self, url):
         context = Context.instance()
         socket = context.socket(zmq.ROUTER)
         socket.setsockopt_string(zmq.IDENTITY, 'server')
-        socket.bind( url )
+        socket.bind(url)
         self.socket = socket
 
     async def run(self, ev):
@@ -35,6 +37,7 @@ class Server:
         # continue to run by returning this `Wire`
         return self.run
 
+
 class Client:
     def __init__(self, url, name):
         self.name = name
@@ -42,7 +45,7 @@ class Client:
         context = Context.instance()
         socket = context.socket(zmq.ROUTER)
         socket.setsockopt_string(zmq.IDENTITY, name)
-        socket.connect( url )
+        socket.connect(url)
         self.socket = socket
 
     async def run(self, ev):
@@ -55,10 +58,12 @@ class Client:
         # continue to run by returning this `Wire`
         return self.run
 
+
 url = 'inproc://test_zmq'
 srv = Server(url)
-romeo  = Client(url, 'romeo')
+romeo = Client(url, 'romeo')
 sierra = Client(url, 'sierra')
+
 
 async def main():
     async with EventLoop(1.0) as ev:
@@ -66,4 +71,5 @@ async def main():
         ev.start(sierra.run)
         ev.start(srv.run)
 
-asyncio.run( main() )
+
+asyncio.run(main())
