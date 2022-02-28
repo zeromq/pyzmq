@@ -1347,6 +1347,9 @@ setup_args = dict(
     author="Brian E. Granger, Min Ragan-Kelley",
     author_email="zeromq-dev@lists.zeromq.org",
     url="https://pyzmq.readthedocs.org",
+    project_urls={
+        'Source': 'https://github.com/zeromq/pyzmq',
+    },
     description="Python bindings for 0MQ",
     long_description=long_desc,
     long_description_content_type="text/markdown",
