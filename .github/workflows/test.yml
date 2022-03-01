@@ -58,6 +58,9 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-20.04
+            python: "3.11-dev"
+
+          - os: ubuntu-20.04
             python: 3.8
             zmq: head
 
