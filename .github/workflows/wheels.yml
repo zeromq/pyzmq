@@ -14,8 +14,8 @@ on:
       - zmq/utils/*.h
 
 env:
-  cython: "0.29.24"
-  cibuildwheel: "2.2.2"
+  cython: "0.29.28"
+  cibuildwheel: "2.3.1"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
