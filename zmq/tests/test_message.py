@@ -55,12 +55,12 @@ class TestFrame(BaseZMQTestCase):
         """Message above 30 bytes are never copied by 0MQ."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i) * x
-            self.assertEqual(grc(s), 2)
+            rc = grc(s)
             m = zmq.Frame(s, copy=False)
-            self.assertEqual(grc(s), 4)
+            self.assertEqual(grc(s), rc + 2)
             del m
-            await_gc(s, 2)
-            self.assertEqual(grc(s), 2)
+            await_gc(s, rc)
+            self.assertEqual(grc(s), rc)
             del s
 
     def test_str(self):
@@ -106,8 +106,7 @@ class TestFrame(BaseZMQTestCase):
         """Run through a ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i) * x
-            rc = 2
-            self.assertEqual(grc(s), rc)
+            rc = rc_0 = grc(s)
             m = zmq.Frame(s, copy=False)
             rc += 2
             self.assertEqual(grc(s), rc)
@@ -135,7 +134,7 @@ class TestFrame(BaseZMQTestCase):
             rc -= 2
             await_gc(s, rc)
             self.assertEqual(grc(s), rc)
-            self.assertEqual(rc, 2)
+            self.assertEqual(rc, rc_0)
             del s
 
     @skip_pypy
@@ -143,8 +142,7 @@ class TestFrame(BaseZMQTestCase):
         """Run through a different ref counting cycle with a copy."""
         for i in range(5, 16):  # 32, 64,..., 65536
             s = (2**i) * x
-            rc = 2
-            self.assertEqual(grc(s), rc)
+            rc = rc_0 = grc(s)
             m = zmq.Frame(s, copy=False)
             rc += 2
             self.assertEqual(grc(s), rc)
@@ -171,7 +169,7 @@ class TestFrame(BaseZMQTestCase):
             rc -= 2
             await_gc(s, rc)
             self.assertEqual(grc(s), rc)
-            self.assertEqual(rc, 2)
+            self.assertEqual(rc, rc_0)
             del s
 
     def test_tracker(self):
