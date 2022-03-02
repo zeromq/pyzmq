@@ -2,13 +2,13 @@
 
 For a good bug report:
 
-1. [Search][] for existing Issues, both on GitHub and in general with Google/Stack Overflow before posting a duplicate question.
-2. Update to pyzmq master, if possible, especially if you are already using git. It's
+1. [Search] for existing Issues, both on GitHub and in general with Google/Stack Overflow before posting a duplicate question.
+1. Update to pyzmq master, if possible, especially if you are already using git. It's
    possible that the bug you are about to report has already been fixed.
 
 Many things reported as pyzmq Issues are often just libzmq-related,
 and don't have anything to do with pyzmq itself.
-These are better directed to [zeromq-dev][].
+These are better directed to [zeromq-dev].
 
 When making a bug report, it is helpful to tell us as much as you can about your system
 (such as pyzmq version, libzmq version, Python version, OS Version, how you built/installed pyzmq and libzmq, etc.)
@@ -26,13 +26,12 @@ print("Python-%s" % sys.version)
 
 Which will give something like:
 
-    libzmq-3.3.0
-    pyzmq-2.2dev
-    Python-2.7.2 (default, Jun 20 2012, 16:23:33)
-    [GCC 4.2.1 Compatible Apple Clang 4.0 (tags/Apple/clang-418.0.60)]
-
-[search]: https://github.com/zeromq/pyzmq/issues
-[zeromq-dev]: mailto:zeromq-dev@zeromq.org
+```
+libzmq-4.3.4
+pyzmq-22.3.0
+Python-3.9.9 | packaged by conda-forge | (main, Dec 20 2021, 02:38:53)
+[Clang 11.1.0 ]
+```
 
 # Licensing and contributing to PyZMQ
 
@@ -58,28 +57,35 @@ When you contribute to PyZMQ, your contributions are made under the same
 license as the file you are working on. Any new, original code should be BSD
 licensed.
 
-We don't enforce strict style, but when in doubt [PEP8][] is a good guideline.
-The only thing we really don't like is mixing up 'cleanup' in real work.
+We use [pre-commit] for autoformatting,
+so you hopefully don't need to worry too much about style.
+
+To install pre-commit:
+
+```
+pip install pre-commit
+pre-commit install
+```
 
 Examples are copyright their respective authors, and BSD unless otherwise
-specified by the author. You can LGPL (or GPL or MIT or Apache, etc.) your own new
-examples if you like, but we strongly encourage using the default BSD license.
-
-[pep8]: http://www.python.org/dev/peps/pep-0008
+specified by the author.
 
 ## Inherited licenses in pyzmq
 
 Some code outside the core is taken from other open-source projects, and
 inherits that project's license.
 
-- zmq/eventloop contains files inherited and adapted from [tornado][], and inherits the Apache license
+- zmq/eventloop contains files inherited and adapted from [tornado], and inherits the Apache license
 
-- zmq/ssh/forward.py is from [paramiko][], and inherits LGPL
+- zmq/ssh/forward.py is from [paramiko], and inherits LGPL
 
 - zmq/devices/monitoredqueue.pxd is derived from the zmq_device function in
   libzmq, and inherits LGPL
 
 - perf examples are (c) iMatix, and LGPL
 
-[tornado]: http://www.tornadoweb.org
 [paramiko]: http://www.lag.net/paramiko
+[pre-commit]: https://pre-commit.com
+[search]: https://github.com/zeromq/pyzmq/issues
+[tornado]: http://www.tornadoweb.org
+[zeromq-dev]: mailto:zeromq-dev@zeromq.org

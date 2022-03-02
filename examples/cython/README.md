@@ -5,13 +5,13 @@ allowing easier access to libzmq.
 
 When using pyzmq, you can:
 
-```python
+```cython
 cimport zmq
 ```
 
 or use the underlying wrapped libzmq as
 
-```python
+```cython
 from zmq cimport libzmq
 ```
 

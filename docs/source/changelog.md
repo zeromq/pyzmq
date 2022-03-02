@@ -225,7 +225,7 @@ Fixes:
 - Cython backend: Build Cython extensions with language level "3str" (requires Cython 0.29)
 - Cython backend: You can now `cimport zmq`
 - Asyncio: Fix memory leak in Poller
-- Log: Much improved logging in {mod}`zmq.log` (see {doc}`logging`)
+- Log: Much improved logging in {mod}`zmq.log` (see {doc}`howto/logging`)
 - Log: add `python -m zmq.log` entrypoint
 - Sources generated with Cython 0.29.15
 

@@ -48,13 +48,7 @@ maxdepth: 2
 ---
 api/index.rst
 changelog.rst
-draft.rst
-morethanbindings.rst
-serialization.rst
-devices.rst
-eventloop.rst
-logging.rst
-ssh.rst
+howto/index.rst
 notes/index.rst
 ```
 
