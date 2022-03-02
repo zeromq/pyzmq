@@ -8,6 +8,11 @@ _HAUSNUMERO = 156384712
 
 
 class Errno(IntEnum):
+    """libzmq error codes
+
+    .. versionadded:: 23
+    """
+
     EAGAIN = errno.EAGAIN
     EFAULT = errno.EFAULT
     EINVAL = errno.EINVAL
@@ -65,7 +70,10 @@ class Errno(IntEnum):
 
 
 class ContextOption(IntEnum):
-    """Options for Context.get/set"""
+    """Options for Context.get/set
+
+    .. versionadded:: 23
+    """
 
     IO_THREADS = 1
     MAX_SOCKETS = 2
@@ -80,7 +88,10 @@ class ContextOption(IntEnum):
 
 
 class SocketType(IntEnum):
-    """zmq socket types"""
+    """zmq socket types
+
+    .. versionadded:: 23
+    """
 
     PAIR = 0
     PUB = 1
@@ -119,7 +130,10 @@ class _OptType(Enum):
 
 
 class SocketOption(IntEnum):
-    """Options for Socket.get/set"""
+    """Options for Socket.get/set
+
+    .. versionadded:: 23
+    """
 
     _opt_type: str
 
@@ -245,6 +259,11 @@ class SocketOption(IntEnum):
 
 
 class MessageOption(IntEnum):
+    """Options on zmq.Frame objects
+
+    .. versionadded:: 23
+    """
+
     MORE = 1
     SHARED = 3
     # Deprecated message options
@@ -252,7 +271,10 @@ class MessageOption(IntEnum):
 
 
 class Flag(IntFlag):
-    """Send/recv options"""
+    """Send/recv flags
+
+    .. versionadded:: 23
+    """
 
     DONTWAIT = 1
     SNDMORE = 2
@@ -260,7 +282,10 @@ class Flag(IntFlag):
 
 
 class SecurityMechanism(IntEnum):
-    """Security mechanisms (socket.get(zmq.MECHANISM))"""
+    """Security mechanisms (as returned by ``socket.get(zmq.MECHANISM)``)
+
+    .. versionadded:: 23
+    """
 
     NULL = 0
     PLAIN = 1
@@ -269,7 +294,10 @@ class SecurityMechanism(IntEnum):
 
 
 class Event(IntFlag):
-    """Socket monitoring events"""
+    """Socket monitoring events
+
+    .. versionadded:: 23
+    """
 
     @staticmethod
     def _global_name(name):
@@ -323,10 +351,15 @@ class Event(IntFlag):
     # DRAFT Socket monitoring events
     PIPES_STATS = 0x10000
     ALL_V1 = ALL
-    ALL_V2 = ALL | PIPES_STATS
+    ALL_V2 = ALL_V1 | PIPES_STATS
 
 
 class PollEvent(IntFlag):
+    """Which events to poll for in poll methods
+
+    .. versionadded: 23
+    """
+
     POLLIN = 1
     POLLOUT = 2
     POLLERR = 4
@@ -334,6 +367,11 @@ class PollEvent(IntFlag):
 
 
 class DeviceType(IntEnum):
+    """Device type constants for zmq.device
+
+    .. versionadded: 23
+    """
+
     STREAMER = 1
     FORWARDER = 2
     QUEUE = 3

@@ -17,7 +17,7 @@ PUB socket.
 
 Code adapted from StarCluster:
 
-    http://github.com/jtriley/StarCluster/blob/master/starcluster/logger.py
+    https://github.com/jtriley/StarCluster/blob/StarCluster-0.91/starcluster/logger.py
 """
 
 import logging

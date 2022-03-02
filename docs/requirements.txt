@@ -1,6 +1,9 @@
 cython>=0.29
+enum-tools[sphinx]>=0.9
 gevent
-pygments==2.4.2
+myst-parser[linkify]
+pydata_sphinx_theme
+pygments>=2.6
 sphinx>=3.0.4
 sphinx-rtd-theme==0.5.*
 tornado

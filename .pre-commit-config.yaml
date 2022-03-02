@@ -1,9 +1,13 @@
 exclude: ^zmq/eventloop/minitornado/
 repos:
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.1
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.13  # Use the ref you want to point at
     hooks:
-      - id: prettier
+      - id: mdformat
+        # Optionally add plugins
+        additional_dependencies:
+          - mdformat-black
+          - mdformat-myst
   - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
     hooks:

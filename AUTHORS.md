@@ -92,7 +92,9 @@ The following people have contributed to the project:
 
 as reported by:
 
-    git log --all --format='- %aN (%aE)' | sort -u | sed 's/@/ AT /1' | sed -e 's/\.\([^ ]\)/ DOT \1/g'
+```
+git log --all --format='- %aN (%aE)' | sort -u | sed 's/@/ AT /1' | sed -e 's/\.\([^ ]\)/ DOT \1/g'
+```
 
 with some adjustments.
 

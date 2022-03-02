@@ -88,6 +88,42 @@ Polling
 
 .. autofunction:: zmq.select
 
+Constants
+---------
+
+All libzmq constants are available as top-level attributes
+(``zmq.PUSH``, etc.),
+as well as via enums (``zmq.SocketType.PUSH``, etc.).
+
+.. versionchanged:: 23
+
+    constants for unavailable socket types
+    or draft features will always be defined in pyzmq,
+    whether the features themselves are available or not.
+
+.. versionadded:: 23
+
+    Each category of zmq constant is now available as an IntEnum.
+
+.. autoenum:: SocketType
+
+.. autoenum:: SocketOption
+
+.. autoenum:: Flag
+
+.. autoenum:: PollEvent
+
+.. autoenum:: ContextOption
+
+.. autoenum:: MessageOption
+
+.. autoenum:: Event
+
+.. autoenum:: SecurityMechanism
+
+.. autoenum:: DeviceType
+
+.. autoenum:: Errno
 
 Exceptions
 ----------

@@ -11,14 +11,11 @@
 # serve to show the default.
 
 import os
-import string
 import sys
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../sphinxext'))
-sys.path.append(os.path.abspath('../..'))
+# add repo root to sys.path
+here = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(here, os.pardir, os.pardir)))
 
 # set target libzmq version
 from buildutils.bundle import bundled_version
@@ -38,13 +35,20 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
+    'myst_parser',
+    'enum_tools.autoenum',
 ]
 
+myst_enable_extensions = [
+    "colon_fence",
+    "linkify",
+    "smartquotes",
+]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.md', '.rst']
 
 # The encoding of source files.
 source_encoding = 'utf-8'
@@ -60,7 +64,7 @@ Python logo ™ of the Python Software Foundation, used by Min RK with permissio
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'tornado': ('http://www.tornadoweb.org/en/stable', None),
+    'tornado': ('https://www.tornadoweb.org/en/stable', None),
 }
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -118,8 +122,20 @@ suppress_warnings = ['epub.unknown_project_files']
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'sphinx_rtd_theme'
+html_theme = "pydata_sphinx_theme"
 
+# html_logo = "_static/logo.png"
+
+html_theme_options = {
+    "icon_links": [
+        {
+            # Label for this link
+            "name": "PyZMQ on GitHub",
+            "url": "https://github.com/zeromq/pyzmq",
+            "icon": "fab fa-github-square",
+        }
+    ]
+}
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
