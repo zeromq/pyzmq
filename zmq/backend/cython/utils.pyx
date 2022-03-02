@@ -26,7 +26,7 @@ from zmq.error import ZMQError, _check_rc, _check_version
 
 def has(capability):
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
-    
+
     .. versionadded:: libzmq-4.1
     .. versionadded:: 14.1
     """
@@ -39,12 +39,12 @@ def has(capability):
 
 def curve_keypair():
     """generate a Z85 keypair for use with zmq.CURVE security
-    
+
     Requires libzmq (≥ 4.0) to have been built with CURVE support.
-    
+
     .. versionadded:: libzmq-4.0
     .. versionadded:: 14.0
-    
+
     Returns
     -------
     (public, secret) : two bytestrings

@@ -11,7 +11,6 @@
 # serve to show the default.
 
 import os
-import string
 import sys
 
 # add repo root to sys.path
@@ -36,14 +35,20 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
+    'myst_parser',
     'enum_tools.autoenum',
 ]
 
+myst_enable_extensions = [
+    "colon_fence",
+    "linkify",
+    "smartquotes",
+]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.md', '.rst']
 
 # The encoding of source files.
 source_encoding = 'utf-8'

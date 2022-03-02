@@ -1,6 +1,7 @@
 cython>=0.29
 enum-tools[sphinx]>=0.9
 gevent
+myst-parser[linkify]
 pygments>=2.6
 sphinx>=3.0.4
 sphinx-rtd-theme==0.5.*

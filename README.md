@@ -48,7 +48,9 @@ For more detail on building pyzmq, see [our Wiki](https://github.com/zeromq/pyzm
 
 We build wheels for macOS, Windows, and Linux, so you can get a binary on those platforms with:
 
-    pip install pyzmq
+```
+pip install pyzmq
+```
 
 but compiling from source with `pip install pyzmq` should work in most environments.
 Especially on macOS, make sure you are using the latest pip (≥ 8), or it may not find the right wheels.
@@ -57,17 +59,21 @@ If the wheel doesn't work for some reason, or you want to force pyzmq to be comp
 (this is often preferable if you already have libzmq installed and configured the way you want it),
 you can force installation with:
 
-    pip install --no-binary=:all: pyzmq
+```
+pip install --no-binary=:all: pyzmq
+```
 
 When compiling pyzmq (e.g. installing with pip on Linux),
 it is generally recommended that zeromq be installed separately,
 via homebrew, apt, yum, etc:
 
-    # Debian-based
-    sudo apt-get install libzmq3-dev
+```
+# Debian-based
+sudo apt-get install libzmq3-dev
 
-    # RHEL-based
-    sudo yum install libzmq3-devel
+# RHEL-based
+sudo yum install libzmq3-devel
+```
 
 If this is not available, pyzmq will _try_ to build libzmq as a Python Extension,
 though this is not guaranteed to work.
@@ -79,9 +85,11 @@ Building pyzmq from the git repo (including release tags on GitHub) requires Cyt
 pyzmq 16 drops support Python 2.6 and 3.2.
 If you need to use one of those Python versions, you can pin your pyzmq version to before 16:
 
-    pip install 'pyzmq<16'
+```
+pip install 'pyzmq<16'
+```
 
-For libzmq 2.0.x, use 'pyzmq<2.1'
+For libzmq 2.0.x, use 'pyzmq\<2.1'
 
 pyzmq-2.1.11 was the last version of pyzmq to support Python 2.5,
 and pyzmq ≥ 2.2.0 requires Python ≥ 2.6.
