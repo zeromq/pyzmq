@@ -1302,22 +1302,6 @@ package_data = {
 }
 
 
-def extract_version():
-    """extract pyzmq version from sugar/version.py, so it's not multiply defined"""
-    with open(pjoin('zmq', 'sugar', 'version.py')) as f:
-        while True:
-            line = f.readline()
-            if line.startswith('VERSION'):
-                lines = ["from typing import *\n"]
-                while line and not line.startswith('def'):
-                    lines.append(line)
-                    line = f.readline()
-                break
-    ns = {}
-    exec(''.join(lines), ns)
-    return ns['__version__']
-
-
 def find_packages():
     """adapted from IPython's setupbase.find_packages()"""
     packages = []
@@ -1339,7 +1323,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup_args = dict(
     name="pyzmq",
-    version=extract_version(),
+    version="23.0.0.dev",
     packages=find_packages(),
     ext_modules=extensions,
     cffi_modules=cffi_modules,
