@@ -1,9 +1,13 @@
-.. PyZMQ Unicode doc, by Min Ragan-Kelley, 2010
-
 .. _unicode:
 
 PyZMQ and Unicode
 =================
+
+.. note::
+
+    This describes early days of pyzmq development,
+    when we supported Python 2.5 and 3.1.
+    Much of this information is wildly outdated now.
 
 PyZMQ is built with an eye towards an easy transition to Python 3, and part of
 that is dealing with unicode strings. This is an overview of some of what we

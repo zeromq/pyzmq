@@ -1,9 +1,13 @@
-.. PyZMQ Version compatibility doc, by Min Ragan-Kelley, 2010
-
 .. _pyversions:
 
 PyZMQ, Python2.5, and Python3
 =============================
+
+.. note::
+
+    This describes early days of pyzmq development,
+    when we supported Python 2.5 and 3.1.
+    Much of this information is wildly outdated now.
 
 PyZMQ is a fairly light, low-level library, so supporting as many versions
 as is reasonable is our goal.  Currently, we support at least Python 2.5-3.1.

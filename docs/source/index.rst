@@ -58,16 +58,8 @@ You can also check out the `examples in the pyzmq repo <https://github.com/zerom
     eventloop.rst
     logging.rst
     ssh.rst
+    notes/index.rst
 
-
-Notes from developing PyZMQ
-===========================
-
-.. toctree::
-    :maxdepth: 2
-
-    pyversions.rst
-    unicode.rst
 
 Indices and tables
 ==================
