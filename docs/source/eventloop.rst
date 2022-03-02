@@ -249,7 +249,7 @@ You can also manually install this IOLoop as the global tornado instance, with:
 PyZMQ and gevent
 ================
 
-PyZMQ ≥ 2.2.0.1 ships with a `gevent <http://www.gevent.org/>`_ compatible API as :mod:`zmq.green`.
+PyZMQ ≥ 2.2.0.1 ships with a `gevent <https://www.gevent.org/>`_ compatible API as :mod:`zmq.green`.
 To use it, simply:
 
 .. sourcecode:: python
@@ -280,7 +280,7 @@ though using two eventloops simultaneously (tornado + gevent) is not recommended
 
 .. seealso::
 
-    zmq.green examples `on GitHub <https://github.com/zeromq/pyzmq/tree/master/examples/gevent>`_.
+    zmq.green examples `on GitHub <https://github.com/zeromq/pyzmq/tree/HEAD/examples/gevent>`_.
 
-:mod:`zmq.green` is simply `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_,
+:mod:`zmq.green` began as `gevent_zeromq <https://github.com/tmc/gevent-zeromq>`_,
 merged into the pyzmq project.

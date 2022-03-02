@@ -202,5 +202,5 @@ included in PyZMQ itself:
   with ØMQ sockets.
 * :ref:`zmq.ssh <ssh>` : Simple tools for tunneling zeromq connections via ssh.
 
-.. _ØMQ: http://www.zeromq.org
-.. _Tornado: https://github.com/facebook/tornado
+.. _ØMQ: https://zeromq.org/
+.. _Tornado: https://www.tornadoweb.org

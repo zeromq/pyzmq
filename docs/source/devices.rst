@@ -7,7 +7,7 @@ Devices in PyZMQ
 
 .. seealso::
 
-    ØMQ Guide `Device coverage <http://zguide.zeromq.org/chapter:all#toc32>`_.
+    ØMQ Guide `Device coverage <https://zguide.zeromq.org/docs/chapter2/#ZeroMQ-s-Built-In-Proxy-Function>`_.
 
 ØMQ has a notion of Devices - simple programs that manage a send-recv pattern for
 connecting two or more sockets. Being full programs, devices include a ``while(True)``
@@ -32,7 +32,7 @@ objects created in the background thread or process, prefixed with 'in\_' or 'ou
 corresponding to the `in_socket` and `out_socket`::
 
     from zmq.devices import ProcessDevice
-    
+
     pd = ProcessDevice(zmq.QUEUE, zmq.ROUTER, zmq.DEALER)
     pd.bind_in('tcp://*:12345')
     pd.connect_out('tcp://127.0.0.1:12543')

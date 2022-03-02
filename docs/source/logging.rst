@@ -7,9 +7,9 @@ Asynchronous Logging via PyZMQ
 
 .. seealso::
 
-    * The ØMQ guide `coverage <http://zguide.zeromq.org/chapter:all#toc7>`_ of PUB/SUB
+    * The ØMQ guide `coverage <https://zguide.zeromq.org/docs/chapter5/>`_ of PUB/SUB
       messaging
-    * Python logging module `documentation <http://docs.python.org/library/logging.html>`_
+    * Python logging module `documentation <https://docs.python.org/3/library/logging.html>`_
 
 Python provides extensible logging facilities through its :py:mod:`logging` module. This
 module allows for easily extensible logging functionality through the use of
@@ -17,13 +17,13 @@ module allows for easily extensible logging functionality through the use of
 logging would be to broadcast log messages over a PUB socket, so we have provided a
 :class:`.PUBHandler` class for doing just that.
 
-You can use PyZMQ as a log handler with no previous knowledge of how ZMQ works, 
+You can use PyZMQ as a log handler with no previous knowledge of how ZMQ works,
 and without writing any ZMQ-specific code in your Python project.
 
 Getting Started
 ---------------
-Ensure you have installed the pyzmq package from pip, ideally in a 
-`virtual environment <https://docs.python.org/3/library/venv.html>`_ 
+Ensure you have installed the pyzmq package from pip, ideally in a
+`virtual environment <https://docs.python.org/3/library/venv.html>`_
 you created for your project::
 
     pip install pyzmq
@@ -40,7 +40,7 @@ Next, configure logging in your Python module and setup the ZMQ log handler::
 Usually, you will add the handler only once in the top-level module of your
 project, on the root logger, just as we did here.
 
-You can choose any IP address and port number that works on your system. We 
+You can choose any IP address and port number that works on your system. We
 used ``tcp://127.0.0.1:12345`` to broadcast events via TCP on the localhost
 interface at port 12345. Make note of what you choose here as you will need it
 later when you listen to the events.
@@ -81,29 +81,29 @@ Slow Joiner Problem
 *******************
 The great thing about using ZMQ sockets is that you can start the publisher
 and subscribers in any order, and you can start & stop any of them while
-you leave the others running. 
+you leave the others running.
 
 When using ZMQ for logging, this means you
 can leave the log watcher running while you start & stop your main
 Python module.
 
 However, you need to be aware of what the ZMQ project calls the
-`"slow joiner problem" <http://zguide.zeromq.org/page:all#Getting-the-Message-Out>`_ . 
+`"slow joiner problem" <https://zguide.zeromq.org/docs/chapter5/#Slow-Subscriber-Detection-Suicidal-Snail-Pattern>`_ .
 To oversimplify, it means it can take a bit of
 time for subscribers to re-connect to a publisher that has just
 started up again. If the publisher starts and immediately sends a
 message, subscribers will likely miss it.
 
-The simplistic workaround when using PyZMQ for logging is to ``sleep()`` 
+The simplistic workaround when using PyZMQ for logging is to ``sleep()``
 briefly after startup, before sending any log messages. See the complete
 example below for more details.
 
 
 Custom Log Formats
 ******************
-A common Python logging recipe encourages 
+A common Python logging recipe encourages
 `use of the current module name
-<https://docs.python.org/howto/logging-cookbook.html#using-logging-in-multiple-modules>`_
+<https://docs.python.org/3/howto/logging-cookbook.html#using-logging-in-multiple-modules>`_
 as the name of the logger. This allows your log messages to reflect your
 code hierarchy in a larger project with minimal configuration.
 

@@ -473,7 +473,7 @@ Changes:
    - catch EACCES on Windows
 - include libsodium when building bundled libzmq on Windows (includes wheels on PyPI)
 - pyzmq no longer bundles external libzmq when making a bdist.
-  You can use `delocate <https://pypi.python.org/pypi/delocate>`_ to do this.
+  You can use `delocate <https://pypi.org/project/delocate/>`_ to do this.
 
 Bugfixes:
 
@@ -584,7 +584,7 @@ security features.
   ensuring that libzmq security is available to users who install from wheels
 - New :mod:`zmq.auth`, implementing zeromq's ZAP authentication,
   modeled on czmq zauth.
-  For more information, see the `examples <https://github.com/zeromq/pyzmq/tree/master/examples/>`_.
+  For more information, see the `examples <https://github.com/zeromq/pyzmq/tree/HEAD/examples/>`_.
 
 
 Other New Stuff
@@ -769,8 +769,8 @@ both used under the LGPL.
 zmq.green
 *********
 
-The excellent `gevent_zeromq <https://github.com/traviscline/gevent_zeromq>`_ socket
-subclass which provides `gevent <http://www.gevent.org/>`_ compatibility has been merged as
+The excellent `gevent_zeromq <https://github.com/tmc/gevent-zeromq>`_ socket
+subclass which provides `gevent <https://www.gevent.org/>`_ compatibility has been merged as
 :mod:`zmq.green`.
 
 .. seealso::
@@ -914,7 +914,7 @@ set in stone, and may be removed or changed in incompatible ways in later releas
   :func:`~zmq.core.version.pyzmq_version_info` for getting libzmq and pyzmq versions as
   tuples of numbers. This helps with the fact that version string comparison breaks down
   once versions get into double-digits.
-* ioloop changes merged from upstream `Tornado <http://www.tornadoweb.org>`_ 2.1
+* ioloop changes merged from upstream `Tornado <https://www.tornadoweb.org>`_ 2.1
 
 2.1.9
 =====

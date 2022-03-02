@@ -18,7 +18,7 @@ using paramiko_ for tunnels, so it should work on Windows.
 An SSH tunnel has five basic components:
 
 * server : the SSH server through which the tunnel will be created
-* remote ip : the IP of the remote machine *as seen from the server* 
+* remote ip : the IP of the remote machine *as seen from the server*
   (remote ip may be, but is not not generally the same machine as server).
 * remote port : the port on the remote machine that you want to connect to.
 * local ip : the interface on your local machine you want to use (default: 127.0.0.1)
@@ -65,10 +65,9 @@ rather than the remote one that wouldn't actually work.
 
 .. seealso::
 
-    A short discussion of ssh tunnels: http://www.revsys.com/writings/quicktips/ssh-tunnel.html
+    A short discussion of ssh tunnels: https://www.revsys.com/writings/quicktips/ssh-tunnel.html
 
 
-.. _IPython: http://ipython.org
-.. _pexpect: http://www.noah.org/wiki/pexpect
-.. _pexpect-u: http://pypi.python.org/pypi/pexpect-u
-.. _paramiko: http://www.lag.net/paramiko/
+.. _IPython: https://ipython.org
+.. _pexpect: https://pexpect.readthedocs.io
+.. _paramiko: https://www.lag.net/paramiko/

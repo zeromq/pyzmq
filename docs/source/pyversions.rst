@@ -67,7 +67,7 @@ Explicit Type           2.x                      3.x
 =================  =================   ====================
 
 .. Note::
-    
+
     2.5 specific
 
     Where we really noticed the issue of :class:`bytes` vs :obj:`strings` coming up for
@@ -123,9 +123,11 @@ We have a :file:`utils/buffers.pxd` file that defines our :func:`asbuffer` and
 :file:`asbuffer.pxi`. The :func:`frombuffer` functionality was added. These functions
 internally switch based on Python version to call the appropriate C-API functions.
 
-.. seealso:: `Python Buffer API <bufferapi>`_
+.. seealso::
 
-.. _bufferapi: http://docs.python.org/c-api/buffer.html
+    `Python Buffer API`_
+
+.. _Python Buffer API: https://docs.python.org/3/c-api/buffer.html
 
 
 ``__str__``
@@ -153,7 +155,7 @@ Exceptions
 
     This section is only relevant for supporting Python 2.5 and 3.x, not for 2.6-3.x.
 
-The syntax for handling exceptions has `changed <PEP-3110>`_ in Python 3.  The old syntax:
+The syntax for handling exceptions has `changed <https://www.python.org/dev/peps/pep-3110/>`_ in Python 3.  The old syntax:
 
 .. sourcecode:: py
 
@@ -187,9 +189,10 @@ exception block:
 This is certainly not as elegant as either the old or new syntax, but it's the only way we
 have found to work everywhere.
 
-.. seealso:: PEP-3110_
+.. seealso::
 
-.. _PEP-3110: http://www.python.org/dev/peps/pep-3110/
+    `PEP 3110 <https://www.python.org/dev/peps/pep-3110/>`_
 
 
-.. _mpi4py: http://mpi4py.googlecode.com
+
+.. _mpi4py: https://mpi4py.readthedocs.io

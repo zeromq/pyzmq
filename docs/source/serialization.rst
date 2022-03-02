@@ -85,7 +85,7 @@ the array.
         return A.reshape(md['shape'])
 
 
-.. [msgpack] Message Pack serialization library http://msgpack.org
-.. [protobuf] Google Protocol Buffers http://code.google.com/p/protobuf
+.. [msgpack] Message Pack serialization library https://msgpack.org
+.. [protobuf] Google Protocol Buffers https://github.com/protocolbuffers/protobuf
 .. [zlib] Python stdlib module for zip compression: :py:mod:`zlib`
-.. [blosc] Blosc: A blocking, shuffling and loss-less (and crazy-fast) compression library http://www.blosc.org
+.. [blosc] Blosc: A blocking, shuffling and loss-less (and crazy-fast) compression library https://www.blosc.org
