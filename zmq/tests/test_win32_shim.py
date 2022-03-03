@@ -56,4 +56,4 @@ class TestWindowsConsoleControlHandler(BaseZMQTestCase):
                 self.fail('Expecting `KeyboardInterrupt` exception!')
 
         # Make sure our handler was called.
-        self.assertEqual(interrupt_polling.__calls__, 1)
+        assert interrupt_polling.__calls__ == 1

@@ -17,15 +17,15 @@ class TestDevice(BaseZMQTestCase):
     def test_device_types(self):
         for devtype in (zmq.STREAMER, zmq.FORWARDER, zmq.QUEUE):
             dev = devices.Device(devtype, zmq.PAIR, zmq.PAIR)
-            self.assertEqual(dev.device_type, devtype)
+            assert dev.device_type == devtype
             del dev
 
     def test_device_attributes(self):
         dev = devices.Device(zmq.QUEUE, zmq.SUB, zmq.PUB)
-        self.assertEqual(dev.in_type, zmq.SUB)
-        self.assertEqual(dev.out_type, zmq.PUB)
-        self.assertEqual(dev.device_type, zmq.QUEUE)
-        self.assertEqual(dev.daemon, True)
+        assert dev.in_type == zmq.SUB
+        assert dev.out_type == zmq.PUB
+        assert dev.device_type == zmq.QUEUE
+        assert dev.daemon == True
         del dev
 
     def test_single_socket_forwarder_connect(self):
@@ -39,7 +39,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello'
         req.send(msg)
-        self.assertEqual(msg, self.recv(req))
+        assert msg == self.recv(req)
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -50,7 +50,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello again'
         req.send(msg)
-        self.assertEqual(msg, self.recv(req))
+        assert msg == self.recv(req)
         del dev
         req.close()
 
@@ -65,7 +65,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello'
         req.send(msg)
-        self.assertEqual(msg, self.recv(req))
+        assert msg == self.recv(req)
         del dev
         req.close()
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
@@ -76,7 +76,7 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello again'
         req.send(msg)
-        self.assertEqual(msg, self.recv(req))
+        assert msg == self.recv(req)
         del dev
         req.close()
 
@@ -125,8 +125,8 @@ class TestDevice(BaseZMQTestCase):
         mon.connect("%s:%i" % (iface, port3))
         push.send(msg)
         self.sockets.extend([push, pull, mon])
-        self.assertEqual(msg, self.recv(pull))
-        self.assertEqual(msg, self.recv(mon))
+        assert msg == self.recv(pull)
+        assert msg == self.recv(mon)
 
     def test_proxy_bind_to_random_with_args(self):
         if zmq.zmq_version_info() < (3, 2):
@@ -164,6 +164,6 @@ if have_gevent:
             timeout = gevent.Timeout(3)
             timeout.start()
             receiver = gevent.spawn(req.recv)
-            self.assertEqual(receiver.get(2), b'hi')
+            assert receiver.get(2) == b'hi'
             timeout.cancel()
             g.kill(block=True)

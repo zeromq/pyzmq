@@ -124,7 +124,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
             except zmq.Again:
                 warnings.warn("client set POLLIN, but cannot recv", RuntimeWarning)
             else:
-                self.assertEqual(rcvd_msg, msg)
+                assert rcvd_msg == msg
                 result = True
         return result
 
@@ -139,7 +139,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
 
         server = self.socket(zmq.PUSH)
         client = self.socket(zmq.PULL)
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet. The client connection
@@ -147,7 +147,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         server = self.socket(zmq.PUSH)
         server.zap_domain = b'global'
         client = self.socket(zmq.PULL)
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
     def test_blacklist(self):
         """threaded auth - Blacklist"""
@@ -158,7 +158,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         # though no policies are configured yet.
         server.zap_domain = b'global'
         client = self.socket(zmq.PULL)
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
     def test_whitelist(self):
         """threaded auth - Whitelist"""
@@ -169,7 +169,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         # though no policies are configured yet.
         server.zap_domain = b'global'
         client = self.socket(zmq.PULL)
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
     def test_plain(self):
         """threaded auth - PLAIN"""
@@ -180,7 +180,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         client.plain_username = b'admin'
         client.plain_password = b'Password'
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
         # Try PLAIN authentication - with server configured, connection should pass
         server = self.socket(zmq.PUSH)
@@ -189,7 +189,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.plain_username = b'admin'
         client.plain_password = b'Password'
         self.auth.configure_plain(domain='*', passwords={'admin': 'Password'})
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
         # Try PLAIN authentication - with bogus credentials, connection should fail
         server = self.socket(zmq.PUSH)
@@ -197,7 +197,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client = self.socket(zmq.PULL)
         client.plain_username = b'admin'
         client.plain_password = b'Bogus'
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
         # Remove authenticator and check that a normal connection works
         self.auth.stop()
@@ -205,7 +205,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
 
         server = self.socket(zmq.PUSH)
         client = self.socket(zmq.PULL)
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
         client.close()
         server.close()
 
@@ -224,7 +224,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
         # Try CURVE authentication - with server configured to CURVE_ALLOW_ANY, connection should pass
         self.auth.configure_curve(domain='*', location=zmq.auth.CURVE_ALLOW_ANY)
@@ -236,7 +236,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
         # Try CURVE authentication - with server configured, connection should pass
         self.auth.configure_curve(domain='*', location=self.public_keys_dir)
@@ -257,7 +257,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         # Try connecting using NULL and no authentication enabled, connection should pass
         server = self.socket(zmq.PUSH)
         client = self.socket(zmq.PULL)
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
     def test_curve_callback(self):
         """threaded auth - CURVE with callback authentication"""
@@ -274,7 +274,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
         # Try CURVE authentication - with callback authentication configured, connection should pass
 
@@ -298,7 +298,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertTrue(self.can_connect(server, client))
+        assert self.can_connect(server, client)
 
         # Try CURVE authentication - with callback authentication configured with wrong key, connection should not pass
 
@@ -322,7 +322,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
         client.curve_serverkey = server_public
-        self.assertFalse(self.can_connect(server, client))
+        assert not self.can_connect(server, client)
 
     @skip_pypy
     def test_curve_user_id(self):

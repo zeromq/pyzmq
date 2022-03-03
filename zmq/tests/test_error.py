@@ -15,13 +15,13 @@ class TestZMQError(BaseZMQTestCase):
         """test that strerror gets the right type."""
         for i in range(10):
             e = strerror(i)
-            self.assertTrue(isinstance(e, str))
+            assert isinstance(e, str)
 
     def test_zmqerror(self):
         for errno in range(10):
             e = ZMQError(errno)
-            self.assertEqual(e.errno, errno)
-            self.assertEqual(str(e), strerror(errno))
+            assert e.errno == errno
+            assert str(e) == strerror(errno)
 
     def test_again(self):
         s = self.context.socket(zmq.REP)
