@@ -40,12 +40,12 @@ class TestPubLog(BaseZMQTestCase):
         logger = self.logger
         ctx = self.context
         handler = handlers.PUBHandler(self.iface)
-        self.assertFalse(handler.ctx is ctx)
+        assert not handler.ctx is ctx
         self.sockets.append(handler.socket)
         # handler.ctx.term()
         handler = handlers.PUBHandler(self.iface, self.context)
         self.sockets.append(handler.socket)
-        self.assertTrue(handler.ctx is ctx)
+        assert handler.ctx is ctx
         handler.setLevel(logging.DEBUG)
         handler.root_topic = self.topic
         logger.addHandler(handler)
@@ -60,8 +60,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
 
         (topic, msg2) = sub.recv_multipart()
-        self.assertEqual(topic, b'zmq.INFO')
-        self.assertEqual(msg2, b(msg1) + b'\n')
+        assert topic == b'zmq.INFO'
+        assert msg2 == b(msg1) + b'\n'
         logger.removeHandler(handler)
 
     def test_init_socket(self):
@@ -72,9 +72,9 @@ class TestPubLog(BaseZMQTestCase):
         handler.root_topic = self.topic
         logger.addHandler(handler)
 
-        self.assertTrue(handler.socket is pub)
-        self.assertTrue(handler.ctx is pub.context)
-        self.assertTrue(handler.ctx is self.context)
+        assert handler.socket is pub
+        assert handler.ctx is pub.context
+        assert handler.ctx is self.context
         sub.setsockopt(zmq.SUBSCRIBE, b(self.topic))
         import time
 
@@ -83,8 +83,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
 
         (topic, msg2) = sub.recv_multipart()
-        self.assertEqual(topic, b'zmq.INFO')
-        self.assertEqual(msg2, b(msg1) + b'\n')
+        assert topic == b'zmq.INFO'
+        assert msg2 == b(msg1) + b'\n'
         logger.removeHandler(handler)
 
     def test_root_topic(self):
@@ -99,8 +99,8 @@ class TestPubLog(BaseZMQTestCase):
         logger.info(msg1)
         self.assertRaisesErrno(zmq.EAGAIN, sub.recv, zmq.NOBLOCK)
         topic, msg2 = sub2.recv_multipart()
-        self.assertEqual(topic, b'twoonly.INFO')
-        self.assertEqual(msg2, b(msg1) + b'\n')
+        assert topic == b'twoonly.INFO'
+        assert msg2 == b(msg1) + b'\n'
 
         logger.removeHandler(handler)
 
@@ -117,14 +117,14 @@ class TestPubLog(BaseZMQTestCase):
         logger.debug(msg_debug)
         self.assertRaisesErrno(zmq.EAGAIN, sub_only_info.recv, zmq.NOBLOCK)
         topic, msg_debug_response = sub_everything.recv_multipart()
-        self.assertEqual(topic, b'DEBUG')
+        assert topic == b'DEBUG'
         msg_info = 'info_message'
         logger.info(msg_info)
         topic, msg_info_response_everything = sub_everything.recv_multipart()
-        self.assertEqual(topic, b'INFO')
+        assert topic == b'INFO'
         topic, msg_info_response_onlyinfo = sub_only_info.recv_multipart()
-        self.assertEqual(topic, b'INFO')
-        self.assertEqual(msg_info_response_everything, msg_info_response_onlyinfo)
+        assert topic == b'INFO'
+        assert msg_info_response_everything == msg_info_response_onlyinfo
 
         logger.removeHandler(handler)
 
@@ -138,7 +138,7 @@ class TestPubLog(BaseZMQTestCase):
         ]:
             logger.info(msg)
             received = sub.recv_multipart()
-            self.assertEqual(received, expected)
+            assert received == expected
         logger.removeHandler(handler)
 
     def test_set_info_formatter_via_property(self):
@@ -148,7 +148,7 @@ class TestPubLog(BaseZMQTestCase):
         sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
         logger.info('info message')
         topic, msg = sub.recv_multipart()
-        self.assertEqual(msg, b'info message UNITTEST\n')
+        assert msg == b'info message UNITTEST\n'
         logger.removeHandler(handler)
 
     def test_custom_global_formatter(self):
@@ -159,10 +159,10 @@ class TestPubLog(BaseZMQTestCase):
         sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
         logger.info('info message')
         topic, msg = sub.recv_multipart()
-        self.assertEqual(msg, b'UNITTEST info message')
+        assert msg == b'UNITTEST info message'
         logger.debug('debug message')
         topic, msg = sub.recv_multipart()
-        self.assertEqual(msg, b'UNITTEST debug message')
+        assert msg == b'UNITTEST debug message'
         logger.removeHandler(handler)
 
     def test_custom_debug_formatter(self):
@@ -173,8 +173,8 @@ class TestPubLog(BaseZMQTestCase):
         sub.setsockopt(zmq.SUBSCRIBE, b(handler.root_topic))
         logger.info('info message')
         topic, msg = sub.recv_multipart()
-        self.assertEqual(msg, b'info message\n')
+        assert msg == b'info message\n'
         logger.debug('debug message')
         topic, msg = sub.recv_multipart()
-        self.assertEqual(msg, b'UNITTEST DEBUG debug message')
+        assert msg == b'UNITTEST DEBUG debug message'
         logger.removeHandler(handler)

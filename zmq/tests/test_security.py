@@ -38,8 +38,8 @@ class TestSecurity(BaseZMQTestCase):
             elif mechanism == b'CURVE':
                 key = msg[6]
 
-            self.assertEqual(version, b"1.0")
-            self.assertEqual(identity, b"IDENT")
+            assert version == b"1.0"
+            assert identity == b"IDENT"
             reply = [version, sequence]
             if (
                 mechanism == b'CURVE'
@@ -92,25 +92,25 @@ class TestSecurity(BaseZMQTestCase):
         try:
             if test_metadata and not PYPY:
                 for frame in frames:
-                    self.assertEqual(frame.get('User-Id'), 'anonymous')
-                    self.assertEqual(frame.get('Hello'), 'World')
-                    self.assertEqual(frame['Socket-Type'], 'DEALER')
+                    assert frame.get('User-Id') == 'anonymous'
+                    assert frame.get('Hello') == 'World'
+                    assert frame['Socket-Type'] == 'DEALER'
         except zmq.ZMQVersionError:
             pass
 
-        self.assertEqual(recvd, msg)
+        assert recvd == msg
         server.send_multipart(recvd)
         msg2 = self.recv_multipart(client)
-        self.assertEqual(msg2, msg)
+        assert msg2 == msg
 
     def test_null(self):
         """test NULL (default) security"""
         server = self.socket(zmq.DEALER)
         client = self.socket(zmq.DEALER)
-        self.assertEqual(client.MECHANISM, zmq.NULL)
-        self.assertEqual(server.mechanism, zmq.NULL)
-        self.assertEqual(client.plain_server, 0)
-        self.assertEqual(server.plain_server, 0)
+        assert client.MECHANISM == zmq.NULL
+        assert server.mechanism == zmq.NULL
+        assert client.plain_server == 0
+        assert server.plain_server == 0
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
         client.connect("%s:%i" % (iface, port))
@@ -121,17 +121,17 @@ class TestSecurity(BaseZMQTestCase):
         server = self.socket(zmq.DEALER)
         server.identity = b'IDENT'
         client = self.socket(zmq.DEALER)
-        self.assertEqual(client.plain_username, b'')
-        self.assertEqual(client.plain_password, b'')
+        assert client.plain_username == b''
+        assert client.plain_password == b''
         client.plain_username = USER
         client.plain_password = PASS
-        self.assertEqual(client.getsockopt(zmq.PLAIN_USERNAME), USER)
-        self.assertEqual(client.getsockopt(zmq.PLAIN_PASSWORD), PASS)
-        self.assertEqual(client.plain_server, 0)
-        self.assertEqual(server.plain_server, 0)
+        assert client.getsockopt(zmq.PLAIN_USERNAME) == USER
+        assert client.getsockopt(zmq.PLAIN_PASSWORD) == PASS
+        assert client.plain_server == 0
+        assert server.plain_server == 0
         server.plain_server = True
-        self.assertEqual(server.mechanism, zmq.PLAIN)
-        self.assertEqual(client.mechanism, zmq.PLAIN)
+        assert server.mechanism == zmq.PLAIN
+        assert client.mechanism == zmq.PLAIN
 
         assert not client.plain_server
         assert server.plain_server
@@ -151,8 +151,8 @@ class TestSecurity(BaseZMQTestCase):
         client.plain_username = USER
         client.plain_password = b'incorrect'
         server.plain_server = True
-        self.assertEqual(server.mechanism, zmq.PLAIN)
-        self.assertEqual(client.mechanism, zmq.PLAIN)
+        assert server.mechanism == zmq.PLAIN
+        assert client.mechanism == zmq.PLAIN
 
         with self.zap():
             iface = 'tcp://127.0.0.1'
@@ -169,17 +169,17 @@ class TestSecurity(BaseZMQTestCase):
         except zmq.ZMQError:
             raise SkipTest("CURVE unsupported")
 
-        self.assertEqual(type(secret), bytes)
-        self.assertEqual(type(public), bytes)
-        self.assertEqual(len(secret), 40)
-        self.assertEqual(len(public), 40)
+        assert type(secret) == bytes
+        assert type(public) == bytes
+        assert len(secret) == 40
+        assert len(public) == 40
 
         # verify that it is indeed Z85
         bsecret, bpublic = (z85.decode(key) for key in (public, secret))
-        self.assertEqual(type(bsecret), bytes)
-        self.assertEqual(type(bpublic), bytes)
-        self.assertEqual(len(bsecret), 32)
-        self.assertEqual(len(bpublic), 32)
+        assert type(bsecret) == bytes
+        assert type(bpublic) == bytes
+        assert len(bsecret) == 32
+        assert len(bpublic) == 32
 
     def test_curve_public(self):
         """test curve_public"""
@@ -192,16 +192,16 @@ class TestSecurity(BaseZMQTestCase):
 
         derived_public = zmq.curve_public(secret)
 
-        self.assertEqual(type(derived_public), bytes)
-        self.assertEqual(len(derived_public), 40)
+        assert type(derived_public) == bytes
+        assert len(derived_public) == 40
 
         # verify that it is indeed Z85
         bpublic = z85.decode(derived_public)
-        self.assertEqual(type(bpublic), bytes)
-        self.assertEqual(len(bpublic), 32)
+        assert type(bpublic) == bytes
+        assert len(bpublic) == 32
 
         # verify that it is equal to the known public key
-        self.assertEqual(derived_public, public)
+        assert derived_public == public
 
     def test_curve(self):
         """test CURVE encryption"""
@@ -225,11 +225,11 @@ class TestSecurity(BaseZMQTestCase):
         client.curve_publickey = client_public
         client.curve_secretkey = client_secret
 
-        self.assertEqual(server.mechanism, zmq.CURVE)
-        self.assertEqual(client.mechanism, zmq.CURVE)
+        assert server.mechanism == zmq.CURVE
+        assert client.mechanism == zmq.CURVE
 
-        self.assertEqual(server.get(zmq.CURVE_SERVER), True)
-        self.assertEqual(client.get(zmq.CURVE_SERVER), False)
+        assert server.get(zmq.CURVE_SERVER) == True
+        assert client.get(zmq.CURVE_SERVER) == False
 
         with self.zap():
             iface = 'tcp://127.0.0.1'

@@ -36,8 +36,8 @@ class TestProxySteerable(BaseZMQTestCase):
         ctrl.connect("%s:%i" % (iface, port4))
         push.send(msg)
         self.sockets.extend([push, pull, mon, ctrl])
-        self.assertEqual(msg, self.recv(pull))
-        self.assertEqual(msg, self.recv(mon))
+        assert msg == self.recv(pull)
+        assert msg == self.recv(mon)
         ctrl.send(b'TERMINATE')
         dev.join()
 
@@ -82,14 +82,14 @@ class TestProxySteerable(BaseZMQTestCase):
         ctrl.connect("%s:%i" % (iface, port4))
         push.send(msg)
         self.sockets.extend([push, pull, mon, ctrl])
-        self.assertEqual(msg, self.recv(pull))
-        self.assertEqual(msg, self.recv(mon))
+        assert msg == self.recv(pull)
+        assert msg == self.recv(mon)
         ctrl.send(b'STATISTICS')
         stats = self.recv_multipart(ctrl)
         stats_int = [struct.unpack("=Q", x)[0] for x in stats]
-        self.assertEqual(1, stats_int[0])
-        self.assertEqual(len(msg), stats_int[1])
-        self.assertEqual(1, stats_int[6])
-        self.assertEqual(len(msg), stats_int[7])
+        assert 1 == stats_int[0]
+        assert len(msg) == stats_int[1]
+        assert 1 == stats_int[6]
+        assert len(msg) == stats_int[7]
         ctrl.send(b'TERMINATE')
         dev.join()

@@ -112,11 +112,11 @@ class TestIOLoop(BaseZMQTestCase):
         req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
         loop.add_handler(req, lambda msg: msg, ioloop.IOLoop.READ)
         loop.add_handler(rep, lambda msg: msg, ioloop.IOLoop.READ)
-        self.assertEqual(req.closed, False)
-        self.assertEqual(rep.closed, False)
+        assert req.closed == False
+        assert rep.closed == False
         loop.close(all_fds=True)
-        self.assertEqual(req.closed, True)
-        self.assertEqual(rep.closed, True)
+        assert req.closed == True
+        assert rep.closed == True
 
 
 if have_gevent and _tornado:

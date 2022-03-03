@@ -21,9 +21,9 @@ class TestZ85(TestCase):
         )
         encoded = z85.encode(client_public)
 
-        self.assertEqual(encoded, b"Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID")
+        assert encoded == b"Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID"
         decoded = z85.decode(encoded)
-        self.assertEqual(decoded, client_public)
+        assert decoded == client_public
 
     def test_client_secret(self):
         client_secret = (
@@ -34,9 +34,9 @@ class TestZ85(TestCase):
         )
         encoded = z85.encode(client_secret)
 
-        self.assertEqual(encoded, b"D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs")
+        assert encoded == b"D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs"
         decoded = z85.decode(encoded)
-        self.assertEqual(decoded, client_secret)
+        assert decoded == client_secret
 
     def test_server_public(self):
         server_public = (
@@ -47,9 +47,9 @@ class TestZ85(TestCase):
         )
         encoded = z85.encode(server_public)
 
-        self.assertEqual(encoded, b"rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7")
+        assert encoded == b"rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7"
         decoded = z85.decode(encoded)
-        self.assertEqual(decoded, server_public)
+        assert decoded == server_public
 
     def test_server_secret(self):
         server_secret = (
@@ -60,6 +60,6 @@ class TestZ85(TestCase):
         )
         encoded = z85.encode(server_secret)
 
-        self.assertEqual(encoded, b"JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6")
+        assert encoded == b"JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6"
         decoded = z85.decode(encoded)
-        self.assertEqual(decoded, server_secret)
+        assert decoded == server_secret

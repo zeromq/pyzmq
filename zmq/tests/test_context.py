@@ -38,13 +38,13 @@ class KwargTestContext(zmq.Context):
 class TestContext(BaseZMQTestCase):
     def test_init(self):
         c1 = self.Context()
-        self.assertTrue(isinstance(c1, self.Context))
+        assert isinstance(c1, self.Context)
         del c1
         c2 = self.Context()
-        self.assertTrue(isinstance(c2, self.Context))
+        assert isinstance(c2, self.Context)
         del c2
         c3 = self.Context()
-        self.assertTrue(isinstance(c3, self.Context))
+        assert isinstance(c3, self.Context)
         del c3
 
     _repr_cls = "zmq.Context"
@@ -62,9 +62,9 @@ class TestContext(BaseZMQTestCase):
 
     def test_dir(self):
         ctx = self.Context()
-        self.assertTrue('socket' in dir(ctx))
+        assert 'socket' in dir(ctx)
         if zmq.zmq_version_info() > (3,):
-            self.assertTrue('IO_THREADS' in dir(ctx))
+            assert 'IO_THREADS' in dir(ctx)
         ctx.term()
 
     @mark.skipif(mock is None, reason="requires unittest.mock")
@@ -74,12 +74,12 @@ class TestContext(BaseZMQTestCase):
     def test_term(self):
         c = self.Context()
         c.term()
-        self.assertTrue(c.closed)
+        assert c.closed
 
     def test_context_manager(self):
         with self.Context() as c:
             pass
-        self.assertTrue(c.closed)
+        assert c.closed
 
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
@@ -95,13 +95,13 @@ class TestContext(BaseZMQTestCase):
     def test_instance(self):
         ctx = self.Context.instance()
         c2 = self.Context.instance(io_threads=2)
-        self.assertTrue(c2 is ctx)
+        assert c2 is ctx
         c2.term()
         c3 = self.Context.instance()
         c4 = self.Context.instance()
-        self.assertFalse(c3 is c2)
-        self.assertFalse(c3.closed)
-        self.assertTrue(c3 is c4)
+        assert not c3 is c2
+        assert not c3.closed
+        assert c3 is c4
 
     def test_instance_subclass_first(self):
         self.context.term()
@@ -169,7 +169,7 @@ class TestContext(BaseZMQTestCase):
         test_kwarg_value = 'testing one two three'
         with KwargTestContext() as ctx:
             with ctx.socket(zmq.DEALER, test_kwarg=test_kwarg_value) as socket:
-                self.assertTrue(socket.test_kwarg_value is test_kwarg_value)
+                assert socket.test_kwarg_value is test_kwarg_value
 
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""
@@ -185,10 +185,10 @@ class TestContext(BaseZMQTestCase):
         """setting socket options with ctx attributes"""
         ctx = self.Context()
         ctx.linger = 5
-        self.assertEqual(ctx.linger, 5)
+        assert ctx.linger == 5
         s = ctx.socket(zmq.REQ)
-        self.assertEqual(s.linger, 5)
-        self.assertEqual(s.getsockopt(zmq.LINGER), 5)
+        assert s.linger == 5
+        assert s.getsockopt(zmq.LINGER) == 5
         s.close()
         # check that subscribe doesn't get set on sockets that don't subscribe:
         ctx.subscribe = b''
@@ -210,7 +210,7 @@ class TestContext(BaseZMQTestCase):
         # reaper is not instantaneous
         time.sleep(1e-2)
         for s in sockets:
-            self.assertTrue(s.closed)
+            assert s.closed
 
     def test_destroy_linger(self):
         """Context.destroy should set linger on closing sockets"""
@@ -221,20 +221,20 @@ class TestContext(BaseZMQTestCase):
         # reaper is not instantaneous
         time.sleep(1e-2)
         for s in (req, rep):
-            self.assertTrue(s.closed)
+            assert s.closed
 
     def test_term_noclose(self):
         """Context.term won't close sockets"""
         ctx = self.Context()
         s = ctx.socket(zmq.REQ)
-        self.assertFalse(s.closed)
+        assert not s.closed
         t = Thread(target=ctx.term)
         t.start()
         t.join(timeout=0.1)
-        self.assertTrue(t.is_alive(), "Context should be waiting")
+        assert t.is_alive(), "Context should be waiting"
         s.close()
         t.join(timeout=0.1)
-        self.assertFalse(t.is_alive(), "Context should have closed")
+        assert not t.is_alive(), "Context should have closed"
 
     def test_gc(self):
         """test close&term by garbage collection alone"""
@@ -253,9 +253,7 @@ class TestContext(BaseZMQTestCase):
         t = Thread(target=gcf)
         t.start()
         t.join(timeout=1)
-        self.assertFalse(
-            t.is_alive(), "Garbage collection should have cleaned up context"
-        )
+        assert not t.is_alive(), "Garbage collection should have cleaned up context"
 
     def test_cyclic_destroy(self):
         """ctx.destroy should succeed when cyclic ref prevents gc"""
@@ -290,7 +288,7 @@ class TestContext(BaseZMQTestCase):
             try:
                 s.recv()
             except zmq.ZMQError as e:
-                self.assertEqual(e.errno, zmq.ETERM)
+                assert e.errno == zmq.ETERM
                 return
             finally:
                 s.close()
@@ -300,11 +298,11 @@ class TestContext(BaseZMQTestCase):
         t.start()
 
         evt.wait(1)
-        self.assertTrue(evt.is_set(), "sync event never fired")
+        assert evt.is_set(), "sync event never fired"
         time.sleep(0.01)
         ctx.term()
         t.join(timeout=1)
-        self.assertFalse(t.is_alive(), "term should have interrupted s.recv()")
+        assert not t.is_alive(), "term should have interrupted s.recv()"
 
     def test_destroy_no_sockets(self):
         ctx = self.Context()
@@ -320,21 +318,21 @@ class TestContext(BaseZMQTestCase):
             raise SkipTest("context options require libzmq 3")
         ctx = self.Context()
         ctx.set(zmq.MAX_SOCKETS, 2)
-        self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 2)
+        assert ctx.get(zmq.MAX_SOCKETS) == 2
         ctx.max_sockets = 100
-        self.assertEqual(ctx.max_sockets, 100)
-        self.assertEqual(ctx.get(zmq.MAX_SOCKETS), 100)
+        assert ctx.max_sockets == 100
+        assert ctx.get(zmq.MAX_SOCKETS) == 100
 
     def test_copy(self):
         c1 = self.Context()
         c2 = copy.copy(c1)
         c2b = copy.deepcopy(c1)
         c3 = copy.deepcopy(c2)
-        self.assertTrue(c2._shadow)
-        self.assertTrue(c3._shadow)
-        self.assertEqual(c1.underlying, c2.underlying)
-        self.assertEqual(c1.underlying, c3.underlying)
-        self.assertEqual(c1.underlying, c2b.underlying)
+        assert c2._shadow
+        assert c3._shadow
+        assert c1.underlying == c2.underlying
+        assert c1.underlying == c3.underlying
+        assert c1.underlying == c2b.underlying
         s = c3.socket(zmq.PUB)
         s.close()
         c1.term()
@@ -342,11 +340,11 @@ class TestContext(BaseZMQTestCase):
     def test_shadow(self):
         ctx = self.Context()
         ctx2 = self.Context.shadow(ctx.underlying)
-        self.assertEqual(ctx.underlying, ctx2.underlying)
+        assert ctx.underlying == ctx2.underlying
         s = ctx.socket(zmq.PUB)
         s.close()
         del ctx2
-        self.assertFalse(ctx.closed)
+        assert not ctx.closed
         s = ctx.socket(zmq.PUB)
         ctx2 = self.Context.shadow(ctx.underlying)
         s2 = ctx2.socket(zmq.PUB)
@@ -370,7 +368,7 @@ class TestContext(BaseZMQTestCase):
         b.connect("inproc://a")
         zstr.send(a, b'hi')
         rcvd = self.recv(b)
-        self.assertEqual(rcvd, b'hi')
+        assert rcvd == b'hi'
         b.close()
 
     @mark.skipif(sys.platform.startswith('win'), reason='No fork on Windows')

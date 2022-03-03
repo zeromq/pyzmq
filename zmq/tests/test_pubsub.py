@@ -22,7 +22,7 @@ class TestPubSub(BaseZMQTestCase):
         msg1 = b'message'
         s1.send(msg1)
         msg2 = s2.recv()  # This is blocking!
-        self.assertEqual(msg1, msg2)
+        assert msg1 == msg2
 
     def test_topic(self):
         s1, s2 = self.create_bound_pair(zmq.PUB, zmq.SUB)
@@ -34,7 +34,7 @@ class TestPubSub(BaseZMQTestCase):
         msg1 = b'xmessage'
         s1.send(msg1)
         msg2 = s2.recv()
-        self.assertEqual(msg1, msg2)
+        assert msg1 == msg2
 
 
 if have_gevent:

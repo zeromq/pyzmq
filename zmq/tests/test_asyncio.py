@@ -90,7 +90,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert not f.done()
             await a.send(b"hi")
             recvd = await f
-            self.assertEqual(recvd, [b"hi"])
+            assert recvd == [b"hi"]
 
         self.loop.run_until_complete(test())
 
@@ -104,8 +104,8 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             await a.send_multipart([b"hi", b"there"])
             recvd = await f2
             assert f1.done()
-            self.assertEqual(f1.result(), b"hi")
-            self.assertEqual(recvd, b"there")
+            assert f1.result() == b"hi"
+            assert recvd == b"there"
 
         self.loop.run_until_complete(test())
 
@@ -122,7 +122,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             await a.send_multipart([b"hi", b"there"])
             recvd = await f2
             assert f2.done()
-            self.assertEqual(recvd, [b"hi", b"there"])
+            assert recvd == [b"hi", b"there"]
 
         self.loop.run_until_complete(test())
 
@@ -145,8 +145,8 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             await a.send_string(msg)
             recvd = await f
             assert f.done()
-            self.assertEqual(f.result(), msg)
-            self.assertEqual(recvd, msg)
+            assert f.result() == msg
+            assert recvd == msg
 
         self.loop.run_until_complete(test())
 
@@ -159,8 +159,8 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             await a.send_json(obj)
             recvd = await f
             assert f.done()
-            self.assertEqual(f.result(), obj)
-            self.assertEqual(recvd, obj)
+            assert f.result() == obj
+            assert recvd == obj
 
         self.loop.run_until_complete(test())
 
@@ -202,8 +202,8 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             await a.send_pyobj(obj)
             recvd = await f
             assert f.done()
-            self.assertEqual(f.result(), obj)
-            self.assertEqual(recvd, obj)
+            assert f.result() == obj
+            assert recvd == obj
 
         self.loop.run_until_complete(test())
 
@@ -274,7 +274,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             f = pull.recv(zmq.DONTWAIT)
             assert f.done()
             msg = await f
-            self.assertEqual(msg, b"ping")
+            assert msg == b"ping"
 
         self.loop.run_until_complete(test())
 
@@ -290,7 +290,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             recvd = await f2
             assert f1.cancelled()
             assert f2.done()
-            self.assertEqual(recvd, [b"hi", b"there"])
+            assert recvd == [b"hi", b"there"]
 
         self.loop.run_until_complete(test())
 
@@ -299,21 +299,21 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
             f = b.poll(timeout=0)
             await asyncio.sleep(0)
-            self.assertEqual(f.result(), 0)
+            assert f.result() == 0
 
             f = b.poll(timeout=1)
             assert not f.done()
             evt = await f
 
-            self.assertEqual(evt, 0)
+            assert evt == 0
 
             f = b.poll(timeout=1000)
             assert not f.done()
             await a.send_multipart([b"hi", b"there"])
             evt = await f
-            self.assertEqual(evt, zmq.POLLIN)
+            assert evt == zmq.POLLIN
             recvd = await b.recv_multipart()
-            self.assertEqual(recvd, [b"hi", b"there"])
+            assert recvd == [b"hi", b"there"]
 
         self.loop.run_until_complete(test())
 
@@ -334,9 +334,9 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert not f.done()
             a.send_multipart([b"hi", b"there"])
             evt = await f
-            self.assertEqual(evt, [(b, zmq.POLLIN)])
+            assert evt == [(b, zmq.POLLIN)]
             recvd = b.recv_multipart()
-            self.assertEqual(recvd, [b"hi", b"there"])
+            assert recvd == [b"hi", b"there"]
 
         self.loop.run_until_complete(test())
 
