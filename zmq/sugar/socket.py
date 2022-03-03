@@ -28,7 +28,6 @@ from zmq._typing import Literal
 from zmq.backend import Socket as SocketBase
 from zmq.error import ZMQBindError, ZMQError
 from zmq.utils import jsonapi
-from zmq.utils.strtypes import bytes, unicode
 
 from ..constants import SocketOption, SocketType, _OptType
 from .attrsettr import AttributeSetter
@@ -283,7 +282,7 @@ class Socket(SocketBase, AttributeSetter):
         _key = key.lower()
         if _key in ('subscribe', 'unsubscribe'):
 
-            if isinstance(value, unicode):
+            if isinstance(value, str):
                 value = value.encode('utf8')
             if _key == 'subscribe':
                 self.set(zmq.SUBSCRIBE, value)
@@ -310,7 +309,7 @@ class Socket(SocketBase, AttributeSetter):
 
         .. versionadded:: 15.3
         """
-        if isinstance(topic, unicode):
+        if isinstance(topic, str):
             topic = topic.encode('utf8')
         self.set(zmq.SUBSCRIBE, topic)
 
@@ -321,7 +320,7 @@ class Socket(SocketBase, AttributeSetter):
 
         .. versionadded:: 15.3
         """
-        if isinstance(topic, unicode):
+        if isinstance(topic, str):
             topic = topic.encode('utf8')
         self.set(zmq.UNSUBSCRIBE, topic)
 

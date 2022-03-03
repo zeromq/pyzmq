@@ -7,14 +7,12 @@
 # Distributed under the terms of the Modified BSD License.
 
 import logging
-import sys
 from itertools import chain
 from threading import Event, Thread
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
 import zmq
 from zmq.utils import jsonapi
-from zmq.utils.strtypes import b, u
 
 from .base import Authenticator
 
@@ -107,21 +105,21 @@ class AuthenticationThread(Thread):
         self.log.debug("auth received API command %r", command)
 
         if command == b'ALLOW':
-            addresses = [u(m, self.encoding) for m in msg[1:]]
+            addresses = [m.decode(self.encoding) for m in msg[1:]]
             try:
                 self.authenticator.allow(*addresses)
-            except Exception as e:
+            except Exception:
                 self.log.exception("Failed to allow %s", addresses)
 
         elif command == b'DENY':
-            addresses = [u(m, self.encoding) for m in msg[1:]]
+            addresses = [m.decode(self.encoding) for m in msg[1:]]
             try:
                 self.authenticator.deny(*addresses)
-            except Exception as e:
+            except Exception:
                 self.log.exception("Failed to deny %s", addresses)
 
         elif command == b'PLAIN':
-            domain = u(msg[1], self.encoding)
+            domain = msg[1].decode(self.encoding)
             json_passwords = msg[2]
             passwords: Dict[str, str] = cast(
                 Dict[str, str], jsonapi.loads(json_passwords)
@@ -130,11 +128,11 @@ class AuthenticationThread(Thread):
 
         elif command == b'CURVE':
             # For now we don't do anything with domains
-            domain = u(msg[1], self.encoding)
+            domain = msg[1].decode(self.encoding)
 
             # If location is CURVE_ALLOW_ANY, allow all clients. Otherwise
             # treat location as a directory that holds the certificates.
-            location = u(msg[2], self.encoding)
+            location = msg[2].decode(self.encoding)
             self.authenticator.configure_curve(domain, location)
 
         elif command == b'TERMINATE':
@@ -197,21 +195,25 @@ class ThreadAuthenticator:
         return getattr(self.thread.authenticator, key)
 
     def allow(self, *addresses: str):
-        self.pipe.send_multipart([b'ALLOW'] + [b(a, self.encoding) for a in addresses])
+        self.pipe.send_multipart(
+            [b'ALLOW'] + [a.encode(self.encoding) for a in addresses]
+        )
 
     def deny(self, *addresses: str):
-        self.pipe.send_multipart([b'DENY'] + [b(a, self.encoding) for a in addresses])
+        self.pipe.send_multipart(
+            [b'DENY'] + [a.encode(self.encoding) for a in addresses]
+        )
 
     def configure_plain(
         self, domain: str = '*', passwords: Optional[Dict[str, str]] = None
     ):
         self.pipe.send_multipart(
-            [b'PLAIN', b(domain, self.encoding), jsonapi.dumps(passwords or {})]
+            [b'PLAIN', domain.encode(self.encoding), jsonapi.dumps(passwords or {})]
         )
 
     def configure_curve(self, domain: str = '*', location: str = ''):
-        domain = b(domain, self.encoding)
-        location = b(location, self.encoding)
+        domain = domain.encode(self.encoding)
+        location = location.encode(self.encoding)
         self.pipe.send_multipart([b'CURVE', domain, location])
 
     def configure_curve_callback(

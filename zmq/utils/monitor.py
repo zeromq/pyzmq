@@ -4,7 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import struct
-from typing import Any, List, Tuple, cast
+from typing import List
 
 import zmq
 from zmq._typing import TypedDict

@@ -17,7 +17,6 @@ import zmq.asyncio as zaio
 from zmq.auth.asyncio import AsyncioAuthenticator
 from zmq.tests import BaseZMQTestCase
 from zmq.tests.test_auth import TestThreadAuthentication
-from zmq.utils.strtypes import u
 
 
 class ProcessForTeardownTest(Process):
@@ -141,7 +140,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
             f = b.recv_string()
             assert not f.done()
-            msg = u("πøøπ")
+            msg = "πøøπ"
             await a.send_string(msg)
             recvd = await f
             assert f.done()
@@ -259,7 +258,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
             await a.send(b"not json")
             with pytest.raises(TypeError):
-                recvd = await b.recv_serialized(json.loads)
+                await b.recv_serialized(json.loads)
 
         self.loop.run_until_complete(test())
 

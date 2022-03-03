@@ -38,12 +38,12 @@ class TestPair(BaseZMQTestCase):
     def test_json(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         o = dict(a=10, b=list(range(10)))
-        o2 = self.ping_pong_json(s1, s2, o)
+        self.ping_pong_json(s1, s2, o)
 
     def test_pyobj(self):
         s1, s2 = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         o = dict(a=10, b=range(10))
-        o2 = self.ping_pong_pyobj(s1, s2, o)
+        self.ping_pong_pyobj(s1, s2, o)
 
 
 if have_gevent:

@@ -1,17 +1,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
-import errno
-import struct
-import sys
-import time
-from unittest import TestCase
-
-from pytest import mark
-
 import zmq
-from zmq.tests import BaseZMQTestCase, require_zmq_4, skip_pypy
+from zmq.tests import BaseZMQTestCase, require_zmq_4
 from zmq.utils.monitor import recv_monitor_message
 
 

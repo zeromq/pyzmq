@@ -12,7 +12,6 @@ import pytest
 import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
-from zmq.utils.strtypes import u
 
 
 class BaseAuthTestCase(BaseZMQTestCase):
@@ -351,7 +350,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         except zmq.ZMQVersionError:
             pass
         else:
-            assert user_id == u(client_public)
+            assert user_id == client_public.decode("utf8")
 
         # test custom user-id map
         self.auth.curve_user_id = lambda client_key: 'custom'

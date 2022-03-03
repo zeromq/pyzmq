@@ -6,7 +6,6 @@
 # -----------------------------------------------------------------------------
 
 import json
-import sys
 from typing import Any, Dict, Optional, Union
 
 import pymongo

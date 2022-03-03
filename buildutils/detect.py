@@ -11,7 +11,6 @@
 #  the file COPYING.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-import copy
 import logging
 import os
 import platform

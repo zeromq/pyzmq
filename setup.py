@@ -17,7 +17,6 @@
 
 import copy
 import errno
-import io
 import os
 import platform
 import shutil
@@ -28,7 +27,6 @@ from contextlib import contextmanager
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
-from os.path import splitext
 from subprocess import PIPE, CalledProcessError, Popen, check_call
 from sysconfig import get_config_var
 from traceback import print_exc
@@ -48,7 +46,6 @@ from buildutils import (
     compile_and_forget,
     config_from_prefix,
     customize_mingw,
-    debug,
     detect_zmq,
     discover_settings,
     fatal,

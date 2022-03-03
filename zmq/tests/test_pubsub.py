@@ -3,8 +3,6 @@
 
 
 import time
-from random import Random
-from unittest import TestCase
 
 import zmq
 from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent

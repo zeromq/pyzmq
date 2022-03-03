@@ -2,12 +2,10 @@
 # Distributed under the terms of the Modified BSD License.
 
 import time
-from unittest import TestCase
 
 import zmq
 from zmq import devices
-from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
-from zmq.utils.strtypes import unicode
+from zmq.tests import PYPY, BaseZMQTestCase
 
 if PYPY or zmq.zmq_version_info() >= (4, 1):
     # cleanup of shared Context doesn't work on PyPy
@@ -216,6 +214,6 @@ class TestMonitoredQueue(BaseZMQTestCase):
         mons = self.context.socket(zmq.PUB)
         self.sockets.extend([ins, outs, mons])
 
-        ins = unicode('in')
-        outs = unicode('out')
+        ins = 'in'
+        outs = 'out'
         self.assertRaises(TypeError, devices.monitoredqueue, ins, outs, mons)

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import zmq
 import zmq.auth
-from zmq.asyncio import Context, Poller
+from zmq.asyncio import Context
 from zmq.auth.asyncio import AsyncioAuthenticator
 
 

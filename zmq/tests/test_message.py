@@ -14,12 +14,9 @@ else:
     grc = getrefcount
 
 import time
-from pprint import pprint
-from unittest import TestCase
 
 import zmq
 from zmq.tests import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
-from zmq.utils.strtypes import b, bytes, u, unicode
 
 # some useful constants:
 
@@ -74,7 +71,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i) * x
             m = zmq.Frame(s)
             m_str = str(m)
-            m_str_b = b(m_str)  # py3compat
+            m_str_b = m_str.encode()
             assert s == m_str_b
 
     def test_bytes(self):
@@ -92,10 +89,10 @@ class TestFrame(BaseZMQTestCase):
 
     def test_unicode(self):
         """Test the unicode representations of the Frames."""
-        s = u('asdf')
+        s = 'asdf'
         self.assertRaises(TypeError, zmq.Frame, s)
         for i in range(16):
-            s = (2**i) * u('§')
+            s = (2**i) * '§'
             m = zmq.Frame(s.encode('utf8'))
             assert s == m.bytes.decode('utf8')
 
@@ -123,7 +120,7 @@ class TestFrame(BaseZMQTestCase):
             buf = m2.buffer
             assert grc(s) == rc
 
-            assert s == b(str(m))
+            assert s == str(m).encode()
             assert s == bytes(m2)
             assert s == m.bytes
             assert s == bytes(buf)
@@ -158,7 +155,7 @@ class TestFrame(BaseZMQTestCase):
             # which references m directly
             buf = m.buffer
             assert grc(s) == rc
-            assert s == b(str(m))
+            assert s == str(m).encode()
             assert s == bytes(m2)
             assert s == m2.bytes
             assert s == m.bytes
@@ -218,8 +215,8 @@ class TestFrame(BaseZMQTestCase):
 
     def test_buffer_in(self):
         """test using a buffer as input"""
-        ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
-        m = zmq.Frame(memoryview(ins))
+        ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
+        zmq.Frame(memoryview(ins))
 
     def test_bad_buffer_in(self):
         """test using a bad object"""
@@ -228,7 +225,7 @@ class TestFrame(BaseZMQTestCase):
 
     def test_buffer_out(self):
         """receiving buffered output"""
-        ins = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
+        ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
         m = zmq.Frame(ins)
         outb = m.buffer
         assert isinstance(outb, memoryview)
@@ -237,7 +234,7 @@ class TestFrame(BaseZMQTestCase):
 
     def test_memoryview_shape(self):
         """memoryview shape info"""
-        data = b("§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√")
+        data = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
         n = len(data)
         f = zmq.Frame(data)
         view1 = f.buffer
@@ -276,7 +273,7 @@ class TestFrame(BaseZMQTestCase):
     def test_memoryview(self):
         """test messages from memoryview"""
         s = b'carrotjuice'
-        v = memoryview(s)
+        memoryview(s)
         m = zmq.Frame(s)
         buf = m.buffer
         s2 = buf.tobytes()

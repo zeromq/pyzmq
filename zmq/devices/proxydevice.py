@@ -88,19 +88,13 @@ class Proxy(ProxyBase, Device):
     A PUB socket is the most logical choice for the mon_socket, but it is not required.
     """
 
-    pass
-
 
 class ThreadProxy(ProxyBase, ThreadDevice):
     """Proxy in a Thread. See Proxy for more."""
 
-    pass
-
 
 class ProcessProxy(ProxyBase, ProcessDevice):
     """Proxy in a Process. See Proxy for more."""
-
-    pass
 
 
 __all__ = [

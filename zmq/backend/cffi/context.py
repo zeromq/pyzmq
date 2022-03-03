@@ -3,7 +3,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq.constants import EINVAL, IO_THREADS, LINGER
+from zmq.constants import EINVAL, IO_THREADS
 from zmq.error import InterruptedSystemCall, ZMQError, _check_rc
 
 from ._cffi import ffi

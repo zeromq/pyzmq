@@ -12,7 +12,6 @@ have tornado ≥ 3.0.
 # Distributed under the terms of the Modified BSD License.
 
 
-import os
 import time
 import warnings
 from typing import Tuple

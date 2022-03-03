@@ -36,7 +36,7 @@ class TestSecurity(BaseZMQTestCase):
             if mechanism == b'PLAIN':
                 username, password = msg[6:]
             elif mechanism == b'CURVE':
-                key = msg[6]
+                msg[6]
 
             assert version == b"1.0"
             assert identity == b"IDENT"

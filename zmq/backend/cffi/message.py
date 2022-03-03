@@ -9,7 +9,6 @@ from threading import Event
 import zmq
 import zmq.error
 from zmq.constants import ETERM
-from zmq.utils.strtypes import unicode
 
 from ._cffi import ffi
 from ._cffi import lib as C
@@ -66,9 +65,9 @@ class Frame(maybe_bufferable):
         if track:
             self.tracker = zmq._FINISHED_TRACKER
 
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             raise TypeError(
-                "Unicode objects not allowed. Only: bytes, buffer interfaces."
+                "Unicode strings are not allowed. Only: bytes, buffer interfaces."
             )
 
         if data is None:

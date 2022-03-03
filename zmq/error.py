@@ -10,8 +10,6 @@ from typing import Optional, Tuple, Union
 class ZMQBaseError(Exception):
     """Base exception class for 0MQ errors in Python."""
 
-    pass
-
 
 class ZMQError(ZMQBaseError):
     """Wrap an errno style error.
@@ -74,8 +72,6 @@ class ZMQBindError(ZMQBaseError):
     .Socket.bind_to_random_port
     """
 
-    pass
-
 
 class NotDone(ZMQBaseError):
     """Raised when timeout is reached while waiting for 0MQ to finish with a Message
@@ -84,8 +80,6 @@ class NotDone(ZMQBaseError):
     --------
     .MessageTracker.wait : object for tracking when ZeroMQ is done
     """
-
-    pass
 
 
 class ContextTerminated(ZMQError):

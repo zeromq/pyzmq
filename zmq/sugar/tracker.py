@@ -5,7 +5,7 @@
 
 import time
 from threading import Event
-from typing import Any, Set, Tuple, Union
+from typing import Set, Tuple, Union
 
 from zmq.backend import Frame
 from zmq.error import NotDone
@@ -96,7 +96,6 @@ class MessageTracker:
             remaining = 3600 * 24 * 7  # a week
         else:
             remaining = timeout
-        done = False
         for evt in self.events:
             if remaining < 0:
                 raise NotDone

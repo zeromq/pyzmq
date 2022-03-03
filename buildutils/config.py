@@ -17,7 +17,7 @@ import sys
 from configparser import ConfigParser
 
 pjoin = os.path.join
-from .msg import debug, fatal, warn
+from .msg import debug, warn
 
 # -----------------------------------------------------------------------------
 # Utility functions (adapted from h5py: https://www.h5py.org/)
