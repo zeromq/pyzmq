@@ -81,7 +81,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             _repr_cls = f"{cls.__module__}.{cls.__name__}"
 
         closed = ' closed' if self.closed else ''
-        if self._sockets:
+        if getattr(self, "_sockets", None):
             n_sockets = len(self._sockets)
             s = 's' if n_sockets > 1 else ''
             sockets = f"{n_sockets} socket{s}"

@@ -37,9 +37,14 @@ def await_gc(obj, rc):
     Necessary because of the zero-copy gc thread,
     which can take some time to receive its DECREF message.
     """
+    # count refs for this function
+    if sys.version_info < (3, 11):
+        my_refs = 2
+    else:
+        my_refs = 1
     for i in range(50):
         # rc + 2 because of the refs in this function
-        if grc(obj) <= rc + 2:
+        if grc(obj) <= rc + my_refs:
             return
         time.sleep(0.05)
 
