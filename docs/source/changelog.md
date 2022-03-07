@@ -16,10 +16,19 @@ Changes:
   is not a valid check for the presence of a feature.
   This practice has never been robust, but it may have worked sometimes.
   Use direct checks via e.g. {func}`zmq.has` or {func}`zmq.zmq_version_info`.
+- A bit more type coverage of Context.term and Context.socket
 
 Compatibility fixes:
 
 - Remove all use of deprecated stdlib distutils
+- Update to Cython 0.29.28 (required for Python 3.11 compatibility)
+- Compatibility with Python 3.11.0a5
+
+Maintenance changes:
+
+- Switch to myst for docs
+- Deprecate `zmq.utils.strtypes`, now unused
+- Updates to autoformatting, linting
 
 ## 22.3.0
 

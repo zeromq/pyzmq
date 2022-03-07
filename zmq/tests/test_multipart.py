@@ -3,7 +3,7 @@
 
 
 import zmq
-from zmq.tests import BaseZMQTestCase, GreenTest, SkipTest, have_gevent
+from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent
 
 
 class TestMultipart(BaseZMQTestCase):
@@ -12,7 +12,7 @@ class TestMultipart(BaseZMQTestCase):
 
         msg1 = b'message1'
         dealer.send(msg1)
-        ident = self.recv(router)
+        self.recv(router)
         more = router.rcvmore
         assert more == True
         msg2 = self.recv(router)

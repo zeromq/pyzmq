@@ -32,7 +32,7 @@ def has(capability):
     """
     _check_version((4,1), 'zmq.has')
     cdef bytes ccap
-    if isinstance(capability, unicode):
+    if isinstance(capability, str):
         capability = capability.encode('utf8')
     ccap = capability
     return bool(zmq_has(ccap))
@@ -76,7 +76,7 @@ def curve_public(secret_key):
     bytestring
         The public key as a 40 byte z85-encoded bytestring.
     """
-    if isinstance(secret_key, unicode):
+    if isinstance(secret_key, str):
         secret_key = secret_key.encode('utf8')
     if not len(secret_key) == 40:
         raise ValueError('secret key must be a 40 byte z85 encoded string')

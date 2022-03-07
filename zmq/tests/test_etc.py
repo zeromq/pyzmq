@@ -1,7 +1,6 @@
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 
-import sys
 
 from pytest import mark
 

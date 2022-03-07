@@ -1,8 +1,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import sys
-import time
 from threading import Thread
 
 import zmq

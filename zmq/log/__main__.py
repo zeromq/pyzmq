@@ -29,7 +29,6 @@ from datetime import datetime
 from typing import Dict
 
 import zmq
-from zmq.utils.strtypes import cast_bytes, u
 
 parser = argparse.ArgumentParser('ZMQ Log Watcher')
 parser.add_argument('zmq_pub_url', type=str, help='URL to a ZMQ publisher socket.')
@@ -88,12 +87,12 @@ else:
 
 ctx = zmq.Context()
 sub = ctx.socket(zmq.SUB)
-sub.subscribe(cast_bytes(args.topic))
+sub.subscribe(args.topic.encode("utf8"))
 sub.connect(args.zmq_pub_url)
 
 topic_widths: Dict[int, int] = {}
 
-while 1:
+while True:
     try:
         if sub.poll(10, zmq.POLLIN):
             topic, msg = sub.recv_multipart()

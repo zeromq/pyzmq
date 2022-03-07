@@ -3,10 +3,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from errno import EINTR
-
-from zmq.error import InterruptedSystemCall, ZMQError, _check_rc, _check_version
-from zmq.utils.strtypes import unicode
+from zmq.error import InterruptedSystemCall, _check_rc, _check_version
 
 from ._cffi import ffi
 from ._cffi import lib as C
@@ -19,7 +16,7 @@ def has(capability):
     .. versionadded:: 14.1
     """
     _check_version((4, 1), 'zmq.has')
-    if isinstance(capability, unicode):
+    if isinstance(capability, str):
         capability = capability.encode('utf8')
     return bool(C.zmq_has(capability))
 
@@ -57,7 +54,7 @@ def curve_public(private):
     bytestring
         The public key as a 40 byte z85-encoded bytestring.
     """
-    if isinstance(private, unicode):
+    if isinstance(private, str):
         private = private.encode('utf8')
     _check_version((4, 2), "curve_public")
     public = ffi.new('char[64]')

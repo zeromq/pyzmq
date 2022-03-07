@@ -5,7 +5,7 @@
 
 import warnings
 from asyncio import Future
-from collections import deque, namedtuple
+from collections import deque
 from itertools import chain
 from typing import (
     Any,

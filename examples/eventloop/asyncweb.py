@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 
-from tornado import gen, ioloop, web
+from tornado import ioloop, web
 
 import zmq
 from zmq.eventloop.future import Context as FutureContext

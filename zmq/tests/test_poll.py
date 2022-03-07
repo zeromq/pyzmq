@@ -164,16 +164,16 @@ class TestPoll(PollZMQTestCase):
         poller = self.Poller()
         poller.register(s1, zmq.POLLIN)
         tic = time.perf_counter()
-        evt = poller.poll(0.005)
+        poller.poll(0.005)
         toc = time.perf_counter()
         toc - tic < 0.1
         tic = time.perf_counter()
-        evt = poller.poll(50)
+        poller.poll(50)
         toc = time.perf_counter()
         assert toc - tic < 0.1
         assert toc - tic > 0.01
         tic = time.perf_counter()
-        evt = poller.poll(500)
+        poller.poll(500)
         toc = time.perf_counter()
         assert toc - tic < 1
         assert toc - tic > 0.1

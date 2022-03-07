@@ -89,19 +89,13 @@ class ProxySteerable(ProxySteerableBase, Proxy):
     .. versionadded:: 18.0
     """
 
-    pass
-
 
 class ThreadProxySteerable(ProxySteerableBase, ThreadProxy):
     """ProxySteerable in a Thread. See ProxySteerable for details."""
 
-    pass
-
 
 class ProcessProxySteerable(ProxySteerableBase, ProcessProxy):
     """ProxySteerable in a Process. See ProxySteerable for details."""
-
-    pass
 
 
 __all__ = [

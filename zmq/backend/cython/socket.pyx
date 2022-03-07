@@ -411,7 +411,7 @@ cdef class Socket:
         cdef Py_ssize_t sz
 
         _check_closed(self)
-        if isinstance(optval, unicode):
+        if isinstance(optval, str):
             raise TypeError("unicode not allowed, use setsockopt_string")
 
         try:
@@ -534,7 +534,7 @@ cdef class Socket:
 
         _check_closed(self)
         addr_b = addr
-        if isinstance(addr, unicode):
+        if isinstance(addr, str):
             addr_b = addr.encode('utf-8')
         elif isinstance(addr_b, bytes):
             addr = addr_b.decode('utf-8')
@@ -583,7 +583,7 @@ cdef class Socket:
         cdef char* c_addr
 
         _check_closed(self)
-        if isinstance(addr, unicode):
+        if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
@@ -620,7 +620,7 @@ cdef class Socket:
 
         _check_version((3,2), "unbind")
         _check_closed(self)
-        if isinstance(addr, unicode):
+        if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
@@ -651,7 +651,7 @@ cdef class Socket:
 
         _check_version((3,2), "disconnect")
         _check_closed(self)
-        if isinstance(addr, unicode):
+        if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
             raise TypeError('expected str, got: %r' % addr)
@@ -687,7 +687,7 @@ cdef class Socket:
 
         _check_version((3,2), "monitor")
         if addr is not None:
-            if isinstance(addr, unicode):
+            if isinstance(addr, str):
                 addr = addr.encode('utf-8')
             if not isinstance(addr, bytes):
                 raise TypeError('expected str, got: %r' % addr)
@@ -710,7 +710,7 @@ cdef class Socket:
         _check_version((4,2), "RADIO-DISH")
         if not zmq.has('draft'):
             raise RuntimeError("libzmq must be built with draft support")
-        if isinstance(group, unicode):
+        if isinstance(group, str):
             group = group.encode('utf8')
         cdef int rc = zmq_join(self.handle, group)
         _check_rc(rc)
@@ -780,7 +780,7 @@ cdef class Socket:
         """
         _check_closed(self)
 
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             raise TypeError("unicode not allowed, use send_string")
 
         if copy and not isinstance(data, Frame):

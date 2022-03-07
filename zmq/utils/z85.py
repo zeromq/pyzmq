@@ -11,7 +11,6 @@ See ZMQ RFC 32 for details.
 # Distributed under the terms of the Modified BSD License.
 
 import struct
-import sys
 
 # Z85CHARS is the base 85 symbol table
 Z85CHARS = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#"

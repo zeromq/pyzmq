@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import zmq
 from zmq.error import _check_version
 from zmq.utils import z85
-from zmq.utils.strtypes import b, bytes, u, unicode
 
 from .certs import load_certificates
 
@@ -222,7 +221,6 @@ class Authenticator:
 
         Currently this is a no-op because there is nothing to configure with GSSAPI.
         """
-        pass
 
     def handle_zap_message(self, msg: List[bytes]):
         """Perform ZAP authentication"""
@@ -237,8 +235,8 @@ class Authenticator:
         version, request_id, domain, address, identity, mechanism = msg[:6]
         credentials = msg[6:]
 
-        domain = u(domain, self.encoding, 'replace')
-        address = u(address, self.encoding, 'replace')
+        domain = domain.decode(self.encoding, 'replace')
+        address = address.decode(self.encoding, 'replace')
 
         if version != VERSION:
             self.log.error("Invalid ZAP version: %r", msg)
@@ -280,7 +278,7 @@ class Authenticator:
                 self.log.debug("PASSED (not in blacklist) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
-        username = u("anonymous")
+        username = "anonymous"
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
@@ -295,7 +293,7 @@ class Authenticator:
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
                 username, password = (
-                    u(c, self.encoding, 'replace') for c in credentials
+                    c.decode(self.encoding, 'replace') for c in credentials
                 )
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
@@ -316,7 +314,8 @@ class Authenticator:
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
                 # use principal as user-id for now
-                principal = username = credentials[0]
+                principal = credentials[0]
+                username = principal.decode("utf8")
                 allowed, reason = self._authenticate_gssapi(domain, principal)
 
         if allowed:
@@ -433,7 +432,7 @@ class Authenticator:
     ) -> None:
         """Send a ZAP reply to finish the authentication."""
         user_id = user_id if status_code == b'200' else b''
-        if isinstance(user_id, unicode):
+        if isinstance(user_id, str):
             user_id = user_id.encode(self.encoding, 'replace')
         metadata = b''  # not currently used
         self.log.debug("ZAP reply code=%s text=%s", status_code, status_text)

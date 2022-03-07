@@ -38,8 +38,6 @@ try:
 except ImportError:
     pexpect = None
 
-from ..utils.strtypes import b
-
 
 def select_random_ports(n):
     """Select and return n random ports that are available."""
@@ -58,7 +56,7 @@ def select_random_ports(n):
 # -----------------------------------------------------------------------------
 # Check for passwordless login
 # -----------------------------------------------------------------------------
-_password_pat = re.compile(b(r'pass(word|phrase):'), re.IGNORECASE)
+_password_pat = re.compile(rb'pass(word|phrase):', re.IGNORECASE)
 
 
 def try_passwordless_ssh(server, keyfile, paramiko=None):

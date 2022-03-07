@@ -17,7 +17,6 @@ from pytest import mark
 
 import zmq
 from zmq.tests import BaseZMQTestCase, GreenTest, SkipTest, have_gevent, skip_pypy
-from zmq.utils.strtypes import unicode
 
 pypy = platform.python_implementation().lower() == 'pypy'
 windows = platform.platform().lower().startswith('windows')
@@ -118,11 +117,11 @@ class TestSocket(BaseZMQTestCase):
 
     def test_bind_unicode(self):
         s = self.socket(zmq.PUB)
-        p = s.bind_to_random_port(unicode("tcp://*"))
+        p = s.bind_to_random_port("tcp://*")
 
     def test_connect_unicode(self):
         s = self.socket(zmq.PUB)
-        s.connect(unicode("tcp://127.0.0.1:5555"))
+        s.connect("tcp://127.0.0.1:5555")
 
     def test_bind_to_random_port(self):
         # Check that bind_to_random_port do not hide useful exception
@@ -149,8 +148,6 @@ class TestSocket(BaseZMQTestCase):
     def test_unicode_sockopts(self):
         """test setting/getting sockopts with unicode strings"""
         topic = "tést"
-        if str is not unicode:
-            topic = topic.decode('utf8')
         p, s = self.create_bound_pair(zmq.PUB, zmq.SUB)
         assert s.send_unicode == s.send_unicode
         assert p.recv_unicode == p.recv_unicode
@@ -275,8 +272,6 @@ class TestSocket(BaseZMQTestCase):
         a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         self.sockets.extend([a, b])
         u = "çπ§"
-        if str is not unicode:
-            u = u.decode('utf8')
         self.assertRaises(TypeError, a.send, u, copy=False)
         self.assertRaises(TypeError, a.send, u, copy=True)
         a.send_unicode(u)
@@ -356,7 +351,7 @@ class TestSocket(BaseZMQTestCase):
         assert msg == [b'again']
         assert p1.done == False
         assert p2.done == False
-        pm = m.tracker
+        m.tracker
         del m
         for i in range(10):
             if p1.done:
@@ -443,7 +438,7 @@ class TestSocket(BaseZMQTestCase):
 
     def test_poll(self):
         a, b = self.create_bound_pair()
-        tic = time.time()
+        time.time()
         evt = a.poll(POLL_TIMEOUT)
         assert evt == 0
         evt = a.poll(POLL_TIMEOUT, zmq.POLLOUT)

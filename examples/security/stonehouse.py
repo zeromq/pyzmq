@@ -14,7 +14,6 @@ Author: Chris Laws
 import logging
 import os
 import sys
-import time
 
 import zmq
 import zmq.auth

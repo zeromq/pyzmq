@@ -18,9 +18,6 @@ catch 'weather'.
 # -----------------------------------------------------------------------------
 
 import sys
-import time
-
-import numpy
 
 import zmq
 

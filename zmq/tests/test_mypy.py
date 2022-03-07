@@ -1,7 +1,6 @@
 """
 Test our typing with mypy
 """
-import glob
 import os
 import sys
 from subprocess import PIPE, STDOUT, Popen

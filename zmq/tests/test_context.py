@@ -13,14 +13,7 @@ from unittest import mock
 from pytest import mark
 
 import zmq
-from zmq.tests import (
-    PYPY,
-    BaseZMQTestCase,
-    GreenTest,
-    SkipTest,
-    have_gevent,
-    skip_green,
-)
+from zmq.tests import PYPY, BaseZMQTestCase, GreenTest, SkipTest
 
 
 class KwargTestSocket(zmq.Socket):
@@ -124,7 +117,6 @@ class TestContext(BaseZMQTestCase):
 
         class SubContextNoInherit(zmq.Context):
             _instance = None
-            pass
 
         ctx = zmq.Context.instance()
         sctx = SubContextInherit.instance()
@@ -245,7 +237,7 @@ class TestContext(BaseZMQTestCase):
         def gcf():
             def inner():
                 ctx = self.Context()
-                s = ctx.socket(zmq.PUSH)
+                ctx.socket(zmq.PUSH)
 
             inner()
             gc.collect()

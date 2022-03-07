@@ -11,7 +11,6 @@ and tornado itself should be used.
 
 
 import time
-import types
 import warnings
 from typing import Any
 
@@ -144,4 +143,4 @@ def install():
 
 # if minitornado is used, fallback on deprecated ZMQIOLoop, install implementations
 if '.minitornado.' in ioloop.__name__:
-    from ._deprecated import IOLoop, ZMQIOLoop, install  # type: ignore
+    from ._deprecated import IOLoop, ZMQIOLoop, install  # type: ignore # noqa

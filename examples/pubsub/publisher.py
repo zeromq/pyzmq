@@ -11,7 +11,6 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 # -----------------------------------------------------------------------------
 
 import sys
-import time
 
 import numpy
 

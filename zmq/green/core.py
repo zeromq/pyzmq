@@ -37,7 +37,7 @@ def _stop(evt):
     """simple wrapper for stopping an Event, allowing for method rename in gevent 1.0"""
     try:
         evt.stop()
-    except AttributeError as e:
+    except AttributeError:
         # gevent<1.0 compat
         evt.cancel()
 

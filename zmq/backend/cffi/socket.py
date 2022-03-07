@@ -31,9 +31,8 @@ ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 import zmq
-from zmq.constants import RCVMORE, SocketOption, _OptType
+from zmq.constants import SocketOption, _OptType
 from zmq.error import ZMQError, _check_rc, _check_version
-from zmq.utils.strtypes import unicode
 
 from .message import Frame
 from .utils import _retry_sys_call
@@ -143,7 +142,7 @@ class Socket:
             _check_rc(rc)
 
     def bind(self, address):
-        if isinstance(address, unicode):
+        if isinstance(address, str):
             address_b = address.encode('utf8')
         else:
             address_b = address
@@ -169,27 +168,27 @@ class Socket:
 
     def unbind(self, address):
         _check_version((3, 2), "unbind")
-        if isinstance(address, unicode):
+        if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
         _check_rc(rc)
 
     def connect(self, address):
-        if isinstance(address, unicode):
+        if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_connect(self._zmq_socket, address)
         _check_rc(rc)
 
     def disconnect(self, address):
         _check_version((3, 2), "disconnect")
-        if isinstance(address, unicode):
+        if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
         _check_rc(rc)
 
     def set(self, option, value):
         length = None
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             raise TypeError("unicode not allowed, use bytes")
 
         try:
@@ -271,7 +270,7 @@ class Socket:
         return tracker
 
     def send(self, data, flags=0, copy=False, track=False):
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             raise TypeError("Message must be in bytes, not a unicode object")
 
         if copy and not isinstance(data, Frame):
@@ -344,9 +343,9 @@ class Socket:
             events = zmq.EVENT_ALL
         if addr is None:
             addr = ffi.NULL
-        if isinstance(addr, unicode):
+        if isinstance(addr, str):
             addr = addr.encode('utf8')
-        rc = C.zmq_socket_monitor(self._zmq_socket, addr, events)
+        C.zmq_socket_monitor(self._zmq_socket, addr, events)
 
 
 __all__ = ['Socket', 'IPC_PATH_MAX_LEN']

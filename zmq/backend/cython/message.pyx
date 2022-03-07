@@ -141,7 +141,7 @@ cdef class Frame:
         if track:
             self.tracker = zmq._FINISHED_TRACKER
 
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             raise TypeError("Unicode objects not allowed. Only: str/bytes, buffer interfaces.")
 
         if data is None:
@@ -353,7 +353,7 @@ cdef class Frame:
             _check_rc(rc)
             return
         elif option == 'group':
-            if isinstance(value, unicode):
+            if isinstance(value, str):
                 value = value.encode('utf8')
             rc = zmq_msg_set_group(&self.zmq_msg, value)
             _check_rc(rc)
@@ -406,7 +406,7 @@ cdef class Frame:
 
         # zmq_msg_gets
         _check_version((4,1), "get string properties")
-        if isinstance(option, unicode):
+        if isinstance(option, str):
             option = option.encode('utf8')
 
         if not isinstance(option, bytes):
