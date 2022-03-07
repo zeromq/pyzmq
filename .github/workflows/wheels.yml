@@ -5,6 +5,8 @@ on:
     branches-ignore:
       - "dependabot/**"
       - "pre-commit-ci-update-config"
+    tags:
+      - "**"
   pull_request:
     paths:
       - setup.py
