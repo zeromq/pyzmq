@@ -61,7 +61,7 @@ class HelloWorldMessage:
     def main(self) -> None:
 
         # activate publishers / subscribers
-        asyncio.get_event_loop().run_until_complete(
+        asyncio.run(
             asyncio.wait(
                 [
                     self.hello_world_pub(),

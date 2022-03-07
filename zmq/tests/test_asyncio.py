@@ -35,7 +35,7 @@ class ProcessForTeardownTest(Process):
         async def never_ending_task(socket):
             await socket.recv()  # never ever receive anything
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
         coro = asyncio.wait_for(never_ending_task(socket), timeout=1)
         try:
             loop.run_until_complete(coro)
@@ -43,6 +43,8 @@ class ProcessForTeardownTest(Process):
             pass  # expected timeout
         else:
             assert False, "never_ending_task was completed unexpectedly"
+        finally:
+            loop.close()
 
 
 class TestAsyncIOSocket(BaseZMQTestCase):
@@ -389,7 +391,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             r.close()
             w.close()
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
         loop.run_until_complete(test())
 
     def test_multiple_loops(self):
