@@ -100,6 +100,16 @@ class _AsyncIO:
     _READ = selectors.EVENT_READ
 
     def _default_loop(self):
+        if sys.version_info >= (3, 7):
+            try:
+                return asyncio.get_running_loop()
+            except RuntimeError:
+                warnings.warn(
+                    "No running event loop. zmq.asyncio should be used from within an asyncio loop.",
+                    RuntimeWarning,
+                    stacklevel=4,
+                )
+        # get_event_loop deprecated in 3.10:
         return asyncio.get_event_loop()
 
 
