@@ -130,7 +130,7 @@ def select(rlist: List, wlist: List, xlist: List, timeout: Optional[int] = None)
     """
     if timeout is None:
         timeout = -1
-    # Convert from sec -> us for zmq_poll.
+    # Convert from sec -> ms for zmq_poll.
     # zmq_poll accepts 3.x style timeout in ms
     timeout = int(timeout * 1000.0)
     if timeout < 0:
