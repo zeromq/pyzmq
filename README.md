@@ -1,8 +1,6 @@
 # PyZMQ: Python bindings for ØMQ
 
-[![Build Status](https://github.com/zeromq/pyzmq/actions/workflows/test.yml/badge.svg)](https://github.com/zeromq/pyzmq/actions/workflows/test.yml)
-
-This package contains Python bindings for [ØMQ](https://zeromq.org).
+This package contains Python bindings for [ZeroMQ](https://zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
 PyZMQ should work with any reasonable version of Python (≥ 3.4),
