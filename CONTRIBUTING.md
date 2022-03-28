@@ -1,9 +1,15 @@
-# Opening an Issue
+# Testing
+
+pyzmq is tested on GitHub Actions.
+
+![Build Status](https://github.com/zeromq/pyzmq/actions/workflows/test.yml/badge.svg)\](https://github.com/zeromq/pyzmq/actions/workflows/test.yml)
+
+## Opening an Issue
 
 For a good bug report:
 
 1. [Search] for existing Issues, both on GitHub and in general with Google/Stack Overflow before posting a duplicate question.
-1. Update to pyzmq master, if possible, especially if you are already using git. It's
+1. Update to pyzmq main, if possible, especially if you are already using git. It's
    possible that the bug you are about to report has already been fixed.
 
 Many things reported as pyzmq Issues are often just libzmq-related,
@@ -33,7 +39,7 @@ Python-3.9.9 | packaged by conda-forge | (main, Dec 20 2021, 02:38:53)
 [Clang 11.1.0 ]
 ```
 
-# Licensing and contributing to PyZMQ
+## Licensing and contributing to PyZMQ
 
 PyZMQ uses different licenses for different parts of the code.
 
@@ -49,7 +55,7 @@ code under the more permissive BSD (specifically Modified BSD aka New BSD aka
 3-clause BSD), where possible. This means that you can copy this code and build
 your own apps without needing to license your own code with the LGPL or GPL.
 
-## Your contributions
+### Your contributions
 
 **Pull Requests are welcome!**
 
@@ -70,7 +76,7 @@ pre-commit install
 Examples are copyright their respective authors, and BSD unless otherwise
 specified by the author.
 
-## Inherited licenses in pyzmq
+### Inherited licenses in pyzmq
 
 Some code outside the core is taken from other open-source projects, and
 inherits that project's license.
