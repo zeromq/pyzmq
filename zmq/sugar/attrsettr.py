@@ -4,7 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno
-from typing import Generic, TypeVar, Union
+from typing import TypeVar, Union
 
 from .. import constants
 
@@ -12,7 +12,7 @@ T = TypeVar("T")
 OptValT = Union[str, bytes, int]
 
 
-class AttributeSetter(Generic[T]):
+class AttributeSetter:
     def __setattr__(self, key: str, value: OptValT) -> None:
         """set zmq options by attribute"""
 
@@ -66,10 +66,10 @@ class AttributeSetter(Generic[T]):
         """override if getattr should do something other than call self.get"""
         return self.get(opt)
 
-    def get(self, opt: Union[T, int]) -> OptValT:
+    def get(self, opt: int) -> OptValT:
         pass
 
-    def set(self, opt: Union[T, int], val: OptValT) -> None:
+    def set(self, opt: int, val: OptValT) -> None:
         pass
 
 

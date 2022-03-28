@@ -62,7 +62,7 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-20.04
-            python: "3.11-dev"
+            python: "3.11.0-alpha.6"
 
           - os: ubuntu-20.04
             python: 3.8
