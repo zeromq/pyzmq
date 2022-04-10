@@ -104,7 +104,7 @@ class Poller:
         return zmq_poll(self.sockets, timeout=timeout)
 
 
-def select(rlist: List, wlist: List, xlist: List, timeout: Optional[int] = None):
+def select(rlist: List, wlist: List, xlist: List, timeout: Optional[float] = None):
     """select(rlist, wlist, xlist, timeout=None) -> (rlist, wlist, xlist)
 
     Return the result of poll as a lists of sockets ready for r/w/exception.
