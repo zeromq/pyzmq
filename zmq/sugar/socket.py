@@ -8,7 +8,7 @@ import errno
 import pickle
 import random
 import sys
-import warnings
+from warnings import warn
 from typing import (
     Any,
     Dict,
@@ -106,7 +106,7 @@ class Socket(SocketBase, AttributeSetter):
 
     def __del__(self):
         if not self._shadow and not self.closed:
-            warnings.warn(
+            warn(
                 f"unclosed socket {self}",
                 ResourceWarning,
                 stacklevel=2,
@@ -254,7 +254,7 @@ class Socket(SocketBase, AttributeSetter):
 
     @property
     def socket_type(self) -> int:
-        warnings.warn(
+        warn(
             "Socket.socket_type is deprecated, use Socket.type", DeprecationWarning
         )
         return cast(int, self.type)
