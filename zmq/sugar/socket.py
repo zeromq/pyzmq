@@ -8,7 +8,6 @@ import errno
 import pickle
 import random
 import sys
-from warnings import warn
 from typing import (
     Any,
     Dict,
@@ -22,6 +21,7 @@ from typing import (
     cast,
     overload,
 )
+from warnings import warn
 
 import zmq
 from zmq._typing import Literal
@@ -254,9 +254,7 @@ class Socket(SocketBase, AttributeSetter):
 
     @property
     def socket_type(self) -> int:
-        warn(
-            "Socket.socket_type is deprecated, use Socket.type", DeprecationWarning
-        )
+        warn("Socket.socket_type is deprecated, use Socket.type", DeprecationWarning)
         return cast(int, self.type)
 
     # -------------------------------------------------------------------------
