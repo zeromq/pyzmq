@@ -291,7 +291,7 @@ class Socket(SocketBase, AttributeSetter):
             return
         super().__setattr__(key, value)
 
-    def fileno(self):
+    def fileno(self) -> int:
         """Return edge-triggered file descriptor for this socket.
 
         This is a read-only edge-triggered file descriptor for both read and write events on this socket.
