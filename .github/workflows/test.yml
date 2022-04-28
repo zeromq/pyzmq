@@ -62,7 +62,8 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-20.04
-            python: "3.11.0-alpha.6"
+            python: "3.11.0-alpha.7"
+            cython: "https://github.com/cython/cython/archive/0.29.x.zip"
 
           - os: ubuntu-20.04
             python: 3.8
@@ -103,7 +104,7 @@ jobs:
       - name: install cython
         if: "! startsWith(matrix.python, 'pypy')"
         run: |
-          pip install cython
+          pip install ${{ matrix.cython || 'cython' }}
           python setup.py cython
 
       - name: remove tornado
