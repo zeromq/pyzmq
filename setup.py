@@ -4,7 +4,7 @@
 #  Copyright (C) PyZMQ Developers
 #  Distributed under the terms of the Modified BSD License.
 #
-#  The `configure` subcommand is copied and adaped from h5py
+#  The `configure` subcommand is copied and adapted from h5py
 #  h5py source used under the New BSD license
 #
 #  h5py: <http://code.google.com/p/h5py/>
