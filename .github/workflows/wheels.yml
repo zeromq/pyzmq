@@ -183,7 +183,7 @@ jobs:
             cibw:
               build: "cp*win32"
 
-          - os: windows-2016
+          - os: windows-2019
             name: win-pypy
             architecture: x64
             cibw:
