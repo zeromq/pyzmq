@@ -21,8 +21,8 @@ Changes:
 Compatibility fixes:
 
 - Remove all use of deprecated stdlib distutils
-- Update to Cython 0.29.28 (required for Python 3.11 compatibility)
-- Compatibility with Python 3.11.0a5
+- Update to Cython 0.29.30 (required for Python 3.11 compatibility)
+- Compatibility with Python 3.11.0b1
 
 Maintenance changes:
 
