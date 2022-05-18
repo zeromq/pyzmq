@@ -16,8 +16,8 @@ on:
       - zmq/utils/*.h
 
 env:
-  cython: "0.29.28"
-  cibuildwheel: "2.3.1"
+  cython: "0.29.30"
+  cibuildwheel: "2.5.0"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -48,9 +48,7 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade pip build
-          # temporary: 0.29.x while we wait for 0.29.29
-          pip install --install-option=--no-cython-compile https://github.com/cython/cython/archive/0.29.x.tar.gz
-          # pip install cython=="${{ env.cython }}"
+          pip install cython=="${{ env.cython }}"
 
       - name: build sdist
         run: |
@@ -110,7 +108,14 @@ jobs:
       matrix:
         include:
           - os: macos-10.15
-            name: mac
+            name: mac-cpython
+            cibw:
+              build: "cp*"
+
+          - os: macos-10.15
+            name: mac-pypy
+            cibw:
+              build: "pp*"
 
           - os: macos-10.15
             name: mac-arm
@@ -128,9 +133,17 @@ jobs:
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
-              build: "cp38* cp39* cp310* pp3*"
+              build: "cp38* cp39* cp310* pp37* pp38*"
               skip: "*musllinux*"
               manylinux_image: manylinux2010
+
+          - os: ubuntu-20.04
+            name: manylinux2014
+            cibw:
+              # cp311 will go here
+              build: "cp310* pp39*"
+              skip: "*musllinux*"
+              manylinux_image: manylinux2014
 
           - os: ubuntu-20.04
             name: musslinux

@@ -62,8 +62,7 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-20.04
-            python: "3.11.0-alpha.7"
-            cython: "https://github.com/cython/cython/archive/0.29.x.zip"
+            python: "3.11.0-beta.1"
 
           - os: ubuntu-20.04
             python: 3.8

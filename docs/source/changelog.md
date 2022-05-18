@@ -21,14 +21,16 @@ Changes:
 Compatibility fixes:
 
 - Remove all use of deprecated stdlib distutils
-- Update to Cython 0.29.28 (required for Python 3.11 compatibility)
-- Compatibility with Python 3.11.0a5
+- Update to Cython 0.29.30 (required for Python 3.11 compatibility)
+- Compatibility with Python 3.11.0b1
 
 Maintenance changes:
 
 - Switch to myst for docs
 - Deprecate `zmq.utils.strtypes`, now unused
 - Updates to autoformatting, linting
+- New wheels for PyPy 3.9
+- Manylinux wheels for CPython 3.10 are based on manylinux2014
 
 ## 22.3.0
 
