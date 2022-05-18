@@ -108,7 +108,14 @@ jobs:
       matrix:
         include:
           - os: macos-10.15
-            name: mac
+            name: mac-cpython
+            cibw:
+              build: "cp*"
+
+          - os: macos-10.15
+            name: mac-pypy
+            cibw:
+              build: "pp*"
 
           - os: macos-10.15
             name: mac-arm
@@ -126,9 +133,17 @@ jobs:
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
-              build: "cp38* cp39* cp310* pp3*"
+              build: "cp38* cp39* cp310* pp37* pp38*"
               skip: "*musllinux*"
               manylinux_image: manylinux2010
+
+          - os: ubuntu-20.04
+            name: manylinux2014
+            cibw:
+              # cp311 will go here
+              build: "cp310* pp39*"
+              skip: "*musllinux*"
+              manylinux_image: manylinux2014
 
           - os: ubuntu-20.04
             name: musslinux

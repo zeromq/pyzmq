@@ -29,6 +29,8 @@ Maintenance changes:
 - Switch to myst for docs
 - Deprecate `zmq.utils.strtypes`, now unused
 - Updates to autoformatting, linting
+- New wheels for PyPy 3.9
+- Manylinux wheels for CPython 3.10 are based on manylinux2014
 
 ## 22.3.0
 
