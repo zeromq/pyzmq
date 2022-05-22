@@ -4,9 +4,15 @@
 # Distributed under the terms of the Modified BSD License.
 
 import struct
+
+# import asyncio
+from inspect import isawaitable
+
+# from typing import Any, Awaitable, Coroutine, Union, overload
 from typing import List
 
 import zmq
+import zmq.asyncio
 from zmq._typing import TypedDict
 from zmq.error import _check_version
 
@@ -49,6 +55,22 @@ def parse_monitor_message(msg: List[bytes]) -> _MonitorMessage:
     return event
 
 
+async def recv_monitor_message_async_wrap(awaitable_msg) -> _MonitorMessage:
+    """Await awaitable_msg and decode the given raw message from the monitoring socket and return a dict.
+
+    Returns
+    -------
+
+    future_event: an instance of asyncio.Future, the result of Future would have:
+        event description as dict with the keys `event`, `value`, and `endpoint`.
+
+    """
+
+    msg = await awaitable_msg  # type: ignore
+    # 4.0-style event API
+    return parse_monitor_message(msg)
+
+
 def recv_monitor_message(socket: zmq.Socket, flags: int = 0) -> _MonitorMessage:
     """Receive and decode the given raw message from the monitoring socket and return a dict.
 
@@ -70,12 +92,21 @@ def recv_monitor_message(socket: zmq.Socket, flags: int = 0) -> _MonitorMessage:
     -------
     event : dict
         event description as dict with the keys `event`, `value`, and `endpoint`.
+
+    if socket.context is of zmq.asyncio.Context type, return asyncio.Future
     """
+
     _check_version((4, 0), 'libzmq event API')
     # will always return a list
     msg = socket.recv_multipart(flags)
+
+    # transparently handle asyncio socket,
+    # returns a future instead of a dict
+    if isawaitable(msg):
+        return recv_monitor_message_async_wrap(msg)  # type: ignore
+
     # 4.0-style event API
-    return parse_monitor_message(msg)
+    return parse_monitor_message(msg)  # type: ignore
 
 
 __all__ = ['parse_monitor_message', 'recv_monitor_message']
