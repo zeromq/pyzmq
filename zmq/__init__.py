@@ -132,12 +132,14 @@ def get_library_dirs():
 
 COPY_THRESHOLD = 65536
 DRAFT_API = backend.has("draft")
+
 __all__ = (
     [
         'get_includes',
         'COPY_THRESHOLD',
         'DRAFT_API',
     ]
+    + constants.__all__
     + sugar.__all__
     + backend.__all__
 )

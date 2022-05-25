@@ -5,6 +5,7 @@ from . import backend, sugar
 COPY_THRESHOLD: int
 DRAFT_API: bool
 __version__: str
+__all__: List[str]
 
 # mypy doesn't like overwriting symbols with * so be explicit
 # about what comes from backend, not from sugar
