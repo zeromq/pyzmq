@@ -14,7 +14,7 @@ repos:
       - id: flake8
         exclude: ^buildutils/templates/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.950
+    rev: v0.960
     hooks:
       - id: mypy
         files: zmq/.*
