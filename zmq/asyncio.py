@@ -77,7 +77,7 @@ def _get_selector_windows(
             _selectors.pop(asyncio_loop, None)
             selector_loop.close()
 
-        asyncio_loop.close = _close_selector_and_loop
+        asyncio_loop.close = _close_selector_and_loop  # type: ignore # mypy bug - assign a function to method
         return selector_loop
     else:
         return asyncio_loop

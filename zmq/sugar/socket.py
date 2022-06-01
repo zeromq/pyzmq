@@ -69,7 +69,10 @@ class _SocketContext(Generic[T]):
             self.socket.disconnect(self.addr)
 
 
-class Socket(SocketBase, AttributeSetter):
+ST = TypeVar("ST")
+
+
+class Socket(SocketBase, AttributeSetter, Generic[ST]):
     """The ZMQ socket object
 
     To create a Socket, first create a Context::
@@ -86,14 +89,14 @@ class Socket(SocketBase, AttributeSetter):
     _monitor_socket = None
     _type_name = 'UNKNOWN'
 
-    def __init__(self, *a, **kw):
+    def __init__(self: "Socket[bytes]", *a, **kw):
         super().__init__(*a, **kw)
         if 'shadow' in kw:
             self._shadow = True
         else:
             self._shadow = False
         try:
-            socket_type = self.get(zmq.TYPE)
+            socket_type: int = cast(int, self.get(zmq.TYPE))
         except Exception:
             pass
         else:

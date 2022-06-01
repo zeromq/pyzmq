@@ -193,7 +193,7 @@ class _NoTimer:
 T = TypeVar("T", bound="_AsyncSocket")
 
 
-class _AsyncSocket(_Async, _zmq.Socket):
+class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
     # Warning : these class variables are only here to allow to call super().__setattr__.
     # They be overridden at instance initialization and not shared in the whole class
@@ -215,10 +215,10 @@ class _AsyncSocket(_Async, _zmq.Socket):
         if isinstance(context, _zmq.Socket):
             context, _from_socket = (None, context)
         if _from_socket is not None:
-            super().__init__(shadow=_from_socket.underlying)
+            super().__init__(shadow=_from_socket.underlying)  # type: ignore
             self._shadow_sock = _from_socket
         else:
-            super().__init__(context, socket_type, **kwargs)
+            super().__init__(context, socket_type, **kwargs)  # type: ignore
             self._shadow_sock = _zmq.Socket.shadow(self.underlying)
 
         if io_loop is not None:
