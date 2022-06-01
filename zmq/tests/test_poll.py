@@ -166,11 +166,11 @@ class TestPoll(PollZMQTestCase):
         tic = time.perf_counter()
         poller.poll(0.005)
         toc = time.perf_counter()
-        toc - tic < 0.1
+        toc - tic < 0.5
         tic = time.perf_counter()
         poller.poll(50)
         toc = time.perf_counter()
-        assert toc - tic < 0.1
+        assert toc - tic < 0.5
         assert toc - tic > 0.01
         tic = time.perf_counter()
         poller.poll(500)
