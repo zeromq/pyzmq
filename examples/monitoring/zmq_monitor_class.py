@@ -38,7 +38,7 @@ from zmq.utils.monitor import recv_monitor_message
 
 
 def event_monitor_thread_async(
-    monitor: zmq.Socket, loop: asyncio.BaseEventLoop
+    monitor: zmq.asyncio.Socket, loop: asyncio.BaseEventLoop
 ) -> None:
     """A thread that prints events
 
@@ -62,17 +62,15 @@ def event_monitor_thread_async(
             print("%21s : %4i" % (name, value))
             EVENT_MAP[value] = name
 
-    print()
-    print()
+    print("\n")
 
     asyncio.set_event_loop(loop)
 
-    async def runLoop():
+    async def run_loop() -> None:
         while True:
             try:
                 while monitor.poll():
                     evt: Dict[str, Any] = {}
-
                     mon_evt = await recv_monitor_message(monitor)
                     evt.update(mon_evt)
                     evt['description'] = EVENT_MAP[evt['event']]
@@ -87,7 +85,7 @@ def event_monitor_thread_async(
         print()
         print("event monitor thread done!")
 
-    asyncio.ensure_future(runLoop())
+    asyncio.ensure_future(run_loop())
 
 
 def event_monitor_thread(monitor: zmq.Socket) -> None:
