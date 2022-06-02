@@ -5,6 +5,18 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 23.1.0
+
+Fixing some regressions in 23.0:
+
+- Fix global name of `zmq.EVENT_HANDSHAKE_*` constants
+- Fix constants missing when using `import zmq.green as zmq`
+
+Compatibility fixes:
+
+- {func}`zmq.utils.monitor.recv_monitor_msg` now supports async Sockets.
+- Fix build with mingw
+
 ## 23.0.0
 
 Changes:
