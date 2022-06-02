@@ -81,10 +81,10 @@ jobs:
             arch: x64
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch || 'x64' }}
@@ -127,7 +127,7 @@ jobs:
 
       # preserve pip cache to speed up installation
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           # Look to see if there is a cache hit for the corresponding requirements file
