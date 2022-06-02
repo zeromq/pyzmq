@@ -354,8 +354,8 @@ class Configure(build_ext):
         if self.zmq is not None:
             merge(self.config, config_from_prefix(self.zmq))
 
-        # ensure vcredist is on PATH
-        if sys.platform.startswith("win"):
+        # ensure vcredist is on PATH in MSVC toolchain
+        if sys.platform.startswith("win") and 'MSC' in sys.version:
             locate_vcredist_dir(self.plat_name)
         # need a dummy extension for run to set up a compiler
         self.extensions = [Extension("fake", ["unused.c"])]
