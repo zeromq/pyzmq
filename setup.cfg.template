@@ -1,7 +1,7 @@
 [global]
 # zmq_prefix = /usr/local # (adds zmq_prefix/include to include_dirs and zmq_prefix/lib to library_dirs)
 # have_sys_un_h = False # does sys/un.h exist? pyzmq will try to detect it, but you can override
-# skip_check_zmq = True # skip checking zmq verson (if it doesn't work for some reason)
+# skip_check_zmq = True # skip checking zmq version (if it doesn't work for some reason)
 # libzmq_extension = True # force building libzmq as an extension (same as --zmq=bundled)
 # no_libzmq_extension = True # prevent fallback on building libzmq as an extension if regular build fails
 # use_static_zmq = False # Force usage of static libzmq. Right now it does not work with version autodetection so you should also set skip_check_zmq to True

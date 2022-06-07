@@ -33,7 +33,7 @@ class TestMonitoredQueue(BaseZMQTestCase):
         self.device.start()
         time.sleep(0.2)
         try:
-            # this is currenlty necessary to ensure no dropped monitor messages
+            # this is currently necessary to ensure no dropped monitor messages
             # see LIBZMQ-248 for more info
             mon.recv_multipart(zmq.NOBLOCK)
         except zmq.ZMQError:

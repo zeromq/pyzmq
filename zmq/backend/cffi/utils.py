@@ -22,14 +22,14 @@ def has(capability):
 
 
 def curve_keypair():
-    """generate a Z85 keypair for use with zmq.CURVE security
+    """generate a Z85 key pair for use with zmq.CURVE security
 
     Requires libzmq (≥ 4.0) to have been built with CURVE support.
 
     Returns
     -------
     (public, secret) : two bytestrings
-        The public and private keypair as 40 byte z85-encoded bytestrings.
+        The public and private key pair as 40 byte z85-encoded bytestrings.
     """
     _check_version((3, 2), "curve_keypair")
     public = ffi.new('char[64]')

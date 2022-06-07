@@ -48,7 +48,7 @@ def event_monitor_thread_async(
     parameters:
 
     monitor: a zmq monitor socket, from calling:  my_zmq_socket.get_monitor_socket()
-    loop: an asyncio event loop, from calling zmq.asyncio.asyncio.get_event_loop() , whens starting a thread it does not conatins an event loop
+    loop: an asyncio event loop, from calling zmq.asyncio.asyncio.get_event_loop() , whens starting a thread it does not contains an event loop
     """
     print("libzmq-%s" % zmq.zmq_version())
     if zmq.zmq_version_info() < (4, 0):

@@ -177,7 +177,7 @@ The big changes are:
   - linux-aarch64 on Python 3.7-3.9
   - wheels for pypy36, 37 on Linux and Windows (previously just mac)
 
-We've totally redone the wheel-building setup, so let us know if you start seeing instalation issues!
+We've totally redone the wheel-building setup, so let us know if you start seeing installation issues!
 
 Packaging updates:
 
@@ -414,7 +414,7 @@ There are no code changes in this release.
 
 ## 15.1
 
-- FIX: Remove inadvertant tornado dependency when using {mod}`zmq.asyncio`
+- FIX: Remove inadvertent tornado dependency when using {mod}`zmq.asyncio`
 - FIX: 15.0 Python 3.5 wheels didn't work on Windows
 - Add GSSAPI support to Authenticators
 - Support new constants defined in upcoming libzmq-4.2.dev

@@ -157,7 +157,7 @@ for lib in zmq/eventloop/*.py; do
     mv $lib.new $lib
 done
 
-# remove excecutable bits
+# remove executable bits
 chmod -x examples/pubsub/topics_pub.py
 chmod -x examples/pubsub/topics_sub.py
 

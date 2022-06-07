@@ -150,7 +150,7 @@ cdef inline int c_monitored_queue (void *insocket_, void *outsocket_,
         # //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1)
         if rc < 0: return rc
-        # //  The algorithm below asumes ratio of request and replies processed
+        # //  The algorithm below assumes ratio of request and replies processed
         # //  under full load to be 1:1. Although processing requests replies
         # //  first is tempting it is suspectible to DoS attacks (overloading
         # //  the system with unsolicited replies).
