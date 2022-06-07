@@ -36,7 +36,7 @@ class MessageTracker:
     def __init__(self, *towatch: Tuple[Union["MessageTracker", Event, Frame]]):
         """MessageTracker(*towatch)
 
-        Create a message tracker to track a set of mesages.
+        Create a message tracker to track a set of messages.
 
         Parameters
         ----------

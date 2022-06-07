@@ -42,7 +42,7 @@ class BaseAuthTestCase(BaseZMQTestCase):
     def create_certs(self):
         """Create CURVE certificates for a test"""
 
-        # Create temporary CURVE keypairs for this test run. We create all keys in a
+        # Create temporary CURVE key pairs for this test run. We create all keys in a
         # temp directory and then move them into the appropriate private or public
         # directory.
 
