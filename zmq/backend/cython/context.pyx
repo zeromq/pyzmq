@@ -29,12 +29,12 @@ cdef class Context:
         The number of IO threads.
     """
 
-    # no-op for the signature
-    def __init__(self, io_threads=1, shadow=0):
-        pass
-
-    def __cinit__(self, int io_threads=1, size_t shadow=0):
+    def __cinit__(self, *args, **kwargs):
         self.handle = NULL
+        self._pid = 0
+        self._shadow = False
+
+    def __init__(self, int io_threads=1, size_t shadow=0):
         if shadow:
             self.handle = <void *>shadow
             self._shadow = True
