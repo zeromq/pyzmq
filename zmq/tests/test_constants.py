@@ -1,6 +1,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import pytest
+
 import zmq
 import zmq.constants
 
@@ -17,3 +19,9 @@ def test_socket_options():
     assert zmq.AFFINITY._opt_type is zmq.constants._OptType.int64
     assert zmq.CURVE_SERVER._opt_type is zmq.constants._OptType.int
     assert zmq.FD._opt_type is zmq.constants._OptType.fd
+
+
+@pytest.mark.parametrize("event_name", list(zmq.Event.__members__))
+def test_event_reprs(event_name):
+    event = getattr(zmq.Event, event_name)
+    assert event_name in repr(event)
