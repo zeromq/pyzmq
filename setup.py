@@ -587,6 +587,10 @@ class Configure(build_ext):
         libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
         libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
 
+        # set draft flag
+        if self.config["zmq_draft_api"]:
+            libzmq.define_macros.append(('ZMQ_BUILD_DRAFT_API', 1))
+
         # select polling subsystem based on platform
         if sys.platform == "darwin" or "bsd" in sys.platform:
             libzmq.define_macros.append(('ZMQ_USE_KQUEUE', 1))
