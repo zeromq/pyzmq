@@ -43,8 +43,8 @@ def parse_monitor_message(msg: List[bytes]) -> _MonitorMessage:
         raise RuntimeError("Invalid event message format: %s" % msg)
     event_id, value = struct.unpack("=hi", msg[0])
     event: _MonitorMessage = {
-        'event': event_id,
-        'value': value,
+        'event': zmq.Event(event_id),
+        'value': zmq.Event(value),
         'endpoint': msg[1],
     }
     return event
