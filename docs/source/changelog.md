@@ -5,6 +5,20 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 23.2.0
+
+Improvements:
+
+- Use `zmq.Event` enums in `parse_monitor_message` for nicer reprs
+
+Fixes:
+
+- Fix building bundled libzmq with `ZMQ_DRAFT_API=1`
+- Fix subclassing `zmq.Context` with additional arguments in the constructor.
+  Subclasses may now have full control over the signature,
+  rather than purely adding keyword-only arguments
+- Typos and other small fixes
+
 ## 23.1.0
 
 Fixing some regressions in 23.0:
