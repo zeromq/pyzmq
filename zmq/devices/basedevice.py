@@ -52,7 +52,7 @@ class Device:
 
     Attributes
     ----------
-    daemon : int
+    daemon : bool
         sets whether the thread should be run as a daemon
         Default is true, because if it is false, the thread will not
         exit unless it is killed
@@ -69,6 +69,7 @@ class Device:
     depending on whether the device should share the global instance or not.
     """
 
+    daemon: bool
     device_type: int
     in_type: int
     out_type: int
