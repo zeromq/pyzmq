@@ -27,7 +27,7 @@ class Authenticator:
         auth.allow("127.0.0.1")
         auth.start()
         while True:
-            auth.handle_zap_msg(auth.zap_socket.recv_multipart()
+            auth.handle_zap_msg(auth.zap_socket.recv_multipart())
 
     Alternatively, you can register `auth.zap_socket` with a poller.
 
