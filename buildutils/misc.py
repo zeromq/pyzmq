@@ -7,8 +7,8 @@ import copy
 import logging
 import os
 import sys
-from pipes import quote
 from pprint import pprint
+from shlex import quote
 from subprocess import PIPE, Popen
 
 from .msg import warn
