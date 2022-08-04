@@ -1,0 +1,3 @@
+cibuildwheel==2.8.1
+cython==0.29.30
+delvewheel==0.0.22; sys_platform == 'win32'
