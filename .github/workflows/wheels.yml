@@ -104,17 +104,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-10.15
+          - os: macos-11
             name: mac-cpython
             cibw:
               build: "cp*"
 
-          - os: macos-10.15
+          - os: macos-11
             name: mac-pypy
             cibw:
               build: "pp*"
 
-          - os: macos-10.15
+          - os: macos-11
             name: mac-arm
             cibw:
               arch: universal2
@@ -187,8 +187,6 @@ jobs:
       - name: customize mac-arm-64
         if: contains(matrix.os, 'macos') && matrix.cibw.arch
         run: |
-          sudo xcode-select -switch /Applications/Xcode_12.2.app
-          echo 'SDKROOT=/Applications/Xcode_12.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk' >> "$GITHUB_ENV"
           echo 'MACOSX_DEPLOYMENT_TARGET=10.15' >> "$GITHUB_ENV"
 
       - name: install dependencies
