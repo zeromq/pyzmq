@@ -1,0 +1,83 @@
+version: 2.1
+
+jobs:
+  arm-wheels:
+    parameters:
+      build:
+        type: string
+
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+
+    environment:
+      CIBW_BEFORE_ALL_LINUX: "bash tools/install_libzmq.sh"
+      CIBW_ENVIRONMENT_LINUX: >-
+        ZMQ_PREFIX=/usr/local
+        CFLAGS=-Wl,-strip-all
+        CXXFLAGS=-Wl,-strip-all
+      CIBW_TEST_REQUIRES: "pytest"
+      CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
+      CIBW_ARCHS: "aarch64"
+      CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64
+      CIBW_MUSLLINUX_AARCH64_IMAGE: quay.io/pypa/musllinux_1_1_aarch64
+      CIBW_BUILD: "<< parameters.build >>"
+
+    steps:
+      - checkout
+      - run:
+          name: install cibuildwheel
+          command: |
+            python3 -m pip install --upgrade pip setuptools
+            python3 -m pip install -r tools/wheel-requirements.txt
+
+      - run:
+          name: pip freeze
+          command: |
+            python3 -m pip freeze
+
+      - run:
+          name: Cython
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            python3 setup.py fetch_libzmq
+            python3 setup.py cython
+
+      - run:
+          name: list wheels
+          command: |
+            python3 -m cibuildwheel . --print-build-identifiers
+
+      - run:
+          name: cibuildwheel
+          command: |
+            python3 -m cibuildwheel .
+
+      - store_artifacts:
+          path: wheelhouse/
+
+      - when:
+          condition:
+            matches:
+              pattern: ".+"
+              value: "<< pipeline.git.tag >>"
+          steps:
+            - run:
+                environment:
+                  TWINE_NONINTERACTIVE: "1"
+                  TWINE_USERNAME: __token__
+                  TWINE_PASSWORD: $TWINE_PASSWORD
+                command: |
+                  python3 -m pip install twine
+                  twine upload --skip-existing wheelhouse/*
+
+workflows:
+  wheels: # This is the name of the workflow, feel free to change it to better match your workflow.
+    # Inside the workflow, you define the jobs you want to run.
+    jobs:
+      - arm-wheels:
+          matrix:
+            parameters:
+              build:
+                - "*manylinux*"
+                - "*musllinux*"

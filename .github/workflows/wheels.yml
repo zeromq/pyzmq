@@ -16,8 +16,6 @@ on:
       - zmq/utils/*.h
 
 env:
-  cython: "0.29.30"
-  cibuildwheel: "2.5.0"
   TWINE_NONINTERACTIVE: "1"
 
 jobs:
@@ -48,7 +46,7 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade pip build
-          pip install cython=="${{ env.cython }}"
+          pip install -r tools/wheel-requirements.txt
 
       - name: build sdist
         run: |
@@ -99,7 +97,6 @@ jobs:
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
-      CIBW_MANYLINUX_AARCH64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
 
@@ -150,46 +147,6 @@ jobs:
             cibw:
               skip: "*manylinux*"
 
-          - os: ubuntu-20.04
-            name: cp36-manylinux_aarch64
-            cibw:
-              build: "cp36*"
-              skip: "*musllinux*"
-              manylinux_image: manylinux2014
-              arch: aarch64
-
-          - os: ubuntu-20.04
-            name: cp37-manylinux_aarch64
-            cibw:
-              build: "cp37*"
-              skip: "*musllinux*"
-              manylinux_image: manylinux2014
-              arch: aarch64
-
-          - os: ubuntu-20.04
-            name: cp38-manylinux_aarch64
-            cibw:
-              build: "cp38*"
-              skip: "*musllinux*"
-              manylinux_image: manylinux2014
-              arch: aarch64
-
-          - os: ubuntu-20.04
-            name: cp39-manylinux_aarch64
-            cibw:
-              build: "cp39*"
-              skip: "*musllinux*"
-              manylinux_image: manylinux2014
-              arch: aarch64
-
-          - os: ubuntu-20.04
-            name: cp310-manylinux_aarch64
-            cibw:
-              build: "cp310*"
-              skip: "*musllinux*"
-              manylinux_image: manylinux2014
-              arch: aarch64
-
           - os: windows-2019
             name: win32
             architecture: x86
@@ -227,19 +184,6 @@ jobs:
           echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
           echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
 
-      - name: register qemu
-        if: contains(matrix.cibw.arch, 'aarch64')
-        run: |
-          docker run --rm --privileged hypriot/qemu-register:v4.2.0
-
-      - name: customize aarch64
-        if: contains(matrix.cibw.arch, 'aarch64')
-        # install zeromq-devel because building libzmq for arm takes too long
-        # it's not in default packages, but it is in epel-7
-        # this will be an older release than than other wheels
-        run: |
-          echo 'CIBW_BEFORE_ALL_LINUX=yum -y install epel-release && yum -y install zeromq-devel' >> "$GITHUB_ENV"
-
       - name: customize mac-arm-64
         if: contains(matrix.os, 'macos') && matrix.cibw.arch
         run: |
@@ -250,12 +194,12 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade setuptools pip wheel
-          pip install cibuildwheel=="${{ env.cibuildwheel }}" cython=="${{ env.cython }}"
+          pip install -r tools/wheel-requirements.txt
+
 
       - name: install windows dependencies
         if: startsWith(matrix.os, 'win')
         run: |
-          pip install delvewheel==0.0.12
           python setup.py fetch_libzmq --dll
           xcopy /i libzmq-dll C:\\libzmq-dll
 
