@@ -27,14 +27,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-10.15
+          - os: macos-11
             python: 3.6
 
-          - os: macos-10.15
+          - os: macos-11
             python: "3.10"
             zmq: bundled
 
-          - os: macos-10.15
+          - os: macos-11
             python: pypy-3.8
             zmq: bundled
 
