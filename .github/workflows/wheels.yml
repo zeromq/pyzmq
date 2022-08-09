@@ -102,15 +102,16 @@ jobs:
               skip: "cp38*"
 
           - os: ubuntu-20.04
-            name: manylinux-cpython
+            name: manylinux-x86_64
             cibw:
-              build: "cp*manylinux*"
-              skip: "*musllinux*"
+              arch: x86_64
+              build: "*manylinux*"
 
           - os: ubuntu-20.04
-            name: manylinux-pypy
+            name: manylinux-i686
             cibw:
-              build: "pp3*manylinux*"
+              arch: i686
+              build: "*manylinux*"
 
           - os: ubuntu-20.04
             name: musllinux
