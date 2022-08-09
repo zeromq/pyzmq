@@ -48,3 +48,76 @@ search = 'version="{current_version}"'
 [[tool.tbump.file]]
 src = "zmq/sugar/version.py"
 search = '__version__: str = "{current_version}"'
+
+
+[tool.cibuildwheel]
+build-verbosity = "1"
+test-requires = ["pytest"]
+test-command = "pytest -vsx {package}/tools/test_wheel.py"
+
+[tool.cibuildwheel.linux]
+before-all = "bash tools/install_libzmq.sh"
+environment.ZMQ_PREFIX = "/usr/local"
+environment.CFLAGS = "-Wl,-strip-all"
+environment.CXXFLAGS = "-Wl,-strip-all"
+
+manylinux-aarch64-image = "manylinux2014"
+musllinux-aarch64-image = "musllinux_1_1"
+musllinux-i686-image = "musllinux_1_1"
+musllinux-x86_64-image = "musllinux_1_1"
+
+[tool.cibuildwheel.macos]
+before-all = "bash tools/install_libzmq.sh"
+environment.ZMQ_PREFIX = "/usr/local"
+environment.MACOSX_DEPLOYMENT_TARGET = "10.9"
+
+[tool.cibuildwheel.windows]
+before-all = [
+    "python setup.py fetch_libzmq --dll",
+    "xcopy /i libzmq-dll C:\\libzmq-dll",
+]
+
+environment.ZMQ_PREFIX = "libzmq-dll"
+repair-wheel-command = """
+    delvewheel repair \
+        -v \
+        --add-path=C:/libzmq-dll \
+        --wheel-dir={dest_dir} \
+        {wheel}
+"""
+
+# mac-arm target is 10.15
+[[tool.cibuildwheel.overrides]]
+select = "*macos*{universal2,arm64}*"
+environment.MACOSX_DEPLOYMENT_TARGET = "10.15"
+
+# manylinux1 for old Python
+[[tool.cibuildwheel.overrides]]
+select = "cp3{6,7}-*"
+manylinux-x86_64-image = "manylinux1"
+manylinux-i686-image = "manylinux1"
+
+# manylinux2010 for cp38-9, pp37-8
+[[tool.cibuildwheel.overrides]]
+select = "cp3{8,9}-* pp3{7,8}-*"
+manylinux-x86_64-image = "manylinux2010"
+manylinux-i686-image = "manylinux2010"
+
+# manylinux2014 for cp310, pp39
+[[tool.cibuildwheel.overrides]]
+select = "cp310-* pp39-*"
+manylinux-x86_64-image = "manylinux2014"
+manylinux-i686-image = "manylinux2014"
+
+# manylinux_2_28 for cp311
+[[tool.cibuildwheel.overrides]]
+select = "cp311-*"
+manylinux-x86_64-image = "manylinux_2_28"
+
+[[tool.cibuildwheel.overrides]]
+select = "pp*win*"
+# pypy builds libzmq as an Extension,
+# doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
+# bundling external libzmq doesn't seem to work
+environment.ZMQ_PREFIX = ""
+repair-wheel-command = ""

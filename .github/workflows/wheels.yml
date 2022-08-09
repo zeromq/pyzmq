@@ -74,29 +74,8 @@ jobs:
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
-      CIBW_BUILD_VERBOSITY: "1"
-      CIBW_BEFORE_ALL_MACOS: "bash tools/install_libzmq.sh"
-      CIBW_BEFORE_ALL_LINUX: "bash tools/install_libzmq.sh"
-
-      CIBW_ENVIRONMENT_MACOS: "ZMQ_PREFIX=/usr/local"
-      CIBW_ENVIRONMENT_LINUX: >-
-        ZMQ_PREFIX=/usr/local
-        CFLAGS=-Wl,-strip-all
-        CXXFLAGS=-Wl,-strip-all
-      CIBW_ENVIRONMENT_WINDOWS: "ZMQ_PREFIX=libzmq-dll"
-      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >-
-        delvewheel repair
-        -v
-        --add-path=C:/libzmq-dll
-        --wheel-dir={dest_dir}
-        {wheel}
-
-      CIBW_TEST_REQUIRES: "pytest"
-      CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
-      CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_image }}"
-      CIBW_MANYLINUX_I686_IMAGE: "${{ matrix.cibw.manylinux_image }}"
       CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_PRERELEASE_PYTHONS: "1"
@@ -127,28 +106,24 @@ jobs:
             cibw:
               build: "cp36* cp37*"
               skip: "*musllinux*"
-              manylinux_image: manylinux1
 
           - os: ubuntu-20.04
             name: manylinux2010
             cibw:
-              build: "cp38* cp39* cp310* pp37* pp38*"
+              build: "cp38* cp39* pp37* pp38*"
               skip: "*musllinux*"
-              manylinux_image: manylinux2010
 
           - os: ubuntu-20.04
             name: manylinux2014
             cibw:
               build: "cp310* pp39*"
               skip: "*musllinux*"
-              manylinux_image: manylinux2014
 
           - os: ubuntu-20.04
             name: manylinux_2_28
             cibw:
               build: "cp311*"
               skip: "*musllinux*"
-              manylinux_image: manylinux_2_28
               arch: x86_64
 
           - os: ubuntu-20.04
@@ -183,16 +158,6 @@ jobs:
           python-version: "3.8"
           architecture: ${{ matrix.architecture }}
 
-      - name: set Windows extra env for pypy
-        shell: bash
-        if: matrix.name == 'win-pypy'
-        # pypy builds libzmq as an Extension,
-        # doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
-        # bundling external libzmq doesn't seem to work
-        run: |
-          echo 'CIBW_REPAIR_WHEEL_COMMAND_WINDOWS=' >> "$GITHUB_ENV"
-          echo 'CIBW_ENVIRONMENT_WINDOWS=' >> "$GITHUB_ENV"
-
       - name: customize mac-arm-64
         if: contains(matrix.os, 'macos') && matrix.cibw.arch
         run: |
@@ -202,13 +167,6 @@ jobs:
         run: |
           pip install --upgrade setuptools pip wheel
           pip install -r tools/wheel-requirements.txt
-
-
-      - name: install windows dependencies
-        if: startsWith(matrix.os, 'win')
-        run: |
-          python setup.py fetch_libzmq --dll
-          xcopy /i libzmq-dll C:\\libzmq-dll
 
       - name: show environment
         run: |

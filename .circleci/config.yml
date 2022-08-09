@@ -8,25 +8,13 @@ jobs:
       skip:
         type: string
         default: ""
-      image:
-        type: string
-        default: quay.io/pypa/manylinux2014_aarch64
 
     machine:
       image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
 
     environment:
-      CIBW_BEFORE_ALL_LINUX: "bash tools/install_libzmq.sh"
-      CIBW_ENVIRONMENT_LINUX: >-
-        ZMQ_PREFIX=/usr/local
-        CFLAGS=-Wl,-strip-all
-        CXXFLAGS=-Wl,-strip-all
-      CIBW_TEST_REQUIRES: "pytest"
-      CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
       CIBW_ARCHS: "aarch64"
-      CIBW_MANYLINUX_AARCH64_IMAGE: "<< parameters.image >>"
-      CIBW_MUSLLINUX_AARCH64_IMAGE: quay.io/pypa/musllinux_1_1_aarch64
       CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
       CIBW_PRERELEASE_PYTHONS: "1"
@@ -86,11 +74,6 @@ workflows:
       - arm-wheels:
           name: manylinux
           build: "*manylinux*"
-          skip: "cp311*"
-      - arm-wheels:
-          name: manylinux-cp311
-          build: "cp311*manylinux*"
-          image: manylinux_2_28
       - arm-wheels:
           name: musllinux
           build: "*musllinux*"
