@@ -14,6 +14,8 @@ on:
 env:
   FORCE_COLOR: "1"
   PYZMQ_CYTHON_COVERAGE: "1"
+  # only affects Windows, but easiest to set here for now
+  SETUPTOOLS_ENABLE_FEATURES: "legacy-editable"
 
 jobs:
   test:
@@ -62,7 +64,7 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-20.04
-            python: "3.11.0-beta.3"
+            python: "3.11.0-rc.1"
 
           - os: ubuntu-20.04
             python: 3.8
@@ -139,12 +141,6 @@ jobs:
         if: startsWith(matrix.os, 'mac') && matrix.zmq != 'bundled'
         run: |
           brew install libsodium zeromq
-
-      - name: setup Windows
-        if: startsWith(matrix.os, 'win')
-        run: |
-          # seem to have a linking error with Windows on new editable installs
-          echo "SETUPTOOLS_ENABLE_FEATURES=legacy-editable" >> "$GITHUB_ENV"
 
       - name: install linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
