@@ -10,6 +10,7 @@ import random
 import sys
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
     List,
@@ -363,7 +364,6 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         optval : str
             The value of the option as a unicode string.
         """
-
         if SocketOption(option)._opt_type != _OptType.bytes:
             raise TypeError(f"option {option} will not return a string to be decoded")
         return cast(bytes, self.get(option)).decode(encoding)
@@ -733,7 +733,11 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         # how do we get mypy to recognize that return type is invariant on `copy`?
         return cast(Union[List[zmq.Frame], List[bytes]], parts)
 
-    def _deserialize(self, recvd, load):
+    def _deserialize(
+        self,
+        recvd: bytes,
+        load: Callable[[bytes], Any],
+    ) -> Any:
         """Deserialize a received message
 
         Override in subclass (e.g. Futures) if recvd is not the raw bytes.

@@ -135,9 +135,9 @@ class SocketOption(IntEnum):
     .. versionadded:: 23
     """
 
-    _opt_type: str
+    _opt_type: _OptType
 
-    def __new__(cls, value, opt_type=_OptType.int):
+    def __new__(cls, value: int, opt_type: _OptType = _OptType.int):
         """Attach option type as `._opt_type`"""
         obj = int.__new__(cls, value)
         obj._value_ = value
