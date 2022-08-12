@@ -17,7 +17,6 @@ jobs:
       CIBW_ARCHS: "aarch64"
       CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
-      CIBW_PRERELEASE_PYTHONS: "1"
 
     steps:
       - checkout

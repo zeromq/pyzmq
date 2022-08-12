@@ -78,7 +78,6 @@ jobs:
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
-      CIBW_PRERELEASE_PYTHONS: "1"
 
     strategy:
       fail-fast: false
