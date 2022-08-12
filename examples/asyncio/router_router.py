@@ -64,13 +64,12 @@ class Client:
         return self.run
 
 
-url = 'inproc://test_zmq'
-srv = Server(url)
-romeo = Client(url, 'romeo')
-sierra = Client(url, 'sierra')
-
-
 async def main():
+    url = 'inproc://test_zmq'
+    srv = Server(url)
+    romeo = Client(url, 'romeo')
+    sierra = Client(url, 'sierra')
+
     async with EventLoop(1.0) as ev:
         ev.start(romeo.run)
         ev.start(sierra.run)
