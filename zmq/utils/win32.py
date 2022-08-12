@@ -6,11 +6,10 @@
 # -----------------------------------------------------------------------------
 
 import os
-from typing import Type
+from typing import Any, Callable, Optional
 
 
-# No-op implementation for other platforms.
-class _allow_interrupt:
+class allow_interrupt:
     """Utility for fixing CTRL-C events on Windows.
 
     On Windows, the Python interpreter intercepts CTRL-C events in order to
@@ -61,7 +60,7 @@ class _allow_interrupt:
     unblock your I/O loop.
     """
 
-    def __init__(self, action=None):
+    def __init__(self, action: Optional[Callable[[], Any]] = None) -> None:
         """Translate ``action`` into a CTRL-C handler.
 
         ``action`` is a callable that takes no arguments and returns no
@@ -70,70 +69,58 @@ class _allow_interrupt:
 
         If unspecified, a no-op will be used.
         """
+        if os.name != "nt":
+            return
         self._init_action(action)
 
     def _init_action(self, action):
-        pass
+        from ctypes import WINFUNCTYPE, windll
+        from ctypes.wintypes import BOOL, DWORD
+
+        kernel32 = windll.LoadLibrary('kernel32')
+
+        # <http://msdn.microsoft.com/en-us/library/ms686016.aspx>
+        PHANDLER_ROUTINE = WINFUNCTYPE(BOOL, DWORD)
+        SetConsoleCtrlHandler = (
+            self._SetConsoleCtrlHandler
+        ) = kernel32.SetConsoleCtrlHandler
+        SetConsoleCtrlHandler.argtypes = (PHANDLER_ROUTINE, BOOL)
+        SetConsoleCtrlHandler.restype = BOOL
+
+        if action is None:
+            action = lambda: None
+        self.action = action
+
+        @PHANDLER_ROUTINE
+        def handle(event):
+            if event == 0:  # CTRL_C_EVENT
+                action()
+                # Typical C implementations would return 1 to indicate that
+                # the event was processed and other control handlers in the
+                # stack should not be executed.  However, that would
+                # prevent the Python interpreter's handler from translating
+                # CTRL-C to a `KeyboardInterrupt` exception, so we pretend
+                # that we didn't handle it.
+            return 0
+
+        self.handle = handle
 
     def __enter__(self):
-        return self
+        """Install the custom CTRL-C handler."""
+        if os.name != "nt":
+            return
+        result = self._SetConsoleCtrlHandler(self.handle, 1)
+        if result == 0:
+            # Have standard library automatically call `GetLastError()` and
+            # `FormatMessage()` into a nice exception object :-)
+            raise OSError()
 
     def __exit__(self, *args):
-        return
-
-
-allow_interrupt: Type[_allow_interrupt]
-
-if os.name == 'nt':
-    from ctypes import WINFUNCTYPE, windll  # type: ignore
-    from ctypes.wintypes import BOOL, DWORD  # type: ignore
-
-    kernel32 = windll.LoadLibrary('kernel32')
-
-    # <http://msdn.microsoft.com/en-us/library/ms686016.aspx>
-    PHANDLER_ROUTINE = WINFUNCTYPE(BOOL, DWORD)
-    SetConsoleCtrlHandler = kernel32.SetConsoleCtrlHandler
-    SetConsoleCtrlHandler.argtypes = (PHANDLER_ROUTINE, BOOL)
-    SetConsoleCtrlHandler.restype = BOOL
-
-    class _real_allow_interrupt(_allow_interrupt):
-        __doc__ = _allow_interrupt.__doc__
-
-        def _init_action(self, action):
-            if action is None:
-                action = lambda: None
-            self.action = action
-
-            @PHANDLER_ROUTINE
-            def handle(event):
-                if event == 0:  # CTRL_C_EVENT
-                    action()
-                    # Typical C implementations would return 1 to indicate that
-                    # the event was processed and other control handlers in the
-                    # stack should not be executed.  However, that would
-                    # prevent the Python interpreter's handler from translating
-                    # CTRL-C to a `KeyboardInterrupt` exception, so we pretend
-                    # that we didn't handle it.
-                return 0
-
-            self.handle = handle
-
-        def __enter__(self):
-            """Install the custom CTRL-C handler."""
-            result = SetConsoleCtrlHandler(self.handle, 1)
-            if result == 0:
-                # Have standard library automatically call `GetLastError()` and
-                # `FormatMessage()` into a nice exception object :-)
-                raise OSError()
-
-        def __exit__(self, *args):
-            """Remove the custom CTRL-C handler."""
-            result = SetConsoleCtrlHandler(self.handle, 0)
-            if result == 0:
-                # Have standard library automatically call `GetLastError()` and
-                # `FormatMessage()` into a nice exception object :-)
-                raise OSError()
-
-    allow_interrupt = _real_allow_interrupt
-else:
-    allow_interrupt = _allow_interrupt
+        """Remove the custom CTRL-C handler."""
+        if os.name != "nt":
+            return
+        result = self._SetConsoleCtrlHandler(self.handle, 0)
+        if result == 0:
+            # Have standard library automatically call `GetLastError()` and
+            # `FormatMessage()` into a nice exception object :-)
+            raise OSError()
