@@ -5,6 +5,18 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 23.2.1
+
+Improvements:
+
+- First release with wheels for Python 3.11 (thanks cibuildwheel!).
+- linux aarch64 wheels now bundle the same libzmq (4.3.4) as all other builds,
+  thanks to switching to native arm builds on CircleCI.
+
+Fixes:
+
+- Some type annotation fixes in devices.
+
 ## 23.2.0
 
 Improvements:
