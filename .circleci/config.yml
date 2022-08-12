@@ -5,22 +5,17 @@ jobs:
     parameters:
       build:
         type: string
+      skip:
+        type: string
+        default: ""
 
     machine:
       image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
 
     environment:
-      CIBW_BEFORE_ALL_LINUX: "bash tools/install_libzmq.sh"
-      CIBW_ENVIRONMENT_LINUX: >-
-        ZMQ_PREFIX=/usr/local
-        CFLAGS=-Wl,-strip-all
-        CXXFLAGS=-Wl,-strip-all
-      CIBW_TEST_REQUIRES: "pytest"
-      CIBW_TEST_COMMAND: "pytest -vsx {package}/tools/test_wheel.py"
       CIBW_ARCHS: "aarch64"
-      CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64
-      CIBW_MUSLLINUX_AARCH64_IMAGE: quay.io/pypa/musllinux_1_1_aarch64
+      CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
 
     steps:
@@ -76,8 +71,8 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - arm-wheels:
-          matrix:
-            parameters:
-              build:
-                - "*manylinux*"
-                - "*musllinux*"
+          name: manylinux
+          build: "*manylinux*"
+      - arm-wheels:
+          name: musllinux
+          build: "*musllinux*"
