@@ -1324,7 +1324,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup_args = dict(
     name="pyzmq",
-    version="23.3.0.dev",
+    version="23.2.1",
     packages=find_packages(),
     ext_modules=extensions,
     cffi_modules=cffi_modules,
