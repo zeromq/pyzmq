@@ -140,6 +140,12 @@ jobs:
         run: |
           brew install libsodium zeromq
 
+      - name: setup Windows
+        if: startsWith(matrix.os, 'win')
+        run: |
+          # seem to have a linking error with Windows on new editable installs
+          echo "SETUPTOOLS_ENABLE_FEATURES=legacy-editable" >> "$GITHUB_ENV"
+
       - name: install linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
         run: |
