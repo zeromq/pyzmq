@@ -73,6 +73,12 @@ workflows:
       - arm-wheels:
           name: manylinux
           build: "*manylinux*"
+          filters:
+            tags:
+              only: /.*/
       - arm-wheels:
           name: musllinux
           build: "*musllinux*"
+          filters:
+            tags:
+              only: /.*/
