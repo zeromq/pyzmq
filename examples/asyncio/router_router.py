@@ -5,6 +5,11 @@ ideal for P2P applications that need a socket that is able to connect
 to several other peers simultaneously, while also being able
 to receive messages
 
+In this example, aiowire.EventLoop is used to await all tasks launched
+within it, while timing out after (here) 1 second.
+This guarantees completion of tasks - even if they are infinite loops
+- as long as they regularly call await.
+
 Contributed by github:jcpinto54 and github:frobnitzem
 """
 # Copyright (c) 2022 PyZMQ Developers.
