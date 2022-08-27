@@ -248,9 +248,7 @@ class ThreadAuthenticator:
 
     def is_alive(self) -> bool:
         """Is the ZAP thread currently running?"""
-        if self.thread and self.thread.is_alive():
-            return True
-        return False
+        return bool(self.thread and self.thread.is_alive())
 
     def __del__(self) -> None:
         self.stop()
