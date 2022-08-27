@@ -31,9 +31,7 @@ class AsyncioAuthenticator(Authenticator):
         self.__task = None
 
     async def __handle_zap(self) -> None:
-        while True:
-            if self.__poller is None:
-                break
+        while self.__poller is not None:
             events = await self.__poller.poll()
             if self.zap_socket in dict(events):
                 msg = await self.zap_socket.recv_multipart()
