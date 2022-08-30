@@ -30,6 +30,7 @@ from queue import Queue
 from typing import Any, Callable, List, Optional, Sequence, Union, cast, overload
 
 import zmq
+from zmq import POLLIN, POLLOUT
 from zmq._typing import Literal
 from zmq.utils import jsonapi
 
@@ -471,13 +472,13 @@ class ZMQStream:
         events = self.poller.poll(0)
         while events and (not limit or count < limit):
             s, event = events[0]
-            if event & zmq.POLLIN:  # receiving
+            if event & POLLIN:  # receiving
                 self._handle_recv()
                 count += 1
                 if self.socket is None:
                     # break if socket was closed during callback
                     break
-            if event & zmq.POLLOUT and self.sending():
+            if event & POLLOUT and self.sending():
                 self._handle_send()
                 count += 1
                 if self.socket is None:

@@ -33,8 +33,4 @@ def select_backend(name: str) -> Dict:
         raise
     except Exception as e:
         raise ImportError(f"Importing {name} failed with {e}") from e
-
-    ns = {}
-    for key in public_api:
-        ns[key] = getattr(mod, key)
-    return ns
+    return {key: getattr(mod, key) for key in public_api}

@@ -75,17 +75,17 @@ def zmq_poll(sockets, timeout):
         else:
             break
     result = []
-    for index in range(len(items)):
-        if items[index].revents > 0:
-            if not items[index].socket == ffi.NULL:
+    for item in items:
+        if item.revents > 0:
+            if item.socket != ffi.NULL:
                 result.append(
                     (
-                        low_level_to_socket_obj[items[index].socket][0],
-                        items[index].revents,
+                        low_level_to_socket_obj[item.socket][0],
+                        item.revents,
                     )
                 )
             else:
-                result.append((items[index].fd, items[index].revents))
+                result.append((item.fd, item.revents))
     return result
 
 

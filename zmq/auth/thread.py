@@ -12,6 +12,7 @@ from threading import Event, Thread
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
 import zmq
+from zmq import NOBLOCK, POLLIN
 from zmq.utils import jsonapi
 
 from .base import Authenticator
@@ -59,12 +60,12 @@ class AuthenticationThread(Thread):
             except zmq.ZMQError:
                 break  # interrupted
 
-            if self.pipe in socks and socks[self.pipe] == zmq.POLLIN:
+            if self.pipe in socks and socks[self.pipe] == POLLIN:
                 # Make sure all API requests are processed before
                 # looking at the ZAP socket.
                 while True:
                     try:
-                        msg = self.pipe.recv_multipart(flags=zmq.NOBLOCK)
+                        msg = self.pipe.recv_multipart(flags=NOBLOCK)
                     except zmq.Again:
                         break
 
@@ -74,7 +75,7 @@ class AuthenticationThread(Thread):
                 if terminate:
                     break
 
-            if zap in socks and socks[zap] == zmq.POLLIN:
+            if zap in socks and socks[zap] == POLLIN:
                 self._handle_zap()
 
         self.pipe.close()
@@ -248,9 +249,7 @@ class ThreadAuthenticator:
 
     def is_alive(self) -> bool:
         """Is the ZAP thread currently running?"""
-        if self.thread and self.thread.is_alive():
-            return True
-        return False
+        return bool(self.thread and self.thread.is_alive())
 
     def __del__(self) -> None:
         self.stop()
