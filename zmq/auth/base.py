@@ -5,7 +5,7 @@
 
 import logging
 import os
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Awaitable, Dict, List, Optional, Set, Tuple, Union
 
 import zmq
 from zmq.error import _check_version
@@ -27,7 +27,7 @@ class Authenticator:
         auth.allow("127.0.0.1")
         auth.start()
         while True:
-            auth.handle_zap_msg(auth.zap_socket.recv_multipart())
+            await auth.handle_zap_msg(auth.zap_socket.recv_multipart())
 
     Alternatively, you can register `auth.zap_socket` with a poller.
 
@@ -182,8 +182,6 @@ class Authenticator:
                         return False
 
         To cover all domains, use "*".
-
-        To allow all client keys without checking, specify CURVE_ALLOW_ANY for the location.
         """
 
         self.allow_any = False
@@ -222,7 +220,7 @@ class Authenticator:
         Currently this is a no-op because there is nothing to configure with GSSAPI.
         """
 
-    def handle_zap_message(self, msg: List[bytes]):
+    async def handle_zap_message(self, msg: List[bytes]):
         """Perform ZAP authentication"""
         if len(msg) < 6:
             self.log.error("Invalid ZAP message, not enough frames: %r", msg)
@@ -304,7 +302,7 @@ class Authenticator:
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
                     return
                 key = credentials[0]
-                allowed, reason = self._authenticate_curve(domain, key)
+                allowed, reason = await self._authenticate_curve(domain, key)
                 if allowed:
                     username = self.curve_user_id(key)
 
@@ -361,7 +359,9 @@ class Authenticator:
 
         return allowed, reason
 
-    def _authenticate_curve(self, domain: str, client_key: bytes) -> Tuple[bool, bytes]:
+    async def _authenticate_curve(
+        self, domain: str, client_key: bytes
+    ) -> Tuple[bool, bytes]:
         """CURVE ZAP authentication"""
         allowed = False
         reason = b""
@@ -377,7 +377,10 @@ class Authenticator:
             if domain in self.credentials_providers:
                 z85_client_key = z85.encode(client_key)
                 # Callback to check if key is Allowed
-                if self.credentials_providers[domain].callback(domain, z85_client_key):
+                r = self.credentials_providers[domain].callback(domain, z85_client_key)
+                if isinstance(r, Awaitable):
+                    r = await r
+                if r:
                     allowed = True
                     reason = b"OK"
                 else:

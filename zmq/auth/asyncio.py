@@ -11,7 +11,7 @@ import warnings
 from typing import Any, Optional
 
 import zmq
-from zmq.asyncio import Poller
+from zmq.asyncio import Poller, Socket
 
 from .base import Authenticator
 
@@ -21,10 +21,16 @@ class AsyncioAuthenticator(Authenticator):
 
     __poller: Optional[Poller]
     __task: Any
-    zap_socket: "zmq.asyncio.Socket"
+    zap_socket: "Socket"
 
-    def __init__(self, context: Optional["zmq.Context"] = None, loop: Any = None):
-        super().__init__(context)
+    def __init__(
+        self,
+        context: Optional["zmq.Context"] = None,
+        loop: Any = None,
+        encoding: str = 'utf-8',
+        log: Any = None,
+    ):
+        super().__init__(context, encoding, log)
         if loop is not None:
             warnings.warn(f"{self.__class__.__name__}(loop) is deprecated and ignored")
         self.__poller = None
@@ -35,7 +41,7 @@ class AsyncioAuthenticator(Authenticator):
             events = await self.__poller.poll()
             if self.zap_socket in dict(events):
                 msg = await self.zap_socket.recv_multipart()
-                self.handle_zap_message(msg)
+                await self.handle_zap_message(msg)
 
     def start(self) -> None:
         """Start ZAP authentication"""

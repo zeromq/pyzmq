@@ -6,101 +6,91 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import asyncio
 import logging
+import threading
 from itertools import chain
 from threading import Event, Thread
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
-import zmq
+import zmq, zmq.asyncio
 from zmq import NOBLOCK, POLLIN
 from zmq.utils import jsonapi
 
 from .base import Authenticator
+from .asyncio import AsyncioAuthenticator
 
 
 class AuthenticationThread(Thread):
     """A Thread for running a zmq Authenticator
 
-    This is run in the background by ThreadedAuthenticator
+    This is run in the background by ThreadAuthenticator
     """
+
+    pipe: zmq.asyncio.Socket
+    loop: asyncio.AbstractEventLoop
+
+    poller: Optional[zmq.asyncio.Poller]
 
     def __init__(
         self,
-        context: "zmq.Context",
         endpoint: str,
         encoding: str = 'utf-8',
         log: Any = None,
-        authenticator: Optional[Authenticator] = None,
     ) -> None:
         super().__init__()
-        self.context = context or zmq.Context.instance()
+        self.context = zmq.asyncio.Context.instance()
         self.encoding = encoding
-        self.log = log = log or logging.getLogger('zmq.auth')
+        self.log = log or logging.getLogger('zmq.auth')
         self.started = Event()
-        self.authenticator: Authenticator = authenticator or Authenticator(
-            context, encoding=encoding, log=log
-        )
-
-        # create a socket to communicate back to main thread.
-        self.pipe = context.socket(zmq.PAIR)
-        self.pipe.linger = 1
-        self.pipe.connect(endpoint)
+        self.endpoint = endpoint
+        self.encoding = encoding
+        self.log = log
 
     def run(self) -> None:
         """Start the Authentication Agent thread task"""
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # create a socket to communicate back to main thread.
+        self.pipe: "zmq.asyncio.Socket" = self.context.socket(zmq.PAIR)
+        self.pipe.linger = 1
+        self.pipe.connect(self.endpoint)
+
+        self.authenticator = AsyncioAuthenticator(
+            self.context, encoding=self.encoding, log=self.log
+        )
         self.authenticator.start()
+
+        self.poller = zmq.asyncio.Poller()
+        self.poller.register(self.pipe, zmq.POLLIN)
         self.started.set()
-        zap = self.authenticator.zap_socket
-        poller = zmq.Poller()
-        poller.register(self.pipe, zmq.POLLIN)
-        poller.register(zap, zmq.POLLIN)
-        while True:
-            try:
-                socks = dict(poller.poll())
-            except zmq.ZMQError:
-                break  # interrupted
 
-            if self.pipe in socks and socks[self.pipe] == POLLIN:
-                # Make sure all API requests are processed before
-                # looking at the ZAP socket.
-                while True:
-                    try:
-                        msg = self.pipe.recv_multipart(flags=NOBLOCK)
-                    except zmq.Again:
-                        break
+        loop.run_until_complete(self.__handle_pipe())
 
-                    terminate = self._handle_pipe(msg)
-                    if terminate:
-                        break
-                if terminate:
-                    break
-
-            if zap in socks and socks[zap] == POLLIN:
-                self._handle_zap()
-
-        self.pipe.close()
+        self.poller.unregister(self.pipe)
+        self.poller = None
         self.authenticator.stop()
+        self.pipe.close()
+        self.loop.close()
 
-    def _handle_zap(self) -> None:
-        """
-        Handle a message from the ZAP socket.
-        """
-        if self.authenticator.zap_socket is None:
-            raise RuntimeError("ZAP socket closed")
-        msg = self.authenticator.zap_socket.recv_multipart()
-        if not msg:
-            return
-        self.authenticator.handle_zap_message(msg)
-
-    def _handle_pipe(self, msg: List[bytes]) -> bool:
+    async def __handle_pipe(self):
         """
         Handle a message from front-end API.
         """
-        terminate = False
 
+        while True:
+            print(self.poller)
+            events = await self.poller.poll()
+            if self.pipe in dict(events):
+                msg = await self.pipe.recv_multipart()
+                if self.__handle_pipe_message(msg):
+                    return
+
+    def __handle_pipe_message(self, msg: List[bytes]) -> bool:
         if msg is None:
-            terminate = True
-            return terminate
+            return True
 
         command = msg[0]
         self.log.debug("auth received API command %r", command)
@@ -137,12 +127,12 @@ class AuthenticationThread(Thread):
             self.authenticator.configure_curve(domain, location)
 
         elif command == b'TERMINATE':
-            terminate = True
+            return True
 
         else:
             self.log.error("Invalid auth command from API: %r", command)
 
-        return terminate
+        return False
 
 
 T = TypeVar("T", bound=type)
@@ -231,7 +221,7 @@ class ThreadAuthenticator:
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
         self.thread = AuthenticationThread(
-            self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log
+            self.pipe_endpoint, encoding=self.encoding, log=self.log
         )
         self.thread.start()
         if not self.thread.started.wait(timeout=10):
