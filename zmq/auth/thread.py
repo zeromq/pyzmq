@@ -13,12 +13,13 @@ from itertools import chain
 from threading import Event, Thread
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
-import zmq, zmq.asyncio
+import zmq
+import zmq.asyncio
 from zmq import NOBLOCK, POLLIN
 from zmq.utils import jsonapi
 
-from .base import Authenticator
 from .asyncio import AsyncioAuthenticator
+from .base import Authenticator
 
 
 class AuthenticationThread(Thread):
