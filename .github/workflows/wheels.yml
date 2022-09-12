@@ -98,7 +98,6 @@ jobs:
             cibw:
               arch: universal2
               build: "cp*"
-              skip: "cp38*"
 
           - os: ubuntu-20.04
             name: manylinux-x86_64
