@@ -36,6 +36,15 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     """Create a zmq Context
 
     A zmq Context creates sockets via its ``ctx.socket`` method.
+
+    .. versionchanged:: 24
+
+        When using a Context as a context manager (``with zmq.Context()``),
+        exiting the context calls `ctx.destroy()`,
+        closing any leftover sockets,
+        instead of `ctx.term()` which requires sockets to be closed first.
+        This makes contexts-as-context-managers
+        not safe for use with sockets managed in other threads.
     """
 
     sockopts: Dict[int, Any]
@@ -93,7 +102,16 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        self.term()
+        for socket in list(self._sockets):
+            if socket and not socket.closed:
+                warnings.warn(
+                    f"unclosed socket {socket}",
+                    ResourceWarning,
+                    stacklevel=2,
+                    source=socket,
+                )
+
+        self.destroy()
 
     def __copy__(self: T, memo: Any = None) -> T:
         """Copying a Context creates a shadow copy"""
