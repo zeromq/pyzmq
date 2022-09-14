@@ -70,9 +70,11 @@ class TestContext(BaseZMQTestCase):
         assert c.closed
 
     def test_context_manager(self):
-        with self.Context() as c:
-            pass
-        assert c.closed
+        with self.Context() as ctx:
+            s = ctx.socket(zmq.PUSH)
+        # context exit destroys sockets
+        assert s.closed
+        assert ctx.closed
 
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
