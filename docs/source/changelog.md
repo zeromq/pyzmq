@@ -5,6 +5,28 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 24
+
+pyzmq 24 has two breaking changes (one only on Windows), though they are not likely to affect most users.
+
+Breaking changes:
+
+- Due to a libzmq bug causing unavoidable crashes for some users,
+  Windows wheels no longer bundle libzmq with AF_UNIX support.
+  In order to enable AF_UNIX on Windows, pyzmq must be built from source,
+  linking an appropriate build of libzmq (e.g. `libzmq-v142`).
+  AF_UNIX support will be re-enabled in pyzmq wheels
+  when libzmq published fixed releases.
+
+- Using a {class}`zmq.Context` as a context manager or deleting a context without closing it now calls {meth}`zmq.Context.destroy` at exit instead of {meth}`zmq.Context.term`.
+  This will have little effect on most users,
+  but changes what happens when user bugs result in a context being _implicitly_ destroyed while sockets are left open.
+  In almost all cases, this will turn what used to be a hang into a warning.
+  However, there may be some cases where sockets are actively used in threads,
+  which could result in a crash.
+  To use sockets across threads, it is critical to properly and explicitly close your contexts and sockets,
+  which will always avoid this issue.
+
 ## 23.2.1
 
 Improvements:

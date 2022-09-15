@@ -40,11 +40,15 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     .. versionchanged:: 24
 
         When using a Context as a context manager (``with zmq.Context()``),
-        exiting the context calls `ctx.destroy()`,
+        or deleting a context without closing it first,
+        ``ctx.destroy()`` is called,
         closing any leftover sockets,
         instead of `ctx.term()` which requires sockets to be closed first.
-        This makes contexts-as-context-managers
-        not safe for use with sockets managed in other threads.
+
+        This prevents hangs caused by `ctx.term()` if sockets are left open,
+        but means that unclean destruction of contexts
+        (with sockets left open) is not safe
+        if sockets are managed in other threads.
     """
 
     sockopts: Dict[int, Any]
@@ -52,6 +56,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     _instance_lock = Lock()
     _instance_pid: Optional[int] = None
     _shadow = False
+    _warn_destroy_close = False
     _sockets: WeakSet
     # mypy doesn't like a default value here
     _socket_class: Type[ST] = Socket  # type: ignore
@@ -66,19 +71,26 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         self._sockets = WeakSet()
 
     def __del__(self) -> None:
-        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
+        """Deleting a Context without closing it destroys it and all sockets.
+
+        .. versionchanged:: 24
+            Switch from threadsafe `term()` which hangs in the event of open sockets
+            to less safe `destroy()` which
+            warns about any leftover sockets and closes them.
+        """
 
         # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
         locals()
 
         if not self._shadow and not _exiting and not self.closed:
+            self._warn_destroy_close = True
             warnings.warn(
                 f"unclosed context {self}",
                 ResourceWarning,
                 stacklevel=2,
                 source=self,
             )
-            self.term()
+            self.destroy()
 
     _repr_cls = "zmq.Context"
 
@@ -102,15 +114,8 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        for socket in list(self._sockets):
-            if socket and not socket.closed:
-                warnings.warn(
-                    f"unclosed socket {socket}",
-                    ResourceWarning,
-                    stacklevel=2,
-                    source=socket,
-                )
-
+        # warn about any leftover sockets before closing them
+        self._warn_destroy_close = True
         self.destroy()
 
     def __copy__(self: T, memo: Any = None) -> T:
@@ -254,6 +259,13 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         self._sockets = WeakSet()
         for s in sockets:
             if s and not s.closed:
+                if self._warn_destroy_close:
+                    warnings.warn(
+                        f"Destroying context with unclosed socket {s}",
+                        ResourceWarning,
+                        stacklevel=3,
+                        source=s,
+                    )
                 if linger is not None:
                     s.setsockopt(SocketOption.LINGER, linger)
                 s.close()
