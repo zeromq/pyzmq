@@ -64,7 +64,7 @@ jobs:
                   TWINE_PASSWORD: $TWINE_PASSWORD
                 command: |
                   python3 -m pip install twine
-                  twine upload --skip-existing wheelhouse/*
+                  python3 -m twine upload --skip-existing wheelhouse/*
 
 workflows:
   wheels: # This is the name of the workflow, feel free to change it to better match your workflow.
