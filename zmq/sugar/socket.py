@@ -8,6 +8,7 @@ import errno
 import pickle
 import random
 import sys
+import weakref
 from typing import (
     Any,
     Callable,
@@ -33,7 +34,6 @@ from zmq.utils import jsonapi
 from ..constants import SocketOption, SocketType, _OptType
 from .attrsettr import AttributeSetter
 from .poll import Poller
-import weakref
 
 try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
