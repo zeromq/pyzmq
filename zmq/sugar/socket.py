@@ -33,6 +33,7 @@ from zmq.utils import jsonapi
 from ..constants import SocketOption, SocketType, _OptType
 from .attrsettr import AttributeSetter
 from .poll import Poller
+import weakref
 
 try:
     DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
@@ -107,8 +108,9 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
                 self._type_name = str(socket_type)
             else:
                 self._type_name = stype.name
+        weakref.finalize(self, lambda x: x._exp_del(), self)
 
-    def __del__(self):
+    def _exp_del(self):
         if not self._shadow and not self.closed:
             warn(
                 f"unclosed socket {self}",
