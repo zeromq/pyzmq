@@ -13,7 +13,7 @@ from ._cffi import lib as C
 class Context:
     _zmq_ctx = None
     _iothreads = None
-    _closed = None
+    _closed = True
     _shadow = False
 
     def __init__(self, io_threads=1, shadow=None):
