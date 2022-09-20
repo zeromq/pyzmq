@@ -8,7 +8,6 @@ import errno
 import pickle
 import random
 import sys
-import weakref
 from typing import (
     Any,
     Callable,
@@ -108,16 +107,17 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
                 self._type_name = str(socket_type)
             else:
                 self._type_name = stype.name
-        weakref.finalize(self, lambda x: x._exp_del(), self)
 
-    def _exp_del(self):
+    def __del__(self):
         if not self._shadow and not self.closed:
-            warn(
-                f"unclosed socket {self}",
-                ResourceWarning,
-                stacklevel=2,
-                source=self,
-            )
+            if warn is not None:
+                # warn can be None during process teardown
+                warn(
+                    f"Unclosed socket {self}",
+                    ResourceWarning,
+                    stacklevel=2,
+                    source=self,
+                )
             self.close()
 
     _repr_cls = "zmq.Socket"
