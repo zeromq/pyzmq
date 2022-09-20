@@ -47,7 +47,7 @@ ROOT = os.path.dirname(HERE)
 # msvc 142 builds have a problem:
 # on _some_ (unclear which!) systems due to the implementation of runtime detection of AF_UNIX
 # in 4.3.4
-vcversion = 141
+vcversion = 140
 # until that's fixed, we shouldn't ship 142 builds,
 # which in turn means we can't support IPC in wheels
 
