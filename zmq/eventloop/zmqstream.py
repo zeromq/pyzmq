@@ -24,7 +24,6 @@ using tornado.
 """
 
 import pickle
-import sys
 import warnings
 from queue import Queue
 from typing import Any, Callable, List, Optional, Sequence, Union, cast, overload
@@ -34,21 +33,22 @@ from zmq import POLLIN, POLLOUT
 from zmq._typing import Literal
 from zmq.utils import jsonapi
 
-from .ioloop import IOLoop, gen_log
+from .ioloop import gen_log
 
 try:
     import tornado.ioloop
+    from tornado.ioloop import IOLoop  # type: ignore
+except ImportError as e:
+    # fallback on deprecated bundled IOLoop
+    from .ioloop import IOLoop
+
+try:
     from tornado.stack_context import wrap as stack_context_wrap  # type: ignore
-except ImportError:
-    if "zmq.eventloop.minitornado" in sys.modules:
-        from .minitornado.stack_context import (
-            wrap as stack_context_wrap,  # type: ignore
-        )
-    else:
-        # tornado 5 deprecates stack_context,
-        # tornado 6 removes it
-        def stack_context_wrap(callback):
-            return callback
+except ImportError as e:
+    # tornado 5 deprecates stack_context,
+    # tornado 6 removes it
+    def stack_context_wrap(callback):
+        return callback
 
 
 class ZMQStream:

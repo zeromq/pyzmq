@@ -10,6 +10,11 @@ from zmq.tests import BaseZMQTestCase, require_zmq_4
 from zmq.utils.monitor import recv_monitor_message
 
 
+async def recv_monitor_async(mon_socket):
+    """As a coroutine, to avoid deprected references to current loop"""
+    return await recv_monitor_message(mon_socket)
+
+
 class TestSocketMonitor(BaseZMQTestCase):
     @require_zmq_4
     def test_monitor(self):
@@ -85,7 +90,6 @@ class TestSocketMonitorAsyncIO(BaseZMQTestCase):
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         super().setUp()
         context = zaio.Context.instance()
 
@@ -117,17 +121,17 @@ class TestSocketMonitorAsyncIO(BaseZMQTestCase):
         s_event.linger = 0
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6666")
-        m = self.loop.run_until_complete(recv_monitor_message(s_event))
+        m = self.loop.run_until_complete(recv_monitor_async(s_event))
         if m['event'] == zmq.EVENT_CONNECT_DELAYED:
             assert m['endpoint'] == b"tcp://127.0.0.1:6666"
             # test receive event for connected event
-            m = self.loop.run_until_complete(recv_monitor_message(s_event))
+            m = self.loop.run_until_complete(recv_monitor_async(s_event))
         assert m['event'] == zmq.EVENT_CONNECTED
         assert m['endpoint'] == b"tcp://127.0.0.1:6666"
 
         # test monitor can be disabled.
         s_rep.disable_monitor()
-        m = self.loop.run_until_complete(recv_monitor_message(s_event))
+        m = self.loop.run_until_complete(recv_monitor_async(s_event))
         assert m['event'] == zmq.EVENT_MONITOR_STOPPED
 
     @require_zmq_4
@@ -138,7 +142,8 @@ class TestSocketMonitorAsyncIO(BaseZMQTestCase):
         m2 = s.get_monitor_socket()
         assert m is m2
         s.disable_monitor()
-        evt = self.loop.run_until_complete(recv_monitor_message(m))
+
+        evt = self.loop.run_until_complete(recv_monitor_async(m))
         assert evt['event'] == zmq.EVENT_MONITOR_STOPPED
         m.close()
         s.close()
@@ -157,10 +162,10 @@ class TestSocketMonitorAsyncIO(BaseZMQTestCase):
         self.sockets.append(s_event)
         # test receive event for connect event
         s_rep.connect("tcp://127.0.0.1:6667")
-        m = self.loop.run_until_complete(recv_monitor_message(s_event))
+        m = self.loop.run_until_complete(recv_monitor_async(s_event))
         if m['event'] == zmq.EVENT_CONNECT_DELAYED:
             assert m['endpoint'] == b"tcp://127.0.0.1:6667"
             # test receive event for connected event
-            m = self.loop.run_until_complete(recv_monitor_message(s_event))
+            m = self.loop.run_until_complete(recv_monitor_async(s_event))
         assert m['event'] == zmq.EVENT_CONNECTED
         assert m['endpoint'] == b"tcp://127.0.0.1:6667"

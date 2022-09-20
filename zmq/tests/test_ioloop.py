@@ -3,9 +3,8 @@
 
 
 import asyncio
-import os
 import threading
-import time
+import warnings
 
 import pytest
 
@@ -28,12 +27,6 @@ if _tornado:
 
     if tornado.version_info >= (5,) and asyncio:
         t5asyncio = True
-
-
-def printer():
-    os.system("say hello")
-    raise Exception
-    print(time.time())
 
 
 class Delay(threading.Thread):
@@ -60,28 +53,28 @@ class Delay(threading.Thread):
 
 class TestIOLoop(BaseZMQTestCase):
     if _tornado:
-        IOLoop = ioloop.IOLoop
+        IOLoop = BaseIOLoop
 
     def setUp(self):
         if not _tornado:
             pytest.skip("tornado required")
         super().setUp()
-        if asyncio:
-            asyncio.set_event_loop(asyncio.new_event_loop())
 
     def tearDown(self):
         super().tearDown()
-        BaseIOLoop.clear_current()
-        BaseIOLoop.clear_instance()
 
     def test_simple(self):
         """simple IOLoop creation test"""
-        loop = self.IOLoop()
-        loop.make_current()
-        dc = ioloop.PeriodicCallback(loop.stop, 200)
-        pc = ioloop.PeriodicCallback(lambda: None, 10)
-        pc.start()
-        dc.start()
+        loop = self.IOLoop(make_current=False)
+
+        async def start_callbacks():
+            dc = ioloop.PeriodicCallback(loop.stop, 200)
+            pc = ioloop.PeriodicCallback(lambda: None, 10)
+            pc.start()
+            dc.start()
+
+        loop.run_sync(start_callbacks)
+
         t = Delay(loop.stop, 1)
         t.start()
         loop.start()
@@ -92,23 +85,25 @@ class TestIOLoop(BaseZMQTestCase):
 
     def test_instance(self):
         """IOLoop.instance returns the right object"""
-        loop = self.IOLoop.instance()
-        if not t5asyncio:
-            assert isinstance(loop, self.IOLoop)
-        base_loop = BaseIOLoop.instance()
-        assert base_loop is loop
+        with warnings.catch_warnings() as record:
+            loop = self.IOLoop.instance()
+            if not t5asyncio:
+                assert isinstance(loop, self.IOLoop)
+            base_loop = BaseIOLoop.instance()
+            assert base_loop is loop
 
     def test_current(self):
         """IOLoop.current returns the right object"""
-        loop = ioloop.IOLoop.current()
-        if not t5asyncio:
-            assert isinstance(loop, self.IOLoop)
-        base_loop = BaseIOLoop.current()
-        assert base_loop is loop
+        with warnings.catch_warnings() as record:
+            loop = ioloop.IOLoop.current()
+            if not t5asyncio:
+                assert isinstance(loop, self.IOLoop)
+            base_loop = BaseIOLoop.current()
+            assert base_loop is loop
 
     def test_close_all(self):
         """Test close(all_fds=True)"""
-        loop = self.IOLoop.current()
+        loop = self.IOLoop(make_current=False)
         req, rep = self.create_bound_pair(zmq.REQ, zmq.REP)
         loop.add_handler(req, lambda msg: msg, ioloop.IOLoop.READ)
         loop.add_handler(rep, lambda msg: msg, ioloop.IOLoop.READ)
