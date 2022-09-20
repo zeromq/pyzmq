@@ -122,6 +122,8 @@ class Socket:
             if e.errno == zmq.ENOTSOCK:
                 self._closed = True
                 return True
+            elif e.errno == zmq.ETERM:
+                pass
             else:
                 raise
         return False

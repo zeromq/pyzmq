@@ -54,6 +54,7 @@ class ProxySteerableBase:
         ins, outs, mons = super()._setup_sockets()
         ctx = self._context
         ctrls = ctx.socket(self.ctrl_type)
+        self._sockets.append(ctrls)
 
         for opt, value in self._ctrl_sockopts:
             ctrls.setsockopt(opt, value)

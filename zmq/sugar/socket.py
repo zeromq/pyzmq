@@ -110,12 +110,14 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
 
     def __del__(self):
         if not self._shadow and not self.closed:
-            warn(
-                f"unclosed socket {self}",
-                ResourceWarning,
-                stacklevel=2,
-                source=self,
-            )
+            if warn is not None:
+                # warn can be None during process teardown
+                warn(
+                    f"Unclosed socket {self}",
+                    ResourceWarning,
+                    stacklevel=2,
+                    source=self,
+                )
             self.close()
 
     _repr_cls = "zmq.Socket"

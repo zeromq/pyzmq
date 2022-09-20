@@ -1,6 +1,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import threading
 import time
 
 import zmq
@@ -42,10 +43,14 @@ class TestMonitoredQueue(BaseZMQTestCase):
         return alice, bob, mon
 
     def teardown_device(self):
+        # spawn term in a background thread
+        t = threading.Thread(target=self.device._context.term, daemon=True)
+        t.start()
         for socket in self.sockets:
             socket.close()
             del socket
-        del self.device
+        t.join(timeout=5)
+        self.device.join(timeout=5)
 
     def test_reply(self):
         alice, bob, mon = self.build_device()

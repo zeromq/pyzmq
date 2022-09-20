@@ -5,9 +5,9 @@
 
 import atexit
 import os
-import warnings
 from threading import Lock
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from warnings import warn
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
@@ -84,12 +84,14 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
         if not self._shadow and not _exiting and not self.closed:
             self._warn_destroy_close = True
-            warnings.warn(
-                f"unclosed context {self}",
-                ResourceWarning,
-                stacklevel=2,
-                source=self,
-            )
+            if warn:
+                # warn can be None during process teardown
+                warn(
+                    f"Unclosed context {self}",
+                    ResourceWarning,
+                    stacklevel=2,
+                    source=self,
+                )
             self.destroy()
 
     _repr_cls = "zmq.Context"
@@ -237,7 +239,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
-    def destroy(self, linger: Optional[float] = None) -> None:
+    def destroy(self, linger: Optional[int] = None) -> None:
         """Close all sockets associated with this context and then terminate
         the context.
 
@@ -255,12 +257,12 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if self.closed:
             return
 
-        sockets = self._sockets
-        self._sockets = WeakSet()
+        sockets: List[ST] = list(getattr(self, "_sockets", None) or [])
         for s in sockets:
             if s and not s.closed:
-                if self._warn_destroy_close:
-                    warnings.warn(
+                if self._warn_destroy_close and warn:
+                    # warn can be None during process teardown
+                    warn(
                         f"Destroying context with unclosed socket {s}",
                         ResourceWarning,
                         stacklevel=3,
