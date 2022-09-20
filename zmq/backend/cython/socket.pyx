@@ -42,6 +42,7 @@ from zmq.utils.buffers cimport asbuffer_r
 
 from .context cimport Context
 from .libzmq cimport (
+    ZMQ_ETERM,
     ZMQ_EVENT_ALL,
     ZMQ_IDENTITY,
     ZMQ_LINGER,
@@ -152,9 +153,14 @@ cdef inline _check_closed_deep(Socket s):
         return True
     else:
         rc = zmq_getsockopt(s.handle, ZMQ_TYPE, <void *>&stype, &sz)
-        if rc < 0 and zmq_errno() == ENOTSOCK:
-            s._closed = True
-            return True
+        if rc < 0:
+            errno = zmq_errno()
+            if errno == ENOTSOCK:
+                s._closed = True
+                return True
+            elif errno == ZMQ_ETERM:
+                # don't raise ETERM when checking if we're closed
+                return False
         else:
             _check_rc(rc)
     return False
