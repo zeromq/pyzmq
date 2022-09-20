@@ -1299,6 +1299,7 @@ package_data = {
     'zmq.backend.cffi': ['*.h', '*.c'],
     'zmq.devices': ['*.pxd'],
     'zmq.sugar': ['*.pyi'],
+    'zmq.tests': ['*.pyx'],
     'zmq.utils': ['*.pxd', '*.h', '*.json'],
 }
 
