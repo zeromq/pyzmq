@@ -35,7 +35,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.EPROTONOSUPPORT, s.connect, 'ftl://a')
         self.assertRaisesErrno(zmq.EINVAL, s.bind, 'tcp://')
         s.close()
-        del ctx
+        ctx.term()
 
     def test_context_manager(self):
         url = 'inproc://a'
@@ -126,17 +126,20 @@ class TestSocket(BaseZMQTestCase):
     def test_bind_to_random_port(self):
         # Check that bind_to_random_port do not hide useful exception
         ctx = self.Context()
-        c = ctx.socket(zmq.PUB)
+        s = ctx.socket(zmq.PUB)
         # Invalid format
         try:
-            c.bind_to_random_port('tcp:*')
+            s.bind_to_random_port('tcp:*')
         except zmq.ZMQError as e:
             assert e.errno == zmq.EINVAL
         # Invalid protocol
         try:
-            c.bind_to_random_port('rand://*')
+            s.bind_to_random_port('rand://*')
         except zmq.ZMQError as e:
             assert e.errno == zmq.EPROTONOSUPPORT
+
+        s.close()
+        ctx.term()
 
     def test_identity(self):
         s = self.context.socket(zmq.PULL)
@@ -371,7 +374,7 @@ class TestSocket(BaseZMQTestCase):
         self.assertRaisesErrno(zmq.ENOTSOCK, s.setsockopt, zmq.SUBSCRIBE, b'')
         self.assertRaisesErrno(zmq.ENOTSOCK, s.send, b'asdf')
         self.assertRaisesErrno(zmq.ENOTSOCK, s.recv)
-        del ctx
+        ctx.term()
 
     def test_attr(self):
         """set setting/getting sockopts as attributes"""

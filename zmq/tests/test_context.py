@@ -10,6 +10,7 @@ from queue import Queue
 from threading import Event, Thread
 from unittest import mock
 
+import pytest
 from pytest import mark
 
 import zmq
@@ -32,13 +33,13 @@ class TestContext(BaseZMQTestCase):
     def test_init(self):
         c1 = self.Context()
         assert isinstance(c1, self.Context)
-        del c1
+        c1.term()
         c2 = self.Context()
         assert isinstance(c2, self.Context)
-        del c2
+        c2.term()
         c3 = self.Context()
         assert isinstance(c3, self.Context)
-        del c3
+        c3.term()
 
     _repr_cls = "zmq.Context"
 
@@ -70,8 +71,9 @@ class TestContext(BaseZMQTestCase):
         assert c.closed
 
     def test_context_manager(self):
-        with self.Context() as ctx:
-            s = ctx.socket(zmq.PUSH)
+        with pytest.warns(ResourceWarning):
+            with self.Context() as ctx:
+                s = ctx.socket(zmq.PUSH)
         # context exit destroys sockets
         assert s.closed
         assert ctx.closed
@@ -241,6 +243,7 @@ class TestContext(BaseZMQTestCase):
                 ctx = self.Context()
                 ctx.socket(zmq.PUSH)
 
+            # can't seem to catch these with pytest.warns(ResourceWarning)
             inner()
             gc.collect()
 
