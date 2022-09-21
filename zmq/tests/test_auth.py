@@ -9,7 +9,7 @@ import warnings
 
 import pytest
 
-import zmq.auth
+import zmq, zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
 

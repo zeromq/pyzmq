@@ -8,14 +8,12 @@
 
 import asyncio
 import logging
-import threading
 from itertools import chain
 from threading import Event, Thread
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
 import zmq
 import zmq.asyncio
-from zmq import NOBLOCK, POLLIN
 from zmq.utils import jsonapi
 
 from .asyncio import AsyncioAuthenticator
@@ -35,32 +33,49 @@ class AuthenticationThread(Thread):
 
     def __init__(
         self,
+        context: zmq.Context,
         endpoint: str,
         encoding: str = 'utf-8',
         log: Any = None,
     ) -> None:
         super().__init__()
-        self.context = zmq.asyncio.Context.instance()
-        self.encoding = encoding
-        self.log = log or logging.getLogger('zmq.auth')
-        self.started = Event()
+
+        self.context = context
         self.endpoint = endpoint
         self.encoding = encoding
-        self.log = log
+        self.log = log or logging.getLogger('zmq.auth')
+
+        self.started = Event()
 
     def run(self) -> None:
         """Start the Authentication Agent thread task"""
 
         loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._run())
+        finally:
+            if self.poller:
+                self.poller.unregister(self.pipe)
+                self.poller = None
+            if self.authenticator:
+                self.authenticator.stop()
+                self.authenticator = None
+            if self.pipe:
+                self.pipe.close()
+                self.pipe = None  # type: ignore
+
+            loop.close()
+
+    async def _run(self):
+        aio_context = zmq.asyncio.Context.shadow(self.context.underlying)
 
         # create a socket to communicate back to main thread.
-        self.pipe: "zmq.asyncio.Socket" = self.context.socket(zmq.PAIR)
+        self.pipe: "zmq.asyncio.Socket" = aio_context.socket(zmq.PAIR)
         self.pipe.linger = 1
         self.pipe.connect(self.endpoint)
 
         self.authenticator = AsyncioAuthenticator(
-            self.context, encoding=self.encoding, log=self.log
+            aio_context, encoding=self.encoding, log=self.log
         )
         self.authenticator.start()
 
@@ -68,21 +83,7 @@ class AuthenticationThread(Thread):
         self.poller.register(self.pipe, zmq.POLLIN)
         self.started.set()
 
-        loop.run_until_complete(self.__handle_pipe())
-
-        self.poller.unregister(self.pipe)
-        self.poller = None
-        self.authenticator.stop()
-        self.pipe.close()
-        self.loop.close()
-
-    async def __handle_pipe(self):
-        """
-        Handle a message from front-end API.
-        """
-
         while True:
-            print(self.poller)
             events = await self.poller.poll()
             if self.pipe in dict(events):
                 msg = await self.pipe.recv_multipart()
@@ -222,7 +223,7 @@ class ThreadAuthenticator:
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
         self.thread = AuthenticationThread(
-            self.pipe_endpoint, encoding=self.encoding, log=self.log
+            self.context, self.pipe_endpoint, encoding=self.encoding, log=self.log
         )
         self.thread.start()
         if not self.thread.started.wait(timeout=10):
