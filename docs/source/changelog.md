@@ -7,6 +7,14 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 24
 
+### 24.0.1
+
+- Fix several possible resource warnings and deprecation warnings
+  when cleaning up contexts and sockets,
+  especially in pyzmq's own tests and when implicit teardown of objects is happening during process teardown.
+
+### 24.0.0
+
 pyzmq 24 has two breaking changes (one only on Windows), though they are not likely to affect most users.
 
 Breaking changes:
