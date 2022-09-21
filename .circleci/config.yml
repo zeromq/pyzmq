@@ -61,7 +61,6 @@ jobs:
                 environment:
                   TWINE_NONINTERACTIVE: "1"
                   TWINE_USERNAME: __token__
-                  TWINE_PASSWORD: $TWINE_PASSWORD
                 command: |
                   python3 -m pip install twine
                   python3 -m twine upload --skip-existing wheelhouse/*
