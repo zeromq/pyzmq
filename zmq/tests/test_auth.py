@@ -26,11 +26,18 @@ class BaseAuthTestCase(BaseZMQTestCase):
         # enable debug logging while we run tests
         logging.getLogger('zmq.auth').setLevel(logging.DEBUG)
         self.auth = self.make_auth()
-        self.auth.start()
         self.base_dir, self.public_keys_dir, self.secret_keys_dir = self.create_certs()
+        self.start_auth()
 
     def make_auth(self):
         raise NotImplementedError()
+
+    def send(self, socket, *args, **kwargs):
+        # allow override in async classes
+        return socket.send(*args, **kwargs)
+
+    def start_auth(self):
+        self.auth.start()
 
     def tearDown(self):
         if self.auth:
@@ -342,7 +349,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         assert self.can_connect(client, server)
 
         # test default user-id map
-        client.send(b'test')
+        self.send(client, b'test')
         msg = self.recv(server, copy=False)
         assert msg.bytes == b'test'
         try:
@@ -361,7 +368,7 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client2.curve_serverkey = server_public
         assert self.can_connect(client2, server)
 
-        client2.send(b'test2')
+        self.send(client2, b'test2')
         msg = self.recv(server, copy=False)
         assert msg.bytes == b'test2'
         try:
@@ -420,17 +427,24 @@ class TestIOLoopAuthentication(BaseAuthTestCase):
         from zmq.eventloop import zmqstream
 
         self.fail_msg = None
-        self.io_loop = ioloop.IOLoop()
+        self.io_loop = ioloop.IOLoop(make_current=False)
         super().setUp()
         self.server = self.socket(zmq.PUSH)
         self.client = self.socket(zmq.PULL)
-        self.pushstream = zmqstream.ZMQStream(self.server, self.io_loop)
-        self.pullstream = zmqstream.ZMQStream(self.client, self.io_loop)
+
+        async def make_streams():
+            self.pushstream = zmqstream.ZMQStream(self.server)
+            self.pullstream = zmqstream.ZMQStream(self.client)
+
+        self.io_loop.run_sync(make_streams)
 
     def make_auth(self):
         from zmq.auth.ioloop import IOLoopAuthenticator
 
-        return IOLoopAuthenticator(self.context, io_loop=self.io_loop)
+        async def make_auth():
+            return IOLoopAuthenticator(self.context)
+
+        return self.io_loop.run_sync(make_auth)
 
     def tearDown(self):
         if self.auth:

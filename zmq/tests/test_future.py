@@ -21,16 +21,13 @@ class TestFutureSocket(BaseZMQTestCase):
     Context = future.Context
 
     def setUp(self):
-        self.loop = IOLoop()
-        self.loop.make_current()
+        self.loop = IOLoop(make_current=False)
         super().setUp()
 
     def tearDown(self):
         super().tearDown()
         if self.loop:
             self.loop.close(all_fds=True)
-        IOLoop.clear_current()
-        IOLoop.clear_instance()
 
     def test_socket_class(self):
         s = self.context.socket(zmq.PUSH)
@@ -312,7 +309,11 @@ class TestFutureSocket(BaseZMQTestCase):
 
     def test_close_all_fds(self):
         s = self.socket(zmq.PUB)
-        s._get_loop()
+
+        async def attach():
+            s._get_loop()
+
+        self.loop.run_sync(attach)
         self.loop.close(all_fds=True)
         self.loop = None  # avoid second close later
         assert s.closed

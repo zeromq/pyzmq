@@ -44,12 +44,23 @@ class TestMonitoredQueue(BaseZMQTestCase):
 
     def teardown_device(self):
         # spawn term in a background thread
-        t = threading.Thread(target=self.device._context.term, daemon=True)
-        t.start()
+        for i in range(50):
+            # wait for device._context to be populated
+            context = getattr(self.device, "_context", None)
+            if context is not None:
+                break
+            time.sleep(0.1)
+
+        if context is not None:
+            t = threading.Thread(target=self.device._context.term, daemon=True)
+            t.start()
+
         for socket in self.sockets:
             socket.close()
-            del socket
-        t.join(timeout=5)
+
+        if context is not None:
+            t.join(timeout=5)
+
         self.device.join(timeout=5)
 
     def test_reply(self):

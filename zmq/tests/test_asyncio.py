@@ -20,13 +20,8 @@ from zmq.tests.test_auth import TestThreadAuthentication
 
 
 class ProcessForTeardownTest(Process):
-    def __init__(self, event_loop_policy_class):
-        Process.__init__(self)
-        self.event_loop_policy_class = event_loop_policy_class
-
     def run(self):
         """Leave context, socket and event loop upon implicit disposal"""
-        asyncio.set_event_loop_policy(self.event_loop_policy_class())
 
         actx = zaio.Context.instance()
         socket = actx.socket(zmq.PAIR)
@@ -52,7 +47,6 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         super().setUp()
 
     def tearDown(self):
@@ -404,7 +398,6 @@ class TestAsyncIOSocket(BaseZMQTestCase):
 
         for i in range(3):
             loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
             loop.run_until_complete(asyncio.wait_for(test(), timeout=10))
             loop.close()
 
@@ -416,8 +409,7 @@ class TestAsyncIOSocket(BaseZMQTestCase):
             assert isinstance(async_s, self.socket_class)
 
     def test_process_teardown(self):
-        event_loop_policy_class = type(asyncio.get_event_loop_policy())
-        proc = ProcessForTeardownTest(event_loop_policy_class)
+        proc = ProcessForTeardownTest()
         proc.start()
         try:
             proc.join(10)  # starting new Python process may cost a lot
@@ -450,8 +442,13 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         super().setUp()
+
+    def start_auth(self):
+        async def start():
+            self.auth.start()
+
+        self.loop.run_until_complete(start())
 
     def tearDown(self):
         super().tearDown()
@@ -486,6 +483,12 @@ class TestAsyncioAuthentication(TestThreadAuthentication):
             return result
 
         return self.loop.run_until_complete(go())
+
+    def send(self, socket, *args, **kwargs):
+        async def _send():
+            return await socket.send(*args, **kwargs)
+
+        return self.loop.run_until_complete(_send())
 
     def _select_recv(self, multipart, socket, **kwargs):
         recv = socket.recv_multipart if multipart else socket.recv

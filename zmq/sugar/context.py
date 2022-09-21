@@ -84,7 +84,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
         if not self._shadow and not _exiting and not self.closed:
             self._warn_destroy_close = True
-            if warn:
+            if warn and getattr(self, "_sockets", None) is not None:
                 # warn can be None during process teardown
                 warn(
                     f"Unclosed context {self}",
