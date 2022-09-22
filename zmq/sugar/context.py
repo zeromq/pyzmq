@@ -337,6 +337,9 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
     def __delattr__(self, key: str) -> None:
         """delete default sockopts as attributes"""
+        if key in self.__dict__:
+            self.__dict__.pop(key)
+            return
         key = key.upper()
         try:
             opt = getattr(SocketOption, key)
