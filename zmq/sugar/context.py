@@ -6,7 +6,18 @@
 import atexit
 import os
 from threading import Lock
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union, overload
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 from warnings import warn
 from weakref import WeakSet
 
@@ -320,7 +331,12 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
         self.term()
 
-    def socket(self: T, socket_type: int, **kwargs: Any) -> ST:
+    def socket(
+        self: T,
+        socket_type: int,
+        socket_class: Callable[[T, int], ST] = None,
+        **kwargs: Any,
+    ) -> ST:
         """Create a Socket associated with this Context.
 
         Parameters
@@ -329,12 +345,20 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
 
+        socket_class: zmq.Socket or a subclass
+            The socket class to instantiate, if different from the default for this Context.
+            e.g. for creating an asyncio socket attached to a default Context or vice versa.
+
+            .. versionadded:: 25
+
         kwargs:
             will be passed to the __init__ method of the socket class.
         """
         if self.closed:
             raise ZMQError(Errno.ENOTSUP)
-        s: ST = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+        if socket_class is None:
+            socket_class = self._socket_class
+        s: ST = socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
             self, socket_type, **kwargs
         )
         for opt, value in self.sockopts.items():
