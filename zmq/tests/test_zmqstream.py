@@ -113,6 +113,8 @@ class TestZMQStream(TestCase):
         self.run_until_timeout()
 
     def test_on_recv_async(self):
+        if tornado.version_info < (5,):
+            pytest.skip()
         sent = [b'wake']
 
         async def callback(msg):
@@ -124,6 +126,8 @@ class TestZMQStream(TestCase):
         self.run_until_timeout()
 
     def test_on_recv_async_error(self):
+        if tornado.version_info < (5,):
+            pytest.skip()
         sent = [b'wake']
 
         async def callback(msg):
