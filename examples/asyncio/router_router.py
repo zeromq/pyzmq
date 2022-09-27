@@ -24,14 +24,14 @@ from zmq.asyncio import Context
 
 
 class Server:
-    def __init__(self, url):
+    def __init__(self, url: str):
         context = Context.instance()
         socket = context.socket(zmq.ROUTER)
         socket.setsockopt_string(zmq.IDENTITY, 'server')
         socket.bind(url)
         self.socket = socket
 
-    async def run(self, ev):
+    async def run(self, ev: EventLoop):
         # `Wire` type receives the event loop as its single argument
 
         req = await self.socket.recv_multipart()
@@ -44,7 +44,7 @@ class Server:
 
 
 class Client:
-    def __init__(self, url, name):
+    def __init__(self, url: str, name: str):
         self.name = name
 
         context = Context.instance()
@@ -53,7 +53,7 @@ class Client:
         socket.connect(url)
         self.socket = socket
 
-    async def run(self, ev):
+    async def run(self, ev: EventLoop):
         await asyncio.sleep(0.1)
         # identity of receptionist, empty frame, message content
         await self.socket.send_multipart([b'server', b'', b'cheers'])
@@ -64,7 +64,7 @@ class Client:
         return self.run
 
 
-async def main():
+async def main() -> None:
     url = 'inproc://test_zmq'
     srv = Server(url)
     romeo = Client(url, 'romeo')
@@ -76,4 +76,5 @@ async def main():
         ev.start(srv.run)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

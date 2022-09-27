@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""This launches an echoing rep socket device using 
-zmq.devices.ThreadDevice, and runs a blocking numpy action. 
+"""This launches an echoing rep socket device using
+zmq.devices.ThreadDevice, and runs a blocking numpy action.
 The rep socket should remain responsive to pings during this time.
 
 Use ping.py to see how responsive it is.
@@ -31,5 +31,5 @@ A = numpy.random.random((2**11, 2**12))
 print("starting blocking loop")
 while True:
     tic = time.time()
-    numpy.dot(A, A.transpose())
+    A.dot(A.T)
     print("blocked for %.3f s" % (time.time() - tic))

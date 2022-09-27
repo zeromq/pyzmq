@@ -31,5 +31,5 @@ A = numpy.random.random((2**11, 2**11))
 print("starting blocking loop")
 while True:
     tic = time.time()
-    numpy.dot(A, A.transpose())
+    A.dot(A.T)
     print("blocked for %.3f s" % (time.time() - tic))
