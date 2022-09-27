@@ -6,13 +6,14 @@
 import atexit
 import os
 from threading import Lock
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union, overload
 from warnings import warn
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
 from zmq.constants import ContextOption, Errno, SocketOption
 from zmq.error import ZMQError
+from zmq.utils.interop import cast_int_addr
 
 from .attrsettr import AttributeSetter, OptValT
 from .socket import Socket
@@ -49,6 +50,17 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         but means that unclean destruction of contexts
         (with sockets left open) is not safe
         if sockets are managed in other threads.
+
+    .. versionadded:: 25
+
+        Contexts can now be shadowed by passing another Context.
+        This helps in creating an async copy of a sync context or vice versa::
+
+            ctx = zmq.Context(async_ctx)
+
+        Which previously had to be::
+
+            ctx = zmq.Context.shadow(async_ctx.underlying)
     """
 
     sockopts: Dict[int, Any]
@@ -56,17 +68,50 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     _instance_lock = Lock()
     _instance_pid: Optional[int] = None
     _shadow = False
+    _shadow_obj = None
     _warn_destroy_close = False
     _sockets: WeakSet
     # mypy doesn't like a default value here
     _socket_class: Type[ST] = Socket  # type: ignore
 
-    def __init__(self: "Context[Socket]", io_threads: int = 1, **kwargs: Any) -> None:
-        super().__init__(io_threads=io_threads, **kwargs)
-        if kwargs.get('shadow', False):
+    @overload
+    def __init__(self: "Context[Socket]", io_threads: int = 1):
+        ...
+
+    @overload
+    def __init__(self: "Context[Socket]", io_threads: "Context"):
+        # this should be positional-only, but that requires 3.8
+        ...
+
+    @overload
+    def __init__(self: "Context[Socket]", *, shadow: Union["Context", int]):
+        ...
+
+    def __init__(
+        self: "Context[Socket]",
+        io_threads: Union[int, "Context"] = 1,
+        shadow: Union["Context", int] = 0,
+    ) -> None:
+        if isinstance(io_threads, Context):
+            # allow positional shadow `zmq.Context(zmq.asyncio.Context())`
+            # this s
+            shadow = io_threads
+            io_threads = 1
+
+        shadow_address: int = 0
+        if shadow:
             self._shadow = True
+            # hold a reference to the shadow object
+            self._shadow_obj = shadow
+            if not isinstance(shadow, int):
+                try:
+                    shadow = shadow.underlying
+                except AttributeError:
+                    pass
+            shadow_address = cast_int_addr(shadow)
         else:
             self._shadow = False
+        super().__init__(io_threads=io_threads, shadow=shadow_address)
         self.sockopts = {}
         self._sockets = WeakSet()
 
@@ -127,17 +172,18 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     __deepcopy__ = __copy__
 
     @classmethod
-    def shadow(cls: Type[T], address: int) -> T:
+    def shadow(cls: Type[T], address: Union[int, "Context"]) -> T:
         """Shadow an existing libzmq context
 
-        address is the integer address of the libzmq context
-        or an FFI pointer to it.
+        address is a zmq.Context or an integer (or FFI pointer)
+        representing the address of the libzmq context.
 
         .. versionadded:: 14.1
-        """
-        from zmq.utils.interop import cast_int_addr
 
-        address = cast_int_addr(address)
+        .. versionadded:: 25
+            Support for shadowing `zmq.Context` objects,
+            instead of just integer addresses.
+        """
         return cls(shadow=address)
 
     @classmethod
