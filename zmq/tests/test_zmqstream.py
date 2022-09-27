@@ -10,6 +10,7 @@ from unittest import TestCase
 import pytest
 
 import zmq
+import zmq.asyncio
 
 try:
     import tornado
@@ -146,3 +147,11 @@ class TestZMQStream(TestCase):
             if x.name == zmqstream.gen_log.name
         ]
         assert "Uncaught exception in ZMQStream callback" in "\n".join(messages)
+
+    def test_shadow_socket(self):
+        with self.context.socket(zmq.PUSH, socket_class=zmq.asyncio.Socket) as socket:
+            with pytest.warns(RuntimeWarning):
+                stream = zmqstream.ZMQStream(socket, io_loop=self.loop)
+            assert type(stream.socket) is zmq.Socket
+            assert stream.socket.underlying == socket.underlying
+            stream.close()

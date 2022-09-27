@@ -40,6 +40,7 @@ from typing import (
 )
 
 import zmq
+import zmq._future
 from zmq import POLLIN, POLLOUT
 from zmq._typing import Literal
 from zmq.utils import jsonapi
@@ -65,7 +66,7 @@ except ImportError as e:
 class ZMQStream:
     """A utility class to register callbacks when a zmq socket sends and receives
 
-    For use with zmq.eventloop.ioloop
+    For use with tornado IOLoop.
 
     There are three main methods
 
@@ -102,12 +103,18 @@ class ZMQStream:
 
         send/recv callbacks can be coroutines.
 
-    .. versionadded:: 25
+    .. versionchanged:: 25
 
-        ZMQStreams can be created from async Sockets.
+        ZMQStreams only support base zmq.Socket classes (this has always been true, but not enforced).
+        If ZMQStreams are created with e.g. async Socket subclasses,
+        a RuntimeWarning will be shown,
+        and the socket cast back to the default zmq.Socket
+        before connecting events.
+
         Previously, using async sockets (or any zmq.Socket subclass) would result in undefined behavior for the
         arguments passed to callback functions.
-        Now, the callback functions reliably get the return value of the base `zmq.Socket` send/recv_multipart methods.
+        Now, the callback functions reliably get the return value of the base `zmq.Socket` send/recv_multipart methods
+        (the list of message frames).
     """
 
     socket: zmq.Socket
@@ -125,13 +132,20 @@ class ZMQStream:
     def __init__(
         self, socket: "zmq.Socket", io_loop: Optional["tornado.ioloop.IOLoop"] = None
     ):
-        if type(socket) is not zmq.Socket:
+        if isinstance(socket, zmq._future._AsyncSocket):
+            warnings.warn(
+                f"""ZMQStream only supports the base zmq.Socket class.
+
+                Use zmq.Socket(shadow=other_socket)
+                or `ctx.socket(zmq.{socket._type_name}, socket_class=zmq.Socket)`
+                to create a base zmq.Socket object,
+                no matter what other kind of socket your Context creates.
+                """,
+                RuntimeWarning,
+                stacklevel=2,
+            )
             # shadow back to base zmq.Socket,
             # otherwise callbacks like `on_recv` will get the wrong types.
-            # We know async sockets don't work,
-            # but other socket subclasses _may_.
-            # should we allow that?
-            # TODO: warn here?
             socket = zmq.Socket(shadow=socket)
         self.socket = socket
 
@@ -387,7 +401,7 @@ class ZMQStream:
         copy: bool = True,
         track: bool = False,
         callback: Callable = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Send a multipart message, optionally also register a new callback for sends.
         See zmq.socket.send_multipart for details.
@@ -408,7 +422,7 @@ class ZMQStream:
         flags: int = 0,
         encoding: str = 'utf-8',
         callback: Optional[Callable] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Send a unicode message with an encoding.
         See zmq.socket.send_unicode for details.
@@ -424,7 +438,7 @@ class ZMQStream:
         obj: Any,
         flags: int = 0,
         callback: Optional[Callable] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
@@ -438,7 +452,7 @@ class ZMQStream:
         flags: int = 0,
         protocol: int = -1,
         callback: Optional[Callable] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Send a Python object as a message using pickle to serialize.
 
