@@ -46,6 +46,25 @@ class TestZMQStream(TestCase):
         port = self.push.bind_to_random_port('tcp://127.0.0.1')
         self.pull.connect('tcp://127.0.0.1:%i' % port)
         self.stream = self.push
+        self.timed_out = []
+        self._schedule_timeout()
+
+    def _schedule_timeout(self, timeout=10):
+        async def sleep_timeout():
+            try:
+                await gen.sleep(timeout)
+            except asyncio.CancelledError:
+                return
+            self.timed_out[:] = ['timed out']
+            self.loop.stop()
+
+        def make_timeout_task():
+            if tornado.version_info < (5,):
+                self.loop.add_callback(sleep_timeout)
+            else:
+                self._timeout_task = asyncio.ensure_future(sleep_timeout())
+
+        self.loop.run_sync(make_timeout_task)
 
     def tearDown(self):
         if self._timeout_task:
@@ -58,26 +77,9 @@ class TestZMQStream(TestCase):
         self.loop.close(all_fds=True)
         self.context.term()
 
-    def run_until_timeout(self, timeout=10):
-        timed_out = []
-
-        async def sleep_timeout():
-            try:
-                await gen.sleep(timeout)
-            except asyncio.CancelledError:
-                return
-            timed_out[:] = ['timed out']
-            self.loop.stop()
-
-        def make_timeout_task():
-            if tornado.version_info < (5,):
-                self.loop.add_callback(sleep_timeout)
-            else:
-                self._timeout_task = asyncio.ensure_future(sleep_timeout())
-
-        self.loop.run_sync(make_timeout_task)
+    def run_until_timeout(self):
         self.loop.start()
-        assert not timed_out
+        assert not self.timed_out
 
     def test_callable_check(self):
         """Ensure callable check works (py3k)."""
