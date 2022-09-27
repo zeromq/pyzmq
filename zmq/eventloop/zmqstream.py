@@ -23,10 +23,21 @@ using tornado.
 
 """
 
+import asyncio
 import pickle
 import warnings
 from queue import Queue
-from typing import Any, Callable, List, Optional, Sequence, Union, cast, overload
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+    overload,
+)
 
 import zmq
 from zmq import POLLIN, POLLOUT
@@ -64,7 +75,7 @@ class ZMQStream:
         register a callback to be run every time the socket has something to receive
     * **on_send(callback):**
         register a callback to be run every time you call send
-    * **send(self, msg, flags=0, copy=False, callback=None):**
+    * **send_multipart(self, msg, flags=0, copy=False, callback=None):**
         perform a send that will trigger the callback
         if callback is passed, on_send is also called.
 
@@ -86,6 +97,17 @@ class ZMQStream:
     >>> stream.bind is stream.socket.bind
     True
 
+
+    .. versionadded:: 25
+
+        send/recv callbacks can be coroutines.
+
+    .. versionadded:: 25
+
+        ZMQStreams can be created from async Sockets.
+        Previously, using async sockets (or any zmq.Socket subclass) would result in undefined behavior for the
+        arguments passed to callback functions.
+        Now, the callback functions reliably get the return value of the base `zmq.Socket` send/recv_multipart methods.
     """
 
     socket: zmq.Socket
@@ -103,7 +125,16 @@ class ZMQStream:
     def __init__(
         self, socket: "zmq.Socket", io_loop: Optional["tornado.ioloop.IOLoop"] = None
     ):
+        if type(socket) is not zmq.Socket:
+            # shadow back to base zmq.Socket,
+            # otherwise callbacks like `on_recv` will get the wrong types.
+            # We know async sockets don't work,
+            # but other socket subclasses _may_.
+            # should we allow that?
+            # TODO: warn here?
+            socket = zmq.Socket(shadow=socket)
         self.socket = socket
+
         self.io_loop = io_loop or IOLoop.current()
         self.poller = zmq.Poller()
         self._fd = cast(int, self.socket.FD)
@@ -552,14 +583,28 @@ class ZMQStream:
         """Wrap running callbacks in try/except to allow us to
         close our socket."""
         try:
-            # Use a NullContext to ensure that all StackContexts are run
-            # inside our blanket exception handler rather than outside.
-            callback(*args, **kwargs)
+            f = callback(*args, **kwargs)
+            if isinstance(f, Awaitable):
+                f = asyncio.ensure_future(f)
+            else:
+                f = None
         except Exception:
             gen_log.error("Uncaught exception in ZMQStream callback", exc_info=True)
             # Re-raise the exception so that IOLoop.handle_callback_exception
             # can see it and log the error
             raise
+
+        if f is not None:
+            # handle async callbacks
+            def _log_error(f):
+                try:
+                    f.result()
+                except Exception:
+                    gen_log.error(
+                        "Uncaught exception in ZMQStream callback", exc_info=True
+                    )
+
+            f.add_done_callback(_log_error)
 
     def _handle_events(self, fd, events):
         """This method is the actual handler for IOLoop, that gets called whenever

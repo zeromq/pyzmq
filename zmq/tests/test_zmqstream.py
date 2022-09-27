@@ -3,6 +3,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 from unittest import TestCase
 
@@ -18,11 +19,20 @@ try:
 except ImportError:
     tornado = None  # type: ignore
 
+caplog = None
 
+
+@pytest.fixture
+def get_caplog(caplog):
+    globals()["caplog"] = caplog
+
+
+@pytest.mark.usefixtures("get_caplog")
 class TestZMQStream(TestCase):
     def setUp(self):
         if tornado is None:
             pytest.skip()
+        self._timeout_task = None
         self.context = zmq.Context()
         self.loop = ioloop.IOLoop(make_current=False)
         if tornado and tornado.version_info < (5,):
@@ -36,7 +46,6 @@ class TestZMQStream(TestCase):
         port = self.push.bind_to_random_port('tcp://127.0.0.1')
         self.pull.connect('tcp://127.0.0.1:%i' % port)
         self.stream = self.push
-        self._timeout_task = None
 
     def tearDown(self):
         if self._timeout_task:
@@ -87,7 +96,6 @@ class TestZMQStream(TestCase):
             self.loop.stop()
 
         self.loop.run_sync(partial(self.push.send_multipart, sent))
-        self.loop.call_later(1, lambda: self.pull.on_recv(callback))
         self.pull.on_recv(callback)
         self.run_until_timeout()
 
@@ -99,5 +107,36 @@ class TestZMQStream(TestCase):
             self.loop.stop()
 
         self.pull.on_recv(callback)
-        self.loop.call_later(1, lambda: self.push.send_multipart(sent))
+        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
         self.run_until_timeout()
+
+    def test_on_recv_async(self):
+        sent = [b'wake']
+
+        async def callback(msg):
+            assert msg == sent
+            self.loop.stop()
+
+        self.pull.on_recv(callback)
+        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
+        self.run_until_timeout()
+
+    def test_on_recv_async_error(self):
+        sent = [b'wake']
+
+        async def callback(msg):
+            ioloop.IOLoop.current().call_later(0.5, lambda: self.loop.stop())
+            assert msg == sent
+            1 / 0
+
+        self.pull.on_recv(callback)
+        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
+        with caplog.at_level(logging.ERROR, logger=zmqstream.gen_log.name):
+            self.run_until_timeout()
+
+        messages = [
+            x.message
+            for x in caplog.get_records("call")
+            if x.name == zmqstream.gen_log.name
+        ]
+        assert "Uncaught exception in ZMQStream callback" in "\n".join(messages)
