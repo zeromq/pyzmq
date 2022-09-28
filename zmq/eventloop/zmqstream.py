@@ -13,14 +13,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A utility class to send to and recv from a non-blocking socket,
-using tornado.
+"""A utility class for event-based messaging on a zmq socket using tornado.
 
 .. seealso::
 
     - :mod:`zmq.asyncio`
     - :mod:`zmq.eventloop.future`
-
 """
 
 import asyncio
@@ -39,28 +37,14 @@ from typing import (
     overload,
 )
 
+from tornado.ioloop import IOLoop
+from tornado.log import gen_log
+
 import zmq
 import zmq._future
 from zmq import POLLIN, POLLOUT
 from zmq._typing import Literal
 from zmq.utils import jsonapi
-
-from .ioloop import gen_log
-
-try:
-    import tornado.ioloop
-    from tornado.ioloop import IOLoop  # type: ignore
-except ImportError as e:
-    # fallback on deprecated bundled IOLoop
-    from .ioloop import IOLoop
-
-try:
-    from tornado.stack_context import wrap as stack_context_wrap  # type: ignore
-except ImportError as e:
-    # tornado 5 deprecates stack_context,
-    # tornado 6 removes it
-    def stack_context_wrap(callback):
-        return callback
 
 
 class ZMQStream:
@@ -118,7 +102,7 @@ class ZMQStream:
     """
 
     socket: zmq.Socket
-    io_loop: "tornado.ioloop.IOLoop"
+    io_loop: IOLoop
     poller: zmq.Poller
     _send_queue: Queue
     _recv_callback: Optional[Callable]
@@ -129,9 +113,7 @@ class ZMQStream:
     _recv_copy: bool = False
     _fd: int
 
-    def __init__(
-        self, socket: "zmq.Socket", io_loop: Optional["tornado.ioloop.IOLoop"] = None
-    ):
+    def __init__(self, socket: "zmq.Socket", io_loop: Optional[IOLoop] = None):
         if isinstance(socket, zmq._future._AsyncSocket):
             warnings.warn(
                 f"""ZMQStream only supports the base zmq.Socket class.
@@ -149,6 +131,8 @@ class ZMQStream:
             socket = zmq.Socket(shadow=socket)
         self.socket = socket
 
+        # IOLoop.current() is deprecated if called outside the event loop
+        # that means
         self.io_loop = io_loop or IOLoop.current()
         self.poller = zmq.Poller()
         self._fd = cast(int, self.socket.FD)
@@ -259,7 +243,7 @@ class ZMQStream:
 
         self._check_closed()
         assert callback is None or callable(callback)
-        self._recv_callback = stack_context_wrap(callback)
+        self._recv_callback = callback
         self._recv_copy = copy
         if callback is None:
             self._drop_io_state(zmq.POLLIN)
@@ -365,7 +349,7 @@ class ZMQStream:
 
         self._check_closed()
         assert callback is None or callable(callback)
-        self._send_callback = stack_context_wrap(callback)
+        self._send_callback = callback
 
     def on_send_stream(
         self,
@@ -551,7 +535,7 @@ class ZMQStream:
 
     def set_close_callback(self, callback: Optional[Callable]):
         """Call the given callback when the stream is closed."""
-        self._close_callback = stack_context_wrap(callback)
+        self._close_callback = callback
 
     def close(self, linger: Optional[int] = None) -> None:
         """Close this stream."""

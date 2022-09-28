@@ -54,7 +54,6 @@ jobs:
 
           - os: ubuntu-20.04
             python: 3.7
-            tornado: 4.5.*
 
           - os: ubuntu-20.04
             python: 3.9
