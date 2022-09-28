@@ -633,6 +633,9 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     # event masking from ZMQStream
     def _handle_events(self, fd=0, events=0):
         """Dispatch IO events to _handle_recv, etc."""
+        if self._shadow_sock.closed:
+            return
+
         zmq_events = self._shadow_sock.get(EVENTS)
         if zmq_events & _zmq.POLLIN:
             self._handle_recv()
