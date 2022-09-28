@@ -28,7 +28,7 @@ class AuthenticationThread(Thread):
 
     pipe: zmq.asyncio.Socket
     loop: asyncio.AbstractEventLoop
-
+    authenticator: AsyncioAuthenticator
     poller: Optional[zmq.asyncio.Poller]
 
     def __init__(
@@ -59,7 +59,7 @@ class AuthenticationThread(Thread):
                 self.poller = None
             if self.authenticator:
                 self.authenticator.stop()
-                self.authenticator = None
+                self.authenticator = None  # type: ignore
             if self.pipe:
                 self.pipe.close()
                 self.pipe = None  # type: ignore
@@ -70,7 +70,7 @@ class AuthenticationThread(Thread):
         aio_context = zmq.asyncio.Context.shadow(self.context.underlying)
 
         # create a socket to communicate back to main thread.
-        self.pipe: "zmq.asyncio.Socket" = aio_context.socket(zmq.PAIR)
+        self.pipe: "zmq.asyncio.Socket" = aio_context.socket(zmq.PAIR)  # type: ignore
         self.pipe.linger = 1
         self.pipe.connect(self.endpoint)
 
