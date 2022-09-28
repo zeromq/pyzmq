@@ -2,8 +2,8 @@ import multiprocessing as mp
 from os import path
 from typing import Tuple
 
-import cv2
 from log import logger
+from PIL import Image
 
 import zmq
 
@@ -74,11 +74,11 @@ def process_images(
                     try:
                         _, encoded_path2image = dealer_socket.recv_multipart()
                         path2source_image = encoded_path2image.decode()
-                        bgr_image = cv2.imread(path2source_image)
-                        resized_image = cv2.resize(bgr_image, dsize=size)
+                        image = Image.open(path2source_image)
+                        resized_image = image.resize(size=size)
                         _, filename = path.split(path2source_image)
                         path2target_image = path.join(path2resized_images, filename)
-                        cv2.imwrite(path2target_image, resized_image)
+                        resized_image.save(path2target_image)
                         dealer_socket.send_multipart([b'', b'rsp'], flags=zmq.SNDMORE)
                         dealer_socket.send_pyobj(
                             {
@@ -131,4 +131,4 @@ def process_images(
 
             ctx.term()
 
-        logger.success(f'worker {worker_id:03d} has released all zeromq ressources')
+        logger.info(f'worker {worker_id:03d} has released all zeromq ressources')

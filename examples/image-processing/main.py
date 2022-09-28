@@ -6,30 +6,11 @@ from os import path
 from typing import List, Tuple
 
 import click
-import cv2
-from loguru import logger
+from log import logger
+from PIL import Image
 from worker import process_images
 
 import zmq
-
-"""
-    ZMQ client-server for parallel image processing(resize).
-    The server(router) create n workers(dealer): 
-        # each worker can ask a job to the server
-        # a job is an image to resize and a path where the resized_image will be saved  
-        # once, the image was resied, the worker can ask a new job 
-        # server will keep sending job to workers until there is no images left or user hit ctl+c 
-    NOTE: opencv, numpy, click, loguru must be installed 
-"""
-
-"""
-    This program has two mode : 
-        # sequential
-            python main.py sequential-processing --path2initial_images /path/to/source/images --path2resized_images /path/to/target/images --image_extension '*.jpg' --size 512 512
-        # parallel 
-            python main.py parallel-processing --path2initial_images /path/to/source/images --path2resized_images /path/to/target/images --image_extension '*.jpg' --nb_workers 8 --size 512 512
-    parallel mode can be 10x times faster than sequential mode 
-"""
 
 
 @click.group(chain=False, invoke_without_command=True)
@@ -70,16 +51,16 @@ def sequential_processing(
     logger.debug(f'{nb_images:05d} were found at {path2initial_images}')
     start = time.time()
     for cursor, path2source_image in enumerate(image_filepaths):
-        bgr_image = cv2.imread(path2source_image)
-        resized_image = cv2.resize(bgr_image, dsize=size)
+        image = Image.open(path2source_image)
+        resized_image = image.resize(size=size)
         _, filename = path.split(path2source_image)
         path2target_image = path.join(path2resized_images, filename)
-        cv2.imwrite(path2target_image, resized_image)
-        print(resized_image.shape, f'{cursor:04d} images')
+        resized_image.save(path2target_image)
+        print(resized_image.size, f'{cursor:04d} images')
 
     end = time.time()
     duration = int(round(end - start))
-    logger.success(
+    logger.info(
         f'server has processed {cursor:04d}/{nb_images} images in {duration:03d}s'
     )
 
@@ -167,7 +148,7 @@ def parallel_processing(
             logger.error('server wait to long for worker to be ready')
             exit(1)
 
-        logger.success('all workers are up and ready to process images')
+        logger.info('all workers are up and ready to process images')
         cursor = 0
         keep_loop = True
         start = time.time()
@@ -188,7 +169,7 @@ def parallel_processing(
         # end loop over images
         end = time.time()
         duration = int(round(end - start))
-        logger.success(
+        logger.info(
             f'server has processed {cursor:04d}/{nb_images} images in {duration:03d}s'
         )
     except Exception as e:
@@ -205,7 +186,7 @@ def parallel_processing(
             router_socket.close()
             ctx.term()
 
-        logger.success('server has released all zeromq ressources')
+        logger.info('server has released all zeromq ressources')
 
 
 if __name__ == '__main__':

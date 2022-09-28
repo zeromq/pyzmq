@@ -1,17 +1,10 @@
-from sys import stdout
+import logging
 
-from loguru import logger
+logging.basicConfig(
+    level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
 
-log_format = [
-    '<W><k>{time: YYYY-MM-DD hh:mm:ss}</k></W>',
-    '<c>{file:^15}</c>',
-    '<w>{function:^25}</w>',
-    '<e>{line:03d}</e>',
-    '<r>{level:^10}</r>',
-    '<W><k>{message:<50}</k></W>',
-]
+logger = logging.getLogger('image-logger')
 
-log_separator = ' | '
-
-logger.remove()
-logger.add(sink=stdout, level='TRACE', format=log_separator.join(log_format))
+if __name__ == '__main__':
+    logger.debug('... log is up ...')
