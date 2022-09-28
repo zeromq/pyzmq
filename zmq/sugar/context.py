@@ -5,14 +5,26 @@
 
 import atexit
 import os
-import warnings
 from threading import Lock
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
+from warnings import warn
 from weakref import WeakSet
 
 from zmq.backend import Context as ContextBase
 from zmq.constants import ContextOption, Errno, SocketOption
 from zmq.error import ZMQError
+from zmq.utils.interop import cast_int_addr
 
 from .attrsettr import AttributeSetter, OptValT
 from .socket import Socket
@@ -36,6 +48,30 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     """Create a zmq Context
 
     A zmq Context creates sockets via its ``ctx.socket`` method.
+
+    .. versionchanged:: 24
+
+        When using a Context as a context manager (``with zmq.Context()``),
+        or deleting a context without closing it first,
+        ``ctx.destroy()`` is called,
+        closing any leftover sockets,
+        instead of `ctx.term()` which requires sockets to be closed first.
+
+        This prevents hangs caused by `ctx.term()` if sockets are left open,
+        but means that unclean destruction of contexts
+        (with sockets left open) is not safe
+        if sockets are managed in other threads.
+
+    .. versionadded:: 25
+
+        Contexts can now be shadowed by passing another Context.
+        This helps in creating an async copy of a sync context or vice versa::
+
+            ctx = zmq.Context(async_ctx)
+
+        Which previously had to be::
+
+            ctx = zmq.Context.shadow(async_ctx.underlying)
     """
 
     sockopts: Dict[int, Any]
@@ -43,33 +79,76 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     _instance_lock = Lock()
     _instance_pid: Optional[int] = None
     _shadow = False
+    _shadow_obj = None
+    _warn_destroy_close = False
     _sockets: WeakSet
     # mypy doesn't like a default value here
     _socket_class: Type[ST] = Socket  # type: ignore
 
-    def __init__(self: "Context[Socket]", io_threads: int = 1, **kwargs: Any) -> None:
-        super().__init__(io_threads=io_threads, **kwargs)
-        if kwargs.get('shadow', False):
+    @overload
+    def __init__(self: "Context[Socket]", io_threads: int = 1):
+        ...
+
+    @overload
+    def __init__(self: "Context[Socket]", io_threads: "Context"):
+        # this should be positional-only, but that requires 3.8
+        ...
+
+    @overload
+    def __init__(self: "Context[Socket]", *, shadow: Union["Context", int]):
+        ...
+
+    def __init__(
+        self: "Context[Socket]",
+        io_threads: Union[int, "Context"] = 1,
+        shadow: Union["Context", int] = 0,
+    ) -> None:
+        if isinstance(io_threads, Context):
+            # allow positional shadow `zmq.Context(zmq.asyncio.Context())`
+            # this s
+            shadow = io_threads
+            io_threads = 1
+
+        shadow_address: int = 0
+        if shadow:
             self._shadow = True
+            # hold a reference to the shadow object
+            self._shadow_obj = shadow
+            if not isinstance(shadow, int):
+                try:
+                    shadow = shadow.underlying
+                except AttributeError:
+                    pass
+            shadow_address = cast_int_addr(shadow)
         else:
             self._shadow = False
+        super().__init__(io_threads=io_threads, shadow=shadow_address)
         self.sockopts = {}
         self._sockets = WeakSet()
 
     def __del__(self) -> None:
-        """deleting a Context should terminate it, without trying non-threadsafe destroy"""
+        """Deleting a Context without closing it destroys it and all sockets.
+
+        .. versionchanged:: 24
+            Switch from threadsafe `term()` which hangs in the event of open sockets
+            to less safe `destroy()` which
+            warns about any leftover sockets and closes them.
+        """
 
         # Calling locals() here conceals issue #1167 on Windows CPython 3.5.4.
         locals()
 
         if not self._shadow and not _exiting and not self.closed:
-            warnings.warn(
-                f"unclosed context {self}",
-                ResourceWarning,
-                stacklevel=2,
-                source=self,
-            )
-            self.term()
+            self._warn_destroy_close = True
+            if warn and getattr(self, "_sockets", None) is not None:
+                # warn can be None during process teardown
+                warn(
+                    f"Unclosed context {self}",
+                    ResourceWarning,
+                    stacklevel=2,
+                    source=self,
+                )
+            self.destroy()
 
     _repr_cls = "zmq.Context"
 
@@ -93,7 +172,9 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        self.term()
+        # warn about any leftover sockets before closing them
+        self._warn_destroy_close = True
+        self.destroy()
 
     def __copy__(self: T, memo: Any = None) -> T:
         """Copying a Context creates a shadow copy"""
@@ -102,17 +183,18 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     __deepcopy__ = __copy__
 
     @classmethod
-    def shadow(cls: Type[T], address: int) -> T:
+    def shadow(cls: Type[T], address: Union[int, "Context"]) -> T:
         """Shadow an existing libzmq context
 
-        address is the integer address of the libzmq context
-        or an FFI pointer to it.
+        address is a zmq.Context or an integer (or FFI pointer)
+        representing the address of the libzmq context.
 
         .. versionadded:: 14.1
-        """
-        from zmq.utils.interop import cast_int_addr
 
-        address = cast_int_addr(address)
+        .. versionadded:: 25
+            Support for shadowing `zmq.Context` objects,
+            instead of just integer addresses.
+        """
         return cls(shadow=address)
 
     @classmethod
@@ -214,7 +296,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
-    def destroy(self, linger: Optional[float] = None) -> None:
+    def destroy(self, linger: Optional[int] = None) -> None:
         """Close all sockets associated with this context and then terminate
         the context.
 
@@ -232,17 +314,29 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if self.closed:
             return
 
-        sockets = self._sockets
-        self._sockets = WeakSet()
+        sockets: List[ST] = list(getattr(self, "_sockets", None) or [])
         for s in sockets:
             if s and not s.closed:
+                if self._warn_destroy_close and warn:
+                    # warn can be None during process teardown
+                    warn(
+                        f"Destroying context with unclosed socket {s}",
+                        ResourceWarning,
+                        stacklevel=3,
+                        source=s,
+                    )
                 if linger is not None:
                     s.setsockopt(SocketOption.LINGER, linger)
                 s.close()
 
         self.term()
 
-    def socket(self: T, socket_type: int, **kwargs: Any) -> ST:
+    def socket(
+        self: T,
+        socket_type: int,
+        socket_class: Callable[[T, int], ST] = None,
+        **kwargs: Any,
+    ) -> ST:
         """Create a Socket associated with this Context.
 
         Parameters
@@ -251,12 +345,20 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
 
+        socket_class: zmq.Socket or a subclass
+            The socket class to instantiate, if different from the default for this Context.
+            e.g. for creating an asyncio socket attached to a default Context or vice versa.
+
+            .. versionadded:: 25
+
         kwargs:
             will be passed to the __init__ method of the socket class.
         """
         if self.closed:
             raise ZMQError(Errno.ENOTSUP)
-        s: ST = self._socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+        if socket_class is None:
+            socket_class = self._socket_class
+        s: ST = socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
             self, socket_type, **kwargs
         )
         for opt, value in self.sockopts.items():
@@ -305,6 +407,9 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
     def __delattr__(self, key: str) -> None:
         """delete default sockopts as attributes"""
+        if key in self.__dict__:
+            self.__dict__.pop(key)
+            return
         key = key.upper()
         try:
             opt = getattr(SocketOption, key)

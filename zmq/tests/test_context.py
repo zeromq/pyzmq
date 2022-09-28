@@ -10,6 +10,7 @@ from queue import Queue
 from threading import Event, Thread
 from unittest import mock
 
+import pytest
 from pytest import mark
 
 import zmq
@@ -32,13 +33,13 @@ class TestContext(BaseZMQTestCase):
     def test_init(self):
         c1 = self.Context()
         assert isinstance(c1, self.Context)
-        del c1
+        c1.term()
         c2 = self.Context()
         assert isinstance(c2, self.Context)
-        del c2
+        c2.term()
         c3 = self.Context()
         assert isinstance(c3, self.Context)
-        del c3
+        c3.term()
 
     _repr_cls = "zmq.Context"
 
@@ -70,9 +71,12 @@ class TestContext(BaseZMQTestCase):
         assert c.closed
 
     def test_context_manager(self):
-        with self.Context() as c:
-            pass
-        assert c.closed
+        with pytest.warns(ResourceWarning):
+            with self.Context() as ctx:
+                s = ctx.socket(zmq.PUSH)
+        # context exit destroys sockets
+        assert s.closed
+        assert ctx.closed
 
     def test_fail_init(self):
         self.assertRaisesErrno(zmq.EINVAL, self.Context, -1)
@@ -163,6 +167,14 @@ class TestContext(BaseZMQTestCase):
             with ctx.socket(zmq.DEALER, test_kwarg=test_kwarg_value) as socket:
                 assert socket.test_kwarg_value is test_kwarg_value
 
+    def test_socket_class_arg(self):
+        class CustomSocket(zmq.Socket):
+            pass
+
+        with self.Context() as ctx:
+            with ctx.socket(zmq.PUSH, socket_class=CustomSocket) as s:
+                assert isinstance(s, CustomSocket)
+
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""
         ctx = self.Context()
@@ -239,6 +251,7 @@ class TestContext(BaseZMQTestCase):
                 ctx = self.Context()
                 ctx.socket(zmq.PUSH)
 
+            # can't seem to catch these with pytest.warns(ResourceWarning)
             inner()
             gc.collect()
 
@@ -338,10 +351,19 @@ class TestContext(BaseZMQTestCase):
         del ctx2
         assert not ctx.closed
         s = ctx.socket(zmq.PUB)
-        ctx2 = self.Context.shadow(ctx.underlying)
-        s2 = ctx2.socket(zmq.PUB)
+        ctx2 = self.Context.shadow(ctx)
+        with ctx2.socket(zmq.PUB) as s2:
+            pass
+
+        assert s2.closed
+        assert not s.closed
         s.close()
-        s2.close()
+
+        ctx3 = self.Context(ctx)
+        assert ctx3.underlying == ctx.underlying
+        del ctx3
+        assert not ctx.closed
+
         ctx.term()
         self.assertRaisesErrno(zmq.EFAULT, ctx2.socket, zmq.PUB)
         del ctx2

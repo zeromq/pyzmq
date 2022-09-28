@@ -57,6 +57,7 @@ class ProxyBase:
         ins, outs = Device._setup_sockets(self)
         ctx = self._context
         mons = ctx.socket(self.mon_type)
+        self._sockets.append(mons)
 
         # set sockopts (must be done first, in case of zmq.IDENTITY)
         for opt, value in self._mon_sockopts:

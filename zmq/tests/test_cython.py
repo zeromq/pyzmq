@@ -1,10 +1,18 @@
+import os
 import sys
 
 import pytest
 
 import zmq
 
+HERE = os.path.dirname(__file__)
+cython_ext = os.path.join(HERE, "cython_ext.pyx")
 
+
+@pytest.mark.skipif(
+    not os.path.exists(cython_ext),
+    reason=f"Requires cython test file {cython_ext}",
+)
 @pytest.mark.skipif(
     'zmq.backend.cython' not in sys.modules, reason="Requires cython backend"
 )

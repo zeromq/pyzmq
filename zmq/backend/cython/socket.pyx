@@ -42,6 +42,7 @@ from zmq.utils.buffers cimport asbuffer_r
 
 from .context cimport Context
 from .libzmq cimport (
+    ZMQ_ETERM,
     ZMQ_EVENT_ALL,
     ZMQ_IDENTITY,
     ZMQ_LINGER,
@@ -152,9 +153,14 @@ cdef inline _check_closed_deep(Socket s):
         return True
     else:
         rc = zmq_getsockopt(s.handle, ZMQ_TYPE, <void *>&stype, &sz)
-        if rc < 0 and zmq_errno() == ENOTSOCK:
-            s._closed = True
-            return True
+        if rc < 0:
+            errno = zmq_errno()
+            if errno == ENOTSOCK:
+                s._closed = True
+                return True
+            elif errno == ZMQ_ETERM:
+                # don't raise ETERM when checking if we're closed
+                return False
         else:
             _check_rc(rc)
     return False
@@ -305,20 +311,16 @@ cdef class Socket:
     .Context.socket : method for creating a socket bound to a Context.
     """
 
-    def __init__(self, context=None, socket_type=-1, shadow=0, copy_threshold=None):
+    def __init__(self, context=None, socket_type=-1, size_t shadow=0, copy_threshold=None):
         if copy_threshold is None:
             copy_threshold = zmq.COPY_THRESHOLD
         self.copy_threshold = copy_threshold
 
         self.handle = NULL
         self.context = context
-        cdef size_t c_shadow
         if shadow:
-            if isinstance(shadow, Socket):
-                shadow = shadow.underlying
-            c_shadow = shadow
             self._shadow = True
-            self.handle = <void *>c_shadow
+            self.handle = <void *>shadow
         else:
             if context is None:
                 raise TypeError("context must be specified")

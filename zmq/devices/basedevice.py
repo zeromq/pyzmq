@@ -7,10 +7,10 @@
 import time
 from multiprocessing import Process
 from threading import Thread
-from typing import Any, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import zmq
-from zmq import ETERM, QUEUE, REQ, Context, ZMQBindError, ZMQError, device
+from zmq import ENOTSOCK, ETERM, PUSH, QUEUE, Context, ZMQBindError, ZMQError, device
 
 
 class Device:
@@ -64,7 +64,7 @@ class Device:
         should *never* try to use it.
     """
 
-    context_factory = Context.instance
+    context_factory: Callable[[], zmq.Context] = Context.instance
     """Callable that returns a context. Typically either Context.instance or Context,
     depending on whether the device should share the global instance or not.
     """
@@ -81,6 +81,7 @@ class Device:
     _out_connects: List[str]
     _out_sockopts: List[Tuple[int, Any]]
     _random_addrs: List[str]
+    _sockets: List[zmq.Socket]
 
     def __init__(
         self,
@@ -104,6 +105,7 @@ class Device:
         self._random_addrs = []
         self.daemon = True
         self.done = False
+        self._sockets = []
 
     def bind_in(self, addr: str) -> None:
         """Enqueue ZMQ address for binding on in_socket.
@@ -176,25 +178,21 @@ class Device:
         self._out_sockopts.append((opt, value))
 
     def _reserve_random_port(self, addr: str, *args, **kwargs) -> int:
-        ctx = Context()
+        with Context() as ctx:
+            with ctx.socket(PUSH) as binder:
+                for i in range(5):
+                    port = binder.bind_to_random_port(addr, *args, **kwargs)
 
-        binder = ctx.socket(REQ)
+                    new_addr = '%s:%i' % (addr, port)
 
-        for i in range(5):
-            port = binder.bind_to_random_port(addr, *args, **kwargs)
+                    if new_addr in self._random_addrs:
+                        continue
+                    else:
+                        break
+                else:
+                    raise ZMQBindError("Could not reserve random port.")
 
-            new_addr = '%s:%i' % (addr, port)
-
-            if new_addr in self._random_addrs:
-                continue
-            else:
-                break
-        else:
-            raise ZMQBindError("Could not reserve random port.")
-
-        self._random_addrs.append(new_addr)
-
-        binder.close()
+                self._random_addrs.append(new_addr)
 
         return port
 
@@ -204,10 +202,12 @@ class Device:
 
         # create the sockets
         ins = ctx.socket(self.in_type)
+        self._sockets.append(ins)
         if self.out_type < 0:
             outs = ins
         else:
             outs = ctx.socket(self.out_type)
+            self._sockets.append(outs)
 
         # set sockopts (must be done first, in case of zmq.IDENTITY)
         for opt, value in self._in_sockopts:
@@ -235,18 +235,25 @@ class Device:
         ins, outs = self._setup_sockets()
         device(self.device_type, ins, outs)
 
+    def _close_sockets(self):
+        """Cleanup sockets we created"""
+        for s in self._sockets:
+            if s and not s.closed:
+                s.close()
+
     def run(self) -> None:
         """wrap run_device in try/catch ETERM"""
         try:
             self.run_device()
         except ZMQError as e:
-            if e.errno == ETERM:
-                # silence TERM errors, because this should be a clean shutdown
+            if e.errno in {ETERM, ENOTSOCK}:
+                # silence TERM, ENOTSOCK errors, because this should be a clean shutdown
                 pass
             else:
                 raise
         finally:
             self.done = True
+            self._close_sockets()
 
     def start(self) -> None:
         """Start the device. Override me in subclass for other launchers."""
@@ -256,11 +263,11 @@ class Device:
         """wait for me to finish, like Thread.join.
 
         Reimplemented appropriately by subclasses."""
-        tic = time.time()
+        tic = time.monotonic()
         toc = tic
         while not self.done and not (timeout is not None and toc - tic > timeout):
             time.sleep(0.001)
-            toc = time.time()
+            toc = time.monotonic()
 
 
 class BackgroundDevice(Device):
