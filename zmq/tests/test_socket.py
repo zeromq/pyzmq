@@ -530,9 +530,13 @@ class TestSocket(BaseZMQTestCase):
         p2 = zmq.Socket.shadow(p.underlying)
         assert p.underlying == p2.underlying
         s = self.socket(zmq.PULL)
-        s2 = zmq.Socket.shadow(s.underlying)
-        self.assertNotEqual(s.underlying, p.underlying)
-        assert s.underlying == s2.underlying
+        s2 = zmq.Socket.shadow(s)
+        assert s2._shadow_obj is s
+        assert s.underlying != p.underlying
+        assert s2.underlying == s.underlying
+        s3 = zmq.Socket(s)
+        assert s3._shadow_obj is s
+        assert s3.underlying == s.underlying
         s2.connect("tcp://127.0.0.1:5555")
         sent = b'hi'
         p2.send(sent)

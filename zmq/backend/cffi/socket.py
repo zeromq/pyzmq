@@ -87,11 +87,13 @@ class Socket:
     _shadow = False
     copy_threshold = 0
 
-    def __init__(self, context=None, socket_type=None, shadow=None):
+    def __init__(self, context=None, socket_type=None, shadow=0, copy_threshold=None):
+        if copy_threshold is None:
+            copy_threshold = zmq.COPY_THRESHOLD
+        self.copy_threshold = copy_threshold
+
         self.context = context
-        if shadow is not None:
-            if isinstance(shadow, Socket):
-                shadow = shadow.underlying
+        if shadow:
             self._zmq_socket = ffi.cast("void *", shadow)
             self._shadow = True
         else:

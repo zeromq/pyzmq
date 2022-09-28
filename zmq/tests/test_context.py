@@ -167,6 +167,14 @@ class TestContext(BaseZMQTestCase):
             with ctx.socket(zmq.DEALER, test_kwarg=test_kwarg_value) as socket:
                 assert socket.test_kwarg_value is test_kwarg_value
 
+    def test_socket_class_arg(self):
+        class CustomSocket(zmq.Socket):
+            pass
+
+        with self.Context() as ctx:
+            with ctx.socket(zmq.PUSH, socket_class=CustomSocket) as s:
+                assert isinstance(s, CustomSocket)
+
     def test_many_sockets(self):
         """opening and closing many sockets shouldn't cause problems"""
         ctx = self.Context()
@@ -343,10 +351,19 @@ class TestContext(BaseZMQTestCase):
         del ctx2
         assert not ctx.closed
         s = ctx.socket(zmq.PUB)
-        ctx2 = self.Context.shadow(ctx.underlying)
-        s2 = ctx2.socket(zmq.PUB)
+        ctx2 = self.Context.shadow(ctx)
+        with ctx2.socket(zmq.PUB) as s2:
+            pass
+
+        assert s2.closed
+        assert not s.closed
         s.close()
-        s2.close()
+
+        ctx3 = self.Context(ctx)
+        assert ctx3.underlying == ctx.underlying
+        del ctx3
+        assert not ctx.closed
+
         ctx.term()
         self.assertRaisesErrno(zmq.EFAULT, ctx2.socket, zmq.PUB)
         del ctx2
