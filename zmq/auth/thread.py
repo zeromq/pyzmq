@@ -26,7 +26,7 @@ class AuthenticationThread(Thread):
     This is run in the background by ThreadAuthenticator
     """
 
-    pipe: zmq.asyncio.Socket
+    pipe: zmq.Socket
     loop: asyncio.AbstractEventLoop
     authenticator: AsyncioAuthenticator
     poller: Optional[zmq.asyncio.Poller]
@@ -67,15 +67,14 @@ class AuthenticationThread(Thread):
             loop.close()
 
     async def _run(self):
-        aio_context = zmq.asyncio.Context.shadow(self.context.underlying)
 
         # create a socket to communicate back to main thread.
-        self.pipe: "zmq.asyncio.Socket" = aio_context.socket(zmq.PAIR)  # type: ignore
+        self.pipe: zmq.Socket = self.context.socket(zmq.PAIR, socket_class=zmq.Socket)
         self.pipe.linger = 1
         self.pipe.connect(self.endpoint)
 
         self.authenticator = AsyncioAuthenticator(
-            aio_context, encoding=self.encoding, log=self.log
+            self.context, encoding=self.encoding, log=self.log
         )
         self.authenticator.start()
 
@@ -86,7 +85,7 @@ class AuthenticationThread(Thread):
         while True:
             events = await self.poller.poll()
             if self.pipe in dict(events):
-                msg = await self.pipe.recv_multipart()
+                msg = self.pipe.recv_multipart()
                 if self.__handle_pipe_message(msg):
                     return
 
@@ -102,14 +101,20 @@ class AuthenticationThread(Thread):
             try:
                 self.authenticator.allow(*addresses)
             except Exception:
-                self.log.exception("Failed to allow %s", addresses)
+                self.log.exception(f"Failed to allow {addresses}")
+                self.pipe.send(b'ERROR')
+            else:
+                self.pipe.send(b'OK')
 
         elif command == b'DENY':
             addresses = [m.decode(self.encoding) for m in msg[1:]]
             try:
                 self.authenticator.deny(*addresses)
             except Exception:
-                self.log.exception("Failed to deny %s", addresses)
+                self.log.exception(f"Failed to deny {addresses}")
+                self.pipe.send(b'ERROR')
+            else:
+                self.pipe.send(b'OK')
 
         elif command == b'PLAIN':
             domain = msg[1].decode(self.encoding)
@@ -117,7 +122,13 @@ class AuthenticationThread(Thread):
             passwords: Dict[str, str] = cast(
                 Dict[str, str], jsonapi.loads(json_passwords)
             )
-            self.authenticator.configure_plain(domain, passwords)
+            try:
+                self.authenticator.configure_plain(domain, passwords)
+            except Exception:
+                self.log.exception(f"Failed to set up plain auth for {domain}")
+                self.pipe.send(b'ERROR')
+            else:
+                self.pipe.send(b'OK')
 
         elif command == b'CURVE':
             # For now we don't do anything with domains
@@ -126,13 +137,20 @@ class AuthenticationThread(Thread):
             # If location is CURVE_ALLOW_ANY, allow all clients. Otherwise
             # treat location as a directory that holds the certificates.
             location = msg[2].decode(self.encoding)
-            self.authenticator.configure_curve(domain, location)
+            try:
+                self.authenticator.configure_curve(domain, location)
+            except Exception:
+                self.log.exception(f"Failed to set up curve auth for {domain}")
+                self.pipe.send(b'ERROR')
+            else:
+                self.pipe.send(b'OK')
 
         elif command == b'TERMINATE':
             return True
 
         else:
             self.log.error("Invalid auth command from API: %r", command)
+            self.pipe.send(b'ERROR')
 
         return False
 
@@ -161,6 +179,8 @@ class ThreadAuthenticator:
     pipe: "zmq.Socket"
     pipe_endpoint: str = ''
     thread: AuthenticationThread
+    _pipe_poller: "zmq.Poller"
+    _pipe_reply_timeout_seconds: float = 3
 
     def __init__(
         self,
@@ -185,29 +205,40 @@ class ThreadAuthenticator:
         setattr(self.thread.authenticator, key, value)
 
     def __getattr__(self, key: str):
-        return getattr(self.thread.authenticator, key)
+        if self.thread and hasattr(self.thread, "authenticator"):
+            return getattr(self.thread.authenticator, key)
+        else:
+            raise AttributeError(key)
+
+    def _pipe_request(self, msg):
+        """Check the reply on the pipe"""
+        self.pipe.send_multipart(msg)
+        evts = self._pipe_poller.poll(
+            timeout=int(1000 * self._pipe_reply_timeout_seconds)
+        )
+        if not evts:
+            raise RuntimeError("Auth thread never responded")
+        reply = self.pipe.recv_multipart()
+        if reply != [b"OK"]:
+            raise RuntimeError("Error in auth thread, check logs")
 
     def allow(self, *addresses: str):
-        self.pipe.send_multipart(
-            [b'ALLOW'] + [a.encode(self.encoding) for a in addresses]
-        )
+        self._pipe_request([b'ALLOW'] + [a.encode(self.encoding) for a in addresses])
 
     def deny(self, *addresses: str):
-        self.pipe.send_multipart(
-            [b'DENY'] + [a.encode(self.encoding) for a in addresses]
-        )
+        self._pipe_request([b'DENY'] + [a.encode(self.encoding) for a in addresses])
 
     def configure_plain(
         self, domain: str = '*', passwords: Optional[Dict[str, str]] = None
     ):
-        self.pipe.send_multipart(
+        self._pipe_request(
             [b'PLAIN', domain.encode(self.encoding), jsonapi.dumps(passwords or {})]
         )
 
     def configure_curve(self, domain: str = '*', location: str = ''):
         domain = domain.encode(self.encoding)
         location = location.encode(self.encoding)
-        self.pipe.send_multipart([b'CURVE', domain, location])
+        self._pipe_request([b'CURVE', domain, location])
 
     def configure_curve_callback(
         self, domain: str = '*', credentials_provider: Any = None
@@ -219,7 +250,9 @@ class ThreadAuthenticator:
     def start(self) -> None:
         """Start the authentication thread"""
         # create a socket to communicate with auth thread.
-        self.pipe = self.context.socket(zmq.PAIR)
+        self.pipe = self.context.socket(zmq.PAIR, socket_class=zmq.Socket)
+        self._pipe_poller = zmq.Poller()
+        self._pipe_poller.register(self.pipe, zmq.POLLIN)
         self.pipe.linger = 1
         self.pipe.bind(self.pipe_endpoint)
         self.thread = AuthenticationThread(

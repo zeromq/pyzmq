@@ -79,7 +79,7 @@ class Authenticator:
 
     def start(self) -> None:
         """Create and bind the ZAP socket"""
-        self.zap_socket = self.context.socket(zmq.REP)
+        self.zap_socket = self.context.socket(zmq.REP, socket_class=zmq.Socket)
         self.zap_socket.linger = 1
         self.zap_socket.bind("inproc://zeromq.zap.01")
         self.log.debug("Starting")

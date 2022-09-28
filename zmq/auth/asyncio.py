@@ -11,7 +11,7 @@ import warnings
 from typing import Any, Optional
 
 import zmq
-from zmq.asyncio import Poller, Socket
+from zmq.asyncio import Poller
 
 from .base import Authenticator
 
@@ -21,7 +21,6 @@ class AsyncioAuthenticator(Authenticator):
 
     __poller: Optional[Poller]
     __task: Any
-    zap_socket: "Socket"
 
     def __init__(
         self,
@@ -40,7 +39,7 @@ class AsyncioAuthenticator(Authenticator):
         while self.__poller is not None:
             events = await self.__poller.poll()
             if self.zap_socket in dict(events):
-                msg = await self.zap_socket.recv_multipart()
+                msg = self.zap_socket.recv_multipart()
                 await self.handle_zap_message(msg)
 
     def start(self) -> None:
