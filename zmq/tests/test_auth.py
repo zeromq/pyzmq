@@ -1,6 +1,7 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import asyncio
 import logging
 import os
 import shutil
@@ -9,6 +10,7 @@ import warnings
 
 import pytest
 
+import zmq
 import zmq.auth
 from zmq.auth.thread import ThreadAuthenticator
 from zmq.tests import BaseZMQTestCase, SkipTest, skip_pypy
@@ -306,6 +308,31 @@ class TestThreadAuthentication(BaseAuthTestCase):
         client.curve_serverkey = server_public
         assert self.can_connect(server, client)
 
+        # Try CURVE authentication - with async callback authentication configured, connection should pass
+
+        class AsyncCredentialsProvider:
+            def __init__(self):
+                self.client = client_public
+
+            async def callback(self, domain, key):
+                await asyncio.sleep(0.1)
+                if key == self.client:
+                    return True
+                else:
+                    return False
+
+        provider = AsyncCredentialsProvider()
+        self.auth.configure_curve_callback(credentials_provider=provider)
+        server = self.socket(zmq.PUSH)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PULL)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        assert self.can_connect(server, client)
+
         # Try CURVE authentication - with callback authentication configured with wrong key, connection should not pass
 
         class WrongCredentialsProvider:
@@ -319,6 +346,31 @@ class TestThreadAuthentication(BaseAuthTestCase):
                     return False
 
         provider = WrongCredentialsProvider()
+        self.auth.configure_curve_callback(credentials_provider=provider)
+        server = self.socket(zmq.PUSH)
+        server.curve_publickey = server_public
+        server.curve_secretkey = server_secret
+        server.curve_server = True
+        client = self.socket(zmq.PULL)
+        client.curve_publickey = client_public
+        client.curve_secretkey = client_secret
+        client.curve_serverkey = server_public
+        assert not self.can_connect(server, client)
+
+        # Try CURVE authentication - with async callback authentication configured with wrong key, connection should not pass
+
+        class WrongAsyncCredentialsProvider:
+            def __init__(self):
+                self.client = "WrongCredentials"
+
+            async def callback(self, domain, key):
+                await asyncio.sleep(0.1)
+                if key == self.client:
+                    return True
+                else:
+                    return False
+
+        provider = WrongAsyncCredentialsProvider()
         self.auth.configure_curve_callback(credentials_provider=provider)
         server = self.socket(zmq.PUSH)
         server.curve_publickey = server_public
