@@ -5,6 +5,7 @@ import asyncio
 import logging
 import os
 import shutil
+import sys
 import warnings
 from contextlib import contextmanager
 
@@ -386,6 +387,10 @@ class TestThreadAuthentication(AuthTest):
         return ThreadAuthenticator(self.context)
 
 
+@pytest.mark.skipif(
+    sys.platform == 'win32' and sys.version_info < (3, 7),
+    reason="flaky event loop cleanup on windows+py36",
+)
 class TestAsyncioAuthentication(AuthTest):
     """Test authentication running in a thread"""
 
@@ -396,6 +401,10 @@ class TestAsyncioAuthentication(AuthTest):
 
 
 @pytest.mark.skipif(tornado is None, reason="requires tornado")
+@pytest.mark.skipif(
+    sys.platform == 'win32' and sys.version_info < (3, 7),
+    reason="flaky event loop cleanup on windows+py36",
+)
 class TestIOLoopAuthentication(AuthTest):
     """Test authentication running in a thread"""
 
