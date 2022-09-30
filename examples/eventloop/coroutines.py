@@ -2,10 +2,8 @@
 # Copyright (c) PyZMQ Developers.
 # This example is in the public domain (CC-0)
 
+import asyncio
 import time
-
-from tornado import gen
-from tornado.ioloop import IOLoop
 
 import zmq
 from zmq.eventloop.future import Context, Poller
@@ -15,14 +13,14 @@ url = 'tcp://127.0.0.1:5555'
 ctx = Context.instance()
 
 
-async def ping():
+async def ping() -> None:
     """print dots to indicate idleness"""
     while True:
-        await gen.sleep(0.25)
+        await asyncio.sleep(0.25)
         print('.')
 
 
-async def receiver():
+async def receiver() -> None:
     """receive messages with poll and timeout"""
     pull = ctx.socket(zmq.PULL)
     pull.connect(url)
@@ -38,7 +36,7 @@ async def receiver():
             print("nothing to recv")
 
 
-async def sender():
+async def sender() -> None:
     """send a message every second"""
     tic = time.time()
     push = ctx.socket(zmq.PUSH)
@@ -48,12 +46,16 @@ async def sender():
     while True:
         print("sending")
         await push.send_multipart([str(time.time() - tic).encode("ascii")])
-        await gen.sleep(1)
+        await asyncio.sleep(1)
 
 
-loop = IOLoop.instance()
+async def main() -> None:
+    await asyncio.gather(
+        ping(),
+        receiver(),
+        sender(),
+    )
 
-loop.spawn_callback(ping)
-loop.spawn_callback(receiver)
-loop.spawn_callback(sender)
-loop.start()
+
+if __name__ == "__main__":
+    asyncio.run(main())

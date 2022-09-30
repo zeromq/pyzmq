@@ -402,15 +402,15 @@ class TestAsyncioAuthentication(AuthTest):
         return AsyncioAuthenticator(self.context)
 
 
-@pytest.mark.skipif(tornado is None, reason="requires tornado")
-@pytest.mark.skipif(
-    sys.platform == 'win32' and sys.version_info < (3, 7),
-    reason="flaky event loop cleanup on windows+py36",
-)
-class TestIOLoopAuthentication(AuthTest):
-    """Test authentication running in a thread"""
+async def test_ioloop_authenticator(context, event_loop, io_loop):
+    from tornado.ioloop import IOLoop
 
-    def make_auth(self):
+    with warnings.catch_warnings():
         from zmq.auth.ioloop import IOLoopAuthenticator
 
-        return IOLoopAuthenticator(self.context)
+    auth = IOLoopAuthenticator(context)
+    assert auth.context is context
+
+    loop = IOLoop(make_current=False)
+    with pytest.warns(DeprecationWarning):
+        auth = IOLoopAuthenticator(io_loop=loop)

@@ -9,6 +9,7 @@ the event loop.
 """
 
 
+import asyncio
 import random
 import sys
 import threading
@@ -56,7 +57,7 @@ class TestHandler(web.RequestHandler):
         self.write(reply)
 
 
-def main() -> None:
+async def setup() -> None:
     worker = threading.Thread(target=slow_responder)
     worker.daemon = True
     worker.start()
@@ -65,11 +66,12 @@ def main() -> None:
     beat = ioloop.PeriodicCallback(dot, 100)
     beat.start()
     application.listen(8888)
-    try:
-        ioloop.IOLoop.instance().start()
-    except KeyboardInterrupt:
-        print(' Interrupted')
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(setup())
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        print(' Interrupted')

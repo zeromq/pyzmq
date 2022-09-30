@@ -31,7 +31,11 @@ class AsyncioAuthenticator(Authenticator):
     ):
         super().__init__(context, encoding, log)
         if loop is not None:
-            warnings.warn(f"{self.__class__.__name__}(loop) is deprecated and ignored")
+            warnings.warn(
+                f"{self.__class__.__name__}(loop) is deprecated and ignored",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self.__poller = None
         self.__task = None
 
