@@ -4,8 +4,6 @@
 
 import asyncio
 import logging
-from functools import partial
-from unittest import TestCase
 
 import pytest
 
@@ -14,144 +12,121 @@ import zmq.asyncio
 
 try:
     import tornado
-    from tornado import gen, ioloop
 
     from zmq.eventloop import zmqstream
 except ImportError:
     tornado = None  # type: ignore
 
-caplog = None
+
+pytestmark = pytest.mark.usefixtures("io_loop")
 
 
 @pytest.fixture
-def get_caplog(caplog):
-    globals()["caplog"] = caplog
+async def push_pull(socket):
+    push = zmqstream.ZMQStream(socket(zmq.PUSH))
+    pull = zmqstream.ZMQStream(socket(zmq.PULL))
+    port = push.bind_to_random_port('tcp://127.0.0.1')
+    pull.connect('tcp://127.0.0.1:%i' % port)
+    return (push, pull)
 
 
-@pytest.mark.usefixtures("get_caplog")
-class TestZMQStream(TestCase):
-    def setUp(self):
-        if tornado is None:
-            pytest.skip()
-        self._timeout_task = None
-        self.context = zmq.Context()
-        self.loop = ioloop.IOLoop(make_current=False)
-        if tornado and tornado.version_info < (5,):
-            self.loop.make_current()
+@pytest.fixture
+def push(push_pull):
+    push, pull = push_pull
+    return push
 
-        async def _make_sockets():
-            self.push = zmqstream.ZMQStream(self.context.socket(zmq.PUSH))
-            self.pull = zmqstream.ZMQStream(self.context.socket(zmq.PULL))
 
-        self.loop.run_sync(_make_sockets)
-        port = self.push.bind_to_random_port('tcp://127.0.0.1')
-        self.pull.connect('tcp://127.0.0.1:%i' % port)
-        self.stream = self.push
-        self.timed_out = []
-        self._schedule_timeout()
+@pytest.fixture
+def pull(push_pull):
+    push, pull = push_pull
+    return pull
 
-    def _schedule_timeout(self, timeout=10):
-        async def sleep_timeout():
-            try:
-                await gen.sleep(timeout)
-            except asyncio.CancelledError:
-                return
-            self.timed_out[:] = ['timed out']
-            self.loop.stop()
 
-        def make_timeout_task():
-            if tornado.version_info < (5,):
-                self.loop.add_callback(sleep_timeout)
-            else:
-                self._timeout_task = asyncio.ensure_future(sleep_timeout())
+async def test_callable_check(pull):
+    """Ensure callable check works."""
 
-        self.loop.run_sync(make_timeout_task)
+    pull.on_send(lambda *args: None)
+    pull.on_recv(lambda *args: None)
+    with pytest.raises(AssertionError):
+        pull.on_recv(1)
+    with pytest.raises(AssertionError):
+        pull.on_send(1)
+    with pytest.raises(AssertionError):
+        pull.on_recv(zmq)
 
-    def tearDown(self):
-        if self._timeout_task:
-            self._timeout_task.cancel()
 
-            async def wait():
-                await gen.with_timeout(self.loop.time() + 1, self._timeout_task)
+async def test_on_recv_basic(push, pull):
+    sent = [b'basic']
+    push.send_multipart(sent)
+    f = asyncio.Future()
 
-            self.loop.run_sync(wait)
-        self.loop.close(all_fds=True)
-        self.context.term()
+    def callback(msg):
+        f.set_result(msg)
 
-    def run_until_timeout(self):
-        self.loop.start()
-        assert not self.timed_out
+    pull.on_recv(callback)
+    recvd = await asyncio.wait_for(f, timeout=5)
+    assert recvd == sent
 
-    def test_callable_check(self):
-        """Ensure callable check works (py3k)."""
 
-        self.stream.on_send(lambda *args: None)
-        self.stream.on_recv(lambda *args: None)
-        self.assertRaises(AssertionError, self.stream.on_recv, 1)
-        self.assertRaises(AssertionError, self.stream.on_send, 1)
-        self.assertRaises(AssertionError, self.stream.on_recv, zmq)
+async def test_on_recv_wake(push, pull):
+    sent = [b'wake']
 
-    def test_on_recv_basic(self):
-        sent = [b'basic']
+    f = asyncio.Future()
+    pull.on_recv(f.set_result)
+    await asyncio.sleep(0.5)
+    push.send_multipart(sent)
+    recvd = await asyncio.wait_for(f, timeout=5)
+    assert recvd == sent
 
-        def callback(msg):
-            assert msg == sent
-            self.loop.stop()
 
-        self.loop.run_sync(partial(self.push.send_multipart, sent))
-        self.pull.on_recv(callback)
-        self.run_until_timeout()
+async def test_on_recv_async(push, pull):
+    if tornado.version_info < (5,):
+        pytest.skip()
+    sent = [b'wake']
 
-    def test_on_recv_wake(self):
-        sent = [b'wake']
+    f = asyncio.Future()
 
-        def callback(msg):
-            assert msg == sent
-            self.loop.stop()
+    async def callback(msg):
+        await asyncio.sleep(0.1)
+        f.set_result(msg)
 
-        self.pull.on_recv(callback)
-        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
-        self.run_until_timeout()
+    pull.on_recv(callback)
+    await asyncio.sleep(0.5)
+    push.send_multipart(sent)
+    recvd = await asyncio.wait_for(f, timeout=5)
+    assert recvd == sent
 
-    def test_on_recv_async(self):
-        if tornado.version_info < (5,):
-            pytest.skip()
-        sent = [b'wake']
 
-        async def callback(msg):
-            assert msg == sent
-            self.loop.stop()
+async def test_on_recv_async_error(push, pull, caplog):
+    sent = [b'wake']
 
-        self.pull.on_recv(callback)
-        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
-        self.run_until_timeout()
+    f = asyncio.Future()
 
-    def test_on_recv_async_error(self):
-        if tornado.version_info < (5,):
-            pytest.skip()
-        sent = [b'wake']
+    async def callback(msg):
+        f.set_result(msg)
+        1 / 0
 
-        async def callback(msg):
-            ioloop.IOLoop.current().call_later(0.5, lambda: self.loop.stop())
-            assert msg == sent
-            1 / 0
+    pull.on_recv(callback)
+    await asyncio.sleep(0.1)
+    with caplog.at_level(logging.ERROR, logger=zmqstream.gen_log.name):
+        push.send_multipart(sent)
+        recvd = await asyncio.wait_for(f, timeout=5)
+        assert recvd == sent
+        # logging error takes a tick later
+        await asyncio.sleep(0.5)
 
-        self.pull.on_recv(callback)
-        self.loop.call_later(0.5, lambda: self.push.send_multipart(sent))
-        with caplog.at_level(logging.ERROR, logger=zmqstream.gen_log.name):
-            self.run_until_timeout()
+    messages = [
+        x.message
+        for x in caplog.get_records("call")
+        if x.name == zmqstream.gen_log.name
+    ]
+    assert "Uncaught exception in ZMQStream callback" in "\n".join(messages)
 
-        messages = [
-            x.message
-            for x in caplog.get_records("call")
-            if x.name == zmqstream.gen_log.name
-        ]
-        assert "Uncaught exception in ZMQStream callback" in "\n".join(messages)
 
-    def test_shadow_socket(self):
-        with self.context.socket(zmq.PUSH, socket_class=zmq.asyncio.Socket) as socket:
-            with pytest.warns(RuntimeWarning):
-                stream = zmqstream.ZMQStream(socket, io_loop=self.loop)
-            assert type(stream.socket) is zmq.Socket
-            assert stream.socket.underlying == socket.underlying
-            stream.close()
+async def test_shadow_socket(context):
+    with context.socket(zmq.PUSH, socket_class=zmq.asyncio.Socket) as socket:
+        with pytest.warns(RuntimeWarning):
+            stream = zmqstream.ZMQStream(socket)
+        assert type(stream.socket) is zmq.Socket
+        assert stream.socket.underlying == socket.underlying
+        stream.close()
