@@ -49,8 +49,8 @@ class Authenticator:
     allow_any: bool
     credentials_providers: Dict[str, Any]
     zap_socket: "zmq.Socket"
-    whitelist: Set[str]
-    blacklist: Set[str]
+    _allowed: Set[str]
+    _denied: Set[str]
     passwords: Dict[str, Dict[str, str]]
     certs: Dict[str, Dict[bytes, Any]]
     log: Any
@@ -67,8 +67,8 @@ class Authenticator:
         self.allow_any = False
         self.credentials_providers = {}
         self.zap_socket = None  # type: ignore
-        self.whitelist = set()
-        self.blacklist = set()
+        self._allowed = set()
+        self._denied = set()
         # passwords is a dict keyed by domain and contains values
         # of dicts with username:password pairs.
         self.passwords = {}
@@ -91,31 +91,31 @@ class Authenticator:
         self.zap_socket = None  # type: ignore
 
     def allow(self, *addresses: str) -> None:
-        """Allow (whitelist) IP address(es).
+        """Allow IP address(es).
 
-        Connections from addresses not in the whitelist will be rejected.
+        Connections from addresses not explicitly allowed will be rejected.
 
         - For NULL, all clients from this address will be accepted.
         - For real auth setups, they will be allowed to continue with authentication.
 
-        whitelist is mutually exclusive with blacklist.
+        allow is mutually exclusive with deny.
         """
-        if self.blacklist:
-            raise ValueError("Only use a whitelist or a blacklist, not both")
+        if self._denied:
+            raise ValueError("Only use allow or deny, not both")
         self.log.debug("Allowing %s", ','.join(addresses))
-        self.whitelist.update(addresses)
+        self._allowed.update(addresses)
 
     def deny(self, *addresses: str) -> None:
-        """Deny (blacklist) IP address(es).
+        """Deny IP address(es).
 
-        Addresses not in the blacklist will be allowed to continue with authentication.
+        Addresses not explicitly denied will be allowed to continue with authentication.
 
-        Blacklist is mutually exclusive with whitelist.
+        deny is mutually exclusive with allow.
         """
-        if self.whitelist:
-            raise ValueError("Only use a whitelist or a blacklist, not both")
+        if self._allowed:
+            raise ValueError("Only use a allow or deny, not both")
         self.log.debug("Denying %s", ','.join(addresses))
-        self.blacklist.update(addresses)
+        self._denied.update(addresses)
 
     def configure_plain(
         self, domain: str = '*', passwords: Dict[str, str] = None
@@ -252,40 +252,40 @@ class Authenticator:
             mechanism,
         )
 
-        # Is address is explicitly whitelisted or blacklisted?
+        # Is address is explicitly allowed or _denied?
         allowed = False
         denied = False
         reason = b"NO ACCESS"
 
-        if self.whitelist:
-            if address in self.whitelist:
+        if self._allowed:
+            if address in self._allowed:
                 allowed = True
-                self.log.debug("PASSED (whitelist) address=%s", address)
+                self.log.debug("PASSED (allowed) address=%s", address)
             else:
                 denied = True
-                reason = b"Address not in whitelist"
-                self.log.debug("DENIED (not in whitelist) address=%s", address)
+                reason = b"Address not allowed"
+                self.log.debug("DENIED (not allowed) address=%s", address)
 
-        elif self.blacklist:
-            if address in self.blacklist:
+        elif self._denied:
+            if address in self._denied:
                 denied = True
-                reason = b"Address is blacklisted"
-                self.log.debug("DENIED (blacklist) address=%s", address)
+                reason = b"Address denied"
+                self.log.debug("DENIED (denied) address=%s", address)
             else:
                 allowed = True
-                self.log.debug("PASSED (not in blacklist) address=%s", address)
+                self.log.debug("PASSED (not denied) address=%s", address)
 
         # Perform authentication mechanism-specific checks if necessary
         username = "anonymous"
         if not denied:
 
             if mechanism == b'NULL' and not allowed:
-                # For NULL, we allow if the address wasn't blacklisted
+                # For NULL, we allow if the address wasn't denied
                 self.log.debug("ALLOWED (NULL)")
                 allowed = True
 
             elif mechanism == b'PLAIN':
-                # For PLAIN, even a whitelisted address must authenticate
+                # For PLAIN, even a _alloweded address must authenticate
                 if len(credentials) != 2:
                     self.log.error("Invalid PLAIN credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")
@@ -296,7 +296,7 @@ class Authenticator:
                 allowed, reason = self._authenticate_plain(domain, username, password)
 
             elif mechanism == b'CURVE':
-                # For CURVE, even a whitelisted address must authenticate
+                # For CURVE, even a _alloweded address must authenticate
                 if len(credentials) != 1:
                     self.log.error("Invalid CURVE credentials: %r", credentials)
                     self._send_zap_reply(request_id, b"400", b"Invalid credentials")

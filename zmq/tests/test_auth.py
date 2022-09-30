@@ -210,20 +210,22 @@ class AuthTest:
             server.zap_domain = b'global'
             assert await self.can_connect(server, client)
 
-    async def test_blacklist(self):
-        """threaded auth - Blacklist"""
-        # Blacklist 127.0.0.1, connection should fail
+    async def test_deny(self):
+        # deny 127.0.0.1, connection should fail
         self.auth.deny('127.0.0.1')
+        with pytest.raises(ValueError):
+            self.auth.allow("127.0.0.2")
         with self.push_pull() as (server, client):
             # By setting a domain we switch on authentication for NULL sockets,
             # though no policies are configured yet.
             server.zap_domain = b'global'
             assert not await self.can_connect(server, client, timeout=100)
 
-    async def test_whitelist(self):
-        """threaded auth - Whitelist"""
-        # Whitelist 127.0.0.1, connection should pass"
+    async def test_allow(self):
+        # allow 127.0.0.1, connection should pass
         self.auth.allow('127.0.0.1')
+        with pytest.raises(ValueError):
+            self.auth.deny("127.0.0.2")
         with self.push_pull() as (server, client):
             # By setting a domain we switch on authentication for NULL sockets,
             # though no policies are configured yet.
