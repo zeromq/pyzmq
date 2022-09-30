@@ -5,6 +5,37 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 25
+
+New:
+
+- Added `socket_class` argument to {func}`zmq.Context.socket`
+- Support shadowing sockets with socket objects,
+  not just via address, e.g. `zmq.asyncio.Socket(other_socket)`.
+  Shadowing an object preserves a reference to the original,
+  unlike shadowing via address.
+- in {mod}`zmq.auth`, CredentialsProvider callbacks may now be async.
+- {class}`~.zmq.eventloop.zmqstream.ZMQStream` callbacks may now be async.
+- Add {class}`zmq.ReconnectStop` draft constants.
+
+Fixed:
+
+- When {class}`~.zmq.eventloop.zmqstream.ZMQStream` is given an async socket,
+  it now warns and hooks up events correctly with the underlying socket, so the callback gets the received message,
+  instead of sending the callback the incorrect arguments.
+
+Deprecated:
+
+- {class}`zmq.auth.ioloop.IOLoopAuthenticator` is deprecated in favor of {class}`zmq.auth.asyncio.AsyncioAuthenticator`
+- As part of migrating toward modern pytest, {class}`zmq.tests.BaseZMQTestCase` is deprecated and should not be used outside pyzmq.
+
+Removed:
+
+- Bundled subset of tornado's IOLoop (deprecated since pyzmq 17) is removed,
+  so ZMQStream cannot be used without an actual install of tornado.
+- Remove support for tornado 4,
+  meaning tornado is always assumed to run on asyncio.
+
 ## 24
 
 ### 24.0.1
