@@ -6,6 +6,7 @@ import logging
 import os
 import shutil
 import warnings
+from contextlib import contextmanager
 
 import pytest
 
@@ -18,6 +19,11 @@ try:
     import tornado
 except ImportError:
     tornado = None
+
+
+@pytest.fixture
+def Context(event_loop):
+    return zmq.asyncio.Context
 
 
 @pytest.fixture
@@ -86,10 +92,13 @@ def certs(secret_keys_dir):
 
 
 @pytest.fixture
-async def _async_setup(request):
+async def _async_setup(request, event_loop):
     """pytest doesn't support async setup/teardown"""
     instance = request.instance
     await instance.async_setup()
+    yield
+    # make sure our teardown runs before the loop closes
+    instance.async_teardown()
 
 
 @pytest.mark.usefixtures("_async_setup")
@@ -109,11 +118,11 @@ class AuthTest:
         self.auth = self.make_auth()
         await self.start_auth()
 
-    def teardown(self):
+    def async_teardown(self):
         if self.auth:
             self.auth.stop()
             self.auth = None
-        self.context.destroy()
+        self.context.term()
 
     def make_auth(self):
         raise NotImplementedError()
@@ -151,6 +160,34 @@ class AuthTest:
                 result = True
         return result
 
+    @contextmanager
+    def push_pull(self):
+        with self.context.socket(zmq.PUSH) as server, self.context.socket(
+            zmq.PULL
+        ) as client:
+            server.linger = 0
+            server.sndtimeo = 2000
+            client.linger = 0
+            client.rcvtimeo = 2000
+            yield server, client
+
+    @contextmanager
+    def curve_push_pull(self, certs, client_key="ok"):
+        server_public, server_secret, client_public, client_secret = certs
+        with self.push_pull() as (server, client):
+            server.curve_publickey = server_public
+            server.curve_secretkey = server_secret
+            server.curve_server = True
+            if client_key is not None:
+                client.curve_publickey = client_public
+                client.curve_secretkey = client_secret
+                if client_key == "ok":
+                    client.curve_serverkey = server_public
+                else:
+                    private, public = zmq.curve_keypair()
+                    client.curve_serverkey = public
+            yield (server, client)
+
     async def test_null(self):
         """threaded auth - NULL"""
         # A default NULL connection should always succeed, and not
@@ -159,151 +196,114 @@ class AuthTest:
         self.auth = None
 
         # use a new context, so ZAP isn't inherited
-        self.context.destroy()
+        self.context.term()
         self.context = zmq.asyncio.Context()
 
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
-        assert await self.can_connect(server, client)
+        with self.push_pull() as (server, client):
+            assert await self.can_connect(server, client)
 
         # By setting a domain we switch on authentication for NULL sockets,
         # though no policies are configured yet. The client connection
         # should still be allowed.
-        server = self.context.socket(zmq.PUSH)
-        server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
-        assert await self.can_connect(server, client)
+        with self.push_pull() as (server, client):
+            server.zap_domain = b'global'
+            assert await self.can_connect(server, client)
 
     async def test_blacklist(self):
         """threaded auth - Blacklist"""
         # Blacklist 127.0.0.1, connection should fail
         self.auth.deny('127.0.0.1')
-        server = self.context.socket(zmq.PUSH)
-        # By setting a domain we switch on authentication for NULL sockets,
-        # though no policies are configured yet.
-        server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
-        assert not await self.can_connect(server, client, timeout=100)
+        with self.push_pull() as (server, client):
+            # By setting a domain we switch on authentication for NULL sockets,
+            # though no policies are configured yet.
+            server.zap_domain = b'global'
+            assert not await self.can_connect(server, client, timeout=100)
 
     async def test_whitelist(self):
         """threaded auth - Whitelist"""
         # Whitelist 127.0.0.1, connection should pass"
         self.auth.allow('127.0.0.1')
-        server = self.context.socket(zmq.PUSH)
-        # By setting a domain we switch on authentication for NULL sockets,
-        # though no policies are configured yet.
-        server.zap_domain = b'global'
-        client = self.context.socket(zmq.PULL)
-        assert await self.can_connect(server, client)
+        with self.push_pull() as (server, client):
+            # By setting a domain we switch on authentication for NULL sockets,
+            # though no policies are configured yet.
+            server.zap_domain = b'global'
+            assert await self.can_connect(server, client)
 
-    async def test_plain(self):
+    @pytest.mark.parametrize(
+        "enabled, password, success",
+        [
+            (True, "correct", True),
+            (False, "correct", False),
+            (True, "incorrect", False),
+        ],
+    )
+    async def test_plain(self, enabled, password, success):
         """threaded auth - PLAIN"""
 
         # Try PLAIN authentication - without configuring server, connection should fail
-        server = self.context.socket(zmq.PUSH)
-        server.plain_server = True
-        client = self.context.socket(zmq.PULL)
-        client.plain_username = b'admin'
-        client.plain_password = b'Password'
-        assert not await self.can_connect(server, client, timeout=100)
-
-        # Try PLAIN authentication - with server configured, connection should pass
-        server = self.context.socket(zmq.PUSH)
-        server.plain_server = True
-        client = self.context.socket(zmq.PULL)
-        client.plain_username = b'admin'
-        client.plain_password = b'Password'
-        self.auth.configure_plain(domain='*', passwords={'admin': 'Password'})
-        assert await self.can_connect(server, client)
-
-        # Try PLAIN authentication - with bogus credentials, connection should fail
-        server = self.context.socket(zmq.PUSH)
-        server.plain_server = True
-        client = self.context.socket(zmq.PULL)
-        client.plain_username = b'admin'
-        client.plain_password = b'Bogus'
-        assert not await self.can_connect(server, client, timeout=100)
+        with self.push_pull() as (server, client):
+            server.plain_server = True
+            if password:
+                client.plain_username = b'admin'
+                client.plain_password = password.encode("ascii")
+            if enabled:
+                self.auth.configure_plain(domain='*', passwords={'admin': 'correct'})
+            if success:
+                assert await self.can_connect(server, client)
+            else:
+                assert not await self.can_connect(server, client, timeout=100)
 
         # Remove authenticator and check that a normal connection works
         self.auth.stop()
         self.auth = None
+        with self.push_pull() as (server, client):
+            assert await self.can_connect(server, client)
 
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
-        assert await self.can_connect(server, client)
-        client.close()
-        server.close()
-
-    async def test_curve(self, certs, public_keys_dir):
+    @pytest.mark.parametrize(
+        "client_key, location, success",
+        [
+            ('ok', zmq.auth.CURVE_ALLOW_ANY, True),
+            ('ok', "public_keys", True),
+            ('bad', "public_keys", False),
+            (None, "public_keys", False),
+        ],
+    )
+    async def test_curve(self, certs, public_keys_dir, client_key, location, success):
         """threaded auth - CURVE"""
         self.auth.allow('127.0.0.1')
-        server_public, server_secret, client_public, client_secret = certs
 
         # Try CURVE authentication - without configuring server, connection should fail
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert not await self.can_connect(server, client, timeout=100)
-
-        # Try CURVE authentication - with server configured to CURVE_ALLOW_ANY, connection should pass
-        self.auth.configure_curve(domain='*', location=zmq.auth.CURVE_ALLOW_ANY)
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert await self.can_connect(server, client)
-
-        # Try CURVE authentication - with server configured, connection should pass
-        self.auth.configure_curve(domain='*', location=public_keys_dir)
-        server = self.context.socket(zmq.PULL)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PUSH)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert await self.can_connect(client, server)
+        with self.curve_push_pull(certs, client_key=client_key) as (server, client):
+            if location:
+                if location == 'public_keys':
+                    location = public_keys_dir
+                self.auth.configure_curve(domain='*', location=location)
+            if success:
+                assert await self.can_connect(server, client, timeout=100)
+            else:
+                assert not await self.can_connect(server, client, timeout=100)
 
         # Remove authenticator and check that a normal connection works
         self.auth.stop()
         self.auth = None
 
         # Try connecting using NULL and no authentication enabled, connection should pass
-        server = self.context.socket(zmq.PUSH)
-        client = self.context.socket(zmq.PULL)
-        assert await self.can_connect(server, client)
+        with self.push_pull() as (server, client):
+            assert await self.can_connect(server, client)
 
-    async def test_curve_callback(self, certs):
+    @pytest.mark.parametrize("key", ["ok", "wrong"])
+    @pytest.mark.parametrize("async_", [True, False])
+    async def test_curve_callback(self, certs, key, async_):
         """threaded auth - CURVE with callback authentication"""
         self.auth.allow('127.0.0.1')
         server_public, server_secret, client_public, client_secret = certs
 
-        # Try CURVE authentication - without configuring server, connection should fail
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert not await self.can_connect(server, client, timeout=100)
-
-        # Try CURVE authentication - with callback authentication configured, connection should pass
-
         class CredentialsProvider:
             def __init__(self):
-                self.client = client_public
+                if key == "ok":
+                    self.client = client_public
+                else:
+                    self.client = server_public
 
             def callback(self, domain, key):
                 if key == self.client:
@@ -311,138 +311,70 @@ class AuthTest:
                 else:
                     return False
 
+            async def async_callback(self, domain, key):
+                await asyncio.sleep(0.1)
+                if key == self.client:
+                    return True
+                else:
+                    return False
+
+        if async_:
+            CredentialsProvider.callback = CredentialsProvider.async_callback
         provider = CredentialsProvider()
         self.auth.configure_curve_callback(credentials_provider=provider)
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert await self.can_connect(server, client, timeout=100)
-
-        # Try CURVE authentication - with async callback authentication configured, connection should pass
-
-        class AsyncCredentialsProvider:
-            def __init__(self):
-                self.client = client_public
-
-            async def callback(self, domain, key):
-                await asyncio.sleep(0.1)
-                if key == self.client:
-                    return True
-                else:
-                    return False
-
-        provider = AsyncCredentialsProvider()
-        self.auth.configure_curve_callback(credentials_provider=provider)
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert await self.can_connect(server, client)
-
-        # Try CURVE authentication - with callback authentication configured with wrong key, connection should not pass
-
-        class WrongCredentialsProvider:
-            def __init__(self):
-                self.client = "WrongCredentials"
-
-            def callback(self, domain, key):
-                if key == self.client:
-                    return True
-                else:
-                    return False
-
-        provider = WrongCredentialsProvider()
-        self.auth.configure_curve_callback(credentials_provider=provider)
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert not await self.can_connect(server, client, timeout=100)
-
-        # Try CURVE authentication - with async callback authentication configured with wrong key, connection should not pass
-
-        class WrongAsyncCredentialsProvider:
-            def __init__(self):
-                self.client = "WrongCredentials"
-
-            async def callback(self, domain, key):
-                await asyncio.sleep(0.1)
-                if key == self.client:
-                    return True
-                else:
-                    return False
-
-        provider = WrongAsyncCredentialsProvider()
-        self.auth.configure_curve_callback(credentials_provider=provider)
-        server = self.context.socket(zmq.PUSH)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PULL)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert not await self.can_connect(server, client)
+        with self.curve_push_pull(certs) as (server, client):
+            if key == "ok":
+                assert await self.can_connect(server, client)
+            else:
+                assert not await self.can_connect(server, client, timeout=200)
 
     @skip_pypy
     async def test_curve_user_id(self, certs, public_keys_dir):
         """threaded auth - CURVE"""
         self.auth.allow('127.0.0.1')
         server_public, server_secret, client_public, client_secret = certs
-
         self.auth.configure_curve(domain='*', location=public_keys_dir)
-        server = self.context.socket(zmq.PULL)
-        server.curve_publickey = server_public
-        server.curve_secretkey = server_secret
-        server.curve_server = True
-        client = self.context.socket(zmq.PUSH)
-        client.curve_publickey = client_public
-        client.curve_secretkey = client_secret
-        client.curve_serverkey = server_public
-        assert await self.can_connect(client, server)
+        # reverse server-client relationship, so server is PULL
+        with self.push_pull() as (client, server):
+            server.curve_publickey = server_public
+            server.curve_secretkey = server_secret
+            server.curve_server = True
 
-        # test default user-id map
-        await client.send(b'test')
-        msg = await server.recv(copy=False)
-        assert msg.bytes == b'test'
-        try:
-            user_id = msg.get('User-Id')
-        except zmq.ZMQVersionError:
-            pass
-        else:
-            assert user_id == client_public.decode("utf8")
+            client.curve_publickey = client_public
+            client.curve_secretkey = client_secret
+            client.curve_serverkey = server_public
 
-        # test custom user-id map
-        self.auth.curve_user_id = lambda client_key: 'custom'
+            assert await self.can_connect(client, server)
 
-        client2 = self.context.socket(zmq.PUSH)
-        client2.curve_publickey = client_public
-        client2.curve_secretkey = client_secret
-        client2.curve_serverkey = server_public
-        assert await self.can_connect(client2, server)
+            # test default user-id map
+            await client.send(b'test')
+            msg = await server.recv(copy=False)
+            assert msg.bytes == b'test'
+            try:
+                user_id = msg.get('User-Id')
+            except zmq.ZMQVersionError:
+                pass
+            else:
+                assert user_id == client_public.decode("utf8")
 
-        await client2.send(b'test2')
-        msg = await server.recv(copy=False)
-        assert msg.bytes == b'test2'
-        try:
-            user_id = msg.get('User-Id')
-        except zmq.ZMQVersionError:
-            pass
-        else:
-            assert user_id == 'custom'
+            # test custom user-id map
+            self.auth.curve_user_id = lambda client_key: 'custom'
+
+            with self.context.socket(zmq.PUSH) as client2:
+                client2.curve_publickey = client_public
+                client2.curve_secretkey = client_secret
+                client2.curve_serverkey = server_public
+                assert await self.can_connect(client2, server)
+
+                await client2.send(b'test2')
+                msg = await server.recv(copy=False)
+                assert msg.bytes == b'test2'
+                try:
+                    user_id = msg.get('User-Id')
+                except zmq.ZMQVersionError:
+                    pass
+                else:
+                    assert user_id == 'custom'
 
 
 class TestThreadAuthentication(AuthTest):
@@ -463,7 +395,6 @@ class TestAsyncioAuthentication(AuthTest):
         return AsyncioAuthenticator(self.context)
 
 
-@pytest.mark.usefixtures("io_loop")
 @pytest.mark.skipif(tornado is None, reason="requires tornado")
 class TestIOLoopAuthentication(AuthTest):
     """Test authentication running in a thread"""
