@@ -5,7 +5,7 @@ Allow or deny clients based on IP address.
 
 Strawhouse, which is plain text with filtering on IP addresses. It still
 uses the NULL mechanism, but we install an authentication hook that checks
-the IP address against a whitelist or blacklist and allows or denies it
+the IP address against a list and allows or denies it
 accordingly.
 
 Author: Chris Laws
