@@ -1,5 +1,16 @@
 exclude: ^zmq/eventloop/minitornado/
 repos:
+  - repo: local
+    hooks:
+      - id: constants
+        name: constants
+        files: "^.*/constants.py"
+        description: Generate constants files
+        entry: python -m buildutils.constants
+        language: python
+        pass_filenames: false
+        additional_dependencies:
+          - black
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.16  # Use the ref you want to point at
     hooks:
@@ -46,6 +57,8 @@ repos:
     rev: 22.8.0
     hooks:
       - id: black
+        # don't run black twice on constants.py
+        exclude: zmq/constants.py
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:

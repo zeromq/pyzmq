@@ -17,6 +17,7 @@ Currently generates the following files from templates:
 import enum
 import os
 import sys
+from subprocess import run
 
 from . import info
 
@@ -112,6 +113,8 @@ def generate_file(fname, ns_func, dest_dir="."):
     info("generating %s from template" % dest)
     with open(dest, 'w') as f:
         f.write(out)
+    if fname.endswith(".py"):
+        run([sys.executable, "-m", "black", dest])
 
 
 def render_constants():
