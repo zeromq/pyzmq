@@ -4,23 +4,6 @@ eventloop.ioloop
 
 Module: :mod:`eventloop.ioloop`
 -------------------------------
-.. automodule:: zmq.eventloop.ioloop
 
-.. currentmodule:: zmq.eventloop.ioloop
-
-Classes
--------
-
-
-:class:`ZMQIOLoop`
-~~~~~~~~~~~~~~~~~~
-
-
-.. autoclass:: ZMQIOLoop
-
-
-Function
---------
-
-
-.. autofunction:: zmq.eventloop.ioloop.install
+This module is deprecated in pyzmq 17.
+Use :py:mod:`tornado.ioloop`.

@@ -29,6 +29,8 @@ if __name__ == '__main__':
     ]
 
     docwriter.module_skip_patterns += [
+        r'\.auth\.ioloop$',
+        r'\.eventloop\.ioloop$',
         r'\.eventloop\.stack_context$',
         r'\.eventloop\.future$',
         r'\.error$',
