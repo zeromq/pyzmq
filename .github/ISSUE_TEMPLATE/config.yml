@@ -1,0 +1,8 @@
+contact_links:
+  - name: "\U0001F914 Question about how to use zeromq"
+    url: https://stackoverflow.com/questions/tagged/zeromq
+    about: The pyzmq development repo is not the place to ask about how to use zeromq. There just aren't that many eyes on it!
+
+  - name: "\U0001F914 Bug reports for zeromq"
+    url: https://github.com/zeromq/libzmq/issues
+    about: Report general issues about zeromq socket behavior on the libzmq repo. pyzmq only exposes libzmq to Python, it does not influence zmq socket behavior.

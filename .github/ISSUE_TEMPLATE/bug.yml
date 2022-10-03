@@ -1,0 +1,85 @@
+name: Bug Report
+description: File a pyzmq-specific bug report
+title: "BUG: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thanks for taking the time to fill out this bug report!
+        Please only report pyzmq-specific bugs on this repo,
+        i.e. missing options, pyzmq build failures,
+        event loop problems.
+        General problems or questions about zeromq sockets
+        (e.g. missing messages, etc.)
+        are best directed towards [zeromq/libzmq](https://github.com/zeromq/libzmq) instead.
+
+  - type: input
+    id: pyzmq-version
+    attributes:
+      label: What pyzmq version?
+      placeholder: |
+        print(zmq.__version__)
+    validations:
+      required: true
+
+  - type: input
+    id: libzmq-version
+    attributes:
+      label: What libzmq version?
+      description: |
+        If you installed libzmq separately, mention that.
+      placeholder: print(zmq.zmq_version())
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version (and how it was installed)
+      description: |
+        For example: Python 3.10 installed via conda-forge
+      placeholder: python 3.87, via Python.org
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      description: |
+        What Operation System and Version?
+      placeholder: What OS (ubuntu 22.04, macOS 12, etc.)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: |
+        What did you expect to happen, and what happened instead?
+      placeholder: Tell us what you see!
+      value: A bug happened!
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Code to reproduce bug
+      description: Please provide _complete_ Python code required to reproduce the bug, if you can.
+      render: python
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Traceback, if applicable
+      description: Provide full Python traceback of the error you see, if there is one.
+      render: shell
+
+  - type: textarea
+    id: more
+    attributes:
+      label: More info
+      description: Anything more you want to share?
