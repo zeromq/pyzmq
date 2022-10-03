@@ -3,9 +3,10 @@
 # example script for installing libzmq and pyzmq with draft support
 
 # 1. install libzmq with draft enabled
-export ZMQ_VERSION=4.3.4
-export PREFIX=${PREFIX:-/usr/local}
-export PYZMQ=${PYZMQ:-pyzmq}
+ZMQ_VERSION=4.3.4
+PREFIX=${PREFIX:-/usr/local}
+PYZMQ=${PYZMQ:-pyzmq}
+CPU_COUNT=${CPU_COUNT:-$(python3 -c "import os; print(os.cpu_count())")}
 
 set -ex
 echo "installing libzmq to $PREFIX"
@@ -13,7 +14,7 @@ wget https://github.com/zeromq/libzmq/releases/download/v${ZMQ_VERSION}/zeromq-$
 tar -xzf libzmq.tar.gz
 cd zeromq-${ZMQ_VERSION}
 ./configure --prefix=${PREFIX} --enable-drafts
-make -j && make install
+make -j${CPU_COUNT} && make install
 
 # install pyzmq with drafts enabled
 # --install-option disables installing pyzmq from wheels,

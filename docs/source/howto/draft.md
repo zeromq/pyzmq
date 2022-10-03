@@ -16,12 +16,14 @@ To install libzmq with draft support:
 ```bash
 ZMQ_VERSION=4.3.4
 PREFIX=/usr/local
+CPU_COUNT=${CPU_COUNT:-$(python3 -c "import os; print(os.cpu_count())")}
+
 
 wget https://github.com/zeromq/libzmq/releases/download/v${ZMQ_VERSION}/zeromq-${ZMQ_VERSION}.tar.gz -O libzmq.tar.gz
 tar -xzf libzmq.tar.gz
 cd zeromq-${ZMQ_VERSION}
 ./configure --prefix=${PREFIX} --enable-drafts
-make -j && make install
+make -j${CPU_COUNT} && make install
 ```
 
 And to install pyzmq with draft support:
