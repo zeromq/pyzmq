@@ -11,6 +11,10 @@ def test_constants():
     assert zmq.POLLIN is zmq.PollEvent.POLLIN
     assert zmq.PUSH is zmq.SocketType.PUSH
     assert zmq.constants.SUBSCRIBE is zmq.SocketOption.SUBSCRIBE
+    assert (
+        zmq.RECONNECT_STOP_AFTER_DISCONNECT
+        is zmq.constants.ReconnectStop.AFTER_DISCONNECT
+    )
 
 
 def test_socket_options():
