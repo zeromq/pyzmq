@@ -81,7 +81,7 @@ def promoted_constants():
 
     global_assignments = []
     all_lines = ["__all__: List[str] = ["]
-    for cls_name in dir(constants):
+    for cls_name in sorted(dir(constants)):
         if cls_name.startswith("_"):
             continue
         cls = getattr(constants, cls_name)
