@@ -14,7 +14,6 @@ jobs:
     resource_class: arm.medium
 
     environment:
-      CIBW_ARCHS: "aarch64"
       CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
 
