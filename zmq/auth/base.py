@@ -118,7 +118,7 @@ class Authenticator:
         self._denied.update(addresses)
 
     def configure_plain(
-        self, domain: str = '*', passwords: Dict[str, str] = None
+        self, domain: str = '*', passwords: Optional[Dict[str, str]] = None
     ) -> None:
         """Configure PLAIN authentication for a given domain.
 

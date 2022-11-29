@@ -140,7 +140,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
         if not self._shadow and not _exiting and not self.closed:
             self._warn_destroy_close = True
-            if warn and getattr(self, "_sockets", None) is not None:
+            if warn is not None and getattr(self, "_sockets", None) is not None:
                 # warn can be None during process teardown
                 warn(
                     f"Unclosed context {self}",
@@ -317,7 +317,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         sockets: List[ST] = list(getattr(self, "_sockets", None) or [])
         for s in sockets:
             if s and not s.closed:
-                if self._warn_destroy_close and warn:
+                if self._warn_destroy_close and warn is not None:
                     # warn can be None during process teardown
                     warn(
                         f"Destroying context with unclosed socket {s}",
@@ -334,7 +334,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     def socket(
         self: T,
         socket_type: int,
-        socket_class: Callable[[T, int], ST] = None,
+        socket_class: Optional[Callable[[T, int], ST]] = None,
         **kwargs: Any,
     ) -> ST:
         """Create a Socket associated with this Context.

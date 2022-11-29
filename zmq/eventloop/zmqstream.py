@@ -384,7 +384,7 @@ class ZMQStream:
         flags: int = 0,
         copy: bool = True,
         track: bool = False,
-        callback: Callable = None,
+        callback: Optional[Callable] = None,
         **kwargs: Any,
     ) -> None:
         """Send a multipart message, optionally also register a new callback for sends.
