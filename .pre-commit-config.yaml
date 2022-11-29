@@ -19,6 +19,15 @@ repos:
         additional_dependencies:
           - mdformat-black
           - mdformat-myst
+
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v1.7.7
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+        exclude: zmq/tests/test_imports.py
+
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
     hooks:
