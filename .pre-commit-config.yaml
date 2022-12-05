@@ -21,7 +21,7 @@ repos:
           - mdformat-myst
 
   - repo: https://github.com/PyCQA/autoflake
-    rev: v1.7.7
+    rev: v2.0.0
     hooks:
       - id: autoflake
         args:
@@ -46,7 +46,7 @@ repos:
         additional_dependencies:
           - types-paramiko
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.2
+    rev: v3.3.0
     hooks:
       - id: pyupgrade
         args:
