@@ -1,3 +1,6 @@
+ci:
+  autoupdate_schedule: monthly
+
 exclude: ^zmq/eventloop/minitornado/
 repos:
   - repo: local
