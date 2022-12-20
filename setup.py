@@ -1362,7 +1362,6 @@ setup_args = dict(
     zip_safe=False,
     python_requires=">=3.6",
     install_requires=[
-        "py; implementation_name == 'pypy'",
         "cffi; implementation_name == 'pypy'",
     ],
 )
