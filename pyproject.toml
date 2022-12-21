@@ -63,19 +63,23 @@ test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
-environment.ZMQ_PREFIX = "/usr/local"
-environment.CFLAGS = "-Wl,-strip-all"
-environment.CXXFLAGS = "-Wl,-strip-all"
 
 manylinux-aarch64-image = "manylinux2014"
 musllinux-aarch64-image = "musllinux_1_1"
 musllinux-i686-image = "musllinux_1_1"
 musllinux-x86_64-image = "musllinux_1_1"
 
+[tool.cibuildwheel.linux.environment]
+ZMQ_PREFIX = "/usr/local"
+CFLAGS = "-Wl,-strip-all"
+CXXFLAGS = "-Wl,-strip-all"
+
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
-environment.ZMQ_PREFIX = "/usr/local"
-environment.MACOSX_DEPLOYMENT_TARGET = "10.9"
+
+[tool.cibuildwheel.macos.environment]
+ZMQ_PREFIX = "/usr/local"
+MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
 before-all = [
@@ -83,7 +87,6 @@ before-all = [
     "xcopy /i libzmq-dll C:\\libzmq-dll",
 ]
 
-environment.ZMQ_PREFIX = "libzmq-dll"
 repair-wheel-command = """
     delvewheel repair \
         -v \
@@ -92,10 +95,13 @@ repair-wheel-command = """
         {wheel}
 """
 
+[tool.cibuildwheel.windows.environment]
+ZMQ_PREFIX = "libzmq-dll"
+
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
 select = "*macos*{universal2,arm64}*"
-environment.MACOSX_DEPLOYMENT_TARGET = "10.15"
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 # manylinux1 for old Python
 [[tool.cibuildwheel.overrides]]
@@ -125,5 +131,5 @@ select = "pp*win*"
 # pypy builds libzmq as an Extension,
 # doesn't bundle dlls (requires separate vcredist install, as pypy itself seems to)
 # bundling external libzmq doesn't seem to work
-environment.ZMQ_PREFIX = ""
+environment = { ZMQ_PREFIX = "" }
 repair-wheel-command = ""
