@@ -23,11 +23,17 @@ Fixed:
 - When {class}`~.zmq.eventloop.zmqstream.ZMQStream` is given an async socket,
   it now warns and hooks up events correctly with the underlying socket, so the callback gets the received message,
   instead of sending the callback the incorrect arguments.
+- Fixed toml parse error in `pyproject.toml`,
+  when installing from source with very old pip.
+- Removed expressed dependency on `py` when running with pypy,
+  which hasn't been used in some time.
 
 Deprecated:
 
 - {class}`zmq.auth.ioloop.IOLoopAuthenticator` is deprecated in favor of {class}`zmq.auth.asyncio.AsyncioAuthenticator`
 - As part of migrating toward modern pytest, {class}`zmq.tests.BaseZMQTestCase` is deprecated and should not be used outside pyzmq.
+- `python setup.py test` is deprecated as a way to launch the tests.
+  Just use `pytest`.
 
 Removed:
 
