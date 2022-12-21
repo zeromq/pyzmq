@@ -179,7 +179,7 @@ chmod -x examples/pubsub/topics_sub.py
     # Make sure we import from the install directory
     #rm zmq/__*.py
     PYTHONPATH=%{buildroot}%{python3_sitearch} \
-        %{__python3} setup.py test
+        %{__python3} pytest
 %endif
 
 
@@ -235,7 +235,7 @@ rm -rf zmq/tests/test_auth.py
 %else
 %python_exec setup.py build_ext --inplace
 %endif
-%python_exec setup.py test
+%python_exec pytest
 %endif
 
 %files %{python_files}

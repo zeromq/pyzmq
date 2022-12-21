@@ -851,9 +851,7 @@ class FetchCommand(Command):
 class TestCommand(Command):
     """Custom setuptools command to run the test suite."""
 
-    description = (
-        "Test PyZMQ (must have been built inplace: `setup.py build_ext --inplace`)"
-    )
+    description = "DEPRECATED, use pytest"
 
     user_options = []
 
@@ -864,7 +862,9 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        """Run the test suite with py.test"""
+        """Run the test suite with pytest"""
+        warn("Running pyzmq's tests with `setup.py test` is deprecated. Use `pytest`.")
+        time.sleep(10)
         # crude check for inplace build:
         try:
             import zmq
