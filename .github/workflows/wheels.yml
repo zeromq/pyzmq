@@ -78,6 +78,7 @@ jobs:
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
+      CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_x86_64_image || '' }}"
 
     strategy:
       fail-fast: false
@@ -110,6 +111,15 @@ jobs:
             cibw:
               arch: i686
               build: "*manylinux*"
+
+          # additional manylinux variants, not specified in pyproject.toml:
+          # build with newer 2_28 for cpython >= 3.10, pypy 3.9
+          - name: manylinux-x86_64-2_28
+            os: ubuntu-20.04
+            cibw:
+              arch: x86_64
+              build: "cp31*-manylinux* pp39-manylinux*"
+              manylinux_x86_64_image: manylinux_2_28
 
           - os: ubuntu-20.04
             name: musllinux

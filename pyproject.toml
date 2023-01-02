@@ -64,6 +64,8 @@ test-command = "pytest -vsx {package}/tools/test_wheel.py"
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
 
+manylinux-x86_64-image = "manylinux2014"
+manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux2014"
 musllinux-aarch64-image = "musllinux_1_1"
 musllinux-i686-image = "musllinux_1_1"
@@ -109,22 +111,14 @@ select = "cp3{6,7}-*"
 manylinux-x86_64-image = "manylinux1"
 manylinux-i686-image = "manylinux1"
 
-# manylinux2010 for cp38-9, pp37-8
+# manylinux2010 for (less) old cp38-9, pp37-8
 [[tool.cibuildwheel.overrides]]
 select = "cp3{8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
-# manylinux2014 for cp310, pp39
-[[tool.cibuildwheel.overrides]]
-select = "cp310-* pp39-*"
-manylinux-x86_64-image = "manylinux2014"
-manylinux-i686-image = "manylinux2014"
-
-# manylinux_2_28 for cp311
-[[tool.cibuildwheel.overrides]]
-select = "cp311-*"
-manylinux-x86_64-image = "manylinux_2_28"
+# note: manylinux_2_28 builds are added
+# in .github/workflows/wheels.yml
 
 [[tool.cibuildwheel.overrides]]
 select = "pp*win*"
