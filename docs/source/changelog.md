@@ -17,6 +17,7 @@ New:
 - in {mod}`zmq.auth`, CredentialsProvider callbacks may now be async.
 - {class}`~.zmq.eventloop.zmqstream.ZMQStream` callbacks may now be async.
 - Add {class}`zmq.ReconnectStop` draft constants.
+- Add manylinux_2_28 wheels for x86_64 CPython 3.10, 3.11, and PyPy 3.9 (these are _in addition to_ not _instead of_ the manylinux_2014 wheels).
 
 Fixed:
 
