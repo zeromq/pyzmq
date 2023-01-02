@@ -123,6 +123,9 @@ manylinux-i686-image = "manylinux2014"
 
 # manylinux_2_28 for cp311
 [[tool.cibuildwheel.overrides]]
+# When building manylinux_2_28 wheels for performance benefits, we also build
+# manylinux2014 wheels for broader OS compatibility as configured in
+# .github/workflows/wheels.yml.
 select = "cp311-*"
 manylinux-x86_64-image = "manylinux_2_28"
 
