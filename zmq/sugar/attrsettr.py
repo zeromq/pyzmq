@@ -3,7 +3,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-import abc
 import errno
 from typing import TypeVar, Union
 
@@ -13,7 +12,7 @@ T = TypeVar("T")
 OptValT = Union[str, bytes, int]
 
 
-class AttributeSetter(metaclass=abc.ABCMeta):
+class AttributeSetter:
     def __setattr__(self, key: str, value: OptValT) -> None:
         """set zmq options by attribute"""
 
@@ -67,13 +66,13 @@ class AttributeSetter(metaclass=abc.ABCMeta):
         """override if getattr should do something other than call self.get"""
         return self.get(opt)
 
-    @abc.abstractmethod
     def get(self, opt: int) -> OptValT:
-        pass
+        """Override in subclass"""
+        raise NotImplementedError("override in subclass")
 
-    @abc.abstractmethod
     def set(self, opt: int, val: OptValT) -> None:
-        pass
+        """Override in subclass"""
+        raise NotImplementedError("override in subclass")
 
 
 __all__ = ['AttributeSetter']
