@@ -11,7 +11,6 @@ from zmq.tests import BaseZMQTestCase
 
 
 class TestPubLog(BaseZMQTestCase):
-
     iface = 'inproc://zmqlog'
     topic = 'zmq'
 

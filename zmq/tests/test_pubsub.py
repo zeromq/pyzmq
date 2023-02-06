@@ -9,7 +9,6 @@ from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent
 
 
 class TestPubSub(BaseZMQTestCase):
-
     pass
 
     # We are disabling this test while an issue is being resolved.

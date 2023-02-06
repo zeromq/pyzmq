@@ -26,6 +26,7 @@ context = zmq.Context()
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:5559")
 
+
 #  Do 10 requests, waiting each time for a response
 def client():
     for request in range(1, 10):

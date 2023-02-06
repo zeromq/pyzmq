@@ -22,7 +22,6 @@ import zmq
 
 
 def main(addr: str, who: str):
-
     ctx = zmq.Context()
     socket = ctx.socket(zmq.PUB)
     socket.bind(addr)

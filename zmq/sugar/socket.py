@@ -353,7 +353,6 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
             return
         _key = key.lower()
         if _key in ('subscribe', 'unsubscribe'):
-
             if isinstance(value, str):
                 value = value.encode('utf8')
             if _key == 'subscribe':

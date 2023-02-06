@@ -51,7 +51,6 @@ def new_pointer_from_opt(option, length=0):
 
 
 def value_from_opt_pointer(option, opt_pointer, length=0):
-
     try:
         option = SocketOption(option)
     except ValueError:

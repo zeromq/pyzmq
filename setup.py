@@ -483,7 +483,6 @@ class Configure(build_ext):
             if zmq_prefix:
                 msg.append("    ZMQ_PREFIX=%s" % zmq_prefix)
             if vers >= min_legacy_zmq:
-
                 msg.append(
                     "    Explicitly allow legacy zmq by specifying `ZMQ_PREFIX=/zmq/prefix`"
                 )
@@ -1207,7 +1206,6 @@ except Exception:
     cmdclass['build_ext'] = CheckingBuildExt
 
     class MissingCython(Command):
-
         user_options = []
 
         def initialize_options(self):
@@ -1232,7 +1230,6 @@ except Exception:
     cmdclass['cython'] = MissingCython
 
 else:
-
     suffix = '.pyx'
 
     class CythonCommand(build_ext_cython):

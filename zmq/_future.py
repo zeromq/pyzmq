@@ -194,7 +194,6 @@ T = TypeVar("T", bound="_AsyncSocket")
 
 
 class _AsyncSocket(_Async, _zmq.Socket[Future]):
-
     # Warning : these class variables are only here to allow to call super().__setattr__.
     # They be overridden at instance initialization and not shared in the whole class
     _recv_futures = None

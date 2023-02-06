@@ -222,7 +222,6 @@ from zmq.eventloop.zmqstream import ZMQStream
 
 
 class TestZMQBridge(AsyncTestCase):
-
     # Use a ZMQ-compatible I/O loop so that we can use `ZMQStream`.
     def get_new_ioloop(self):
         return ZMQIOLoop()
