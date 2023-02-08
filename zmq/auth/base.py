@@ -278,7 +278,6 @@ class Authenticator:
         # Perform authentication mechanism-specific checks if necessary
         username = "anonymous"
         if not denied:
-
             if mechanism == b'NULL' and not allowed:
                 # For NULL, we allow if the address wasn't denied
                 self.log.debug("ALLOWED (NULL)")

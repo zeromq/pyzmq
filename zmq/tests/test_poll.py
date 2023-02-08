@@ -16,7 +16,6 @@ def wait():
 
 
 class TestPoll(PollZMQTestCase):
-
     Poller = zmq.Poller
 
     def test_pair(self):

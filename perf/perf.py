@@ -22,7 +22,6 @@ zmq.COPY_THRESHOLD = 0
 
 
 def parse_args(argv=None):
-
     parser = argparse.ArgumentParser(description='Run a zmq performance test')
     parser.add_argument(
         '-p',

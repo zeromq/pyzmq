@@ -136,6 +136,7 @@ class TestContext(BaseZMQTestCase):
         self.context.term()  # clear default context
 
         q = Queue()
+
         # slow context initialization,
         # to ensure that we are both trying to create one at the same time
         class SlowContext(self.Context):
@@ -262,6 +263,7 @@ class TestContext(BaseZMQTestCase):
 
     def test_cyclic_destroy(self):
         """ctx.destroy should succeed when cyclic ref prevents gc"""
+
         # test credit @dln (GH #137):
         class CyclicReference:
             def __init__(self, parent=None):

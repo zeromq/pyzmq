@@ -49,7 +49,6 @@ with open(join(root, '.mailmap')) as f:
 author_commits = defaultdict(lambda: [])
 
 for commit in get_all_commits():
-
     # exclude some specific commits (e.g. docstring typos)
     if commit.hexsha in EXCLUDED:
         continue

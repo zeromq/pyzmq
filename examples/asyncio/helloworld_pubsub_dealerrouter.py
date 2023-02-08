@@ -59,7 +59,6 @@ class HelloWorldMessage:
         self.hello_world = HelloWorld()
 
     def main(self) -> None:
-
         # activate publishers / subscribers
         asyncio.run(
             asyncio.wait(

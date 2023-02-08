@@ -17,7 +17,6 @@ class Context:
     _shadow = False
 
     def __init__(self, io_threads=1, shadow=None):
-
         if shadow:
             self._zmq_ctx = ffi.cast("void *", shadow)
             self._shadow = True

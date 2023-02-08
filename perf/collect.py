@@ -153,7 +153,6 @@ def main():
                 t_min=t_min,
                 t_max=t_max,
             ):
-
                 data.append(
                     (size, count, copy, poll, transport) + result,
                 )

@@ -69,7 +69,6 @@ class AuthenticationThread(Thread):
                 await self.authenticator.handle_zap_message(msg)
 
     def _handle_pipe_message(self, msg: List[bytes]) -> bool:
-
         command = msg[0]
         self.log.debug("auth received API command %r", command)
 
