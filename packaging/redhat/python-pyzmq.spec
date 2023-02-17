@@ -239,7 +239,7 @@ rm -rf zmq/tests/test_auth.py
 %endif
 
 %files %{python_files}
-%doc AUTHORS.md COPYING.BSD COPYING.LESSER README.md examples
+%doc AUTHORS.md LICENSE.BSD LICENSE.LESSER README.md examples
 %{python_sitearch}/zmq/
 %{python_sitearch}/pyzmq-*-py*.egg-info
 %exclude %{python_sitearch}/zmq/utils/*.h

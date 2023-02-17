@@ -1,5 +1,5 @@
-include COPYING.BSD
-include COPYING.LESSER
+include LICENSE.BSD
+include LICENSE.LESSER
 include CONTRIBUTING.md
 include MANIFEST.in
 include README.md

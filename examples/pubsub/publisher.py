@@ -7,7 +7,7 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 #  Copyright (c) 2010 Brian Granger
 #
 #  Distributed under the terms of the New BSD License.  The full license is in
-#  the file COPYING.BSD, distributed as part of this software.
+#  the file LICENSE.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
 import sys
