@@ -175,3 +175,19 @@ class TestPubLog(BaseZMQTestCase):
         topic, msg = sub.recv_multipart()
         assert msg == b'UNITTEST DEBUG debug message'
         logger.removeHandler(handler)
+
+    def test_custom_message_type(self):
+        class Message:
+            def __init__(self, msg: str):
+                self.msg = msg
+
+            def __str__(self) -> str:
+                return self.msg
+
+        logger, handler, sub = self.connect_handler()
+        msg = "hello"
+        logger.info(Message(msg))
+        topic, received = sub.recv_multipart()
+        assert topic == b'zmq.INFO'
+        assert received == b'hello\n'
+        logger.removeHandler(handler)
