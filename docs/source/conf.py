@@ -124,7 +124,7 @@ suppress_warnings = ['epub.unknown_project_files']
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = "pydata_sphinx_theme"
 
-# html_logo = "_static/logo.png"
+html_logo = "_static/logo.png"
 
 html_theme_options = {
     "icon_links": [
