@@ -30,7 +30,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'sphinx_rtd_theme',
     'myst_parser',
     'enum_tools.autoenum',
 ]
@@ -41,9 +40,6 @@ myst_enable_extensions = [
     "smartquotes",
     "substitution",
 ]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = ['.md', '.rst']
@@ -136,7 +132,7 @@ html_theme_options = {
             # Label for this link
             "name": "PyZMQ on GitHub",
             "url": "https://github.com/zeromq/pyzmq",
-            "icon": "fab fa-github-square",
+            "icon": "fa-brand fa-github-square",
         }
     ]
 }
