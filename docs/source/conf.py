@@ -132,7 +132,7 @@ html_theme_options = {
             # Label for this link
             "name": "PyZMQ on GitHub",
             "url": "https://github.com/zeromq/pyzmq",
-            "icon": "fa-brand fa-github-square",
+            "icon": "fa-brands fa-github-square",
         }
     ]
 }
