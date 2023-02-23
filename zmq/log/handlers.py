@@ -59,9 +59,12 @@ class PUBHandler(logging.Handler):
 
     def __init__(
         self,
-        interface_or_socket: Union[str, zmq.Socket],
+        interface_or_socket: Optional[Union[str, zmq.Socket]] = None,
         context: Optional[zmq.Context] = None,
         root_topic: str = '',
+        *,
+        socket: Optional[zmq.Socket] = None,
+        url: Optional[str] = None,
     ) -> None:
         logging.Handler.__init__(self)
         self.root_topic = root_topic
@@ -80,13 +83,27 @@ class PUBHandler(logging.Handler):
                 "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
             ),
         }
-        if isinstance(interface_or_socket, zmq.Socket):
-            self.socket = interface_or_socket
+        socket_args = [
+            arg for arg in (interface_or_socket, socket, url) if arg is not None
+        ]
+        if len(socket_args) > 1:
+            raise ValueError(
+                f"Can only specify one of `socket` or `url`, got: {socket_args}"
+            )
+        if interface_or_socket is not None:
+            if isinstance(interface_or_socket, zmq.Socket):
+                socket = interface_or_socket
+            else:
+                url = interface_or_socket
+        if socket is not None:
+            self.socket = socket
             self.ctx = self.socket.context
-        else:
+        elif url is not None:
             self.ctx = context or zmq.Context()
             self.socket = self.ctx.socket(zmq.PUB)
-            self.socket.bind(interface_or_socket)
+            self.socket.bind(url)
+        else:
+            raise ValueError("Please specify a PUB socket or URL.")
 
     @property
     def root_topic(self) -> str:

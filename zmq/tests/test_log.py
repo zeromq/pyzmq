@@ -5,6 +5,8 @@
 import logging
 import time
 
+import pytest
+
 import zmq
 from zmq.log import handlers
 from zmq.tests import BaseZMQTestCase
@@ -83,6 +85,21 @@ class TestPubLog(BaseZMQTestCase):
         assert topic == b'zmq.INFO'
         assert msg2 == (msg1 + "\n").encode("utf8")
         logger.removeHandler(handler)
+
+    def test_socket_args(self):
+        pub = self.socket(zmq.PUB)
+        h = handlers.PUBHandler(pub)
+        h2 = handlers.PUBHandler(socket=pub)
+        h3 = handlers.PUBHandler(url="tcp://127.0.0.1:12345", context=self.context)
+        h3.socket.close()
+
+        with pytest.raises(ValueError):
+            handlers.PUBHandler(pub, socket=pub)
+        with pytest.raises(ValueError):
+            handlers.PUBHandler(pub, url="tcp://127.0.0.1:12345")
+        with pytest.raises(ValueError):
+            handlers.PUBHandler(socket=pub, url="tcp://127.0.0.1:12345")
+        pub.close()
 
     def test_root_topic(self):
         logger, handler, sub = self.connect_handler()
