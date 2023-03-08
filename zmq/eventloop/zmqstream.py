@@ -107,7 +107,7 @@ class ZMQStream:
     _send_queue: Queue
     _recv_callback: Optional[Callable]
     _send_callback: Optional[Callable]
-    _close_callback = Optional[Callable]
+    _close_callback: Optional[Callable]
     _state: int = 0
     _flushed: bool = False
     _recv_copy: bool = False
