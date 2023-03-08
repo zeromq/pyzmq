@@ -5,5 +5,4 @@ myst-parser[linkify]
 pydata_sphinx_theme
 pygments>=2.6
 sphinx>=3.0.4
-sphinx-rtd-theme==0.5.*
 tornado
