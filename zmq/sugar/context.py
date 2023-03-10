@@ -269,7 +269,8 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         For further details regarding socket linger behaviour refer to libzmq documentation for ZMQ_LINGER.
 
         This can be called to close the context by hand. If this is not called,
-        the context will automatically be closed when it is garbage collected.
+        the context will automatically be closed when it is garbage collected,
+        in which case you may see a ResourceWarning about the unclosed context.
         """
         super().term()
 

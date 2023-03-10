@@ -250,7 +250,8 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
 
         This can be called to close the socket by hand. If this is not
         called, the socket will automatically be closed when it is
-        garbage collected.
+        garbage collected,
+        in which case you may see a ResourceWarning about the unclosed socket.
         """
         if self.context:
             self.context._rm_socket(self)
