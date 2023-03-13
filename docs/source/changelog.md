@@ -7,6 +7,16 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 25
 
+### 25.0.1
+
+Tiny bugfix release that should only affect users of {class}`~.PUBHandler` or pyzmq repackagers.
+
+- Fix handling of custom Message types in {class}`~.PUBHandler`
+- Small lint fixes to satisfy changes in mypy
+- License files have been renamed to more standard LICENSE.BSD, LICENSE.LESSER to appease some license auto-detect tools.
+
+### 25.0.0
+
 New:
 
 - Added `socket_class` argument to {func}`zmq.Context.socket`
