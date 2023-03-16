@@ -614,6 +614,19 @@ class ZMQStream:
             zmq_events = self.socket.EVENTS
         except zmq.ContextTerminated:
             gen_log.warning("Got events for stream %s after terminating context", self)
+            # trigger close check, this will unregister callbacks
+            self.closed()
+            return
+        except zmq.ZMQError as e:
+            # run close check
+            # shadow sockets may have been closed elsewhere,
+            # which should show up as ENOTSOCK here
+            if self.closed():
+                gen_log.warning(
+                    "Got events for stream %s attached to closed socket: %s", self, e
+                )
+            else:
+                gen_log.error("Error getting events for %s: %s", self, e)
             return
         try:
             # dispatch events:
