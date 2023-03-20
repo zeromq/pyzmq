@@ -7,6 +7,10 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 25
 
+### 25.0.2
+
+- Fix handling of shadow sockets in ZMQStream when the original sockets have been closed. A regression in 25.0.0, seen with jupyter-client 7.
+
 ### 25.0.1
 
 Tiny bugfix release that should only affect users of {class}`~.PUBHandler` or pyzmq repackagers.
