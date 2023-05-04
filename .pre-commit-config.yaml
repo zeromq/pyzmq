@@ -24,7 +24,7 @@ repos:
           - mdformat-myst
 
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.0.2
+    rev: v2.1.1
     hooks:
       - id: autoflake
         args:
@@ -37,7 +37,7 @@ repos:
       - id: flake8
         exclude: ^buildutils/templates/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.1.1
+    rev: v1.2.0
     hooks:
       - id: mypy
         files: zmq/.*
@@ -49,7 +49,7 @@ repos:
         additional_dependencies:
           - types-paramiko
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+    rev: v3.3.2
     hooks:
       - id: pyupgrade
         args:
