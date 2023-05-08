@@ -18,6 +18,7 @@ skip = [
 [build-system]
 requires = [
     "setuptools",
+    "setuptools_scm[toml]",
     "wheel",
     "packaging",
     "cffi; implementation_name == 'pypy'",
