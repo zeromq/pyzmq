@@ -1,47 +1,7 @@
-include LICENSE.BSD
-include LICENSE.LESSER
-include CONTRIBUTING.md
-include MANIFEST.in
-include README.md
-include AUTHORS.md
-include setup.cfg.template
-include setup.cfg.android
-include setup.py
-include setupegg.py
-include zmqversion.py
-include tox.ini
-include .travis.yml
-
-graft docs
-graft tools
-prune docs/build
-prune docs/gh-pages
-
+# only need to track non-version-controlled files to add
 include bundled/zeromq/COPYING
 graft bundled/zeromq/include
 graft bundled/zeromq/src
-graft bundled/zeromq/tweetnacl
 graft bundled/zeromq/external/wepoll
 exclude bundled/zeromq/src/Makefile*
 exclude bundled/zeromq/src/platform.hpp
-
-graft buildutils
-graft examples
-graft zmq
-graft perf
-
-exclude setup.cfg
-exclude zmq/libzmq*
-# exclude docs/_static
-# exclude docs/_templates
-
-global-exclude __pycache__/*
-global-exclude .deps/*
-global-exclude *.so
-global-exclude *.pyd
-global-exclude *.pyc
-global-exclude .git*
-global-exclude .DS_Store
-global-exclude .mailmap
-global-exclude Makefile.am
-global-exclude Makefile.in
