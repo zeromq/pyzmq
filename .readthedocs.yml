@@ -4,13 +4,16 @@
 version: 2
 formats: all
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+
 sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: true
 
 python:
-  # https://docs.readthedocs.io/en/stable/config-file/v2.html#build-image
-  version: 3.7
   install:
     - requirements: docs/requirements.txt
     - path: .
