@@ -9,7 +9,7 @@ import json
 from typing import Any, Dict, Optional, Union
 
 import pymongo
-import pymongo.json_util
+from bson import json_util
 
 import zmq
 
@@ -32,12 +32,12 @@ class MongoZMQ:
         self._bind_addr = bind_addr
         self._db_name = db_name
         self._table_name = table_name
-        self._conn = pymongo.Connection()
+        self._conn: pymongo.MongoClient = pymongo.MongoClient()
         self._db = self._conn[self._db_name]
         self._table = self._db[self._table_name]
 
     def _doc_to_json(self, doc: Any) -> str:
-        return json.dumps(doc, default=pymongo.json_util.default)
+        return json.dumps(doc, default=json_util.default)
 
     def add_document(self, doc: Dict) -> Optional[str]:
         """
@@ -50,7 +50,7 @@ class MongoZMQ:
             return 'Error: %s' % e
         return None
 
-    def get_document_by_keys(self, keys: Dict[str, Any]) -> Union[Dict, str]:
+    def get_document_by_keys(self, keys: Dict[str, Any]) -> Union[Dict, str, None]:
         """
         Attempts to return a single document from database table that matches
         each key/value in keys dictionary.
