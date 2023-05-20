@@ -871,7 +871,7 @@ possible), to allow more permissive use of less-critical code and utilities.
   second argument to the callback, making it easier to use a single callback on multiple
   streams.
 - A {attr}`~Frame.more` boolean attribute has been added to the {class}`~.Frame` (née
-  Message) class, so that frames can be identified as terminal without extra queires of
+  Message) class, so that frames can be identified as terminal without extra queries of
   {attr}`~.Socket.rcvmore`.
 
 ### Experimental New Stuff
