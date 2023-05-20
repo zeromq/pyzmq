@@ -74,7 +74,7 @@ jobs:
             arch: x86
 
           - os: windows-2022
-            python: pypy-3.9
+            python: 3.9
             arch: x64
 
           - os: windows-2022
