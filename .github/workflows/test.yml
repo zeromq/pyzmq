@@ -120,17 +120,6 @@ jobs:
           pip install --upgrade pip wheel
           pip install -r test-requirements.txt
 
-      - name: install pre-release Cython
-        if: startsWith(matrix.python, '3.12')
-        run: |
-          pip install --pre cython
-
-      - name: install cython
-        if: "! (startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12'))"
-        run: |
-          pip install ${{ matrix.cython || 'cython' }}
-          python setup.py cython
-
       - name: remove tornado
         if: matrix.tornado == 'none'
         run: |
