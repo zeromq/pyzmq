@@ -141,6 +141,18 @@ class TestSocket(BaseZMQTestCase):
         s.close()
         ctx.term()
 
+    def test_bind_connect_addr_error(self):
+        with self.socket(zmq.PUSH) as s:
+            url = "tcp://1.2.3.4.5:1234567"
+            with pytest.raises(zmq.ZMQError) as exc:
+                s.bind(url)
+            assert url in str(exc.value)
+
+            url = "noproc://no/such/file"
+            with pytest.raises(zmq.ZMQError) as exc:
+                s.connect(url)
+            assert url in str(exc.value)
+
     def test_identity(self):
         s = self.context.socket(zmq.PULL)
         self.sockets.append(s)
