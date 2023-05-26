@@ -5,6 +5,8 @@ import pytest
 
 import zmq
 
+pyximport = pytest.importorskip("pyximport")
+
 HERE = os.path.dirname(__file__)
 cython_ext = os.path.join(HERE, "cython_ext.pyx")
 
@@ -20,10 +22,7 @@ cython_ext = os.path.join(HERE, "cython_ext.pyx")
     sys.platform.startswith('win'), reason="Don't try runtime Cython on Windows"
 )
 @pytest.mark.parametrize('language_level', [3, 2])
-@pytest.mark.importorskip("pyximport")
 def test_cython(language_level, request, tmpdir):
-    import pyximport
-
     assert 'zmq.tests.cython_ext' not in sys.modules
 
     importers = pyximport.install(
