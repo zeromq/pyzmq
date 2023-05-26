@@ -298,7 +298,11 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
             encoded to utf-8 first.
 
         """
-        super().bind(addr)
+        try:
+            super().bind(addr)
+        except ZMQError as e:
+            e.strerror += f" (addr={addr!r})"
+            raise
         return self._bind_cm(addr)
 
     def connect(self: T, addr: str) -> _SocketContext[T]:
@@ -320,7 +324,11 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
             encoded to utf-8 first.
 
         """
-        super().connect(addr)
+        try:
+            super().connect(addr)
+        except ZMQError as e:
+            e.strerror += f" (addr={addr!r})"
+            raise
         return self._connect_cm(addr)
 
     # -------------------------------------------------------------------------
