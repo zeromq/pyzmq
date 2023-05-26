@@ -96,6 +96,16 @@ jobs:
           grep -v plugins .coveragerc > .coveragerc-pypy
           mv .coveragerc-pypy .coveragerc
 
+      # preserve pip cache to speed up installation
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-pip-${{ runner.python }}-${{ hashFiles('*requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: install dependencies
         run: |
           pip install --upgrade pip wheel
@@ -125,16 +135,6 @@ jobs:
       - name: show environment
         run: |
           pip freeze
-
-      # preserve pip cache to speed up installation
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-pip-${{ runner.python }}-${{ hashFiles('*requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
 
       - name: install mac dependencies
         if: startsWith(matrix.os, 'mac') && matrix.zmq != 'bundled'
