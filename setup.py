@@ -422,7 +422,7 @@ class Configure(build_ext):
         if use_static_zmq in ('TRUE', '1'):
             settings['define_macros'].append(('ZMQ_STATIC', '1'))
 
-        if os.environ.get("PYZMQ_CYTHON_COVERAGE"):
+        if os.environ.get("PYZMQ_CYTHON_COVERAGE", "") not in {"", "0"}:
             settings['define_macros'].append(('CYTHON_TRACE', '1'))
 
         # include internal directories
@@ -1280,7 +1280,7 @@ if cython:
     # set binding so that compiled methods can be inspected
     # set language-level to 3str, requires Cython 0.29
     cython_directives = {"binding": True, "language_level": "3str"}
-    if os.environ.get("PYZMQ_CYTHON_COVERAGE"):
+    if os.environ.get("PYZMQ_CYTHON_COVERAGE", "") not in {"", "0"}:
         cython_directives["linetrace"] = True
     extensions = cythonize(extensions, compiler_directives=cython_directives)
 
