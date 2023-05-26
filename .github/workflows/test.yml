@@ -29,56 +29,56 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-11
+          - os: macos-13
             python: 3.6
 
-          - os: macos-11
-            python: "3.10"
+          - os: macos-13
+            python: 3.11
             zmq: bundled
 
-          - os: macos-11
-            python: pypy-3.8
+          - os: macos-13
+            python: pypy-3.9
             zmq: bundled
 
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             python: 3.6
             zmq: bundled
             tornado: none
 
-          - os: ubuntu-20.04
-            python: pypy-3.8
+          - os: ubuntu-22.04
+            python: pypy-3.9
             zmq: bundled
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python: pypy-3.7
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python: 3.7
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python: 3.9
             tornado: head
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python: "3.10"
 
-          - os: ubuntu-20.04
-            python: "3.11.0-rc.1"
+          - os: ubuntu-22.04
+            python: 3.11
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             python: 3.8
             zmq: head
 
-          - os: windows-2019
+          - os: windows-2022
             python: 3.6
             arch: x86
 
-          - os: windows-2019
+          - os: windows-2022
             python: 3.9
             arch: x64
 
-          - os: windows-2019
-            python: "3.10"
+          - os: windows-2022
+            python: 3.11
             arch: x64
 
     steps:
