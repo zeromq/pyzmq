@@ -32,8 +32,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - os: ubuntu-latest
-            python: "3.12.0-beta.1"
           - os: macos-13
             python: 3.6
 
@@ -73,6 +71,9 @@ jobs:
           - os: ubuntu-22.04
             python: 3.8
             zmq: head
+
+          - os: ubuntu-22.04
+            python: "3.12.0-beta.1"
 
           - os: windows-2022
             python: 3.6
