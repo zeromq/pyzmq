@@ -1362,11 +1362,5 @@ setup_args = dict(
         "cffi; implementation_name == 'pypy'",
     ],
 )
-if not os.path.exists(os.path.join("zmq", "backend", "cython", "socket.c")):
-    # this generally means pip install from git
-    # which requires Cython
-    setup_args.setdefault("setup_requires", []).append(
-        f"cython>={min_cython_version}; implementation_name == 'cpython'",
-    )
 
 setup(**setup_args)
