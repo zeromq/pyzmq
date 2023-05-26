@@ -7,6 +7,22 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 25
 
+### 25.1.0
+
+pyzmq 25.1 mostly changes some packaging details of pyzmq, including support for installation from source on Python 3.12 beta 1.
+
+Enhancements:
+
+- Include address in error message when bind/connect fail.
+
+Packaging changes:
+
+- Fix inclusion of some test files in source distributions.
+- Add Cython as a build-time dependency in `build-system.requires` metadata, following current [recommendations][cython-build-requires] of the Cython maintainers.
+  We still ship generated Cython sources in source distributions, so it is not a _strict_ dependency for packagers using `--no-build-isolation`, but pip will install Cython as part of building pyzmq from source.
+  This makes it more likely that past pyzmq releases will install on future Python releases, which often require an update to Cython but not pyzmq itself.
+  For Python 3.12, Cython >=3.0.0b3 is required.
+
 ### 25.0.2
 
 - Fix handling of shadow sockets in ZMQStream when the original sockets have been closed. A regression in 25.0.0, seen with jupyter-client 7.
@@ -983,4 +999,5 @@ s.linger
 - Added {meth}`~Context.instance()` method for using a single Context throughout an application
   without passing references around.
 
+[cython-build-requires]: https://groups.google.com/g/cython-users/c/ZqKFQmS0JdA/m/1FrK1ApYBAAJ
 [pyczmq]: https://github.com/zeromq/pyczmq
