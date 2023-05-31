@@ -70,6 +70,9 @@ index 17c3537df3..12dead87ba 100644
      LIBZMQ_UNUSED (init_);
 EOF
 
+# avoid error on warning
+export CXXFLAGS="-Wno-error"
+
 ./configure --prefix="$PREFIX" --with-libsodium
 make -j4
 make install
