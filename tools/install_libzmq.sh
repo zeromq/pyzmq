@@ -71,7 +71,7 @@ index 17c3537df3..12dead87ba 100644
 EOF
 
 # avoid error on warning
-export CXXFLAGS="-Wno-error"
+export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 
 ./configure --prefix="$PREFIX" --with-libsodium
 make -j4
