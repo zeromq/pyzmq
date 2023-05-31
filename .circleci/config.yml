@@ -16,7 +16,7 @@ jobs:
     environment:
       CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
-      CIBW_PRERELEASE_WHEELS: "1"
+      CIBW_PRERELEASE_PYTHONS: "1"
 
     steps:
       - checkout
