@@ -73,7 +73,7 @@ jobs:
             zmq: head
 
           - os: ubuntu-22.04
-            python: "3.12.0-beta.1"
+            python: "3.12"
 
           - os: windows-2022
             python: 3.6
@@ -95,6 +95,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch || 'x64' }}
+          # allows us to use '3.12' and get '-dev' while we wait
+          allow-prereleases: true
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
