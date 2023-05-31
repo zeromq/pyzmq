@@ -1188,9 +1188,6 @@ submodules = {
 min_cython_version = "0.29"
 cython_language_level = "3str"
 
-if sys.version_info >= (3, 12):
-    min_cython_version = "3.0.0b3"
-
 try:
     import Cython
 

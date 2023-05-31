@@ -21,23 +21,24 @@ concurrency:
 
 env:
   TWINE_NONINTERACTIVE: "1"
+  CIBW_PRERELEASE_PYTHONS: "1"
 
 jobs:
   check-bundle:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: check bundled libzmq checksums
         run: python -m buildutils.bundle checksums
 
   sdist:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -45,7 +46,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: install dependencies
         run: |
@@ -78,7 +79,8 @@ jobs:
           twine upload --skip-existing dist/*.tar.gz
 
   wheel:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    name: wheel-${{ matrix.name }}
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
@@ -108,14 +110,12 @@ jobs:
               arch: universal2
               build: "cp*"
 
-          - os: ubuntu-20.04
-            name: manylinux-x86_64
+          - name: manylinux-x86_64
             cibw:
               arch: x86_64
               build: "*manylinux*"
 
-          - os: ubuntu-20.04
-            name: manylinux-i686
+          - name: manylinux-i686
             cibw:
               arch: i686
               build: "*manylinux*"
@@ -123,19 +123,17 @@ jobs:
           # additional manylinux variants, not specified in pyproject.toml:
           # build with newer 2_28 for cpython >= 3.10, pypy 3.9
           - name: manylinux-x86_64-2_28
-            os: ubuntu-20.04
             cibw:
               arch: x86_64
               build: "cp31*-manylinux* pp39-manylinux*"
               manylinux_x86_64_image: manylinux_2_28
 
-          - os: ubuntu-20.04
-            name: musllinux
+          - name: musllinux
             cibw:
               build: "*musllinux*"
 
-          - os: windows-2019
-            name: win32
+          - name: win32
+            os: windows-2019
             architecture: x86
             cibw:
               build: "cp*win32"
@@ -158,7 +156,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
           architecture: ${{ matrix.architecture }}
 
       - name: customize mac-arm-64
@@ -178,10 +176,6 @@ jobs:
       - name: list target wheels
         run: |
           python -m cibuildwheel . --print-build-identifiers
-
-      - name: compile Cython sources
-        run: |
-          python setup.py cython
 
       - name: build wheels
         run: |
