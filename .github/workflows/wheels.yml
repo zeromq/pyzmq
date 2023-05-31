@@ -21,6 +21,7 @@ concurrency:
 
 env:
   TWINE_NONINTERACTIVE: "1"
+  CIBW_PRERELEASE_PYTHONS: "1"
 
 jobs:
   check-bundle:
@@ -31,7 +32,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: check bundled libzmq checksums
         run: python -m buildutils.bundle checksums
@@ -45,7 +46,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: install dependencies
         run: |
@@ -158,7 +159,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
           architecture: ${{ matrix.architecture }}
 
       - name: customize mac-arm-64
@@ -178,10 +179,6 @@ jobs:
       - name: list target wheels
         run: |
           python -m cibuildwheel . --print-build-identifiers
-
-      - name: compile Cython sources
-        run: |
-          python setup.py cython
 
       - name: build wheels
         run: |
