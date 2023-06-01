@@ -24,7 +24,6 @@ import subprocess
 import sys
 import time
 from contextlib import contextmanager
-from distutils.errors import DistutilsOptionError
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
@@ -37,6 +36,7 @@ from setuptools import Command, setup
 from setuptools.command.bdist_egg import bdist_egg
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
+from setuptools.errors import OptionError
 from setuptools.extension import Extension
 
 # local script imports:
@@ -1118,7 +1118,7 @@ class CheckingBuildExt(build_ext):
             try:
                 self.parallel = int(self.parallel)
             except ValueError:
-                raise DistutilsOptionError("parallel should be an integer")
+                raise OptionError("parallel should be an integer")
 
         # check version, to prevent confusing undefined constant errors
         self.distribution.run_command("configure")
@@ -1281,7 +1281,7 @@ else:
                 try:
                     self.parallel = int(self.parallel)
                 except ValueError:
-                    raise DistutilsOptionError("parallel should be an integer")
+                    raise OptionError("parallel should be an integer")
 
             self.distribution.run_command("configure")
             return super().finalize_options()
