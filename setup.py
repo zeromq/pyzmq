@@ -24,6 +24,7 @@ import subprocess
 import sys
 import time
 from contextlib import contextmanager
+from distutils.errors import DistutilsOptionError
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
@@ -1107,6 +1108,18 @@ class CheckingBuildExt(build_ext):
         patch_lib_paths(ext_path, self.compiler.library_dirs)
 
     def finalize_options(self):
+        # this is normally done by super().finalize_options() but it
+        # needs to be done *before* we call configure if cython,
+        # numpy and pythran are all installed; and we can't call it
+        # after finalize_options() because that breaks pypy builds
+        # on Windows; logic copied from distutils/command/build_ext.py
+        # https://github.com/zeromq/pyzmq/pull/1872
+        if isinstance(self.parallel, str):
+            try:
+                self.parallel = int(self.parallel)
+            except ValueError:
+                raise DistutilsOptionError("parallel should be an integer")
+
         # check version, to prevent confusing undefined constant errors
         self.distribution.run_command("configure")
         return super().finalize_options()
@@ -1258,6 +1271,18 @@ else:
             patch_lib_paths(ext_path, self.compiler.library_dirs)
 
         def finalize_options(self):
+            # this is normally done by super().finalize_options() but it
+            # needs to be done *before* we call configure if cython,
+            # numpy and pythran are all installed; and we can't call it
+            # after finalize_options() because that breaks pypy builds
+            # on Windows; logic copied from distutils/command/build_ext.py
+            # https://github.com/zeromq/pyzmq/pull/1872
+            if isinstance(self.parallel, str):
+                try:
+                    self.parallel = int(self.parallel)
+                except ValueError:
+                    raise DistutilsOptionError("parallel should be an integer")
+
             self.distribution.run_command("configure")
             return super().finalize_options()
 
