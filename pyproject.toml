@@ -4,10 +4,10 @@ requires = [
   "cffi; implementation_name == 'pypy'",
   "cython>=3.0.0; implementation_name == 'cpython'",
   "packaging",
-  "setuptools>=61",
-  "setuptools_scm[toml]",
+  "meson-python",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "mesonpy"
+# build-backend = "setuptools.build_meta"
 
 # Project metadata
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
