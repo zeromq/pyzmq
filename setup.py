@@ -27,6 +27,7 @@ from contextlib import contextmanager
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
+from pathlib import Path
 from subprocess import PIPE, CalledProcessError, Popen, check_call
 from sysconfig import get_config_var
 from traceback import print_exc
@@ -1168,6 +1169,7 @@ def makename(path, ext):
 pxd = lambda *path: makename(path, '.pxd')
 pxi = lambda *path: makename(path, '.pxi')
 pyx = lambda *path: makename(path, '.pyx')
+py = lambda *path: makename(path, '.py')
 dotc = lambda *path: makename(path, '.c')
 doth = lambda *path: makename(path, '.h')
 
@@ -1180,17 +1182,24 @@ checkrc = pxd('backend', 'cython', 'checkrc')
 monqueue = pxd('devices', 'monitoredqueue')
 mutex = doth('utils', 'mutex')
 
+
+zmq_path = Path("zmq").resolve()
+src = Path("src").resolve()
+backend_cython = zmq_path / "backend" / "cython"
+_zmq = str(src / "_zmq.py")
+
 submodules = {
     'backend.cython': {
+        '_zmq': [libzmq],
         'error': [libzmq, checkrc],
         '_poll': [libzmq, socket, context, checkrc],
-        'utils': [libzmq, checkrc],
+        # 'utils': [libzmq, checkrc],
         'context': [context, libzmq, checkrc],
-        'message': [libzmq, buffers, message, checkrc, mutex],
+        # 'message': [libzmq, buffers, message, checkrc, mutex],
         'socket': [context, message, socket, libzmq, buffers, checkrc],
         '_device': [libzmq, socket, context, checkrc],
         '_proxy_steerable': [libzmq, socket, checkrc],
-        '_version': [libzmq],
+        # '_version': [libzmq],
     },
     'devices': {
         'monitoredqueue': [buffers, libzmq, monqueue, socket, context, checkrc],
@@ -1294,7 +1303,11 @@ ext_kwargs = {
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
-        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
+        if pkg == '_zmq':
+            _suffix = '.py'
+        else:
+            _suffix = suffix
+        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + _suffix)]
         ext = Extension(f"zmq.{submod}.{pkg}", sources=sources, **ext_kwargs)
         extensions.append(ext)
 
