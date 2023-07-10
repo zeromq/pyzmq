@@ -50,7 +50,9 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     _zmq_version,
     zmq_curve_keypair,
     zmq_curve_public,
-    zmq_errno,
+)
+from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
+from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_free_fn,
     zmq_has,
     zmq_msg_close,
@@ -87,7 +89,7 @@ def _check_rc(rc: cython.int, error_without_errno: bool = False) -> cython.int:
 
     and raising the appropriate Exception class
     """
-    errno: cython.int = zmq_errno()
+    errno: cython.int = _zmq_errno()
     PyErr_CheckSignals()
     if errno == 0 and not error_without_errno:
         return 0
@@ -152,9 +154,9 @@ def free_python_msg(data: p_void, vhint: p_void) -> cython.int:
         if rc < 0:
             # gc socket could have been closed, e.g. during process teardown.
             # If so, ignore the failure because there's nothing to do.
-            if zmq_errno() != ZMQ_ENOTSOCK:
+            if _zmq_errno() != ZMQ_ENOTSOCK:
                 fprintf(
-                    cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(zmq_errno())
+                    cstderr, "pyzmq-gc send failed: %s\n", zmq_strerror(_zmq_errno())
                 )
         rc = mutex_unlock(hint.mutex)
         if rc != 0:
@@ -453,6 +455,17 @@ class Frame:
 
 
 # General utility functions
+def zmq_errno():
+    """Return the integer errno of the most recent zmq error."""
+    return _zmq_errno()
+
+
+def strerror(errno: C.int) -> str:
+    """
+    Return the error string given the error number.
+    """
+    str_e: bytes = zmq_strerror(errno)
+    return str_e.decode("utf8", "replace")
 
 
 def zmq_version_info() -> (int, int, int):
@@ -543,4 +556,6 @@ __all__ = [
     'curve_keypair',
     'curve_public',
     'zmq_version_info',
+    'zmq_errno',
+    'strerror',
 ]

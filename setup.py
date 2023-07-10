@@ -1191,7 +1191,7 @@ _zmq = str(src / "_zmq.py")
 submodules = {
     'backend.cython': {
         '_zmq': [libzmq],
-        'error': [libzmq, checkrc],
+        # 'error': [libzmq, checkrc],
         '_poll': [libzmq, socket, context, checkrc],
         # 'utils': [libzmq, checkrc],
         'context': [context, libzmq, checkrc],
