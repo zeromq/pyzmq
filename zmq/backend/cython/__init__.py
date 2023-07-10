@@ -4,7 +4,10 @@
 # Distributed under the terms of the Lesser GNU Public License (LGPL).
 
 from . import _zmq
+
+# mq not in __all__
 from ._zmq import *  # noqa
+from ._zmq import monitored_queue  # noqa
 
 Message = _zmq.Frame
 

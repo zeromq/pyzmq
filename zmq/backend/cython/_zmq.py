@@ -64,6 +64,10 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     ZMQ_IDENTITY,
     ZMQ_IO_THREADS,
     ZMQ_LINGER,
+    ZMQ_POLLIN,
+    ZMQ_RCVMORE,
+    ZMQ_ROUTER,
+    ZMQ_SNDMORE,
     ZMQ_TYPE,
     ZMQ_VERSION_MAJOR,
     _zmq_version,
@@ -1696,6 +1700,237 @@ def proxy_steerable(
         with nogil:
             rc = zmq_proxy_steerable(
                 frontend.handle, backend.handle, capture_handle, control_handle
+            )
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
+    return rc
+
+
+# monitored queue - like proxy (predates libzmq proxy)
+# but supports ROUTER-ROUTER devices
+@cfunc
+@inline
+@nogil
+def _mq_relay(
+    in_socket: p_void,
+    out_socket: p_void,
+    side_socket: p_void,
+    msg: zmq_msg_t,
+    side_msg: zmq_msg_t,
+    id_msg: zmq_msg_t,
+    swap_ids: bint,
+) -> C.int:
+    rc: C.int
+    flags: C.int
+    flagsz = declare(size_t)
+    more = declare(int)
+    flagsz = sizeof(int)
+
+    if swap_ids:  # both router, must send second identity first
+        # recv two ids into msg, id_msg
+        rc = zmq_msg_recv(address(msg), in_socket, 0)
+        if rc < 0:
+            return rc
+
+        rc = zmq_msg_recv(address(id_msg), in_socket, 0)
+        if rc < 0:
+            return rc
+
+        # send second id (id_msg) first
+        #!!!! always send a copy before the original !!!!
+        rc = zmq_msg_copy(address(side_msg), address(id_msg))
+        if rc < 0:
+            return rc
+        rc = zmq_msg_send(address(side_msg), out_socket, ZMQ_SNDMORE)
+        if rc < 0:
+            return rc
+        rc = zmq_msg_send(address(id_msg), side_socket, ZMQ_SNDMORE)
+        if rc < 0:
+            return rc
+        # send first id (msg) second
+        rc = zmq_msg_copy(address(side_msg), address(msg))
+        if rc < 0:
+            return rc
+        rc = zmq_msg_send(address(side_msg), out_socket, ZMQ_SNDMORE)
+        if rc < 0:
+            return rc
+        rc = zmq_msg_send(address(msg), side_socket, ZMQ_SNDMORE)
+        if rc < 0:
+            return rc
+    while True:
+        rc = zmq_msg_recv(address(msg), in_socket, 0)
+        if rc < 0:
+            return rc
+        # assert (rc == 0)
+        rc = zmq_getsockopt(in_socket, ZMQ_RCVMORE, address(more), address(flagsz))
+        if rc < 0:
+            return rc
+        flags = 0
+        if more:
+            flags |= ZMQ_SNDMORE
+
+        rc = zmq_msg_copy(address(side_msg), address(msg))
+        if rc < 0:
+            return rc
+        if flags:
+            rc = zmq_msg_send(address(side_msg), out_socket, flags)
+            if rc < 0:
+                return rc
+            # only SNDMORE for side-socket
+            rc = zmq_msg_send(address(msg), side_socket, ZMQ_SNDMORE)
+            if rc < 0:
+                return rc
+        else:
+            rc = zmq_msg_send(address(side_msg), out_socket, 0)
+            if rc < 0:
+                return rc
+            rc = zmq_msg_send(address(msg), side_socket, 0)
+            if rc < 0:
+                return rc
+            break
+    return rc
+
+
+@cfunc
+@inline
+@nogil
+def _mq_inline(
+    in_socket: p_void,
+    out_socket: p_void,
+    side_socket: p_void,
+    in_msg_ptr: pointer(zmq_msg_t),
+    out_msg_ptr: pointer(zmq_msg_t),
+    swap_ids: bint,
+) -> C.int:
+    """
+    inner C function for monitored_queue
+    """
+
+    msg: zmq_msg_t = declare(zmq_msg_t)
+    rc: C.int = zmq_msg_init(address(msg))
+    id_msg = declare(zmq_msg_t)
+    rc = zmq_msg_init(address(id_msg))
+    if rc < 0:
+        return rc
+    side_msg = declare(zmq_msg_t)
+    rc = zmq_msg_init(address(side_msg))
+    if rc < 0:
+        return rc
+
+    items = declare(zmq_pollitem_t[2])
+    items[0].socket = in_socket
+    items[0].events = ZMQ_POLLIN
+    items[0].fd = items[0].revents = 0
+    items[1].socket = out_socket
+    items[1].events = ZMQ_POLLIN
+    items[1].fd = items[1].revents = 0
+
+    while True:
+        # wait for the next message to process
+        rc = zmq_poll_c(address(items[0]), 2, -1)
+        if rc < 0:
+            return rc
+        if items[0].revents & ZMQ_POLLIN:
+            # send in_prefix to side socket
+            rc = zmq_msg_copy(address(side_msg), in_msg_ptr)
+            if rc < 0:
+                return rc
+            rc = zmq_msg_send(address(side_msg), side_socket, ZMQ_SNDMORE)
+            if rc < 0:
+                return rc
+            # relay the rest of the message
+            rc = _mq_relay(
+                in_socket, out_socket, side_socket, msg, side_msg, id_msg, swap_ids
+            )
+            if rc < 0:
+                return rc
+        if items[1].revents & ZMQ_POLLIN:
+            # send out_prefix to side socket
+            rc = zmq_msg_copy(address(side_msg), out_msg_ptr)
+            if rc < 0:
+                return rc
+            rc = zmq_msg_send(address(side_msg), side_socket, ZMQ_SNDMORE)
+            if rc < 0:
+                return rc
+            # relay the rest of the message
+            rc = _mq_relay(
+                out_socket, in_socket, side_socket, msg, side_msg, id_msg, swap_ids
+            )
+            if rc < 0:
+                return rc
+    return rc
+
+
+def monitored_queue(
+    in_socket: Socket,
+    out_socket: Socket,
+    mon_socket: Socket,
+    in_prefix: bytes = b'in',
+    out_prefix: bytes = b'out',
+):
+    """
+    Start a monitored queue device.
+
+    A monitored queue is very similar to the zmq.proxy device (monitored queue came first).
+
+    Differences from zmq.proxy:
+
+    - monitored_queue supports both in and out being ROUTER sockets
+      (via swapping IDENTITY prefixes).
+    - monitor messages are prefixed, making in and out messages distinguishable.
+
+    Parameters
+    ----------
+    in_socket : Socket
+        One of the sockets to the Queue. Its messages will be prefixed with
+        'in'.
+    out_socket : Socket
+        One of the sockets to the Queue. Its messages will be prefixed with
+        'out'. The only difference between in/out socket is this prefix.
+    mon_socket : Socket
+        This socket sends out every message received by each of the others
+        with an in/out prefix specifying which one it was.
+    in_prefix : str
+        Prefix added to broadcast messages from in_socket.
+    out_prefix : str
+        Prefix added to broadcast messages from out_socket.
+    """
+    ins: p_void = in_socket.handle
+    outs: p_void = out_socket.handle
+    mons: p_void = mon_socket.handle
+    in_msg = declare(zmq_msg_t)
+    out_msg = declare(zmq_msg_t)
+    swap_ids: bint
+    msg_c: p_char = NULL
+    msg_c_len = declare(Py_ssize_t)
+    rc: C.int
+
+    # force swap_ids if both ROUTERs
+    swap_ids = in_socket.type == ZMQ_ROUTER and out_socket.type == ZMQ_ROUTER
+
+    # build zmq_msg objects from str prefixes
+    asbuffer_r(in_prefix, cast(pointer(p_void), address(msg_c)), address(msg_c_len))
+    rc = zmq_msg_init_size(address(in_msg), msg_c_len)
+    _check_rc(rc)
+
+    memcpy(zmq_msg_data(address(in_msg)), msg_c, zmq_msg_size(address(in_msg)))
+
+    asbuffer_r(out_prefix, cast(pointer(p_void), address(msg_c)), address(msg_c_len))
+
+    rc = zmq_msg_init_size(address(out_msg), msg_c_len)
+    _check_rc(rc)
+
+    while True:
+        with nogil:
+            memcpy(
+                zmq_msg_data(address(out_msg)), msg_c, zmq_msg_size(address(out_msg))
+            )
+            rc = _mq_inline(
+                ins, outs, mons, address(in_msg), address(out_msg), swap_ids
             )
         try:
             _check_rc(rc)

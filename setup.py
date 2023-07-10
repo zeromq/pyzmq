@@ -1200,9 +1200,6 @@ submodules = {
         # '_proxy_steerable': [libzmq, socket, checkrc],
         # '_version': [libzmq],
     },
-    'devices': {
-        'monitoredqueue': [buffers, libzmq, monqueue, socket, context, checkrc],
-    },
 }
 
 # require cython 0.29
