@@ -3,15 +3,22 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from cpython cimport PyBytes_FromStringAndSize
+from zmq.backend.cython.libzmq cimport zmq_msg_t
 
-from zmq.backend.cython.libzmq cimport zmq_msg_data, zmq_msg_size, zmq_msg_t
 
+cdef class Context:
+
+    cdef object __weakref__  # enable weakref
+    cdef void *handle  # The C handle for the underlying zmq object.
+    cdef bint _shadow  # whether the Context is a shadow wrapper of another
+    cdef int _pid  # the pid of the process which created me (for fork safety)
+
+    cdef public bint closed  # bool property for a closed context.
+    cdef inline int _term(self)
 
 cdef class MessageTracker(object):
     cdef set events  # Message Event objects to track.
-    cdef set peers   # Other Message or MessageTracker objects.
-
+    cdef set peers  # Other Message or MessageTracker objects.
 
 cdef class Frame:
 

@@ -5,3 +5,6 @@ cdef extern from "mutex.h" nogil:
     cdef void mutex_dallocate(mutex_t*)
     cdef int mutex_lock(mutex_t*)
     cdef int mutex_unlock(mutex_t*)
+
+cdef extern from "getpid_compat.h":
+    int getpid()

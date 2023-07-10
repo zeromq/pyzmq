@@ -40,8 +40,7 @@ from libc.string cimport memcpy
 
 from zmq.utils.buffers cimport asbuffer_r
 
-from ._zmq cimport Frame
-from .context cimport Context
+from ._zmq cimport Context, Frame
 from .libzmq cimport (
     ZMQ_ETERM,
     ZMQ_EVENT_ALL,

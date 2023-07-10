@@ -1186,7 +1186,6 @@ mutex = doth('utils', 'mutex')
 zmq_path = Path("zmq").resolve()
 src = Path("src").resolve()
 backend_cython = zmq_path / "backend" / "cython"
-_zmq = str(src / "_zmq.py")
 
 submodules = {
     'backend.cython': {
@@ -1194,7 +1193,7 @@ submodules = {
         # 'error': [libzmq, checkrc],
         '_poll': [libzmq, socket, context, checkrc],
         # 'utils': [libzmq, checkrc],
-        'context': [context, libzmq, checkrc],
+        # 'context': [context, libzmq, checkrc],
         # 'message': [libzmq, buffers, message, checkrc, mutex],
         'socket': [context, message, socket, libzmq, buffers, checkrc],
         '_device': [libzmq, socket, context, checkrc],

@@ -4,9 +4,9 @@
 # Distributed under the terms of the Modified BSD License.
 
 try:
-    import cython
+    import cython as C
 
-    if not cython.compiled:
+    if not C.compiled:
         raise ImportError()
 except ImportError:
     raise ImportError("zmq Cython backend has not been compiled") from None
@@ -14,13 +14,13 @@ except ImportError:
 from threading import Event
 from weakref import ref
 
-import cython as C
 from cython import (
     NULL,
     Py_ssize_t,
     address,
     cast,
     cclass,
+    char,
     declare,
     nogil,
     p_char,
@@ -38,7 +38,8 @@ from cython.cimports.libc.stdio import fprintf
 from cython.cimports.libc.stdio import stderr as cstderr
 from cython.cimports.libc.stdlib import free, malloc
 from cython.cimports.libc.string import memcpy
-from cython.cimports.zmq.backend.cython._mutex import (
+from cython.cimports.zmq.backend.cython._externs import (
+    getpid,
     mutex_allocate,
     mutex_lock,
     mutex_t,
@@ -47,7 +48,13 @@ from cython.cimports.zmq.backend.cython._mutex import (
 from cython.cimports.zmq.backend.cython.libzmq import (
     ZMQ_ENOTSOCK,
     ZMQ_ETERM,
+    ZMQ_IO_THREADS,
+    ZMQ_VERSION_MAJOR,
     _zmq_version,
+    zmq_ctx_destroy,
+    zmq_ctx_get,
+    zmq_ctx_new,
+    zmq_ctx_set,
     zmq_curve_keypair,
     zmq_curve_public,
 )
@@ -55,6 +62,7 @@ from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
 from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_free_fn,
     zmq_has,
+    zmq_init,
     zmq_msg_close,
     zmq_msg_copy,
     zmq_msg_data,
@@ -76,20 +84,20 @@ from cython.cimports.zmq.backend.cython.libzmq import (
 from cython.cimports.zmq.utils.buffers import asbuffer_r
 
 import zmq
-from zmq.error import _check_version
+from zmq.error import InterruptedSystemCall, ZMQError, _check_version
 
 # Python imports
 
 
-@cython.cfunc
-@cython.inline
-@cython.exceptval(-1)
-def _check_rc(rc: cython.int, error_without_errno: bool = False) -> cython.int:
+@C.cfunc
+@C.inline
+@C.exceptval(-1)
+def _check_rc(rc: C.int, error_without_errno: bool = False) -> C.int:
     """internal utility for checking zmq return condition
 
     and raising the appropriate Exception class
     """
-    errno: cython.int = _zmq_errno()
+    errno: C.int = _zmq_errno()
     PyErr_CheckSignals()
     if errno == 0 and not error_without_errno:
         return 0
@@ -115,16 +123,16 @@ def _check_rc(rc: cython.int, error_without_errno: bool = False) -> cython.int:
 
 # message Frame class
 
-_zhint = cython.struct(
+_zhint = C.struct(
     sock=p_void,
     mutex=pointer(mutex_t),
     id=size_t,
 )
 
 
-@cython.cfunc
-@cython.nogil
-def free_python_msg(data: p_void, vhint: p_void) -> cython.int:
+@C.cfunc
+@C.nogil
+def free_python_msg(data: p_void, vhint: p_void) -> C.int:
     """A pure-C function for DECREF'ing Python-owned message data.
 
     Sends a message on a PUSH socket
@@ -142,7 +150,7 @@ def free_python_msg(data: p_void, vhint: p_void) -> cython.int:
     msg = declare(zmq_msg_t)
     msg_ptr: pointer(zmq_msg_t) = address(msg)
     hint: pointer(_zhint) = cast(pointer(_zhint), vhint)
-    rc: cython.int
+    rc: C.int
 
     if hint != NULL:
         zmq_msg_init_size(msg_ptr, sizeof(size_t))
@@ -167,8 +175,8 @@ def free_python_msg(data: p_void, vhint: p_void) -> cython.int:
         return 0
 
 
-@cython.cfunc
-@cython.inline
+@C.cfunc
+@C.inline
 def _copy_zmq_msg_bytes(zmq_msg: pointer(zmq_msg_t)) -> bytes:
     """Copy the data from a zmq_msg_t"""
     data_c: p_char = NULL
@@ -454,7 +462,144 @@ class Frame:
         _check_rc(rc)
 
 
+@cclass
+class Context:
+    """
+    Manage the lifecycle of a 0MQ context.
+
+    Parameters
+    ----------
+    io_threads : int
+        The number of IO threads.
+    """
+
+    def __init__(self, io_threads: C.int = 1, shadow: size_t = 0):
+        self.handle = NULL
+        self._pid = 0
+        self._shadow = False
+
+        if shadow:
+            self.handle = cast(p_void, shadow)
+            self._shadow = True
+        else:
+            self._shadow = False
+            if ZMQ_VERSION_MAJOR >= 3:
+                self.handle = zmq_ctx_new()
+            else:
+                self.handle = zmq_init(io_threads)
+
+        if self.handle == NULL:
+            raise ZMQError()
+
+        rc: C.int = 0
+        if ZMQ_VERSION_MAJOR >= 3 and not self._shadow:
+            rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
+            _check_rc(rc)
+
+        self.closed = False
+        self._pid = getpid()
+
+    @property
+    def underlying(self):
+        """The address of the underlying libzmq context"""
+        return cast(size_t, self.handle)
+
+    @C.cfunc
+    @C.inline
+    def _term(self) -> C.int:
+        rc: C.int = 0
+        if self.handle != NULL and not self.closed and getpid() == self._pid:
+            with nogil:
+                rc = zmq_ctx_destroy(self.handle)
+        self.handle = NULL
+        return rc
+
+    def term(self):
+        """
+        Close or terminate the context.
+
+        This can be called to close the context by hand. If this is not called,
+        the context will automatically be closed when it is garbage collected.
+        """
+        rc: C.int = self._term()
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            # ignore interrupted term
+            # see PEP 475 notes about close & EINTR for why
+            pass
+
+        self.closed = True
+
+    def set(self, option: C.int, optval):
+        """
+        Set a context option.
+
+        See the 0MQ API documentation for zmq_ctx_set
+        for details on specific options.
+
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
+
+        Parameters
+        ----------
+        option : int
+            The option to set.  Available values will depend on your
+            version of libzmq.  Examples include::
+
+                zmq.IO_THREADS, zmq.MAX_SOCKETS
+
+        optval : int
+            The value of the option to set.
+        """
+        optval_int_c: C.int
+        rc: C.int
+
+        if self.closed:
+            raise RuntimeError("Context has been destroyed")
+
+        if not isinstance(optval, int):
+            raise TypeError(f'expected int, got: {optval!r}')
+        optval_int_c = optval
+        rc = zmq_ctx_set(self.handle, option, optval_int_c)
+        _check_rc(rc)
+
+    def get(self, option: C.int):
+        """
+        Get the value of a context option.
+
+        See the 0MQ API documentation for zmq_ctx_get
+        for details on specific options.
+
+        .. versionadded:: libzmq-3.2
+        .. versionadded:: 13.0
+
+        Parameters
+        ----------
+        option : int
+            The option to get.  Available values will depend on your
+            version of libzmq.  Examples include::
+
+                zmq.IO_THREADS, zmq.MAX_SOCKETS
+
+        Returns
+        -------
+        optval : int
+            The value of the option as an integer.
+        """
+        rc: C.int
+
+        if self.closed:
+            raise RuntimeError("Context has been destroyed")
+
+        rc = zmq_ctx_get(self.handle, option)
+        _check_rc(rc, error_without_errno=False)
+        return rc
+
+
 # General utility functions
+
+
 def zmq_errno():
     """Return the integer errno of the most recent zmq error."""
     return _zmq_errno()
@@ -470,10 +615,10 @@ def strerror(errno: C.int) -> str:
 
 def zmq_version_info() -> (int, int, int):
     """Return the version of ZeroMQ itself as a 3-tuple of ints."""
-    major: cython.int = 0
-    minor: cython.int = 0
-    patch: cython.int = 0
-    _zmq_version(cython.address(major), cython.address(minor), cython.address(patch))
+    major: C.int = 0
+    minor: C.int = 0
+    patch: C.int = 0
+    _zmq_version(address(major), address(minor), address(patch))
     return (major, minor, patch)
 
 
@@ -504,9 +649,9 @@ def curve_keypair():
     (public, secret) : two bytestrings
         The public and private key pair as 40 byte z85-encoded bytestrings.
     """
-    rc: cython.int
-    public_key = cython.declare(cython.char[64])
-    secret_key = cython.declare(cython.char[64])
+    rc: C.int
+    public_key = declare(char[64])
+    secret_key = declare(char[64])
     _check_version((4, 0), "curve_keypair")
     # see huge comment in libzmq/src/random.cpp
     # about threadsafety of random initialization
@@ -536,9 +681,9 @@ def curve_public(secret_key) -> bytes:
     if not len(secret_key) == 40:
         raise ValueError('secret key must be a 40 byte z85 encoded string')
 
-    rc: cython.int
-    public_key = cython.declare(cython.char[64])
-    c_secret_key: cython.pointer(cython.char) = secret_key
+    rc: C.int
+    public_key = declare(char[64])
+    c_secret_key: pointer(char) = secret_key
     _check_version((4, 2), "curve_public")
     # see huge comment in libzmq/src/random.cpp
     # about threadsafety of random initialization
