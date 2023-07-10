@@ -397,7 +397,6 @@ class Frame:
         """
         rc: C.int = 0
         property_c: p_char = NULL
-        property_len_c: Py_ssize_t = 0
 
         # zmq_msg_get
         if isinstance(option, int):
