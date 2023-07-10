@@ -1195,7 +1195,7 @@ submodules = {
         # 'utils': [libzmq, checkrc],
         # 'context': [context, libzmq, checkrc],
         # 'message': [libzmq, buffers, message, checkrc, mutex],
-        'socket': [context, message, socket, libzmq, buffers, checkrc],
+        # 'socket': [context, message, socket, libzmq, buffers, checkrc],
         '_device': [libzmq, socket, context, checkrc],
         '_proxy_steerable': [libzmq, socket, checkrc],
         # '_version': [libzmq],

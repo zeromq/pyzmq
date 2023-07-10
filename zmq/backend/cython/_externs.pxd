@@ -8,3 +8,6 @@ cdef extern from "mutex.h" nogil:
 
 cdef extern from "getpid_compat.h":
     int getpid()
+
+cdef extern from "ipcmaxlen.h":
+    int get_ipc_path_max_len()
