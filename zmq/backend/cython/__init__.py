@@ -1,7 +1,7 @@
 """Python bindings for core 0MQ objects."""
 
 # Copyright (C) PyZMQ Developers
-# Distributed under the terms of the Lesser GNU Public License (LGPL).
+# Distributed under the terms of the Modified BSD License.
 
 from . import _zmq
 
