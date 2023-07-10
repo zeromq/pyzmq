@@ -3,22 +3,10 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Lesser GNU Public License (LGPL).
 
-from . import _device, _poll, _proxy_steerable, _zmq, context, socket
-
-__all__ = []
-for submod in (
-    context,
-    socket,
-    _poll,
-    _device,
-    _proxy_steerable,
-    _zmq,
-):
-    __all__.extend(submod.__all__)
-
-from ._device import *  # noqa
-from ._poll import *  # noqa
-from ._proxy_steerable import *  # noqa
+from . import _zmq
 from ._zmq import *  # noqa
-from .context import *  # noqa
-from .socket import *  # noqa
+
+Message = _zmq.Frame
+
+__all__ = ["Message"]
+__all__.extend(_zmq.__all__)

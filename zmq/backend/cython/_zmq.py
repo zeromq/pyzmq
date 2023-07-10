@@ -11,6 +11,8 @@ try:
 except ImportError:
     raise ImportError("zmq Cython backend has not been compiled") from None
 
+import time
+import warnings
 from threading import Event
 from weakref import ref
 
@@ -76,6 +78,7 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_ctx_set,
     zmq_curve_keypair,
     zmq_curve_public,
+    zmq_device,
     zmq_disconnect,
 )
 from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
@@ -103,6 +106,12 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_msg_set_routing_id,
     zmq_msg_size,
     zmq_msg_t,
+)
+from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
+from cython.cimports.zmq.backend.cython.libzmq import (
+    zmq_pollitem_t,
+    zmq_proxy,
+    zmq_proxy_steerable,
     zmq_setsockopt,
     zmq_socket,
     zmq_socket_monitor,
@@ -1470,18 +1479,246 @@ def curve_public(secret_key) -> bytes:
     return public_key[:40]
 
 
-Message = Frame
+# polling
+def zmq_poll(sockets, timeout: C.int = -1):
+    """zmq_poll(sockets, timeout=-1)
+
+    Poll a set of 0MQ sockets, native file descs. or sockets.
+
+    Parameters
+    ----------
+    sockets : list of tuples of (socket, flags)
+        Each element of this list is a two-tuple containing a socket
+        and a flags. The socket may be a 0MQ socket or any object with
+        a ``fileno()`` method. The flags can be zmq.POLLIN (for detecting
+        for incoming messages), zmq.POLLOUT (for detecting that send is OK)
+        or zmq.POLLIN|zmq.POLLOUT for detecting both.
+    timeout : int
+        The number of milliseconds to poll for. Negative means no timeout.
+    """
+    rc: C.int
+    i: C.int
+    pollitems: pointer(zmq_pollitem_t) = NULL
+    nsockets: C.int = len(sockets)
+
+    if nsockets == 0:
+        return []
+
+    pollitems = cast(pointer(zmq_pollitem_t), malloc(nsockets * sizeof(zmq_pollitem_t)))
+    if pollitems == NULL:
+        raise MemoryError("Could not allocate poll items")
+
+    if ZMQ_VERSION_MAJOR < 3:
+        # timeout is us in 2.x, ms in 3.x
+        # expected input is ms (matches 3.x)
+        timeout = 1000 * timeout
+
+    for i in range(nsockets):
+        s, events = sockets[i]
+        if isinstance(s, Socket):
+            pollitems[i].socket = cast(Socket, s).handle
+            pollitems[i].fd = 0
+            pollitems[i].events = events
+            pollitems[i].revents = 0
+        elif isinstance(s, int):
+            pollitems[i].socket = NULL
+            pollitems[i].fd = s
+            pollitems[i].events = events
+            pollitems[i].revents = 0
+        elif hasattr(s, 'fileno'):
+            try:
+                fileno = int(s.fileno())
+            except:
+                free(pollitems)
+                raise ValueError('fileno() must return a valid integer fd')
+            else:
+                pollitems[i].socket = NULL
+                pollitems[i].fd = fileno
+                pollitems[i].events = events
+                pollitems[i].revents = 0
+        else:
+            free(pollitems)
+            raise TypeError(
+                "Socket must be a 0MQ socket, an integer fd or have "
+                "a fileno() method: %r" % s
+            )
+
+    ms_passed: int = 0
+    try:
+        while True:
+            start = time.monotonic()
+            with nogil:
+                rc = zmq_poll_c(pollitems, nsockets, timeout)
+            try:
+                _check_rc(rc)
+            except InterruptedSystemCall:
+                if timeout > 0:
+                    ms_passed = int(1000 * (time.monotonic() - start))
+                    if ms_passed < 0:
+                        # don't allow negative ms_passed,
+                        # which can happen on old Python versions without time.monotonic.
+                        warnings.warn(
+                            f"Negative elapsed time for interrupted poll: {ms_passed}."
+                            "  Did the clock change?",
+                            RuntimeWarning,
+                        )
+                        # treat this case the same as no time passing,
+                        # since it should be rare and not happen twice in a row.
+                        ms_passed = 0
+                    timeout = max(0, timeout - ms_passed)
+                continue
+            else:
+                break
+    except Exception:
+        free(pollitems)
+        raise
+
+    results = []
+    for i in range(nsockets):
+        revents = pollitems[i].revents
+        # for compatibility with select.poll:
+        # - only return sockets with non-zero status
+        # - return the fd for plain sockets
+        if revents > 0:
+            if pollitems[i].socket != NULL:
+                s = sockets[i][0]
+            else:
+                s = pollitems[i].fd
+            results.append((s, revents))
+
+    free(pollitems)
+    return results
+
+
+# device functions
+
+
+def device(device_type: C.int, frontend: Socket, backend: Socket = None):
+    """
+    Start a zeromq device.
+
+    .. deprecated:: libzmq-3.2
+        Use zmq.proxy
+
+    Parameters
+    ----------
+    device_type : (QUEUE, FORWARDER, STREAMER)
+        The type of device to start.
+    frontend : Socket
+        The Socket instance for the incoming traffic.
+    backend : Socket
+        The Socket instance for the outbound traffic.
+    """
+    if ZMQ_VERSION_MAJOR >= 3:
+        return proxy(frontend, backend)
+
+    rc: C.int = 0
+    while True:
+        with nogil:
+            rc = zmq_device(device_type, frontend.handle, backend.handle)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
+    return rc
+
+
+def proxy(frontend: Socket, backend: Socket, capture: Socket = None):
+    """
+    Start a zeromq proxy (replacement for device).
+
+    .. versionadded:: libzmq-3.2
+    .. versionadded:: 13.0
+
+    Parameters
+    ----------
+    frontend : Socket
+        The Socket instance for the incoming traffic.
+    backend : Socket
+        The Socket instance for the outbound traffic.
+    capture : Socket (optional)
+        The Socket instance for capturing traffic.
+    """
+    rc: C.int = 0
+    capture_handle: p_void
+    if isinstance(capture, Socket):
+        capture_handle = capture.handle
+    else:
+        capture_handle = NULL
+    while True:
+        with nogil:
+            rc = zmq_proxy(frontend.handle, backend.handle, capture_handle)
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
+    return rc
+
+
+def proxy_steerable(
+    frontend: Socket,
+    backend: Socket,
+    capture: Socket = None,
+    control: Socket = None,
+):
+    """
+    Start a zeromq proxy with control flow.
+
+    .. versionadded:: libzmq-4.1
+    .. versionadded:: 18.0
+
+    Parameters
+    ----------
+    frontend : Socket
+        The Socket instance for the incoming traffic.
+    backend : Socket
+        The Socket instance for the outbound traffic.
+    capture : Socket (optional)
+        The Socket instance for capturing traffic.
+    control : Socket (optional)
+        The Socket instance for control flow.
+    """
+    rc: C.int = 0
+    capture_handle: p_void
+    if isinstance(capture, Socket):
+        capture_handle = capture.handle
+    else:
+        capture_handle = NULL
+    if isinstance(control, Socket):
+        control_handle = control.handle
+    else:
+        control_handle = NULL
+    while True:
+        with nogil:
+            rc = zmq_proxy_steerable(
+                frontend.handle, backend.handle, capture_handle, control_handle
+            )
+        try:
+            _check_rc(rc)
+        except InterruptedSystemCall:
+            continue
+        else:
+            break
+    return rc
+
 
 __all__ = [
     'IPC_PATH_MAX_LEN',
     'Context',
     'Socket',
     'Frame',
-    'Message',
     'has',
     'curve_keypair',
     'curve_public',
     'zmq_version_info',
     'zmq_errno',
+    'zmq_poll',
     'strerror',
+    'device',
+    'proxy',
+    'proxy_steerable',
 ]
