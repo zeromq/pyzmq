@@ -1162,48 +1162,23 @@ cmdclass = {
 # -----------------------------------------------------------------------------
 
 
-def makename(path, ext):
-    return os.path.abspath(pjoin('zmq', *path)) + ext
-
-
-pxd = lambda *path: makename(path, '.pxd')
-pxi = lambda *path: makename(path, '.pxi')
-pyx = lambda *path: makename(path, '.pyx')
-py = lambda *path: makename(path, '.py')
-dotc = lambda *path: makename(path, '.c')
-doth = lambda *path: makename(path, '.h')
-
-libzmq = pxd('backend', 'cython', 'libzmq')
-buffers = pxd('utils', 'buffers')
-message = pxd('backend', 'cython', 'message')
-context = pxd('backend', 'cython', 'context')
-socket = pxd('backend', 'cython', 'socket')
-checkrc = pxd('backend', 'cython', 'checkrc')
-monqueue = pxd('devices', 'monitoredqueue')
-mutex = doth('utils', 'mutex')
-
-
 zmq_path = Path("zmq").resolve()
-src = Path("src").resolve()
 backend_cython = zmq_path / "backend" / "cython"
+utils = zmq_path / 'utils'
 
 submodules = {
     'backend.cython': {
-        '_zmq': [libzmq],
-        # 'error': [libzmq, checkrc],
-        # '_poll': [libzmq, socket, context, checkrc],
-        # 'utils': [libzmq, checkrc],
-        # 'context': [context, libzmq, checkrc],
-        # 'message': [libzmq, buffers, message, checkrc, mutex],
-        # 'socket': [context, message, socket, libzmq, buffers, checkrc],
-        # '_device': [libzmq, socket, context, checkrc],
-        # '_proxy_steerable': [libzmq, socket, checkrc],
-        # '_version': [libzmq],
+        '_zmq': [
+            backend_cython / "libzmq.pxd",
+            backend_cython / "_externs.pxd",
+            utils / "buffers.pxd",
+        ]
+        + list(utils.glob("*.h"))
     },
 }
 
-# require cython 0.29
-min_cython_version = "0.29"
+# require cython 3
+min_cython_version = "3.0.0b3"
 cython_language_level = "3str"
 
 try:
@@ -1248,7 +1223,7 @@ except Exception:
     cmdclass['cython'] = MissingCython
 
 else:
-    suffix = '.pyx'
+    suffix = '.py'
 
     class CythonCommand(build_ext_cython):
         """Custom setuptools command subclassed from Cython.Distutils.build_ext
@@ -1299,11 +1274,7 @@ ext_kwargs = {
 
 for submod, packages in submodules.items():
     for pkg in sorted(packages):
-        if pkg == '_zmq':
-            _suffix = '.py'
-        else:
-            _suffix = suffix
-        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + _suffix)]
+        sources = [pjoin("zmq", submod.replace(".", os.path.sep), pkg + suffix)]
         ext = Extension(f"zmq.{submod}.{pkg}", sources=sources, **ext_kwargs)
         extensions.append(ext)
 

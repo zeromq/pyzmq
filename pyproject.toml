@@ -22,7 +22,7 @@ requires = [
     "wheel",
     "packaging",
     "cffi; implementation_name == 'pypy'",
-    "cython>=3.0.0rc0; implementation_name == 'cpython'",
+    "cython>=3.0.0b3; implementation_name == 'cpython'",
 ]
 build-backend = "setuptools.build_meta"
 
