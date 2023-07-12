@@ -1,5 +1,5 @@
 # only need to track non-version-controlled files to add
-include bundled/zeromq/COPYING
+include bundled/zeromq/COPYING*
 graft bundled/zeromq/include
 graft bundled/zeromq/src
 graft bundled/zeromq/external/wepoll

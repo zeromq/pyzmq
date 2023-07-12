@@ -47,6 +47,7 @@ def test_git_files(sdist_files, git_files):
     [
         # bundled zeromq
         "bundled/zeromq/COPYING",
+        "bundled/zeromq/COPYING.LESSER",
         "bundled/zeromq/include/zmq.h",
         "bundled/zeromq/src/zmq.cpp",
         "bundled/zeromq/external/wepoll/license.txt",
