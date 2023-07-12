@@ -24,6 +24,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    continue-on-error: ${{ matrix.zmq == 'head' }}
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.14"

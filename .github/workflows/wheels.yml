@@ -9,6 +9,7 @@ on:
       - "**"
   pull_request:
     paths:
+      - pyproject.toml
       - setup.py
       - buildutils/**
       - .github/workflows/wheels.yml
