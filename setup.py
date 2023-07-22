@@ -1178,7 +1178,7 @@ submodules = {
 }
 
 # require cython 3
-min_cython_version = "3.0.0b3"
+min_cython_version = "3.0.0"
 cython_language_level = "3str"
 
 try:
@@ -1194,6 +1194,9 @@ try:
 
     cython = True
 except Exception:
+    warn(
+        f"Cython >= {min_cython_version} is a build dependency of pyzmq. Cython sources may be out of date."
+    )
     cython = False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
