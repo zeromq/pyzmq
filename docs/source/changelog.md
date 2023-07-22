@@ -25,8 +25,11 @@ __Enhancements__:
 __Breaking changes__:
 
 - `str(Frame)` no longer returns the whole frame contents interpreted as utf8-bytes.
-  Instead, it returns the new summarized repr.
-  `bytes(Frame)` remains unchanged.
+  Instead, it returns the new summarized repr,
+  which produces more logical results with `print`, etc.
+  `bytes(Frame)` remains unchanged, and utf-8 text strings can still be produced with:
+  `bytes(Frame).decode("utf8")`,
+  which works in all versions of pyzmq and does the same thing.
 
 ## 25
 
