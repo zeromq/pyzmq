@@ -17,6 +17,17 @@ This means:
 
 The license of the libzmq library (included in pyzmq wheels and sources included but may not be used in pyzmq tarballs) remains unchanged and has its own LGPL license.
 
+__Enhancements__:
+
+- `repr(Frame)` now produces a nice repr, summarizing Frame contents (without getting too large),
+  e.g. `<zmq.Frame(b'abcdefghijkl'...52B)>`
+
+__Breaking changes__:
+
+- `str(Frame)` no longer returns the whole frame contents interpreted as utf8-bytes.
+  Instead, it returns the new summarized repr.
+  `bytes(Frame)` remains unchanged.
+
 ## 25
 
 ### 25.1.0
