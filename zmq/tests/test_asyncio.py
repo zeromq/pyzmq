@@ -342,6 +342,19 @@ def test_shadow():
         assert async_s.type == s.type
 
 
+async def test_poll_leak():
+    ctx = zmq.asyncio.Context()
+    with ctx, ctx.socket(zmq.PULL) as s:
+        assert len(s._recv_futures) == 0
+        for i in range(10):
+            f = asyncio.ensure_future(s.poll(timeout=1000, flags=zmq.PollEvent.POLLIN))
+            f.cancel()
+            await asyncio.sleep(0)
+        # one more sleep allows further chained cleanup
+        await asyncio.sleep(0.1)
+        assert len(s._recv_futures) == 0
+
+
 class ProcessForTeardownTest(Process):
     def run(self):
         """Leave context, socket and event loop upon implicit disposal"""
