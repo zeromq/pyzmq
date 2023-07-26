@@ -105,10 +105,11 @@ jobs:
           grep -v plugins .coveragerc > .coveragerc-save
           mv .coveragerc-save .coveragerc
 
-      - name: enable Cython coverage
-        if: "! (startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12'))"
-        run: |
-          echo "PYZMQ_CYTHON_COVERAGE=1" >> "$GITHUB_ENV"
+      # - name: enable Cython coverage
+      #   if: "! (startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12'))"
+      #   run: |
+      #     echo "PYZMQ_CYTHON_COVERAGE=1" >> "$GITHUB_ENV"
+
       # preserve pip cache to speed up installation
       - name: Cache pip
         uses: actions/cache@v3
