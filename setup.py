@@ -1329,48 +1329,11 @@ with open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(
-    name="pyzmq",
-    version="26.0.0.dev",
     packages=find_packages(),
     ext_modules=extensions,
     cffi_modules=cffi_modules,
     package_data=package_data,
-    author="Brian E. Granger, Min Ragan-Kelley",
-    author_email="zeromq-dev@lists.zeromq.org",
-    url="https://pyzmq.readthedocs.org",
-    project_urls={
-        'Source': 'https://github.com/zeromq/pyzmq',
-    },
-    description="Python bindings for 0MQ",
-    long_description=long_desc,
-    long_description_content_type="text/markdown",
-    license="BSD-3-Clause",
     cmdclass=cmdclass,
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
-        "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: MacOS :: MacOS X",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX",
-        "Topic :: System :: Networking",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-    ],
-    zip_safe=False,
-    python_requires=">=3.6",
-    install_requires=[
-        "cffi; implementation_name == 'pypy'",
-    ],
 )
 
 setup(**setup_args)
