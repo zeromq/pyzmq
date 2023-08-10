@@ -33,7 +33,7 @@ repos:
         exclude: zmq/tests/test_imports.py
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         exclude: ^buildutils/templates/
@@ -50,7 +50,7 @@ repos:
         additional_dependencies:
           - types-paramiko
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.8.0
+    rev: v3.10.1
     hooks:
       - id: pyupgrade
         args:
@@ -67,7 +67,7 @@ repos:
         name: isort (pyi)
         types: [pyi]
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
         # don't run black twice on constants.py

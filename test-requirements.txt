@@ -2,7 +2,8 @@ black; platform_python_implementation != "PyPy"
 # gevent wheels on mac cause Illegal Instruction
 codecov
 # coverage 5 has issues with Cython: https://github.com/cython/cython/issues/3515
-coverage<5
+coverage<5; python_version < "3.7"
+coverage>=7.1; python_version >= "3.7"
 cython; platform_python_implementation != "PyPy" # required for Cython tests
 cython>=3.0.0b3; platform_python_implementation != "PyPy" and python_version >= "3.12" # required for Cython tests
 flake8

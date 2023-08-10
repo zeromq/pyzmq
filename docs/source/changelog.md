@@ -33,6 +33,20 @@ __Breaking changes__:
 
 ## 25
 
+### 25.1.1
+
+25.1.1 is the first stable release with Python 3.12 wheels.
+
+Changes:
+
+- Allow Cython 0.29.35 to build Python 3.12 wheels (no longer require Cython 3)
+
+Bugs fixed:
+
+- Fix builds on Solaris by including generated platform.hpp
+- Cleanup futures in `Socket.poll()`  that are cancelled and never return
+- Fix builds with `-j` when numpy is present in the build env
+
 ### 25.1.0
 
 pyzmq 25.1 mostly changes some packaging details of pyzmq, including support for installation from source on Python 3.12 beta 1.

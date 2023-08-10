@@ -14,9 +14,16 @@ if PYPY:
 
 
 class TestProxySteerable(BaseZMQTestCase):
+    def setUp(self):
+        if zmq.zmq_version_info() >= (4, 3, 5):
+            raise SkipTest("Steerable Proxies removed in libzmq 4.3.5")
+        super().setUp()
+
     def test_proxy_steerable(self):
         if zmq.zmq_version_info() < (4, 1):
             raise SkipTest("Steerable Proxies only in libzmq >= 4.1")
+        if zmq.zmq_version_info() >= (4, 3, 5):
+            raise SkipTest("Steerable Proxies removed in libzmq 4.3.5")
         dev = devices.ThreadProxySteerable(zmq.PULL, zmq.PUSH, zmq.PUSH, zmq.PAIR)
         iface = 'tcp://127.0.0.1'
         port = dev.bind_in_to_random_port(iface)
