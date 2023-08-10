@@ -34,7 +34,7 @@ jobs:
       matrix:
         include:
           - os: macos-13
-            python: 3.6
+            python: 3.7
 
           - os: macos-13
             python: 3.11
@@ -45,7 +45,7 @@ jobs:
             zmq: bundled
 
           - os: ubuntu-20.04
-            python: 3.6
+            python: 3.7
             zmq: bundled
             tornado: none
 
@@ -57,9 +57,6 @@ jobs:
             python: pypy-3.7
 
           - os: ubuntu-22.04
-            python: 3.7
-
-          - os: ubuntu-22.04
             python: 3.9
             tornado: head
 
@@ -67,25 +64,25 @@ jobs:
             python: "3.10"
 
           - os: ubuntu-22.04
-            python: 3.11
+            python: "3.11"
 
           - os: ubuntu-22.04
-            python: 3.8
+            python: "3.8"
             zmq: head
 
           - os: ubuntu-22.04
             python: "3.12"
 
           - os: windows-2022
-            python: 3.6
+            python: "3.7"
             arch: x86
 
           - os: windows-2022
-            python: 3.9
+            python: "3.9"
             arch: x64
 
           - os: windows-2022
-            python: 3.11
+            python: "3.11"
             arch: x64
 
     steps:
