@@ -27,7 +27,7 @@ jobs:
     continue-on-error: ${{ matrix.zmq == 'head' }}
 
     env:
-      MACOSX_DEPLOYMENT_TARGET: "10.14"
+      MACOSX_DEPLOYMENT_TARGET: "11.7"
 
     strategy:
       fail-fast: true
