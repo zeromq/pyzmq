@@ -15,7 +15,7 @@ repos:
         additional_dependencies:
           - black
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.16  # Use the ref you want to point at
+    rev: 0.7.17  # Use the ref you want to point at
     hooks:
       - id: mdformat
         # Optionally add plugins
@@ -24,7 +24,7 @@ repos:
           - mdformat-myst
 
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.2.0
+    rev: v2.2.1
     hooks:
       - id: autoflake
         args:
@@ -37,7 +37,7 @@ repos:
       - id: flake8
         exclude: ^buildutils/templates/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
+    rev: v1.5.1
     hooks:
       - id: mypy
         files: zmq/.*
