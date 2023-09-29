@@ -21,6 +21,7 @@ requires = [
     "setuptools_scm[toml]",
     "wheel",
     "packaging",
+    "GitPython",
     "cffi; implementation_name == 'pypy'",
     "cython>=0.29; implementation_name == 'cpython'",
     "cython>=0.29.35; implementation_name == 'cpython' and python_version >= '3.12'",

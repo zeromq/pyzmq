@@ -22,6 +22,11 @@ from urllib.request import urlopen
 
 from .msg import fatal, info, warn
 
+from git import Repo
+from git.exc import InvalidGitRepositoryError, NoSuchPathError
+from gitdb.exc import BadName
+import re
+
 pjoin = os.path.join
 
 # -----------------------------------------------------------------------------
@@ -159,6 +164,55 @@ def fetch_libzmq(savedir):
     fetch_and_extract(
         savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
     )
+
+def fetch_libzmq_repo(savedir, url, ref):
+    """fetch libzmq from repo"""    
+    dest = pjoin(savedir, 'zeromq')
+    #print("fetch_libzmq_repo: ", dest, url, ref)
+    try:
+        repo = Repo(dest)
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        info("invalid local repo, clone from %s" % url)
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        repo = Repo.clone_from(url, dest)
+
+    if ref:
+        try:
+            commit = repo.commit(ref)
+        except BadName:
+            warn("invalid ref %s" % ref)
+        else:
+            if repo.head.commit != commit:
+                info("checking out %s" % ref)
+                repo.head.reference = commit
+                repo.head.reset(index=True, working_tree=True)
+            else:
+                info("repo head is already %s" % ref)
+    
+    # get repo version
+    zmq_hdr = pjoin(dest, 'include', 'zmq.h')
+    ver_maj = None
+    ver_min = None
+    ver_pat = None
+    repo_version = None
+    if os.path.exists(zmq_hdr):
+        for line in open(zmq_hdr, 'r'):
+            if re.search('^#define +ZMQ_VERSION_MAJOR +[0-9]+$', line):
+                ver_maj=line.split()[2]
+            elif re.search('^#define +ZMQ_VERSION_MINOR +[0-9]+$', line):
+                ver_min=line.split()[2]
+            elif re.search('^#define +ZMQ_VERSION_PATCH +[0-9]+$', line):
+                ver_pat=line.split()[2]
+    
+        if ver_maj and ver_min and ver_pat:
+            repo_version = (int(ver_maj), int(ver_min), int(ver_pat))
+        else:
+            warn('unable to determine bundle_version, build may fail') 
+    else:
+        warn('zmq header not found, build may fail')
+    
+    return repo_version
 
 
 def stage_platform_hpp(zmqroot):

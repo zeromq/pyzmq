@@ -110,14 +110,24 @@ def get_cfg_args():
 def config_from_prefix(prefix):
     """Get config from zmq prefix"""
     settings = {}
-    if prefix.lower() in ('default', 'auto', ''):
+    prefix_lower = prefix.lower()
+    if prefix_lower in ('default', 'auto', ''):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = False
         settings['no_libzmq_extension'] = False
-    elif prefix.lower() in ('bundled', 'extension'):
+    elif prefix_lower in ('bundled', 'extension'):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = True
         settings['no_libzmq_extension'] = False
+    elif prefix_lower.startswith('git://') or prefix_lower.startswith('https://'):
+        settings['zmq_prefix'] = ''
+        settings['libzmq_extension'] = True
+        settings['no_libzmq_extension'] = False
+
+        prefix_split = prefix.split('@', 1)
+        settings['zmq_repo_url'] = prefix_split[0]
+        if len(prefix_split) > 1:
+            settings['zmq_repo_ref'] = prefix_split[1]
     else:
         settings['zmq_prefix'] = os.path.abspath(prefix)
         settings['libzmq_extension'] = False
@@ -157,6 +167,8 @@ def discover_settings(conf_base=None):
         'build_ext': {},
         'bdist_egg': {},
         'win_ver': None,
+        'zmq_repo_url': None,
+        'zmq_repo_ref': None
     }
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False

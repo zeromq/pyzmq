@@ -51,6 +51,7 @@ from buildutils import (
     discover_settings,
     fatal,
     fetch_libzmq,
+    fetch_libzmq_repo,
     fetch_libzmq_dll,
     info,
     line,
@@ -523,6 +524,7 @@ class Configure(build_ext):
                 )
 
     def bundle_libzmq_extension(self):
+        global bundled_version
         bundledir = "bundled"
         ext_modules = self.distribution.ext_modules
         if ext_modules and any(m.name == 'zmq.libzmq' for m in ext_modules):
@@ -536,7 +538,13 @@ class Configure(build_ext):
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
 
-        fetch_libzmq(bundledir)
+        if self.config['zmq_repo_url']:
+            repo_version = fetch_libzmq_repo(bundledir, self.config['zmq_repo_url'], self.config['zmq_repo_ref'])
+            if repo_version and repo_version != bundled_version:
+                bundled_version = repo_version
+                info(f"bundled_version update with repo {bundled_version}")
+        else:
+            fetch_libzmq(bundledir)
 
         stage_platform_hpp(pjoin(bundledir, 'zeromq'))
 
@@ -567,8 +575,8 @@ class Configure(build_ext):
             sources += tweetnacl_sources
             includes.append(pjoin(tweetnacl, 'src'))
             includes.append(randombytes)
-        else:
-            # >= 4.2
+        elif bundled_version <= (4, 3, 4):
+            # >= 4.2 and <= 4.3.4
             sources += glob(pjoin(bundledir, 'zeromq', 'src', 'tweetnacl.c'))
 
         # construct the Extensions:
@@ -583,9 +591,12 @@ class Configure(build_ext):
         # before finalize_options in build_ext
         self.distribution.ext_modules.insert(0, libzmq)
 
-        # use tweetnacl to provide CURVE support
-        libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
-        libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
+        if bundled_version <= (4, 3, 4):
+            # use tweetnacl to provide CURVE support
+            libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
+            libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
+        else:
+            libzmq.define_macros.append(('ZMQ_HAVE_STRUCT_SOCKADDR_UN', 1))
 
         # set draft flag
         if self.config["zmq_draft_api"]:
