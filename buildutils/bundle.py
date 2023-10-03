@@ -9,23 +9,26 @@
 # -----------------------------------------------------------------------------
 
 
+import errno
 import hashlib
 import os
 import platform
+import re
 import shutil
+import stat
 import sys
 import zipfile
 from subprocess import PIPE, Popen
 from tempfile import TemporaryDirectory
 from unittest import mock
+from urllib.parse import urlparse
 from urllib.request import urlopen
-
-from .msg import fatal, info, warn
 
 from git import Repo
 from git.exc import InvalidGitRepositoryError, NoSuchPathError
 from gitdb.exc import BadName
-import re
+
+from .msg import fatal, info, warn
 
 pjoin = os.path.join
 
@@ -165,31 +168,63 @@ def fetch_libzmq(savedir):
         savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
     )
 
-def fetch_libzmq_repo(savedir, url, ref):
-    """fetch libzmq from repo"""    
-    dest = pjoin(savedir, 'zeromq')
-    #print("fetch_libzmq_repo: ", dest, url, ref)
-    try:
-        repo = Repo(dest)
-    except (InvalidGitRepositoryError, NoSuchPathError):
-        info("invalid local repo, clone from %s" % url)
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
-        repo = Repo.clone_from(url, dest)
 
-    if ref:
+# On Windows, deleting a local git repo directory with shutil.rmtree
+# fails with permission problem on some read-only files in .git/.
+# Add a hook trying to fix the permission.
+def handle_remove_readonly(func, path, exc):
+    excvalue = exc[1]
+    if func in (os.rmdir, os.remove, os.unlink) and excvalue.errno == errno.EACCES:
+        os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
+        func(path)
+    else:
+        raise
+
+
+def fetch_libzmq_repo_zip(savedir, url):
+    fetch_path = urlparse(url)
+    fetch_name = os.path.basename(fetch_path.path)
+    dest = pjoin(savedir, 'zeromq')
+    fname_file = pjoin(dest, fetch_name)
+    # checks for a file with the name of the zip archive
+    if os.path.exists(fname_file):
+        info("already have extracted sources from repo archive %s" % fetch_name)
+        return
+    else:
+        if os.path.exists(dest):
+            shutil.rmtree(dest, ignore_errors=False, onerror=handle_remove_readonly)
+        fetch_and_extract(savedir, 'zeromq', url=url, fname=fetch_name, checksum=None)
+        open(fname_file, 'a')  # touch the file with the name of the zip archive
+
+
+def fetch_libzmq_repo(savedir, url, ref):
+    """fetch libzmq from repo"""
+    dest = pjoin(savedir, 'zeromq')
+
+    if url.endswith('.zip'):
+        fetch_libzmq_repo_zip(savedir, url)
+    else:
         try:
-            commit = repo.commit(ref)
-        except BadName:
-            warn("invalid ref %s" % ref)
-        else:
-            if repo.head.commit != commit:
-                info("checking out %s" % ref)
-                repo.head.reference = commit
-                repo.head.reset(index=True, working_tree=True)
+            repo = Repo(dest)
+        except (InvalidGitRepositoryError, NoSuchPathError):
+            info("invalid local repo, clone from %s" % url)
+            if os.path.exists(dest):
+                shutil.rmtree(dest, ignore_errors=False, onerror=handle_remove_readonly)
+            repo = Repo.clone_from(url, dest)
+
+        if ref:
+            try:
+                commit = repo.commit(ref)
+            except BadName:
+                warn("invalid ref %s" % ref)
             else:
-                info("repo head is already %s" % ref)
-    
+                if repo.head.commit != commit:
+                    info("checking out %s" % ref)
+                    repo.head.reference = commit
+                    repo.head.reset(index=True, working_tree=True)
+                else:
+                    info("repo head is already %s" % ref)
+
     # get repo version
     zmq_hdr = pjoin(dest, 'include', 'zmq.h')
     ver_maj = None
@@ -197,21 +232,21 @@ def fetch_libzmq_repo(savedir, url, ref):
     ver_pat = None
     repo_version = None
     if os.path.exists(zmq_hdr):
-        for line in open(zmq_hdr, 'r'):
+        for line in open(zmq_hdr):
             if re.search('^#define +ZMQ_VERSION_MAJOR +[0-9]+$', line):
-                ver_maj=line.split()[2]
+                ver_maj = line.split()[2]
             elif re.search('^#define +ZMQ_VERSION_MINOR +[0-9]+$', line):
-                ver_min=line.split()[2]
+                ver_min = line.split()[2]
             elif re.search('^#define +ZMQ_VERSION_PATCH +[0-9]+$', line):
-                ver_pat=line.split()[2]
-    
+                ver_pat = line.split()[2]
+
         if ver_maj and ver_min and ver_pat:
             repo_version = (int(ver_maj), int(ver_min), int(ver_pat))
         else:
-            warn('unable to determine bundle_version, build may fail') 
+            warn('unable to determine bundle_version, build may fail')
     else:
         warn('zmq header not found, build may fail')
-    
+
     return repo_version
 
 

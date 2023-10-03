@@ -51,8 +51,8 @@ from buildutils import (
     discover_settings,
     fatal,
     fetch_libzmq,
-    fetch_libzmq_repo,
     fetch_libzmq_dll,
+    fetch_libzmq_repo,
     info,
     line,
     localpath,
@@ -539,7 +539,9 @@ class Configure(build_ext):
             os.makedirs(bundledir)
 
         if self.config['zmq_repo_url']:
-            repo_version = fetch_libzmq_repo(bundledir, self.config['zmq_repo_url'], self.config['zmq_repo_ref'])
+            repo_version = fetch_libzmq_repo(
+                bundledir, self.config['zmq_repo_url'], self.config['zmq_repo_ref']
+            )
             if repo_version and repo_version != bundled_version:
                 bundled_version = repo_version
                 info(f"bundled_version update with repo {bundled_version}")
@@ -596,7 +598,8 @@ class Configure(build_ext):
             libzmq.define_macros.append(('ZMQ_HAVE_CURVE', 1))
             libzmq.define_macros.append(('ZMQ_USE_TWEETNACL', 1))
         else:
-            libzmq.define_macros.append(('ZMQ_HAVE_STRUCT_SOCKADDR_UN', 1))
+            if sys.platform.startswith('win'):
+                libzmq.define_macros.append(('ZMQ_HAVE_STRUCT_SOCKADDR_UN', 1))
 
         # set draft flag
         if self.config["zmq_draft_api"]:

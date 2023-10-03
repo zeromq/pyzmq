@@ -119,15 +119,25 @@ def config_from_prefix(prefix):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = True
         settings['no_libzmq_extension'] = False
-    elif prefix_lower.startswith('git://') or prefix_lower.startswith('https://'):
+        settings['zmq_repo_url'] = None
+        settings['zmq_repo_ref'] = None
+    elif prefix_lower.startswith('git@'):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = True
         settings['no_libzmq_extension'] = False
 
-        prefix_split = prefix.split('@', 1)
-        settings['zmq_repo_url'] = prefix_split[0]
-        if len(prefix_split) > 1:
-            settings['zmq_repo_ref'] = prefix_split[1]
+        prefix_split = prefix.split('@', 2)
+        settings['zmq_repo_url'] = prefix_split[1]
+        if len(prefix_split) > 2:
+            settings['zmq_repo_ref'] = prefix_split[2]
+        else:
+            settings['zmq_repo_ref'] = None
+    elif prefix_lower.startswith('https://') and prefix_lower.endswith('.zip'):
+        settings['zmq_prefix'] = ''
+        settings['libzmq_extension'] = True
+        settings['no_libzmq_extension'] = False
+        settings['zmq_repo_url'] = prefix_lower
+        settings['zmq_repo_ref'] = None
     else:
         settings['zmq_prefix'] = os.path.abspath(prefix)
         settings['libzmq_extension'] = False
@@ -168,7 +178,7 @@ def discover_settings(conf_base=None):
         'bdist_egg': {},
         'win_ver': None,
         'zmq_repo_url': None,
-        'zmq_repo_ref': None
+        'zmq_repo_ref': None,
     }
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False
