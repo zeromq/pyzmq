@@ -28,22 +28,22 @@ pjoin = os.path.join
 # Constants
 # -----------------------------------------------------------------------------
 
-bundled_version = (4, 3, 4)
+bundled_version = (4, 3, 5)
 vs = '%i.%i.%i' % bundled_version
 x, y, z = bundled_version
 libzmq = "zeromq-%s.zip" % vs
 download_url = f"https://github.com/zeromq/libzmq/releases/download/v{vs}"
 
 libzmq_url = f"{download_url}/{libzmq}"
-libzmq_checksum = (
-    "sha256:622bf650f7dab6de098c84d491052ad5a6d3e57550cd09cc259e0ab24ec83ec3"
-)
+libzmq_checksum = "sha1:a8a8b800cbb3e13db0246473362d4d1f17813879"
 
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
 
 
+# libzmq has stopped building binaries with 4.3.5
+# so this is all dead code:
 # msvc 142 builds have a problem:
 # on _some_ (unclear which!) systems due to the implementation of runtime detection of AF_UNIX
 # in 4.3.4

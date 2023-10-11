@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # script to install libzmq/libsodium for use in wheels
 set -ex
-LIBSODIUM_VERSION="1.0.18"
+LIBSODIUM_VERSION="1.0.19"
 
 LIBZMQ_VERSION="$(python3 -m buildutils.bundle)"
 
@@ -50,30 +50,10 @@ which ldconfig && ldconfig || true
 
 tar -xzf zeromq-${LIBZMQ_VERSION}.tar.gz
 cd zeromq-${LIBZMQ_VERSION}
-# patch CURVE crash bug https://github.com/zeromq/libzmq/issues/4241
-# FIXME: switch to `--disable-libsodium_randombytes_close`
-# when we bump bundle libzmq to 4.3.5
-
-patch -p1 <<EOF
-diff --git a/src/random.cpp b/src/random.cpp
-index 17c3537df3..12dead87ba 100644
---- a/src/random.cpp
-+++ b/src/random.cpp
-@@ -151,8 +151,6 @@ static void manage_random (bool init_)
-     if (init_) {
-         int rc = sodium_init ();
-         zmq_assert (rc != -1);
--    } else {
--        randombytes_close ();
-     }
- #else
-     LIBZMQ_UNUSED (init_);
-EOF
-
 # avoid error on warning
 export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 
-./configure --prefix="$PREFIX" --with-libsodium
+./configure --prefix="$PREFIX" --with-libsodium --disable-libsodium_randombytes_close
 make -j4
 make install
 

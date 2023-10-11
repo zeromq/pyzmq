@@ -129,17 +129,17 @@ ZMQ_PREFIX = "/usr/local"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
-before-all = [
-  "python setup.py fetch_libzmq --dll",
-  "xcopy /i libzmq-dll C:\\libzmq-dll",
-]
+# before-all = [
+#   "python setup.py fetch_libzmq --dll",
+#   "xcopy /i libzmq-dll C:\\libzmq-dll",
+# ]
 repair-wheel-command = """
     delvewheel repair \
         -v \
-        --add-path=C:/libzmq-dll \
         --wheel-dir={dest_dir} \
         {wheel}
 """
+        # --add-path=C:/libzmq-dll \
 
 [tool.cibuildwheel.windows.environment]
 ZMQ_PREFIX = "libzmq-dll"
