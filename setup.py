@@ -27,6 +27,7 @@ from contextlib import contextmanager
 from glob import glob
 from os.path import basename
 from os.path import join as pjoin
+from pathlib import Path
 from subprocess import PIPE, CalledProcessError, Popen, check_call
 from sysconfig import get_config_var
 from traceback import print_exc
@@ -1161,44 +1162,23 @@ cmdclass = {
 # -----------------------------------------------------------------------------
 
 
-def makename(path, ext):
-    return os.path.abspath(pjoin('zmq', *path)) + ext
-
-
-pxd = lambda *path: makename(path, '.pxd')
-pxi = lambda *path: makename(path, '.pxi')
-pyx = lambda *path: makename(path, '.pyx')
-dotc = lambda *path: makename(path, '.c')
-doth = lambda *path: makename(path, '.h')
-
-libzmq = pxd('backend', 'cython', 'libzmq')
-buffers = pxd('utils', 'buffers')
-message = pxd('backend', 'cython', 'message')
-context = pxd('backend', 'cython', 'context')
-socket = pxd('backend', 'cython', 'socket')
-checkrc = pxd('backend', 'cython', 'checkrc')
-monqueue = pxd('devices', 'monitoredqueue')
-mutex = doth('utils', 'mutex')
+zmq_path = Path("zmq").resolve()
+backend_cython = zmq_path / "backend" / "cython"
+utils = zmq_path / 'utils'
 
 submodules = {
     'backend.cython': {
-        'error': [libzmq, checkrc],
-        '_poll': [libzmq, socket, context, checkrc],
-        'utils': [libzmq, checkrc],
-        'context': [context, libzmq, checkrc],
-        'message': [libzmq, buffers, message, checkrc, mutex],
-        'socket': [context, message, socket, libzmq, buffers, checkrc],
-        '_device': [libzmq, socket, context, checkrc],
-        '_proxy_steerable': [libzmq, socket, checkrc],
-        '_version': [libzmq],
-    },
-    'devices': {
-        'monitoredqueue': [buffers, libzmq, monqueue, socket, context, checkrc],
+        '_zmq': [
+            backend_cython / "libzmq.pxd",
+            backend_cython / "_externs.pxd",
+            utils / "buffers.pxd",
+        ]
+        + list(utils.glob("*.h"))
     },
 }
 
-# require cython 0.29
-min_cython_version = "0.29"
+# require cython 3
+min_cython_version = "3.0.0"
 cython_language_level = "3str"
 
 try:
@@ -1214,6 +1194,9 @@ try:
 
     cython = True
 except Exception:
+    warn(
+        f"Cython >= {min_cython_version} is a build dependency of pyzmq. Cython sources may be out of date."
+    )
     cython = False
     suffix = '.c'
     cmdclass['build_ext'] = CheckingBuildExt
@@ -1243,7 +1226,7 @@ except Exception:
     cmdclass['cython'] = MissingCython
 
 else:
-    suffix = '.pyx'
+    suffix = '.py'
 
     class CythonCommand(build_ext_cython):
         """Custom setuptools command subclassed from Cython.Distutils.build_ext
@@ -1346,49 +1329,11 @@ with open('README.md', encoding='utf-8') as f:
     long_desc = f.read()
 
 setup_args = dict(
-    name="pyzmq",
-    version="26.0.0.dev0",
     packages=find_packages(),
     ext_modules=extensions,
     cffi_modules=cffi_modules,
     package_data=package_data,
-    author="Brian E. Granger, Min Ragan-Kelley",
-    author_email="zeromq-dev@lists.zeromq.org",
-    url="https://pyzmq.readthedocs.org",
-    project_urls={
-        'Source': 'https://github.com/zeromq/pyzmq',
-    },
-    description="Python bindings for 0MQ",
-    long_description=long_desc,
-    long_description_content_type="text/markdown",
-    license="LGPL+BSD",
     cmdclass=cmdclass,
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
-        "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: MacOS :: MacOS X",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX",
-        "Topic :: System :: Networking",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-    ],
-    zip_safe=False,
-    python_requires=">=3.6",
-    install_requires=[
-        "cffi; implementation_name == 'pypy'",
-    ],
 )
 
 setup(**setup_args)

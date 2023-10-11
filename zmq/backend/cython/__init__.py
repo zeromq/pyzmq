@@ -1,40 +1,15 @@
 """Python bindings for core 0MQ objects."""
 
 # Copyright (C) PyZMQ Developers
-# Distributed under the terms of the Lesser GNU Public License (LGPL).
+# Distributed under the terms of the Modified BSD License.
 
-from . import (
-    _device,
-    _poll,
-    _proxy_steerable,
-    _version,
-    context,
-    error,
-    message,
-    socket,
-    utils,
-)
+from . import _zmq
 
-__all__ = []
-for submod in (
-    error,
-    message,
-    context,
-    socket,
-    utils,
-    _poll,
-    _version,
-    _device,
-    _proxy_steerable,
-):
-    __all__.extend(submod.__all__)
+# mq not in __all__
+from ._zmq import *  # noqa
+from ._zmq import monitored_queue  # noqa
 
-from ._device import *  # noqa
-from ._poll import *  # noqa
-from ._proxy_steerable import *  # noqa
-from ._version import *  # noqa
-from .context import *  # noqa
-from .error import *  # noqa
-from .message import *  # noqa
-from .socket import *  # noqa
-from .utils import *  # noqa
+Message = _zmq.Frame
+
+__all__ = ["Message"]
+__all__.extend(_zmq.__all__)

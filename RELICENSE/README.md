@@ -1,8 +1,16 @@
 # Permission to Relicense under MPLv2 or BSD
 
+pyzmq starting with 26.0.0 is fully licensed under the 3-clause Modified BSD License.
+A small part of the core (Cython backend only) was previously licensed under LGPLv3 for historical reasons.
+Permission has been granted by the contributors of the vast majority of those components to relicense under MPLv2 or BSD.
+This backend has been completely replaced in pyzmq 26, and the new implementation is fully licensed under BSD-3-Clause,
+so pyzmq is now under a single license.
+
+Original text:
+
 Most of pyzmq is licensed under [3-Clause BSD](https://opensource.org/licenses/BSD-3-Clause).
 For historical reasons, the 'core' of pyzmq (the low-level Cython bindings)
-is licensed under LGPLv3, like libzmq itself.
+was licensed under LGPLv3, like libzmq itself.
 
 libzmq is in the process of moving away from LGPL to the [Mozilla Public License, version
 2](https://www.mozilla.org/en-US/MPL/2.0/).

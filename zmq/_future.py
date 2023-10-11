@@ -119,11 +119,18 @@ class _AsyncPoller(_Async, _zmq.Poller):
             lambda f: self._unwatch_raw_sockets(loop, *raw_sockets)
         )
 
+        wrapped_sockets: List[_AsyncSocket] = []
+
+        def _clear_wrapper_io(f):
+            for s in wrapped_sockets:
+                s._clear_io_state()
+
         for socket, mask in self.sockets:
             if isinstance(socket, _zmq.Socket):
                 if not isinstance(socket, self._socket_class):
                     # it's a blocking zmq.Socket, wrap it in async
                     socket = self._socket_class.from_socket(socket)
+                    wrapped_sockets.append(socket)
                 if mask & _zmq.POLLIN:
                     socket._add_recv_event('poll', future=watcher)
                 if mask & _zmq.POLLOUT:
@@ -158,6 +165,9 @@ class _AsyncPoller(_Async, _zmq.Poller):
                     future.set_result(result)
 
         watcher.add_done_callback(on_poll_ready)
+
+        if wrapped_sockets:
+            watcher.add_done_callback(_clear_wrapper_io)
 
         if timeout is not None and timeout > 0:
             # schedule cancel to fire on poll timeout, if any

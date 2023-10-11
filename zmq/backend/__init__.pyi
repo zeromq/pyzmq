@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Set, Tuple, TypeVar, Union, overload
+from typing import Any, Callable, List, Optional, Set, Tuple, TypeVar, Union, overload
 
 from typing_extensions import Literal
 
@@ -122,3 +122,5 @@ def proxy_steerable(
     capture: Optional[Socket] = ...,
     control: Optional[Socket] = ...,
 ) -> int: ...
+
+monitored_queue = Optional[Callable]

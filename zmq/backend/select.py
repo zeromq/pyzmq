@@ -33,4 +33,9 @@ def select_backend(name: str) -> Dict:
         raise
     except Exception as e:
         raise ImportError(f"Importing {name} failed with {e}") from e
-    return {key: getattr(mod, key) for key in public_api}
+    ns = {
+        # private API
+        'monitored_queue': mod.monitored_queue,
+    }
+    ns.update({key: getattr(mod, key) for key in public_api})
+    return ns

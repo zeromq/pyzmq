@@ -70,7 +70,7 @@ def compile_and_forget(basedir, src, compiler, **compiler_attrs):
     cfile = pjoin(basedir, os.path.basename(src))
     shutil.copy(src, cfile)
     try:
-        efile = test_compilation(cfile, compiler=compiler, **compiler_attrs)
+        test_compilation(cfile, compiler=compiler, **compiler_attrs)
     finally:
         shutil.rmtree(basedir)
 

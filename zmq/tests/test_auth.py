@@ -99,7 +99,7 @@ async def _async_setup(request, event_loop):
     await instance.async_setup()
     yield
     # make sure our teardown runs before the loop closes
-    instance.async_teardown()
+    await instance.async_teardown()
 
 
 @pytest.mark.usefixtures("_async_setup")
@@ -119,10 +119,19 @@ class AuthTest:
         self.auth = self.make_auth()
         await self.start_auth()
 
-    def async_teardown(self):
+    async def async_teardown(self):
+        # Windows seems to have an issue waiting for cleanup
+        # of the closed sockets
+        # perhaps due to the background selector thread
+        if sys.platform.startswith("win"):
+            await asyncio.sleep(0.2)
+
         if self.auth:
             self.auth.stop()
             self.auth = None
+
+        if sys.platform.startswith("win"):
+            await asyncio.sleep(0.2)
         self.context.term()
 
     def make_auth(self):
@@ -390,8 +399,8 @@ class TestThreadAuthentication(AuthTest):
 
 
 @pytest.mark.skipif(
-    sys.platform == 'win32' and sys.version_info < (3, 7),
-    reason="flaky event loop cleanup on windows+py36",
+    sys.platform == 'win32' and sys.version_info < (3, 8),
+    reason="flaky event loop cleanup on windows+py<38",
 )
 class TestAsyncioAuthentication(AuthTest):
     """Test authentication running in a thread"""

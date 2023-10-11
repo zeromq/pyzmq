@@ -1,9 +1,68 @@
+# PEP 621 build info
+[build-system]
+requires = [
+  "cffi; implementation_name == 'pypy'",
+  "cython>=3.0.0; implementation_name == 'cpython'",
+  "packaging",
+  "setuptools>=61",
+  "setuptools_scm[toml]",
+]
+build-backend = "setuptools.build_meta"
+
+# Project metadata
+# ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+[project]
+name = "pyzmq"
+version = "26.0.0.dev0"
+authors = [
+  { name = "PyZMQ Contributors", email = "zeromq-dev@lists.zeromq.org" },
+  { name = "Brian E. Granger" },
+  { name = "Min Ragan-Kelley" },
+]
+license = { text = "BSD-3-Clause" }
+requires-python = ">=3.7"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Topic :: System :: Networking",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = ["cffi; implementation_name == 'pypy'"]
+description = "Python bindings for 0MQ"
+dynamic = ["readme"]
+
+[project.urls]
+Homepage = "https://pyzmq.readthedocs.org"
+Documentation = "https://pyzmq.readthedocs.org"
+Source = "https://github.com/zeromq/pyzmq"
+Tracker = "https://github.com/zeromq/pyzmq/issues"
+
+[tool.setuptools]
+zip-safe = false
+license-files = ["LICENSE.md", "bundled/zeromq/COPYING", "bundled/zeromq/COPYING.LESSER"]
+
+[tool.setuptools.dynamic]
+readme = { file = "README.md" }
+
 [tool.autoflake]
 ignore-init-module-imports = true
 remove-all-unused-imports = true
 remove-duplicate-keys = true
-# remove-unused-variables = true
 
+# remove-unused-variables = true
 [tool.black]
 skip-string-normalization = true
 exclude = "zmq/eventloop/minitornado|docs/source/conf.py"
@@ -11,21 +70,7 @@ exclude = "zmq/eventloop/minitornado|docs/source/conf.py"
 [tool.isort]
 profile = "black"
 multi_line_output = 3
-skip = [
-    "zmq/__init__.py"
-]
-
-[build-system]
-requires = [
-    "setuptools",
-    "setuptools_scm[toml]",
-    "wheel",
-    "packaging",
-    "cffi; implementation_name == 'pypy'",
-    "cython>=0.29; implementation_name == 'cpython'",
-    "cython>=0.29.35; implementation_name == 'cpython' and python_version >= '3.12'",
-]
-build-backend = "setuptools.build_meta"
+skip = ["zmq/__init__.py"]
 
 [tool.tbump]
 # Uncomment this if your project is hosted on GitHub:
@@ -49,15 +94,13 @@ tag_template = "v{new_version}"
 # For each file to patch, add a [[tool.tbump.file]] config
 # section containing the path of the file, relative to the
 # pyproject.toml location.
-
 [[tool.tbump.file]]
-src = "setup.py"
-search = 'version="{current_version}"'
+src = "pyproject.toml"
+search = 'version = "{current_version}"'
 
 [[tool.tbump.file]]
 src = "zmq/sugar/version.py"
 search = '__version__: str = "{current_version}"'
-
 
 [tool.cibuildwheel]
 build-verbosity = "1"
@@ -66,7 +109,6 @@ test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
-
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux2014"
@@ -88,10 +130,9 @@ MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
 before-all = [
-    "python setup.py fetch_libzmq --dll",
-    "xcopy /i libzmq-dll C:\\libzmq-dll",
+  "python setup.py fetch_libzmq --dll",
+  "xcopy /i libzmq-dll C:\\libzmq-dll",
 ]
-
 repair-wheel-command = """
     delvewheel repair \
         -v \
@@ -122,7 +163,6 @@ manylinux-i686-image = "manylinux2010"
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
-
 [[tool.cibuildwheel.overrides]]
 select = "pp*win*"
 # pypy builds libzmq as an Extension,

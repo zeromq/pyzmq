@@ -81,11 +81,11 @@ def latency_echo(url, count, size=None, poll=False, copy=True, quiet=False):
 
     for i in range(count + 1):
         if poll:
-            res = p.poll()
+            p.poll()
         msg = s.recv(block, copy=copy)
 
         if poll:
-            res = p.poll()
+            p.poll()
         s.send(msg, block, copy=copy)
 
     msg = s.recv()

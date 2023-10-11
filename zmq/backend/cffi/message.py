@@ -180,9 +180,6 @@ class Frame(maybe_bufferable):
     def __eq__(self, other):
         return self.bytes == _content(other)
 
-    def __str__(self):
-        return self.bytes.decode()
-
     @property
     def done(self):
         return self.tracker.done()

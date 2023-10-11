@@ -53,7 +53,7 @@ def test_git_files(sdist_files, git_files):
         "bundled/zeromq/external/wepoll/license.txt",
         "bundled/zeromq/external/wepoll/wepoll.h",
         # Cython-generated files
-        "zmq/backend/cython/socket.c",
+        "zmq/backend/cython/_zmq.c",
     ],
 )
 def test_included(sdist_files, path):

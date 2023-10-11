@@ -67,12 +67,16 @@ class TestFrame(BaseZMQTestCase):
 
     def test_str(self):
         """Test the str representations of the Frames."""
-        for i in range(16):
-            s = (2**i) * x
-            m = zmq.Frame(s)
-            m_str = str(m)
-            m_str_b = m_str.encode()
-            assert s == m_str_b
+        m = zmq.Frame(b'')
+        assert str(m) == "<zmq.Frame(b'')>"
+        m = zmq.Frame(b'123456789')
+        assert str(m) == "<zmq.Frame(b'123456789')>"
+        m = zmq.Frame(b'x' * 20)
+        assert str(m) == "<zmq.Frame(b'xxxxxxxxxxxx'...20B)>"
+        m = zmq.Frame(b'x' * 2000)
+        assert str(m) == "<zmq.Frame(b'xxxxxxxxxxxx'...2kB)>"
+        m = zmq.Frame(b'x' * 2_000_000)
+        assert str(m) == "<zmq.Frame(b'xxxxxxxxxxxx'...2MB)>"
 
     def test_bytes(self):
         """Test the Frame.bytes property."""
@@ -120,12 +124,9 @@ class TestFrame(BaseZMQTestCase):
             buf = m2.buffer
             assert grc(s) == rc
 
-            assert s == str(m).encode()
             assert s == bytes(m2)
             assert s == m.bytes
             assert s == bytes(buf)
-            # assert s is str(m)
-            # assert s is str(m2)
             del m2
             assert grc(s) == rc
             # buf holds direct reference to m2 which holds
@@ -155,13 +156,10 @@ class TestFrame(BaseZMQTestCase):
             # which references m directly
             buf = m.buffer
             assert grc(s) == rc
-            assert s == str(m).encode()
             assert s == bytes(m2)
             assert s == m2.bytes
             assert s == m.bytes
             assert s == bytes(buf)
-            # assert s is str(m)
-            # assert s is str(m2)
             del buf
             assert grc(s) == rc
             del m

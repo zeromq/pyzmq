@@ -5,6 +5,32 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 26
+
+pyzmq 26 is a small release, but with some big changes nobody should notice.
+The Cython backend has been rewritten using Cython 3's pure Python mode.
+This means:
+
+1. Cython >=3.0 is now a build requirement (if omitted, source distributions _should_ still build from Cython-generated .c files without any Cython present)
+1. pyzmq's Cython backend is a single extension module, which should improve install size, import time, compile time, etc.
+1. pyzmq's Cython backend is now BSD-licensed, matching the rest of pyzmq.
+
+The license of the libzmq library (included in pyzmq wheels and sources included but may not be used in pyzmq tarballs) remains unchanged and has its own LGPL license.
+
+__Enhancements__:
+
+- `repr(Frame)` now produces a nice repr, summarizing Frame contents (without getting too large),
+  e.g. `<zmq.Frame(b'abcdefghijkl'...52B)>`
+
+__Breaking changes__:
+
+- `str(Frame)` no longer returns the whole frame contents interpreted as utf8-bytes.
+  Instead, it returns the new summarized repr,
+  which produces more logical results with `print`, etc.
+  `bytes(Frame)` remains unchanged, and utf-8 text strings can still be produced with:
+  `bytes(Frame).decode("utf8")`,
+  which works in all versions of pyzmq and does the same thing.
+
 ## 25
 
 ### 25.1.1

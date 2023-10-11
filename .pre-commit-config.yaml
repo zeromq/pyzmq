@@ -22,6 +22,7 @@ repos:
         additional_dependencies:
           - mdformat-black
           - mdformat-myst
+        exclude: LICENSE.md
 
   - repo: https://github.com/PyCQA/autoflake
     rev: v2.2.1

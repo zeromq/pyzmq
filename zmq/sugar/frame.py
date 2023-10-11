@@ -68,6 +68,33 @@ class Frame(FrameBase, AttributeSetter):
         # map Frame['User-Id'] to Frame.get('User-Id')
         return self.get(key)
 
+    def __repr__(self):
+        """Return the str form of the message."""
+        nbytes = len(self)
+        msg_suffix = ""
+        if nbytes > 16:
+            msg_bytes = bytes(memoryview(self)[:12])
+            if nbytes >= 1e9:
+                unit = "GB"
+                n = nbytes // 1e9
+            elif nbytes >= 2**20:
+                unit = "MB"
+                n = nbytes // 1e6
+            elif nbytes >= 1e3:
+                unit = "kB"
+                n = nbytes // 1e3
+            else:
+                unit = "B"
+                n = nbytes
+            msg_suffix = f'...{n:.0f}{unit}'
+        else:
+            msg_bytes = self.bytes
+
+        _module = self.__class__.__module__
+        if _module == "zmq.sugar.frame":
+            _module = "zmq"
+        return f"<{_module}.{self.__class__.__name__}({msg_bytes!r}{msg_suffix})>"
+
     @property
     def group(self):
         """The RADIO-DISH group of the message.

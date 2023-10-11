@@ -31,3 +31,5 @@ from .error import *
 from .message import *
 from .socket import *
 from .utils import *
+
+monitored_queue = None
