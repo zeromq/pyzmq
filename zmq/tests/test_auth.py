@@ -399,8 +399,8 @@ class TestThreadAuthentication(AuthTest):
 
 
 @pytest.mark.skipif(
-    sys.platform == 'win32' and sys.version_info < (3, 7),
-    reason="flaky event loop cleanup on windows+py36",
+    sys.platform == 'win32' and sys.version_info < (3, 8),
+    reason="flaky event loop cleanup on windows+py<38",
 )
 class TestAsyncioAuthentication(AuthTest):
     """Test authentication running in a thread"""
