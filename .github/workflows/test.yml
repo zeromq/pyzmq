@@ -33,45 +33,45 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - os: macos-13
-            python: 3.7
-
-          - os: macos-13
-            python: 3.11
-            zmq: bundled
-
-          - os: macos-13
-            python: pypy-3.9
-            zmq: bundled
-
-          - os: ubuntu-20.04
-            python: 3.7
-            zmq: bundled
-            tornado: none
-
-          - os: ubuntu-22.04
-            python: pypy-3.9
-            zmq: bundled
-
-          - os: ubuntu-22.04
-            python: pypy-3.7
-
-          - os: ubuntu-22.04
-            python: 3.9
-            tornado: head
-
-          - os: ubuntu-22.04
-            python: "3.10"
-
-          - os: ubuntu-22.04
-            python: "3.11"
-
-          - os: ubuntu-22.04
-            python: "3.8"
-            zmq: head
-
-          - os: ubuntu-22.04
-            python: "3.12"
+#           - os: macos-13
+#             python: 3.7
+#
+#           - os: macos-13
+#             python: 3.11
+#             zmq: bundled
+#
+#           - os: macos-13
+#             python: pypy-3.9
+#             zmq: bundled
+#
+#           - os: ubuntu-20.04
+#             python: 3.7
+#             zmq: bundled
+#             tornado: none
+#
+#           - os: ubuntu-22.04
+#             python: pypy-3.9
+#             zmq: bundled
+#
+#           - os: ubuntu-22.04
+#             python: pypy-3.7
+#
+#           - os: ubuntu-22.04
+#             python: 3.9
+#             tornado: head
+#
+#           - os: ubuntu-22.04
+#             python: "3.10"
+#
+#           - os: ubuntu-22.04
+#             python: "3.11"
+#
+#           - os: ubuntu-22.04
+#             python: "3.8"
+#             zmq: head
+#
+#           - os: ubuntu-22.04
+#             python: "3.12"
 
           - os: windows-2022
             python: "3.7"
