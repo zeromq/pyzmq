@@ -39,6 +39,10 @@ except ImportError:
     pexpect = None
 
 
+class MaxRetryExceeded(Exception):
+    pass
+
+
 def select_random_ports(n):
     """Select and return n random ports that are available."""
     ports = []
@@ -56,7 +60,7 @@ def select_random_ports(n):
 # -----------------------------------------------------------------------------
 # Check for passwordless login
 # -----------------------------------------------------------------------------
-_password_pat = re.compile(rb'pass(word|phrase):', re.IGNORECASE)
+_password_pat = re.compile(rb'pass(word|phrase)', re.IGNORECASE)
 
 
 def try_passwordless_ssh(server, keyfile, paramiko=None):
@@ -90,7 +94,10 @@ def _try_passwordless_openssh(server, keyfile):
 
     ssh_newkey = 'Are you sure you want to continue connecting'
     p = pexpect.spawn(cmd, env=env)
-    while True:
+
+    MAX_RETRY = 10
+
+    for _ in range(MAX_RETRY):
         try:
             i = p.expect([ssh_newkey, _password_pat], timeout=0.1)
             if i == 0:
@@ -103,6 +110,8 @@ def _try_passwordless_openssh(server, keyfile):
             return True
         else:
             return False
+
+    raise MaxRetryExceeded(f"Failed after {MAX_RETRY} attempts")
 
 
 def _try_passwordless_paramiko(server, keyfile):
@@ -274,7 +283,8 @@ def openssh_tunnel(
     ssh_newkey = 'Are you sure you want to continue connecting'
     tunnel = pexpect.spawn(cmd, env=env)
     failed = False
-    while True:
+    MAX_RETRY = 10
+    for _ in range(MAX_RETRY):
         try:
             i = tunnel.expect([ssh_newkey, _password_pat], timeout=0.1)
             if i == 0:
@@ -299,6 +309,7 @@ def openssh_tunnel(
                 password = getpass("%s's password: " % (server))
             tunnel.sendline(password)
             failed = True
+    raise MaxRetryExceeded(f"Failed after {MAX_RETRY} attempts")
 
 
 def _stop_tunnel(cmd):
