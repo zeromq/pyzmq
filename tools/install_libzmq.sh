@@ -39,7 +39,7 @@ curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSOD
 curl -L -O "https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION}/zeromq-${LIBZMQ_VERSION}.tar.gz"
 
 tar -xzf libsodium-${LIBSODIUM_VERSION}.tar.gz
-cd libsodium-${LIBSODIUM_VERSION}
+cd libsodium-*/
 ./configure --prefix="$PREFIX"
 make -j4
 make install
