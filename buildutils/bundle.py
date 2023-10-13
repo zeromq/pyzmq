@@ -11,7 +11,6 @@
 
 import hashlib
 import os
-import platform
 import shutil
 import sys
 import zipfile
@@ -40,36 +39,6 @@ libzmq_checksum = "sha1:a8a8b800cbb3e13db0246473362d4d1f17813879"
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.dirname(HERE)
-
-
-# libzmq has stopped building binaries with 4.3.5
-# so this is all dead code:
-# msvc 142 builds have a problem:
-# on _some_ (unclear which!) systems due to the implementation of runtime detection of AF_UNIX
-# in 4.3.4
-vcversion = 141
-# until that's fixed, we shouldn't ship 142 builds,
-# which in turn means we can't support IPC in wheels
-
-if platform.architecture()[0] == '64bit':
-    msarch = '-x64'
-    # vcversion = 142
-else:
-    msarch = ''
-    # vcversion = 141
-
-libzmq_dll = f"libzmq-v{vcversion}{msarch}-{x}_{y}_{z}.zip"
-libzmq_dll_url = f"{download_url}/{libzmq_dll}"
-
-libzmq_dll_checksums = {
-    "libzmq-v140-4_3_4.zip": "sha256:05b7c42fe8d5feb2795d32f71f7d900083530ee6fdd15575bfc8d1b3fb8643f7",
-    "libzmq-v140-x64-4_3_4.zip": "sha256:d5d75bd502d7935af3cf80734f81069be78420331c54814d0aab6d64adf450ae",
-    "libzmq-v141-4_3_4.zip": "sha256:acfc997f036018b8dc8ab5b3a1d1444bba6ba5621e91c756d07cd9447db19672",
-    "libzmq-v141-x64-4_3_4.zip": "sha256:4bb29d6fed20bd175a82317676c7e940356cd358b624efae8569c7ee11c45636",
-    "libzmq-v142-x64-4_3_4.zip": "sha256:61ae77d70bd55ffb85c3b30b6a4aeb40b0c69aaf492a9e691404d7f0192969e2",
-}
-
-libzmq_dll_checksum = libzmq_dll_checksums.get(libzmq_dll)
 
 # -----------------------------------------------------------------------------
 # Utilities
@@ -217,28 +186,6 @@ def stage_platform_hpp(zmqroot):
     shutil.copy(pjoin(platform_dir, 'platform.hpp'), platform_hpp)
 
 
-def fetch_libzmq_dll(savedir):
-    """Download binary release of libzmq for windows
-
-    vcversion specifies the MSVC runtime version to use
-    """
-
-    dest = pjoin(savedir, 'zmq.h')
-    if os.path.exists(dest):
-        info("already have %s" % dest)
-        return
-    path = fetch_archive(
-        savedir, libzmq_dll_url, fname=libzmq_dll, checksum=libzmq_dll_checksum
-    )
-    archive = zipfile.ZipFile(path)
-    to_extract = []
-    for name in archive.namelist():
-        if not name.endswith(".exe"):
-            to_extract.append(name)
-    archive.extractall(savedir, members=to_extract)
-    archive.close()
-
-
 def check_checksums():
     """Check all the checksums!"""
     _failed = False
@@ -260,13 +207,6 @@ def check_checksums():
             fname=libzmq,
             checksum=libzmq_checksum,
         )
-        for dll, checksum in libzmq_dll_checksums.items():
-            fetch_archive(
-                savedir,
-                f"{download_url}/{dll}",
-                fname=dll,
-                checksum=checksum,
-            )
     if not _failed:
         print("All ok!")
     return _failed
