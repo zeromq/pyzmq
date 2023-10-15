@@ -24,10 +24,6 @@ from unittest import mock
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
-from git import Repo
-from git.exc import InvalidGitRepositoryError, NoSuchPathError
-from gitdb.exc import BadName
-
 from .msg import fatal, info, warn
 
 pjoin = os.path.join
@@ -181,7 +177,10 @@ def handle_remove_readonly(func, path, exc):
         raise
 
 
-def fetch_libzmq_repo_zip(savedir, url):
+def fetch_libzmq_archive(savedir, url):
+    """fetch libzmq from archive zip"""
+    dest = pjoin(savedir, 'zeromq')
+
     fetch_path = urlparse(url)
     fetch_name = os.path.basename(fetch_path.path)
     dest = pjoin(savedir, 'zeromq')
@@ -189,41 +188,12 @@ def fetch_libzmq_repo_zip(savedir, url):
     # checks for a file with the name of the zip archive
     if os.path.exists(fname_file):
         info("already have extracted sources from repo archive %s" % fetch_name)
-        return
     else:
         if os.path.exists(dest):
             shutil.rmtree(dest, ignore_errors=False, onerror=handle_remove_readonly)
         fetch_and_extract(savedir, 'zeromq', url=url, fname=fetch_name, checksum=None)
-        open(fname_file, 'a')  # touch the file with the name of the zip archive
-
-
-def fetch_libzmq_repo(savedir, url, ref):
-    """fetch libzmq from repo"""
-    dest = pjoin(savedir, 'zeromq')
-
-    if url.endswith('.zip'):
-        fetch_libzmq_repo_zip(savedir, url)
-    else:
-        try:
-            repo = Repo(dest)
-        except (InvalidGitRepositoryError, NoSuchPathError):
-            info("invalid local repo, clone from %s" % url)
-            if os.path.exists(dest):
-                shutil.rmtree(dest, ignore_errors=False, onerror=handle_remove_readonly)
-            repo = Repo.clone_from(url, dest)
-
-        if ref:
-            try:
-                commit = repo.commit(ref)
-            except BadName:
-                warn("invalid ref %s" % ref)
-            else:
-                if repo.head.commit != commit:
-                    info("checking out %s" % ref)
-                    repo.head.reference = commit
-                    repo.head.reset(index=True, working_tree=True)
-                else:
-                    info("repo head is already %s" % ref)
+        with open(fname_file, 'a'):  # touch the file with the name of the zip archive
+            pass
 
     # get repo version
     zmq_hdr = pjoin(dest, 'include', 'zmq.h')

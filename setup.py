@@ -51,8 +51,8 @@ from buildutils import (
     discover_settings,
     fatal,
     fetch_libzmq,
+    fetch_libzmq_archive,
     fetch_libzmq_dll,
-    fetch_libzmq_repo,
     info,
     line,
     localpath,
@@ -538,9 +538,9 @@ class Configure(build_ext):
         if not os.path.exists(bundledir):
             os.makedirs(bundledir)
 
-        if self.config['zmq_repo_url']:
-            repo_version = fetch_libzmq_repo(
-                bundledir, self.config['zmq_repo_url'], self.config['zmq_repo_ref']
+        if self.config['zmq_archive_url']:
+            repo_version = fetch_libzmq_archive(
+                bundledir, self.config['zmq_archive_url']
             )
             if repo_version and repo_version != bundled_version:
                 bundled_version = repo_version
