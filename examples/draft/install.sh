@@ -17,8 +17,7 @@ cd zeromq-${ZMQ_VERSION}
 make -j${CPU_COUNT} && make install
 
 # install pyzmq with drafts enabled
-# --install-option disables installing pyzmq from wheels,
-# which do not have draft support
+# By specifying ``--no-binary pyzmq``, pip knows to not install wheels, and will compile pyzmq from source.
 
 echo "installing ${PYZMQ}"
 export ZMQ_PREFIX=${PREFIX}
