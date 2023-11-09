@@ -110,14 +110,21 @@ def get_cfg_args():
 def config_from_prefix(prefix):
     """Get config from zmq prefix"""
     settings = {}
-    if prefix.lower() in ('default', 'auto', ''):
+    prefix_lower = prefix.lower()
+    if prefix_lower in ('default', 'auto', ''):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = False
         settings['no_libzmq_extension'] = False
-    elif prefix.lower() in ('bundled', 'extension'):
+    elif prefix_lower in ('bundled', 'extension'):
         settings['zmq_prefix'] = ''
         settings['libzmq_extension'] = True
         settings['no_libzmq_extension'] = False
+        settings['zmq_archive_url'] = None
+    elif prefix_lower.startswith('https://') and prefix_lower.endswith('.zip'):
+        settings['zmq_prefix'] = ''
+        settings['libzmq_extension'] = True
+        settings['no_libzmq_extension'] = False
+        settings['zmq_archive_url'] = prefix_lower
     else:
         settings['zmq_prefix'] = os.path.abspath(prefix)
         settings['libzmq_extension'] = False
@@ -157,6 +164,7 @@ def discover_settings(conf_base=None):
         'build_ext': {},
         'bdist_egg': {},
         'win_ver': None,
+        'zmq_archive_url': None,
     }
     if sys.platform.startswith('win'):
         settings['have_sys_un_h'] = False

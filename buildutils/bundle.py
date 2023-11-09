@@ -9,15 +9,19 @@
 # -----------------------------------------------------------------------------
 
 
+import errno
 import hashlib
 import os
 import platform
+import re
 import shutil
+import stat
 import sys
 import zipfile
 from subprocess import PIPE, Popen
 from tempfile import TemporaryDirectory
 from unittest import mock
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 from .msg import fatal, info, warn
@@ -159,6 +163,61 @@ def fetch_libzmq(savedir):
     fetch_and_extract(
         savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
     )
+
+
+# On Windows, deleting a local git repo directory with shutil.rmtree
+# fails with permission problem on some read-only files in .git/.
+# Add a hook trying to fix the permission.
+def handle_remove_readonly(func, path, exc):
+    excvalue = exc[1]
+    if func in (os.rmdir, os.remove, os.unlink) and excvalue.errno == errno.EACCES:
+        os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)  # 0777
+        func(path)
+    else:
+        raise
+
+
+def fetch_libzmq_archive(savedir, url):
+    """fetch libzmq from archive zip"""
+    dest = pjoin(savedir, 'zeromq')
+
+    fetch_path = urlparse(url)
+    fetch_name = os.path.basename(fetch_path.path)
+    dest = pjoin(savedir, 'zeromq')
+    fname_file = pjoin(dest, fetch_name)
+    # checks for a file with the name of the zip archive
+    if os.path.exists(fname_file):
+        info("already have extracted sources from repo archive %s" % fetch_name)
+    else:
+        if os.path.exists(dest):
+            shutil.rmtree(dest, ignore_errors=False, onerror=handle_remove_readonly)
+        fetch_and_extract(savedir, 'zeromq', url=url, fname=fetch_name, checksum=None)
+        with open(fname_file, 'a'):  # touch the file with the name of the zip archive
+            pass
+
+    # get repo version
+    zmq_hdr = pjoin(dest, 'include', 'zmq.h')
+    ver_maj = None
+    ver_min = None
+    ver_pat = None
+    repo_version = None
+    if os.path.exists(zmq_hdr):
+        for line in open(zmq_hdr):
+            if re.search('^#define +ZMQ_VERSION_MAJOR +[0-9]+$', line):
+                ver_maj = line.split()[2]
+            elif re.search('^#define +ZMQ_VERSION_MINOR +[0-9]+$', line):
+                ver_min = line.split()[2]
+            elif re.search('^#define +ZMQ_VERSION_PATCH +[0-9]+$', line):
+                ver_pat = line.split()[2]
+
+        if ver_maj and ver_min and ver_pat:
+            repo_version = (int(ver_maj), int(ver_min), int(ver_pat))
+        else:
+            warn('unable to determine bundle_version, build may fail')
+    else:
+        warn('zmq header not found, build may fail')
+
+    return repo_version
 
 
 def stage_platform_hpp(zmqroot):
