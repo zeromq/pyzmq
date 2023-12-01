@@ -15,7 +15,7 @@ import platform
 import shutil
 import sys
 import zipfile
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, run
 from tempfile import TemporaryDirectory
 from unittest import mock
 from urllib.request import urlopen
@@ -138,7 +138,14 @@ def fetch_archive(savedir, url, fname, checksum, force=False):
 # -----------------------------------------------------------------------------
 
 
-def fetch_and_extract(savedir, extract_to, url, fname, checksum):
+def apply_patch(path, patch_file):
+    """apply a single patch to a directory"""
+    info(f"patching {path} with {patch_file}")
+    with open(patch_file) as f:
+        run(["patch", "-p1"], stdin=f, check=True, cwd=path)
+
+
+def fetch_and_extract(savedir, extract_to, url, fname, checksum, patches=None):
     """Download and extract an archive"""
     dest = pjoin(savedir, extract_to)
     if os.path.exists(dest):
@@ -150,14 +157,23 @@ def fetch_and_extract(savedir, extract_to, url, fname, checksum):
         with_version = pjoin(savedir, zf.namelist()[0])
     # remove version suffix:
     shutil.move(with_version, dest)
+    # apply patches, if any
+    for patch_file in patches or []:
+        apply_patch(dest, patch_file)
     # remove archive when we are done
     os.remove(archive)
+    return dest
 
 
 def fetch_libzmq(savedir):
     """download and extract libzmq"""
     fetch_and_extract(
-        savedir, 'zeromq', url=libzmq_url, fname=libzmq, checksum=libzmq_checksum
+        savedir,
+        'zeromq',
+        url=libzmq_url,
+        fname=libzmq,
+        checksum=libzmq_checksum,
+        patches=[pjoin(HERE, "4480.patch")],
     )
 
 
