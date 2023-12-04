@@ -57,6 +57,11 @@ __Breaking changes__:
 
 ## 25
 
+### 25.1.2
+
+- Fix builds with some recent compilers and bundled libzmq
+- Fix builds with upcoming Cython 3.1
+
 ### 25.1.1
 
 25.1.1 is the first stable release with Python 3.12 wheels.
