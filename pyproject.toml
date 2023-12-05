@@ -32,7 +32,7 @@ build-backend = "setuptools.build_meta"
 github_url = "https://github.com/zeromq/pyzmq"
 
 [tool.tbump.version]
-current = "25.1.1"
+current = "25.1.2"
 regex = '''
   (?P<major>\d+)
   \.
