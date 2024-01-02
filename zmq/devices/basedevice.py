@@ -47,7 +47,7 @@ class Device:
         passthrough for ``{in|out}_socket.connect(iface)``, to be called in the
         thread
     setsockopt_{in_out}(opt,value)
-        passthrough for ``{in|out}_socket.setsockopt(opt, value)``, to be called in
+        passthrough for ``{in|out}_socket.setsockopt_string(opt, value)``, to be called in
         the thread
 
     Attributes
@@ -211,9 +211,9 @@ class Device:
 
         # set sockopts (must be done first, in case of zmq.IDENTITY)
         for opt, value in self._in_sockopts:
-            ins.setsockopt(opt, value)
+            ins.setsockopt_string(opt, value)
         for opt, value in self._out_sockopts:
-            outs.setsockopt(opt, value)
+            outs.setsockopt_string(opt, value)
 
         for iface in self._in_binds:
             ins.bind(iface)

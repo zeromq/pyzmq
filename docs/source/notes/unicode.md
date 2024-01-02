@@ -173,14 +173,6 @@ Overview of the relevant methods:
 ```
 
 ```{eval-rst}
-.. py:function::    socket.setsockopt(self, opt, optval)
-
-        only accepts ``bytes``  for `optval` (or ``int``, depending on `opt`)
-
-        ``TypeError`` if ``unicode`` or anything else
-```
-
-```{eval-rst}
 .. py:function::    socket.getsockopt(self, opt)
 
         returns ``bytes`` (or ``int``), never ``unicode``

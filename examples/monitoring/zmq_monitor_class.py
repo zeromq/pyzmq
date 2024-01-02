@@ -12,7 +12,7 @@ from zmq_monitor_class import event_monitor
 
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-socket.setsockopt(zmq.SUBSCRIBE, b"")
+socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 
 event_monitor(socket)
 # event_monitor_async(socket, zmq.asyncio.asyncio.get_event_loop() )
