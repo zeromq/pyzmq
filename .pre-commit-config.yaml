@@ -38,7 +38,7 @@ repos:
       - id: flake8
         exclude: ^buildutils/templates/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+    rev: v1.8.0
     hooks:
       - id: mypy
         files: zmq/.*
@@ -56,7 +56,7 @@ repos:
         args:
           - --py36-plus
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
@@ -67,7 +67,7 @@ repos:
         name: isort (pyi)
         types: [pyi]
   - repo: https://github.com/psf/black
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
       - id: black
         # don't run black twice on constants.py
