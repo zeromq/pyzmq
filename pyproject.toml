@@ -19,7 +19,7 @@ authors = [
   { name = "Brian E. Granger" },
   { name = "Min Ragan-Kelley" },
 ]
-license = { text = "BSD-3-Clause" }
+license = { file = "LICENSE.md" }
 requires-python = ">=3.7"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -42,7 +42,7 @@ classifiers = [
 ]
 dependencies = ["cffi; implementation_name == 'pypy'"]
 description = "Python bindings for 0MQ"
-dynamic = ["readme"]
+readme = "README.md"
 
 [project.urls]
 Homepage = "https://pyzmq.readthedocs.org"

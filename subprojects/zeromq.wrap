@@ -1,0 +1,11 @@
+[wrap-file]
+directory = zeromq-4.3.5
+
+source_url = https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz
+source_filename = libzmq.tar.gz
+source_hash = 6653ef5910f17954861fe72332e68b03ca6e4d9c7160eb3a8de5a5a913bfab43
+# patch_directory relative to packagefiles/
+patch_directory = zeromq
+
+[provide]
+dependency_names = zmq_static

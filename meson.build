@@ -1,31 +1,28 @@
 project(
-  'pyzmq', 'c', 'cython',
+  'pyzmq', 'c',
   version: '26.0.0.dev0',
   meson_version: '>= 1.0.0',
   default_options: [
   ]
 )
+# subproject('zmq-static')
 
-libzmq = dependency('libzmq', static: false)
+
+# libzmq = dependency('libzmq', static: false)
+
 
 py = import('python').find_installation(pure: false)
 
 cc = meson.get_compiler('c')
-cython = meson.get_compiler('cython')
 
-libzmq = dependency('libzmq', static: false)
-# cython = find_program('cython')
-# cython_gen_cpp = generator(cython_cli,
-#   arguments : ['@INPUT@', '@OUTPUT@', '--cplus'],
-#  output : '@BASENAME@.cpp')
+libzmq = dependency('libzmq', static: false, required: false)
+if not libzmq.found()
+  libzmq = cc.find_library('zmq', has_headers: 'zmq.h', required: false)
+  if not libzmq.found()
+    # This will use the fallback
+    libzmq = dependency('zmq_static', required: true, static: true)
+  endif
+endif
+# libzmq = dependency('libzmqxyz', static: false, fallback: ['libzmq', 'libzmq_dep'])
 
-libzmq_pyx = 'zmq/backend/cython/_zmq.py'
-
-py.extension_module(
-  'zmq.backend.cython._zmq',
-  libzmq_pyx,
-  dependencies: libzmq,
-  # TODO: link_with for bundled libzmq
-  install: true,
-  compiler: cython,
-)
+subdir('zmq')
