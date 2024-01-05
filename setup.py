@@ -52,7 +52,6 @@ from buildutils import (
     discover_settings,
     fatal,
     fetch_libzmq,
-    fetch_libzmq_dll,
     info,
     line,
     localpath,

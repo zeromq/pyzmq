@@ -1,4 +1,6 @@
 [wrap-file]
+# must specify what is unpacked out of the tarball,
+# not something we control
 directory = zeromq-4.3.5
 
 source_url = https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz

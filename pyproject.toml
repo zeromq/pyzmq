@@ -50,9 +50,14 @@ Documentation = "https://pyzmq.readthedocs.org"
 Source = "https://github.com/zeromq/pyzmq"
 Tracker = "https://github.com/zeromq/pyzmq/issues"
 
+[tool.meson-python.args]
+# avoid installing static libzmq
+install = ['--tags=runtime,python-runtime']
+
 [tool.setuptools]
 zip-safe = false
 license-files = ["LICENSE.md", "bundled/zeromq/COPYING", "bundled/zeromq/COPYING.LESSER"]
+packages = ["zmq"]
 
 [tool.setuptools.dynamic]
 readme = { file = "README.md" }

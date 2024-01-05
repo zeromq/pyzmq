@@ -1,6 +1,10 @@
 [wrap-file]
-directory = libsodium
+directory = libsodium-stable
 
 source_url = https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19.tar.gz
 source_filename = libsodium.tar.gz
-source_hash = fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2
+source_hash = 018d79fe0a045cca07331d37bd0cb57b2e838c51bc48fd837a1472e50068bbea
+patch_directory = libsodium
+
+[provide]
+dependency_names = sodium_static
