@@ -47,14 +47,18 @@ if [false, 'default', 'auto'].contains(zmq_prefix)
         if cfg.get('no_libzmq_extension', false)
             error('bundled libzmq is disabled, but libzmq was not found')
         endif
-        # subproject('libsodium')
-        # subproject('zeromq')
-        libzmq = dependency('zmq_static', required: true, static: true)
+        libzmq = [
+            dependency('zmq_static', required: true, static: true),
+            dependency('sodium_static', required: true, static: true),
+        ]
       endif
     endif
 elif zmq_prefix == 'bundled'
     # bundle requested, no search
-    libzmq = dependency('zmq_static', required: true, static: true)
+    libzmq = [
+        dependency('zmq_static', required: true, static: true),
+        dependency('sodium_static', required: true, static: true),
+    ]
 else
     # lookup by explicit prefix
     libzmq = cc.find_library('zmq', dirs: [zmq_prefix / 'lib'], header_include_directories: include_directories(zmq_prefix / 'include'), has_headers: 'zmq.h', required: true)
