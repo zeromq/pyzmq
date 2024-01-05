@@ -46,7 +46,7 @@ with open(join(root, '.mailmap')) as f:
         mailmap[src] = dest
         email_names[dest] = line[: line.index('<')].strip()
 
-author_commits = defaultdict(lambda: [])
+author_commits = defaultdict(list)
 
 for commit in get_all_commits():
     # exclude some specific commits (e.g. docstring typos)

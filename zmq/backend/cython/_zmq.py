@@ -371,26 +371,6 @@ class Frame:
         buffer.itemsize = 1
         buffer.internal = NULL
 
-    def __getsegcount__(self, lenp: pointer(Py_ssize_t)) -> C.int:
-        # required for getreadbuffer
-        if lenp != NULL:
-            lenp[0] = zmq_msg_size(address(self.zmq_msg))
-        return 1
-
-    def __getreadbuffer__(self, idx: Py_ssize_t, p: pointer(p_void)) -> Py_ssize_t:
-        # old-style (buffer) interface
-        data_c: p_char = NULL
-        data_len_c: Py_ssize_t
-        if idx != 0:
-            raise SystemError("accessing non-existent buffer segment")
-        # read-only, because we don't want to allow
-        # editing of the message in-place
-        data_c = cast(p_char, zmq_msg_data(address(self.zmq_msg)))
-        data_len_c = zmq_msg_size(address(self.zmq_msg))
-        if p != NULL:
-            p[0] = cast(p_void, data_c)
-        return data_len_c
-
     def __len__(self) -> size_t:
         """Return the length of the message in bytes."""
         sz: size_t = zmq_msg_size(address(self.zmq_msg))
