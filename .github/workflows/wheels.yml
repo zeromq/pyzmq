@@ -56,8 +56,6 @@ jobs:
 
       - name: build sdist
         run: |
-          python setup.py fetch_libzmq
-          python setup.py cython
           python -m build --sdist .
 
       - uses: actions/upload-artifact@v4
