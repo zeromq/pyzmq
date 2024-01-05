@@ -19,8 +19,6 @@ import os
 import sys
 from subprocess import run
 
-from . import info
-
 pjoin = os.path.join
 
 buildutils = os.path.abspath(os.path.dirname(__file__))
@@ -110,7 +108,7 @@ def generate_file(fname, ns_func, dest_dir="."):
         tpl = f.read()
     out = tpl.format(**ns_func())
     dest = pjoin(dest_dir, fname)
-    info("generating %s from template" % dest)
+    print("generating %s from template" % dest)
     with open(dest, 'w') as f:
         f.write(out)
     if fname.endswith(".py"):
