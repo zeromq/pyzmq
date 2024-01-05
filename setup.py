@@ -834,7 +834,7 @@ class FetchCommand(Command):
             shutil.rmtree(libdir)
         if not os.path.exists(libdir):
             os.makedirs(libdir)
-        fetch_libzmq_dll(libdir)
+        # fetch_libzmq_dll(libdir)
         for archive in glob(pjoin(libdir, '*.zip')):
             os.remove(archive)
 
