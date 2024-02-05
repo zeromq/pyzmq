@@ -12,6 +12,7 @@ This guarantees completion of tasks - even if they are infinite loops
 
 Contributed by github:jcpinto54 and github:frobnitzem
 """
+
 # Copyright (c) 2022 PyZMQ Developers.
 # This example is in the public domain (CC-0)
 

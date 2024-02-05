@@ -178,24 +178,21 @@ class ZMQStream:
     def on_recv(
         self,
         callback: Callable[[List[bytes]], Any],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv(
         self,
         callback: Callable[[List[bytes]], Any],
         copy: Literal[True],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv(
         self,
         callback: Callable[[List[zmq.Frame]], Any],
         copy: Literal[False],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv(
@@ -205,8 +202,7 @@ class ZMQStream:
             Callable[[List[bytes]], Any],
         ],
         copy: bool = ...,
-    ):
-        ...
+    ): ...
 
     def on_recv(
         self,
@@ -254,24 +250,21 @@ class ZMQStream:
     def on_recv_stream(
         self,
         callback: Callable[["ZMQStream", List[bytes]], Any],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv_stream(
         self,
         callback: Callable[["ZMQStream", List[bytes]], Any],
         copy: Literal[True],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv_stream(
         self,
         callback: Callable[["ZMQStream", List[zmq.Frame]], Any],
         copy: Literal[False],
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def on_recv_stream(
@@ -281,8 +274,7 @@ class ZMQStream:
             Callable[["ZMQStream", List[bytes]], Any],
         ],
         copy: bool = ...,
-    ):
-        ...
+    ): ...
 
     def on_recv_stream(
         self,

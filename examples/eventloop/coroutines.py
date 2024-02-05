@@ -1,4 +1,5 @@
 """Example using zmq with tornado coroutines"""
+
 # Copyright (c) PyZMQ Developers.
 # This example is in the public domain (CC-0)
 

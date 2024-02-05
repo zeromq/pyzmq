@@ -1,6 +1,7 @@
 """
 Complex example which is a combination of the rr* examples from the zguide.
 """
+
 from gevent import spawn
 
 import zmq.green as zmq
