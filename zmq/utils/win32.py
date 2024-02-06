@@ -81,9 +81,9 @@ class allow_interrupt:
 
         # <http://msdn.microsoft.com/en-us/library/ms686016.aspx>
         PHANDLER_ROUTINE = WINFUNCTYPE(BOOL, DWORD)
-        SetConsoleCtrlHandler = (
-            self._SetConsoleCtrlHandler
-        ) = kernel32.SetConsoleCtrlHandler
+        SetConsoleCtrlHandler = self._SetConsoleCtrlHandler = (
+            kernel32.SetConsoleCtrlHandler
+        )
         SetConsoleCtrlHandler.argtypes = (PHANDLER_ROUTINE, BOOL)
         SetConsoleCtrlHandler.restype = BOOL
 

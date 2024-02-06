@@ -1,4 +1,5 @@
 """Test asyncio support"""
+
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
