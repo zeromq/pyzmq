@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 import cffi
 
@@ -58,4 +59,4 @@ ffi.set_source(
 )
 
 if __name__ == "__main__":
-    ffi.compile(verbose=True)
+    ffi.emit_c_code(sys.argv[1])

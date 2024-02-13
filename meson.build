@@ -14,6 +14,7 @@ python3 = py.full_path()
 cfg = configuration_data()
 
 foreach key : ['zmq_prefix', 'zmq_draft_api']
+    # workaround meson's religious objection to environment variables
     env_key = key.to_upper()
     res = run_command(python3, '-c', 'import os; print(os.environ.get("@0@", ""))'.format(env_key), check: true)
     str_value = res.stdout().strip()
@@ -25,6 +26,7 @@ foreach key : ['zmq_prefix', 'zmq_draft_api']
         cfg.set(key, str_value)
     endif
 endforeach
+
 foreach key: cfg.keys()
     message('@0@: @1@'.format(key, cfg.get(key)))
 endforeach
