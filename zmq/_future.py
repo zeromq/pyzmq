@@ -275,14 +275,12 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     @overload  # type: ignore
     def recv_multipart(
         self, flags: int = 0, *, track: bool = False
-    ) -> Awaitable[List[bytes]]:
-        ...
+    ) -> Awaitable[List[bytes]]: ...
 
     @overload
     def recv_multipart(
         self, flags: int = 0, *, copy: Literal[True], track: bool = False
-    ) -> Awaitable[List[bytes]]:
-        ...
+    ) -> Awaitable[List[bytes]]: ...
 
     @overload
     def recv_multipart(
@@ -293,8 +291,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     @overload
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]:
-        ...
+    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]: ...
 
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False

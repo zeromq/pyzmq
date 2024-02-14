@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch || 'x64' }}
@@ -109,7 +109,7 @@ jobs:
 
       # preserve pip cache to speed up installation
       - name: Cache pip
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           # Look to see if there is a cache hit for the corresponding requirements file

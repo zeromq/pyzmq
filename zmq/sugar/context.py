@@ -86,8 +86,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     _socket_class: Type[ST] = Socket  # type: ignore
 
     @overload
-    def __init__(self: "Context[Socket]", io_threads: int = 1):
-        ...
+    def __init__(self: "Context[Socket]", io_threads: int = 1): ...
 
     @overload
     def __init__(self: "Context[Socket]", io_threads: "Context"):
@@ -95,8 +94,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         ...
 
     @overload
-    def __init__(self: "Context[Socket]", *, shadow: Union["Context", int]):
-        ...
+    def __init__(self: "Context[Socket]", *, shadow: Union["Context", int]): ...
 
     def __init__(
         self: "Context[Socket]",

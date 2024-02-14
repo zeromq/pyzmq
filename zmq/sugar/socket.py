@@ -109,8 +109,7 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         socket_type: int,
         *,
         copy_threshold: Optional[int] = None,
-    ):
-        ...
+    ): ...
 
     @overload
     def __init__(
@@ -118,15 +117,13 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         *,
         shadow: Union["Socket", int],
         copy_threshold: Optional[int] = None,
-    ):
-        ...
+    ): ...
 
     @overload
     def __init__(
         self: "Socket[bytes]",
         ctx_or_socket: "Socket",
-    ):
-        ...
+    ): ...
 
     def __init__(
         self: "Socket[bytes]",
@@ -578,8 +575,7 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         track: Literal[True],
         routing_id: Optional[int] = ...,
         group: Optional[str] = ...,
-    ) -> "zmq.MessageTracker":
-        ...
+    ) -> "zmq.MessageTracker": ...
 
     @overload
     def send(
@@ -591,8 +587,7 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         track: Literal[False],
         routing_id: Optional[int] = ...,
         group: Optional[str] = ...,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def send(
@@ -603,8 +598,7 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         copy: bool = ...,
         routing_id: Optional[int] = ...,
         group: Optional[str] = ...,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def send(
@@ -615,8 +609,7 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
         track: bool = ...,
         routing_id: Optional[int] = ...,
         group: Optional[str] = ...,
-    ) -> Optional["zmq.MessageTracker"]:
-        ...
+    ) -> Optional["zmq.MessageTracker"]: ...
 
     def send(
         self,
@@ -755,24 +748,20 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
     @overload
     def recv_multipart(
         self, flags: int = ..., *, copy: Literal[True], track: bool = ...
-    ) -> List[bytes]:
-        ...
+    ) -> List[bytes]: ...
 
     @overload
     def recv_multipart(
         self, flags: int = ..., *, copy: Literal[False], track: bool = ...
-    ) -> List[zmq.Frame]:
-        ...
+    ) -> List[zmq.Frame]: ...
 
     @overload
-    def recv_multipart(self, flags: int = ..., *, track: bool = ...) -> List[bytes]:
-        ...
+    def recv_multipart(self, flags: int = ..., *, track: bool = ...) -> List[bytes]: ...
 
     @overload
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Union[List[zmq.Frame], List[bytes]]:
-        ...
+    ) -> Union[List[zmq.Frame], List[bytes]]: ...
 
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False

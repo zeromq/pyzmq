@@ -2,6 +2,7 @@
 Test Imports - the quickest test to ensure that we haven't
 introduced version-incompatible syntax errors.
 """
+
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 

@@ -8,7 +8,6 @@ A '.' is printed every 100ms to demonstrate that the zmq request is not blocking
 the event loop.
 """
 
-
 import asyncio
 import random
 import sys

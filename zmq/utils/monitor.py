@@ -67,16 +67,14 @@ async def _parse_monitor_msg_async(
 def recv_monitor_message(
     socket: "zmq.asyncio.Socket",
     flags: int = 0,
-) -> Awaitable[_MonitorMessage]:
-    ...
+) -> Awaitable[_MonitorMessage]: ...
 
 
 @overload
 def recv_monitor_message(
     socket: zmq.Socket[bytes],
     flags: int = 0,
-) -> _MonitorMessage:
-    ...
+) -> _MonitorMessage: ...
 
 
 def recv_monitor_message(

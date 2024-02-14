@@ -18,7 +18,6 @@ avoid this issue.
 
 """
 
-
 # encoding: utf-8
 
 # Copyright (C) PyZMQ Developers
@@ -113,12 +112,16 @@ while True:
 
             fields = {
                 'msg': msg.decode('utf8').strip(),
-                'ts': datetime.now().strftime(args.dateformat) + ' '
-                if args.timestamp
-                else '',
-                'aligned': '.'.join(aligned_parts)
-                if args.align
-                else topic.decode('utf8').strip(),
+                'ts': (
+                    datetime.now().strftime(args.dateformat) + ' '
+                    if args.timestamp
+                    else ''
+                ),
+                'aligned': (
+                    '.'.join(aligned_parts)
+                    if args.align
+                    else topic.decode('utf8').strip()
+                ),
                 'color': colors.get(level, ''),
                 'color_rst': colors.get('__RESET__', ''),
                 'sep': args.separator,
