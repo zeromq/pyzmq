@@ -47,13 +47,16 @@ cd ..
 
 which ldconfig && ldconfig || true
 
+# make sure to find our libsodium
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+
 tar -xzf zeromq-${LIBZMQ_VERSION}.tar.gz
 cd zeromq-${LIBZMQ_VERSION}
 # avoid error on warning
 export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 
-./configure --prefix="$PREFIX" --disable-perf --without-docs --enable-curve --with-libsodium --disable-libsodium_randombytes_close
-make -j4
-make install
+./configure --prefix="$PREFIX" --disable-perf --without-docs --enable-curve --with-libsodium --disable-drafts --disable-libsodium_randombytes_close
+make -j4 src/libzmq.la
+make install-libLTLIBRARIES install-data
 
 which ldconfig && ldconfig || true
