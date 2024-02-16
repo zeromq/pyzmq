@@ -32,7 +32,7 @@ as they never received a stable release.
 
 Binary distributions (wheels on [PyPI](https://pypi.org/project/pyzmq/)) of PyZMQ ship with
 the stable version of libzmq at the time of release, built with default configuration,
-and include CURVE support provided by tweetnacl.
+and include CURVE support provided by libsodium.
 For pyzmq-{{ release }}, this is {{ target_libzmq }}.
 
 # Using PyZMQ

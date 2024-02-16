@@ -4,7 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 #
 #  Some original test code Copyright (c) 2007-2010 iMatix Corporation,
-#  Used under LGPLv3
+#  Used under MPL-2.0
 
 import argparse
 import time
