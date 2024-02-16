@@ -5,6 +5,9 @@ LIBSODIUM_VERSION=$(python buildutils/bundle.py libsodium)
 LIBZMQ_VERSION=$(python buildutils/bundle.py)
 
 if [[ "$(uname)" == "Darwin" ]]; then
+    # need LT_MULTI_MODULE or libtool will strip out
+    # all multi-arch symbols at the last step
+    export LT_MULTI_MODULE=1
     ARCHS="x86_64"
     case "${CIBW_ARCHS_MACOS:-auto}" in
         "universal2")
@@ -24,7 +27,10 @@ if [[ "$(uname)" == "Darwin" ]]; then
             ;;
     esac
     echo "building libzmq for mac ${ARCHS}"
+    export CXX="${CC:-clang++}"
     for arch in ${ARCHS}; do
+        # seem to need ARCH in CXX for libtool
+        export CXX="${CXX} -arch ${arch}"
         export CFLAGS="-arch ${arch} ${CFLAGS:-}"
         export CXXFLAGS="-arch ${arch} ${CXXFLAGS:-}"
         export LDFLAGS="-arch ${arch} ${LDFLAGS:-}"
@@ -56,7 +62,7 @@ cd zeromq-${LIBZMQ_VERSION}
 export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 
 ./configure --prefix="$PREFIX" --disable-perf --without-docs --enable-curve --with-libsodium --disable-drafts --disable-libsodium_randombytes_close
-make -j4 src/libzmq.la
-make install-libLTLIBRARIES install-data
+make -j4
+make install
 
 which ldconfig && ldconfig || true
