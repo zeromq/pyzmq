@@ -4,6 +4,7 @@
 ---
 maxdepth: 2
 ---
+build.md
 morethanbindings.rst
 serialization.rst
 devices.rst

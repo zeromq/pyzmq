@@ -25,19 +25,6 @@ env:
 #  CIBW_PRERELEASE_PYTHONS: "1"
 
 jobs:
-  check-bundle:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: check bundled libzmq checksums
-        run: python -m buildutils.bundle checksums
-
   sdist:
     runs-on: ubuntu-22.04
 
@@ -56,8 +43,6 @@ jobs:
 
       - name: build sdist
         run: |
-          python setup.py fetch_libzmq
-          python setup.py cython
           python -m build --sdist .
 
       - uses: actions/upload-artifact@v4

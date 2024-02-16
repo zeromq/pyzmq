@@ -20,7 +20,7 @@ sys.path.append(os.path.abspath(os.path.join(here, os.pardir, os.pardir)))
 # set target libzmq version
 from buildutils.bundle import bundled_version
 
-target_libzmq = '%i.%i.%i' % bundled_version
+target_libzmq = bundled_version
 
 # -- General configuration -----------------------------------------------------
 

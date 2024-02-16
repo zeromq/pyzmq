@@ -1,9 +1,11 @@
 import json
 import os
+import sys
 
 import cffi
 
 here = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(here)
 zmq_dir = os.path.join(os.path.dirname(here), 'zmq')
 backend_dir = os.path.join(zmq_dir, 'backend', 'cffi')
 
@@ -19,7 +21,7 @@ def load_compiler_config():
     else:
         cfg = {}
 
-    cfg.setdefault("include_dirs", [])
+    cfg.setdefault("include_dirs", [os.path.join(zmq_dir, 'utils')])
     cfg.setdefault("library_dirs", [])
     cfg.setdefault("runtime_library_dirs", [])
     cfg.setdefault("libraries", ["zmq"])
@@ -33,7 +35,7 @@ def load_compiler_config():
         abs_paths = []
         for p in cfg[key]:
             if p.startswith('zmq'):
-                p = os.path.join(zmq_dir, p)
+                p = os.path.join(repo_root, p)
             abs_paths.append(str(p))
         cfg[key] = abs_paths
     return cfg
@@ -57,4 +59,4 @@ ffi.set_source(
 )
 
 if __name__ == "__main__":
-    ffi.compile()
+    ffi.emit_c_code(sys.argv[1])

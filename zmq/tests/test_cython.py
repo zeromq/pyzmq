@@ -21,6 +21,9 @@ cython_ext = os.path.join(HERE, "cython_ext.pyx")
 @pytest.mark.skipif(
     sys.platform.startswith('win'), reason="Don't try runtime Cython on Windows"
 )
+@pytest.mark.skipif(
+    os.environ.get("ZMQ_PREFIX") == "bundled", reason="bundled builds don't have zmq.h"
+)
 @pytest.mark.parametrize('language_level', [3, 2])
 def test_cython(language_level, request, tmpdir):
     assert 'zmq.tests.cython_ext' not in sys.modules

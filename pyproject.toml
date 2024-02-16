@@ -4,10 +4,13 @@ requires = [
   "cffi; implementation_name == 'pypy'",
   "cython>=3.0.0; implementation_name == 'cpython'",
   "packaging",
-  "setuptools>=61",
-  "setuptools_scm[toml]",
+  # "setuptools>=61",
+  # "setuptools_scm[toml]",
+  "scikit-build-core",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
+
+# build-backend = "setuptools.build_meta"
 
 # Project metadata
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
@@ -19,7 +22,7 @@ authors = [
   { name = "Brian E. Granger" },
   { name = "Min Ragan-Kelley" },
 ]
-license = { text = "BSD-3-Clause" }
+license = { file = "LICENSE.md" }
 requires-python = ">=3.7"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -42,7 +45,7 @@ classifiers = [
 ]
 dependencies = ["cffi; implementation_name == 'pypy'"]
 description = "Python bindings for 0MQ"
-dynamic = ["readme"]
+readme = "README.md"
 
 [project.urls]
 Homepage = "https://pyzmq.readthedocs.org"
@@ -50,12 +53,21 @@ Documentation = "https://pyzmq.readthedocs.org"
 Source = "https://github.com/zeromq/pyzmq"
 Tracker = "https://github.com/zeromq/pyzmq/issues"
 
+[tool.meson-python.args]
+# avoid installing static libzmq
+install = ['--tags=runtime,python-runtime']
+
 [tool.setuptools]
 zip-safe = false
 license-files = ["LICENSE.md", "bundled/zeromq/COPYING", "bundled/zeromq/COPYING.LESSER"]
+packages = ["zmq"]
 
 [tool.setuptools.dynamic]
 readme = { file = "README.md" }
+
+[tool.scikit-build]
+wheel.packages = ["zmq"]
+cmake.version = ">=3.28"
 
 [tool.autoflake]
 ignore-init-module-imports = true
@@ -129,35 +141,24 @@ ZMQ_PREFIX = "/usr/local"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
-before-all = [
-  "python setup.py fetch_libzmq --dll",
-  "xcopy /i libzmq-dll C:\\libzmq-dll",
-]
 repair-wheel-command = """
     delvewheel repair \
         -v \
-        --add-path=C:/libzmq-dll \
         --wheel-dir={dest_dir} \
         {wheel}
 """
 
 [tool.cibuildwheel.windows.environment]
-ZMQ_PREFIX = "libzmq-dll"
+ZMQ_PREFIX = "bundled"
 
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
 select = "*macos*{universal2,arm64}*"
 environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
-# manylinux1 for old Python
+# manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
-select = "cp3{6,7}-*"
-manylinux-x86_64-image = "manylinux1"
-manylinux-i686-image = "manylinux1"
-
-# manylinux2010 for (less) old cp38-9, pp37-8
-[[tool.cibuildwheel.overrides]]
-select = "cp3{8,9}-* pp3{7,8}-*"
+select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 

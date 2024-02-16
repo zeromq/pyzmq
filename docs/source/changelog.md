@@ -7,15 +7,27 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
-pyzmq 26 is a small release, but with some big changes nobody should notice.
-The Cython backend has been rewritten using Cython 3's pure Python mode.
+pyzmq 26 is a small release, but with some big changes _hopefully_ nobody will notice.
+The highlights are:
+
+- The Cython backend has been rewritten using Cython 3's pure Python mode.
+- The build system has been rewritten to use CMake via [scikit-build-core] instead of setuptools (setup.py is gone!).
+- Bundled libzmq is updated to 4.3.5, which changes its license from LGPL to MPL.
+
 This means:
 
 1. Cython >=3.0 is now a build requirement (if omitted, source distributions _should_ still build from Cython-generated .c files without any Cython present)
 1. pyzmq's Cython backend is a single extension module, which should improve install size, import time, compile time, etc.
 1. pyzmq's Cython backend is now BSD-licensed, matching the rest of pyzmq.
+1. The license of the libzmq library (included in pyzmq wheels) starting with 4.3.5 is now Mozilla Public License 2.0 (MPL-2.0).
+1. when building pyzmq from source and it falls back on bundled libzmq, libzmq and libsodium are built as static libraries using their own build systems (CMake for libzmq, autotools for libsodium except on Windows where it uses msbuild)
+   rather than bundling libzmq with tweetnacl as a Python Extension.
 
-The license of the libzmq library (included in pyzmq wheels and sources included but may not be used in pyzmq tarballs) remains unchanged and has its own LGPL license.
+Since the new build system uses libzmq and libsodium's own build systems, evaluated at install time, building pyzmq with bundled libzmq from source should be much more likely to succeed on a variety of platforms than the previous method, where their build system was skipped and approximated as a Python extension.
+But I would also be _very_ surprised if I didn't break anything in the process of replacing 14 years of setup.py from scratch, especially cases like cross-compiling.
+Please [report](https://github.com/zeromq/pyzmq/issues/new) any issues you encounter building pyzmq.
+
+See [build docs](building-pyzmq) for more info.
 
 __Enhancements__:
 
@@ -30,6 +42,7 @@ __Breaking changes__:
   `bytes(Frame)` remains unchanged, and utf-8 text strings can still be produced with:
   `bytes(Frame).decode("utf8")`,
   which works in all versions of pyzmq and does the same thing.
+- Stop building Python 3.7 wheels for manylinux1, which reached EOL in January, 2022. The new build system doesn't seem to be able to find cmake in that environment.
 
 ## 25
 
@@ -1041,3 +1054,4 @@ s.linger
 
 [cython-build-requires]: https://groups.google.com/g/cython-users/c/ZqKFQmS0JdA/m/1FrK1ApYBAAJ
 [pyczmq]: https://github.com/zeromq/pyczmq
+[scikit-build-core]: https://scikit-build-core.readthedocs.io

@@ -14,16 +14,7 @@ import pytest
 def test_has(feature):
     import zmq
 
-    if (
-        feature == 'ipc'
-        and sys.platform == 'win32'
-        and platform.python_implementation() == "CPython"
-    ):
-        # Windows wheels lack IPC
-        # pending release with https://github.com/zeromq/libzmq/pull/4422
-        assert not zmq.has(feature)
-    else:
-        assert zmq.has(feature)
+    assert zmq.has(feature)
 
 
 def test_simple_socket():
@@ -65,6 +56,3 @@ def test_bundle_msvcp():
 
     for dll in should_bundle:
         assert dll in dlls
-
-    assert any(dll.startswith("libzmq") for dll in dlls)
-    assert any(dll.startswith("libsodium") for dll in dlls)

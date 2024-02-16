@@ -39,22 +39,6 @@ Python-3.9.9 | packaged by conda-forge | (main, Dec 20 2021, 02:38:53)
 [Clang 11.1.0 ]
 ```
 
-## Licensing and contributing to PyZMQ
-
-PyZMQ uses different licenses for different parts of the code.
-
-The 'core' of PyZMQ (located in zmq/core) is licensed under LGPLv3.
-This just means that if you make any changes to how that code works,
-you must release those changes under the LGPL.
-If you just _use_ pyzmq, then you can use any license you want for your own code.
-
-We don't feel that the restrictions imposed by the LGPL make sense for the
-'non-core' functionality in pyzmq (derivative code must _also_ be LGPL or GPL),
-especially for examples and utility code, so we have relicensed all 'non-core'
-code under the more permissive BSD (specifically Modified BSD aka New BSD aka
-3-clause BSD), where possible. This means that you can copy this code and build
-your own apps without needing to license your own code with the LGPL or GPL.
-
 ### Your contributions
 
 **Pull Requests are welcome!**
@@ -85,10 +69,7 @@ inherits that project's license.
 
 - zmq/ssh/forward.py is from [paramiko], and inherits LGPL
 
-- zmq/devices/monitoredqueue.pxd is derived from the zmq_device function in
-  libzmq, and inherits LGPL
-
-- perf examples are (c) iMatix, and LGPL
+- perf examples are (c) iMatix, and MPL
 
 [paramiko]: http://www.lag.net/paramiko
 [pre-commit]: https://pre-commit.com

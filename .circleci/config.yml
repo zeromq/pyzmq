@@ -32,13 +32,6 @@ jobs:
             python3 -m pip freeze
 
       - run:
-          name: Cython
-          # This assumes pytest is installed via the install-package step above
-          command: |
-            python3 setup.py fetch_libzmq
-            python3 setup.py cython
-
-      - run:
           name: list wheels
           command: |
             python3 -m cibuildwheel . --print-build-identifiers
