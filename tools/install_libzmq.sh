@@ -31,7 +31,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     done
 fi
 
-PREFIX="${PREFIX:-/usr/local}"
+PREFIX="${ZMQ_PREFIX:-/usr/local}"
 
 curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_VERSION}.tar.gz"
 

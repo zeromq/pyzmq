@@ -137,7 +137,7 @@ CXXFLAGS = "-Wl,-strip-all"
 before-all = "bash tools/install_libzmq.sh"
 
 [tool.cibuildwheel.macos.environment]
-ZMQ_PREFIX = "/usr/local"
+ZMQ_PREFIX = "/tmp/zmq"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
@@ -154,7 +154,7 @@ ZMQ_PREFIX = "bundled"
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
 select = "*macos*{universal2,arm64}*"
-environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
+environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
