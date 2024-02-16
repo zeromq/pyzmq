@@ -45,15 +45,8 @@ def test_git_files(sdist_files, git_files):
 @pytest.mark.parametrize(
     "path",
     [
-        # bundled zeromq
-        "bundled/zeromq/COPYING",
-        "bundled/zeromq/COPYING.LESSER",
-        "bundled/zeromq/include/zmq.h",
-        "bundled/zeromq/src/zmq.cpp",
-        "bundled/zeromq/external/wepoll/license.txt",
-        "bundled/zeromq/external/wepoll/wepoll.h",
-        # Cython-generated files
-        "zmq/backend/cython/_zmq.c",
+        # generated files that should be in the dist
+        "PKG-INFO",
     ],
 )
 def test_included(sdist_files, path):
@@ -63,9 +56,18 @@ def test_included(sdist_files, path):
 @pytest.mark.parametrize(
     "path",
     [
-        "bundled/zeromq/src/platform.hpp",
+        ".git",
+        "build",
+        "dist",
+        "**/*.dylib",
         "**/*.so",
+        "**/*.a",
+        "**/*.lib",
         "**/__pycache__",
+        "bundled",
+        "CMakeCache.txt",
+        "CMakeFiles",
+        "cmake_install.cmake",
     ],
 )
 def test_excluded(sdist_files, path):

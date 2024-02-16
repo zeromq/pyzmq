@@ -1,7 +1,7 @@
 """
 script for generating files that involve repetitive updates for zmq constants.
 
-Run as `python setup.py constants`
+Run as `python3 buildutils/constants.py`
 
 Run this after updating utils/constant_names
 
@@ -18,8 +18,6 @@ import enum
 import os
 import sys
 from subprocess import run
-
-from . import info
 
 pjoin = os.path.join
 
@@ -110,7 +108,7 @@ def generate_file(fname, ns_func, dest_dir="."):
         tpl = f.read()
     out = tpl.format(**ns_func())
     dest = pjoin(dest_dir, fname)
-    info("generating %s from template" % dest)
+    print("generating %s from template" % dest)
     with open(dest, 'w') as f:
         f.write(out)
     if fname.endswith(".py"):

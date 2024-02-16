@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # script to install libzmq/libsodium for use in wheels
 set -ex
-LIBSODIUM_VERSION="1.0.19"
-
-LIBZMQ_VERSION="$(python3 -m buildutils.bundle)"
+LIBSODIUM_VERSION=$(python buildutils/bundle.py libsodium)
+LIBZMQ_VERSION=$(python buildutils/bundle.py)
 
 if [[ "$(uname)" == "Darwin" ]]; then
     ARCHS="x86_64"
@@ -39,7 +38,7 @@ curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSOD
 curl -L -O "https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION}/zeromq-${LIBZMQ_VERSION}.tar.gz"
 
 tar -xzf libsodium-${LIBSODIUM_VERSION}.tar.gz
-cd libsodium-${LIBSODIUM_VERSION}
+cd libsodium-*/
 ./configure --prefix="$PREFIX"
 make -j4
 make install
@@ -53,7 +52,7 @@ cd zeromq-${LIBZMQ_VERSION}
 # avoid error on warning
 export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 
-./configure --prefix="$PREFIX" --with-libsodium --disable-libsodium_randombytes_close
+./configure --prefix="$PREFIX" --disable-perf --without-docs --enable-curve --with-libsodium --disable-libsodium_randombytes_close
 make -j4
 make install
 
