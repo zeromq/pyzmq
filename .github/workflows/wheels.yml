@@ -26,6 +26,9 @@ env:
 
 jobs:
   sdist:
+    permissions:
+      id-token: write
+    environment: release
     runs-on: ubuntu-22.04
 
     steps:
@@ -56,15 +59,13 @@ jobs:
           pytest -v tools/test_sdist.py
 
       - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          pip install twine
-          twine upload --skip-existing dist/*.tar.gz
 
   wheel:
+    permissions:
+      id-token: write
+    environment: release
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     name: wheel-${{ matrix.name }}
 
@@ -174,10 +175,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          pip install twine
-          twine upload --skip-existing wheelhouse/*
+        with:
+          packages-dir: wheelhouse/
