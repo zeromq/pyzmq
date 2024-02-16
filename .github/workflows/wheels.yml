@@ -91,7 +91,7 @@ jobs:
             cibw:
               build: "pp*"
 
-          - os: macos-11
+          - os: macos-13
             name: mac-arm
             cibw:
               arch: universal2

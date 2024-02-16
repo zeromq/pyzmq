@@ -6,6 +6,7 @@ Just import things
 import os
 import platform
 import sys
+from fnmatch import fnmatch
 
 import pytest
 
@@ -43,16 +44,14 @@ def test_bundle_msvcp():
         )
     print(dlls)
     # Is concrt140 needed? delvewheel doesn't detect it anymore
-    should_bundle = ["msvcp140.dll"]
-    vcruntime = "vcruntime140.dll"
+    # check for vcruntime?
+    should_bundle = ["msvcp140*.dll"]
     shouldnt_bundle = []
-    if platform.python_implementation() == 'PyPy':
-        should_bundle = []
-    elif sys.version_info < (3, 10):
-        shouldnt_bundle.append(vcruntime)
 
-    for dll in shouldnt_bundle:
-        assert dll not in dlls
+    for pattern in shouldnt_bundle:
+        matched = [dll for dll in dlls if fnmatch(dll, pattern)]
+        assert not matched
 
-    for dll in should_bundle:
-        assert dll in dlls
+    for pattern in should_bundle:
+        matched = [dll for dll in dlls if fnmatch(dll, pattern)]
+        assert matched
