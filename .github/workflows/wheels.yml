@@ -28,7 +28,7 @@ jobs:
   sdist:
     permissions:
       id-token: write
-    environment: release
+    # environment: release
     runs-on: ubuntu-22.04
 
     steps:
@@ -65,7 +65,7 @@ jobs:
   wheel:
     permissions:
       id-token: write
-    environment: release
+    # environment: release
     runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     name: wheel-${{ matrix.name }}
 
