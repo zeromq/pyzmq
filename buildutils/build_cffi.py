@@ -1,62 +1,34 @@
-import json
-import os
+"""Generate the CFFI backend C code"""
+
 import sys
+from pathlib import Path
 
 import cffi
 
-here = os.path.dirname(os.path.abspath(__file__))
-repo_root = os.path.dirname(here)
-zmq_dir = os.path.join(os.path.dirname(here), 'zmq')
-backend_dir = os.path.join(zmq_dir, 'backend', 'cffi')
-
-ffi = cffi.FFI()
+here = Path(__file__).parent.absolute()
+repo_root = here.parent
+zmq_dir = repo_root / 'zmq'
+backend_cffi = zmq_dir / 'backend' / 'cffi'
 
 
-def load_compiler_config():
-    """load pyzmq compiler arguments"""
-    fname = os.path.join(zmq_dir, 'utils', 'compiler.json')
-    if os.path.exists(fname):
-        with open(fname) as f:
-            cfg = json.load(f)
-    else:
-        cfg = {}
+def generate_cffi_c(dest_file: str):
+    """Generate CFFI backend extension C code
 
-    cfg.setdefault("include_dirs", [os.path.join(zmq_dir, 'utils')])
-    cfg.setdefault("library_dirs", [])
-    cfg.setdefault("runtime_library_dirs", [])
-    cfg.setdefault("libraries", ["zmq"])
+    Called during build
+    """
 
-    # cast to str, because cffi can't handle unicode paths (?!)
-    cfg['libraries'] = [str(lib) for lib in cfg['libraries']]
-    if 'zmq' not in cfg['libraries']:
-        cfg['libraries'].append('zmq')
-    for key in ("include_dirs", "library_dirs", "runtime_library_dirs"):
-        # interpret paths relative to parent of zmq (like source tree)
-        abs_paths = []
-        for p in cfg[key]:
-            if p.startswith('zmq'):
-                p = os.path.join(repo_root, p)
-            abs_paths.append(str(p))
-        cfg[key] = abs_paths
-    return cfg
+    ffi = cffi.FFI()
 
+    with (backend_cffi / '_cdefs.h').open() as f:
+        ffi.cdef(f.read())
 
-cfg = load_compiler_config()
+    with (backend_cffi / '_cffi_src.c').open() as f:
+        ffi.set_source(
+            'zmq.backend.cffi._cffi',
+            source=f.read(),
+        )
+    ffi.emit_c_code(dest_file)
 
-with open(os.path.join(backend_dir, '_cdefs.h')) as f:
-    ffi.cdef(f.read())
-
-with open(os.path.join(here, "_cffi.c")) as f:
-    _cffi_c = f.read()
-
-ffi.set_source(
-    'zmq.backend.cffi._cffi',
-    libraries=cfg['libraries'],
-    include_dirs=cfg['include_dirs'],
-    library_dirs=cfg['library_dirs'],
-    runtime_library_dirs=cfg['runtime_library_dirs'],
-    source=_cffi_c,
-)
 
 if __name__ == "__main__":
-    ffi.emit_c_code(sys.argv[1])
+    generate_cffi_c(sys.argv[1])

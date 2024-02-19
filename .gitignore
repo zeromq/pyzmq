@@ -2,7 +2,8 @@
 .vagrant
 *.pyc
 zmq/backend/cython/*.c
-zmq/backend/cffi/*.[co]
+zmq/backend/cffi/*.o
+zmq/backend/cffi/_cffi.c
 zmq/devices/*.c
 zmq/utils/*.json
 zmq/include/*.h
