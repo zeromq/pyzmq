@@ -9,15 +9,19 @@ find_package(
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 
+# legacy pyzmq env options, no PYZMQ_ prefix
 set(ZMQ_PREFIX "auto" CACHE STRING "libzmq installation prefix or 'bundled'")
 option(ZMQ_DRAFT_API "whether to build the libzmq draft API" OFF)
-set(LIBZMQ_BUNDLED_VERSION "4.3.5" CACHE STRING "libzmq version when bundling")
-set(LIBSODIUM_BUNDLED_VERSION "1.0.19" CACHE STRING "libsodium version when bundling")
-set(LIBZMQ_BUNDLED_URL "" CACHE STRING "full URL to download bundled libzmq")
-set(LIBSODIUM_BUNDLED_URL "" CACHE STRING "full URL to download bundled libsodium")
-set(LIBSODIUM_CONFIGURE_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to ./configure for bundled libsodium")
-set(LIBSODIUM_MSBUILD_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to msbuild for bundled libsodium")
-set(LIBSODIUM_VS_VERSION "" CACHE STRING "Visual studio solution version for bundled libsodium (default: detect from MSVC_VERSION)")
+
+# anything new should start with PYZMQ_
+option(PYZMQ_LIBZMQ_NO_BUNDLE "Prohibit building bundled libzmq. Useful for repackaging, to allow default search for libzmq and requiring it to succeed." OFF)
+set(PYZMQ_LIBZMQ_VERSION "4.3.5" CACHE STRING "libzmq version when bundling")
+set(PYZMQ_LIBSODIUM_VERSION "1.0.19" CACHE STRING "libsodium version when bundling")
+set(PYZMQ_LIBZMQ_URL "" CACHE STRING "full URL to download bundled libzmq")
+set(PYZMQ_LIBSODIUM_URL "" CACHE STRING "full URL to download bundled libsodium")
+set(PYZMQ_LIBSODIUM_CONFIGURE_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to ./configure for bundled libsodium")
+set(PYZMQ_LIBSODIUM_MSBUILD_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to msbuild for bundled libsodium")
+set(PYZMQ_LIBSODIUM_VS_VERSION "" CACHE STRING "Visual studio solution version for bundled libsodium (default: detect from MSVC_VERSION)")
 
 if (NOT CMAKE_BUILD_TYPE)
   # default to Release
@@ -25,36 +29,36 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # get options from env
-if (DEFINED ENV{ZMQ_PREFIX})
-  set(ZMQ_PREFIX "$ENV{ZMQ_PREFIX}")
-endif()
 
-if (DEFINED ENV{ZMQ_DRAFT_API})
-  if ("$ENV{ZMQ_DRAFT_API}" STREQUAL "1")
-    set(ZMQ_DRAFT_API TRUE)
-  else()
-    set(ZMQ_DRAFT_API FALSE)
+# handle booleans
+foreach(_optname ZMQ_DRAFT_API PYZMQ_NO_BUNDLE)
+  if (DEFINED ENV{${_optname}})
+    if ("$ENV{${_optname}}" STREQUAL "1" OR "$ENV{${_optname}}" STREQUAL "ON")
+      set(${_optname} TRUE)
+    else()
+      set(${_optname} FALSE)
+    endif()
   endif()
-endif()
+endforeach()
 
-# load options from env with PYZMQ_ prefix
 foreach(_optname
-  LIBZMQ_BUNDLED_VERSION
-  LIBZMQ_BUNDLED_URL
-  LIBSODIUM_BUNDLED_VERSION
-  LIBSODIUM_BUNDLED_URL
-  LIBSODIUM_CONFIGURE_ARGS
-  LIBSODIUM_MSBUILD_ARGS
-  LIBSODIUM_VS_VERSION
+  ZMQ_PREFIX
+  PYZMQ_LIBZMQ_VERSION
+  PYZMQ_LIBZMQ_URL
+  PYZMQ_LIBSODIUM_VERSION
+  PYZMQ_LIBSODIUM_URL
+  PYZMQ_LIBSODIUM_CONFIGURE_ARGS
+  PYZMQ_LIBSODIUM_MSBUILD_ARGS
+  PYZMQ_LIBSODIUM_VS_VERSION
 )
-  if (DEFINED ENV{PYZMQ_${_optname}})
+  if (DEFINED ENV{${_optname}})
     if (_optname MATCHES ".*_ARGS")
       # if it's an _ARGS, split "-a -b" into "-a" "-b"
       # use native CMake lists for cmake args,
       # native command-line strings for env variables
-      separate_arguments(${_optname} NATIVE_COMMAND "$ENV{PYZMQ_${_optname}}")
+      separate_arguments(${_optname} NATIVE_COMMAND "$ENV{${_optname}}")
     else()
-      set(${_optname} "$ENV{PYZMQ_${_optname}}")
+      set(${_optname} "$ENV{${_optname}}")
     endif()
   endif()
 endforeach()
@@ -64,12 +68,12 @@ if(ZMQ_DRAFT_API)
   add_compile_definitions(ZMQ_BUILD_DRAFT_API=1)
 endif()
 
-if (LIBSODIUM_BUNDLED_VERSION AND NOT LIBSODIUM_BUNDLED_URL)
-  set(LIBSODIUM_BUNDLED_URL "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_BUNDLED_VERSION}.tar.gz")
+if (PYZMQ_LIBSODIUM_VERSION AND NOT PYZMQ_LIBSODIUM_URL)
+  set(PYZMQ_LIBSODIUM_URL "https://download.libsodium.org/libsodium/releases/libsodium-${PYZMQ_LIBSODIUM_VERSION}.tar.gz")
 endif()
 
-if (LIBZMQ_BUNDLED_VERSION AND NOT LIBZMQ_BUNDLED_URL)
-  set(LIBZMQ_BUNDLED_URL "https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_BUNDLED_VERSION}/zeromq-${LIBZMQ_BUNDLED_VERSION}.tar.gz")
+if (PYZMQ_LIBZMQ_VERSION AND NOT PYZMQ_LIBZMQ_URL)
+  set(PYZMQ_LIBZMQ_URL "https://github.com/zeromq/libzmq/releases/download/v${PYZMQ_LIBZMQ_VERSION}/zeromq-${PYZMQ_LIBZMQ_VERSION}.tar.gz")
 endif()
 
 #------- bundle libzmq ------
@@ -124,8 +128,13 @@ if (ZMQ_PREFIX STREQUAL "auto")
   endif()
 
   if (NOT ZeroMQ_FOUND)
-    message(CHECK_FAIL "libzmq not found, will bundle libzmq and libsodium")
-    set(ZMQ_PREFIX "bundled")
+    if (PYZMQ_NO_BUNDLE)
+      message(CHECK_FAIL "libzmq not found")
+      message(FATAL_ERROR "aborting because bundled libzmq is disabled")
+    else()
+      message(CHECK_FAIL "libzmq not found, will bundle libzmq and libsodium")
+      set(ZMQ_PREFIX "bundled")
+    endif()
   endif()
 elseif (NOT ZMQ_PREFIX STREQUAL "bundled")
   message(CHECK_START "Looking for libzmq in ${ZMQ_PREFIX}")
@@ -168,7 +177,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   endif()
 
   FetchContent_Declare(bundled_libsodium
-    URL ${LIBSODIUM_BUNDLED_URL}
+    URL ${PYZMQ_LIBSODIUM_URL}
     PREFIX ${BUNDLE_DIR}
   )
   FetchContent_MakeAvailable(bundled_libsodium)
@@ -179,18 +188,18 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     message(STATUS "building bundled libsodium")
     if (MSVC)
       # select vs build solution by msvc version number
-      if (NOT LIBSODIUM_VS_VERSION)
+      if (NOT PYZMQ_LIBSODIUM_VS_VERSION)
         if(MSVC_VERSION GREATER 1940)
           message(STATUS "Unrecognized MSVC_VERSION=${MSVC_VERSION}")
           set(MSVC_VERSION 1939)
         endif()
 
         if(MSVC_VERSION GREATER_EQUAL 1930)
-          set(LIBSODIUM_VS_VERSION "2022")
+          set(PYZMQ_LIBSODIUM_VS_VERSION "2022")
         elseif(MSVC_VERSION GREATER_EQUAL 1920)
-          set(LIBSODIUM_VS_VERSION "2019")
+          set(PYZMQ_LIBSODIUM_VS_VERSION "2019")
         elseif(MSVC_VERSION GREATER_EQUAL 1910)
-          set(LIBSODIUM_VS_VERSION "2017")
+          set(PYZMQ_LIBSODIUM_VS_VERSION "2017")
         else()
           message(FATAL_ERROR "unsupported bundling libsodium for MSVC_VERSION=${MSVC_VERSION} (need at least VS2017)")
         endif()
@@ -203,9 +212,9 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         "/v:n"
         "/p:Configuration=Static${CMAKE_BUILD_TYPE}"
         "/p:Platform=${CMAKE_GENERATOR_PLATFORM}"
-        "builds/msvc/vs${LIBSODIUM_VS_VERSION}/libsodium.sln"
+        "builds/msvc/vs${PYZMQ_LIBSODIUM_VS_VERSION}/libsodium.sln"
       )
-      list(APPEND libsodium_build ${LIBSODIUM_MSBUILD_ARGS})
+      list(APPEND libsodium_build ${PYZMQ_LIBSODIUM_MSBUILD_ARGS})
       execute_process(
         COMMAND ${libsodium_build}
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
@@ -223,7 +232,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         --disable-shared
         --enable-static
       )
-      list(APPEND libsodium_configure ${LIBSODIUM_CONFIGURE_ARGS})
+      list(APPEND libsodium_configure ${PYZMQ_LIBSODIUM_CONFIGURE_ARGS})
       execute_process(
         COMMAND ${libsodium_configure}
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
@@ -259,7 +268,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   set(BUILD_STATIC ON)
 
   FetchContent_Declare(bundled_libzmq
-    URL ${LIBZMQ_BUNDLED_URL}
+    URL ${PYZMQ_LIBZMQ_URL}
     PREFIX ${BUNDLE_DIR}
     CMAKE_ARGS ${LIBZMQ_CMAKE_ARGS}
     EXCLUDE_FROM_ALL

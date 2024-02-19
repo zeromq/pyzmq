@@ -10,7 +10,8 @@ on:
   pull_request:
     paths:
       - pyproject.toml
-      - setup.py
+      - CMakeLists.txt
+      - cmake/**
       - buildutils/**
       - .github/workflows/wheels.yml
       - tools/install_libzmq.sh
