@@ -183,8 +183,6 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
           # link to release notes, PyPI
           body: |
-            # pyzmq ${{ github.ref_name }}
-
             See [release notes][], or [pyzmq on PyPI][].
 
             Install with:
