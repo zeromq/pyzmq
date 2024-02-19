@@ -14,6 +14,14 @@ body:
         (e.g. missing messages, etc.)
         are best directed towards [zeromq/libzmq](https://github.com/zeromq/libzmq) instead.
 
+  - type: checkboxes
+    id: not-libzmq
+    attributes:
+      label: This is a pyzmq bug
+      description: Make sure to open issues about zmq socket behavior (e.g. HWM, LINGER, missed or dropped messages) on zeromq/libzmq itself, not here.
+      options:
+        - label: This is a pyzmq-specific bug, not an issue of zmq socket behavior. Don't worry if you're not sure! We'll figure it out together.
+          required: true
   - type: input
     id: pyzmq-version
     attributes:
