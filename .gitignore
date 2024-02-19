@@ -3,7 +3,6 @@
 *.pyc
 zmq/backend/cython/*.c
 zmq/backend/cffi/*.o
-zmq/backend/cffi/_cffi.c
 zmq/devices/*.c
 zmq/utils/*.json
 zmq/include/*.h
@@ -47,3 +46,4 @@ CMakeCache.txt
 cmake_install.cmake
 _deps
 /Makefile
+_src
