@@ -1,4 +1,5 @@
 """zmq constants as enums"""
+
 import errno
 import sys
 from enum import Enum, IntEnum, IntFlag
