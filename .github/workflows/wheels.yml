@@ -164,6 +164,38 @@ jobs:
           path: "wheelhouse/*"
           if-no-files-found: error
 
+  github-release:
+    permissions:
+      contents: write
+    environment: release
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - id: version
+        # strip leading `v` from tag, since it's not part of the version
+        # see https://github.com/orgs/community/discussions/26625 for substring feature request
+        run: |
+          echo "v=${{ github.rev_name }}" | sed s@^v@@ >> "${GITHUB_OUTPUT}"
+
+      - uses: ncipollo/release-action@v1
+        with:
+          # mark as prerelease if it looks like one
+          prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
+          # link to release notes, PyPI
+          body: |
+            # pyzmq ${{ github.ref_name }}
+
+            See [release notes][], or [pyzmq on PyPI][].
+
+            Install with:
+
+            ```
+            pip install 'pyzmq==${{ steps.version.v }}'
+            ```
+
+            [release notes]: https://pyzmq.readthedocs.io/en/latest/changelog.html
+            [pyzmq on PyPI]: https://pypi.org/project/pyzmq/${{ steps.version.v }}/
+
   upload-pypi:
     permissions:
       id-token: write
