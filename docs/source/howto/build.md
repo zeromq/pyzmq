@@ -6,7 +6,7 @@ pyzmq publishes around a hundred wheels for each release, so hopefully very few 
 
 pyzmq 26 has a whole new build system using CMake via [scikit-build-core].
 
-~all options can be specified via environment variables, in order to play nicely with pip.
+~all options can be specified via environment variables with the same name, in order to play nicely with pip.
 
 ## Installing from source
 
@@ -46,7 +46,7 @@ First, some quick examples of influencing pyzmq's build.
 Build a wheel against already-installed libzmq:
 
 ```bash
-ZMQ_PREFIX=/usr/local
+export ZMQ_PREFIX=/usr/local
 python3 -m pip install --no-binary pyzmq pyzmq
 ```
 
@@ -83,7 +83,18 @@ If pyzmq doesn't find your libzmq via the default search, or you want to skip th
 ZMQ_PREFIX=/path/to/zmq  # should contain 'include', 'lib', etc.
 ```
 
-If you tell pyzmq where to look, it will not try to build if it doesn't find libzmq there, rather than falling back on bundled libzmq.
+### Disabling bundled build fallback
+
+You may want to keep the default search,
+which will import targets from CMake, pkg-config, etc.,
+but make _sure_ libzmq is found.
+
+To do this, set PYZMQ_NO_BUNDLE.
+If you set only this, pyzmq will still search via standard means, but _fail_ if libzmq is not found, rather than falling back on the bundled static library.
+
+```bash
+-DPYZMQ_NO_BUNDLE=ON
+```
 
 ## Building bundled libzmq
 
@@ -109,20 +120,20 @@ or `msbuild` on Windows:
 msbuild /m /v:n /p:Configuration=StaticRelease /pPlatform=x64 builds/msvc/vs2022/libsodium.sln
 ```
 
-You can _add_ arguments to configure with a semicolon-separated list, by specifying `PYZMQ_LIBSODIUM_CONFIGURE_ARGS` environment variable, or `LIBSODIUM_CONFIGURE_ARGS` CMake variable.
+You can _add_ arguments to configure with a semicolon-separated list, by specifying `PYZMQ_LIBSODIUM_CONFIGURE_ARGS` variable:
 
 ```bash
 PYZMQ_LIBSODIUM_CONFIGURE_ARGS="--without-pthread --enable-minimal"
 # or
-CMAKE_ARGS="-DLIBSODIUM_CONFIGURE_ARGS=--without-pthread;--enable-minimal"
+CMAKE_ARGS="-DPYZMQ_LIBSODIUM_CONFIGURE_ARGS=--without-pthread;--enable-minimal"
 ```
 
-and `[PYZMQ_]LIBSODIUM_MSBUILD_ARGS` on Windows:
+and `PYZMQ_LIBSODIUM_MSBUILD_ARGS` on Windows:
 
 ```bash
 PYZMQ_LIBSODIUM_MSBUILD_ARGS="/something /else"
 # or
-CMAKE_ARGS="-DLIBSODIUM_MSBUILD_ARGS=/something;/else"
+CMAKE_ARGS="-DPYZMQ_LIBSODIUM_MSBUILD_ARGS=/something;/else"
 ```
 
 ```{note}
@@ -148,15 +159,15 @@ CMAKE_ARGS="-DWITH_OPENPGM=ON"
 You can specify which version of libsodium/libzmq to bundle with:
 
 ```
--DLIBZMQ_BUNDLED_VERSION=4.3.5
--DLIBSODIUM_BUNDLED_VERSION=1.0.19
+-DPYZMQ_LIBZMQ_VERSION=4.3.5
+-DPYZMQ_LIBSODIUM_VERSION=1.0.19
 ```
 
 or the specify the full URL to download (e.g. to test bundling an unreleased version):
 
 ```
--DLIBZMQ_BUNDLED_URL="https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz"
--DLIBSODIUM_BUNDLED_URL="https://download.libsodium.org/libsodium/releases/libsodium-1.0.19.tar.gz"
+-DPYZMQ_LIBZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz"
+-DPYZMQ_LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-1.0.19.tar.gz"
 ```
 
 ```{warning}
@@ -171,12 +182,12 @@ but it's not really meant to be customizable; it's meant to allow you to workaro
 
 libsodium ships several solutions for msbuild, identified by `/builds/msvc/vs{year}/libsodium.sln`.
 pyzmq tries to guess which solution to use based on the MSVC_VERSION CMake variable,
-but you can skip the guess by specifying `-D LIBSODIUM_VS_VERSION=2022` to explicitly use the vs2022 solution.
+but you can skip the guess by specifying `-D PYZMQ_LIBSODIUM_VS_VERSION=2022` to explicitly use the vs2022 solution.
 
 ## Passing arguments
 
 pyzmq has a few CMake options to influence the build. All options are settable as environment variables, as well.
-Other than `ZMQ_PREFIX` and `ZMQ_DRAFT_API`, environment variables for building pyzmq have the prefix `PYZMQ_`.
+Other than `ZMQ_PREFIX` and `ZMQ_DRAFT_API` which have been around forever, environment variables for building pyzmq have the prefix `PYZMQ_`.
 
 The `_ARGS` variables that are meant to pass-through command-line strings accept standard command-line format from environment, or semicolon-separated lists when specified directly to cmake.
 
@@ -184,7 +195,7 @@ So
 
 ```bash
 export ZMQ_PREFIX=bundled
-export PYZMQ_LIBZMQ_BUNDLED_VERSION=4.3.4
+export PYZMQ_LIBZMQ_VERSION=4.3.4
 export PYZMQ_LIBSODIUM_CONFIGURE_ARGS=--disable-pie --minimal
 
 python3 -m build .
@@ -193,7 +204,7 @@ python3 -m build .
 is equivalent to
 
 ```bash
-export CMAKE_ARGS="-DZMQ_PREFIX=bundled -DLIBZMQ_BUNDLED_VERSION=4.3.4 -DLIBSODIUM_CONFIGURE_ARGS=--disable-pie;--minimal"
+export CMAKE_ARGS="-DZMQ_PREFIX=bundled -DPYZMQ_LIBZMQ_VERSION=4.3.4 -DPYZMQ_LIBSODIUM_CONFIGURE_ARGS=--disable-pie;--minimal"
 python3 -m build .
 ```
 
@@ -205,7 +216,7 @@ Most cmake options can be seen below:
 <summary>
 
 `cmake -LH` output for pyzmq, which can be passed via `CMAKE_ARGS`.
-Most of these can also be specified via `PYZMQ_` environment variables.
+Most of these can also be specified via environment variables.
 
 </summary>
 
@@ -213,26 +224,29 @@ Most of these can also be specified via `PYZMQ_` environment variables.
 # Path to a program.
 CYTHON:FILEPATH=$PREFIX/bin/cython
 
-# full URL to download bundled libsodium
-LIBSODIUM_BUNDLED_URL:STRING=
-
-# libsodium version when bundling
-LIBSODIUM_BUNDLED_VERSION:STRING=1.0.19
-
 # semicolon-separated list of arguments to pass to ./configure for bundled libsodium
-LIBSODIUM_CONFIGURE_ARGS:STRING=
+PYZMQ_LIBSODIUM_CONFIGURE_ARGS:STRING=
 
 # semicolon-separated list of arguments to pass to msbuild for bundled libsodium
-LIBSODIUM_MSBUILD_ARGS:STRING=
+PYZMQ_LIBSODIUM_MSBUILD_ARGS:STRING=
+
+# full URL to download bundled libsodium
+PYZMQ_LIBSODIUM_URL:STRING=
+
+# libsodium version when bundling
+PYZMQ_LIBSODIUM_VERSION:STRING=1.0.19
 
 # Visual studio solution version for bundled libsodium (default: detect from MSVC_VERSION)
-LIBSODIUM_VS_VERSION:STRING=
+PYZMQ_LIBSODIUM_VS_VERSION:STRING=
 
 # full URL to download bundled libzmq
-LIBZMQ_BUNDLED_URL:STRING=
+PYZMQ_LIBZMQ_URL:STRING=
 
 # libzmq version when bundling
-LIBZMQ_BUNDLED_VERSION:STRING=4.3.5
+PYZMQ_LIBZMQ_VERSION:STRING=4.3.5
+
+# Prohibit building bundled libzmq. Useful for repackaging, to allow default search for libzmq and requiring it to succeed.
+PYZMQ_NO_BUNDLE:BOOL=OFF
 
 # whether to build the libzmq draft API
 ZMQ_DRAFT_API:BOOL=OFF
