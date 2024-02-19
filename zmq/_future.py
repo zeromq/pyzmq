@@ -355,6 +355,16 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         def _chain(_):
             """Chain result through serialization to recvd"""
             if f.done():
+                # chained future may be cancelled, which means nobody is going to get this result
+                # if it's an error, that's no big deal (probably zmq.Again),
+                # but if it's a successful recv, this is a dropped message!
+                if not recvd.cancelled() and recvd.exception() is None:
+                    warnings.warn(
+                        # is there a useful stacklevel?
+                        # ideally, it would point to where `f.cancel()` was called
+                        f"Future {f} completed while awaiting {recvd}. A message has been dropped!",
+                        RuntimeWarning,
+                    )
                 return
             if recvd.exception():
                 f.set_exception(recvd.exception())
