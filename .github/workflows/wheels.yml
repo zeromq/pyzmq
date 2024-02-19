@@ -175,7 +175,7 @@ jobs:
         # strip leading `v` from tag, since it's not part of the version
         # see https://github.com/orgs/community/discussions/26625 for substring feature request
         run: |
-          echo "v=${{ github.rev_name }}" | sed s@^v@@ >> "${GITHUB_OUTPUT}"
+          echo "${{ github.ref_name }}" | sed s@^v@v=@ >> "${GITHUB_OUTPUT}"
 
       - uses: ncipollo/release-action@v1
         with:
@@ -190,11 +190,11 @@ jobs:
             Install with:
 
             ```
-            pip install 'pyzmq==${{ steps.version.v }}'
+            pip install 'pyzmq==${{ steps.version.outputs.v }}'
             ```
 
             [release notes]: https://pyzmq.readthedocs.io/en/latest/changelog.html
-            [pyzmq on PyPI]: https://pypi.org/project/pyzmq/${{ steps.version.v }}/
+            [pyzmq on PyPI]: https://pypi.org/project/pyzmq/${{ steps.version.outputs.v }}/
 
   upload-pypi:
     permissions:
