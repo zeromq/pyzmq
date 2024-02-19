@@ -155,7 +155,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   include(FetchContent)
   add_compile_definitions(ZMQ_STATIC=1)
   set(BUNDLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/bundled")
-  make_directory("${BUNDLE_DIR}/lib")
+  file(MAKE_DIRECTORY "${BUNDLE_DIR}/lib")
   include_directories(${BUNDLE_DIR}/include)
   list(PREPEND CMAKE_PREFIX_PATH ${BUNDLE_DIR})
 
@@ -287,16 +287,16 @@ endif()
 
 message(STATUS "Using Python ${Python_INTERPRETER_ID} ${Python_EXECUTABLE}")
 
-set(ZMQ_BACKEND "${CMAKE_CURRENT_BINARY_DIR}/zmq/backend")
+set(EXT_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/_src")
 set(ZMQ_BUILDUTILS "${CMAKE_CURRENT_SOURCE_DIR}/buildutils")
+file(MAKE_DIRECTORY "${EXT_SRC_DIR}")
 
 if(Python_INTERPRETER_ID STREQUAL "PyPy")
   message(STATUS "Building CFFI backend")
   set(ZMQ_EXT_NAME "_cffi")
 
-  set(ZMQ_BACKEND_CFFI "${ZMQ_BACKEND}/cffi")
   set(ZMQ_BACKEND_DEST "zmq/backend/cffi")
-  set(ZMQ_C "${ZMQ_BACKEND_CFFI}/${ZMQ_EXT_NAME}.c")
+  set(ZMQ_C "${EXT_SRC_DIR}/${ZMQ_EXT_NAME}.c")
 
   add_custom_command(
     OUTPUT ${ZMQ_C}
@@ -309,10 +309,9 @@ else()
   message(STATUS "Building Cython backend")
   find_program(CYTHON "cython")
 
-  set(ZMQ_BACKEND_CYTHON "${ZMQ_BACKEND}/cython")
   set(ZMQ_BACKEND_DEST "zmq/backend/cython")
   set(ZMQ_EXT_NAME "_zmq")
-  set(ZMQ_C "${ZMQ_BACKEND_CYTHON}/${ZMQ_EXT_NAME}.c")
+  set(ZMQ_C "${EXT_SRC_DIR}/${ZMQ_EXT_NAME}.c")
   set(ZMQ_PYX "${CMAKE_CURRENT_SOURCE_DIR}/zmq/backend/cython/${ZMQ_EXT_NAME}.py")
   add_custom_command(
     OUTPUT ${ZMQ_C}
@@ -321,11 +320,12 @@ else()
     COMMAND "${CYTHON}"
             --3str
             --output-file ${ZMQ_C}
+            --module-name "zmq.backend.cython._zmq"
             ${ZMQ_PYX}
   )
 endif()
 
-make_directory(${ZMQ_BACKEND_DEST})
+file(MAKE_DIRECTORY ${ZMQ_BACKEND_DEST})
 
 python_add_library(
   ${ZMQ_EXT_NAME} MODULE
