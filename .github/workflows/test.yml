@@ -95,6 +95,7 @@ jobs:
           architecture: ${{ matrix.arch || 'x64' }}
           # allows us to use '3.12' and get '-dev' while we wait
           allow-prereleases: true
+          cache: pip
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
@@ -106,16 +107,6 @@ jobs:
       #   if: "! (startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12'))"
       #   run: |
       #     echo "PYZMQ_CYTHON_COVERAGE=1" >> "$GITHUB_ENV"
-
-      # preserve pip cache to speed up installation
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-pip-${{ runner.python }}-${{ hashFiles('*requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
 
       - name: install dependencies
         run: |
