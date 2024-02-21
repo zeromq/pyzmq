@@ -245,6 +245,11 @@ class TestSocket(BaseZMQTestCase):
                     'ONLY_FIRST_SUBSCRIBE',
                     'PRIORITY',
                     'RECONNECT_STOP',
+                    'NORM_',
+                    'ROUTER_',
+                    'BUSY_POLL',
+                    'XSUB_VERBOSE_',
+                    'TOPICS_',
                 )
             ):
                 # some sockopts are write-only
