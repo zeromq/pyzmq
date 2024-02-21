@@ -280,7 +280,6 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   FetchContent_Declare(bundled_libzmq
     URL ${PYZMQ_LIBZMQ_URL}
     PREFIX ${BUNDLE_DIR}
-    CMAKE_ARGS ${LIBZMQ_CMAKE_ARGS}
     EXCLUDE_FROM_ALL
   )
   FetchContent_MakeAvailable(bundled_libzmq)
