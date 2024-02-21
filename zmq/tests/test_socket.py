@@ -48,9 +48,9 @@ class TestSocket(BaseZMQTestCase):
                     a.send(msg)
                     rcvd = self.recv(b)
                     assert rcvd == msg
-                assert b.closed == True
-            assert a.closed == True
-        assert ctx.closed == True
+                assert b.closed is True
+            assert a.closed is True
+        assert ctx.closed is True
 
     def test_connectbind_context_managers(self):
         url = 'inproc://a'
@@ -356,38 +356,38 @@ class TestSocket(BaseZMQTestCase):
             if p1.done:
                 break
             time.sleep(0.1)
-        assert p1.done == True
+        assert p1.done is True
         assert msg == [b'something']
         msg = self.recv_multipart(b)
         for i in range(10):
             if p2.done:
                 break
             time.sleep(0.1)
-        assert p2.done == True
+        assert p2.done is True
         assert msg == [b'something', b'else']
         m = zmq.Frame(b"again", copy=False, track=True)
-        assert m.tracker.done == False
+        assert m.tracker.done is False
         p1 = a.send(m, copy=False)
         p2 = a.send(m, copy=False)
-        assert m.tracker.done == False
-        assert p1.done == False
-        assert p2.done == False
+        assert m.tracker.done is False
+        assert p1.done is False
+        assert p2.done is False
         msg = self.recv_multipart(b)
-        assert m.tracker.done == False
+        assert m.tracker.done is False
         assert msg == [b'again']
         msg = self.recv_multipart(b)
-        assert m.tracker.done == False
+        assert m.tracker.done is False
         assert msg == [b'again']
-        assert p1.done == False
-        assert p2.done == False
+        assert p1.done is False
+        assert p2.done is False
         m.tracker
         del m
         for i in range(10):
             if p1.done:
                 break
             time.sleep(0.1)
-        assert p1.done == True
-        assert p2.done == True
+        assert p1.done is True
+        assert p2.done is True
         m = zmq.Frame(b'something', track=False)
         self.assertRaises(ValueError, a.send, m, copy=False, track=True)
 

@@ -188,9 +188,9 @@ class TestFrame(BaseZMQTestCase):
 
     def test_no_tracker(self):
         m = zmq.Frame(b'asdf', track=False)
-        assert m.tracker == None
+        assert m.tracker is None
         m2 = copy.copy(m)
-        assert m2.tracker == None
+        assert m2.tracker is None
         self.assertRaises(ValueError, zmq.MessageTracker, m)
 
     def test_multi_tracker(self):

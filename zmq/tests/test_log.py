@@ -37,7 +37,7 @@ class TestPubLog(BaseZMQTestCase):
         logger = self.logger
         ctx = self.context
         handler = handlers.PUBHandler(self.iface)
-        assert not handler.ctx is ctx
+        assert handler.ctx is not ctx
         self.sockets.append(handler.socket)
         # handler.ctx.term()
         handler = handlers.PUBHandler(self.iface, self.context)

@@ -10,21 +10,38 @@ from ._cffi import lib as C
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 
-new_uint64_pointer = lambda: (ffi.new('uint64_t*'), nsp(ffi.sizeof('uint64_t')))
-new_int64_pointer = lambda: (ffi.new('int64_t*'), nsp(ffi.sizeof('int64_t')))
-new_int_pointer = lambda: (ffi.new('int*'), nsp(ffi.sizeof('int')))
-new_binary_data = lambda length: (
-    ffi.new('char[%d]' % (length)),
-    nsp(ffi.sizeof('char') * length),
-)
 
-value_uint64_pointer = lambda val: (ffi.new('uint64_t*', val), ffi.sizeof('uint64_t'))
-value_int64_pointer = lambda val: (ffi.new('int64_t*', val), ffi.sizeof('int64_t'))
-value_int_pointer = lambda val: (ffi.new('int*', val), ffi.sizeof('int'))
-value_binary_data = lambda val, length: (
-    ffi.new('char[%d]' % (length + 1), val),
-    ffi.sizeof('char') * length,
-)
+def new_uint64_pointer():
+    return ffi.new('uint64_t*'), nsp(ffi.sizeof('uint64_t'))
+
+
+def new_int64_pointer():
+    return ffi.new('int64_t*'), nsp(ffi.sizeof('int64_t'))
+
+
+def new_int_pointer():
+    return ffi.new('int*'), nsp(ffi.sizeof('int'))
+
+
+def new_binary_data(length):
+    return ffi.new('char[%d]' % length), nsp(ffi.sizeof('char') * length)
+
+
+def value_uint64_pointer(val):
+    return ffi.new('uint64_t*', val), ffi.sizeof('uint64_t')
+
+
+def value_int64_pointer(val):
+    return ffi.new('int64_t*', val), ffi.sizeof('int64_t')
+
+
+def value_int_pointer(val):
+    return ffi.new('int*', val), ffi.sizeof('int')
+
+
+def value_binary_data(val, length):
+    return ffi.new('char[%d]' % (length + 1), val), ffi.sizeof('char') * length
+
 
 ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 

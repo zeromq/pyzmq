@@ -89,7 +89,10 @@ class allow_interrupt:
         SetConsoleCtrlHandler.restype = BOOL
 
         if action is None:
-            action = lambda: None
+
+            def action():
+                return None
+
         self.action = action
 
         @PHANDLER_ROUTINE

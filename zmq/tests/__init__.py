@@ -33,7 +33,10 @@ PYPY = platform.python_implementation() == 'PyPy'
 # skip decorators (directly from unittest)
 # -----------------------------------------------------------------------------
 
-_id = lambda x: x
+
+def _id(x):
+    return x
+
 
 skip_pypy = mark.skipif(PYPY, reason="Doesn't work on PyPy")
 require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq >= 4")
