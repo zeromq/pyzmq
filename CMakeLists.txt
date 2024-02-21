@@ -273,11 +273,13 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   set(BUILD_TESTS OFF)
   set(BUILD_SHARED OFF)
   set(BUILD_STATIC ON)
+  if(MSVC)
+    set(API_POLLER "select" CACHE STRING "Set API Poller (default: select)")
+  endif()
 
   FetchContent_Declare(bundled_libzmq
     URL ${PYZMQ_LIBZMQ_URL}
     PREFIX ${BUNDLE_DIR}
-    CMAKE_ARGS ${LIBZMQ_CMAKE_ARGS}
     EXCLUDE_FROM_ALL
   )
   FetchContent_MakeAvailable(bundled_libzmq)
