@@ -9,6 +9,13 @@ find_package(
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 
+# Python_SOABI isn't always right when cross-compiling
+# SKBUILD_SOABI seems to be
+if (DEFINED SKBUILD_SOABI AND NOT "${SKBUILD_SOABI}" STREQUAL "${Python_SOABI}")
+  message(WARNING "SKBUILD_SOABI=${SKBUILD_SOABI} != Python_SOABI=${Python_SOABI}; likely cross-compiling, using SOABI=${SKBUILD_SOABI} from scikit-build")
+  set(Python_SOABI "${SKBUILD_SOABI}")
+endif()
+
 # legacy pyzmq env options, no PYZMQ_ prefix
 set(ZMQ_PREFIX "auto" CACHE STRING "libzmq installation prefix or 'bundled'")
 option(ZMQ_DRAFT_API "whether to build the libzmq draft API" OFF)
