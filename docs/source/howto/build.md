@@ -26,7 +26,7 @@ brew install zeromq
 You can install pyzmq from source with `pip` by telling it `--no-binary pyzmq`:
 
 ```
-python3 -m pip install --no-binary pyzmq pyzmq
+python3 -m pip install pyzmq --no-binary pyzmq
 ```
 
 or an editable install from a local checkout:
@@ -47,7 +47,7 @@ Build a wheel against already-installed libzmq:
 
 ```bash
 export ZMQ_PREFIX=/usr/local
-python3 -m pip install --no-binary pyzmq pyzmq
+python3 -m pip install pyzmq --no-binary pyzmq
 ```
 
 Force building bundled libzmq with the draft API:
@@ -55,7 +55,7 @@ Force building bundled libzmq with the draft API:
 ```bash
 export ZMQ_PREFIX=bundled
 export ZMQ_BUILD_DRAFT=1
-python3 -m pip install --no-binary pyzmq pyzmq
+python3 -m pip install pyzmq --no-binary pyzmq
 ```
 
 ## Finding libzmq

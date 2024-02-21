@@ -8,13 +8,13 @@ As of libzmq-4.2, this includes the CLIENT-SERVER and RADIO-DISH patterns.
 Because these APIs are explicitly unstable,
 pyzmq does not support them by default,
 and pyzmq binaries (wheels) will not be built with DRAFT API support.
-However, pyzmq-17 can be built with draft socket support,
+However, pyzmq can be built with draft socket support,
 as long as you compile pyzmq yourself with a special flag.
 
 To install libzmq with draft support:
 
 ```bash
-ZMQ_VERSION=4.3.4
+ZMQ_VERSION=4.3.5
 PREFIX=/usr/local
 CPU_COUNT=${CPU_COUNT:-$(python3 -c "import os; print(os.cpu_count())")}
 
@@ -26,19 +26,19 @@ cd zeromq-${ZMQ_VERSION}
 make -j${CPU_COUNT} && make install
 ```
 
-And to install pyzmq with draft support:
+And then build pyzmq with draft support:
 
 ```bash
 export ZMQ_PREFIX=${PREFIX}
 export ZMQ_DRAFT_API=1
-pip install -v --no-binary pyzmq --pre pyzmq
+pip install -v pyzmq --no-binary pyzmq
 ```
 
-By specifying `--no-binary pyzmq`, pip knows to not install wheels, and will compile pyzmq from source.
+By specifying `--no-binary pyzmq`, pip knows to not install the pre-built wheels, and will compile pyzmq from source.
 
 The `ZMQ_PREFIX=$PREFIX` part is only necessary if libzmq is installed somewhere not on the default search path.
 If libzmq is installed in {file}`/usr/local` or similar,
-only the `ZMQ_ENABLE_DRAFTS` option is required.
+only the `ZMQ_DRAFT_API` option is required.
 
 There are examples of the CLIENT-SERVER and RADIO-DISH patterns in the {file}`examples/draft`
 directory of the pyzmq repository.
