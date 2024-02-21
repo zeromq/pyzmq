@@ -31,10 +31,10 @@ And then build pyzmq with draft support:
 ```bash
 export ZMQ_PREFIX=${PREFIX}
 export ZMQ_DRAFT_API=1
-pip install -v --no-binary pyzmq pyzmq
+pip install -v pyzmq --no-binary pyzmq
 ```
 
-By specifying `--no-binary pyzmq`, pip knows to not install wheels, and will compile pyzmq from source.
+By specifying `--no-binary pyzmq`, pip knows to not install the pre-built wheels, and will compile pyzmq from source.
 
 The `ZMQ_PREFIX=$PREFIX` part is only necessary if libzmq is installed somewhere not on the default search path.
 If libzmq is installed in {file}`/usr/local` or similar,
