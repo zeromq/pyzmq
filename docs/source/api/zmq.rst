@@ -119,6 +119,10 @@ as well as via enums (``zmq.SocketType.PUSH``, etc.).
 
 .. autoenum:: Event
 
+.. autoenum:: NormMode
+
+.. autoenum:: RouterNotify
+
 .. autoenum:: SecurityMechanism
 
 .. autoenum:: DeviceType

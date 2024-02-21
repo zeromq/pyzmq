@@ -88,6 +88,11 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_MORE
     enum: ZMQ_SHARED
     enum: ZMQ_SRCFD
+    enum: ZMQ_NORM_FIXED
+    enum: ZMQ_NORM_CC
+    enum: ZMQ_NORM_CCL
+    enum: ZMQ_NORM_CCE
+    enum: ZMQ_NORM_CCE_ECNONLY
     enum: ZMQ_POLLIN
     enum: ZMQ_POLLOUT
     enum: ZMQ_POLLERR
@@ -95,6 +100,8 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_RECONNECT_STOP_CONN_REFUSED
     enum: ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED
     enum: ZMQ_RECONNECT_STOP_AFTER_DISCONNECT
+    enum: ZMQ_NOTIFY_CONNECT
+    enum: ZMQ_NOTIFY_DISCONNECT
     enum: ZMQ_NULL
     enum: ZMQ_PLAIN
     enum: ZMQ_CURVE
@@ -206,6 +213,18 @@ cdef extern from "zmq.h" nogil:
     enum: ZMQ_HELLO_MSG
     enum: ZMQ_DISCONNECT_MSG
     enum: ZMQ_PRIORITY
+    enum: ZMQ_BUSY_POLL
+    enum: ZMQ_HICCUP_MSG
+    enum: ZMQ_XSUB_VERBOSE_UNSUBSCRIBE
+    enum: ZMQ_TOPICS_COUNT
+    enum: ZMQ_NORM_MODE
+    enum: ZMQ_NORM_UNICAST_NACK
+    enum: ZMQ_NORM_BUFFER_SIZE
+    enum: ZMQ_NORM_SEGMENT_SIZE
+    enum: ZMQ_NORM_BLOCK_SIZE
+    enum: ZMQ_NORM_NUM_PARITY
+    enum: ZMQ_NORM_NUM_AUTOPARITY
+    enum: ZMQ_NORM_PUSH
     enum: ZMQ_PAIR
     enum: ZMQ_PUB
     enum: ZMQ_SUB
