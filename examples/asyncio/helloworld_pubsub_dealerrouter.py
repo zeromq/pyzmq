@@ -195,11 +195,7 @@ class HelloWorldMessage:
                 )
 
                 self.hello_world.change_language()
-                print(
-                    "Changed language! New language is: {}\n".format(
-                        self.hello_world.lang
-                    )
-                )
+                print(f"Changed language! New language is: {self.hello_world.lang}\n")
 
         except Exception as e:
             print("Error with sub world")

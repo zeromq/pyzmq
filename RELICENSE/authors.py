@@ -87,10 +87,4 @@ for email, commits in sorted(author_commits.items(), key=sort_key, reverse=True)
             start=commits[-1].authored_datetime.year,
             end=commits[0].authored_datetime.year,
         )
-    print(
-        "- [ ] {name} {email}: {msg}".format(
-            name=email_names[email],
-            email=email,
-            msg=msg,
-        )
-    )
+    print(f"- [ ] {email_names[email]} {email}: {msg}")

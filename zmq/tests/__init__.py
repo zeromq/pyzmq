@@ -172,9 +172,8 @@ class BaseZMQTestCase(TestCase):
             self.assertEqual(
                 e.errno,
                 errno,
-                "wrong error raised, expected '%s' \
-got '%s'"
-                % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)),
+                f"wrong error raised, expected '{zmq.ZMQError(errno)}' \
+got '{zmq.ZMQError(e.errno)}'",
             )
         else:
             self.fail("Function did not raise any error")
@@ -223,9 +222,8 @@ class GreenTest:
             self.assertEqual(
                 e.errno,
                 errno,
-                "wrong error raised, expected '%s' \
-got '%s'"
-                % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)),
+                f"wrong error raised, expected '{zmq.ZMQError(errno)}' \
+got '{zmq.ZMQError(e.errno)}'",
             )
         else:
             self.fail("Function did not raise any error")

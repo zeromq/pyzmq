@@ -69,8 +69,8 @@ class _Decorator:
                         kwargs[kw_name] = obj
                     elif kw_name and kw_name in kwargs:
                         raise TypeError(
-                            "{}() got multiple values for"
-                            " argument '{}'".format(func.__name__, kw_name)
+                            f"{func.__name__}() got multiple values for"
+                            f" argument '{kw_name}'"
                         )
                     else:
                         args = args + (obj,)

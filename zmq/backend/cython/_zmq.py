@@ -887,12 +887,10 @@ class Socket:
             if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
-                    'ipc path "{}" is longer than {} '
+                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
                     'characters (sizeof(sockaddr_un.sun_path)). '
                     'zmq.IPC_PATH_MAX_LEN constant can be used '
-                    'to check addr length (if it is defined).'.format(
-                        path, IPC_PATH_MAX_LEN
-                    )
+                    'to check addr length (if it is defined).'
                 )
                 raise ZMQError(msg=msg)
             elif zmq_errno() == ENOENT:

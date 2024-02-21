@@ -49,7 +49,7 @@ def cython_enums():
     lines = []
     for name in all_names:
         if no_prefix(name):
-            lines.append('enum: ZMQ_{0} "{0}"'.format(name))
+            lines.append(f'enum: ZMQ_{name} "{name}"')
         else:
             lines.append(f'enum: ZMQ_{name}')
 

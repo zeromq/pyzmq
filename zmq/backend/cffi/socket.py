@@ -156,10 +156,8 @@ class Socket:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
                 path = address.split('://', 1)[-1]
                 msg = (
-                    'ipc path "{}" is longer than {} '
-                    'characters (sizeof(sockaddr_un.sun_path)).'.format(
-                        path, IPC_PATH_MAX_LEN
-                    )
+                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
+                    'characters (sizeof(sockaddr_un.sun_path)).'
                 )
                 raise ZMQError(C.zmq_errno(), msg=msg)
             elif C.zmq_errno() == errno_mod.ENOENT:
