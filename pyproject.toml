@@ -67,7 +67,11 @@ readme = { file = "README.md" }
 
 [tool.scikit-build]
 wheel.packages = ["zmq"]
-cmake.version = ">=3.28"
+# 3.14 for FetchContent_MakeAvailable
+cmake.version = ">=3.14"
+# only build/install the pyzmq component
+cmake.targets = ["pyzmq"]
+install.components = ["pyzmq"]
 
 [tool.autoflake]
 ignore-init-module-imports = true

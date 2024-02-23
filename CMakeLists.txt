@@ -1,5 +1,4 @@
-# 3.28 needed for EXCLUDE_FROM_ALL
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.14...3.28)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
@@ -280,7 +279,6 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   FetchContent_Declare(bundled_libzmq
     URL ${PYZMQ_LIBZMQ_URL}
     PREFIX ${BUNDLE_DIR}
-    EXCLUDE_FROM_ALL
   )
   FetchContent_MakeAvailable(bundled_libzmq)
 
@@ -364,4 +362,8 @@ else()
 endif()
 
 target_include_directories(${ZMQ_EXT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zmq/utils")
-install(TARGETS ${ZMQ_EXT_NAME} DESTINATION "${ZMQ_BACKEND_DEST}")
+install(TARGETS ${ZMQ_EXT_NAME} DESTINATION "${ZMQ_BACKEND_DEST}" COMPONENT pyzmq)
+
+# add custom target so we exclude bundled targets from installation
+# only need this because the extension name is different for cff/cython
+add_custom_target(pyzmq DEPENDS ${ZMQ_EXT_NAME})
