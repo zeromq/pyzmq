@@ -272,6 +272,24 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   set(BUILD_TESTS OFF)
   set(BUILD_SHARED OFF)
   set(BUILD_STATIC ON)
+
+  if(NOT MSVC)
+    # backport check for kqueue, which is wrong in libzmq 4.3.5
+    # libzmq's cmake will proceed with the rest
+    # https://github.com/zeromq/libzmq/pull/4659
+    include(CheckCXXSymbolExists)
+    set(POLLER
+      ""
+      CACHE STRING "Choose polling system for I/O threads. valid values are
+    kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
+    if(POLLER STREQUAL "")
+      check_cxx_symbol_exists(kqueue "sys/types.h;sys/event.h;sys/time.h" HAVE_KQUEUE)
+      if(HAVE_KQUEUE)
+        set(POLLER "kqueue")
+      endif()
+    endif()
+  endif()
+
   if(MSVC)
     set(API_POLLER "select" CACHE STRING "Set API Poller (default: select)")
   endif()
