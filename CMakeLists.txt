@@ -1,5 +1,4 @@
-# 3.28 needed for EXCLUDE_FROM_ALL
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.14...3.28)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
@@ -273,6 +272,24 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   set(BUILD_TESTS OFF)
   set(BUILD_SHARED OFF)
   set(BUILD_STATIC ON)
+
+  if(NOT MSVC)
+    # backport check for kqueue, which is wrong in libzmq 4.3.5
+    # libzmq's cmake will proceed with the rest
+    # https://github.com/zeromq/libzmq/pull/4659
+    include(CheckCXXSymbolExists)
+    set(POLLER
+      ""
+      CACHE STRING "Choose polling system for I/O threads. valid values are
+    kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
+    if(POLLER STREQUAL "")
+      check_cxx_symbol_exists(kqueue "sys/types.h;sys/event.h;sys/time.h" HAVE_KQUEUE)
+      if(HAVE_KQUEUE)
+        set(POLLER "kqueue")
+      endif()
+    endif()
+  endif()
+
   if(MSVC)
     set(API_POLLER "select" CACHE STRING "Set API Poller (default: select)")
   endif()
@@ -280,7 +297,6 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   FetchContent_Declare(bundled_libzmq
     URL ${PYZMQ_LIBZMQ_URL}
     PREFIX ${BUNDLE_DIR}
-    EXCLUDE_FROM_ALL
   )
   FetchContent_MakeAvailable(bundled_libzmq)
 
@@ -364,4 +380,8 @@ else()
 endif()
 
 target_include_directories(${ZMQ_EXT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zmq/utils")
-install(TARGETS ${ZMQ_EXT_NAME} DESTINATION "${ZMQ_BACKEND_DEST}")
+install(TARGETS ${ZMQ_EXT_NAME} DESTINATION "${ZMQ_BACKEND_DEST}" COMPONENT pyzmq)
+
+# add custom target so we exclude bundled targets from installation
+# only need this because the extension name is different for cff/cython
+add_custom_target(pyzmq DEPENDS ${ZMQ_EXT_NAME})
