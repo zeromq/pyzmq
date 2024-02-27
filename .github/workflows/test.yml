@@ -7,10 +7,12 @@ on:
       - "pre-commit-ci-update-config"
     paths-ignore:
       - "docs/**"
+      - "tools/**"
       - .github/workflows/wheels.yml
   pull_request:
     paths-ignore:
       - "docs/**"
+      - "tools/**"
       - .github/workflows/wheels.yml
 
 concurrency:
