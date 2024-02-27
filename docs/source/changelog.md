@@ -7,7 +7,9 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
-pyzmq 26 is a small release, but with some big changes _hopefully_ nobody will notice.
+pyzmq 26 is a small release, but with some big changes _hopefully_ nobody will notice,
+except for some users (especially on Windows) where pyzmq releases did not work.
+
 The highlights are:
 
 - The Cython backend has been rewritten using Cython 3's pure Python mode.
@@ -28,6 +30,10 @@ But I would also be _very_ surprised if I didn't break anything in the process o
 Please [report](https://github.com/zeromq/pyzmq/issues/new) any issues you encounter building pyzmq.
 
 See [build docs](building-pyzmq) for more info.
+
+__New__:
+
+- Experimental support for wheels on windows-arm64
 
 __Enhancements__:
 
