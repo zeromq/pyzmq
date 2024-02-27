@@ -145,11 +145,11 @@ ZMQ_PREFIX = "/tmp/zmq"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
-repair-wheel-command = """
+repair-wheel-command = """\
     delvewheel repair \
         -v \
         --wheel-dir={dest_dir} \
-        {wheel}
+        {wheel} \
 """
 
 [tool.cibuildwheel.windows.environment]

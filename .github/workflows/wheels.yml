@@ -65,8 +65,7 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
-      CIBW_ARCHS_LINUX: "${{ matrix.cibw.arch || 'auto' }}"
-      CIBW_ARCHS_MACOS: "${{ matrix.cibw.arch || 'auto' }}"
+      CIBW_ARCHS: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_x86_64_image || '' }}"
 
     strategy:
@@ -129,6 +128,13 @@ jobs:
             cibw:
               build: "cp*win_amd64"
 
+          - os: windows-2022
+            name: win_arm64
+            architecture: x64
+            cibw:
+              arch: ARM64
+              skip: "cp37*"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -137,6 +143,11 @@ jobs:
         with:
           python-version: "3.11"
           architecture: ${{ matrix.architecture }}
+
+      - name: locate windows-arm vcredist
+        if: matrix.name == 'win_arm64'
+        run: |
+          echo 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.38.33135\arm64\Microsoft.VC143.CRT' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: customize mac-arm-64
         if: contains(matrix.os, 'macos') && matrix.cibw.arch
@@ -195,6 +206,19 @@ jobs:
 
             [release notes]: https://pyzmq.readthedocs.io/en/latest/changelog.html
             [pyzmq on PyPI]: https://pypi.org/project/pyzmq/${{ steps.version.outputs.v }}/
+
+  list-wheels:
+    runs-on: ubuntu-22.04
+    needs:
+      - sdist
+      - wheel
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: list wheels
+        run: ls -l dist
 
   upload-pypi:
     permissions:

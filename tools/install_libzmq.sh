@@ -9,7 +9,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     # all multi-arch symbols at the last step
     export LT_MULTI_MODULE=1
     ARCHS="x86_64"
-    case "${CIBW_ARCHS_MACOS:-auto}" in
+    case "${CIBW_ARCHS_MACOS:-${CIBW_ARCHS:-auto}}" in
         "universal2")
             ARCHS="x86_64 arm64"
             ;;
