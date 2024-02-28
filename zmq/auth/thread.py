@@ -32,7 +32,7 @@ class AuthenticationThread(Thread):
         authenticator: Authenticator,
         pipe: zmq.Socket,
     ) -> None:
-        super().__init__()
+        super().__init__(daemon=True)
         self.authenticator = authenticator
         self.log = authenticator.log
         self.pipe = pipe
