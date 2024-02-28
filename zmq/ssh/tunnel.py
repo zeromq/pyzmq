@@ -232,7 +232,7 @@ def openssh_tunnel(
         Default is localhost, which means that the tunnel would redirect
         localhost:lport on this machine to localhost:rport on the *server*.
 
-    keyfile : str; path to public key file
+    keyfile : str; path to private key file
         This specifies a key to be used in ssh login, default None.
         Regular default ssh keys will be used without specifying this argument.
     password : str;
@@ -360,7 +360,7 @@ def paramiko_tunnel(
         Default is localhost, which means that the tunnel would redirect
         localhost:lport on this machine to localhost:rport on the *server*.
 
-    keyfile : str; path to public key file
+    keyfile : str; path to private key file
         This specifies a key to be used in ssh login, default None.
         Regular default ssh keys will be used without specifying this argument.
     password : str;
