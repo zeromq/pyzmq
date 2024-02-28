@@ -1101,8 +1101,8 @@ class Socket:
         None : if `copy` or not track
             None if message was sent, raises an exception otherwise.
         MessageTracker : if track and not copy
-            a MessageTracker object, whose `pending` property will
-            be True until the send is completed.
+            a MessageTracker object, whose `done` property will
+            be False until the send is completed.
 
         Raises
         ------
