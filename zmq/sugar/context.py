@@ -216,7 +216,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     def instance(cls: Type[T], io_threads: int = 1) -> T:
         """Returns a global Context instance.
 
-        Most single-threaded applications have a single, global Context.
+        Most single-process applications have a single, global Context.
         Use this method instead of passing around Context instances
         throughout your code.
 
