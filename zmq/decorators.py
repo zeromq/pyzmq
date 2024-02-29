@@ -15,6 +15,8 @@ For example::
         ...
 """
 
+from __future__ import annotations
+
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
 

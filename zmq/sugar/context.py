@@ -3,24 +3,16 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import atexit
 import os
 from threading import Lock
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any, Callable, Generic, TypeVar, overload
 from warnings import warn
 from weakref import WeakSet
 
+import zmq
 from zmq.backend import Context as ContextBase
 from zmq.constants import ContextOption, Errno, SocketOption
 from zmq.error import ZMQError
@@ -40,11 +32,11 @@ def _notice_atexit() -> None:
 
 atexit.register(_notice_atexit)
 
-T = TypeVar('T', bound='Context')
-ST = TypeVar('ST', bound='Socket', covariant=True)
+_ContextType = TypeVar('_ContextType', bound='Context')
+_SocketType = TypeVar('_SocketType', bound='Socket', covariant=True)
 
 
-class Context(ContextBase, AttributeSetter, Generic[ST]):
+class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
     """Create a zmq Context
 
     A zmq Context creates sockets via its ``ctx.socket`` method.
@@ -74,32 +66,32 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             ctx = zmq.Context.shadow(async_ctx.underlying)
     """
 
-    sockopts: Dict[int, Any]
+    sockopts: dict[int, Any]
     _instance: Any = None
     _instance_lock = Lock()
-    _instance_pid: Optional[int] = None
+    _instance_pid: int | None = None
     _shadow = False
     _shadow_obj = None
     _warn_destroy_close = False
     _sockets: WeakSet
     # mypy doesn't like a default value here
-    _socket_class: Type[ST] = Socket  # type: ignore
+    _socket_class: type[_SocketType] = Socket  # type: ignore
 
     @overload
-    def __init__(self: "Context[Socket]", io_threads: int = 1): ...
+    def __init__(self: Context[Socket], io_threads: int = 1): ...
 
     @overload
-    def __init__(self: "Context[Socket]", io_threads: "Context"):
+    def __init__(self: Context[Socket], io_threads: Context):
         # this should be positional-only, but that requires 3.8
         ...
 
     @overload
-    def __init__(self: "Context[Socket]", *, shadow: Union["Context", int]): ...
+    def __init__(self: Context[Socket], *, shadow: Context | int): ...
 
     def __init__(
-        self: "Context[Socket]",
-        io_threads: Union[int, "Context"] = 1,
-        shadow: Union["Context", int] = 0,
+        self: Context[Socket],
+        io_threads: int | Context = 1,
+        shadow: Context | int = 0,
     ) -> None:
         if isinstance(io_threads, Context):
             # allow positional shadow `zmq.Context(zmq.asyncio.Context())`
@@ -166,7 +158,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             sockets = ""
         return f"<{_repr_cls}({sockets}) at {hex(id(self))}{closed}>"
 
-    def __enter__(self: T) -> T:
+    def __enter__(self: _ContextType) -> _ContextType:
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
@@ -174,14 +166,14 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         self._warn_destroy_close = True
         self.destroy()
 
-    def __copy__(self: T, memo: Any = None) -> T:
+    def __copy__(self: _ContextType, memo: Any = None) -> _ContextType:
         """Copying a Context creates a shadow copy"""
         return self.__class__.shadow(self.underlying)
 
     __deepcopy__ = __copy__
 
     @classmethod
-    def shadow(cls: Type[T], address: Union[int, "Context"]) -> T:
+    def shadow(cls: type[_ContextType], address: int | zmq.Context) -> _ContextType:
         """Shadow an existing libzmq context
 
         address is a zmq.Context or an integer (or FFI pointer)
@@ -196,7 +188,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         return cls(shadow=address)
 
     @classmethod
-    def shadow_pyczmq(cls: Type[T], ctx: Any) -> T:
+    def shadow_pyczmq(cls: type[_ContextType], ctx: Any) -> _ContextType:
         """Shadow an existing pyczmq context
 
         ctx is the FFI `zctx_t *` pointer
@@ -213,7 +205,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
 
     # static method copied from tornado IOLoop.instance
     @classmethod
-    def instance(cls: Type[T], io_threads: int = 1) -> T:
+    def instance(cls: type[_ContextType], io_threads: int = 1) -> _ContextType:
         """Returns a global Context instance.
 
         Most single-process applications have a single, global Context.
@@ -276,7 +268,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
     # Hooks for ctxopt completion
     # -------------------------------------------------------------------------
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         keys = dir(self.__class__)
         keys.extend(ContextOption.__members__)
         return keys
@@ -295,13 +287,13 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if getattr(self, "_sockets", None) is not None:
             self._sockets.discard(socket)
 
-    def destroy(self, linger: Optional[int] = None) -> None:
+    def destroy(self, linger: int | None = None) -> None:
         """Close all sockets associated with this context and then terminate
         the context.
 
         .. warning::
 
-            destroy involves calling ``zmq_close()``, which is **NOT** threadsafe.
+            destroy involves calling :meth:`Socket.close`, which is **NOT** threadsafe.
             If there are active sockets in other threads, this must not be called.
 
         Parameters
@@ -313,7 +305,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         if self.closed:
             return
 
-        sockets: List[ST] = list(getattr(self, "_sockets", None) or [])
+        sockets: list[_SocketType] = list(getattr(self, "_sockets", None) or [])
         for s in sockets:
             if s and not s.closed:
                 if self._warn_destroy_close and warn is not None:
@@ -331,11 +323,11 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
         self.term()
 
     def socket(
-        self: T,
+        self: _ContextType,
         socket_type: int,
-        socket_class: Optional[Callable[[T, int], ST]] = None,
+        socket_class: Callable[[_ContextType, int], _SocketType] | None = None,
         **kwargs: Any,
-    ) -> ST:
+    ) -> _SocketType:
         """Create a Socket associated with this Context.
 
         Parameters
@@ -344,7 +336,7 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             The socket type, which can be any of the 0MQ socket types:
             REQ, REP, PUB, SUB, PAIR, DEALER, ROUTER, PULL, PUSH, etc.
 
-        socket_class: zmq.Socket or a subclass
+        socket_class: zmq.Socket
             The socket class to instantiate, if different from the default for this Context.
             e.g. for creating an asyncio socket attached to a default Context or vice versa.
 
@@ -357,8 +349,10 @@ class Context(ContextBase, AttributeSetter, Generic[ST]):
             raise ZMQError(Errno.ENOTSUP)
         if socket_class is None:
             socket_class = self._socket_class
-        s: ST = socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
-            self, socket_type, **kwargs
+        s: _SocketType = (
+            socket_class(  # set PYTHONTRACEMALLOC=2 to get the calling frame
+                self, socket_type, **kwargs
+            )
         )
         for opt, value in self.sockopts.items():
             try:

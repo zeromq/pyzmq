@@ -3,18 +3,17 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import time
 from threading import Event
-from typing import Set, Tuple, Union
 
 from zmq.backend import Frame
 from zmq.error import NotDone
 
 
 class MessageTracker:
-    """MessageTracker(*towatch)
-
-    A class for tracking if 0MQ is done using one or more messages.
+    """A class for tracking if 0MQ is done using one or more messages.
 
     When you send a 0MQ message, it is not sent immediately. The 0MQ IO thread
     sends the message at some later time. Often you want to know when 0MQ has
@@ -24,19 +23,17 @@ class MessageTracker:
 
     Parameters
     ----------
-    towatch : Event, MessageTracker, Message instances.
+    towatch : Event, MessageTracker, zmq.Frame
         This objects to track. This class can track the low-level
         Events used by the Message class, other MessageTrackers or
         actual Messages.
     """
 
-    events: Set[Event]
-    peers: Set["MessageTracker"]
+    events: set[Event]
+    peers: set[MessageTracker]
 
-    def __init__(self, *towatch: Tuple[Union["MessageTracker", Event, Frame]]):
-        """MessageTracker(*towatch)
-
-        Create a message tracker to track a set of messages.
+    def __init__(self, *towatch: tuple[MessageTracker | Event | Frame]):
+        """Create a message tracker to track a set of messages.
 
         Parameters
         ----------
@@ -70,14 +67,13 @@ class MessageTracker:
                 return False
         return True
 
-    def wait(self, timeout: Union[float, int] = -1):
-        """mt.wait(timeout=-1)
-
-        Wait for 0MQ to be done with the message or until `timeout`.
+    def wait(self, timeout: float | int = -1):
+        """Wait for 0MQ to be done with the message or until `timeout`.
 
         Parameters
         ----------
-        timeout : float [default: -1, wait forever]
+        timeout : float
+            default: -1, which means wait forever.
             Maximum time in (s) to wait before raising NotDone.
 
         Returns

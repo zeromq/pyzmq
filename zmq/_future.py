@@ -2,27 +2,14 @@
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import warnings
 from asyncio import Future
 from collections import deque
 from functools import partial
 from itertools import chain
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Dict,
-    List,
-    NamedTuple,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import Any, Awaitable, Callable, NamedTuple, TypeVar, cast, overload
 
 import zmq as _zmq
 from zmq import EVENTS, POLLIN, POLLOUT
@@ -32,7 +19,7 @@ from zmq._typing import Literal
 class _FutureEvent(NamedTuple):
     future: Future
     kind: str
-    kwargs: Dict
+    kwargs: dict
     msg: Any
     timer: Any
 
@@ -50,7 +37,7 @@ class _Async:
     """Mixin for common async logic"""
 
     _current_loop: Any = None
-    _Future: Type[Future]
+    _Future: type[Future]
 
     def _get_loop(self) -> Any:
         """Get event loop
@@ -79,10 +66,10 @@ class _Async:
 class _AsyncPoller(_Async, _zmq.Poller):
     """Poller that returns a Future on poll, instead of blocking."""
 
-    _socket_class: Type["_AsyncSocket"]
+    _socket_class: type[_AsyncSocket]
     _READ: int
     _WRITE: int
-    raw_sockets: List[Any]
+    raw_sockets: list[Any]
 
     def _watch_raw_socket(self, loop: Any, socket: Any, evt: int, f: Callable) -> None:
         """Schedule callback for a raw socket"""
@@ -92,7 +79,7 @@ class _AsyncPoller(_Async, _zmq.Poller):
         """Unschedule callback for a raw socket"""
         raise NotImplementedError()
 
-    def poll(self, timeout=-1) -> Awaitable[List[Tuple[Any, int]]]:  # type: ignore
+    def poll(self, timeout=-1) -> Awaitable[list[tuple[Any, int]]]:  # type: ignore
         """Return a Future for a poll event"""
         future = self._Future()
         if timeout == 0:
@@ -110,7 +97,7 @@ class _AsyncPoller(_Async, _zmq.Poller):
         watcher = self._Future()
 
         # watch raw sockets:
-        raw_sockets: List[Any] = []
+        raw_sockets: list[Any] = []
 
         def wake_raw(*args):
             if not watcher.done():
@@ -120,7 +107,7 @@ class _AsyncPoller(_Async, _zmq.Poller):
             lambda f: self._unwatch_raw_sockets(loop, *raw_sockets)
         )
 
-        wrapped_sockets: List[_AsyncSocket] = []
+        wrapped_sockets: list[_AsyncSocket] = []
 
         def _clear_wrapper_io(f):
             for s in wrapped_sockets:
@@ -210,7 +197,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     _recv_futures = None
     _send_futures = None
     _state = 0
-    _shadow_sock: "_zmq.Socket"
+    _shadow_sock: _zmq.Socket
     _poller_class = _AsyncPoller
     _fd = None
 
@@ -219,7 +206,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         context=None,
         socket_type=-1,
         io_loop=None,
-        _from_socket: Optional["_zmq.Socket"] = None,
+        _from_socket: _zmq.Socket | None = None,
         **kwargs,
     ) -> None:
         if isinstance(context, _zmq.Socket):
@@ -244,13 +231,13 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         self._fd = self._shadow_sock.FD
 
     @classmethod
-    def from_socket(cls: Type[T], socket: "_zmq.Socket", io_loop: Any = None) -> T:
+    def from_socket(cls: type[T], socket: _zmq.Socket, io_loop: Any = None) -> T:
         """Create an async socket from an existing Socket"""
         return cls(_from_socket=socket, io_loop=io_loop)
 
-    def close(self, linger: Optional[int] = None) -> None:
+    def close(self, linger: int | None = None) -> None:
         if not self.closed and self._fd is not None:
-            event_list: List[_FutureEvent] = list(
+            event_list: list[_FutureEvent] = list(
                 chain(self._recv_futures or [], self._send_futures or [])
             )
             for event in event_list:
@@ -276,27 +263,27 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     @overload  # type: ignore
     def recv_multipart(
         self, flags: int = 0, *, track: bool = False
-    ) -> Awaitable[List[bytes]]: ...
+    ) -> Awaitable[list[bytes]]: ...
 
     @overload
     def recv_multipart(
         self, flags: int = 0, *, copy: Literal[True], track: bool = False
-    ) -> Awaitable[List[bytes]]: ...
+    ) -> Awaitable[list[bytes]]: ...
 
     @overload
     def recv_multipart(
         self, flags: int = 0, *, copy: Literal[False], track: bool = False
-    ) -> Awaitable[List[_zmq.Frame]]:  # type: ignore
+    ) -> Awaitable[list[_zmq.Frame]]:  # type: ignore
         ...
 
     @overload
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]: ...
+    ) -> Awaitable[list[bytes] | list[_zmq.Frame]]: ...
 
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Awaitable[Union[List[bytes], List[_zmq.Frame]]]:
+    ) -> Awaitable[list[bytes] | list[_zmq.Frame]]:
         """Receive a complete multipart zmq message.
 
         Returns a Future whose result will be a multipart message.
@@ -307,7 +294,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
     def recv(  # type: ignore
         self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Awaitable[Union[bytes, _zmq.Frame]]:
+    ) -> Awaitable[bytes | _zmq.Frame]:
         """Receive a single zmq frame.
 
         Returns a Future, whose result will be the received frame.
@@ -318,7 +305,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
     def send_multipart(  # type: ignore
         self, msg_parts: Any, flags: int = 0, copy: bool = True, track=False, **kwargs
-    ) -> Awaitable[Optional[_zmq.MessageTracker]]:
+    ) -> Awaitable[_zmq.MessageTracker | None]:
         """Send a complete multipart zmq message.
 
         Returns a Future that resolves when sending is complete.
@@ -335,7 +322,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         copy: bool = True,
         track: bool = False,
         **kwargs: Any,
-    ) -> Awaitable[Optional[_zmq.MessageTracker]]:
+    ) -> Awaitable[_zmq.MessageTracker | None]:
         """Send a single zmq frame.
 
         Returns a Future that resolves when sending is complete.

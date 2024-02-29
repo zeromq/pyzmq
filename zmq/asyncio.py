@@ -5,6 +5,7 @@ Requires asyncio and Python 3.
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import asyncio
 import selectors

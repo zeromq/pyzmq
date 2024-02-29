@@ -8,10 +8,11 @@
 
 # Copyright (c) PyZMQ Developers.
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import asyncio
 import warnings
-from typing import Any, Type
+from typing import Any
 
 from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
@@ -50,7 +51,7 @@ class _CancellableTornadoTimeout:
 
 
 class _AsyncTornado:
-    _Future: Type[asyncio.Future] = _TornadoFuture
+    _Future: type[asyncio.Future] = _TornadoFuture
     _READ = IOLoop.READ
     _WRITE = IOLoop.WRITE
 
@@ -91,7 +92,7 @@ class Context(_zmq.Context[Socket]):
     def _socket_class(self, socket_type):
         return Socket(self, socket_type)
 
-    def __init__(self: "Context", *args: Any, **kwargs: Any) -> None:
+    def __init__(self: Context, *args: Any, **kwargs: Any) -> None:
         io_loop = kwargs.pop('io_loop', None)
         if io_loop is not None:
             warnings.warn(
