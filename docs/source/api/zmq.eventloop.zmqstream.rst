@@ -3,8 +3,8 @@
 eventloop.zmqstream
 ===================
 
-Module: :mod:`eventloop.zmqstream`
-----------------------------------
+Module: :mod:`zmq.eventloop.zmqstream`
+--------------------------------------
 .. automodule:: zmq.eventloop.zmqstream
 
 .. currentmodule:: zmq.eventloop.zmqstream

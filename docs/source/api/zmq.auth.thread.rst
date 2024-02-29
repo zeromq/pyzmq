@@ -3,8 +3,8 @@
 auth.thread
 ===========
 
-Module: :mod:`auth.thread`
---------------------------
+Module: :mod:`zmq.auth.thread`
+------------------------------
 .. automodule:: zmq.auth.thread
 
 .. currentmodule:: zmq.auth.thread
@@ -21,3 +21,5 @@ Classes
   :members:
   :undoc-members:
   :inherited-members:
+
+.. autoclass:: AuthenticationThread

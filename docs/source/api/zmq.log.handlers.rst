@@ -3,8 +3,8 @@
 log.handlers
 ============
 
-Module: :mod:`log.handlers`
----------------------------
+Module: :mod:`zmq.log.handlers`
+-------------------------------
 .. automodule:: zmq.log.handlers
 
 .. currentmodule:: zmq.log.handlers

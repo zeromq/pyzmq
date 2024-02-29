@@ -1,5 +1,3 @@
-.. AUTO-GENERATED FILE -- DO NOT EDIT!
-
 asyncio
 =======
 
@@ -13,8 +11,8 @@ Module: :mod:`zmq.asyncio`
 
 As of 15.0, pyzmq now supports :mod:`asyncio`, via :mod:`zmq.asyncio`.
 When imported from this module, blocking methods such as
-:meth:`zmq.asyncio.Socket.recv_multipart`, :meth:`zmq.asyncio.Socket.poll`,
-and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future` s.
+:meth:`Socket.recv_multipart`, :meth:`Socket.poll`,
+and :meth:`Poller.poll` return :class:`~.asyncio.Future` s.
 
 .. sourcecode:: python
 
@@ -37,19 +35,12 @@ and :meth:`zmq.asyncio.Poller.poll` return :class:`~.asyncio.Future` s.
 Classes
 -------
 
-:class:`ZMQEventLoop`
-~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: ZMQEventLoop
-
-
 :class:`Context`
 ~~~~~~~~~~~~~~~~
 
 Context class that creates Future-returning sockets. See :class:`zmq.Context` for more info.
 
 .. autoclass:: Context
-  :noindex:
 
 
 
@@ -64,18 +55,17 @@ for use in coroutines and async applications.
     :class:`zmq.Socket` for the inherited API.
 
 .. autoclass:: Socket
-  :noindex:
 
   .. automethod:: recv
-    :noindex:
+
   .. automethod:: recv_multipart
-    :noindex:
+
   .. automethod:: send
-    :noindex:
+
   .. automethod:: send_multipart
-    :noindex:
+
   .. automethod:: poll
-    :noindex:
+
 
 :class:`Poller`
 ~~~~~~~~~~~~~~~
@@ -88,7 +78,5 @@ for use in coroutines and async applications.
     :class:`zmq.Poller` for the inherited API.
 
 .. autoclass:: Poller
-  :noindex:
 
   .. automethod:: poll
-    :noindex:

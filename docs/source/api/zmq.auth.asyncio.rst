@@ -1,8 +1,8 @@
 auth.asyncio
 ============
 
-Module: :mod:`auth.asyncio`
----------------------------
+Module: :mod:`zmq.auth.asyncio`
+-------------------------------
 
 .. automodule:: zmq.auth.asyncio
 

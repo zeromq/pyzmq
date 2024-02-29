@@ -1,8 +1,8 @@
 auth
 ====
 
-Module: :mod:`auth`
--------------------
+Module: :mod:`zmq.auth`
+-----------------------
 .. automodule:: zmq.auth
 
 .. currentmodule:: zmq.auth

@@ -120,8 +120,8 @@ Fixed:
 
 Deprecated:
 
-- {class}`zmq.auth.ioloop.IOLoopAuthenticator` is deprecated in favor of {class}`zmq.auth.asyncio.AsyncioAuthenticator`
-- As part of migrating toward modern pytest, {class}`zmq.tests.BaseZMQTestCase` is deprecated and should not be used outside pyzmq.
+- `zmq.auth.ioloop.IOLoopAuthenticator` is deprecated in favor of {class}`zmq.auth.asyncio.AsyncioAuthenticator`
+- As part of migrating toward modern pytest, `zmq.tests.BaseZMQTestCase` is deprecated and should not be used outside pyzmq.
 - `python setup.py test` is deprecated as a way to launch the tests.
   Just use `pytest`.
 
@@ -197,7 +197,7 @@ Fixing some regressions in 23.0:
 
 Compatibility fixes:
 
-- {func}`zmq.utils.monitor.recv_monitor_msg` now supports async Sockets.
+- {func}`zmq.utils.monitor.recv_monitor_message` now supports async Sockets.
 - Fix build with mingw
 
 ## 23.0.0
@@ -431,7 +431,7 @@ Fixes:
 - Cython backend: Build Cython extensions with language level "3str" (requires Cython 0.29)
 - Cython backend: You can now `cimport zmq`
 - Asyncio: Fix memory leak in Poller
-- Log: Much improved logging in {mod}`zmq.log` (see {doc}`howto/logging`)
+- Log: Much improved logging in {mod}`zmq.log.handlers` (see {doc}`howto/logging`)
 - Log: add `python -m zmq.log` entrypoint
 - Sources generated with Cython 0.29.15
 
@@ -486,7 +486,7 @@ There are no code changes in this release.
 - Bump bundled libzmq to 4.2.5
 - Improve tornado 5.0 compatibility
   (use {meth}`~tornado.ioloop.IOLoop.current` instead of {meth}`~tornado.ioloop.IOLoop.instance`
-  to get default loops in {class}`.ZMQStream` and {class}`.IOLoopAuthenticator`)
+  to get default loops in {class}`.ZMQStream` and `.IOLoopAuthenticator`)
 - Add support for {func}`.curve_public`
 - Remove delayed import of json in `send/recv_json`
 - Add {meth}`.Authenticator.configure_curve_callback`
@@ -507,13 +507,13 @@ There are no code changes in this release.
   Tornado eventloop integration shouldn't be used without a proper tornado install
   since pyzmq 14.
 
-- Allow pyzmq asyncio/tornado integration to run without installing {func}`zmq_poll`
+- Allow pyzmq asyncio/tornado integration to run without installing `zmq_poll`
   implementation. The following methods and classes are deprecated and no longer required:
 
-  - {func}`zmq.eventloop.ioloop.install`
-  - {class}`zmq.eventloop.ioloop.IOLoop`
-  - {func}`zmq.asyncio.install`
-  - {class}`zmq.asyncio.ZMQEventLoop`
+  - `zmq.eventloop.ioloop.install`
+  - `zmq.eventloop.ioloop.IOLoop`
+  - `zmq.asyncio.install`
+  - `zmq.asyncio.ZMQEventLoop`
 
 - Set RPATH correctly when building on macOS.
 
@@ -552,13 +552,13 @@ There are no code changes in this release.
 - Include zmq.h
 - Deprecate `zmq.Stopwatch`. Native Python timing tools can be used instead.
 - Better support for using pyzmq as a Cython library
-  \- bundle zmq.h when pyzmq bundles libzmq as an extension
-  \- add {func}`zmq.get_library_dirs` to find bundled libzmq
+  - bundle zmq.h when pyzmq bundles libzmq as an extension
+  - add {func}`zmq.get_library_dirs` to find bundled libzmq
 - Updates to setup.py for Cython 0.25 compatibility
 - Various asyncio/future fixes:
-  \- support raw sockets in pollers
-  \- allow cancelling async sends
-- Fix {meth}`IOLoop.current` in {mod}`zmq.green`
+  - support raw sockets in pollers
+  - allow cancelling async sends
+- Fix `IOLoop.current()` in {mod}`zmq.green`
 
 ## 15.4
 
@@ -583,12 +583,12 @@ There are no code changes in this release.
 - Add {meth}`zmq.Socket.subscribe` and {meth}`zmq.Socket.unsubscribe` methods to sockets, so that assignment is no longer needed for subscribing. Verbs should be methods!
   Assignment is still supported for backward-compatibility.
 - Accept text (unicode) input to z85 encoding, not just bytes
-- {meth}`zmq.Context.socket` forwards keyword arguments to the {class}`Socket` constructor
+- {meth}`zmq.Context.socket` forwards keyword arguments to the {class}`~.zmq.Socket` constructor
 
 ## 15.2
 
 - FIX: handle multiple events in a single register call in {mod}`zmq.asyncio`
-- FIX: unicode/bytes bug in password prompt in {mod}`zmq.ssh` on Python 3
+- FIX: unicode/bytes bug in password prompt in `zmq.ssh` on Python 3
 - FIX: workaround gevent monkeypatches in garbage collection thread
 - update bundled minitornado from tornado-4.3.
 - improved inspection by setting `binding=True` in cython compile options
@@ -604,10 +604,10 @@ There are no code changes in this release.
 
 ## 15.0
 
-PyZMQ 15 adds Future-returning sockets and pollers for both {mod}`asyncio` and {mod}`tornado`.
+PyZMQ 15 adds Future-returning sockets and pollers for both {mod}`asyncio` and {mod}`tornado.concurrent`.
 
 - add {mod}`asyncio` support via {mod}`zmq.asyncio`
-- add {mod}`tornado` future support via {mod}`zmq.eventloop.future`
+- add {mod}`tornado.concurrent` future support via {mod}`zmq.eventloop.future`
 - trigger bundled libzmq if system libzmq is found to be \< 3.
   System libzmq 2 can be forced by explicitly requesting `--zmq=/prefix/`.
 
@@ -640,7 +640,7 @@ Changes:
 
 Bugfixes:
 
-- add missing {attr}`ndim` on memoryviews of Frames
+- add missing `ndim` on memoryviews of Frames
 - allow {func}`copy.copy` and {func}`copy.deepcopy` on Sockets, Contexts
 
 ## 14.5.0
@@ -672,7 +672,7 @@ New features:
 - Experimental support for libzmq-4.1.0 rc (new constants, plus {func}`zmq.has`).
 - Update bundled libzmq to 4.0.5
 - Update bundled libsodium to 1.0.0
-- Fixes for SSH dialogs when using {mod}`zmq.ssh` to create tunnels
+- Fixes for SSH dialogs when using {mod}`zmq.ssh.tunnel` to create tunnels
 - More build/link/load fixes on OS X and Solaris
 - Get Frame metadata via dict access (libzmq 4)
 - Contexts and Sockets are context managers (term/close on `__exit__`)
@@ -699,7 +699,7 @@ Minor bugfixes to pyzmq 14.3:
 
 - PyZMQ no longer calls {meth}`.Socket.close` or {meth}`.Context.term` during process cleanup.
   Changes to garbage collection in Python 3.4 make this impossible to do sensibly.
-- {meth}`ZMQStream.close` closes its socket immediately, rather than scheduling a timeout.
+- {meth}`.ZMQStream.close` closes its socket immediately, rather than scheduling a timeout.
 - Raise the original ImportError when importing zmq fails.
   Should be more informative than `no module cffi...`.
 
@@ -756,7 +756,7 @@ Bugfix release
 - Update bundled libzmq to current (4.0.3).
 - Fix bug in {meth}`.Context.destroy` with no open sockets.
 - Threadsafety fixes in the garbage collector.
-- Python 3 fixes in {mod}`zmq.ssh`.
+- Python 3 fixes in {mod}`zmq.ssh.tunnel`.
 
 ## 14.0.0
 
@@ -820,7 +820,7 @@ This means that subclasses of these classes that require extra attributes
 
 - The Threadsafe ZMQStream experiment in 2.2.0.1 was deemed inappropriate and not useful,
   and has been removed.
-- The {mod}`zmq.web` experiment has been removed,
+- The `zmq.web` experiment has been removed,
   to be developed as a [standalone project](https://github.com/ellisonbg/zmqweb).
 
 ### New Stuff
@@ -838,7 +838,7 @@ This means that subclasses of these classes that require extra attributes
   - {func}`zmq.proxy`
   - {class}`zmq.devices.Proxy`
   - Exceptions for common zmq errnos: {class}`zmq.Again`, {class}`zmq.ContextTerminated`
-    (subclass {class}`ZMQError`, so fully backward-compatible).
+    (subclass {class}`~.ZMQError`, so fully backward-compatible).
 
 - Setting and getting {attr}`.Socket.hwm` sets or gets *both* SNDHWM/RCVHWM for libzmq-3.
 
@@ -867,7 +867,7 @@ and may be removed or changed in incompatible ways in later releases.
 #### Threadsafe ZMQStream
 
 With the IOLoop inherited from tornado, there is exactly one method that is threadsafe:
-{meth}`.IOLoop.add_callback`.  With this release, we are trying an experimental option
+{meth}`~.tornado.ioloop.IOLoop.add_callback`.  With this release, we are trying an experimental option
 to pass all IOLoop calls via this method, so that ZMQStreams can be used from one thread
 while the IOLoop runs in another.  To try out a threadsafe stream:
 
@@ -913,7 +913,7 @@ possible), to allow more permissive use of less-critical code and utilities.
 
 ### Name Changes
 
-- The {class}`~.Message` class has been renamed to {class}`~.Frame`, to better match other
+- The `Message` class has been renamed to {class}`~.Frame`, to better match other
   zmq bindings. The old Message name remains for backwards-compatibility.  Wherever pyzmq
   docs say "Message", they should refer to a complete zmq atom of communication (one or
   more Frames, connected by ZMQ_SNDMORE). Please report any remaining instances of
@@ -925,13 +925,13 @@ possible), to allow more permissive use of less-critical code and utilities.
 
 ### Other Changes and Removals
 
-- `prefix` removed as an unused keyword argument from {meth}`~.Socket.send_multipart`.
+- `prefix` removed as an unused keyword argument from {meth}`~.zmq.Socket.send_multipart`.
 - ZMQStream {meth}`~.ZMQStream.send` default has been changed to `copy=True`, so it matches
-  Socket {meth}`~.Socket.send`.
+  Socket {meth}`~.zmq.Socket.send`.
 - ZMQStream {meth}`~.ZMQStream.on_err` is deprecated, because it never did anything.
 - Python 2.5 compatibility has been dropped, and some code has been cleaned up to reflect
   no-longer-needed hacks.
-- Some Cython files in {mod}`zmq.core` have been split, to reduce the amount of
+- Some Cython files in `zmq.core` have been split, to reduce the amount of
   Cython-compiled code.  Much of the body of these files were pure Python, and thus did
   not benefit from the increased compile time.  This change also aims to ease maintaining
   feature parity in other projects, such as
@@ -939,47 +939,47 @@ possible), to allow more permissive use of less-critical code and utilities.
 
 ### New Stuff
 
-- {class}`~.Context` objects can now set default options when they create a socket. These
+- {class}`~.zmq.Context` objects can now set default options when they create a socket. These
   are set and accessed as attributes to the context.  Socket options that do not apply to a
   socket (e.g. SUBSCRIBE on non-SUB sockets) will simply be ignored.
 - {meth}`~.ZMQStream.on_recv_stream` has been added, which adds the stream itself as a
   second argument to the callback, making it easier to use a single callback on multiple
   streams.
-- A {attr}`~Frame.more` boolean attribute has been added to the {class}`~.Frame` (née
+- A `Frame.more` boolean attribute has been added to the {class}`~.Frame` (née
   Message) class, so that frames can be identified as terminal without extra queries of
-  {attr}`~.Socket.rcvmore`.
+  `Socket.rcvmore`.
 
 ### Experimental New Stuff
 
 These features are marked 'experimental', which means that their APIs are not
 set in stone, and may be removed or changed in incompatible ways in later releases.
 
-- {mod}`zmq.web` added for load-balancing requests in a tornado webapp with zeromq.
+- `zmq.web` added for load-balancing requests in a tornado webapp with zeromq.
 
 ## 2.1.11
 
 - remove support for LABEL prefixes.  A major feature of libzmq-3.0, the LABEL
   prefix, has been removed from libzmq, prior to the first stable libzmq 3.x release.
 
-  - The prefix argument to {meth}`~.Socket.send_multipart` remains, but it continue to behave in
+  - The prefix argument to {meth}`~.zmq.Socket.send_multipart` remains, but it continue to behave in
     exactly the same way as it always has on 2.1.x, simply prepending message parts.
-  - {meth}`~.Socket.recv_multipart` will always return a list, because prefixes are once
+  - {meth}`~.zmq.Socket.recv_multipart` will always return a list, because prefixes are once
     again indistinguishable from regular message parts.
 
-- add {meth}`.Socket.poll` method, for simple polling of events on a single socket.
+- add {meth}`.zmq.Socket.poll` method, for simple polling of events on a single socket.
 
-- no longer require monkeypatching tornado IOLoop.  The {class}`.ioloop.ZMQPoller` class
+- no longer require monkeypatching tornado IOLoop.  The `ioloop.ZMQPoller` class
   is a poller implementation that matches tornado's expectations, and pyzmq sockets can
   be used with any tornado application just by specifying the use of this poller.  The
   pyzmq IOLoop implementation now only trivially differs from tornado's.
 
-  It is still recommended to use {func}`.ioloop.install`, which sets *both* the zmq and
+  It is still recommended to use `ioloop.install()`, which sets *both* the zmq and
   tornado global IOLoop instances to the same object, but it is no longer necessary.
 
   ```{warning}
   The most important part of this change is that the `IOLoop.READ/WRITE/ERROR`
   constants now match tornado's, rather than being mapped directly to the zmq
-  `POLLIN/OUT/ERR`. So applications that used the low-level {meth}`IOLoop.add_handler`
+  `POLLIN/OUT/ERR`. So applications that used the low-level `IOLoop.add_handler`
   code with `POLLIN/OUT/ERR` directly (used to work, but was incorrect), rather than
   using the IOLoop class constants will no longer work. Fixing these to use the IOLoop
   constants should be insensitive to the actual value of the constants.
@@ -1000,18 +1000,18 @@ set in stone, and may be removed or changed in incompatible ways in later releas
     send_multipart([b"msg", b"parts"], prefix=[b"label", b"prefix"])
     ```
 
-  - {meth}`recv_multipart` returns a tuple of `(prefix,msg)` if a label prefix is detected
+  - {meth}`zmq.Socket.recv_multipart` returns a tuple of `(prefix,msg)` if a label prefix is detected
 
   - ZMQStreams and devices also respect the LABEL prefix
 
-- add czmq-style close&term as {meth}`ctx.destroy`, so that {meth}`ctx.term`
+- add czmq-style close&term as {meth}`zmq.Context.destroy`, so that {meth}`zmq.Context.term`
   remains threadsafe and 1:1 with libzmq.
 
-- {meth}`Socket.close` takes optional linger option, for setting linger prior
+- {meth}`zmq.Socket.close` takes optional linger option, for setting linger prior
   to closing.
 
-- add {func}`~zmq.core.version.zmq_version_info` and
-  {func}`~zmq.core.version.pyzmq_version_info` for getting libzmq and pyzmq versions as
+- add {func}`~.zmq_version_info` and
+  {func}`~.pyzmq_version_info` for getting libzmq and pyzmq versions as
   tuples of numbers. This helps with the fact that version string comparison breaks down
   once versions get into double-digits.
 
@@ -1021,8 +1021,8 @@ set in stone, and may be removed or changed in incompatible ways in later releas
 
 - added zmq.ssh tools for tunneling socket connections, copied from IPython
 - Expanded sockopt support to cover changes in libzmq-4.0 dev.
-- Fixed an issue that prevented {exc}`KeyboardInterrupts` from being catchable.
-- Added attribute-access for set/getsockopt.  Setting/Getting attributes of {class}`Sockets`
+- Fixed an issue that prevented {exc}`KeyboardInterrupt` from being catchable.
+- Added attribute-access for set/getsockopt.  Setting/Getting attributes of {class}`~.zmq.Socket`s
   with the names of socket options is mapped to calls of set/getsockopt.
 
 ```python
@@ -1032,9 +1032,9 @@ s.linger
 # -1
 ```
 
-- Terminating a {class}`~Context` closes the sockets it created, matching the behavior in
+- Terminating a {class}`~.zmq.Context` closes the sockets it created, matching the behavior in
   [czmq](http://czmq.zeromq.org/).
-- {class}`ThreadDevices` use {meth}`Context.instance` to create sockets, so they can use
+- {class}`.ThreadDevice`s use {meth}`.zmq.Context.instance` to create sockets, so they can use
   inproc connections to sockets in other threads.
 - fixed units error on {func}`zmq.select`, where the poll timeout was 1000 times longer
   than expected.
@@ -1049,13 +1049,13 @@ s.linger
 ## 2.1.7
 
 - Added experimental support for libzmq-3.0 API
-- Add {func}`zmq.eventloop.ioloop.install` for using pyzmq's IOLoop in a tornado
+- Add `zmq.eventloop.ioloop.install` for using pyzmq's IOLoop in a tornado
   application.
 
 ## 2.1.4
 
 - First version with binary distribution support
-- Added {meth}`~Context.instance()` method for using a single Context throughout an application
+- Added {meth}`zmq.Context.instance()` method for using a single Context throughout an application
   without passing references around.
 
 [cython-build-requires]: https://groups.google.com/g/cython-users/c/ZqKFQmS0JdA/m/1FrK1ApYBAAJ

@@ -3,8 +3,8 @@
 ssh.tunnel
 ==========
 
-Module: :mod:`ssh.tunnel`
--------------------------
+Module: :mod:`zmq.ssh.tunnel`
+-----------------------------
 .. automodule:: zmq.ssh.tunnel
 
 .. currentmodule:: zmq.ssh.tunnel
@@ -14,12 +14,6 @@ Functions
 
 
 .. autofunction:: zmq.ssh.tunnel.open_tunnel
-
-
-.. autofunction:: zmq.ssh.tunnel.openssh_tunnel
-
-
-.. autofunction:: zmq.ssh.tunnel.paramiko_tunnel
 
 
 .. autofunction:: zmq.ssh.tunnel.select_random_ports

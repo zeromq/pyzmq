@@ -11,7 +11,7 @@
 ØMQ has a notion of Devices - simple programs that manage a send-recv pattern for
 connecting two or more sockets. Being full programs, devices include a `while(True)`
 loop and thus block execution permanently once invoked. We have provided in the
-{mod}`devices` subpackage some facilities for running these devices in the background, as
+{mod}`~.zmq.devices` subpackage some facilities for running these devices in the background, as
 well as a custom three-socket [MonitoredQueue](monitored-queue) device.
 
 ## BackgroundDevices
@@ -23,7 +23,7 @@ processes. We have provided classes for launching devices in a background thread
 {class}`.ThreadDevice` and via multiprocessing with {class}`.ProcessDevice`. For
 threadsafety and running across processes, these methods do not take Socket objects as
 arguments, but rather socket types, and then the socket creation and configuration happens
-via the BackgroundDevice's {meth}`foo_in` proxy methods. For each configuration method
+via the BackgroundDevice's `foo_in()` proxy methods. For each configuration method
 (bind/connect/setsockopt), there are proxy methods for calling those methods on the Socket
 objects created in the background thread or process, prefixed with 'in\_' or 'out\_',
 corresponding to the `in_socket` and `out_socket`:
@@ -79,4 +79,4 @@ received the message.
 
 Or for launching an MQ in the background, there are {class}`.ThreadMonitoredQueue` and
 {class}`.ProcessMonitoredQueue`, which function just like the base
-BackgroundDevice objects, but add {meth}`foo_mon` methods for configuring the monitor socket.
+BackgroundDevice objects, but add `foo_mon()` methods for configuring the monitor socket.

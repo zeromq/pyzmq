@@ -3,8 +3,8 @@
 utils.jsonapi
 =============
 
-Module: :mod:`utils.jsonapi`
-----------------------------
+Module: :mod:`zmq.utils.jsonapi`
+--------------------------------
 .. automodule:: zmq.utils.jsonapi
 
 .. currentmodule:: zmq.utils.jsonapi

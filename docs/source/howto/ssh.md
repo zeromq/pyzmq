@@ -10,7 +10,7 @@
 You may want to connect ØMQ sockets across machines, or untrusted networks. One common way
 to do this is to tunnel the connection via SSH. [IPython] introduced some tools for
 tunneling ØMQ connections over ssh in simple cases. These functions have been brought into
-pyzmq as {mod}`zmq.ssh` under IPython's BSD license.
+pyzmq as {mod}`zmq.ssh.tunnel` under IPython's BSD license.
 
 PyZMQ will use the shell ssh command via [pexpect] by default, but it also supports
 using [paramiko] for tunnels, so it should work on Windows.
@@ -47,7 +47,7 @@ ssh.tunnel_connection(sock, "tcp://10.0.1.2:5555", "server")
 
 Note that `"server"` can actually be a fully specified `"user@server:port"` ssh url.
 Since this really just launches a shell command, all your ssh configuration of usernames,
-aliases, keys, etc. will be respected. If necessary, {func}`tunnel_connection` does take
+aliases, keys, etc. will be respected. If necessary, {func}`.tunnel_connection` does take
 arguments for specific passwords, private keys (the ssh `-i` option), and non-default
 choice of whether to use paramiko.
 
@@ -61,7 +61,7 @@ from zmq import ssh
 ssh.tunnel_connection(sock, "tcp://127.0.0.1:5555", "10.0.1.2")
 ```
 
-The {func}`tunnel_connection` function is a simple utility that forwards a random
+The {func}`.tunnel_connection` function is a simple utility that forwards a random
 localhost port to the real destination, and connects a socket to the new local url,
 rather than the remote one that wouldn't actually work.
 

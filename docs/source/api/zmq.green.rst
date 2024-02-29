@@ -1,7 +1,7 @@
 green
 =====
 
-Module: :mod:`green`
---------------------
+Module: :mod:`zmq.green`
+------------------------
 
 .. automodule:: zmq.green

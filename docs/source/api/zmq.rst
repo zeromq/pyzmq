@@ -105,6 +105,11 @@ as well as via enums (``zmq.SocketType.PUSH``, etc.).
 
     Each category of zmq constant is now available as an IntEnum.
 
+.. data:: COPY_THRESHOLD
+
+    The global default "small message" threshold for copying when `copy=False`.
+    Copying has a thread-coordination cost, so zero-copy only has a benefit for sufficiently large messages.
+
 .. autoenum:: SocketType
 
 .. autoenum:: SocketOption
@@ -122,6 +127,8 @@ as well as via enums (``zmq.SocketType.PUSH``, etc.).
 .. autoenum:: NormMode
 
 .. autoenum:: RouterNotify
+
+.. autoenum:: ReconnectStop
 
 .. autoenum:: SecurityMechanism
 
@@ -202,3 +209,5 @@ Functions
 .. autofunction:: zmq.get_includes
 
 .. autofunction:: zmq.get_library_dirs
+
+.. autofunction:: zmq.strerror
