@@ -46,7 +46,7 @@ myst_enable_extensions = [
 ]
 
 # The suffix of source filenames.
-source_suffix = ['.md', '.rst']
+source_suffix = ['.md']
 
 # The encoding of source files.
 source_encoding = 'utf-8'

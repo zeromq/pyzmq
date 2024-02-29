@@ -1,106 +1,123 @@
-devices
-=======
+# devices
 
-Functions
----------
+## Functions
 
+```{eval-rst}
 .. autofunction:: zmq.device
     :noindex:
+```
 
+```{eval-rst}
 .. autofunction:: zmq.proxy
     :noindex:
+```
 
+```{eval-rst}
 .. autofunction:: zmq.proxy_steerable
     :noindex:
+```
 
-Module: :mod:`zmq.devices`
---------------------------
+## Module: {mod}`zmq.devices`
+
+```{eval-rst}
 .. automodule:: zmq.devices
+```
 
-.. currentmodule:: zmq.devices
+```{currentmodule} zmq.devices
+```
 
+## Base Devices
 
-Base Devices
-------------
+### {class}`Device`
 
-:class:`Device`
-***************
-
+```{eval-rst}
 .. autoclass:: Device
   :members:
   :exclude-members: context_factory, run, run_device
+```
 
-:class:`ThreadDevice`
-*********************
+### {class}`ThreadDevice`
 
+```{eval-rst}
 .. autoclass:: ThreadDevice
   :members:
+```
 
-:class:`ProcessDevice`
-**********************
+### {class}`ProcessDevice`
 
+```{eval-rst}
 .. autoclass:: ProcessDevice
   :members:
 
+```
 
-Proxy Devices
--------------
+## Proxy Devices
 
-:class:`Proxy`
-**************
+### {class}`Proxy`
 
+```{eval-rst}
 .. autoclass:: Proxy
   :members: bind_mon, connect_mon, setsockopt_mon
+```
 
-:class:`ThreadProxy`
-********************
+### {class}`ThreadProxy`
 
+```{eval-rst}
 .. autoclass:: ThreadProxy
   :members:
+```
 
-:class:`ProcessProxy`
-*********************
+### {class}`ProcessProxy`
 
+```{eval-rst}
 .. autoclass:: ProcessProxy
   :members:
+```
 
-:class:`ProxySteerable`
-***********************
+### {class}`ProxySteerable`
 
+```{eval-rst}
 .. autoclass:: ProxySteerable
   :members: bind_ctrl, connect_ctrl, setsockopt_ctrl
+```
 
-:class:`ThreadProxySteerable`
-*****************************
+### {class}`ThreadProxySteerable`
 
+```{eval-rst}
 .. autoclass:: ThreadProxySteerable
   :members:
+```
 
-:class:`ProcessProxySteerable`
-******************************
+### {class}`ProcessProxySteerable`
 
+```{eval-rst}
 .. autoclass:: ProcessProxySteerable
   :members:
+```
 
-MonitoredQueue Devices
-----------------------
+## MonitoredQueue Devices
 
+```{eval-rst}
 .. autofunction:: zmq.devices.monitored_queue
+```
 
-:class:`MonitoredQueue`
-***********************
+### {class}`MonitoredQueue`
 
+```{eval-rst}
 .. autoclass:: MonitoredQueue
   :members:
+```
 
-:class:`ThreadMonitoredQueue`
-*****************************
+### {class}`ThreadMonitoredQueue`
 
+```{eval-rst}
 .. autoclass:: ThreadMonitoredQueue
   :members:
+```
 
-:class:`ProcessMonitoredQueue`
-******************************
+### {class}`ProcessMonitoredQueue`
 
+```{eval-rst}
 .. autoclass:: ProcessMonitoredQueue
   :members:
+```

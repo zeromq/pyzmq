@@ -45,9 +45,9 @@ You can also check out the [examples in the pyzmq repo](https://github.com/zerom
 ---
 maxdepth: 2
 ---
-api/index.rst
-changelog.rst
-howto/index.rst
+api/index
+changelog
+howto/index
 ```
 
 # Indices and tables

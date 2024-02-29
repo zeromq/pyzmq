@@ -1,17 +1,17 @@
-zmq
-===
+# zmq
 
+```{eval-rst}
 .. automodule:: zmq
+```
 
-.. currentmodule:: zmq
+```{currentmodule} zmq
+```
 
-Basic Classes
--------------
+## Basic Classes
 
-:class:`Context`
-****************
+### {class}`Context`
 
-
+```{eval-rst}
 .. autoclass:: Context
   :members:
   :inherited-members:
@@ -22,11 +22,11 @@ Basic Classes
       boolean - whether the context has been terminated.
       If True, you can no longer use this Context.
 
+```
 
-:class:`Socket`
-***************
+### {class}`Socket`
 
-
+```{eval-rst}
 .. autoclass:: Socket
   :members:
   :inherited-members:
@@ -56,158 +56,214 @@ Basic Classes
 
       .. versionadded:: 17
 
+```
 
-:class:`Frame`
-**************
+### {class}`Frame`
 
-
+```{eval-rst}
 .. autoclass:: Frame
   :members:
   :inherited-members:
 
+```
 
-:class:`MessageTracker`
-***********************
+### {class}`MessageTracker`
 
-
+```{eval-rst}
 .. autoclass:: MessageTracker
   :members:
   :inherited-members:
 
+```
 
-Polling
--------
+## Polling
 
-:class:`Poller`
-***************
+### {class}`Poller`
 
+```{eval-rst}
 .. autoclass:: Poller
   :members:
   :inherited-members:
 
+```
 
+```{eval-rst}
 .. autofunction:: zmq.select
+```
 
-Constants
----------
+## Constants
 
 All libzmq constants are available as top-level attributes
-(``zmq.PUSH``, etc.),
-as well as via enums (``zmq.SocketType.PUSH``, etc.).
+(`zmq.PUSH`, etc.),
+as well as via enums (`zmq.SocketType.PUSH`, etc.).
 
-.. versionchanged:: 23
+```{versionchanged} 23
+constants for unavailable socket types
+or draft features will always be defined in pyzmq,
+whether the features themselves are available or not.
+```
 
-    constants for unavailable socket types
-    or draft features will always be defined in pyzmq,
-    whether the features themselves are available or not.
+```{versionadded} 23
+Each category of zmq constant is now available as an IntEnum.
+```
 
-.. versionadded:: 23
-
-    Each category of zmq constant is now available as an IntEnum.
-
+```{eval-rst}
 .. data:: COPY_THRESHOLD
 
     The global default "small message" threshold for copying when `copy=False`.
     Copying has a thread-coordination cost, so zero-copy only has a benefit for sufficiently large messages.
+```
 
+```{eval-rst}
 .. autoenum:: SocketType
+```
 
+```{eval-rst}
 .. autoenum:: SocketOption
+```
 
+```{eval-rst}
 .. autoenum:: Flag
+```
 
+```{eval-rst}
 .. autoenum:: PollEvent
+```
 
+```{eval-rst}
 .. autoenum:: ContextOption
+```
 
+```{eval-rst}
 .. autoenum:: MessageOption
+```
 
+```{eval-rst}
 .. autoenum:: Event
+```
 
+```{eval-rst}
 .. autoenum:: NormMode
+```
 
+```{eval-rst}
 .. autoenum:: RouterNotify
+```
 
+```{eval-rst}
 .. autoenum:: ReconnectStop
+```
 
+```{eval-rst}
 .. autoenum:: SecurityMechanism
+```
 
+```{eval-rst}
 .. autoenum:: DeviceType
+```
 
+```{eval-rst}
 .. autoenum:: Errno
+```
 
-Exceptions
-----------
+## Exceptions
 
-:class:`ZMQError`
-*****************
+### {class}`ZMQError`
 
+```{eval-rst}
 .. autoclass:: ZMQError
   :members:
   :inherited-members:
 
+```
 
-:class:`ZMQVersionError`
-************************
+### {class}`ZMQVersionError`
 
+```{eval-rst}
 .. autoclass:: ZMQVersionError
   :members:
   :inherited-members:
+```
 
-:class:`Again`
-**************
+### {class}`Again`
 
-
+```{eval-rst}
 .. autoclass:: Again
 
+```
 
-:class:`ContextTerminated`
-**************************
+### {class}`ContextTerminated`
 
-
+```{eval-rst}
 .. autoclass:: ContextTerminated
 
+```
 
-:class:`NotDone`
-****************
+### {class}`NotDone`
 
-
+```{eval-rst}
 .. autoclass:: NotDone
 
+```
 
-:class:`ZMQBindError`
-*********************
+### {class}`ZMQBindError`
 
-
+```{eval-rst}
 .. autoclass:: ZMQBindError
 
 
+```
 
-Functions
----------
+## Functions
 
+```{eval-rst}
 .. autofunction:: zmq.zmq_version
+```
 
+```{eval-rst}
 .. autofunction:: zmq.pyzmq_version
+```
 
+```{eval-rst}
 .. autofunction:: zmq.zmq_version_info
+```
 
+```{eval-rst}
 .. autofunction:: zmq.pyzmq_version_info
+```
 
+```{eval-rst}
 .. autofunction:: zmq.has
+```
 
+```{eval-rst}
 .. autofunction:: zmq.device
+```
 
+```{eval-rst}
 .. autofunction:: zmq.proxy
+```
 
+```{eval-rst}
 .. autofunction:: zmq.proxy_steerable
+```
 
+```{eval-rst}
 .. autofunction:: zmq.curve_public
+```
 
+```{eval-rst}
 .. autofunction:: zmq.curve_keypair
+```
 
+```{eval-rst}
 .. autofunction:: zmq.get_includes
+```
 
+```{eval-rst}
 .. autofunction:: zmq.get_library_dirs
+```
 
+```{eval-rst}
 .. autofunction:: zmq.strerror
+```
