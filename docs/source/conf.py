@@ -45,6 +45,8 @@ myst_enable_extensions = [
     "substitution",
 ]
 
+myst_linkify_fuzzy_links = False
+
 # The suffix of source filenames.
 source_suffix = ['.md']
 
