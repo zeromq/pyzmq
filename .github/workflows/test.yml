@@ -8,12 +8,14 @@ on:
     paths-ignore:
       - "docs/**"
       - "tools/**"
-      - .github/workflows/wheels.yml
+      - ".github/workflows/*"
+      - "!.github/workflows/test.yml"
   pull_request:
     paths-ignore:
       - "docs/**"
       - "tools/**"
-      - .github/workflows/wheels.yml
+      - ".github/workflows/*"
+      - "!.github/workflows/test.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

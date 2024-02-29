@@ -1,0 +1,60 @@
+name: Test docs
+
+# The tests defined in docs/ are currently influenced by changes to _version.py
+# and scopes.py.
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "zmq/**"
+      - ".github/workflows/test-docs.yml"
+  push:
+    paths:
+      - "docs/**"
+      - "zmq/**"
+      - ".github/workflows/test-docs.yml"
+    branches-ignore:
+      - "dependabot/**"
+      - "pre-commit-ci-update-config"
+    tags:
+      - "**"
+  workflow_dispatch:
+
+env:
+  LANG: C.UTF-8
+  SPHINXOPTS: "-W"
+
+jobs:
+  test-docs:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install libzmq
+        run: |
+          sudo apt-get -y install libzmq3-dev
+
+      - name: Install pyzmq
+        run: |
+          pip install -v .
+
+      - name: Install requirements
+        run: |
+          pip install -r docs/requirements.txt
+
+      # readthedocs doesn't halt on warnings,
+      # so raise any warnings here
+      - name: build docs
+        run: |
+          cd docs
+          make html
+
+      - name: check links
+        run: |
+          cd docs
+          make linkcheck
