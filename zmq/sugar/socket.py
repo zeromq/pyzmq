@@ -270,6 +270,13 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
 
         .. versionadded:: 20.0
         """
+        try:
+            # retrieve last_endpoint
+            # to support binding on random ports via
+            # `socket.bind('tcp://127.0.0.1:0')`
+            addr = cast(bytes, self.get(zmq.LAST_ENDPOINT)).decode("utf8")
+        except (AttributeError, ZMQError, UnicodeDecodeError):
+            pass
         return _SocketContext(self, 'bind', addr)
 
     def bind(self: T, addr: str) -> _SocketContext[T]:
@@ -285,6 +292,11 @@ class Socket(SocketBase, AttributeSetter, Generic[ST]):
 
         .. versionadded:: 20.0
             Can be used as a context manager.
+
+        .. versionadded:: 26.0
+            binding to port 0 can be used as a context manager
+            for binding to a random port.
+            The URL can be retrieved as `socket.last_endpoint`.
 
         Parameters
         ----------

@@ -90,6 +90,15 @@ class TestSocket(BaseZMQTestCase):
                 with pytest.raises(zmq.Again):
                     b.recv(flags=zmq.DONTWAIT)
 
+    def test_bind_random_context(self):
+        with self.context.socket(zmq.PUSH) as push:
+            with push.bind("tcp://127.0.0.1:0"):
+                url = push.last_endpoint
+                with self.context.socket(zmq.PULL) as pull:
+                    pull.connect(url)
+                    push.send(b"msg")
+                    self.recv(pull)
+
     _repr_cls = "zmq.Socket"
 
     def test_repr(self):
