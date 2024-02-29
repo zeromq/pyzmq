@@ -48,7 +48,6 @@ maxdepth: 2
 api/index.rst
 changelog.rst
 howto/index.rst
-notes/index.rst
 ```
 
 # Indices and tables
