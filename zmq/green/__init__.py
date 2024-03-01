@@ -27,6 +27,7 @@ This compatibility is accomplished by ensuring the nonblocking flag is set
 before any blocking operation and the ØMQ file descriptor is polled internally
 to trigger needed events.
 """
+from __future__ import annotations
 
 from typing import List
 
@@ -41,6 +42,6 @@ Poller = _Poller  # type: ignore
 
 from zmq.green.device import device  # type: ignore
 
-__all__: List[str] = []
+__all__: list[str] = []
 # adding `__all__` to __init__.pyi gets mypy all confused
 __all__.extend(_zmq.__all__)  # type: ignore

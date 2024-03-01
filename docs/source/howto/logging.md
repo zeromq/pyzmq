@@ -265,7 +265,7 @@ handler.root_topic = "myprogram"
 ```
 
 Python loggers also have loglevels. The base topic of messages emitted by the PUBHandler
-will be of the form: `<handler.root_topic>.<loglevel>`, e.g. 'myprogram.INFO' or
+will be of the form: `<handler.root_topic>.<loglevel>`, e.g. `myprogram.INFO` or
 'whatever.ERROR'. This way, subscribers can easily subscribe to subsets of the logging
 messages. Log messages are always two-part, where the first part is the topic tree, and
 the second part is the actual log message.

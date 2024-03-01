@@ -42,14 +42,16 @@ Code adapted from StarCluster:
     https://github.com/jtriley/StarCluster/blob/StarCluster-0.91/starcluster/logger.py
 """
 
+from __future__ import annotations
+
 import logging
 from copy import copy
 
+import zmq
+
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
-from typing import Optional, Union
 
-import zmq
 
 TOPIC_DELIM = "::"  # delimiter for splitting topics on the receiving end.
 
@@ -82,8 +84,8 @@ class PUBHandler(logging.Handler):
 
     def __init__(
         self,
-        interface_or_socket: Union[str, zmq.Socket],
-        context: Optional[zmq.Context] = None,
+        interface_or_socket: str | zmq.Socket,
+        context: zmq.Context | None = None,
         root_topic: str = '',
     ) -> None:
         logging.Handler.__init__(self)

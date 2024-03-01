@@ -1,9 +1,10 @@
 """zmq constants as enums"""
 
+from __future__ import annotations
+
 import errno
 import sys
 from enum import Enum, IntEnum, IntFlag
-from typing import List
 
 _HAUSNUMERO = 156384712
 
@@ -709,7 +710,7 @@ DGRAM: int = SocketType.DGRAM
 PEER: int = SocketType.PEER
 CHANNEL: int = SocketType.CHANNEL
 
-__all__: List[str] = [
+__all__: list[str] = [
     "ContextOption",
     "IO_THREADS",
     "MAX_SOCKETS",

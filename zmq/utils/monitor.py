@@ -3,8 +3,10 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import struct
-from typing import Awaitable, List, Union, overload
+from typing import Awaitable, overload
 
 import zmq
 import zmq.asyncio
@@ -18,7 +20,7 @@ class _MonitorMessage(TypedDict):
     endpoint: bytes
 
 
-def parse_monitor_message(msg: List[bytes]) -> _MonitorMessage:
+def parse_monitor_message(msg: list[bytes]) -> _MonitorMessage:
     """decode zmq_monitor event messages.
 
     Parameters
@@ -51,7 +53,7 @@ def parse_monitor_message(msg: List[bytes]) -> _MonitorMessage:
 
 
 async def _parse_monitor_msg_async(
-    awaitable_msg: Awaitable[List[bytes]],
+    awaitable_msg: Awaitable[list[bytes]],
 ) -> _MonitorMessage:
     """Like parse_monitor_msg, but awaitable
 
@@ -65,7 +67,7 @@ async def _parse_monitor_msg_async(
 
 @overload
 def recv_monitor_message(
-    socket: "zmq.asyncio.Socket",
+    socket: zmq.asyncio.Socket,
     flags: int = 0,
 ) -> Awaitable[_MonitorMessage]: ...
 
@@ -80,15 +82,18 @@ def recv_monitor_message(
 def recv_monitor_message(
     socket: zmq.Socket,
     flags: int = 0,
-) -> Union[_MonitorMessage, Awaitable[_MonitorMessage]]:
+) -> _MonitorMessage | Awaitable[_MonitorMessage]:
     """Receive and decode the given raw message from the monitoring socket and return a dict.
 
     Requires libzmq ≥ 4.0
 
     The returned dict will have the following entries:
-      event     : int, the event id as described in libzmq.zmq_socket_monitor
-      value     : int, the event value associated with the event, see libzmq.zmq_socket_monitor
-      endpoint  : string, the affected endpoint
+      event : int
+        the event id as described in `libzmq.zmq_socket_monitor`
+      value : int
+        the event value associated with the event, see `libzmq.zmq_socket_monitor`
+      endpoint : str
+        the affected endpoint
 
     .. versionchanged:: 23.1
         Support for async sockets added.
@@ -97,9 +102,9 @@ def recv_monitor_message(
 
     Parameters
     ----------
-    socket : zmq PAIR socket
+    socket : zmq.Socket
         The PAIR socket (created by other.get_monitor_socket()) on which to recv the message
-    flags : bitfield (int)
+    flags : int
         standard zmq recv flags
 
     Returns

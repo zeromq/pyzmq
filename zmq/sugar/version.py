@@ -2,9 +2,10 @@
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import re
-from typing import Match, Tuple, Union, cast
+from typing import Match, cast
 
 from zmq.backend import zmq_version_info
 
@@ -18,7 +19,7 @@ VERSION_MINOR = int(_version_groups[1])
 VERSION_PATCH = int(_version_groups[2])
 VERSION_EXTRA = _version_groups[3].lstrip(".")
 
-version_info: Union[Tuple[int, int, int], Tuple[int, int, int, float]] = (
+version_info: tuple[int, int, int] | tuple[int, int, int, float] = (
     VERSION_MAJOR,
     VERSION_MINOR,
     VERSION_PATCH,
@@ -43,7 +44,7 @@ def pyzmq_version() -> str:
         return __version__
 
 
-def pyzmq_version_info() -> Union[Tuple[int, int, int], Tuple[int, int, int, float]]:
+def pyzmq_version_info() -> tuple[int, int, int] | tuple[int, int, int, float]:
     """return the pyzmq version as a tuple of at least three numbers
 
     If pyzmq is a development version, `inf` will be appended after the third integer.

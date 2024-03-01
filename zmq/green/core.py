@@ -10,12 +10,11 @@
 
 """This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
 """
-
+from __future__ import annotations
 
 import sys
 import time
 import warnings
-from typing import Tuple
 
 import gevent
 from gevent.event import AsyncResult
@@ -28,7 +27,7 @@ from zmq import Socket as _original_Socket
 from .poll import _Poller
 
 if hasattr(zmq, 'RCVTIMEO'):
-    TIMEOS: Tuple = (zmq.RCVTIMEO, zmq.SNDTIMEO)
+    TIMEOS: tuple = (zmq.RCVTIMEO, zmq.SNDTIMEO)
 else:
     TIMEOS = ()
 

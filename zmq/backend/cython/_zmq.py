@@ -3,6 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 try:
     import cython
 
@@ -334,7 +336,7 @@ class Frame:
     def __copy__(self):
         return self.fast_copy()
 
-    def fast_copy(self) -> "Frame":
+    def fast_copy(self) -> Frame:
         new_msg: Frame = Frame()
         # This does not copy the contents, but just increases the ref-count
         # of the zmq_msg by one.
@@ -1015,7 +1017,8 @@ class Socket:
             The inproc url used for monitoring. Passing None as
             the addr will cause an existing socket monitor to be
             deregistered.
-        events : int [default: zmq.EVENT_ALL]
+        events : int
+            default: zmq.EVENT_ALL
             The zmq event bitmask for which events will be sent to the monitor.
         """
         _check_version((3, 2), "monitor")
@@ -1407,7 +1410,7 @@ def has(capability) -> bool:
     return bool(zmq_has(ccap))
 
 
-def curve_keypair():
+def curve_keypair() -> tuple[bytes, bytes]:
     """generate a Z85 key pair for use with zmq.CURVE security
 
     Requires libzmq (≥ 4.0) to have been built with CURVE support.
@@ -1417,8 +1420,10 @@ def curve_keypair():
 
     Returns
     -------
-    (public, secret) : two bytestrings
-        The public and private key pair as 40 byte z85-encoded bytestrings.
+    public: bytes
+        The public key as 40 byte z85-encoded bytestring.
+    private: bytes
+        The private key as 40 byte z85-encoded bytestring.
     """
     rc: C.int
     public_key = declare(char[64])
@@ -1444,7 +1449,7 @@ def curve_public(secret_key) -> bytes:
 
     Returns
     -------
-    bytestring
+    bytes
         The public key as a 40 byte z85-encoded bytestring
     """
     if isinstance(secret_key, str):
@@ -1586,7 +1591,8 @@ def device(device_type: C.int, frontend: Socket, backend: Socket = None):
 
     Parameters
     ----------
-    device_type : (QUEUE, FORWARDER, STREAMER)
+    device_type : int
+        one of: QUEUE, FORWARDER, STREAMER
         The type of device to start.
     frontend : Socket
         The Socket instance for the incoming traffic.
@@ -1865,13 +1871,13 @@ def monitored_queue(
 
     Parameters
     ----------
-    in_socket : Socket
+    in_socket : zmq.Socket
         One of the sockets to the Queue. Its messages will be prefixed with
         'in'.
-    out_socket : Socket
+    out_socket : zmq.Socket
         One of the sockets to the Queue. Its messages will be prefixed with
         'out'. The only difference between in/out socket is this prefix.
-    mon_socket : Socket
+    mon_socket : zmq.Socket
         This socket sends out every message received by each of the others
         with an in/out prefix specifying which one it was.
     in_prefix : str

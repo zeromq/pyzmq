@@ -4,9 +4,10 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 # -----------------------------------------------------------------------------
+from __future__ import annotations
 
 import os
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 
 class allow_interrupt:
@@ -60,7 +61,7 @@ class allow_interrupt:
     unblock your I/O loop.
     """
 
-    def __init__(self, action: Optional[Callable[[], Any]] = None) -> None:
+    def __init__(self, action: Callable[[], Any] | None = None) -> None:
         """Translate ``action`` into a CTRL-C handler.
 
         ``action`` is a callable that takes no arguments and returns no

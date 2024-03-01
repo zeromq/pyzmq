@@ -3,7 +3,9 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from typing import Any, Dict, List, Optional, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 from zmq.backend import zmq_poll
 from zmq.constants import POLLERR, POLLIN, POLLOUT
@@ -16,8 +18,8 @@ from zmq.constants import POLLERR, POLLIN, POLLOUT
 class Poller:
     """A stateful poll interface that mirrors Python's built-in poll."""
 
-    sockets: List[Tuple[Any, int]]
-    _map: Dict
+    sockets: list[tuple[Any, int]]
+    _map: dict
 
     def __init__(self) -> None:
         self.sockets = []
@@ -75,7 +77,7 @@ class Poller:
         for socket, flags in self.sockets[idx:]:
             self._map[socket] -= 1
 
-    def poll(self, timeout: Optional[int] = None) -> List[Tuple[Any, int]]:
+    def poll(self, timeout: int | None = None) -> list[tuple[Any, int]]:
         """Poll the registered 0MQ or native fds for I/O.
 
         If there are currently events ready to be processed, this function will return immediately.
@@ -90,7 +92,7 @@ class Poller:
 
         Returns
         -------
-        events : list of tuples
+        events : list
             The list of events that are ready to be processed.
             This is a list of tuples of the form ``(socket, event_mask)``, where the 0MQ Socket
             or integer fd is the first element, and the poll event mask (POLLIN, POLLOUT) is the second.
@@ -104,7 +106,9 @@ class Poller:
         return zmq_poll(self.sockets, timeout=timeout)
 
 
-def select(rlist: List, wlist: List, xlist: List, timeout: Optional[float] = None):
+def select(
+    rlist: list, wlist: list, xlist: list, timeout: float | None = None
+) -> tuple[list, list, list]:
     """select(rlist, wlist, xlist, timeout=None) -> (rlist, wlist, xlist)
 
     Return the result of poll as a lists of sockets ready for r/w/exception.
@@ -113,20 +117,24 @@ def select(rlist: List, wlist: List, xlist: List, timeout: Optional[float] = Non
 
     Parameters
     ----------
-    timeout : float, int, optional
+    timeout : float, optional
         The timeout in seconds. If None, no timeout (infinite). This is in seconds to be
         compatible with ``select.select()``.
-    rlist : list of sockets/FDs
+    rlist : list
         sockets/FDs to be polled for read events
-    wlist : list of sockets/FDs
+    wlist : list
         sockets/FDs to be polled for write events
-    xlist : list of sockets/FDs
+    xlist : list
         sockets/FDs to be polled for error events
 
     Returns
     -------
-    (rlist, wlist, xlist) : tuple of lists of sockets (length 3)
-        Lists correspond to sockets available for read/write/error events respectively.
+    rlist: list
+        list of sockets or FDs that are readable
+    wlist: list
+        list of sockets or FDs that are writable
+    xlist: list
+        list of sockets or FDs that had error events (rare)
     """
     if timeout is None:
         timeout = -1

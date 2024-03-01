@@ -4,12 +4,12 @@
 ---
 maxdepth: 2
 ---
-build.md
-morethanbindings.rst
-serialization.rst
-devices.rst
-eventloop.rst
-draft.rst
-logging.rst
-ssh.rst
+build
+morethanbindings
+serialization
+devices
+eventloop
+draft
+logging
+ssh
 ```

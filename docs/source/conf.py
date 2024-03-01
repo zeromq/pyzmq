@@ -10,15 +10,19 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
 import sys
+from pathlib import Path
 
-# add repo root to sys.path
-here = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(os.path.join(here, os.pardir, os.pardir)))
+# add repo root to sys.path for buildutils import
+here = Path(__file__).parent.absolute()
+repo_root = here.parents[1]
+sys.path.append(str(repo_root))
 
 # set target libzmq version
 from buildutils.bundle import bundled_version
+
+# remove repo root from sys.path
+sys.path = sys.path[:-1]
 
 target_libzmq = bundled_version
 
@@ -41,8 +45,10 @@ myst_enable_extensions = [
     "substitution",
 ]
 
+myst_linkify_fuzzy_links = False
+
 # The suffix of source filenames.
-source_suffix = ['.md', '.rst']
+source_suffix = ['.md']
 
 # The encoding of source files.
 source_encoding = 'utf-8'
@@ -117,7 +123,33 @@ pygments_style = 'sphinx'
 # List of Sphinx warnings that will not be raised
 suppress_warnings = ['epub.unknown_project_files']
 
+nitpick_ignore = [
+    # napoleon seems to try to resolve everything
+    # in type descriptions, leave some prose keywords alone
+    ('py:class', 'optional'),
+    ('py:class', 'Python object'),
+    ('py:class', 'native socket'),
+    ('py:class', 'iterable'),
+    ('py:class', 'callable'),
+    # suppress warnings on some old outdated symbols
+    ('py:class', 'basestring'),
+    ('py:class', 'unicode'),
+]
 
+autodoc_type_aliases = {
+    # 'Socket': 'zmq.Socket',
+    # 'Context': 'zmq.Context',
+    # Cython
+    'C.int': 'int',
+    'bint': 'bool',
+    # type aliases
+    '_MonitorMessage': 'dict',
+    'Frame': 'zmq.Frame',
+    'Socket': 'zmq.Socket',
+    'Context': 'zmq.Context',
+    '_SocketType': 'zmq.Socket',
+    '_ContextType': 'zmq.Context',
+}
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with

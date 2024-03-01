@@ -8,9 +8,10 @@
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Union
+from typing import Any
 
 # backward-compatibility, unused
 jsonmod = json
@@ -24,7 +25,7 @@ def dumps(o: Any, **kwargs) -> bytes:
     return json.dumps(o, **kwargs).encode("utf8")
 
 
-def loads(s: Union[bytes, str], **kwargs) -> Union[Dict, List, str, int, float]:
+def loads(s: bytes | str, **kwargs) -> dict | list | str | int | float:
     """Load object from JSON bytes (utf-8).
 
     Keyword arguments are passed along to :py:func:`json.loads`.

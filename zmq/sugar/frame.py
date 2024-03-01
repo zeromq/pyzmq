@@ -18,8 +18,7 @@ def _draft(v, feature):
 
 
 class Frame(FrameBase, AttributeSetter):
-    """Frame(data=None, track=False, copy=None, copy_threshold=zmq.COPY_THRESHOLD)
-
+    """
     A zmq message Frame class for non-copying send/recvs and access to message properties.
 
     A ``zmq.Frame`` wraps an underlying ``zmq_msg_t``.
@@ -51,15 +50,17 @@ class Frame(FrameBase, AttributeSetter):
     data : object, optional
         any object that provides the buffer interface will be used to
         construct the 0MQ message data.
-    track : bool [default: False]
+    track : bool
         whether a MessageTracker_ should be created to track this object.
         Tracking a message has a cost at creation, because it creates a threadsafe
         Event object.
-    copy : bool [default: use copy_threshold]
+    copy : bool
+        default: use copy_threshold
         Whether to create a copy of the data to pass to libzmq
         or share the memory with libzmq.
         If unspecified, copy_threshold is used.
-    copy_threshold: int [default: zmq.COPY_THRESHOLD]
+    copy_threshold: int
+        default: :const:`zmq.COPY_THRESHOLD`
         If copy is unspecified, messages smaller than this many bytes
         will be copied and messages larger than this will be shared with libzmq.
     """
