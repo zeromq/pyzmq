@@ -369,7 +369,8 @@ else()
     OUTPUT ${ZMQ_C}
     DEPENDS ${ZMQ_PYX}
     VERBATIM
-    COMMAND "${CYTHON}"
+    COMMAND "${Python_EXECUTABLE}"
+            -mcython
             --3str
             --output-file ${ZMQ_C}
             --module-name "zmq.backend.cython._zmq"
