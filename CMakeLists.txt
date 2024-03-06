@@ -225,8 +225,12 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         COMMAND ${libsodium_build}
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
         COMMAND_ECHO STDOUT
-        COMMAND_ERROR_IS_FATAL ANY
+        # COMMAND_ERROR_IS_FATAL ANY
+        RESULT_VARIABLE _status
       )
+      if (_status) 
+        message(FATAL_ERROR "failed to build libsodium")
+      endif()
       file(GLOB_RECURSE BUILT_LIB "${bundled_libsodium_SOURCE_DIR}/**/libsodium.lib")
       message(STATUS "copy ${BUILT_LIB} ${libsodium_lib}")
       file(COPY_FILE ${BUILT_LIB} ${libsodium_lib})
@@ -235,6 +239,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         ./configure
         --prefix=${BUNDLE_DIR}
         --with-pic
+        --disable-dependency-tracking
         --disable-shared
         --enable-static
       )
@@ -243,20 +248,33 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         COMMAND ${libsodium_configure}
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
         COMMAND_ECHO      STDOUT
-        COMMAND_ERROR_IS_FATAL ANY
+        # COMMAND_ERROR_IS_FATAL ANY
+        RESULT_VARIABLE _status
       )
+      # COMMAND_ERROR_IS_FATAL requires cmake 3.19, ubuntu 20.04 has 3.16
+      if (_status) 
+        message(FATAL_ERROR "failed to configure libsodium")
+      endif()
       execute_process(
         COMMAND make
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
         COMMAND_ECHO STDOUT
-        COMMAND_ERROR_IS_FATAL ANY
+        # COMMAND_ERROR_IS_FATAL ANY
+        RESULT_VARIABLE _status
       )
+      if (_status) 
+        message(FATAL_ERROR "failed to build libsodium")
+      endif()
       execute_process(
         COMMAND make install
         WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
         COMMAND_ECHO STDOUT
-        COMMAND_ERROR_IS_FATAL ANY
+        # COMMAND_ERROR_IS_FATAL ANY
+        RESULT_VARIABLE _status
       )
+      if (_status) 
+        message(FATAL_ERROR "failed to install libsodium")
+      endif()
     endif()
   endif()
 
