@@ -104,6 +104,10 @@ You can tell pyzmq to skip searching for libzmq and always build the bundled ver
 When building a bundled libzmq, pyzmq downloads and builds libzmq and libsodium as static libraries.
 These static libraries are then linked to by the pyzmq extension and discarded.
 
+Bundled libzmq is supported on a best-effort basis, and isn't expected to work everywhere with zero configuration.
+If you have trouble building bundled libzmq, please do [report it](https://github.com/zeromq/pyzmq/issues).
+But the best solution is usually to install libzmq yourself via the appropriate mechanism _before_ building pyzmq.
+
 ### Building bundled libsodium
 
 libsodium is built first, with `configure` most places:
@@ -401,5 +405,48 @@ ZMQ_OUTPUT_BASENAME:STRING=zmq
 
 </details>
 
+## Cross-compiling pyzmq
+
+Cross-compiling Python extensions is tricky!
+
+To cross-compile pyzmq, in general you need:
+
+- Python built for the 'build' machine
+- Python built for the 'host' machine (identical version)
+- cross-compiling toolchain (e.g. `aarch64-linux-gnu-gcc`)
+- Python setup to cross-compile ([crossenv] is the popular tool these days, and includes lots of info for cross-compiling for Python, but pyzmq makes no assumptions)
+
+It is probably a good idea to build libzmq/libsodium separately and link them with ZMQ_PREFIX,
+as cross-compiling bundled libzmq is not guaranteed to work.
+
+I don't have a lot of experience cross-compiling,
+but we have two example Dockerfiles that appear to work to cross-compile pyzmq.
+These aren't official or supported, but they appear to work and may be useful as reference to get you started.
+
+<details>
+
+<summary>Dockerfile for building x86_64 on aarch64</summary>
+
+```{literalinclude} cross.Dockerfile
+---
+language: Dockerfile
+---
+```
+
+</details>
+
+<details>
+
+<summary>Dockerfile for building for android-aarch64 on x86_64</summary>
+
+```{literalinclude} cross-android.Dockerfile
+---
+language: Dockerfile
+---
+```
+
+</details>
+
+[crossenv]: https://crossenv.readthedocs.io/
 [fetchcontent]: https://cmake.org/cmake/help/latest/module/FetchContent.html
 [scikit-build-core]: https://scikit-build-core.readthedocs.io
