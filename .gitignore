@@ -47,3 +47,4 @@ cmake_install.cmake
 _deps
 /Makefile
 _src
+licenses

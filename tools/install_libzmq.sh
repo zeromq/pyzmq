@@ -3,6 +3,9 @@
 set -ex
 LIBSODIUM_VERSION=$(python buildutils/bundle.py libsodium)
 LIBZMQ_VERSION=$(python buildutils/bundle.py)
+PYZMQ_DIR="$PWD"
+LICENSE_DIR="$PYZMQ_DIR/licenses"
+test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
 
 if [[ "$(uname)" == "Darwin" ]]; then
     # need LT_MULTI_MODULE or libtool will strip out
@@ -45,6 +48,7 @@ curl -L -O "https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION
 
 tar -xzf libsodium-${LIBSODIUM_VERSION}.tar.gz
 cd libsodium-*/
+cp LICENSE "${LICENSE_DIR}/LICENSE.libsodium.txt"
 ./configure --prefix="$PREFIX"
 make -j4
 make install
@@ -58,6 +62,7 @@ export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 
 tar -xzf zeromq-${LIBZMQ_VERSION}.tar.gz
 cd zeromq-${LIBZMQ_VERSION}
+cp LICENSE "${LICENSE_DIR}/LICENSE.zeromq.txt"
 # avoid error on warning
 export CXXFLAGS="-Wno-error ${CXXFLAGS:-}"
 

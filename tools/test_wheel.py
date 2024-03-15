@@ -10,6 +10,11 @@ from fnmatch import fnmatch
 
 import pytest
 
+try:
+    from importlib.metadata import distribution
+except ImportError:
+    from importlib_metadata import distribution
+
 
 @pytest.mark.parametrize("feature", ["curve", "ipc"])
 def test_has(feature):
@@ -55,3 +60,22 @@ def test_bundle_msvcp():
     for pattern in should_bundle:
         matched = [dll for dll in dlls if fnmatch(dll, pattern)]
         assert matched
+
+
+@pytest.mark.parametrize(
+    "license_name",
+    [
+        "LICENSE.md",
+        "LICENSE.zeromq.txt",
+        "LICENSE.libsodium.txt",
+    ],
+)
+def test_license_files(license_name):
+    pyzmq = distribution("pyzmq")
+    license_files = [f for f in pyzmq.files if "licenses" in str(f)]
+    license_file_names = [f.name for f in license_files]
+    assert license_name in license_file_names
+    for license_file in license_files:
+        if license_file.name == license_name:
+            break
+    assert license_file.locate().exists()

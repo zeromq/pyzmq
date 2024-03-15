@@ -53,20 +53,9 @@ Documentation = "https://pyzmq.readthedocs.org"
 Source = "https://github.com/zeromq/pyzmq"
 Tracker = "https://github.com/zeromq/pyzmq/issues"
 
-[tool.meson-python.args]
-# avoid installing static libzmq
-install = ['--tags=runtime,python-runtime']
-
-[tool.setuptools]
-zip-safe = false
-license-files = ["LICENSE.md", "bundled/zeromq/COPYING", "bundled/zeromq/COPYING.LESSER"]
-packages = ["zmq"]
-
-[tool.setuptools.dynamic]
-readme = { file = "README.md" }
-
 [tool.scikit-build]
 wheel.packages = ["zmq"]
+wheel.license-files = ["licenses/LICENSE*"]
 # 3.14 for FetchContent_MakeAvailable
 cmake.version = ">=3.14"
 # only build/install the pyzmq component
@@ -120,7 +109,7 @@ search = '__version__: str = "{current_version}"'
 
 [tool.cibuildwheel]
 build-verbosity = "1"
-test-requires = ["pytest"]
+test-requires = ["pytest", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
 [tool.cibuildwheel.linux]
@@ -145,6 +134,7 @@ ZMQ_PREFIX = "/tmp/zmq"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
+before-all = "python buildutils/bundle.py licenses"
 repair-wheel-command = """\
     delvewheel repair \
         -v \
