@@ -174,6 +174,9 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   include_directories(${BUNDLE_DIR}/include)
   list(PREPEND CMAKE_PREFIX_PATH ${BUNDLE_DIR})
 
+  set(LICENSE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/licenses")
+  file(MAKE_DIRECTORY "${LICENSE_DIR}")
+
   # libsodium
 
   if (MSVC)
@@ -187,6 +190,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     PREFIX ${BUNDLE_DIR}
   )
   FetchContent_MakeAvailable(bundled_libsodium)
+  file(COPY_FILE "${bundled_libsodium_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.libsodium.txt")
   # run libsodium build explicitly here, so it's available to libzmq next
   set(bundled_libsodium_include "${bundled_libsodium_SOURCE_DIR}/src/libsodium/include")
 
@@ -317,6 +321,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     PREFIX ${BUNDLE_DIR}
   )
   FetchContent_MakeAvailable(bundled_libzmq)
+  file(COPY_FILE "${bundled_libzmq_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.zeromq.txt")
 
   # target for libzmq static
   if (TARGET libzmq-static)
