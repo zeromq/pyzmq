@@ -5,37 +5,53 @@
 
 import errno as errno_mod
 
-from ._cffi import ffi
-from ._cffi import lib as C
-
-nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
-
-new_uint64_pointer = lambda: (ffi.new('uint64_t*'), nsp(ffi.sizeof('uint64_t')))
-new_int64_pointer = lambda: (ffi.new('int64_t*'), nsp(ffi.sizeof('int64_t')))
-new_int_pointer = lambda: (ffi.new('int*'), nsp(ffi.sizeof('int')))
-new_binary_data = lambda length: (
-    ffi.new('char[%d]' % (length)),
-    nsp(ffi.sizeof('char') * length),
-)
-
-value_uint64_pointer = lambda val: (ffi.new('uint64_t*', val), ffi.sizeof('uint64_t'))
-value_int64_pointer = lambda val: (ffi.new('int64_t*', val), ffi.sizeof('int64_t'))
-value_int_pointer = lambda val: (ffi.new('int*', val), ffi.sizeof('int'))
-value_binary_data = lambda val, length: (
-    ffi.new('char[%d]' % (length + 1), val),
-    ffi.sizeof('char') * length,
-)
-
-ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
-
-IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
-
 import zmq
 from zmq.constants import SocketOption, _OptType
 from zmq.error import ZMQError, _check_rc, _check_version
 
+from ._cffi import ffi
+from ._cffi import lib as C
 from .message import Frame
 from .utils import _retry_sys_call
+
+nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
+
+
+def new_uint64_pointer():
+    return ffi.new('uint64_t*'), nsp(ffi.sizeof('uint64_t'))
+
+
+def new_int64_pointer():
+    return ffi.new('int64_t*'), nsp(ffi.sizeof('int64_t'))
+
+
+def new_int_pointer():
+    return ffi.new('int*'), nsp(ffi.sizeof('int'))
+
+
+def new_binary_data(length):
+    return ffi.new('char[%d]' % length), nsp(ffi.sizeof('char') * length)
+
+
+def value_uint64_pointer(val):
+    return ffi.new('uint64_t*', val), ffi.sizeof('uint64_t')
+
+
+def value_int64_pointer(val):
+    return ffi.new('int64_t*', val), ffi.sizeof('int64_t')
+
+
+def value_int_pointer(val):
+    return ffi.new('int*', val), ffi.sizeof('int')
+
+
+def value_binary_data(val, length):
+    return ffi.new('char[%d]' % (length + 1), val), ffi.sizeof('char') * length
+
+
+ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
+
+IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
 
 def new_pointer_from_opt(option, length=0):
@@ -156,10 +172,8 @@ class Socket:
             if IPC_PATH_MAX_LEN and C.zmq_errno() == errno_mod.ENAMETOOLONG:
                 path = address.split('://', 1)[-1]
                 msg = (
-                    'ipc path "{}" is longer than {} '
-                    'characters (sizeof(sockaddr_un.sun_path)).'.format(
-                        path, IPC_PATH_MAX_LEN
-                    )
+                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
+                    'characters (sizeof(sockaddr_un.sun_path)).'
                 )
                 raise ZMQError(C.zmq_errno(), msg=msg)
             elif C.zmq_errno() == errno_mod.ENOENT:

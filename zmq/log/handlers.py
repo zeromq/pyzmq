@@ -11,7 +11,7 @@ The PUBHandler can be used with the regular logging module, as in::
     >>> logger = logging.getLogger('foobar')
     >>> logger.setLevel(logging.DEBUG)
     >>> logger.addHandler(handler)
-    
+
 Or using ``dictConfig``, as in::
 
     >>> from logging.config import dictConfig
@@ -32,7 +32,7 @@ Or using ``dictConfig``, as in::
     >>>         'handlers': ['zmq'],
     >>>     }
     >>> })
-        
+
 
 After this point, all messages logged by ``logger`` will be published on the
 PUB socket.

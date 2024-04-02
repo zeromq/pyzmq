@@ -86,9 +86,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_curve_public,
     zmq_device,
     zmq_disconnect,
-)
-from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
-from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_free_fn,
     zmq_getsockopt,
     zmq_has,
@@ -112,9 +109,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_msg_set_routing_id,
     zmq_msg_size,
     zmq_msg_t,
-)
-from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
-from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
@@ -124,6 +118,8 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_strerror,
     zmq_unbind,
 )
+from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
+from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
 from cython.cimports.zmq.utils.buffers import asbuffer_r
 
 import zmq
@@ -887,12 +883,10 @@ class Socket:
             if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
-                    'ipc path "{}" is longer than {} '
+                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
                     'characters (sizeof(sockaddr_un.sun_path)). '
                     'zmq.IPC_PATH_MAX_LEN constant can be used '
-                    'to check addr length (if it is defined).'.format(
-                        path, IPC_PATH_MAX_LEN
-                    )
+                    'to check addr length (if it is defined).'
                 )
                 raise ZMQError(msg=msg)
             elif zmq_errno() == ENOENT:
@@ -1517,7 +1511,7 @@ def zmq_poll(sockets, timeout: C.int = -1):
         elif hasattr(s, 'fileno'):
             try:
                 fileno = int(s.fileno())
-            except:
+            except Exception:
                 free(pollitems)
                 raise ValueError('fileno() must return a valid integer fd')
             else:

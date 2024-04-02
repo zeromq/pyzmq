@@ -33,7 +33,7 @@ class _Poller(_original_Poller):
             elif hasattr(socket, 'fileno'):
                 try:
                     fd = int(socket.fileno())
-                except:
+                except Exception:
                     raise ValueError('fileno() must return an valid integer fd')
             else:
                 raise TypeError(

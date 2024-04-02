@@ -3,7 +3,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 from zmq import error
 from zmq.sugar import context, frame, poll, socket, tracker, version
 

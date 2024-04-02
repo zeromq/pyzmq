@@ -431,7 +431,9 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     def recv_string(self, *args, **kwargs) -> Awaitable[str]:  # type: ignore
         return super().recv_string(*args, **kwargs)  # type: ignore
 
-    def send_string(self, s: str, flags: int = 0, encoding: str = 'utf-8') -> Awaitable[None]:  # type: ignore
+    def send_string(  # type: ignore
+        self, s: str, flags: int = 0, encoding: str = 'utf-8'
+    ) -> Awaitable[None]:
         return super().send_string(s, flags=flags, encoding=encoding)  # type: ignore
 
     def _add_timeout(self, future, timeout):

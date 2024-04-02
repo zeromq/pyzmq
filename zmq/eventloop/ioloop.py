@@ -9,7 +9,6 @@ and tornado itself should be used.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 import warnings
 
 

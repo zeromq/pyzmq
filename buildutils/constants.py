@@ -25,7 +25,7 @@ buildutils = os.path.abspath(os.path.dirname(__file__))
 root = pjoin(buildutils, os.path.pardir)
 
 sys.path.insert(0, pjoin(root, 'zmq'))
-import constants
+import constants  # noqa: E402
 
 all_names = []
 for name in constants.__all__:
@@ -49,7 +49,7 @@ def cython_enums():
     lines = []
     for name in all_names:
         if no_prefix(name):
-            lines.append('enum: ZMQ_{0} "{0}"'.format(name))
+            lines.append(f'enum: ZMQ_{name} "{name}"')
         else:
             lines.append(f'enum: ZMQ_{name}')
 
@@ -112,7 +112,7 @@ def generate_file(fname, ns_func, dest_dir="."):
     with open(dest, 'w') as f:
         f.write(out)
     if fname.endswith(".py"):
-        run([sys.executable, "-m", "black", dest])
+        run(["ruff", "format", dest])
 
 
 def render_constants():

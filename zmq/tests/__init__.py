@@ -33,7 +33,10 @@ PYPY = platform.python_implementation() == 'PyPy'
 # skip decorators (directly from unittest)
 # -----------------------------------------------------------------------------
 
-_id = lambda x: x
+
+def _id(x):
+    return x
+
 
 skip_pypy = mark.skipif(PYPY, reason="Doesn't work on PyPy")
 require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq >= 4")
@@ -172,9 +175,8 @@ class BaseZMQTestCase(TestCase):
             self.assertEqual(
                 e.errno,
                 errno,
-                "wrong error raised, expected '%s' \
-got '%s'"
-                % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)),
+                f"wrong error raised, expected '{zmq.ZMQError(errno)}' \
+got '{zmq.ZMQError(e.errno)}'",
             )
         else:
             self.fail("Function did not raise any error")
@@ -223,9 +225,8 @@ class GreenTest:
             self.assertEqual(
                 e.errno,
                 errno,
-                "wrong error raised, expected '%s' \
-got '%s'"
-                % (zmq.ZMQError(errno), zmq.ZMQError(e.errno)),
+                f"wrong error raised, expected '{zmq.ZMQError(errno)}' \
+got '{zmq.ZMQError(e.errno)}'",
             )
         else:
             self.fail("Function did not raise any error")

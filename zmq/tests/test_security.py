@@ -228,8 +228,8 @@ class TestSecurity(BaseZMQTestCase):
         assert server.mechanism == zmq.CURVE
         assert client.mechanism == zmq.CURVE
 
-        assert server.get(zmq.CURVE_SERVER) == True
-        assert client.get(zmq.CURVE_SERVER) == False
+        assert server.get(zmq.CURVE_SERVER)
+        assert not client.get(zmq.CURVE_SERVER)
 
         with self.zap():
             iface = 'tcp://127.0.0.1'

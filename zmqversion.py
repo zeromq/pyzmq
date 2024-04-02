@@ -6,17 +6,12 @@ it searches for an installed header, rather than in the current dir.
 # Copyright (c) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 import os
 import re
 import sys
 import traceback
+from configparser import ConfigParser
 from warnings import warn
-
-try:
-    from configparser import ConfigParser
-except:
-    from ConfigParser import ConfigParser
 
 pjoin = os.path.join
 

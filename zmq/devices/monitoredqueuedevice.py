@@ -3,7 +3,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 from zmq import PUB
 from zmq.devices.monitoredqueue import monitored_queue
 from zmq.devices.proxydevice import ProcessProxy, Proxy, ProxyBase, ThreadProxy

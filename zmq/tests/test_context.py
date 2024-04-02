@@ -96,7 +96,7 @@ class TestContext(BaseZMQTestCase):
         c2.term()
         c3 = self.Context.instance()
         c4 = self.Context.instance()
-        assert not c3 is c2
+        assert c3 is not c2
         assert not c3.closed
         assert c3 is c4
 

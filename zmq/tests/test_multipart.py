@@ -14,11 +14,10 @@ class TestMultipart(BaseZMQTestCase):
         dealer.send(msg1)
         self.recv(router)
         more = router.rcvmore
-        assert more == True
+        assert more
         msg2 = self.recv(router)
         assert msg1 == msg2
-        more = router.rcvmore
-        assert more == False
+        assert not router.rcvmore
 
     def test_basic_multipart(self):
         a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)

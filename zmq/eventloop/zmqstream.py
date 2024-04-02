@@ -12,8 +12,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import annotations
-
 """A utility class for event-based messaging on a zmq socket using tornado.
 
 .. seealso::
@@ -21,6 +19,8 @@ from __future__ import annotations
     - :mod:`zmq.asyncio`
     - :mod:`zmq.eventloop.future`
 """
+
+from __future__ import annotations
 
 import asyncio
 import pickle

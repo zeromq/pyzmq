@@ -27,6 +27,7 @@ This compatibility is accomplished by ensuring the nonblocking flag is set
 before any blocking operation and the ØMQ file descriptor is polled internally
 to trigger needed events.
 """
+
 from __future__ import annotations
 
 from typing import List

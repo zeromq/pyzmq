@@ -19,7 +19,7 @@ repo_root = here.parents[1]
 sys.path.append(str(repo_root))
 
 # set target libzmq version
-from buildutils.bundle import bundled_version
+from buildutils.bundle import bundled_version  # noqa
 
 # remove repo root from sys.path
 sys.path = sys.path[:-1]

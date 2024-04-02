@@ -7,7 +7,6 @@ zeromq connections.
 #
 # Redistributed from IPython under the terms of the BSD License.
 
-
 import atexit
 import os
 import re

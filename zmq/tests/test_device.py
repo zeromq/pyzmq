@@ -24,7 +24,7 @@ class TestDevice(BaseZMQTestCase):
         assert dev.in_type == zmq.SUB
         assert dev.out_type == zmq.PUB
         assert dev.device_type == zmq.QUEUE
-        assert dev.daemon == True
+        assert dev.daemon is True
         del dev
 
     def test_single_socket_forwarder_connect(self):
