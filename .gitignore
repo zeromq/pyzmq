@@ -48,3 +48,4 @@ _deps
 /Makefile
 _src
 licenses
+.virtual_documents

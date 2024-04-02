@@ -1,8 +1,8 @@
-BASE_IMAGE=python:3.6
+BASE_IMAGE=python:3.11
 IMAGE=pyzmq-perf
 VOLUME=pyzmq-perf
 
-ifeq ($(DOCKER_MACHINE_NAME), "")
+ifeq ("$(DOCKER_MACHINE_NAME)", "")
 	OUT_PATH=$(PWD)
 	FETCH=true
 else
