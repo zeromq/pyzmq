@@ -55,9 +55,7 @@ def generate_certificates(base_dir: Union[str, os.PathLike]) -> None:
 if __name__ == '__main__':
     if zmq.zmq_version_info() < (4, 0):
         raise RuntimeError(
-            "Security is not supported in libzmq version < 4.0. libzmq version {}".format(
-                zmq.zmq_version()
-            )
+            f"Security is not supported in libzmq version < 4.0. libzmq version {zmq.zmq_version()}"
         )
 
     generate_certificates(os.path.dirname(__file__))

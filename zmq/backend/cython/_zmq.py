@@ -86,9 +86,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_curve_public,
     zmq_device,
     zmq_disconnect,
-)
-from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
-from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_free_fn,
     zmq_getsockopt,
     zmq_has,
@@ -112,9 +109,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_msg_set_routing_id,
     zmq_msg_size,
     zmq_msg_t,
-)
-from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
-from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
@@ -124,6 +118,8 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_strerror,
     zmq_unbind,
 )
+from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
+from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
 from cython.cimports.zmq.utils.buffers import asbuffer_r
 
 import zmq

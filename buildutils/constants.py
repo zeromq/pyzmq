@@ -112,7 +112,7 @@ def generate_file(fname, ns_func, dest_dir="."):
     with open(dest, 'w') as f:
         f.write(out)
     if fname.endswith(".py"):
-        run([sys.executable, "-m", "black", dest])
+        run(["ruff", "format", dest])
 
 
 def render_constants():

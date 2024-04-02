@@ -59,11 +59,7 @@ class Handler(socketserver.BaseRequestHandler):
             return
 
         logger.debug(
-            'Connected!  Tunnel open {!r} -> {!r} -> {!r}'.format(
-                self.request.getpeername(),
-                chan.getpeername(),
-                (self.chain_host, self.chain_port),
-            )
+            f'Connected!  Tunnel open {self.request.getpeername()!r} -> {chan.getpeername()!r} -> {(self.chain_host, self.chain_port)!r}'
         )
         while True:
             r, w, x = select.select([self.request, chan], [], [])
