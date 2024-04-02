@@ -5,8 +5,14 @@
 
 import errno as errno_mod
 
+import zmq
+from zmq.constants import SocketOption, _OptType
+from zmq.error import ZMQError, _check_rc, _check_version
+
 from ._cffi import ffi
 from ._cffi import lib as C
+from .message import Frame
+from .utils import _retry_sys_call
 
 nsp = new_sizet_pointer = lambda length: ffi.new('size_t*', length)
 
@@ -46,13 +52,6 @@ def value_binary_data(val, length):
 ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
-
-import zmq
-from zmq.constants import SocketOption, _OptType
-from zmq.error import ZMQError, _check_rc, _check_version
-
-from .message import Frame
-from .utils import _retry_sys_call
 
 
 def new_pointer_from_opt(option, length=0):

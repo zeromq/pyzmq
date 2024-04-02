@@ -1,3 +1,5 @@
+# flake8 no longer used,
+# ruff config in pyproject.toml
 [flake8]
 exclude = .git,dist,docs,zmq/eventloop/minitornado,buildutils/templates
 ignore = E,W

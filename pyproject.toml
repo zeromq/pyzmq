@@ -62,14 +62,46 @@ cmake.version = ">=3.14"
 cmake.targets = ["pyzmq"]
 install.components = ["pyzmq"]
 
+[tool.ruff]
+
+[tool.ruff.format]
+exclude = [
+    "buildutils/templates/*",
+    "zmq/eventloop/minitornado/*",
+]
+quote-style = "preserve"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "UP",
+    "I",
+]
+ignore = [
+    "E501", # line length (formatter is responsible)
+    "E721", # compare types
+    "F841", # unused variables
+]
+ignore-init-module-imports = true
+exclude = ["buildutils/templates/*"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F4", "E4"]
+"__init__.pyi" = ["F4", "E4"]
+"zmq/tests/*" = ["E4", "F4"]
+"docs/source/conf.py" = ["E4"]
+"zmq/eventloop/*" = ["E402"]
+"zmq/ssh/forward.py" = ["E"]
+
+# no longer used autoformatters, linters:
+
 [tool.autoflake]
 ignore-init-module-imports = true
 remove-all-unused-imports = true
 remove-duplicate-keys = true
 
 # remove-unused-variables = true
-
-[tool.ruff]
 
 [tool.black]
 skip-string-normalization = true

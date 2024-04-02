@@ -25,7 +25,7 @@ buildutils = os.path.abspath(os.path.dirname(__file__))
 root = pjoin(buildutils, os.path.pardir)
 
 sys.path.insert(0, pjoin(root, 'zmq'))
-import constants
+import constants  # noqa: E402
 
 all_names = []
 for name in constants.__all__:

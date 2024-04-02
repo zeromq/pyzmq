@@ -1515,7 +1515,7 @@ def zmq_poll(sockets, timeout: C.int = -1):
         elif hasattr(s, 'fileno'):
             try:
                 fileno = int(s.fileno())
-            except:
+            except Exception:
                 free(pollitems)
                 raise ValueError('fileno() must return a valid integer fd')
             else:
