@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Adapted echo.py to put the send in the event loop using a ZMQStream.
-"""
+"""Adapted echo.py to put the send in the event loop using a ZMQStream."""
+
 from typing import List
 
 from tornado import ioloop

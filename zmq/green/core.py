@@ -8,8 +8,8 @@
 #  the file LICENSE.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-"""This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking
-"""
+"""This module wraps the :class:`Socket` and :class:`Context` found in :mod:`pyzmq <zmq>` to be non blocking"""
+
 from __future__ import annotations
 
 import sys
@@ -218,9 +218,7 @@ class _Socket(_original_Socket):
             return msg
         # ensure the zmq.NOBLOCK flag is part of flags
         flags |= zmq.NOBLOCK
-        while (
-            True
-        ):  # Attempt to complete this operation indefinitely, blocking the current greenlet
+        while True:  # Attempt to complete this operation indefinitely, blocking the current greenlet
             try:
                 # attempt the actual call
                 msg = super().send(data, flags, copy, track)

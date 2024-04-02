@@ -11,7 +11,6 @@ have tornado ≥ 3.0.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 import time
 import warnings
 from typing import Tuple
@@ -200,10 +199,9 @@ def install():
     # check if tornado's IOLoop is already initialized to something other
     # than the pyzmq IOLoop instance:
     assert (
-        not ioloop.IOLoop.initialized()
-    ) or ioloop.IOLoop.instance() is IOLoop.instance(), (
-        "tornado IOLoop already initialized"
-    )
+        (not ioloop.IOLoop.initialized())
+        or ioloop.IOLoop.instance() is IOLoop.instance()
+    ), "tornado IOLoop already initialized"
 
     if tornado_version >= (3,):
         # tornado 3 has an official API for registering new defaults, yay!

@@ -44,7 +44,8 @@ def _get_selector_windows(
 
     # detect add_reader instead of checking for proactor?
     if hasattr(asyncio, "ProactorEventLoop") and isinstance(
-        asyncio_loop, asyncio.ProactorEventLoop  # type: ignore
+        asyncio_loop,
+        asyncio.ProactorEventLoop,  # type: ignore
     ):
         try:
             from tornado.platform.asyncio import AddThreadSelectorEventLoop
@@ -66,7 +67,9 @@ def _get_selector_windows(
             stacklevel=5,
         )
 
-        selector_loop = _selectors[asyncio_loop] = AddThreadSelectorEventLoop(asyncio_loop)  # type: ignore
+        selector_loop = _selectors[asyncio_loop] = AddThreadSelectorEventLoop(
+            asyncio_loop
+        )  # type: ignore
 
         # patch loop.close to also close the selector thread
         loop_close = asyncio_loop.close

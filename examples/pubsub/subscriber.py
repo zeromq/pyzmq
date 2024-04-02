@@ -10,7 +10,6 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 #  the file LICENSE.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-
 import sys
 import time
 

@@ -3,7 +3,6 @@
 # This example is placed in the Public Domain
 # It may also be used under the Creative Commons CC-0 License, (C) PyZMQ Developers
 
-
 import time
 from threading import Thread
 

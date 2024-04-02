@@ -25,7 +25,6 @@ forwarding (the openssh -L option) from a local port through a tunneled
 connection to a destination reachable from the SSH server machine.
 """
 
-
 import logging
 import select
 import socketserver

@@ -3,7 +3,6 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 import time
 from multiprocessing import Process
 from threading import Thread

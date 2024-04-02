@@ -8,7 +8,7 @@ Context and sockets are closed at the end of the function.
 For example::
 
     from zmq.decorators import context, socket
-    
+
     @context()
     @socket(zmq.PUSH)
     def work(ctx, push):

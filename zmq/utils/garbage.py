@@ -5,7 +5,6 @@ used in zero-copy sends.
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-
 import atexit
 import struct
 import warnings

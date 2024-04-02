@@ -6,13 +6,13 @@ Designed to be run as an executable module - try this to see options:
     python -m zmq.log -h
 
 Subscribes to the '' (empty string) topic by default which means it will work
-out-of-the-box with a PUBHandler object instantiated with default settings. 
-If you change the root topic with PUBHandler.setRootTopic() you must pass 
+out-of-the-box with a PUBHandler object instantiated with default settings.
+If you change the root topic with PUBHandler.setRootTopic() you must pass
 the value to this script with the --topic argument.
 
 Note that the default formats for the PUBHandler object selectively include
 the log level in the message. This creates redundancy in this script as it
-always prints the topic of the message, which includes the log level. 
+always prints the topic of the message, which includes the log level.
 Consider overriding the default formats with PUBHandler.setFormat() to
 avoid this issue.
 
