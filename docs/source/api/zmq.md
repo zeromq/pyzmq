@@ -9,6 +9,29 @@
 
 ## Basic Classes
 
+````{note}
+For typing purposes, `zmq.Context` and `zmq.Socket` are Generics,
+which means they will accept any Context or Socket implementation.
+
+The base `zmq.Context()` constructor returns the type
+`zmq.Context[zmq.Socket[bytes]]`.
+If you are using type annotations and want to _exclude_ the async subclasses,
+use the resolved types instead of the base Generics:
+
+```python
+ctx: zmq.Context[zmq.Socket[bytes]] = zmq.Context()
+sock: zmq.Socket[bytes]
+```
+
+in pyzmq 26, these are available as the Type Aliases (not actual classes!):
+
+```python
+ctx: zmq.SyncContext = zmq.Context()
+sock: zmq.SyncSocket
+```
+
+````
+
 ### {class}`Context`
 
 ```{eval-rst}
