@@ -292,6 +292,19 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
             'recv_multipart', dict(flags=flags, copy=copy, track=track)
         )
 
+    @overload  # type: ignore
+    def recv(self, flags: int = 0, *, track: bool = False) -> Awaitable[bytes]: ...
+
+    @overload
+    def recv(
+        self, flags: int = 0, *, copy: Literal[True], track: bool = False
+    ) -> Awaitable[bytes]: ...
+
+    @overload
+    def recv(
+        self, flags: int = 0, *, copy: Literal[False], track: bool = False
+    ) -> Awaitable[_zmq.Frame]: ...
+
     def recv(  # type: ignore
         self, flags: int = 0, copy: bool = True, track: bool = False
     ) -> Awaitable[bytes | _zmq.Frame]:
