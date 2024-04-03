@@ -78,18 +78,18 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
     _socket_class: type[_SocketType] = Socket  # type: ignore
 
     @overload
-    def __init__(self: Context[Socket], io_threads: int = 1): ...
+    def __init__(self: Context[Socket[bytes]], io_threads: int = 1): ...
 
     @overload
-    def __init__(self: Context[Socket], io_threads: Context):
+    def __init__(self: Context[Socket[bytes]], io_threads: Context):
         # this should be positional-only, but that requires 3.8
         ...
 
     @overload
-    def __init__(self: Context[Socket], *, shadow: Context | int): ...
+    def __init__(self: Context[Socket[bytes]], *, shadow: Context | int): ...
 
     def __init__(
-        self: Context[Socket],
+        self: Context[Socket[bytes]],
         io_threads: int | Context = 1,
         shadow: Context | int = 0,
     ) -> None:
