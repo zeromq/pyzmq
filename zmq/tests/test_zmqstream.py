@@ -32,28 +32,28 @@ async def push_pull(socket):
 
 
 @pytest.fixture
-def push(push_pull):
-    push, pull = push_pull
+async def push(push_pull):
+    push, pull = await push_pull
     return push
 
 
 @pytest.fixture
-def pull(push_pull):
-    push, pull = push_pull
+async def pull(push_pull):
+    push, pull = await push_pull
     return pull
 
 
 async def test_callable_check(pull):
     """Ensure callable check works."""
 
-    pull.on_send(lambda *args: None)
-    pull.on_recv(lambda *args: None)
+    await pull.on_send(lambda *args: None)
+    await pull.on_recv(lambda *args: None)
     with pytest.raises(AssertionError):
-        pull.on_recv(1)
+        await pull.on_recv(1)
     with pytest.raises(AssertionError):
-        pull.on_send(1)
+        await pull.on_send(1)
     with pytest.raises(AssertionError):
-        pull.on_recv(zmq)
+        await pull.on_recv(zmq)
 
 
 async def test_on_recv_basic(push, pull):
