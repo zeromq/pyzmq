@@ -23,7 +23,7 @@ from typing import (
 from warnings import warn
 
 import zmq
-from zmq._typing import Literal
+from zmq._typing import Literal, TypeAlias
 from zmq.backend import Socket as SocketBase
 from zmq.error import ZMQBindError, ZMQError
 from zmq.utils import jsonapi
@@ -1107,4 +1107,6 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         self.monitor(None, 0)
 
 
-__all__ = ['Socket']
+SyncSocket: TypeAlias = Socket[bytes]
+
+__all__ = ['Socket', 'SyncSocket']

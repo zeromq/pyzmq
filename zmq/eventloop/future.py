@@ -101,4 +101,4 @@ class Context(_zmq.Context[Socket]):
                 DeprecationWarning,
                 stacklevel=2,
             )
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # type: ignore

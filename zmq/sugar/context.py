@@ -13,13 +13,14 @@ from warnings import warn
 from weakref import WeakSet
 
 import zmq
+from zmq._typing import TypeAlias
 from zmq.backend import Context as ContextBase
 from zmq.constants import ContextOption, Errno, SocketOption
 from zmq.error import ZMQError
 from zmq.utils.interop import cast_int_addr
 
 from .attrsettr import AttributeSetter, OptValT
-from .socket import Socket
+from .socket import Socket, SyncSocket
 
 # notice when exiting, to avoid triggering term on exit
 _exiting = False
@@ -78,18 +79,18 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
     _socket_class: type[_SocketType] = Socket  # type: ignore
 
     @overload
-    def __init__(self: Context[Socket], io_threads: int = 1): ...
+    def __init__(self: SyncContext, io_threads: int = 1): ...
 
     @overload
-    def __init__(self: Context[Socket], io_threads: Context):
+    def __init__(self: SyncContext, io_threads: Context):
         # this should be positional-only, but that requires 3.8
         ...
 
     @overload
-    def __init__(self: Context[Socket], *, shadow: Context | int): ...
+    def __init__(self: SyncContext, *, shadow: Context | int): ...
 
     def __init__(
-        self: Context[Socket],
+        self: SyncContext,
         io_threads: int | Context = 1,
         shadow: Context | int = 0,
     ) -> None:
@@ -415,4 +416,7 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
                 del self.sockopts[opt]
 
 
-__all__ = ['Context']
+SyncContext: TypeAlias = Context[SyncSocket]
+
+
+__all__ = ['Context', 'SyncContext']
