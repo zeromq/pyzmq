@@ -36,6 +36,9 @@ __New__:
 - Experimental support for wheels on windows-arm64
 - `Socket.bind('tcp://ip:0')` can be used as a context manager to bind to a random port.
   The resulting URL can be retrieved as `socket.last_endpoint`.
+- Add `SyncSocket` and `SyncContext` type aliases for the default Socket/Context implementations,
+  since the base classes are Generics, type-wise.
+  These are type aliases only to be used in type checking, not actual classes.
 
 __Enhancements__:
 
@@ -53,6 +56,11 @@ __Breaking changes__:
 - Stop building Python 3.7 wheels for manylinux1, which reached EOL in January, 2022. The new build system doesn't seem to be able to find cmake in that environment.
 
 ## 25
+
+### 25.1.2
+
+- Fix builds with some recent compilers and bundled libzmq
+- Fix builds with upcoming Cython 3.1
 
 ### 25.1.1
 
