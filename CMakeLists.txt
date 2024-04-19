@@ -190,7 +190,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     PREFIX ${BUNDLE_DIR}
   )
   FetchContent_MakeAvailable(bundled_libsodium)
-  file(COPY_FILE "${bundled_libsodium_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.libsodium.txt")
+  configure_file("${bundled_libsodium_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.libsodium.txt" COPYONLY)
   # run libsodium build explicitly here, so it's available to libzmq next
   set(bundled_libsodium_include "${bundled_libsodium_SOURCE_DIR}/src/libsodium/include")
 
@@ -237,7 +237,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
       endif()
       file(GLOB_RECURSE BUILT_LIB "${bundled_libsodium_SOURCE_DIR}/**/libsodium.lib")
       message(STATUS "copy ${BUILT_LIB} ${libsodium_lib}")
-      file(COPY_FILE ${BUILT_LIB} ${libsodium_lib})
+      configure_file(${BUILT_LIB} ${libsodium_lib} COPYONLY)
     else()
       list(APPEND libsodium_configure
         ./configure
@@ -321,7 +321,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     PREFIX ${BUNDLE_DIR}
   )
   FetchContent_MakeAvailable(bundled_libzmq)
-  file(COPY_FILE "${bundled_libzmq_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.zeromq.txt")
+  configure_file("${bundled_libzmq_SOURCE_DIR}/LICENSE" "${LICENSE_DIR}/LICENSE.zeromq.txt" COPYONLY)
 
   # target for libzmq static
   if (TARGET libzmq-static)

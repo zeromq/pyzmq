@@ -7,6 +7,12 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.0.1
+
+- Fix install from source with cmake \< 3.21
+
+### 26.0.0
+
 pyzmq 26 is a small release, but with some big changes _hopefully_ nobody will notice,
 except for some users (especially on Windows) where pyzmq releases did not work.
 
