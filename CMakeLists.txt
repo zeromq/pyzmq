@@ -75,7 +75,7 @@ if(ZMQ_DRAFT_API)
 endif()
 
 if (PYZMQ_LIBSODIUM_VERSION AND NOT PYZMQ_LIBSODIUM_URL)
-  set(PYZMQ_LIBSODIUM_URL "https://download.libsodium.org/libsodium/releases/libsodium-${PYZMQ_LIBSODIUM_VERSION}.tar.gz")
+  set(PYZMQ_LIBSODIUM_URL "https://github.com/jedisct1/libsodium/releases/download/${PYZMQ_LIBSODIUM_VERSION}-RELEASE/libsodium-${PYZMQ_LIBSODIUM_VERSION}.tar.gz")
 endif()
 
 if (PYZMQ_LIBZMQ_VERSION AND NOT PYZMQ_LIBZMQ_URL)
