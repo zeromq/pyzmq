@@ -234,5 +234,11 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - name: Verify all wheel builds are successful
+        run: |
+          if [ -z "$(ls dist/*.whl)" ]; then
+            echo "No wheels available, aborting release."
+            exit 1
+          fi
       - name: Publish wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
