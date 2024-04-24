@@ -8,12 +8,14 @@ on:
     paths-ignore:
       - "docs/**"
       - "tools/**"
+      - ".circleci/**"
       - ".github/workflows/*"
       - "!.github/workflows/test.yml"
   pull_request:
     paths-ignore:
       - "docs/**"
       - "tools/**"
+      - ".circleci/**"
       - ".github/workflows/*"
       - "!.github/workflows/test.yml"
 

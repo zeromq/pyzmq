@@ -22,6 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  PYTHONUNBUFFERED: "1"
   TWINE_NONINTERACTIVE: "1"
 #  CIBW_PRERELEASE_PYTHONS: "1"
 
@@ -177,6 +178,38 @@ jobs:
           path: "wheelhouse/*"
           if-no-files-found: error
 
+  circle-wheels:
+    if: github.repository_owner == 'zeromq'
+    runs-on: ubuntu-22.04
+    needs:
+      # not strictly required, but avoids wasting cpu time waiting
+      - wheel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade setuptools pip wheel
+          pip install requests
+
+      - name: fetch wheels from circleci
+        run: python3 tools/circle_wheels.py
+        env:
+          CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
+          PR_HEAD_SHA: ${{ github.event.pull_request && github.event.pull_request.head.sha }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-arm
+          path: "wheelhouse/*"
+          if-no-files-found: error
+
   github-release:
     permissions:
       contents: write
@@ -212,6 +245,7 @@ jobs:
     needs:
       - sdist
       - wheel
+      - circle-wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -229,6 +263,7 @@ jobs:
     needs:
       - sdist
       - wheel
+      - circle-wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
