@@ -44,20 +44,6 @@ jobs:
       - store_artifacts:
           path: wheelhouse/
 
-      - when:
-          condition:
-            matches:
-              pattern: ".+"
-              value: "<< pipeline.git.tag >>"
-          steps:
-            - run:
-                environment:
-                  TWINE_NONINTERACTIVE: "1"
-                  TWINE_USERNAME: __token__
-                command: |
-                  python3 -m pip install twine
-                  python3 -m twine upload --skip-existing wheelhouse/*
-
 workflows:
   wheels: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
