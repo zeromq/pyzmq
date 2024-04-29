@@ -158,6 +158,7 @@ musllinux-x86_64-image = "musllinux_1_1"
 
 [tool.cibuildwheel.linux.environment]
 ZMQ_PREFIX = "/usr/local"
+PYZMQ_LIBZMQ_RPATH = "OFF"
 CFLAGS = "-Wl,-strip-all"
 CXXFLAGS = "-Wl,-strip-all"
 
@@ -165,7 +166,9 @@ CXXFLAGS = "-Wl,-strip-all"
 before-all = "bash tools/install_libzmq.sh"
 
 [tool.cibuildwheel.macos.environment]
+# note: everything here needs to also be duplicated in overrides below
 ZMQ_PREFIX = "/tmp/zmq"
+PYZMQ_LIBZMQ_RPATH = "OFF"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 [tool.cibuildwheel.windows]
@@ -183,7 +186,7 @@ ZMQ_PREFIX = "bundled"
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
 select = "*macos*{universal2,arm64}*"
-environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
+environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15", PYZMQ_LIBZMQ_RPATH = "OFF" }
 
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
