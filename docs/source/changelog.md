@@ -7,6 +7,10 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.0.3
+
+- Add Cython as build dependency for non-pypy, non-cpython implementations (fixes install on pyston)
+
 ### 26.0.2
 
 - When bundling libsodium, download from libsodium's releases on GitHub instead of download.libsodium.org,
