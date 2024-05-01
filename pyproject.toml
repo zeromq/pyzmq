@@ -2,10 +2,8 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3.0.0; implementation_name == 'cpython'",
+  "cython>=3.0.0; implementation_name != 'pypy'",
   "packaging",
-  # "setuptools>=61",
-  # "setuptools_scm[toml]",
   "scikit-build-core",
 ]
 build-backend = "scikit_build_core.build"
