@@ -24,6 +24,7 @@ tar -xzf libzmq.tar.gz
 cd zeromq-${ZMQ_VERSION}
 ./configure --prefix=${PREFIX} --enable-drafts
 make -j${CPU_COUNT} && make install
+sudo ldconfig
 ```
 
 And then build pyzmq with draft support:
@@ -31,6 +32,9 @@ And then build pyzmq with draft support:
 ```bash
 export ZMQ_PREFIX=${PREFIX}
 export ZMQ_DRAFT_API=1
+# rpath may be needed to find libzmq at runtime,
+# depending on installation
+export LDFLAGS="${LDFLAGS:-} -Wl,-rpath,${ZMQ_PREFIX}/lib"
 pip install -v pyzmq --no-binary pyzmq
 ```
 

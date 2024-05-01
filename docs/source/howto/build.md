@@ -83,6 +83,14 @@ If pyzmq doesn't find your libzmq via the default search, or you want to skip th
 ZMQ_PREFIX=/path/to/zmq  # should contain 'include', 'lib', etc.
 ```
 
+You may also need to add:
+
+```bash
+export LDFLAGS="-Wl,-rpath,${ZMQ_PREFIX}/lib"
+```
+
+to make sure that your libzmq is found at _runtime_.
+
 ### Disabling bundled build fallback
 
 You may want to keep the default search,
