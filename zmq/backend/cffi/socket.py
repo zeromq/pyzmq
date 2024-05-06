@@ -220,7 +220,7 @@ class Socket:
 
         if isinstance(value, bytes):
             if opt_type != _OptType.bytes:
-                raise TypeError("not a bytes sockopt: %s" % option)
+                raise TypeError(f"not a bytes sockopt: {option}")
             length = len(value)
 
         c_value_pointer, c_sizet = initialize_opt_pointer(option, value, length)

@@ -27,7 +27,7 @@ def cast_bytes(s, encoding='utf8', errors='strict'):
     elif isinstance(s, str):
         return s.encode(encoding, errors)
     else:
-        raise TypeError("Expected unicode or bytes, got %r" % s)
+        raise TypeError(f"Expected unicode or bytes, got {s!r}")
 
 
 def cast_unicode(s, encoding='utf8', errors='strict'):
@@ -42,7 +42,7 @@ def cast_unicode(s, encoding='utf8', errors='strict'):
     elif isinstance(s, str):
         return s
     else:
-        raise TypeError("Expected unicode or bytes, got %r" % s)
+        raise TypeError(f"Expected unicode or bytes, got {s!r}")
 
 
 # give short 'b' alias for cast_bytes, so that we can use fake b'stuff'

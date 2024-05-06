@@ -80,7 +80,7 @@ class HeartBeater:
         if msg[1] == str(self.lifetime):
             self.responses.add(msg[0])
         else:
-            print("got bad heartbeat (possibly old?): %s" % msg[1])
+            print(f"got bad heartbeat (possibly old?): {msg[1]}")
 
 
 # sub.setsockopt(zmq.SUBSCRIBE)

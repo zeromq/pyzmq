@@ -29,7 +29,7 @@ class TestDevice(BaseZMQTestCase):
 
     def test_single_socket_forwarder_connect(self):
         if zmq.zmq_version() in ('4.1.1', '4.0.6'):
-            raise SkipTest("libzmq-%s broke single-socket devices" % zmq.zmq_version())
+            raise SkipTest(f"libzmq-{zmq.zmq_version()} broke single-socket devices")
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
@@ -55,7 +55,7 @@ class TestDevice(BaseZMQTestCase):
 
     def test_single_socket_forwarder_bind(self):
         if zmq.zmq_version() in ('4.1.1', '4.0.6'):
-            raise SkipTest("libzmq-%s broke single-socket devices" % zmq.zmq_version())
+            raise SkipTest(f"libzmq-{zmq.zmq_version()} broke single-socket devices")
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         port = dev.bind_in_to_random_port('tcp://127.0.0.1')
         req = self.context.socket(zmq.REQ)

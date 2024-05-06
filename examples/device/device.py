@@ -17,11 +17,11 @@ def produce(url, ident):
     ctx = zmq.Context.instance()
     s = ctx.socket(zmq.PUSH)
     s.connect(url)
-    print("Producing %s" % ident)
+    print(f"Producing {ident}")
     for i in range(MSGS):
         s.send(('%s: %i' % (ident, time.time())).encode('utf8'))
         time.sleep(1)
-    print("Producer %s done" % ident)
+    print(f"Producer {ident} done")
     s.close()
 
 

@@ -172,7 +172,7 @@ class ZMQVersionError(NotImplementedError):
         self.version = _zmq_version
 
     def __repr__(self):
-        return "ZMQVersionError('%s')" % str(self)
+        return f"ZMQVersionError('{str(self)}')"
 
     def __str__(self):
         return f"{self.msg} requires libzmq >= {self.min_version}, have {self.version}"

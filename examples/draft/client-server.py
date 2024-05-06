@@ -16,7 +16,7 @@ for i in range(10):
     print(f'server recvd {msg.bytes!r} from {msg.routing_id!r}')
     server.send_string('reply %i' % i, routing_id=msg.routing_id)
     reply = client.recv_string()
-    print('client recvd %r' % reply)
+    print(f'client recvd {reply!r}')
     time.sleep(0.1)
     client.close()
 

@@ -47,7 +47,7 @@ class MongoZMQ:
         try:
             self._table.insert(doc)
         except Exception as e:
-            return 'Error: %s' % e
+            return f'Error: {e}'
         return None
 
     def get_document_by_keys(self, keys: Dict[str, Any]) -> Union[Dict, str, None]:
@@ -55,11 +55,11 @@ class MongoZMQ:
         Attempts to return a single document from database table that matches
         each key/value in keys dictionary.
         """
-        print('attempting to retrieve document using keys: %s' % keys)
+        print(f'attempting to retrieve document using keys: {keys}')
         try:
             return self._table.find_one(keys)
         except Exception as e:
-            return 'Error: %s' % e
+            return f'Error: {e}'
 
     def start(self) -> None:
         context = zmq.Context()
@@ -69,7 +69,7 @@ class MongoZMQ:
             msg = socket.recv_multipart()
             print("Received msg: ", msg)
             if len(msg) != 3:
-                error_msg = 'invalid message received: %s' % msg
+                error_msg = f'invalid message received: {msg}'
                 print(error_msg)
                 reply = [msg[0], error_msg]
                 socket.send_multipart(reply)

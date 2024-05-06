@@ -88,16 +88,16 @@ def check_zmq_version(min_version):
         found, zmq_h = find_zmq_version()
         sf = ver_str(found)
         if found < min_version:
-            print("This pyzmq requires zeromq >= %s" % sv)
-            print("but it appears you are building against %s" % zmq_h)
-            print("which has zeromq %s" % sf)
+            print(f"This pyzmq requires zeromq >= {sv}")
+            print(f"but it appears you are building against {zmq_h}")
+            print(f"which has zeromq {sf}")
             sys.exit(1)
     except OSError:
         msg = '\n'.join(
             [
                 "Couldn't find zmq.h to check for version compatibility.",
                 "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
-                "This pyzmq requires zeromq >= %s" % sv,
+                f"This pyzmq requires zeromq >= {sv}",
             ]
         )
         warn(msg)
@@ -107,7 +107,7 @@ def check_zmq_version(min_version):
                 "Couldn't find ZMQ_VERSION macros in zmq.h to check for version compatibility.",
                 "This probably means that you have ZeroMQ <= 2.0.9",
                 "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
-                "This pyzmq requires zeromq >= %s" % sv,
+                f"This pyzmq requires zeromq >= {sv}",
             ]
         )
         warn(msg)
@@ -117,7 +117,7 @@ def check_zmq_version(min_version):
             [
                 "Unexpected Error checking for zmq version.",
                 "If you see 'undeclared identifier' errors, your ZeroMQ is likely too old.",
-                "This pyzmq requires zeromq >= %s" % sv,
+                f"This pyzmq requires zeromq >= {sv}",
             ]
         )
         warn(msg)

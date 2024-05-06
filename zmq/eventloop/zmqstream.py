@@ -522,10 +522,9 @@ class ZMQStream:
                 # hopefully this happened promptly after close,
                 # otherwise somebody else may have the FD
                 warnings.warn(
-                    "Unregistering FD %s after closing socket. "
+                    f"Unregistering FD {self._fd} after closing socket. "
                     "This could result in unregistering handlers for the wrong socket. "
-                    "Please use stream.close() instead of closing the socket directly."
-                    % self._fd,
+                    "Please use stream.close() instead of closing the socket directly.",
                     stacklevel=2,
                 )
                 self.io_loop.remove_handler(self._fd)

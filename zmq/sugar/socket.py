@@ -496,7 +496,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ):
             # if LAST_ENDPOINT is supported, and min_port / max_port weren't specified,
             # we can bind to port 0 and let the OS do the work
-            self.bind("%s:*" % addr)
+            self.bind(f"{addr}:*")
             url = cast(bytes, self.last_endpoint).decode('ascii', 'replace')
             _, port_s = url.rsplit(':', 1)
             return int(port_s)
@@ -1074,7 +1074,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         # safe-guard, method only available on libzmq >= 4
         if zmq.zmq_version_info() < (4,):
             raise NotImplementedError(
-                "get_monitor_socket requires libzmq >= 4, have %s" % zmq.zmq_version()
+                f"get_monitor_socket requires libzmq >= 4, have {zmq.zmq_version()}"
             )
 
         # if already monitoring, return existing socket

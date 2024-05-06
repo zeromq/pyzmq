@@ -116,7 +116,7 @@ def load_certificate(
                 break
 
     if public_key is None:
-        raise ValueError("No public key found in %s" % filename)
+        raise ValueError(f"No public key found in {filename}")
 
     return public_key, secret_key
 

@@ -65,8 +65,8 @@ def zmq_poll(sockets, timeout):
                     # don't allow negative ms_passed,
                     # which can happen on old Python versions without time.monotonic.
                     warnings.warn(
-                        "Negative elapsed time for interrupted poll: %s."
-                        "  Did the clock change?" % ms_passed,
+                        f"Negative elapsed time for interrupted poll: {ms_passed}."
+                        "  Did the clock change?",
                         RuntimeWarning,
                     )
                     ms_passed = 0

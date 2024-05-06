@@ -54,7 +54,7 @@ class MessageTracker:
                     raise ValueError("Not a tracked message")
                 self.peers.add(obj.tracker)
             else:
-                raise TypeError("Require Events or Message Frames, not %s" % type(obj))
+                raise TypeError(f"Require Events or Message Frames, not {type(obj)}")
 
     @property
     def done(self):
