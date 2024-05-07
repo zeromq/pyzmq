@@ -249,7 +249,7 @@ def openssh_tunnel(
 
     if ':' in server:
         server, port = server.split(':')
-        ssh += " -p %s" % port
+        ssh += f" -p {port}"
 
     cmd = f"{ssh} -O check {server}"
     (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
@@ -297,7 +297,7 @@ def openssh_tunnel(
                 print(tunnel.exitstatus)
                 print(tunnel.before)
                 print(tunnel.after)
-                raise RuntimeError("tunnel '%s' failed to start" % (cmd))
+                raise RuntimeError(f"tunnel '{cmd}' failed to start")
             else:
                 return tunnel.pid
         else:
@@ -305,7 +305,7 @@ def openssh_tunnel(
                 print("Password rejected, try again")
                 password = None
             if password is None:
-                password = getpass("%s's password: " % (server))
+                password = getpass(f"{server}'s password: ")
             tunnel.sendline(password)
             failed = True
     raise MaxRetryExceeded(f"Failed after {MAX_RETRY} attempts")
@@ -375,7 +375,7 @@ def paramiko_tunnel(
 
     if password is None:
         if not _try_passwordless_paramiko(server, keyfile):
-            password = getpass("%s's password: " % (server))
+            password = getpass(f"{server}'s password: ")
 
     p = Process(
         target=_paramiko_tunnel,
@@ -424,7 +424,7 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
         print('SIGINT: Port forwarding stopped cleanly')
         sys.exit(0)
     except Exception as e:
-        print("Port forwarding stopped uncleanly: %s" % e)
+        print(f"Port forwarding stopped uncleanly: {e}")
         sys.exit(255)
 
 

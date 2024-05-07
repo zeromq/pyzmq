@@ -61,7 +61,7 @@ def ifndefs():
     lines = ['#define _PYZMQ_UNDEFINED (-9999)']
     for name in all_names:
         if not no_prefix(name):
-            name = 'ZMQ_%s' % name
+            name = f'ZMQ_{name}'
         lines.append(ifndef_t.format(name))
     return dict(ZMQ_IFNDEFS='\n'.join(lines))
 
@@ -104,11 +104,11 @@ def promoted_constants():
 
 def generate_file(fname, ns_func, dest_dir="."):
     """generate a constants file from its template"""
-    with open(pjoin(root, 'buildutils', 'templates', '%s' % fname)) as f:
+    with open(pjoin(root, 'buildutils', 'templates', f'{fname}')) as f:
         tpl = f.read()
     out = tpl.format(**ns_func())
     dest = pjoin(dest_dir, fname)
-    print("generating %s from template" % dest)
+    print(f"generating {dest} from template")
     with open(dest, 'w') as f:
         f.write(out)
     if fname.endswith(".py"):

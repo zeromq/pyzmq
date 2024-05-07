@@ -50,7 +50,7 @@ def event_monitor_thread_async(
     monitor: a zmq monitor socket, from calling:  my_zmq_socket.get_monitor_socket()
     loop: an asyncio event loop, from calling zmq.asyncio.asyncio.get_event_loop() , whens starting a thread it does not contains an event loop
     """
-    print("libzmq-%s" % zmq.zmq_version())
+    print(f"libzmq-{zmq.zmq_version()}")
     if zmq.zmq_version_info() < (4, 0):
         raise RuntimeError("monitoring in libzmq version < 4.0 is not supported")
 
@@ -99,7 +99,7 @@ def event_monitor_thread(monitor: zmq.Socket) -> None:
     monitor: a zmq monitor socket, from calling:  my_zmq_socket.get_monitor_socket()
     """
 
-    print("libzmq-%s" % zmq.zmq_version())
+    print(f"libzmq-{zmq.zmq_version()}")
     if zmq.zmq_version_info() < (4, 0):
         raise RuntimeError("monitoring in libzmq version < 4.0 is not supported")
 

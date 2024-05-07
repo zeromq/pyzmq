@@ -622,7 +622,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         elif kind == 'recv':
             recv = self._shadow_sock.recv
         else:
-            raise ValueError("Unhandled recv event type: %r" % kind)
+            raise ValueError(f"Unhandled recv event type: {kind!r}")
 
         kwargs['flags'] |= _zmq.DONTWAIT
         try:
@@ -662,7 +662,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         elif kind == 'send':
             send = self._shadow_sock.send
         else:
-            raise ValueError("Unhandled send event type: %r" % kind)
+            raise ValueError(f"Unhandled send event type: {kind!r}")
 
         kwargs['flags'] |= _zmq.DONTWAIT
         try:

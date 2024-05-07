@@ -218,10 +218,10 @@ def throughput(url, count, size, poll=False, copy=True, quiet=False):
     if not quiet:
         print("message size   : %8i     [B]" % size)
         print("message count  : %8i     [msgs]" % count)
-        print("send only      : %8.0f     [msg/s]" % send_throughput)
-        print("mean throughput: %8.0f     [msg/s]" % throughput)
-        print("mean throughput: %12.3f [Mb/s]" % megabits)
-        print("test time      : %12.3f [s]" % elapsed)
+        print(f"send only      : {send_throughput:8.0f}     [msg/s]")
+        print(f"mean throughput: {throughput:8.0f}     [msg/s]")
+        print(f"mean throughput: {megabits:12.3f} [Mb/s]")
+        print(f"test time      : {elapsed:12.3f} [s]")
     ctx.destroy()
     return (send_throughput, throughput)
 

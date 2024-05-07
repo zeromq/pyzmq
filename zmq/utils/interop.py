@@ -26,4 +26,4 @@ def cast_int_addr(n: Any) -> int:
         if isinstance(n, ffi.CData):
             return int(ffi.cast("size_t", n))
 
-    raise ValueError("Cannot cast %r to int" % n)
+    raise ValueError(f"Cannot cast {n!r} to int")

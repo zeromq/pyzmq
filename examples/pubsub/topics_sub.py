@@ -38,7 +38,7 @@ def main() -> None:
         print("Receiving messages on ALL topics...")
         s.setsockopt(zmq.SUBSCRIBE, b'')
     else:
-        print("Receiving messages on topics: %s ..." % topics)
+        print(f"Receiving messages on topics: {topics} ...")
         for t in topics:
             s.setsockopt(zmq.SUBSCRIBE, t.encode('utf-8'))
     print

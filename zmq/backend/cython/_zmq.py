@@ -755,13 +755,13 @@ class Socket:
 
         if opt_type == _OptType.bytes:
             if not isinstance(optval, bytes):
-                raise TypeError('expected bytes, got: %r' % optval)
+                raise TypeError(f'expected bytes, got: {optval!r}')
             optval_c = PyBytes_AsString(optval)
             sz = PyBytes_Size(optval)
             _setsockopt(self.handle, option, optval_c, sz)
         elif opt_type == _OptType.int64:
             if not isinstance(optval, int):
-                raise TypeError('expected int, got: %r' % optval)
+                raise TypeError(f'expected int, got: {optval!r}')
             optval_int64_c = optval
             _setsockopt(self.handle, option, address(optval_int64_c), sizeof(int64_t))
         else:
@@ -771,7 +771,7 @@ class Socket:
             # sockopts will still raise just the same, but it will be libzmq doing
             # the raising.
             if not isinstance(optval, int):
-                raise TypeError('expected int, got: %r' % optval)
+                raise TypeError(f'expected int, got: {optval!r}')
             optval_int_c = optval
             _setsockopt(self.handle, option, address(optval_int_c), sizeof(int))
 
@@ -876,7 +876,7 @@ class Socket:
             addr = addr_b.decode('utf-8')
 
         if not isinstance(addr_b, bytes):
-            raise TypeError('expected str, got: %r' % addr)
+            raise TypeError(f'expected str, got: {addr!r}')
         c_addr = addr_b
         rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
@@ -921,7 +921,7 @@ class Socket:
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
-            raise TypeError('expected str, got: %r' % addr)
+            raise TypeError(f'expected str, got: {addr!r}')
         c_addr = addr
 
         while True:
@@ -957,7 +957,7 @@ class Socket:
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
-            raise TypeError('expected str, got: %r' % addr)
+            raise TypeError(f'expected str, got: {addr!r}')
         c_addr = addr
 
         rc = zmq_unbind(self.handle, c_addr)
@@ -987,7 +987,7 @@ class Socket:
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
         if not isinstance(addr, bytes):
-            raise TypeError('expected str, got: %r' % addr)
+            raise TypeError(f'expected str, got: {addr!r}')
         c_addr = addr
 
         rc = zmq_disconnect(self.handle, c_addr)
@@ -1523,7 +1523,7 @@ def zmq_poll(sockets, timeout: C.int = -1):
             free(pollitems)
             raise TypeError(
                 "Socket must be a 0MQ socket, an integer fd or have "
-                "a fileno() method: %r" % s
+                f"a fileno() method: {s!r}"
             )
 
     ms_passed: int = 0

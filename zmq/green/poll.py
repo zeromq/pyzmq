@@ -38,7 +38,7 @@ class _Poller(_original_Poller):
             else:
                 raise TypeError(
                     'Socket must be a 0MQ socket, an integer fd '
-                    'or have a fileno() method: %r' % socket
+                    f'or have a fileno() method: {socket!r}'
                 )
 
             if flags & zmq.POLLIN:

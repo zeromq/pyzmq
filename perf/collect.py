@@ -106,7 +106,7 @@ def main():
 
     test = args.test
     full_name = full_names[test]
-    print("Running %s test" % full_name)
+    print(f"Running {full_name} test")
     fname = test + '.pickle'
     import pandas as pd
 

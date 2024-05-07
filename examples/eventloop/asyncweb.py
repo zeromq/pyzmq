@@ -29,7 +29,7 @@ def slow_responder() -> None:
     i = 0
     while True:
         frame, msg = socket.recv_multipart()
-        print("\nworker received %r\n" % msg, end='')
+        print(f"\nworker received {msg!r}\n", end='')
         time.sleep(random.randint(1, 5))
         socket.send_multipart([frame, msg + b" to you too, #%i" % i])
         i += 1
@@ -52,7 +52,7 @@ class TestHandler(web.RequestHandler):
 
         # finish web request with worker's reply
         reply = await s.recv_string()
-        print("\nfinishing with %r\n" % reply)
+        print(f"\nfinishing with {reply!r}\n")
         self.write(reply)
 
 

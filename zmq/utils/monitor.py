@@ -42,7 +42,7 @@ def parse_monitor_message(msg: list[bytes]) -> _MonitorMessage:
         event description as dict with the keys `event`, `value`, and `endpoint`.
     """
     if len(msg) != 2 or len(msg[0]) != 6:
-        raise RuntimeError("Invalid event message format: %s" % msg)
+        raise RuntimeError(f"Invalid event message format: {msg}")
     event_id, value = struct.unpack("=hi", msg[0])
     event: _MonitorMessage = {
         'event': zmq.Event(event_id),

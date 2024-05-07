@@ -20,7 +20,7 @@ def line() -> None:
     print('-' * 40)
 
 
-print("libzmq-%s" % zmq.zmq_version())
+print(f"libzmq-{zmq.zmq_version()}")
 if zmq.zmq_version_info() < (4, 0):
     raise RuntimeError("monitoring in libzmq version < 4.0 is not supported")
 
