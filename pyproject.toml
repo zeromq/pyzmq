@@ -8,8 +8,6 @@ requires = [
 ]
 build-backend = "scikit_build_core.build"
 
-# build-backend = "setuptools.build_meta"
-
 # Project metadata
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 [project]
@@ -54,8 +52,8 @@ Tracker = "https://github.com/zeromq/pyzmq/issues"
 [tool.scikit-build]
 wheel.packages = ["zmq"]
 wheel.license-files = ["licenses/LICENSE*"]
-# 3.14 for FetchContent_MakeAvailable
-cmake.version = ">=3.14"
+# 3.15 is required by scikit-build-core
+cmake.version = ">=3.15"
 # only build/install the pyzmq component
 cmake.targets = ["pyzmq"]
 install.components = ["pyzmq"]
