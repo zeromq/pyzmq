@@ -6,7 +6,7 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
+from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest
 
 if PYPY:
     # cleanup of shared Context doesn't work on PyPy

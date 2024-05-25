@@ -6,7 +6,7 @@ import time
 
 import zmq
 from zmq import devices
-from zmq.tests import PYPY, BaseZMQTestCase
+from zmq_test_utils import PYPY, BaseZMQTestCase
 
 if PYPY or zmq.zmq_version_info() >= (4, 1):
     # cleanup of shared Context doesn't work on PyPy

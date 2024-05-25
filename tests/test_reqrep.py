@@ -3,7 +3,7 @@
 
 
 import zmq
-from zmq.tests import BaseZMQTestCase, GreenTest, have_gevent
+from zmq_test_utils import BaseZMQTestCase, GreenTest, have_gevent
 
 
 class TestReqRep(BaseZMQTestCase):

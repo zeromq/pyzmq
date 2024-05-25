@@ -43,7 +43,7 @@ def test_cython(language_level, request, tmpdir):
     request.addfinalizer(unimport)
 
     # this import tests the compilation
-    from . import cython_ext
+    from zmq_test_utils import cython_ext
 
     assert hasattr(cython_ext, 'send_recv_test')
 

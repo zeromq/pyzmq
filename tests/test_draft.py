@@ -6,7 +6,7 @@ import time
 import pytest
 
 import zmq
-from zmq.tests import BaseZMQTestCase
+from zmq_test_utils import BaseZMQTestCase
 
 
 class TestDraftSockets(BaseZMQTestCase):

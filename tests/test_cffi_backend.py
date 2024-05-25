@@ -1,7 +1,7 @@
 import time
 from unittest import TestCase
 
-from zmq.tests import SkipTest
+from zmq_test_utils import SkipTest
 
 try:
     from zmq.backend.cffi import (  # type: ignore

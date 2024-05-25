@@ -14,7 +14,7 @@ import pytest
 from pytest import mark
 
 import zmq
-from zmq.tests import PYPY, BaseZMQTestCase, GreenTest, SkipTest
+from zmq_test_utils import PYPY, BaseZMQTestCase, GreenTest, SkipTest
 
 
 class KwargTestSocket(zmq.Socket):

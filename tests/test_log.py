@@ -7,7 +7,7 @@ import time
 
 import zmq
 from zmq.log import handlers
-from zmq.tests import BaseZMQTestCase
+from zmq_test_utils import BaseZMQTestCase
 
 
 class TestPubLog(BaseZMQTestCase):
