@@ -26,24 +26,19 @@ cython_ext = os.path.join(HERE, "cython_ext.pyx")
 )
 @pytest.mark.parametrize('language_level', [3, 2])
 def test_cython(language_level, request, tmpdir):
-    assert 'zmq.tests.cython_ext' not in sys.modules
-
-    importers = pyximport.install(
+    hook = pyximport.install(
         setup_args=dict(include_dirs=zmq.get_includes()),
         language_level=language_level,
         build_dir=str(tmpdir),
     )
+    # don't actually need the hook, just the finder
+    pyximport.uninstall(*hook)
+    finder = hook[1]
 
-    cython_ext = None
-
-    def unimport():
-        pyximport.uninstall(*importers)
-        sys.modules.pop('zmq.tests.cython_ext', None)
-
-    request.addfinalizer(unimport)
-
-    # this import tests the compilation
-    from zmq_test_utils import cython_ext
+    # loading the module tests the compilation
+    spec = finder.find_spec("cython_ext", [HERE])
+    cython_ext = spec.loader.create_module(spec)
+    spec.loader.exec_module(cython_ext)
 
     assert hasattr(cython_ext, 'send_recv_test')
 
