@@ -75,13 +75,14 @@ void * malloc(size_t sz);
 void free(void *p);
 int get_ipc_path_max_len(void);
 
+typedef struct { ...; } mutex_t;
+
 typedef struct _zhint {
     void *sock;
-    void *mutex;
+    mutex_t *mutex;
     size_t id;
 } zhint;
 
-typedef ... mutex_t;
 mutex_t* mutex_allocate();
 
 int zmq_wrap_msg_init_data(zmq_msg_t *msg,
