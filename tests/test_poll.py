@@ -8,7 +8,7 @@ import time
 from pytest import mark
 
 import zmq
-from zmq.tests import GreenTest, PollZMQTestCase, have_gevent
+from zmq_test_utils import GreenTest, PollZMQTestCase, have_gevent
 
 
 def wait():

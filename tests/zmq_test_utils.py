@@ -32,10 +32,6 @@ PYPY = platform.python_implementation() == 'PyPy'
 # -----------------------------------------------------------------------------
 # skip decorators (directly from unittest)
 # -----------------------------------------------------------------------------
-warnings.warn(
-    "zmq.tests is deprecated in pyzmq 25, we recommend managing your own contexts and sockets.",
-    DeprecationWarning,
-)
 
 
 def _id(x):
@@ -71,16 +67,8 @@ class BaseZMQTestCase(TestCase):
     sockets: List[zmq.Socket]
 
     @property
-    def _is_pyzmq_test(self):
-        return self.__class__.__module__.split(".", 1)[0] == __name__.split(".", 1)[0]
-
-    @property
     def _should_test_timeout(self):
-        return (
-            self._is_pyzmq_test
-            and hasattr(signal, 'SIGALRM')
-            and self.test_timeout_seconds
-        )
+        return hasattr(signal, 'SIGALRM') and self.test_timeout_seconds
 
     @property
     def Context(self):

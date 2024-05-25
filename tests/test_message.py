@@ -16,7 +16,7 @@ else:
 import time
 
 import zmq
-from zmq.tests import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
+from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
 
 # some useful constants:
 

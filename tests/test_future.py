@@ -14,7 +14,7 @@ from tornado.ioloop import IOLoop
 
 import zmq
 from zmq.eventloop import future
-from zmq.tests import BaseZMQTestCase
+from zmq_test_utils import BaseZMQTestCase
 
 
 class TestFutureSocket(BaseZMQTestCase):

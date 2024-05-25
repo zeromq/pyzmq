@@ -14,7 +14,7 @@ import pytest
 import zmq
 import zmq.asyncio
 import zmq.auth
-from zmq.tests import SkipTest, skip_pypy
+from zmq_test_utils import SkipTest, skip_pypy
 
 try:
     import tornado

@@ -4,8 +4,8 @@ from functools import wraps
 
 from pytest import mark
 
-from zmq.tests import BaseZMQTestCase
 from zmq.utils.win32 import allow_interrupt
+from zmq_test_utils import BaseZMQTestCase
 
 
 def count_calls(f):

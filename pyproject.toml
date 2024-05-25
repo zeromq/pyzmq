@@ -67,6 +67,9 @@ exclude = [
 ]
 quote-style = "preserve"
 
+[tool.ruff.isort]
+known-first-party = ["zmq", "zmq_test_utils"]
+
 [tool.ruff.lint]
 select = [
     "E",
@@ -85,7 +88,7 @@ exclude = ["buildutils/templates/*"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F4", "E4"]
 "__init__.pyi" = ["F4", "E4"]
-"zmq/tests/*" = ["E4", "F4"]
+"tests/*" = ["E4", "F4"]
 "docs/source/conf.py" = ["E4"]
 "zmq/eventloop/*" = ["E402"]
 "zmq/ssh/forward.py" = ["E"]

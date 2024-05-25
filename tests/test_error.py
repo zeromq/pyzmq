@@ -5,7 +5,7 @@ from threading import Thread
 
 import zmq
 from zmq import Again, ContextTerminated, ZMQError, strerror
-from zmq.tests import BaseZMQTestCase
+from zmq_test_utils import BaseZMQTestCase
 
 
 class TestZMQError(BaseZMQTestCase):

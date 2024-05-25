@@ -8,7 +8,7 @@ from threading import Thread
 from pytest import mark
 
 import zmq
-from zmq.tests import BaseZMQTestCase, SkipTest
+from zmq_test_utils import BaseZMQTestCase, SkipTest
 
 # Partially based on EINTRBaseTest from CPython 3.5 eintr_tester
 

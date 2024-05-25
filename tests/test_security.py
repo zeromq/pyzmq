@@ -9,8 +9,8 @@ import time
 from threading import Thread
 
 import zmq
-from zmq.tests import PYPY, BaseZMQTestCase, SkipTest
 from zmq.utils import z85
+from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest
 
 USER = b"admin"
 PASS = b"password"

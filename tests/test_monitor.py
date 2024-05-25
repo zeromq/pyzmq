@@ -3,8 +3,8 @@
 
 import zmq
 import zmq.asyncio
-from zmq.tests import require_zmq_4
 from zmq.utils.monitor import recv_monitor_message
+from zmq_test_utils import require_zmq_4
 
 pytestmark = require_zmq_4
 import pytest

@@ -16,7 +16,7 @@ import pytest
 from pytest import mark
 
 import zmq
-from zmq.tests import BaseZMQTestCase, GreenTest, SkipTest, have_gevent, skip_pypy
+from zmq_test_utils import BaseZMQTestCase, GreenTest, SkipTest, have_gevent, skip_pypy
 
 pypy = platform.python_implementation().lower() == 'pypy'
 windows = platform.platform().lower().startswith('windows')
