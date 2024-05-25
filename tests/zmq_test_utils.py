@@ -67,16 +67,8 @@ class BaseZMQTestCase(TestCase):
     sockets: List[zmq.Socket]
 
     @property
-    def _is_pyzmq_test(self):
-        return self.__class__.__module__.split(".", 1)[0] == __name__.split(".", 1)[0]
-
-    @property
     def _should_test_timeout(self):
-        return (
-            self._is_pyzmq_test
-            and hasattr(signal, 'SIGALRM')
-            and self.test_timeout_seconds
-        )
+        return hasattr(signal, 'SIGALRM') and self.test_timeout_seconds
 
     @property
     def Context(self):
@@ -95,12 +87,6 @@ class BaseZMQTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        if not self._is_pyzmq_test:
-            warnings.warn(
-                "zmq.tests.BaseZMQTestCase is deprecated in pyzmq 25, we recommend managing your own contexts and sockets.",
-                DeprecationWarning,
-                stacklevel=3,
-            )
         if self.green and not have_gevent:
             raise SkipTest("requires gevent")
 

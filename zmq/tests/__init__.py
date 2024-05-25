@@ -99,12 +99,6 @@ class BaseZMQTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        if not self._is_pyzmq_test:
-            warnings.warn(
-                "zmq.tests.BaseZMQTestCase is deprecated in pyzmq 25, we recommend managing your own contexts and sockets.",
-                DeprecationWarning,
-                stacklevel=3,
-            )
         if self.green and not have_gevent:
             raise SkipTest("requires gevent")
 
