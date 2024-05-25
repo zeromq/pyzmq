@@ -75,7 +75,7 @@ void * malloc(size_t sz);
 void free(void *p);
 int get_ipc_path_max_len(void);
 
-typedef ... mutex_t;
+typedef struct { ...; } mutex_t;
 
 typedef struct _zhint {
     void *sock;
