@@ -11,7 +11,25 @@ try:
     if not cython.compiled:
         raise ImportError()
 except ImportError:
-    raise ImportError("zmq Cython backend has not been compiled") from None
+    from pathlib import Path
+
+    zmq_root = Path(__file__).parents[3]
+    msg = f"""
+    Attempting to import zmq Cython backend, which has not been compiled.
+
+    This probably means you are importing zmq from its source tree.
+    if this is what you want, make sure to do an in-place build first:
+
+        pip install -e '{zmq_root}'
+
+    If it is not, then '{zmq_root}' is probably on your sys.path,
+    when it shouldn't be. Is that your current working directory?
+
+    If neither of those is true and this file is actually installed,
+    something seems to have gone wrong with the install!
+    Please report at https://github.com/zeromq/pyzmq/issues
+    """
+    raise ImportError(msg)
 
 import time
 import warnings
