@@ -32,10 +32,6 @@ PYPY = platform.python_implementation() == 'PyPy'
 # -----------------------------------------------------------------------------
 # skip decorators (directly from unittest)
 # -----------------------------------------------------------------------------
-warnings.warn(
-    "zmq.tests is deprecated in pyzmq 25, we recommend managing your own contexts and sockets.",
-    DeprecationWarning,
-)
 
 
 def _id(x):
