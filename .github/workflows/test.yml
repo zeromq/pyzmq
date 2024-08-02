@@ -139,6 +139,11 @@ jobs:
         run: |
           pip install --upgrade pip wheel
           pip install -r test-requirements.txt
+      
+      - name: install free-threading dependencies
+        if: ${{ !matrix.free_threading }}
+        run: |
+          pip install --upgrade --pre -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple cython 
 
       - name: remove tornado
         if: matrix.tornado == 'none'
@@ -192,12 +197,18 @@ jobs:
           echo ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
 
       - name: build pyzmq
+        if: ${{ !matrix.free_threading }}
         run: |
           pip install -v -e .
 
+      - name: build pyzmq (free threading)
+        if: ${{ matrix.free_threading }}
+        run: |
+          pip install -v --no-build-isolation .
+
       - name: import zmq
         run: |
-          python -c "import zmq"
+          python -I -c "import zmq"
 
       - name: run tests
         run: |
