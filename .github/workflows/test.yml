@@ -124,6 +124,9 @@ jobs:
           channels: defaults,ad-testing/label/py313_nogil
           activate-envirionment: nogil
           show-channel-urls: true
+          packages:
+            - python=${{ matrix.python-version }}
+            - pip
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
