@@ -118,11 +118,12 @@ jobs:
           cache: pip
 
       - name: setup python (free threading)
-        uses: deadsnakes/action@v3.1.0
-        if: ${{ matrix.free_threading }}
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: ${{ matrix.python }}
-          nogil: true
+          python-version: ${{ matrix.python-version }}
+          channels: defaults,ad-testing/label/py313_nogil
+          activate-envirionment: nogil
+          show-channel-urls: true
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
