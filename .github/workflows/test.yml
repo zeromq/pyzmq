@@ -141,9 +141,12 @@ jobs:
           pip install -r test-requirements.txt
       
       - name: install free-threading dependencies
-        if: ${{ !matrix.free_threading }}
+        if: ${{ matrix.free_threading }}
         run: |
-          pip install --upgrade --pre -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple cython 
+          # need build deps for no-build-isolation
+          # remove after Cython 3.1
+          pip install scikit-build-core ninja packaging
+          pip install --upgrade --pre -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple cython
 
       - name: remove tornado
         if: matrix.tornado == 'none'
