@@ -12,4 +12,4 @@ extensions = [
         include_dirs=zmq.get_includes() + [numpy.get_include()],
     )
 ]
-setup(name="cython-zmq-example", ext_modules=cythonize(extensions))
+setup(name="cython-zmq-example", ext_modules=cythonize(extensions))  # type: ignore
