@@ -199,7 +199,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
     if (MSVC)
       # select vs build solution by msvc version number
       if (NOT PYZMQ_LIBSODIUM_VS_VERSION)
-        if(MSVC_VERSION GREATER 1940)
+        if(MSVC_VERSION GREATER_EQUAL 1940)
           message(STATUS "Unrecognized MSVC_VERSION=${MSVC_VERSION}")
           set(MSVC_VERSION 1939)
         endif()
