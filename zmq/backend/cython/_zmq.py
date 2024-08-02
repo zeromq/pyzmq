@@ -1,3 +1,4 @@
+# cython: freethreading_compatible = True
 """Cython backend for pyzmq"""
 
 # Copyright (C) PyZMQ Developers
