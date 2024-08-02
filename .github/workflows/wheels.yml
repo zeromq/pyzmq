@@ -138,9 +138,8 @@ jobs:
             architecture: x64
             cibw:
               arch: ARM64
-              skip: "cp37*"
               # free-threaded doesn't seem to work on Windows
-              skip: "*t-win*"
+              skip: "cp37* *t-win*"
 
     steps:
       - uses: actions/checkout@v4
