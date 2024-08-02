@@ -50,6 +50,7 @@ jobs:
 
           - os: macos-14
             python: "3.13-dev"
+            zmq: bundled
 
           - os: macos-13
             python: pypy-3.9
