@@ -139,9 +139,10 @@ jobs:
           echo $PATH
           echo "PATH=$PATH" >> "$GITHUB_ENV"
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
+          # need prerelease Cython until 3.1 is out
+          echo "PIP_PRE=1" >> "$GITHUB_ENV"
+          echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
         shell: micromamba-shell {0}
-
-
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
@@ -158,17 +159,6 @@ jobs:
         run: |
           pip install --upgrade pip wheel
           pip install -r test-requirements.txt
-      
-      - name: install free-threading dependencies
-        if: ${{ matrix.free_threading }}
-        run: |
-          conda info
-          which -a python
-          which -a pip
-          # need build deps for no-build-isolation
-          # remove after Cython 3.1
-          pip install scikit-build-core ninja packaging
-          pip install --upgrade --pre -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple cython
 
       - name: remove tornado
         if: matrix.tornado == 'none'
@@ -222,14 +212,8 @@ jobs:
           echo ZMQ_DRAFT_API=1 >> "$GITHUB_ENV"
 
       - name: build pyzmq
-        if: ${{ !matrix.free_threading }}
         run: |
           pip install -v -e .
-
-      - name: build pyzmq (free threading)
-        if: ${{ matrix.free_threading }}
-        run: |
-          pip install -v --no-build-isolation .
 
       - name: import zmq
         run: |
