@@ -118,15 +118,30 @@ jobs:
           cache: pip
 
       - name: setup python (free threading)
-        uses: conda-incubator/setup-miniconda@v3
+        if: ${{ matrix.free_threading }}
+        uses: mamba-org/setup-micromamba@v1
         with:
-          python-version: ${{ matrix.python-version }}
-          channels: defaults,ad-testing/label/py313_nogil
-          activate-envirionment: nogil
-          show-channel-urls: true
-          packages:
-            - python=${{ matrix.python-version }}
-            - pip
+          environment-name: nogil
+          condarc: |
+            channels:
+              - ad-testing/label/py313_nogil
+              - defaults
+          create-args: >-
+            python=${{ matrix.python-version }}
+            pip
+
+      - name: activate python (free threading)
+        if: ${{ matrix.free_threading }}
+        # light activate, just add env to path
+        # run this in micromamba-shell
+        # so we don't have to for the rest
+        run: |
+          echo $PATH
+          echo "PATH=$PATH" >> "$GITHUB_ENV"
+          echo "PYTHON_NOGIL=1" >> "$GITHUB_ENV"
+        shell: micromamba-shell {0}
+
+
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
@@ -147,6 +162,9 @@ jobs:
       - name: install free-threading dependencies
         if: ${{ matrix.free_threading }}
         run: |
+          conda info
+          which -a python
+          which -a pip
           # need build deps for no-build-isolation
           # remove after Cython 3.1
           pip install scikit-build-core ninja packaging
