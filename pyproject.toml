@@ -143,6 +143,7 @@ search = '__version__: str = "{current_version}"'
 
 [tool.cibuildwheel]
 build-verbosity = "1"
+free-threaded-support = true
 test-requires = ["pytest", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
