@@ -7,6 +7,15 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.1.0
+
+26.1.0 is the first release with wheels for CPython 3.13.
+Free-threading support in CPython 3.13 is experimental,
+but since libzmq sockets themselves aren't threadsafe, pyzmq sockets should still be handled with locks.
+
+- pyzmq tests are no longer distributed as part of the package
+- fix CFFI backend compilation with `-Werror=incompatible-pointer-types`
+
 ### 26.0.3
 
 - Add Cython as build dependency for non-pypy, non-cpython implementations (fixes install on pyston)
