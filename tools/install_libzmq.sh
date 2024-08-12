@@ -41,6 +41,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
 fi
 
 PREFIX="${ZMQ_PREFIX:-/usr/local}"
+# add rpath so auditwheel patches it
+export LDFLAGS="${LDFLAGS} -Wl,-rpath,$PREFIX/lib"
 
 curl -L -O "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VERSION}-RELEASE/libsodium-${LIBSODIUM_VERSION}.tar.gz"
 
