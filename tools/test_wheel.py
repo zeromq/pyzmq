@@ -50,8 +50,8 @@ def test_bundle_msvcp():
     print(dlls)
     # Is concrt140 needed? delvewheel doesn't detect it anymore
     # check for vcruntime?
-    should_bundle = ["msvcp140*.dll"]
-    shouldnt_bundle = []
+    should_bundle = []
+    shouldnt_bundle = ["msvcp140*.dll"]
 
     for pattern in shouldnt_bundle:
         matched = [dll for dll in dlls if fnmatch(dll, pattern)]

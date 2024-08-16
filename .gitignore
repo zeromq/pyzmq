@@ -49,3 +49,6 @@ _deps
 _src
 licenses
 .virtual_documents
+/libsodium-*
+/zeromq-*
+*.tar.gz
