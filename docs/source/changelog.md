@@ -7,6 +7,10 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.1.1
+
+Windows wheels now statically link msvcp instead of bundling msvcp.dll, which could cause compatibility problems.
+
 ### 26.1.0
 
 26.1.0 is the first release with wheels for CPython 3.13.

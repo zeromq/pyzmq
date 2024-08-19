@@ -178,6 +178,13 @@ repair-wheel-command = """\
         {wheel} \
 """
 
+[tool.cibuildwheel.windows.config-settings]
+# statically link MSVCP
+# see https://github.com/zeromq/pyzmq/issues/2012
+# and https://github.com/matplotlib/matplotlib/pull/28687
+"cmake.define.CMAKE_MSVC_RUNTIME_LIBRARY" = "MultiThreaded"
+"cmake.define.CMAKE_SHARED_LINKER_FLAGS" = "ucrt.lib;vcruntime.lib;/nodefaultlib:libucrt.lib;/nodefaultlib:libvcruntime.lib"
+
 [tool.cibuildwheel.windows.environment]
 ZMQ_PREFIX = "bundled"
 
