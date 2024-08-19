@@ -46,12 +46,10 @@ async def sender() -> None:
         await asyncio.sleep(1)
 
 
-asyncio.run(
-    asyncio.wait(
-        [
-            ping(),
-            receiver(),
-            sender(),
-        ]
-    )
-)
+async def main() -> None:
+    tasks = [asyncio.create_task(coroutine()) for coroutine in [ping, receiver, sender]]
+    await asyncio.wait(tasks)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
