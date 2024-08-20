@@ -7,6 +7,16 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.2
+
+Re-disable IPC in Windows wheels.
+
+Installing pyzmq from source on Windows should build with IPC enabled.
+
+IPC support via epoll on Windows was disabled in pyzmq 24 due to crashes,
+this was reintroduced somewhat unintentionally via the new build system in 26.0,
+but unfortunately the crashes remain, so IPC is disabled again in 26.2.
+
 ### 26.1.1
 
 Windows wheels now statically link msvcp instead of bundling msvcp.dll, which could cause compatibility problems.

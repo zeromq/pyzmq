@@ -178,14 +178,16 @@ repair-wheel-command = """\
 """
 
 [tool.cibuildwheel.windows.config-settings]
+"cmake.define.ZMQ_PREFIX" = "bundled"
 # statically link MSVCP
 # see https://github.com/zeromq/pyzmq/issues/2012
 # and https://github.com/matplotlib/matplotlib/pull/28687
 "cmake.define.CMAKE_MSVC_RUNTIME_LIBRARY" = "MultiThreaded"
 "cmake.define.CMAKE_SHARED_LINKER_FLAGS" = "ucrt.lib;vcruntime.lib;/nodefaultlib:libucrt.lib;/nodefaultlib:libvcruntime.lib"
-
-[tool.cibuildwheel.windows.environment]
-ZMQ_PREFIX = "bundled"
+# disable IPC/epoll on Windows
+# due to https://github.com/zeromq/pyzmq/issues/1981
+"cmake.define.ZMQ_HAVE_IPC" = "OFF"
+"cmake.define.POLLER" = "select"
 
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
