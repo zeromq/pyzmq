@@ -25,7 +25,7 @@ class SerializingSocket(zmq.Socket):
         """pack and compress an object with pickle and zlib."""
         pobj = pickle.dumps(obj, protocol)
         zobj = zlib.compress(pobj)
-        print('zipped pickle is %i bytes' % len(zobj))
+        print(f'zipped pickle is {len(zobj)} bytes')
         return self.send(zobj, flags=flags)
 
     def recv_zipped_pickle(self, flags: int = 0) -> Any:
@@ -67,7 +67,7 @@ def main() -> None:
     rep.bind('inproc://a')
     req.connect('inproc://a')
     A = numpy.ones((1024, 1024))
-    print("Array is %i bytes" % (A.nbytes))
+    print(f"Array is {A.nbytes} bytes")
 
     # send/recv with pickle+zip
     req.send_zipped_pickle(A)

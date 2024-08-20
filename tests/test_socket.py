@@ -328,7 +328,7 @@ class TestSocket(BaseZMQTestCase):
         sock = socket.socket()
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
-        iface = "%s:%i" % (addr, port)
+        iface = f"{addr}:{port}"
         sock.close()
         time.sleep(0.1)
 

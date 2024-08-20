@@ -30,7 +30,7 @@ def new_int_pointer():
 
 
 def new_binary_data(length):
-    return ffi.new('char[%d]' % length), nsp(ffi.sizeof('char') * length)
+    return ffi.new(f'char[{length:d}]'), nsp(ffi.sizeof('char') * length)
 
 
 def value_uint64_pointer(val):
@@ -46,7 +46,7 @@ def value_int_pointer(val):
 
 
 def value_binary_data(val, length):
-    return ffi.new('char[%d]' % (length + 1), val), ffi.sizeof('char') * length
+    return ffi.new(f'char[{length + 1:d}]', val), ffi.sizeof('char') * length
 
 
 ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8

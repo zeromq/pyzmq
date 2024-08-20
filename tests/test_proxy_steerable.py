@@ -34,13 +34,13 @@ class TestProxySteerable(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello'
         push = self.context.socket(zmq.PUSH)
-        push.connect("%s:%i" % (iface, port))
+        push.connect(f"{iface}:{port}")
         pull = self.context.socket(zmq.PULL)
-        pull.connect("%s:%i" % (iface, port2))
+        pull.connect(f"{iface}:{port2}")
         mon = self.context.socket(zmq.PULL)
-        mon.connect("%s:%i" % (iface, port3))
+        mon.connect(f"{iface}:{port3}")
         ctrl = self.context.socket(zmq.PAIR)
-        ctrl.connect("%s:%i" % (iface, port4))
+        ctrl.connect(f"{iface}:{port4}")
         push.send(msg)
         self.sockets.extend([push, pull, mon, ctrl])
         assert msg == self.recv(pull)
@@ -65,7 +65,7 @@ class TestProxySteerable(BaseZMQTestCase):
         )
         for port in ports:
             if port < min or port > max:
-                self.fail('Unexpected port number: %i' % port)
+                self.fail(f'Unexpected port number: {port}')
 
     def test_proxy_steerable_statistics(self):
         if zmq.zmq_version_info() < (4, 3):
@@ -80,13 +80,13 @@ class TestProxySteerable(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello'
         push = self.context.socket(zmq.PUSH)
-        push.connect("%s:%i" % (iface, port))
+        push.connect(f"{iface}:{port}")
         pull = self.context.socket(zmq.PULL)
-        pull.connect("%s:%i" % (iface, port2))
+        pull.connect(f"{iface}:{port2}")
         mon = self.context.socket(zmq.PULL)
-        mon.connect("%s:%i" % (iface, port3))
+        mon.connect(f"{iface}:{port3}")
         ctrl = self.context.socket(zmq.PAIR)
-        ctrl.connect("%s:%i" % (iface, port4))
+        ctrl.connect(f"{iface}:{port4}")
         push.send(msg)
         self.sockets.extend([push, pull, mon, ctrl])
         assert msg == self.recv(pull)

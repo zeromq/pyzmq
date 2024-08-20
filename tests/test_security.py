@@ -113,7 +113,7 @@ class TestSecurity(BaseZMQTestCase):
         assert server.plain_server == 0
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
-        client.connect("%s:%i" % (iface, port))
+        client.connect(f"{iface}:{port}")
         self.bounce(server, client, False)
 
     def test_plain(self):
@@ -139,7 +139,7 @@ class TestSecurity(BaseZMQTestCase):
         with self.zap():
             iface = 'tcp://127.0.0.1'
             port = server.bind_to_random_port(iface)
-            client.connect("%s:%i" % (iface, port))
+            client.connect(f"{iface}:{port}")
             self.bounce(server, client)
 
     def skip_plain_inauth(self):
@@ -157,7 +157,7 @@ class TestSecurity(BaseZMQTestCase):
         with self.zap():
             iface = 'tcp://127.0.0.1'
             port = server.bind_to_random_port(iface)
-            client.connect("%s:%i" % (iface, port))
+            client.connect(f"{iface}:{port}")
             client.send(b'ping')
             server.rcvtimeo = 250
             self.assertRaisesErrno(zmq.EAGAIN, server.recv)
@@ -234,5 +234,5 @@ class TestSecurity(BaseZMQTestCase):
         with self.zap():
             iface = 'tcp://127.0.0.1'
             port = server.bind_to_random_port(iface)
-            client.connect("%s:%i" % (iface, port))
+            client.connect(f"{iface}:{port}")
             self.bounce(server, client)

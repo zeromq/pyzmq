@@ -155,7 +155,7 @@ class _Socket(_original_Socket):
                 and self.getsockopt(zmq.EVENTS) & zmq.POLLOUT
             ):
                 print(
-                    "BUG: gevent may have missed a libzmq send event on %i!" % self.FD,
+                    f"BUG: gevent may have missed a libzmq send event on {self.FD}!",
                     file=sys.stderr,
                 )
         finally:
@@ -193,7 +193,7 @@ class _Socket(_original_Socket):
                 and self.getsockopt(zmq.EVENTS) & zmq.POLLIN
             ):
                 print(
-                    "BUG: gevent may have missed a libzmq recv event on %i!" % self.FD,
+                    f"BUG: gevent may have missed a libzmq recv event on {self.FD}!",
                     file=sys.stderr,
                 )
         finally:

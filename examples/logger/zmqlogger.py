@@ -28,7 +28,7 @@ LOG_LEVELS = (
 def sub_logger(port: int, level: int = logging.DEBUG) -> None:
     ctx = zmq.Context()
     sub = ctx.socket(zmq.SUB)
-    sub.bind('tcp://127.0.0.1:%i' % port)
+    sub.bind(f'tcp://127.0.0.1:{port}')
     sub.setsockopt(zmq.SUBSCRIBE, b"")
     logging.basicConfig(level=level)
 
@@ -46,17 +46,17 @@ def sub_logger(port: int, level: int = logging.DEBUG) -> None:
 def log_worker(port: int, interval: float = 1, level: int = logging.DEBUG) -> None:
     ctx = zmq.Context()
     pub = ctx.socket(zmq.PUB)
-    pub.connect('tcp://127.0.0.1:%i' % port)
+    pub.connect(f'tcp://127.0.0.1:{port}')
 
     logger = logging.getLogger(str(os.getpid()))
     logger.setLevel(level)
     handler: PUBHandler = PUBHandler(pub)
     logger.addHandler(handler)
-    print("starting logger at %i with level=%s" % (os.getpid(), level))
+    print(f"starting logger at {os.getpid()} with level={level}")
 
     while True:
         level = random.choice(LOG_LEVELS)
-        logger.log(level, "Hello from %i!" % os.getpid())
+        logger.log(level, f"Hello from {os.getpid()}!")
         time.sleep(interval)
 
 

@@ -25,11 +25,10 @@ def encode(rawbytes):
     """encode raw bytes into Z85"""
     # Accepts only byte arrays bounded to 4 bytes
     if len(rawbytes) % 4:
-        raise ValueError("length must be multiple of 4, not %i" % len(rawbytes))
+        raise ValueError(f"length must be multiple of 4, not {len(rawbytes)}")
 
-    nvalues = len(rawbytes) / 4
-
-    values = struct.unpack('>%dI' % nvalues, rawbytes)
+    nvalues = len(rawbytes) // 4
+    values = struct.unpack(f'>{nvalues:d}I', rawbytes)
     encoded = []
     for v in values:
         for offset in _85s:
@@ -47,13 +46,13 @@ def decode(z85bytes):
             raise ValueError('string argument should contain only ASCII characters')
 
     if len(z85bytes) % 5:
-        raise ValueError("Z85 length must be multiple of 5, not %i" % len(z85bytes))
+        raise ValueError(f"Z85 length must be multiple of 5, not {len(z85bytes)}")
 
-    nvalues = len(z85bytes) / 5
+    nvalues = len(z85bytes) // 5
     values = []
     for i in range(0, len(z85bytes), 5):
         value = 0
         for j, offset in enumerate(_85s):
             value += Z85MAP[z85bytes[i + j]] * offset
         values.append(value)
-    return struct.pack('>%dI' % nvalues, *values)
+    return struct.pack(f'>{nvalues:d}I', *values)

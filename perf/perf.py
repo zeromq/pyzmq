@@ -133,8 +133,8 @@ def latency(url, count, size, poll=False, copy=True, quiet=False):
     latency = 1e6 * elapsed / (count * 2.0)
 
     if not quiet:
-        print("message size   : %8i     [B]" % (size,))
-        print("roundtrip count: %8i     [msgs]" % (count,))
+        print(f"message size   : {size:8d}     [B]")
+        print(f"roundtrip count: {count:8d}     [msgs]")
         print(f"mean latency   : {latency:12.3f} [µs]")
         print(f"test time      : {elapsed:12.3f} [s]")
     ctx.destroy()
@@ -216,8 +216,8 @@ def throughput(url, count, size, poll=False, copy=True, quiet=False):
     megabits = throughput * size * 8 / 1e6
 
     if not quiet:
-        print("message size   : %8i     [B]" % size)
-        print("message count  : %8i     [msgs]" % count)
+        print(f"message size   : {size:8d}     [B]")
+        print(f"message count  : {count:8d}     [msgs]")
         print(f"send only      : {send_throughput:8.0f}     [msg/s]")
         print(f"mean throughput: {throughput:8.0f}     [msg/s]")
         print(f"mean throughput: {megabits:12.3f} [Mb/s]")

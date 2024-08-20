@@ -34,7 +34,7 @@ class ProxyBase:
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 
-        self.bind_mon('%s:%i' % (addr, port))
+        self.bind_mon(f'{addr}:{port}')
 
         return port
 

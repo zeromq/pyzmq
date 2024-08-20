@@ -29,7 +29,7 @@ print("Event names:")
 for name in dir(zmq):
     if name.startswith('EVENT_'):
         value = getattr(zmq, name)
-        print("%21s : %4i" % (name, value))
+        print(f"{name:21} : {value:4}")
         EVENT_MAP[value] = name
 
 

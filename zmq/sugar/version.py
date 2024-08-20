@@ -54,7 +54,7 @@ def pyzmq_version_info() -> tuple[int, int, int] | tuple[int, int, int, float]:
 
 def zmq_version() -> str:
     """return the version of libzmq as a string"""
-    return "%i.%i.%i" % zmq_version_info()
+    return "{}.{}.{}".format(*zmq_version_info())
 
 
 __all__ = [

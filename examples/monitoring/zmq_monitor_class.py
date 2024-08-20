@@ -59,7 +59,7 @@ def event_monitor_thread_async(
     for name in dir(zmq):
         if name.startswith('EVENT_'):
             value = getattr(zmq, name)
-            print("%21s : %4i" % (name, value))
+            print(f"{name:21} : {value:4}")
             EVENT_MAP[value] = name
 
     print("\n")
@@ -108,7 +108,7 @@ def event_monitor_thread(monitor: zmq.Socket) -> None:
     for name in dir(zmq):
         if name.startswith('EVENT_'):
             value = getattr(zmq, name)
-            print("%21s : %4i" % (name, value))
+            print(f"{name:21} : {value:4}")
             EVENT_MAP[value] = name
 
     print()

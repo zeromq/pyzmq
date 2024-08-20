@@ -746,11 +746,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
                 if len(rmsg) > 32:
                     rmsg = rmsg[:32] + '...'
                 raise TypeError(
-                    "Frame %i (%s) does not support the buffer interface."
-                    % (
-                        i,
-                        rmsg,
-                    )
+                    f"Frame {i} ({rmsg}) does not support the buffer interface."
                 )
         for msg in msg_parts[:-1]:
             self.send(msg, zmq.SNDMORE | flags, copy=copy, track=track)

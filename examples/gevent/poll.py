@@ -10,7 +10,7 @@ def sender():
     sender.connect('inproc://polltest2')
 
     for i in range(10):
-        sender.send('test %d' % i)
+        sender.send(f'test {i}')
         gevent.sleep(1)
 
 

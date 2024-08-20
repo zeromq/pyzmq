@@ -27,7 +27,7 @@ async def push_pull(socket):
     push = zmqstream.ZMQStream(socket(zmq.PUSH))
     pull = zmqstream.ZMQStream(socket(zmq.PULL))
     port = push.bind_to_random_port('tcp://127.0.0.1')
-    pull.connect('tcp://127.0.0.1:%i' % port)
+    pull.connect(f'tcp://127.0.0.1:{port}')
     return (push, pull)
 
 
