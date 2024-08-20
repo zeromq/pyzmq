@@ -1740,7 +1740,7 @@ def _mq_relay(
             return rc
 
         # send second id (id_msg) first
-        #!!!! always send a copy before the original !!!!
+        # !!!! always send a copy before the original !!!!
         rc = zmq_msg_copy(address(side_msg), address(id_msg))
         if rc < 0:
             return rc
