@@ -68,7 +68,7 @@ exclude = [
 ]
 quote-style = "preserve"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["zmq", "zmq_test_utils"]
 
 [tool.ruff.lint]
@@ -83,7 +83,6 @@ ignore = [
     "E721", # compare types
     "F841", # unused variables
 ]
-ignore-init-module-imports = true
 exclude = ["buildutils/templates/*"]
 
 [tool.ruff.lint.per-file-ignores]
