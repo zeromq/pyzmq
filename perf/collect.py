@@ -46,7 +46,7 @@ def compute_data_point(
     count = 2
     results = []
     print(f'copy={copy}, size={size}')
-    print('%8s %5s %7s' % ('count', 'dt', 'result'))
+    print(f"{'count':8} {'dt':5} {'result':7}")
     while duration < t_max:
         with timer() as get_duration:
             result = do_run(

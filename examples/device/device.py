@@ -19,7 +19,7 @@ def produce(url, ident):
     s.connect(url)
     print(f"Producing {ident}")
     for i in range(MSGS):
-        s.send(('%s: %i' % (ident, time.time())).encode('utf8'))
+        s.send((f'{ident}: {time.time():.0f}').encode())
         time.sleep(1)
     print(f"Producer {ident} done")
     s.close()

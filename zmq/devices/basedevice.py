@@ -124,7 +124,7 @@ class Device:
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 
-        self.bind_in('%s:%i' % (addr, port))
+        self.bind_in(f'{addr}:{port}')
 
         return port
 
@@ -159,7 +159,7 @@ class Device:
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 
-        self.bind_out('%s:%i' % (addr, port))
+        self.bind_out(f'{addr}:{port}')
 
         return port
 
@@ -183,7 +183,7 @@ class Device:
                 for i in range(5):
                     port = binder.bind_to_random_port(addr, *args, **kwargs)
 
-                    new_addr = '%s:%i' % (addr, port)
+                    new_addr = f'{addr}:{port}'
 
                     if new_addr in self._random_addrs:
                         continue

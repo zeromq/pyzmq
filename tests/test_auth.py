@@ -145,7 +145,7 @@ class AuthTest:
         result = False
         iface = 'tcp://127.0.0.1'
         port = server.bind_to_random_port(iface)
-        client.connect("%s:%i" % (iface, port))
+        client.connect(f"{iface}:{port}")
         msg = [b"Hello World"]
         # run poll on server twice
         # to flush spurious events

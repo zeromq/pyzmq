@@ -28,7 +28,7 @@ while True:
     time.sleep(t)
     for i in range(4):
         n += 1
-        msg = 'ping %i' % n
+        msg = f'ping {n}'
         tic = time.time()
         req.send_string(msg)
         resp = req.recv_string()

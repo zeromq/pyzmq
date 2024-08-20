@@ -32,7 +32,7 @@ class ProxySteerableBase:
         """
         port = self._reserve_random_port(addr, *args, **kwargs)
 
-        self.bind_ctrl('%s:%i' % (addr, port))
+        self.bind_ctrl(f'{addr}:{port}')
 
         return port
 

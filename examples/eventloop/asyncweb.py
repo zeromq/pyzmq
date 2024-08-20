@@ -31,7 +31,7 @@ def slow_responder() -> None:
         frame, msg = socket.recv_multipart()
         print(f"\nworker received {msg!r}\n", end='')
         time.sleep(random.randint(1, 5))
-        socket.send_multipart([frame, msg + b" to you too, #%i" % i])
+        socket.send_multipart([frame, msg + f" to you too, #{i}".encode()])
         i += 1
 
 

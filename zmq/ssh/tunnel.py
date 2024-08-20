@@ -200,7 +200,7 @@ def open_tunnel(addr, server, keyfile=None, password=None, paramiko=None, timeou
         password=password,
         timeout=timeout,
     )
-    return 'tcp://127.0.0.1:%i' % lport, tunnel
+    return f'tcp://127.0.0.1:{lport}', tunnel
 
 
 def openssh_tunnel(
@@ -255,25 +255,12 @@ def openssh_tunnel(
     (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
     if not exitstatus:
         pid = int(output[output.find(b"(pid=") + 5 : output.find(b")")])
-        cmd = "%s -O forward -L 127.0.0.1:%i:%s:%i %s" % (
-            ssh,
-            lport,
-            remoteip,
-            rport,
-            server,
-        )
+        cmd = f"{ssh} -O forward -L 127.0.0.1:{lport}:{remoteip}:{rport} {server}"
         (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
         if not exitstatus:
             atexit.register(_stop_tunnel, cmd.replace("-O forward", "-O cancel", 1))
             return pid
-    cmd = "%s -f -S none -L 127.0.0.1:%i:%s:%i %s sleep %i" % (
-        ssh,
-        lport,
-        remoteip,
-        rport,
-        server,
-        timeout,
-    )
+    cmd = f"{ssh} -f -S none -L 127.0.0.1:{lport}:{remoteip}:{rport} {server} sleep {timeout}"
 
     # pop SSH_ASKPASS from env
     env = os.environ.copy()
@@ -412,7 +399,7 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
     #        else:
     #            raise
     except Exception as e:
-        print('*** Failed to connect to %s:%d: %r' % (server, port, e))
+        print(f'*** Failed to connect to {server}:{port}: {e!r}')
         sys.exit(1)
 
     # Don't let SIGINT kill the tunnel subprocess

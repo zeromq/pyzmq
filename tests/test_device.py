@@ -33,7 +33,7 @@ class TestDevice(BaseZMQTestCase):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
-        dev.connect_in('tcp://127.0.0.1:%i' % port)
+        dev.connect_in(f'tcp://127.0.0.1:{port}')
         dev.start()
         time.sleep(0.25)
         msg = b'hello'
@@ -44,7 +44,7 @@ class TestDevice(BaseZMQTestCase):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         req = self.context.socket(zmq.REQ)
         port = req.bind_to_random_port('tcp://127.0.0.1')
-        dev.connect_out('tcp://127.0.0.1:%i' % port)
+        dev.connect_out(f'tcp://127.0.0.1:{port}')
         dev.start()
         time.sleep(0.25)
         msg = b'hello again'
@@ -59,7 +59,7 @@ class TestDevice(BaseZMQTestCase):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         port = dev.bind_in_to_random_port('tcp://127.0.0.1')
         req = self.context.socket(zmq.REQ)
-        req.connect('tcp://127.0.0.1:%i' % port)
+        req.connect(f'tcp://127.0.0.1:{port}')
         dev.start()
         time.sleep(0.25)
         msg = b'hello'
@@ -70,7 +70,7 @@ class TestDevice(BaseZMQTestCase):
         dev = devices.ThreadDevice(zmq.QUEUE, zmq.REP, -1)
         port = dev.bind_in_to_random_port('tcp://127.0.0.1')
         req = self.context.socket(zmq.REQ)
-        req.connect('tcp://127.0.0.1:%i' % port)
+        req.connect(f'tcp://127.0.0.1:{port}')
         dev.start()
         time.sleep(0.25)
         msg = b'hello again'
@@ -92,7 +92,7 @@ class TestDevice(BaseZMQTestCase):
         )
         for port in ports:
             if port < min or port > max:
-                self.fail('Unexpected port number: %i' % port)
+                self.fail(f'Unexpected port number: {port}')
 
     def test_device_bind_to_random_binderror(self):
         dev = devices.ThreadDevice(zmq.PULL, zmq.PUSH, -1)
@@ -117,11 +117,11 @@ class TestDevice(BaseZMQTestCase):
         time.sleep(0.25)
         msg = b'hello'
         push = self.context.socket(zmq.PUSH)
-        push.connect("%s:%i" % (iface, port))
+        push.connect(f"{iface}:{port}")
         pull = self.context.socket(zmq.PULL)
-        pull.connect("%s:%i" % (iface, port2))
+        pull.connect(f"{iface}:{port2}")
         mon = self.context.socket(zmq.PULL)
-        mon.connect("%s:%i" % (iface, port3))
+        mon.connect(f"{iface}:{port3}")
         push.send(msg)
         self.sockets.extend([push, pull, mon])
         assert msg == self.recv(pull)
@@ -143,7 +143,7 @@ class TestDevice(BaseZMQTestCase):
         )
         for port in ports:
             if port < min or port > max:
-                self.fail('Unexpected port number: %i' % port)
+                self.fail(f'Unexpected port number: {port}')
 
 
 if have_gevent:
@@ -158,7 +158,7 @@ if have_gevent:
             self.sockets.extend([req, rep])
             port = rep.bind_to_random_port('tcp://127.0.0.1')
             g = gevent.spawn(zmq.green.device, zmq.QUEUE, rep, rep)
-            req.connect('tcp://127.0.0.1:%i' % port)
+            req.connect(f'tcp://127.0.0.1:{port}')
             req.send(b'hi')
             timeout = gevent.Timeout(3)
             timeout.start()

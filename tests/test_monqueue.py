@@ -28,9 +28,9 @@ class TestMonitoredQueue(BaseZMQTestCase):
         mport = mon.bind_to_random_port('tcp://127.0.0.1')
         mon.setsockopt(zmq.SUBSCRIBE, mon_sub)
 
-        self.device.connect_in("tcp://127.0.0.1:%i" % aport)
-        self.device.connect_out("tcp://127.0.0.1:%i" % bport)
-        self.device.connect_mon("tcp://127.0.0.1:%i" % mport)
+        self.device.connect_in(f"tcp://127.0.0.1:{aport}")
+        self.device.connect_out(f"tcp://127.0.0.1:{bport}")
+        self.device.connect_mon(f"tcp://127.0.0.1:{mport}")
         self.device.start()
         time.sleep(0.2)
         try:
@@ -191,8 +191,8 @@ class TestMonitoredQueue(BaseZMQTestCase):
         b.identity = b'b'
         self.sockets.extend([a, b])
 
-        a.connect('tcp://127.0.0.1:%i' % porta)
-        b.connect('tcp://127.0.0.1:%i' % portb)
+        a.connect(f'tcp://127.0.0.1:{porta}')
+        b.connect(f'tcp://127.0.0.1:{portb}')
         dev.start()
         time.sleep(1)
         if zmq.zmq_version_info() >= (3, 1, 0):
