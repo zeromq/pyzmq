@@ -122,12 +122,8 @@ async def test_recv_json_cancelled(push_pull):
     obj = dict(a=5)
     await a.send_json(obj)
     # CancelledError change in 3.8 https://bugs.python.org/issue32528
-    if sys.version_info < (3, 8):
-        with pytest.raises(CancelledError):
-            recvd = await f
-    else:
-        with pytest.raises(asyncio.exceptions.CancelledError):
-            recvd = await f
+    with pytest.raises(asyncio.exceptions.CancelledError):
+        recvd = await f
     assert f.done()
     # give it a chance to incorrectly consume the event
     events = await b.poll(timeout=5)
