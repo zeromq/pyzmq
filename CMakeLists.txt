@@ -285,6 +285,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   # use libzmq's own cmake, so we can import the libzmq-static target
   set(ENABLE_CURVE ON)
   set(ENABLE_DRAFTS ${ZMQ_DRAFT_API})
+  set(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "OFF")
   set(WITH_LIBSODIUM ON)
   set(WITH_LIBSODIUM_STATIC ON)
   set(LIBZMQ_PEDANTIC OFF)
