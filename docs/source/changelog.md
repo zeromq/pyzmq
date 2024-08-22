@@ -9,13 +9,21 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ### 26.2
 
-Re-disable IPC in Windows wheels.
+26.2 fixes some regressions introduced by the new build system in 26.0:
 
-Installing pyzmq from source on Windows should build with IPC enabled.
+These changes all match the behavior of pyzmq 25.1.2:
+
+- include libzmq location in rpath when building from source
+- restore libsodium randombytes_close fix for bundled libzmq
+- Disable sometimes-broken IPC/EPOLL on Windows
+
+Installing pyzmq from source on Windows should build with IPC enabled by default,
+but the Windows wheels on PyPI have it disabled because it produces unavoidable crashes for some users.
 
 IPC support via epoll on Windows was disabled in pyzmq 24 due to crashes,
-this was reintroduced somewhat unintentionally via the new build system in 26.0,
+this was reintroduced somewhat unintentionally via the new build system in 26.0 (there was a chance libzmq 4.3.5 would fix it),
 but unfortunately the crashes remain, so IPC is disabled again in 26.2.
+See [issue #1981](https://github.com/zeromq/pyzmq/issues/1981) for more details.
 
 ### 26.1.1
 
