@@ -188,8 +188,10 @@ repair-wheel-command = """\
 "cmake.define.CMAKE_SHARED_LINKER_FLAGS" = "ucrt.lib;vcruntime.lib;/nodefaultlib:libucrt.lib;/nodefaultlib:libvcruntime.lib"
 # disable IPC/epoll on Windows
 # due to https://github.com/zeromq/pyzmq/issues/1981
-"cmake.define.ZMQ_HAVE_IPC" = "OFF"
-"cmake.define.POLLER" = "select"
+# "cmake.define.ZMQ_HAVE_IPC" = "OFF"
+# "cmake.define.POLLER" = "select"
+"cmake.define.PYZMQ_LIBZMQ_URL" = "https://github.com/minrk/libzmq/archive/ipc-can-fail.tar.gz"
+
 
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]

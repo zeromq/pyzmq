@@ -82,7 +82,6 @@ endif()
 if (PYZMQ_LIBZMQ_VERSION AND NOT PYZMQ_LIBZMQ_URL)
   set(PYZMQ_LIBZMQ_URL "https://github.com/zeromq/libzmq/releases/download/v${PYZMQ_LIBZMQ_VERSION}/zeromq-${PYZMQ_LIBZMQ_VERSION}.tar.gz")
 endif()
-set(PYZMQ_LIBZMQ_URL "https://github.com/minrk/libzmq/archive/ipc-can-fail.tar.gz")
 
 #------- bundle libzmq ------
 

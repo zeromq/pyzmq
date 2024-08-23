@@ -20,12 +20,12 @@ except ImportError:
 def test_has(feature):
     import zmq
 
-    if feature == 'ipc' and sys.platform.startswith('win32'):
-        # IPC support is broken in enough cases on Windows
-        # that we can't ship wheels with it (for now)
-        assert not zmq.has(feature)
-    else:
-        assert zmq.has(feature)
+    # if feature == 'ipc' and sys.platform.startswith('win32'):
+    #     # IPC support is broken in enough cases on Windows
+    #     # that we can't ship wheels with it (for now)
+    #     assert not zmq.has(feature)
+    # else:
+    assert zmq.has(feature)
 
 
 def test_simple_socket():
