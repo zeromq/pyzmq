@@ -3,6 +3,7 @@ name: Test
 on:
   push:
     branches-ignore:
+      - "**"
       - "dependabot/**"
       - "pre-commit-ci-update-config"
     paths-ignore:
@@ -10,14 +11,15 @@ on:
       - "tools/**"
       - ".circleci/**"
       - ".github/workflows/*"
-      - "!.github/workflows/test.yml"
+      # - "!.github/workflows/test.yml"
   pull_request:
     paths-ignore:
+      - "**"
       - "docs/**"
       - "tools/**"
       - ".circleci/**"
       - ".github/workflows/*"
-      - "!.github/workflows/test.yml"
+      # - "!.github/workflows/test.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
