@@ -190,7 +190,7 @@ repair-wheel-command = """\
 # due to https://github.com/zeromq/pyzmq/issues/1981
 # "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 # "cmake.define.POLLER" = "select"
-"cmake.define.PYZMQ_LIBZMQ_URL" = "https://github.com/minrk/libzmq/archive/ipc-can-fail.tar.gz"
+"cmake.define.PYZMQ_LIBZMQ_URL" = "https://github.com/minrk/libzmq/archive/ipc-debug.tar.gz"
 
 
 # mac-arm target is 10.15
