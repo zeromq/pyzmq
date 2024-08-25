@@ -128,7 +128,7 @@ jobs:
             name: win_amd64
             architecture: x64
             cibw:
-              build: "cp312*win_amd64"
+              build: "cp*win_amd64"
               # free-threaded doesn't seem to work on Windows
               skip: "*t-win*"
 
@@ -137,7 +137,6 @@ jobs:
             architecture: x64
             cibw:
               arch: ARM64
-              build: "cp312*"
               # free-threaded doesn't seem to work on Windows
               skip: "cp37* *t-win*"
 
