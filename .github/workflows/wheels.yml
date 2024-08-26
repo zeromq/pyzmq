@@ -184,7 +184,7 @@ jobs:
           if-no-files-found: error
 
   circle-wheels:
-    if: github.repository_owner == 'zeromq'
+    if: 'false'
     runs-on: ubuntu-22.04
     needs:
       # not strictly required, but avoids wasting cpu time waiting
