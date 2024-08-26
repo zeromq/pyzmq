@@ -243,19 +243,19 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         "builds/msvc/vs${PYZMQ_LIBSODIUM_VS_VERSION}/libsodium.sln"
       )
       list(APPEND libsodium_build ${PYZMQ_LIBSODIUM_MSBUILD_ARGS})
-      execute_process(
-        COMMAND ${libsodium_build}
-        WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
-        COMMAND_ECHO STDOUT
-        # COMMAND_ERROR_IS_FATAL ANY
-        RESULT_VARIABLE _status
-      )
-      if (_status) 
-        message(FATAL_ERROR "failed to build libsodium")
-      endif()
-      file(GLOB_RECURSE BUILT_LIB "${bundled_libsodium_SOURCE_DIR}/**/libsodium.lib")
-      message(STATUS "copy ${BUILT_LIB} ${libsodium_lib}")
-      configure_file(${BUILT_LIB} ${libsodium_lib} COPYONLY)
+      # execute_process(
+      #   COMMAND ${libsodium_build}
+      #   WORKING_DIRECTORY ${bundled_libsodium_SOURCE_DIR}
+      #   COMMAND_ECHO STDOUT
+      #   # COMMAND_ERROR_IS_FATAL ANY
+      #   RESULT_VARIABLE _status
+      # )
+      # if (_status)
+      #   message(FATAL_ERROR "failed to build libsodium")
+      # endif()
+      # file(GLOB_RECURSE BUILT_LIB "${bundled_libsodium_SOURCE_DIR}/**/libsodium.lib")
+      # message(STATUS "copy ${BUILT_LIB} ${libsodium_lib}")
+      # configure_file(${BUILT_LIB} ${libsodium_lib} COPYONLY)
     else()
       list(APPEND libsodium_configure
         ./configure
@@ -301,11 +301,11 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   endif()
 
   # use libzmq's own cmake, so we can import the libzmq-static target
-  set(ENABLE_CURVE ON)
+  set(ENABLE_CURVE OFF)
   set(ENABLE_DRAFTS ${ZMQ_DRAFT_API})
   set(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "OFF")
-  set(WITH_LIBSODIUM ON)
-  set(WITH_LIBSODIUM_STATIC ON)
+  set(WITH_LIBSODIUM OFF)
+  set(WITH_LIBSODIUM_STATIC OFF)
   set(LIBZMQ_PEDANTIC OFF)
   set(LIBZMQ_WERROR OFF)
   set(WITH_DOC OFF)
