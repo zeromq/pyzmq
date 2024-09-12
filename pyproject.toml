@@ -204,7 +204,3 @@ manylinux-i686-image = "manylinux2010"
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
-
-[[tool.cibuildwheel.overrides]]
-select = "cp313t-*"
-build-frontend = "pip; args: -v --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"

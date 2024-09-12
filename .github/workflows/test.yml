@@ -139,9 +139,6 @@ jobs:
           echo $PATH
           echo "PATH=$PATH" >> "$GITHUB_ENV"
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
-          # need prerelease Cython until 3.1 is out
-          echo "PIP_PRE=1" >> "$GITHUB_ENV"
-          echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
         shell: micromamba-shell {0}
 
       - name: setup coverage
