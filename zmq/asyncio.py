@@ -172,6 +172,14 @@ class Context(_zmq.Context[Socket]):
     # avoid sharing instance with base Context class
     _instance = None
 
+    # overload with no changes to satisfy pyright
+    def __init__(
+        self: Context,
+        io_threads: int | _zmq.Context = 1,
+        shadow: _zmq.Context | int = 0,
+    ) -> None:
+        super().__init__(io_threads, shadow)  # type: ignore
+
 
 class ZMQEventLoop(SelectorEventLoop):
     """DEPRECATED: AsyncIO eventloop using zmq_poll.
