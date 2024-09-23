@@ -9,11 +9,17 @@ from asyncio import Future
 from collections import deque
 from functools import partial
 from itertools import chain
-from typing import Any, Awaitable, Callable, NamedTuple, TypeVar, cast, overload
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    NamedTuple,
+    TypeVar,
+    cast,
+)
 
 import zmq as _zmq
 from zmq import EVENTS, POLLIN, POLLOUT
-from zmq._typing import Literal
 
 
 class _FutureEvent(NamedTuple):
@@ -260,27 +266,6 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
     get.__doc__ = _zmq.Socket.get.__doc__
 
-    @overload  # type: ignore
-    def recv_multipart(
-        self, flags: int = 0, *, track: bool = False
-    ) -> Awaitable[list[bytes]]: ...
-
-    @overload
-    def recv_multipart(
-        self, flags: int = 0, *, copy: Literal[True], track: bool = False
-    ) -> Awaitable[list[bytes]]: ...
-
-    @overload
-    def recv_multipart(
-        self, flags: int = 0, *, copy: Literal[False], track: bool = False
-    ) -> Awaitable[list[_zmq.Frame]]:  # type: ignore
-        ...
-
-    @overload
-    def recv_multipart(
-        self, flags: int = 0, copy: bool = True, track: bool = False
-    ) -> Awaitable[list[bytes] | list[_zmq.Frame]]: ...
-
     def recv_multipart(
         self, flags: int = 0, copy: bool = True, track: bool = False
     ) -> Awaitable[list[bytes] | list[_zmq.Frame]]:
@@ -291,19 +276,6 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         return self._add_recv_event(
             'recv_multipart', dict(flags=flags, copy=copy, track=track)
         )
-
-    @overload  # type: ignore
-    def recv(self, flags: int = 0, *, track: bool = False) -> Awaitable[bytes]: ...
-
-    @overload
-    def recv(
-        self, flags: int = 0, *, copy: Literal[True], track: bool = False
-    ) -> Awaitable[bytes]: ...
-
-    @overload
-    def recv(
-        self, flags: int = 0, *, copy: Literal[False], track: bool = False
-    ) -> Awaitable[_zmq.Frame]: ...
 
     def recv(  # type: ignore
         self, flags: int = 0, copy: bool = True, track: bool = False
@@ -439,15 +411,6 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         future.add_done_callback(cancel_poll)
 
         return future
-
-    # overrides only necessary for updated types
-    def recv_string(self, *args, **kwargs) -> Awaitable[str]:  # type: ignore
-        return super().recv_string(*args, **kwargs)  # type: ignore
-
-    def send_string(  # type: ignore
-        self, s: str, flags: int = 0, encoding: str = 'utf-8'
-    ) -> Awaitable[None]:
-        return super().send_string(s, flags=flags, encoding=encoding)  # type: ignore
 
     def _add_timeout(self, future, timeout):
         """Add a timeout for a send or recv Future"""
