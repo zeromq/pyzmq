@@ -54,9 +54,13 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only: x
       - arm-wheels:
           name: musllinux
           build: "*musllinux*"
           filters:
             tags:
               only: /.*/
+            branches:
+              only: x

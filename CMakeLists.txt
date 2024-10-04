@@ -250,7 +250,7 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         # COMMAND_ERROR_IS_FATAL ANY
         RESULT_VARIABLE _status
       )
-      if (_status) 
+      if (_status)
         message(FATAL_ERROR "failed to build libsodium")
       endif()
       file(GLOB_RECURSE BUILT_LIB "${bundled_libsodium_SOURCE_DIR}/**/libsodium.lib")
