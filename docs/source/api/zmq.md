@@ -10,10 +10,10 @@
 ## Basic Classes
 
 ````{note}
-For typing purposes, `zmq.Context` and `zmq.Socket` are Generics,
+For typing purposes, {class}`.zmq.Context` and {class}`.zmq.Socket` are Generics,
 which means they will accept any Context or Socket implementation.
 
-The base `zmq.Context()` constructor returns the type
+The base {class}`zmq.Context()` constructor returns the type
 `zmq.Context[zmq.Socket[bytes]]`.
 If you are using type annotations and want to _exclude_ the async subclasses,
 use the resolved types instead of the base Generics:
@@ -32,7 +32,7 @@ sock: zmq.SyncSocket
 
 ````
 
-### {class}`Context`
+## {class}`Context`
 
 ```{eval-rst}
 .. autoclass:: Context
@@ -47,7 +47,7 @@ sock: zmq.SyncSocket
 
 ```
 
-### {class}`Socket`
+## {class}`Socket`
 
 ```{eval-rst}
 .. autoclass:: Socket
@@ -81,7 +81,7 @@ sock: zmq.SyncSocket
 
 ```
 
-### {class}`Frame`
+## {class}`Frame`
 
 ```{eval-rst}
 .. autoclass:: Frame
@@ -90,7 +90,7 @@ sock: zmq.SyncSocket
 
 ```
 
-### {class}`MessageTracker`
+## {class}`MessageTracker`
 
 ```{eval-rst}
 .. autoclass:: MessageTracker
@@ -99,9 +99,7 @@ sock: zmq.SyncSocket
 
 ```
 
-## Polling
-
-### {class}`Poller`
+## {class}`Poller`
 
 ```{eval-rst}
 .. autoclass:: Poller

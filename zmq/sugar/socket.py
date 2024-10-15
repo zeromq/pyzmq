@@ -936,7 +936,17 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
     def send_pyobj(
         self, obj: Any, flags: int = 0, protocol: int = DEFAULT_PROTOCOL, **kwargs
     ) -> zmq.Frame | None:
-        """Send a Python object as a message using pickle to serialize.
+        """
+        Send a Python object as a message using pickle to serialize.
+
+        .. warning::
+
+            Never deserialize an untrusted message with pickle,
+            which can involve arbitrary code execution.
+            Make sure to authenticate the sources of messages
+            before unpickling them, e.g. with transport-level security
+            (e.g. CURVE, ZAP, or IPC permissions)
+            or signed messages.
 
         Parameters
         ----------
@@ -952,7 +962,17 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         return self.send(msg, flags=flags, **kwargs)
 
     def recv_pyobj(self, flags: int = 0) -> Any:
-        """Receive a Python object as a message using pickle to serialize.
+        """
+        Receive a Python object as a message using UNSAFE pickle to serialize.
+
+        .. warning::
+
+            Never deserialize an untrusted message with pickle,
+            which can involve arbitrary code execution.
+            Make sure to authenticate the sources of messages
+            before unpickling them, e.g. with transport-level security
+            (such as CURVE or IPC permissions)
+            or authenticating messages themselves before deserializing.
 
         Parameters
         ----------

@@ -1,6 +1,6 @@
 """A test that publishes NumPy arrays.
 
-Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
+Uses XPUB to wait for subscription to start
 """
 
 # -----------------------------------------------------------------------------
@@ -10,50 +10,51 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 #  the file LICENSE.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-import sys
+from argparse import ArgumentParser
 
 import numpy
 
 import zmq
 
 
-def sync(bind_to: str) -> None:
-    # use bind socket + 1
-    sync_with = ':'.join(
-        bind_to.split(':')[:-1] + [str(int(bind_to.split(':')[-1]) + 1)]
-    )
-    ctx = zmq.Context.instance()
-    s = ctx.socket(zmq.REP)
-    s.bind(sync_with)
-    print("Waiting for subscriber to connect...")
-    s.recv()
-    print("   Done.")
-    s.send(b'GO')
+def send_array(
+    socket: zmq.Socket, array: numpy.ndarray, flags=0, copy=True, track=False
+):
+    md = {
+        "shape": array.shape,
+        # is there a better way to serialize dtypes?
+        "dtype": str(array.dtype),
+    }
+    socket.send_json(md, flags | zmq.SNDMORE)
+    return socket.send(array, flags, copy=copy, track=track)
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
-        print('usage: publisher <bind-to> <array-size> <array-count>')
-        sys.exit(1)
-
-    try:
-        bind_to = sys.argv[1]
-        array_size = int(sys.argv[2])
-        array_count = int(sys.argv[3])
-    except (ValueError, OverflowError) as e:
-        print('array-size and array-count must be integers')
-        sys.exit(1)
-
+    parser = ArgumentParser()
+    parser.add_argument("--url", default="tcp://127.0.0.1:5555")
+    parser.add_argument(
+        "-n", "--count", default=10, type=int, help="number of arrays to send"
+    )
+    parser.add_argument(
+        "--size",
+        default=1024,
+        type=int,
+        help="size of the arrays to send (length of each dimension). Total size is size**nd",
+    )
+    parser.add_argument("--nd", default=2, type=int, help="number of dimensions")
+    args = parser.parse_args()
+    bind_to = args.url
     ctx = zmq.Context()
-    s = ctx.socket(zmq.PUB)
+    s = ctx.socket(zmq.XPUB)
     s.bind(bind_to)
-
-    sync(bind_to)
-
+    print("Waiting for subscriber")
+    s.recv()
     print("Sending arrays...")
-    for i in range(array_count):
-        a = numpy.random.rand(array_size, array_size)
-        s.send_pyobj(a)
+    shape = (args.size,) * args.nd
+    for i in range(args.count):
+        a = numpy.random.random(shape)
+        send_array(s, a)
+    s.send_json({"done": True})
     print("   Done.")
 
 
