@@ -133,6 +133,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         shadow: Socket | int = 0,
         copy_threshold: int | None = None,
     ):
+        shadow_context: zmq.Context | None = None
         if isinstance(ctx_or_socket, zmq.Socket):
             # positional Socket(other_socket)
             shadow = ctx_or_socket
@@ -145,6 +146,8 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
             # hold a reference to the shadow object
             self._shadow_obj = shadow
             if not isinstance(shadow, int):
+                if isinstance(shadow, zmq.Socket):
+                    shadow_context = shadow.context
                 try:
                     shadow = cast(int, shadow.underlying)
                 except AttributeError:
@@ -159,6 +162,9 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
             shadow=shadow_address,
             copy_threshold=copy_threshold,
         )
+        if self._shadow_obj and shadow_context:
+            # keep self.context reference if shadowing a Socket object
+            self.context = shadow_context
 
         try:
             socket_type = cast(int, self.get(zmq.TYPE))
