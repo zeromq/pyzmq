@@ -560,6 +560,7 @@ class TestSocket(BaseZMQTestCase):
         assert s2._shadow_obj is s
         assert s.underlying != p.underlying
         assert s2.underlying == s.underlying
+        assert s2.context is s.context
         s3 = zmq.Socket(s)
         assert s3._shadow_obj is s
         assert s3.underlying == s.underlying
