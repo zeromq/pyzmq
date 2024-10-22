@@ -28,7 +28,7 @@ def report_version(library="libzmq"):
 def fetch_licenses():
     """Download license files for bundled dependencies"""
     licenses.mkdir(exist_ok=True)
-    libsodium_license_url = f"https://raw.githubusercontent.com/jedisct1/libsodium/{bundled_libsodium_version}/LICENSE"
+    libsodium_license_url = f"https://raw.githubusercontent.com/jedisct1/libsodium/{bundled_libsodium_version}-RELEASE/LICENSE"
     libzmq_license_url = (
         f"https://raw.githubusercontent.com/zeromq/libzmq/v{bundled_version}/LICENSE"
     )
