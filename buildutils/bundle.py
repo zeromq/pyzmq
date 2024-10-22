@@ -12,7 +12,7 @@ buildutils = Path(__file__).parent
 repo_root = buildutils.parent.resolve()
 licenses = repo_root / "licenses"
 
-bundled_libsodium_version = "1.0.19"
+bundled_libsodium_version = "1.0.20"
 bundled_version = "4.3.5"
 
 

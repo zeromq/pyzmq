@@ -23,7 +23,7 @@ option(PYZMQ_LIBZMQ_RPATH "Add $ZMQ_PREFIX/lib to $RPATH (true by default). Set 
 # anything new should start with PYZMQ_
 option(PYZMQ_LIBZMQ_NO_BUNDLE "Prohibit building bundled libzmq. Useful for repackaging, to allow default search for libzmq and requiring it to succeed." OFF)
 set(PYZMQ_LIBZMQ_VERSION "4.3.5" CACHE STRING "libzmq version when bundling")
-set(PYZMQ_LIBSODIUM_VERSION "1.0.19" CACHE STRING "libsodium version when bundling")
+set(PYZMQ_LIBSODIUM_VERSION "1.0.20" CACHE STRING "libsodium version when bundling")
 set(PYZMQ_LIBZMQ_URL "" CACHE STRING "full URL to download bundled libzmq")
 set(PYZMQ_LIBSODIUM_URL "" CACHE STRING "full URL to download bundled libsodium")
 set(PYZMQ_LIBSODIUM_CONFIGURE_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to ./configure for bundled libsodium")

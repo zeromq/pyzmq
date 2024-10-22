@@ -54,7 +54,7 @@ RUN make install
 
 # (optional) cross-compile libsodium, libzmq
 WORKDIR /src
-ENV LIBSODIUM_VERSION=1.0.19
+ENV LIBSODIUM_VERSION=1.0.20
 RUN curl -L -O "https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_VERSION}.tar.gz" \
  && tar -xzf libsodium-${LIBSODIUM_VERSION}.tar.gz \
  && mv libsodium-stable libsodium \
