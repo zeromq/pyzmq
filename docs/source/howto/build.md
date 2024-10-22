@@ -172,14 +172,14 @@ You can specify which version of libsodium/libzmq to bundle with:
 
 ```
 -DPYZMQ_LIBZMQ_VERSION=4.3.5
--DPYZMQ_LIBSODIUM_VERSION=1.0.19
+-DPYZMQ_LIBSODIUM_VERSION=1.0.20
 ```
 
 or the specify the full URL to download (e.g. to test bundling an unreleased version):
 
 ```
 -DPYZMQ_LIBZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.tar.gz"
--DPYZMQ_LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-1.0.19.tar.gz"
+-DPYZMQ_LIBSODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz"
 ```
 
 ```{warning}
@@ -246,7 +246,7 @@ PYZMQ_LIBSODIUM_MSBUILD_ARGS:STRING=
 PYZMQ_LIBSODIUM_URL:STRING=
 
 # libsodium version when bundling
-PYZMQ_LIBSODIUM_VERSION:STRING=1.0.19
+PYZMQ_LIBSODIUM_VERSION:STRING=1.0.20
 
 # Visual studio solution version for bundled libsodium (default: detect from MSVC_VERSION)
 PYZMQ_LIBSODIUM_VS_VERSION:STRING=
