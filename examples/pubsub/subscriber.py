@@ -10,65 +10,62 @@ Uses REQ/REP (on PUB/SUB socket + 1) to synchronize
 #  the file LICENSE.BSD, distributed as part of this software.
 # -----------------------------------------------------------------------------
 
-import sys
+from __future__ import annotations
+
 import time
+from argparse import ArgumentParser
+from typing import Any, cast
+
+import numpy
 
 import zmq
 
 
-def sync(connect_to: str) -> None:
-    # use connect socket + 1
-    sync_with = ':'.join(
-        connect_to.split(':')[:-1] + [str(int(connect_to.split(':')[-1]) + 1)]
-    )
-    ctx = zmq.Context.instance()
-    s = ctx.socket(zmq.REQ)
-    s.connect(sync_with)
-    s.send(b'READY')
-    s.recv()
+def recv_array(
+    socket: zmq.Socket, flags: int = 0, copy: bool = True, track: bool = False
+) -> numpy.ndarray | None:
+    """recv a numpy array"""
+    header = cast(dict[str, Any], socket.recv_json(flags=flags))
+    if header.get('done', False):
+        return None
+    msg = socket.recv(flags=flags, copy=copy, track=track)
+    A = numpy.frombuffer(msg, dtype=header['dtype'])  # type: ignore
+    return A.reshape(header['shape'])
 
 
 def main() -> None:
-    if len(sys.argv) != 3:
-        print('usage: subscriber <connect_to> <array-count>')
-        sys.exit(1)
-
-    try:
-        connect_to = sys.argv[1]
-        array_count = int(sys.argv[2])
-    except (ValueError, OverflowError) as e:
-        print('array-count must be integers')
-        sys.exit(1)
+    parser = ArgumentParser()
+    parser.add_argument("--url", default="tcp://127.0.0.1:5555")
+    args = parser.parse_args()
 
     ctx = zmq.Context()
     s = ctx.socket(zmq.SUB)
-    s.connect(connect_to)
-    s.setsockopt(zmq.SUBSCRIBE, b'')
+    s.connect(args.url)
+    s.subscribe(b'')
 
-    sync(connect_to)
-
-    start = time.process_time()
-
+    start = time.perf_counter()
     print("Receiving arrays...")
-    for i in range(array_count):
-        a = s.recv_pyobj()
+    a = first_array = recv_array(s)
+    assert first_array is not None
+    array_count = 0
+    while a is not None:
+        array_count += 1
+        a = recv_array(s)
     print("   Done.")
 
-    end = time.process_time()
+    end = time.perf_counter()
 
     elapsed = end - start
 
     throughput = float(array_count) / elapsed
 
-    message_size = a.nbytes
+    message_size = first_array.nbytes
     megabits = float(throughput * message_size * 8) / 1000000
 
     print(f"message size: {message_size:.0f} [B]")
     print(f"array count: {array_count:.0f}")
     print(f"mean throughput: {throughput:.0f} [msg/s]")
     print(f"mean throughput: {megabits:.3f} [Mb/s]")
-
-    time.sleep(1.0)
 
 
 if __name__ == "__main__":

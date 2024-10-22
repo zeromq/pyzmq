@@ -122,10 +122,23 @@ as first-class methods to the {class}`~.zmq.Socket` class. A socket has the meth
 {meth}`~.zmq.Socket.send_json` and {meth}`~.zmq.Socket.send_pyobj`, which correspond to sending an
 object over the wire after serializing with {mod}`json` and {mod}`pickle` respectively,
 and any object sent via those methods can be reconstructed with the
-{meth}`~.zmq.Socket.recv_json` and {meth}`~.zmq.Socket.recv_pyobj` methods. Unicode strings are
-other objects that are not unambiguously sendable over the wire, so we include
-{meth}`~.zmq.Socket.send_string` and {meth}`~.zmq.Socket.recv_string` that simply send bytes
+{meth}`~.zmq.Socket.recv_json` and {meth}`~.zmq.Socket.recv_pyobj` methods.
+
+```{warning}
+Deserializing with pickle grants the message sender access to arbitrary code execution on the receiver.
+Never use `recv_pyobj` on a socket that might receive messages from untrusted sources
+before authenticating the sender.
+
+It's always a good idea to enable CURVE security if you can,
+or authenticate messages with e.g. HMAC digests or other signing mechanisms.
+```
+
+Text strings are other objects that are not unambiguously sendable over the wire, so we include
+{meth}`~.zmq.Socket.send_string` and {meth}`~.zmq.Socket.recv_string` that send bytes
 after encoding the message ('utf-8' is the default).
+
+These are all convenience methods, and users are encouraged to build their own serialization that best suits their applications needs,
+especially concerning performance and security.
 
 ```{seealso}
 - {ref}`Further information <serialization>` on serialization in pyzmq.
