@@ -12,9 +12,8 @@ else:
     _tornado = True
 
 
-def setup():
-    if not _tornado:
-        pytest.skip("requires tornado")
+if not _tornado:
+    pytest.skip("requires tornado", allow_module_level=True)
 
 
 def test_ioloop():

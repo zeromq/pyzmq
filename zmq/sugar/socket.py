@@ -857,7 +857,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         frames = serialize(msg)
         return self.send_multipart(frames, flags=flags, copy=copy, **kwargs)
 
-    def recv_serialized(self, deserialize, flags=0, copy=True):
+    async def recv_serialized(self, deserialize, flags=0, copy=True):
         """Receive a message with a custom deserialization function.
 
         .. versionadded:: 17
@@ -883,7 +883,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ZMQError
             for any of the reasons :func:`~Socket.recv` might fail
         """
-        frames = self.recv_multipart(flags=flags, copy=copy)
+        frames = await self.recv_multipart(flags=flags, copy=copy)
         return self._deserialize(frames, deserialize)
 
     def send_string(
@@ -914,7 +914,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
 
     send_unicode = send_string
 
-    def recv_string(self, flags: int = 0, encoding: str = 'utf-8') -> str:
+    async def recv_string(self, flags: int = 0, encoding: str = 'utf-8') -> str:
         """Receive a unicode string, as sent by send_string.
 
         Parameters
@@ -934,12 +934,12 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ZMQError
             for any of the reasons :func:`Socket.recv` might fail
         """
-        msg = self.recv(flags=flags)
+        msg = await self.recv(flags=flags)
         return self._deserialize(msg, lambda buf: buf.decode(encoding))
 
     recv_unicode = recv_string
 
-    def send_pyobj(
+    async def send_pyobj(
         self, obj: Any, flags: int = 0, protocol: int = DEFAULT_PROTOCOL, **kwargs
     ) -> zmq.Frame | None:
         """
@@ -965,9 +965,9 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
             where defined, and pickle.HIGHEST_PROTOCOL elsewhere.
         """
         msg = pickle.dumps(obj, protocol)
-        return self.send(msg, flags=flags, **kwargs)
+        return await self.send(msg, flags=flags, **kwargs)
 
-    def recv_pyobj(self, flags: int = 0) -> Any:
+    async def recv_pyobj(self, flags: int = 0) -> Any:
         """
         Receive a Python object as a message using UNSAFE pickle to serialize.
 
@@ -995,10 +995,10 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ZMQError
             for any of the reasons :func:`~Socket.recv` might fail
         """
-        msg = self.recv(flags)
+        msg = await self.recv(flags)
         return self._deserialize(msg, pickle.loads)
 
-    def send_json(self, obj: Any, flags: int = 0, **kwargs) -> None:
+    async def send_json(self, obj: Any, flags: int = 0, **kwargs) -> None:
         """Send a Python object as a message using json to serialize.
 
         Keyword arguments are passed on to json.dumps
@@ -1015,9 +1015,11 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
             if key in kwargs:
                 send_kwargs[key] = kwargs.pop(key)
         msg = jsonapi.dumps(obj, **kwargs)
-        return self.send(msg, flags=flags, **send_kwargs)
+        return await self.send(msg, flags=flags, **send_kwargs)
 
-    def recv_json(self, flags: int = 0, **kwargs) -> list | str | int | float | dict:
+    async def recv_json(
+        self, flags: int = 0, **kwargs
+    ) -> list | str | int | float | dict:
         """Receive a Python object as a message using json to serialize.
 
         Keyword arguments are passed on to json.loads
@@ -1037,7 +1039,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ZMQError
             for any of the reasons :func:`~Socket.recv` might fail
         """
-        msg = self.recv(flags)
+        msg = await self.recv(flags)
         return self._deserialize(msg, lambda buf: jsonapi.loads(buf, **kwargs))
 
     _poller_class = Poller

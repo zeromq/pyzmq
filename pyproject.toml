@@ -40,7 +40,10 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["cffi; implementation_name == 'pypy'"]
+dependencies = [
+    "cffi; implementation_name == 'pypy'",
+    "anyioutils >=0.4.2"
+]
 description = "Python bindings for 0MQ"
 readme = "README.md"
 
@@ -144,7 +147,7 @@ search = '__version__: str = "{current_version}"'
 [tool.cibuildwheel]
 build-verbosity = "1"
 free-threaded-support = true
-test-requires = ["pytest>=6", "importlib_metadata"]
+test-requires = ["pytest>=6", "importlib_metadata", "exceptiongroup;python_version<'3.11'"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
 [tool.cibuildwheel.linux]

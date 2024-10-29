@@ -11,8 +11,10 @@ import asyncio
 import selectors
 import sys
 import warnings
-from asyncio import Future, SelectorEventLoop
+from asyncio import SelectorEventLoop
 from weakref import WeakKeyDictionary
+
+from anyioutils import Future
 
 import zmq as _zmq
 from zmq import _future
@@ -119,13 +121,13 @@ class _AsyncIO:
 class Poller(_AsyncIO, _future._AsyncPoller):
     """Poller returning asyncio.Future for poll results."""
 
-    def _watch_raw_socket(self, loop, socket, evt, f):
+    def _watch_raw_socket(self, socket, evt, f):
         """Schedule callback for a raw socket"""
-        selector = _get_selector(loop)
+        selelector = selectors.DefaultSelector()
         if evt & self._READ:
-            selector.add_reader(socket, lambda *args: f())
+            selelector.register(socket, self._READ, lambda *args: f())
         if evt & self._WRITE:
-            selector.add_writer(socket, lambda *args: f())
+            selelector.register(socket, self._WRITE, lambda *args: f())
 
     def _unwatch_raw_sockets(self, loop, *sockets):
         """Unschedule callback for a raw socket"""
@@ -145,20 +147,20 @@ class Socket(_AsyncIO, _future._AsyncSocket):
             io_loop = self._get_loop()
         return _get_selector(io_loop)
 
-    def _init_io_state(self, io_loop=None):
-        """initialize the ioloop event handler"""
-        self._get_selector(io_loop).add_reader(
-            self._fd, lambda: self._handle_events(0, 0)
-        )
+    # def _init_io_state(self, io_loop=None):
+    #     """initialize the ioloop event handler"""
+    #     self._get_selector(io_loop).add_reader(
+    #         self._fd, lambda: self._handle_events(0, 0)
+    #     )
 
     def _clear_io_state(self):
         """clear any ioloop event handler
 
         called once at close
         """
-        loop = self._current_loop
-        if loop and not loop.is_closed() and self._fd != -1:
-            self._get_selector(loop).remove_reader(self._fd)
+        # loop = self._current_loop
+        # if loop and not loop.is_closed() and self._fd != -1:
+        #     self._get_selector(loop).remove_reader(self._fd)
 
 
 Poller._socket_class = Socket
