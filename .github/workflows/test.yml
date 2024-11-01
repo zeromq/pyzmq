@@ -119,7 +119,7 @@ jobs:
 
       - name: setup python (free threading)
         if: ${{ matrix.free_threading }}
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: nogil
           condarc: |
