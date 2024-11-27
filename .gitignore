@@ -47,7 +47,8 @@ cmake_install.cmake
 _deps
 /Makefile
 _src
-licenses
+licenses/*
+!licenses/LICENSE.tornado.txt
 .virtual_documents
 /libsodium-*
 /zeromq-*
