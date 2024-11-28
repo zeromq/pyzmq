@@ -65,7 +65,7 @@ specified by the author.
 Some code outside the core is taken from other open-source projects, and
 inherits that project's license.
 
-- zmq/eventloop contains files inherited and adapted from [tornado], and inherits the Apache license
+- zmq/eventloop contains some code derived from [tornado], used under the Apache 2.0 license
 
 - zmq/ssh/forward.py is from [paramiko], and inherits LGPL
 
