@@ -2,9 +2,9 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3.0.0; implementation_name != 'pypy'",
+  "cython>=3.1.0a1; implementation_name != 'pypy'",
   "packaging",
-  "scikit-build-core",
+  "scikit-build-core>=0.10",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -56,7 +56,7 @@ wheel.license-files = ["licenses/LICENSE*"]
 # 3.15 is required by scikit-build-core
 cmake.version = ">=3.15"
 # only build/install the pyzmq component
-cmake.targets = ["pyzmq"]
+build.targets = ["pyzmq"]
 install.components = ["pyzmq"]
 
 [tool.ruff]
@@ -201,6 +201,15 @@ environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
 select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
+
+# build limited-api wheels for 3.7, 3.12
+[[tool.cibuildwheel.overrides]]
+config-settings = { wheel = { py-api = "cp312" } }
+select = "cp312-*"
+
+[[tool.cibuildwheel.overrides]]
+config-settings = { wheel = { py-api = "cp37" } }
+select = "cp37-*"
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml

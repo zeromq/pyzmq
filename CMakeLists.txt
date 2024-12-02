@@ -5,13 +5,13 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(
   Python
-  COMPONENTS Interpreter Development.Module
+  COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT}
   REQUIRED)
 
 # Python_SOABI isn't always right when cross-compiling
 # SKBUILD_SOABI seems to be
 if (DEFINED SKBUILD_SOABI AND NOT "${SKBUILD_SOABI}" STREQUAL "${Python_SOABI}")
-  message(WARNING "SKBUILD_SOABI=${SKBUILD_SOABI} != Python_SOABI=${Python_SOABI}; likely cross-compiling, using SOABI=${SKBUILD_SOABI} from scikit-build")
+  message(WARNING "SKBUILD_SOABI=${SKBUILD_SOABI} != Python_SOABI=${Python_SOABI}; likely cross-compiling or Limited API, using SOABI=${SKBUILD_SOABI} from scikit-build")
   set(Python_SOABI "${SKBUILD_SOABI}")
 endif()
 
@@ -404,9 +404,19 @@ endif()
 
 file(MAKE_DIRECTORY ${ZMQ_BACKEND_DEST})
 
+if(NOT "${SKBUILD_SABI_COMPONENT}" STREQUAL "")
+  # set stable API
+  # assume we are targeting >= current Python version
+  # this isn't required, but we can't seem to get `wheel.py-api
+  message("SKBUILD_LIMITED_API=${SKBUILD_LIMITED_API}")
+  set(SABI_ARG "USE_SABI;${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+  message("Building with stable API ${SABI_ARG} for ${Python_SOABI}")
+endif()
+
 python_add_library(
   ${ZMQ_EXT_NAME} MODULE
   WITH_SOABI
+  ${SABI_ARG}
   ${ZMQ_C}
 )
 
