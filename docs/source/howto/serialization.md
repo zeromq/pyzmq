@@ -36,7 +36,7 @@ You can protect your sockets by e.g.:
 ## Using your own serialization
 
 In general, you will want to provide your own serialization that is optimized for your
-application goals or library availability.  This may include using your own preferred
+application goals or library availability. This may include using your own preferred
 serialization such as [msgpack] or [msgspec],
 or adding compression via {py:mod}`zlib` in the standard library,
 or the super fast [blosc] library.
@@ -133,7 +133,7 @@ def recv_signed_zipped_pickle(socket, flags=0, *, key):
 
 ### Example: numpy arrays
 
-A common data structure in Python is the numpy array.  PyZMQ supports sending
+A common data structure in Python is the numpy array. PyZMQ supports sending
 numpy arrays without copying any data, since they provide the Python buffer interface.
 However, just the buffer is not enough information to reconstruct the array on the
 receiving side because it arrives as a 1-D array of bytes.
