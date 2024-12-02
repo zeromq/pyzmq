@@ -57,7 +57,7 @@ logger.info('hello world!')
 ```
 
 You can use this module's built-in command line interface to "tune in" to
-messages broadcast by the  log handler. To start the log watcher,
+messages broadcast by the log handler. To start the log watcher,
 run this command from a shell that has access to the pyzmq package
 (usually a virtual environment):
 

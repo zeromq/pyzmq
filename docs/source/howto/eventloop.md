@@ -93,7 +93,7 @@ by restoring either callback.
 #### {meth}`~.ZMQStream.on_recv_stream`
 
 {meth}`.ZMQStream.on_recv_stream` is just like on_recv above, but the callback will be
-passed both the message and the stream, rather than just the message.  This is meant to make
+passed both the message and the stream, rather than just the message. This is meant to make
 it easier to use a single callback with multiple streams.
 
 ```python
