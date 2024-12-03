@@ -146,6 +146,7 @@ build-verbosity = "1"
 free-threaded-support = true
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
+build-frontend = "build"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
@@ -163,7 +164,7 @@ CXXFLAGS = "-Wl,-strip-all"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
-repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}; abi3audit -s {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 # note: everything here needs to also be duplicated in overrides below
@@ -204,12 +205,12 @@ manylinux-i686-image = "manylinux2010"
 
 # build limited-api wheels for 3.7, 3.12
 [[tool.cibuildwheel.overrides]]
-config-settings = { wheel = { py-api = "cp312" } }
 select = "cp312-*"
+config-settings = { "wheel.py-api" = "cp312" }
 
 [[tool.cibuildwheel.overrides]]
-config-settings = { wheel = { py-api = "cp37" } }
 select = "cp37-*"
+config-settings = { "wheel.py-api" = "cp37" }
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
