@@ -2,7 +2,8 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3.1.0a1; implementation_name != 'pypy'",
+  "cython>=3; implementation_name != 'pypy'",
+  "cython>=3.1.0a1; implementation_name != 'pypy' and python_version >= '3.11'",
   "packaging",
   "scikit-build-core>=0.10",
 ]
@@ -19,7 +20,7 @@ authors = [
   { name = "Min Ragan-Kelley" },
 ]
 license = { file = "LICENSE.md" }
-requires-python = ">=3.8"
+requires-python = ">=3.7"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -32,6 +33,7 @@ classifiers = [
   "Topic :: System :: Networking",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
