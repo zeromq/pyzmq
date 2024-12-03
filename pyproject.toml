@@ -202,14 +202,10 @@ select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
-# build limited-api wheels for 3.8, 3.12
+# build limited-api wheels for 3.11
 [[tool.cibuildwheel.overrides]]
-select = "cp312-*"
-config-settings = { "wheel.py-api" = "cp312" }
-
-[[tool.cibuildwheel.overrides]]
-select = "cp38-*"
-config-settings = { "wheel.py-api" = "cp38" }
+select = "cp311-*"
+config-settings = { "wheel.py-api" = "cp311" }
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml

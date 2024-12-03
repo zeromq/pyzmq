@@ -64,7 +64,7 @@ jobs:
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
-      CIBW_SKIP: "cp39-* cp310-* cp311-* cp313-* ${{ matrix.cibw.skip || '' }}"
+      CIBW_SKIP: "cp312-* cp313-* ${{ matrix.cibw.skip || '' }}"
       CIBW_ARCHS: "${{ matrix.cibw.arch || 'auto' }}"
       CIBW_MANYLINUX_X86_64_IMAGE: "${{ matrix.cibw.manylinux_x86_64_image || '' }}"
 
