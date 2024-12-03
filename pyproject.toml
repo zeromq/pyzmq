@@ -2,9 +2,10 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3.0.0; implementation_name != 'pypy'",
+  "cython>=3; implementation_name != 'pypy'",
+  "cython>=3.1.0a1; implementation_name != 'pypy' and python_version >= '3.11'",
   "packaging",
-  "scikit-build-core",
+  "scikit-build-core>=0.10",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -56,7 +57,7 @@ wheel.license-files = ["licenses/LICENSE*"]
 # 3.15 is required by scikit-build-core
 cmake.version = ">=3.15"
 # only build/install the pyzmq component
-cmake.targets = ["pyzmq"]
+build.targets = ["pyzmq"]
 install.components = ["pyzmq"]
 
 [tool.ruff]
@@ -146,6 +147,7 @@ build-verbosity = "1"
 free-threaded-support = true
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
+build-frontend = "build"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
@@ -163,7 +165,7 @@ CXXFLAGS = "-Wl,-strip-all"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
-repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}; abi3audit -s {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 # note: everything here needs to also be duplicated in overrides below
@@ -201,6 +203,11 @@ environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
 select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
+
+# build limited-api wheels for 3.11
+[[tool.cibuildwheel.overrides]]
+select = "cp311-*"
+config-settings = { "wheel.py-api" = "cp311" }
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
