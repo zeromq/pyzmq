@@ -19,7 +19,7 @@ authors = [
   { name = "Min Ragan-Kelley" },
 ]
 license = { file = "LICENSE.md" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -32,7 +32,6 @@ classifiers = [
   "Topic :: System :: Networking",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -203,14 +202,14 @@ select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
-# build limited-api wheels for 3.7, 3.12
+# build limited-api wheels for 3.8, 3.12
 [[tool.cibuildwheel.overrides]]
 select = "cp312-*"
 config-settings = { "wheel.py-api" = "cp312" }
 
 [[tool.cibuildwheel.overrides]]
-select = "cp37-*"
-config-settings = { "wheel.py-api" = "cp37" }
+select = "cp38-*"
+config-settings = { "wheel.py-api" = "cp38" }
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
