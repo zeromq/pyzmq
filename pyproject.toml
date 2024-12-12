@@ -165,7 +165,7 @@ CXXFLAGS = "-Wl,-strip-all"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
-repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}; abi3audit -s {wheel}"
+repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 # note: everything here needs to also be duplicated in overrides below
@@ -211,7 +211,7 @@ select = "cp311-*"
 inherit.config-settings = "append"
 config-settings."wheel.py-api" = "cp311"
 inherit.repair-wheel-command = "append"
-repair-wheel-command = ["abi3audit", "--strict", "--report" , "{wheel}"]
+repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
 
 # for benchmarking, build limited cp312 as well
 [[tool.cibuildwheel.overrides]]
