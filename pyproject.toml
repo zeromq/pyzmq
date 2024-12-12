@@ -211,7 +211,8 @@ select = "cp311-*"
 inherit.config-settings = "append"
 config-settings."wheel.py-api" = "cp311"
 inherit.repair-wheel-command = "append"
-repair-wheel-command = "pipx run abi3audit --strict --report {wheel}"
+before-build = "pip install abi3audit"
+repair-wheel-command = "abi3audit --strict --report {wheel}"
 
 # for benchmarking, build limited cp312 as well
 [[tool.cibuildwheel.overrides]]

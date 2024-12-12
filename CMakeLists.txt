@@ -410,7 +410,7 @@ if(NOT "${SKBUILD_SABI_COMPONENT}" STREQUAL "")
   # this isn't required, but we can't seem to get `wheel.py-api`
   # see https://github.com/scikit-build/scikit-build-core/issues/958
   set(SABI_ARG "USE_SABI;${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
-  message("Building with stable API ${SABI_ARG} for ${Python_SOABI}")
+  message(STATUS "Building with stable API ${SABI_ARG} for ${Python_SOABI}")
 endif()
 
 python_add_library(
