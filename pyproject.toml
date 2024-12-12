@@ -196,7 +196,8 @@ repair-wheel-command = """\
 # mac-arm target is 10.15
 [[tool.cibuildwheel.overrides]]
 select = "*macos*{universal2,arm64}*"
-environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
+inherit.environment = "append"
+"environment.MACOSX_DEPLOYMENT_TARGET" = "10.15"
 
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
@@ -207,7 +208,16 @@ manylinux-i686-image = "manylinux2010"
 # build limited-api wheels for 3.11
 [[tool.cibuildwheel.overrides]]
 select = "cp311-*"
-config-settings = { "wheel.py-api" = "cp311" }
+inherit.config-settings = "append"
+config-settings."wheel.py-api" = "cp311"
+inherit.repair-wheel-command = "append"
+repair-wheel-command = ["abi3audit", "--strict", "--report" , "{wheel}"]
+
+# for benchmarking, build limited cp312 as well
+[[tool.cibuildwheel.overrides]]
+select = "cp312-*"
+inherit.config-settings = "append"
+config-settings."wheel.py-api" = "cp312"
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml

@@ -14,7 +14,7 @@ jobs:
     resource_class: arm.medium
 
     environment:
-      CIBW_SKIP: "cp312-* cp313-* << parameters.skip >>"
+      CIBW_SKIP: "<< parameters.skip >>"
       CIBW_BUILD: "<< parameters.build >>"
       CIBW_PRERELEASE_PYTHONS: "1"
 
