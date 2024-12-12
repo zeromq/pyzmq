@@ -72,12 +72,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-12
+          - os: macos-13
             name: mac-cpython
             cibw:
               build: "cp*"
 
-          - os: macos-12
+          - os: macos-13
             name: mac-pypy
             cibw:
               build: "pp*"
