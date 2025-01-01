@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2009-2012, Brian Granger, Min Ragan-Kelley
+Copyright (c) 2009-2025, Brian Granger, Min Ragan-Kelley
 
 All rights reserved.
 
