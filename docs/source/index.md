@@ -21,7 +21,7 @@ General questions about ØMQ are better sent to the [ØMQ tracker] or [mailing l
 # Supported LibZMQ
 
 PyZMQ aims to support all stable (≥ 3.2.2, ≥ 4.0.1 )
-versions of libzmq.  Building the same pyzmq against various versions of libzmq is supported,
+versions of libzmq. Building the same pyzmq against various versions of libzmq is supported,
 but only the functionality of the linked libzmq will be available.
 
 ```{note}
