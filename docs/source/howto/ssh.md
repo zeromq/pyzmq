@@ -28,7 +28,7 @@ So once you have established the tunnel, connections to `localip:localport` will
 be connections to `remoteip:remoteport`.
 
 In most cases, you have a zeromq url for a remote machine, but you need to tunnel the
-connection through an ssh server.  This is
+connection through an ssh server. This is
 
 So if you would use this command from the same LAN as the remote machine:
 

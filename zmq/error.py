@@ -24,6 +24,7 @@ class ZMQError(ZMQBaseError):
     """
 
     errno: int | None = None
+    strerror: str
 
     def __init__(self, errno: int | None = None, msg: str | None = None):
         """Wrap an errno style error.
@@ -116,6 +117,7 @@ class InterruptedSystemCall(ZMQError, InterruptedError):
     """
 
     errno = EINTR
+    strerror: str
 
     def __init__(self, errno="ignored", msg="ignored"):
         super().__init__(EINTR)
