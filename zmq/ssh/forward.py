@@ -47,14 +47,17 @@ class Handler(socketserver.BaseRequestHandler):
             )
         except Exception as e:
             logger.debug(
-                'Incoming request to %s:%d failed: %s'
-                % (self.chain_host, self.chain_port, repr(e))
+                'Incoming request to %s:%d failed: %r',
+                self.chain_host,
+                self.chain_port,
+                e,
             )
             return
         if chan is None:
             logger.debug(
-                'Incoming request to %s:%d was rejected by the SSH server.'
-                % (self.chain_host, self.chain_port)
+                'Incoming request to %s:%d was rejected by the SSH server.',
+                self.chain_host,
+                self.chain_port,
             )
             return
 
