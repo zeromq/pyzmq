@@ -14,6 +14,7 @@ from typing import (
     Callable,
     Generic,
     List,
+    Literal,
     Sequence,
     TypeVar,
     Union,
@@ -23,7 +24,7 @@ from typing import (
 from warnings import warn
 
 import zmq
-from zmq._typing import Literal, TypeAlias
+from zmq._typing import TypeAlias
 from zmq.backend import Socket as SocketBase
 from zmq.error import ZMQBindError, ZMQError
 from zmq.utils import jsonapi

@@ -8,11 +8,7 @@ from ._cffi import lib as C
 
 
 def strerror(errno):
-    s = ffi.string(C.zmq_strerror(errno))
-    if not isinstance(s, str):
-        # py3
-        s = s.decode()
-    return s
+    return ffi.string(C.zmq_strerror(errno)).decode()
 
 
 zmq_errno = C.zmq_errno

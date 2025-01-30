@@ -1,9 +1,7 @@
 black; platform_python_implementation != "PyPy"
 # gevent wheels on mac cause Illegal Instruction
 codecov
-# coverage 5 has issues with Cython: https://github.com/cython/cython/issues/3515
-coverage<5; python_version < "3.7"
-coverage>=7.1; python_version >= "3.7"
+coverage>=7.1
 cython; platform_python_implementation != "PyPy" # required for Cython tests
 cython>=3.0.0b3; platform_python_implementation != "PyPy" and python_version >= "3.12" # required for Cython tests
 flake8
@@ -11,8 +9,7 @@ gevent; platform_python_implementation != "PyPy" and sys_platform != "win32" and
 mypy; platform_python_implementation != "PyPy"
 pymongo
 pytest
-pytest-asyncio>=0.16; python_version < "3.7"
-pytest-asyncio>=0.17; python_version >= "3.7"
+pytest-asyncio>=0.17
 # pytest-cov 2.11 requires coverage 5, which still doesn't work with Cython
 pytest-cov==2.10.*
 pytest-rerunfailures

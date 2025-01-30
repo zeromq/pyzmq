@@ -109,10 +109,3 @@ if __name__ == '__main__':
     logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
     asyncio.run(run())
-
-    # Note: asyncio.run() was added in Python 3.7.
-    # For earlier Python versions, you can use:
-    #
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(run())
-    # loop.close()
