@@ -7,6 +7,17 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.2.1
+
+26.2.1 is a tiny bugfix release
+
+- Update bundled libsodium to 1.0.20
+- Some typing-related fixes for pyright and newer mypy versions
+- Fix PYZMQ_NO_BUNDLE option name when specified via cmake instead of environment variable
+- Fix missing `socket.context` reference when shadowing existing Sockets
+- Various updates to documentation and examples, especially discouraging use of insecure `recv_pyobj` without message authentication.
+  `recv_pyobj` is **_NOT_** deprecated, but it is _discouraged_.
+
 ### 26.2
 
 26.2 fixes some regressions introduced by the new build system in 26.0:
