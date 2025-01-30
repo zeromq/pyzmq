@@ -62,7 +62,7 @@ jobs:
     name: wheel-${{ matrix.name }}
 
     env:
-      MACOSX_DEPLOYMENT_TARGET: "10.9"
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_ARCHS: "${{ matrix.cibw.arch || 'auto' }}"
