@@ -6,8 +6,9 @@ LIBZMQ_VERSION=$(python buildutils/bundle.py)
 PYZMQ_DIR="$PWD"
 LICENSE_DIR="$PYZMQ_DIR/licenses"
 test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
-
+SHLIB_EXT="so"
 if [[ "$(uname)" == "Darwin" ]]; then
+    SHLIB_EXT="dylib"
     # need LT_MULTI_MODULE or libtool will strip out
     # all multi-arch symbols at the last step
     export LT_MULTI_MODULE=1
@@ -41,6 +42,12 @@ if [[ "$(uname)" == "Darwin" ]]; then
 fi
 
 PREFIX="${ZMQ_PREFIX:-/usr/local}"
+
+if [ -f "$PREFIX/lib/libzmq.${SHLIB_EXT}" ]; then
+  echo "using $PREFIX/lib/libzmq.${SHLIB_EXT}"
+  exit 0
+fi
+
 # add rpath so auditwheel patches it
 export LDFLAGS="${LDFLAGS} -Wl,-rpath,$PREFIX/lib"
 
