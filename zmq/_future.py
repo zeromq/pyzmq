@@ -14,9 +14,9 @@ from typing import (
     Awaitable,
     Callable,
     NamedTuple,
+    Optional,
     TypeVar,
     cast,
-    Optional,
 )
 
 import zmq as _zmq

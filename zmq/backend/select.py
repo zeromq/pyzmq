@@ -22,7 +22,7 @@ public_api = [
     'curve_public',
     'zmq_version_info',
     'IPC_PATH_MAX_LEN',
-    'ZMQPoller'
+    'ZMQPoller',
 ]
 
 

@@ -10,9 +10,9 @@ from __future__ import annotations
 import asyncio
 import selectors
 import sys
-from typing import Optional
 import warnings
 from asyncio import Future, SelectorEventLoop
+from typing import Optional
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq
@@ -167,11 +167,12 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         loop = self._current_loop
         if loop and not loop.is_closed() and self._fd is not None:
             self._get_selector(loop).remove_reader(self._fd)
-        
+
         if self._zmqpoller is not None:
             self._fd = None
             self._zmqpoller.remove(self._shadow_sock)
             self._zmqpoller = None
+
     def _update_handler(self, state: int):
         """Update IOLoop handler with state.
 
