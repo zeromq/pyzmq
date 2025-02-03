@@ -136,6 +136,12 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_socket_monitor,
     zmq_strerror,
     zmq_unbind,
+    zmq_poller_new,
+    zmq_poller_destroy,
+    zmq_poller_add,
+    zmq_poller_modify,
+    zmq_poller_remove,
+    zmq_poller_fd,
 )
 from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
 from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
@@ -1193,6 +1199,39 @@ class Socket:
             frame = _recv_frame(self.handle, flags, track)
             frame.more = self.get(zmq.RCVMORE)
             return frame
+@cclass
+class ZMQPoller:
+    def __init__(self):
+        _check_version((4, 3, 2), "zmq_poller_fd")
+        if not zmq.has('draft'):
+            raise RuntimeError("libzmq must be built with draft support")
+
+
+        self.handle = zmq_poller_new()
+        if self.handle == NULL:
+            raise ZMQError()
+        self._pid = getpid()
+    def __del__(self):
+        if self.handle != NULL and getpid()==self._pid:
+            rc:C.int = zmq_poller_destroy( address(self.handle) )
+            _check_rc(rc)
+    def add(self, socket: Socket, flags: C.short):
+        rc: C.int = zmq_poller_add(self.handle, socket.handle, NULL, flags)
+        _check_rc(rc)
+    def modify(self, socket: Socket, flags: C.short):
+        rc: C.int = zmq_poller_modify(self.handle, socket.handle, flags)
+        _check_rc(rc)        
+    def remove(self, socket: Socket):
+        rc: C.int = zmq_poller_remove(self.handle, socket.handle)
+        _check_rc(rc)        
+
+    def fd(self) -> object:
+        fd_: fd_t
+        rc: C.int = zmq_poller_fd(self.handle, address(fd_))
+        _check_rc(rc)
+        return fd_
+
+
 
 
 # inline socket methods
@@ -1955,4 +1994,5 @@ __all__ = [
     'device',
     'proxy',
     'proxy_steerable',
+    'ZMQPoller'
 ]
