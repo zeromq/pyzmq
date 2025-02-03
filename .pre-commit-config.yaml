@@ -15,7 +15,7 @@ repos:
         additional_dependencies:
           - ruff
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.21  # Use the ref you want to point at
+    rev: 0.7.22  # Use the ref you want to point at
     hooks:
       - id: mdformat
         # Optionally add plugins
@@ -26,7 +26,7 @@ repos:
 
   # autoformat and lint Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.9.4
     hooks:
       - id: ruff
         types_or:
