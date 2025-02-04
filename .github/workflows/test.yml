@@ -35,14 +35,14 @@ jobs:
     continue-on-error: ${{ matrix.zmq == 'head' }}
 
     env:
-      MACOSX_DEPLOYMENT_TARGET: "11.7"
+      MACOSX_DEPLOYMENT_TARGET: "13.7"
 
     strategy:
       fail-fast: true
       matrix:
         include:
           - os: macos-13
-            python: "3.7"
+            python: "3.8"
 
           - os: macos-14
             python: "3.12"
@@ -57,7 +57,7 @@ jobs:
             zmq: bundled
 
           - os: ubuntu-20.04
-            python: "3.7"
+            python: "3.8"
             zmq: bundled
             tornado: none
 
@@ -66,7 +66,7 @@ jobs:
             zmq: bundled
 
           - os: ubuntu-22.04
-            python: pypy-3.7
+            python: pypy-3.8
 
           - os: ubuntu-22.04
             python: "3.9"
@@ -77,9 +77,6 @@ jobs:
 
           - os: ubuntu-22.04
             python: "3.11"
-
-          - os: ubuntu-22.04
-            python: "3.8"
             zmq: head
 
           - os: ubuntu-22.04
@@ -93,11 +90,11 @@ jobs:
             free_threading: free_threading
 
           - os: windows-2022
-            python: "3.7"
+            python: "3.8"
             arch: x86
 
           - os: windows-2022
-            python: "3.9"
+            python: "3.11"
             arch: x64
 
           - os: windows-2022

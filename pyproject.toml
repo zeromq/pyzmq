@@ -19,7 +19,7 @@ authors = [
   { name = "Min Ragan-Kelley" },
 ]
 license = { file = "LICENSE.md" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -32,7 +32,6 @@ classifiers = [
   "Topic :: System :: Networking",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -166,9 +165,8 @@ before-all = "bash tools/install_libzmq.sh"
 repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.macos.environment]
-# note: everything here needs to also be duplicated in overrides below
 ZMQ_PREFIX = "/tmp/zmq"
-MACOSX_DEPLOYMENT_TARGET = "10.9"
+MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
@@ -191,10 +189,6 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-# mac-arm target is 10.15
-[[tool.cibuildwheel.overrides]]
-select = "*macos*{universal2,arm64}*"
-environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]

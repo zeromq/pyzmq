@@ -3,7 +3,7 @@
 This package contains Python bindings for [ZeroMQ](https://zeromq.org).
 ØMQ is a lightweight and fast messaging implementation.
 
-PyZMQ should work with any reasonable version of Python (≥ 3.7), as well as PyPy.
+PyZMQ should work with any reasonable version of Python (≥ 3.8), as well as PyPy.
 The Cython backend used by CPython supports libzmq ≥ 2.1.4 (including 3.2.x and 4.x),
 but the CFFI backend used by PyPy only supports libzmq ≥ 3.2.2 (including 4.x).
 
