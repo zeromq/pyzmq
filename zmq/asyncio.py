@@ -12,7 +12,6 @@ import selectors
 import sys
 import warnings
 from asyncio import Future, SelectorEventLoop
-from typing import Optional
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq

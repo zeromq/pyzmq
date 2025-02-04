@@ -14,7 +14,6 @@ from typing import (
     Awaitable,
     Callable,
     NamedTuple,
-    Optional,
     TypeVar,
     cast,
 )
