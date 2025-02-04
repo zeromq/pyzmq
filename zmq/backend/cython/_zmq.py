@@ -1231,7 +1231,7 @@ class ZMQPoller:
         _check_rc(rc)
 
     def fd(self) -> object:
-        fd_: fd_t
+        fd_: fd_t = declare(fd_t)
         rc: C.int = zmq_poller_fd(self.handle, address(fd_))
         _check_rc(rc)
         return fd_

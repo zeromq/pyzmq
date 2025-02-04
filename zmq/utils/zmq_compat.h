@@ -71,15 +71,15 @@
     #define zmq_msg_routing_id(msg) 0
     #define zmq_msg_set_group(msg, group) _missing
     #define zmq_msg_group(msg) NULL
-    #define zmq_poller_new _missing
-    #define zmq_poller_destroy _missing
-    #define zmq_poller_add _missing
-    #define zmq_poller_modify _missing
-    #define zmq_poller_remove _missing
+    #define zmq_poller_new() _missing
+    #define zmq_poller_destroy(poller_p) _missing
+    #define zmq_poller_add(poller, socket, userdata, events) _missing
+    #define zmq_poller_modify(poller, socket, events) _missing
+    #define zmq_poller_remove(poller, socket) _missing
     
 #endif
 #ifndef PYZMQ_DRAFT_432
-    #define zmq_poller_fd _missing
+    #define zmq_poller_fd(poller, fd) _missing
 #endif
 
 #if ZMQ_VERSION >= 40100

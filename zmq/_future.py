@@ -206,7 +206,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     _state = 0
     _shadow_sock: _zmq.Socket
     _poller_class = _AsyncPoller
-    _fd: Optional[object] = None
+    _fd: object | None = None
 
     def __init__(
         self,

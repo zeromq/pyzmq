@@ -141,7 +141,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
     """Socket returning asyncio Futures for send/recv/poll methods."""
 
     _poller_class = Poller
-    _zmqpoller: Optional[ZMQPoller] = None
+    _zmqpoller: ZMQPoller | None = None
 
     def _get_selector(self, io_loop=None):
         if io_loop is None:
