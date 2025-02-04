@@ -15,7 +15,7 @@ from asyncio import Future, SelectorEventLoop
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq
-from zmq import _future
+from zmq import _future, Socket as _Socket
 from zmq.backend import ZMQPoller
 
 # registry of asyncio loop : selector thread
@@ -141,6 +141,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     _poller_class = Poller
     _zmqpoller: ZMQPoller | None = None
+    _shadow_sock: _Socket
 
     def _get_selector(self, io_loop=None):
         if io_loop is None:
@@ -179,7 +180,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         """
         if self._zmqpoller is not None:
             self._zmqpoller.modify(self._shadow_sock, state)
-        super()._update_handler(state)
+        super()._update_handler(state) # type: ignore
 
 
 Poller._socket_class = Socket
