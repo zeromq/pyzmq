@@ -395,7 +395,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
 
         .. versionadded:: 17.0
         """
-        return cast(int, self.FD) # FIXME: On windows this is not an int
+        return cast(int, self.FD)  # FIXME: On windows this is not an int
 
     def subscribe(self, topic: str | bytes) -> None:
         """Subscribe to a topic
