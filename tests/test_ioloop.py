@@ -4,17 +4,7 @@
 
 import pytest
 
-try:
-    import tornado.ioloop
-except ImportError:
-    _tornado = False
-else:
-    _tornado = True
-
-
-def setup():
-    if not _tornado:
-        pytest.skip("requires tornado")
+tornado = pytest.importorskip("tornado")
 
 
 def test_ioloop():
