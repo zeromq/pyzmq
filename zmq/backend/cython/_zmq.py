@@ -1213,7 +1213,7 @@ class ZMQPoller:
             raise ZMQError()
         self._pid = getpid()
 
-    def __del__(self):
+    def close(self):
         if self.handle != NULL and getpid() == self._pid:
             rc: C.int = zmq_poller_destroy(address(self.handle))
             _check_rc(rc)

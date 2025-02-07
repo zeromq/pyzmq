@@ -172,6 +172,7 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         if self._zmqpoller is not None:
             self._fd = None
             self._zmqpoller.remove(self._shadow_sock)
+            self._zmqpoller.close()
             self._zmqpoller = None
 
     def _update_handler(self, state: int):
