@@ -128,6 +128,12 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_msg_set_routing_id,
     zmq_msg_size,
     zmq_msg_t,
+    zmq_poller_add,
+    zmq_poller_destroy,
+    zmq_poller_fd,
+    zmq_poller_modify,
+    zmq_poller_new,
+    zmq_poller_remove,
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
@@ -1195,6 +1201,51 @@ class Socket:
             return frame
 
 
+@cclass
+class ZMQPoller:
+    def __init__(self):
+        _check_version((4, 3, 2), "zmq_poller_fd")
+        if not zmq.has('draft'):
+            raise RuntimeError("libzmq must be built with draft support")
+
+        self.handle = zmq_poller_new()
+        if self.handle == NULL:
+            raise ZMQError()
+        self._pid = getpid()
+
+    def close(self):
+        if self.handle != NULL and getpid() == self._pid:
+            # This sets self.handle = NULL
+            rc: C.int = zmq_poller_destroy(address(self.handle))
+            _check_rc(rc)
+
+    def add(self, socket: Socket, flags: C.short):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
+        rc: C.int = zmq_poller_add(self.handle, socket.handle, NULL, flags)
+        _check_rc(rc)
+
+    def modify(self, socket: Socket, flags: C.short):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
+        rc: C.int = zmq_poller_modify(self.handle, socket.handle, flags)
+        _check_rc(rc)
+
+    def remove(self, socket: Socket):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
+        rc: C.int = zmq_poller_remove(self.handle, socket.handle)
+        _check_rc(rc)
+
+    def fd(self) -> object:
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
+        fd_: fd_t = declare(fd_t)
+        rc: C.int = zmq_poller_fd(self.handle, address(fd_))
+        _check_rc(rc)
+        return fd_
+
+
 # inline socket methods
 
 
@@ -1955,4 +2006,5 @@ __all__ = [
     'device',
     'proxy',
     'proxy_steerable',
+    'ZMQPoller',
 ]

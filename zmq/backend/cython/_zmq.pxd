@@ -20,6 +20,10 @@ cdef class MessageTracker(object):
     cdef set events  # Message Event objects to track.
     cdef set peers  # Other Message or MessageTracker objects.
 
+cdef class ZMQPoller:
+    cdef void *handle  # The C handle for the underlying zmq object. NULL if closed
+    cdef int _pid    # the pid of the process which created me (for fork safety)
+
 cdef class Frame:
 
     cdef zmq_msg_t zmq_msg
