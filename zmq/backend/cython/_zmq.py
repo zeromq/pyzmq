@@ -1215,22 +1215,31 @@ class ZMQPoller:
 
     def close(self):
         if self.handle != NULL and getpid() == self._pid:
+            # This sets self.handle = NULL
             rc: C.int = zmq_poller_destroy(address(self.handle))
             _check_rc(rc)
 
     def add(self, socket: Socket, flags: C.short):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
         rc: C.int = zmq_poller_add(self.handle, socket.handle, NULL, flags)
         _check_rc(rc)
 
     def modify(self, socket: Socket, flags: C.short):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
         rc: C.int = zmq_poller_modify(self.handle, socket.handle, flags)
         _check_rc(rc)
 
     def remove(self, socket: Socket):
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
         rc: C.int = zmq_poller_remove(self.handle, socket.handle)
         _check_rc(rc)
 
     def fd(self) -> object:
+        if self.handle == NULL:
+            raise RuntimeError("Poller has been destroyed")
         fd_: fd_t = declare(fd_t)
         rc: C.int = zmq_poller_fd(self.handle, address(fd_))
         _check_rc(rc)
