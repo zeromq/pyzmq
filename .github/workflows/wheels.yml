@@ -228,7 +228,9 @@ jobs:
           path: dist
           merge-multiple: true
       - name: list wheels
-        run: ls -l dist
+        run: |
+          ls -l dist
+          python3 tools/wheel_summary.py dist | tee "$GITHUB_STEP_SUMMARY"
 
   upload-pypi:
     permissions:
