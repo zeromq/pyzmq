@@ -4,7 +4,7 @@ requires = [
   "cffi; implementation_name == 'pypy'",
   "cython>=3.0.0; implementation_name != 'pypy'",
   "packaging",
-  "scikit-build-core",
+  "scikit-build-core>=0.10",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -55,8 +55,12 @@ wheel.license-files = ["licenses/LICENSE*"]
 # 3.15 is required by scikit-build-core
 cmake.version = ">=3.15"
 # only build/install the pyzmq component
-cmake.targets = ["pyzmq"]
+build.targets = ["pyzmq"]
 install.components = ["pyzmq"]
+
+[[tool.scikit-build.overrides]]
+if.env.PYZMQ_BACKEND = "cffi"
+build.requires = ["cffi"]
 
 [tool.ruff]
 
