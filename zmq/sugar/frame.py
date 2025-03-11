@@ -74,7 +74,7 @@ class Frame(FrameBase, AttributeSetter):
         nbytes = len(self)
         msg_suffix = ""
         if nbytes > 16:
-            msg_bytes = bytes(memoryview(self)[:12])
+            msg_bytes = bytes(memoryview(self.buffer)[:12])
             if nbytes >= 1e9:
                 unit = "GB"
                 n = nbytes // 1e9

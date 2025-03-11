@@ -16,7 +16,7 @@ else:
 import time
 
 import zmq
-from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
+from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_cpython_cffi, skip_pypy
 
 # some useful constants:
 
@@ -230,6 +230,7 @@ class TestFrame(BaseZMQTestCase):
         assert outb is m.buffer
         assert m.buffer is m.buffer
 
+    @skip_cpython_cffi
     def test_memoryview_shape(self):
         """memoryview shape info"""
         data = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
@@ -278,6 +279,7 @@ class TestFrame(BaseZMQTestCase):
         assert s2 == s
         assert m.bytes == s
 
+    @skip_cpython_cffi
     def test_noncopying_recv(self):
         """check for clobbering message buffers"""
         null = b'\0' * 64
@@ -300,6 +302,7 @@ class TestFrame(BaseZMQTestCase):
                 assert m2.bytes == ff
                 assert type(m2.bytes) is bytes
 
+    @skip_cpython_cffi
     def test_noncopying_memoryview(self):
         """test non-copying memmoryview messages"""
         null = b'\0' * 64
