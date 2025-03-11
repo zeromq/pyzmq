@@ -41,6 +41,8 @@ except AttributeError:
 
 _SocketType = TypeVar("_SocketType", bound="Socket")
 
+_JSONType: TypeAlias = "int | str | bool | list[_JSONType] | dict[str, _JSONType]"
+
 
 class _SocketContext(Generic[_SocketType]):
     """Context Manager for socket bind/unbind"""
@@ -1018,7 +1020,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         msg = jsonapi.dumps(obj, **kwargs)
         return self.send(msg, flags=flags, **send_kwargs)
 
-    def recv_json(self, flags: int = 0, **kwargs) -> list | str | int | float | dict:
+    def recv_json(self, flags: int = 0, **kwargs) -> _JSONType:
         """Receive a Python object as a message using json to serialize.
 
         Keyword arguments are passed on to json.loads
