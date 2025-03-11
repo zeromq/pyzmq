@@ -7,6 +7,10 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.3
+
+pyzmq 26.3 drops support for Python 3.7 and adds wheels for PyPy 3.11
+
 ### 26.2.1
 
 26.2.1 is a tiny bugfix release
