@@ -142,7 +142,7 @@ search = '__version__: str = "{current_version}"'
 
 [tool.cibuildwheel]
 build-verbosity = "1"
-free-threaded-support = true
+enable = ["cpython-freethreading", "pypy"]
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
@@ -170,6 +170,8 @@ MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
+# free-threaded doesn't seem to work on Windows
+enable = ["pypy"]
 repair-wheel-command = """\
     delvewheel repair \
         -v \
