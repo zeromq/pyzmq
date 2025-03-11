@@ -201,6 +201,7 @@ jobs:
         if: matrix.backend
         run: |
           echo "PYZMQ_BACKEND=${{ matrix.backend }}" >> "$GITHUB_ENV"
+          pip install cffi
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
