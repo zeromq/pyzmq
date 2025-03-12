@@ -132,7 +132,7 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
-    zmq_recvbuf,
+    zmq_recv,
     zmq_setsockopt,
     zmq_socket,
     zmq_socket_monitor,
@@ -1258,7 +1258,7 @@ class Socket:
         # call zmq_recv, with retries
         while True:
             with nogil:
-                rc: C.int = zmq_recvbuf(self.handle, py_buf.buf, c_nbytes, c_flags)
+                rc: C.int = zmq_recv(self.handle, py_buf.buf, c_nbytes, c_flags)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:

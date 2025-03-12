@@ -78,7 +78,6 @@ cdef extern from "zmq.h" nogil:
     int zmq_msg_set (zmq_msg_t *msg, int option, int optval)
     const char *zmq_msg_gets (zmq_msg_t *msg, const char *property)
     int zmq_has (const char *capability)
-    int zmq_recvbuf(void *s_, void *buf_, size_t len_, int flags_)
 
     void *zmq_socket (void *context, int type)
     int zmq_close (void *s)
@@ -92,8 +91,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_socket_monitor (void *s, char *addr, int flags)
     
     # send/recv
-    int zmq_sendbuf (void *s, const void *buf, size_t n, int flags)
-    int zmq_recvbuf (void *s, void *buf, size_t n, int flags)
+    int zmq_send (void *s, const void *buf, size_t n, int flags)
+    int zmq_recv (void *s, void *buf, size_t n, int flags)
 
     ctypedef struct zmq_pollitem_t:
         void *socket

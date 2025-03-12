@@ -351,7 +351,7 @@ class Socket:
         elif nbytes > view_bytes:
             raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
         c_buf = ffi.from_buffer(view)
-        rc: int = _retry_sys_call(C.zmq_recvbuf, self._zmq_socket, c_buf, nbytes, flags)
+        rc: int = _retry_sys_call(C.zmq_recv, self._zmq_socket, c_buf, nbytes, flags)
         _check_rc(rc)
         return rc
 

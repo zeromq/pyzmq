@@ -78,35 +78,8 @@
     #define zmq_proxy_steerable(in, out, mon, ctrl) _missing
 #endif
 
-#if ZMQ_VERSION_MAJOR >= 3
-    #define zmq_sendbuf zmq_send
-    #define zmq_recvbuf zmq_recv
-
-    // 3.x deprecations - these symbols haven't been removed,
-    // but let's protect against their planned removal
-    #define zmq_device(device_type, isocket, osocket) _missing
-    #define zmq_init(io_threads) ((void*)NULL)
-    #define zmq_term zmq_ctx_destroy
-#else
-    #define zmq_ctx_set(ctx, opt, val) _missing
-    #define zmq_ctx_get(ctx, opt) _missing
-    #define zmq_ctx_destroy zmq_term
-    #define zmq_ctx_new() ((void*)NULL)
-
-    #define zmq_proxy(a,b,c) _missing
-
-    #define zmq_disconnect(s, addr) _missing
-    #define zmq_unbind(s, addr) _missing
-
-    #define zmq_msg_more(msg) _missing
-    #define zmq_msg_get(msg, opt) _missing
-    #define zmq_msg_set(msg, opt, val) _missing
-    #define zmq_msg_send(msg, s, flags) zmq_send(s, msg, flags)
-    #define zmq_msg_recv(msg, s, flags) zmq_recv(s, msg, flags)
-
-    #define zmq_sendbuf(s, buf, len, flags) _missing
-    #define zmq_recvbuf(s, buf, len, flags) _missing
-
-    #define zmq_socket_monitor(s, addr, flags) _missing
-
-#endif
+// 3.x deprecations - these symbols haven't been removed,
+// but let's protect against their planned removal
+#define zmq_device(device_type, isocket, osocket) _missing
+#define zmq_init(io_threads) ((void*)NULL)
+#define zmq_term zmq_ctx_destroy
