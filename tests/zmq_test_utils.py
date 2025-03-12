@@ -134,6 +134,7 @@ class BaseZMQTestCase(TestCase):
         s2.setsockopt(zmq.LINGER, 0)
         s2.connect(f'{interface}:{port}')
         self.sockets.extend([s1, s2])
+        s2.setsockopt(zmq.LINGER, 0)
         return s1, s2
 
     def ping_pong(self, s1, s2, msg):

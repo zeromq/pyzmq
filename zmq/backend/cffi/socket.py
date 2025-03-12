@@ -337,6 +337,24 @@ class Socket:
         _check_rc(rc)
         return _bytes
 
+    def recv_into(self, buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
+        view = memoryview(buffer)
+        if not view.contiguous:
+            raise ValueError("Can only recv_into contiguous buffers")
+        if view.readonly:
+            raise ValueError("Cannot recv_into readonly buffer")
+        if nbytes < 0:
+            raise ValueError(f"{nbytes=} must be non-negative")
+        view_bytes = view.nbytes
+        if nbytes == 0:
+            nbytes = view_bytes
+        elif nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
+        c_buf = ffi.from_buffer(view)
+        rc: int = _retry_sys_call(C.zmq_recv, self._zmq_socket, c_buf, nbytes, flags)
+        _check_rc(rc)
+        return rc
+
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)
 

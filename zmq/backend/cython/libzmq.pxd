@@ -91,8 +91,8 @@ cdef extern from "zmq.h" nogil:
     int zmq_socket_monitor (void *s, char *addr, int flags)
     
     # send/recv
-    int zmq_sendbuf (void *s, const void *buf, size_t n, int flags)
-    int zmq_recvbuf (void *s, void *buf, size_t n, int flags)
+    int zmq_send (void *s, const void *buf, size_t n, int flags)
+    int zmq_recv (void *s, void *buf, size_t n, int flags)
 
     ctypedef struct zmq_pollitem_t:
         void *socket
