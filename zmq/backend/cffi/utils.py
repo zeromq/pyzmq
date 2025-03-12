@@ -73,6 +73,7 @@ def _retry_sys_call(f, *args, **kwargs):
             continue
         else:
             break
+    return rc
 
 
 __all__ = ['has', 'curve_keypair', 'curve_public']

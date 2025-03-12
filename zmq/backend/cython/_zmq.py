@@ -62,6 +62,7 @@ from cython.cimports.cpython import (
     PyBytes_Size,
     PyErr_CheckSignals,
 )
+from cython.cimports.cpython.memoryview import PyMemoryView_GET_BUFFER
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
 
 # cimports require Cython 3
@@ -131,6 +132,7 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
+    zmq_recvbuf,
     zmq_setsockopt,
     zmq_socket,
     zmq_socket_monitor,
@@ -1193,6 +1195,74 @@ class Socket:
             frame = _recv_frame(self.handle, flags, track)
             frame.more = self.get(zmq.RCVMORE)
             return frame
+
+    def recv_into(self, buffer, /, *, nbytes=0, flags=0) -> C.int:
+        """
+        Receive up to nbytes bytes from the socket,
+        storing the data into a buffer rather than allocating a new Frame.
+
+        A message frame can be discarded by receiving into an empty buffer::
+
+            sock.recv_into(bytearray())
+
+        Parameters
+        ----------
+        buffer : memoryview
+            Any object providing the buffer interface (i.e. `memoryview(buffer)` works),
+            where the memoryview is contiguous and writable.
+        nbytes: int, default=0
+            The maximum number of bytes to receive.
+            If nbytes is not specified (or 0), receive up to the size available in the given buffer.
+            If the next frame is larger than this, the frame will be truncated and message content discarded.
+        flags: int, default=0
+            See `socket.recv`
+
+        Returns
+        -------
+        bytes_received: int
+            Returns the number of bytes received.
+            This is always the size of the received frame.
+            If the returned `bytes_received` is larger than `nbytes` (or size of `buffer` if `nbytes=0`),
+            the message has been truncated and the rest of the frame discarded.
+            Truncated data cannot be recovered.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons `zmq_recv` might fail.
+        ValueError
+            for invalid inputs, such as readonly or not contiguous buffers,
+            or invalid nbytes.
+        """
+        c_flags: C.int = flags
+        _check_closed(self)
+        view = memoryview(buffer)
+        if not view.contiguous:
+            raise ValueError("Can only recv_into contiguous buffers")
+        if nbytes < 0:
+            raise ValueError(f"{nbytes=} must be non-negative")
+        view_bytes: size_t = view.nbytes
+        c_nbytes: size_t = nbytes
+        if nbytes == 0:
+            c_nbytes = view_bytes
+        elif c_nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
+
+        # get C buffer
+        py_buf = PyMemoryView_GET_BUFFER(view)
+        if py_buf.readonly:
+            raise ValueError("Cannot recv_into readonly buffer")
+
+        # call zmq_recv, with retries
+        while True:
+            with nogil:
+                rc: C.int = zmq_recvbuf(self.handle, py_buf.buf, c_nbytes, c_flags)
+            try:
+                _check_rc(rc)
+            except InterruptedSystemCall:
+                continue
+            else:
+                return rc
 
 
 # inline socket methods

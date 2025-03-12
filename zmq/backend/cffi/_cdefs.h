@@ -46,6 +46,7 @@ int zmq_msg_close(zmq_msg_t *msg);
 int zmq_msg_copy(zmq_msg_t *dst, zmq_msg_t *src);
 int zmq_msg_send(zmq_msg_t *msg, void *socket, int flags);
 int zmq_msg_recv(zmq_msg_t *msg, void *socket, int flags);
+int zmq_recvbuf(void *socket, void *buf, int nbytes, int flags);
 
 int zmq_getsockopt(void *socket,
                    int option_name,

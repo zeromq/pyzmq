@@ -337,6 +337,61 @@ class Socket:
         _check_rc(rc)
         return _bytes
 
+    def recv_into(self, buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
+        """
+        Receive up to nbytes bytes from the socket,
+        storing the data into a buffer rather than allocating a new Frame.
+
+        A message frame can be discarded by receiving into an empty buffer::
+
+            sock.recv_into(bytearray())
+
+        Parameters
+        ----------
+        buffer : memoryview
+            Any object providing the buffer interface (i.e. `memoryview(buffer)` works),
+            where the memoryview is contiguous and writable.
+        nbytes: int, default=0
+            The maximum number of bytes to receive.
+            If nbytes is not specified (or 0), receive up to the size available in the given buffer.
+            If the next frame is larger than this, the frame will be truncated and message content discarded.
+        flags: int, default=0
+            See `socket.recv`
+
+        Returns
+        -------
+        bytes_received: int
+            Returns the number of bytes received.
+            This is always the size of the received frame.
+            If the returned `bytes_received` is larger than `nbytes` (or size of `buffer` if `nbytes=0`),
+            the message has been truncated and the rest of the frame discarded.
+            Truncated data cannot be recovered.
+
+        Raises
+        ------
+        ZMQError
+            for any of the reasons `zmq_recv` might fail.
+        ValueError
+            for invalid inputs, such as readonly or not contiguous buffers,
+            or invalid nbytes.
+        """
+        view = memoryview(buffer)
+        if not view.contiguous:
+            raise ValueError("Can only recv_into contiguous buffers")
+        if view.readonly:
+            raise ValueError("Cannot recv_into readonly buffer")
+        if nbytes < 0:
+            raise ValueError(f"{nbytes=} must be non-negative")
+        view_bytes = view.nbytes
+        if nbytes == 0:
+            nbytes = view_bytes
+        elif nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
+        c_buf = ffi.from_buffer(view)
+        rc: int = _retry_sys_call(C.zmq_recvbuf, self._zmq_socket, c_buf, nbytes, flags)
+        _check_rc(rc)
+        return rc
+
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)
 
