@@ -2,7 +2,6 @@
 Test our typing with mypy
 """
 
-import os
 import sys
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen
@@ -10,6 +9,7 @@ from subprocess import PIPE, STDOUT, Popen
 import pytest
 
 pytest.importorskip("mypy")
+pytestmark = pytest.mark.skipif(sys.version_info < (3, 10), reason="targets 3.10")
 
 repo_root = Path(__file__).parents[1]
 
