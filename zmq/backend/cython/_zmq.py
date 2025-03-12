@@ -1201,9 +1201,11 @@ class Socket:
         Receive up to nbytes bytes from the socket,
         storing the data into a buffer rather than allocating a new Frame.
 
-        A message frame can be discarded by receiving into an empty buffer::
+        The next message frame can be discarded by receiving into an empty buffer::
 
             sock.recv_into(bytearray())
+
+        .. versionadded:: 26.4
 
         Parameters
         ----------
