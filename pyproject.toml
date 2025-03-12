@@ -12,7 +12,7 @@ build-backend = "scikit_build_core.build"
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 [project]
 name = "pyzmq"
-version = "26.3.0.dev"
+version = "26.3.0"
 authors = [
   { name = "PyZMQ Contributors", email = "zeromq-dev@lists.zeromq.org" },
   { name = "Brian E. Granger" },
@@ -119,7 +119,7 @@ skip = ["zmq/__init__.py"]
 github_url = "https://github.com/zeromq/pyzmq"
 
 [tool.tbump.version]
-current = "26.3.0.dev"
+current = "26.3.0"
 regex = '''
   (?P<major>\d+)
   \.
