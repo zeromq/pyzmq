@@ -411,7 +411,6 @@ elseif(PYZMQ_BACKEND STREQUAL "cython")
     VERBATIM
     COMMAND "${Python_EXECUTABLE}"
             -mcython
-            --3str
             --output-file ${ZMQ_C}
             --module-name "zmq.backend.cython._zmq"
             ${ZMQ_PYX}
