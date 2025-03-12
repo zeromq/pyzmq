@@ -25,7 +25,9 @@ def run_mypy(*mypy_args):
     Captures output and reports it on errors
     """
     p = Popen(
-        [sys.executable, "-m", "mypy"] + list(mypy_args), stdout=PIPE, stderr=STDOUT
+        [sys.executable, "-m", "mypy", "--python-version=3.10"] + list(mypy_args),
+        stdout=PIPE,
+        stderr=STDOUT,
     )
     o, _ = p.communicate()
     out = o.decode("utf8", "replace")
