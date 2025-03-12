@@ -92,7 +92,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     ZMQ_ROUTER,
     ZMQ_SNDMORE,
     ZMQ_TYPE,
-    ZMQ_VERSION_MAJOR,
     _zmq_version,
     fd_t,
     int64_t,
@@ -109,7 +108,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_free_fn,
     zmq_getsockopt,
     zmq_has,
-    zmq_init,
     zmq_join,
     zmq_leave,
     zmq_msg_close,
@@ -534,16 +532,13 @@ class Context:
             self._shadow = True
         else:
             self._shadow = False
-            if ZMQ_VERSION_MAJOR >= 3:
-                self.handle = zmq_ctx_new()
-            else:
-                self.handle = zmq_init(io_threads)
+            self.handle = zmq_ctx_new()
 
         if self.handle == NULL:
             raise ZMQError()
 
         rc: C.int = 0
-        if ZMQ_VERSION_MAJOR >= 3 and not self._shadow:
+        if not self._shadow:
             rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
             _check_rc(rc)
 
@@ -984,7 +979,6 @@ class Socket:
         rc: C.int
         c_addr: p_char
 
-        _check_version((3, 2), "unbind")
         _check_closed(self)
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
@@ -1014,7 +1008,6 @@ class Socket:
         rc: C.int
         c_addr: p_char
 
-        _check_version((3, 2), "disconnect")
         _check_closed(self)
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
@@ -1047,7 +1040,6 @@ class Socket:
             default: zmq.EVENT_ALL
             The zmq event bitmask for which events will be sent to the monitor.
         """
-        _check_version((3, 2), "monitor")
 
         if isinstance(addr, str):
             # cast str to utf8 bytes
@@ -1594,11 +1586,6 @@ def zmq_poll(sockets, timeout: C.int = -1):
     pollitems = cast(pointer(zmq_pollitem_t), malloc(nsockets * sizeof(zmq_pollitem_t)))
     if pollitems == NULL:
         raise MemoryError("Could not allocate poll items")
-
-    if ZMQ_VERSION_MAJOR < 3:
-        # timeout is us in 2.x, ms in 3.x
-        # expected input is ms (matches 3.x)
-        timeout = 1000 * timeout
 
     for i in range(nsockets):
         s, events = sockets[i]

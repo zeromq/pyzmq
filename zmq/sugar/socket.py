@@ -498,11 +498,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         ZMQBindError
             if `max_tries` reached before successful bind
         """
-        if (
-            (zmq.zmq_version_info() >= (3, 2))
-            and min_port == 49152
-            and max_port == 65536
-        ):
+        if min_port == 49152 and max_port == 65536:
             # if LAST_ENDPOINT is supported, and min_port / max_port weren't specified,
             # we can bind to port 0 and let the OS do the work
             self.bind(f"{addr}:*")
@@ -531,17 +527,13 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
 
         On libzmq ≥ 3, this gets SNDHWM if available, otherwise RCVHWM
         """
-        major = zmq.zmq_version_info()[0]
-        if major >= 3:
-            # return sndhwm, fallback on rcvhwm
-            try:
-                return cast(int, self.get(zmq.SNDHWM))
-            except zmq.ZMQError:
-                pass
+        # return sndhwm, fallback on rcvhwm
+        try:
+            return cast(int, self.get(zmq.SNDHWM))
+        except zmq.ZMQError:
+            pass
 
-            return cast(int, self.get(zmq.RCVHWM))
-        else:
-            return cast(int, self.get(zmq.HWM))
+        return cast(int, self.get(zmq.RCVHWM))
 
     def set_hwm(self, value: int) -> None:
         """Set the High Water Mark.
@@ -554,22 +546,18 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
             New values only take effect for subsequent socket
             bind/connects.
         """
-        major = zmq.zmq_version_info()[0]
-        if major >= 3:
-            raised = None
-            try:
-                self.sndhwm = value
-            except Exception as e:
-                raised = e
-            try:
-                self.rcvhwm = value
-            except Exception as e:
-                raised = e
+        raised = None
+        try:
+            self.sndhwm = value
+        except Exception as e:
+            raised = e
+        try:
+            self.rcvhwm = value
+        except Exception as e:
+            raised = e
 
-            if raised:
-                raise raised
-        else:
-            self.set(zmq.HWM, value)
+        if raised:
+            raise raised
 
     hwm = property(
         get_hwm,

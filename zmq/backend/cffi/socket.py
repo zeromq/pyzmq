@@ -7,7 +7,7 @@ import errno as errno_mod
 
 import zmq
 from zmq.constants import SocketOption, _OptType
-from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.error import ZMQError, _check_rc
 
 from ._cffi import ffi
 from ._cffi import lib as C
@@ -184,7 +184,6 @@ class Socket:
                 _check_rc(rc)
 
     def unbind(self, address):
-        _check_version((3, 2), "unbind")
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
@@ -197,7 +196,6 @@ class Socket:
         _check_rc(rc)
 
     def disconnect(self, address):
-        _check_version((3, 2), "disconnect")
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
@@ -372,8 +370,6 @@ class Socket:
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
-
-        _check_version((3, 2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
         if addr is None:
