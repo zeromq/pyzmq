@@ -33,9 +33,9 @@ except ImportError:
     """
     raise ImportError(msg)
 
-import time
 import warnings
 from threading import Event
+from time import monotonic
 from weakref import ref
 
 import cython as C
@@ -143,7 +143,13 @@ from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
 
 import zmq
 from zmq.constants import SocketOption, _OptType
-from zmq.error import InterruptedSystemCall, ZMQError, _check_version
+from zmq.error import (
+    Again,
+    ContextTerminated,
+    InterruptedSystemCall,
+    ZMQError,
+    _check_version,
+)
 
 IPC_PATH_MAX_LEN = get_ipc_path_max_len()
 
@@ -162,20 +168,12 @@ def _check_rc(rc: C.int, error_without_errno: bint = False) -> C.int:
         return 0
     if rc == -1:  # if rc < -1, it's a bug in libzmq. Should we warn?
         if errno == EINTR:
-            from zmq.error import InterruptedSystemCall
-
             raise InterruptedSystemCall(errno)
         elif errno == EAGAIN:
-            from zmq.error import Again
-
             raise Again(errno)
         elif errno == ZMQ_ETERM:
-            from zmq.error import ContextTerminated
-
             raise ContextTerminated(errno)
         else:
-            from zmq.error import ZMQError
-
             raise ZMQError(errno)
     return 0
 
@@ -272,6 +270,10 @@ class Frame:
         if copy_threshold is None:
             copy_threshold = zmq.COPY_THRESHOLD
 
+        c_copy_threshold: C.size_t = 0
+        if copy_threshold is not None:
+            c_copy_threshold = copy_threshold
+
         zmq_msg_ptr: pointer(zmq_msg_t) = address(self.zmq_msg)
         # init more as False
         self.more = False
@@ -301,13 +303,16 @@ class Frame:
         data_len_c = _asbuffer(data, cast(pointer(p_void), address(data_c)))
 
         # copy unspecified, apply copy_threshold
+        c_copy: bint = True
         if copy is None:
-            if copy_threshold and data_len_c < copy_threshold:
-                copy = True
+            if c_copy_threshold and data_len_c < c_copy_threshold:
+                c_copy = True
             else:
-                copy = False
+                c_copy = False
+        else:
+            c_copy = copy
 
-        if copy:
+        if c_copy:
             # copy message data instead of sharing memory
             rc = zmq_msg_init_size(zmq_msg_ptr, data_len_c)
             _check_rc(rc)
@@ -710,7 +715,7 @@ class Socket:
         """Whether the socket is closed"""
         return _check_closed_deep(self)
 
-    def close(self, linger=None):
+    def close(self, linger: int | None = None):
         """
         Close the socket.
 
@@ -732,7 +737,7 @@ class Socket:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, address(linger_c), sizeof(int))
             rc = zmq_close(self.handle)
-            if rc < 0 and zmq_errno() != ENOTSOCK:
+            if rc < 0 and _zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 _check_rc(rc)
             self._closed = True
@@ -877,7 +882,7 @@ class Socket:
 
         return result
 
-    def bind(self, addr):
+    def bind(self, addr: str):
         """
         Bind the socket to an address.
 
@@ -894,21 +899,13 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        c_addr: p_char
+        b_addr: bytes = addr.encode('utf-8')
+        c_addr: p_char = b_addr
 
         _check_closed(self)
-        addr_b = addr
-        if isinstance(addr, str):
-            addr_b = addr.encode('utf-8')
-        elif isinstance(addr_b, bytes):
-            addr = addr_b.decode('utf-8')
-
-        if not isinstance(addr_b, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr_b
         rc = zmq_bind(self.handle, c_addr)
         if rc != 0:
-            if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
+            if IPC_PATH_MAX_LEN and _zmq_errno() == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
                     f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
@@ -917,7 +914,7 @@ class Socket:
                     'to check addr length (if it is defined).'
                 )
                 raise ZMQError(msg=msg)
-            elif zmq_errno() == ENOENT:
+            elif _zmq_errno() == ENOENT:
                 path = addr.split('://', 1)[-1]
                 msg = f'No such file or directory for ipc path "{path}".'
                 raise ZMQError(msg=msg)
@@ -930,7 +927,7 @@ class Socket:
             else:
                 break
 
-    def connect(self, addr):
+    def connect(self, addr: str) -> None:
         """
         Connect to a remote 0MQ socket.
 
@@ -943,14 +940,10 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        c_addr: p_char
+        b_addr: bytes = addr.encode('utf-8')
+        c_addr: p_char = b_addr
 
         _check_closed(self)
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
 
         while True:
             try:
@@ -1061,7 +1054,7 @@ class Socket:
 
         _check_rc(zmq_socket_monitor(self.handle, c_addr, events))
 
-    def join(self, group):
+    def join(self, group: str | bytes):
         """
         Join a RADIO-DISH group
 
@@ -1076,7 +1069,8 @@ class Socket:
             raise RuntimeError("libzmq must be built with draft support")
         if isinstance(group, str):
             group = group.encode('utf8')
-        rc: C.int = zmq_join(self.handle, group)
+        c_group: bytes = group
+        rc: C.int = zmq_join(self.handle, c_group)
         _check_rc(rc)
 
     def leave(self, group):
@@ -1152,8 +1146,10 @@ class Socket:
             else:
                 if self.copy_threshold:
                     buf = memoryview(data)
+                    nbytes: C.int = buf.nbytes
+                    copy_threshold: C.int = self.copy_threshold
                     # always copy messages smaller than copy_threshold
-                    if buf.nbytes < self.copy_threshold:
+                    if nbytes < copy_threshold:
                         _send_copy(self.handle, buf, flags)
                         return zmq._FINISHED_TRACKER
                 msg = Frame(data, track=track, copy_threshold=self.copy_threshold)
@@ -1310,7 +1306,7 @@ def _check_closed_deep(s: Socket) -> bint:
             s.handle, ZMQ_TYPE, cast(p_void, address(stype)), address(sz)
         )
         if rc < 0:
-            errno = zmq_errno()
+            errno = _zmq_errno()
             if errno == ENOTSOCK:
                 s._closed = True
                 return True
@@ -1465,7 +1461,7 @@ def _setsockopt(handle: p_void, option: C.int, optval: p_void, sz: size_t):
 # General utility functions
 
 
-def zmq_errno():
+def zmq_errno() -> C.int:
     """Return the integer errno of the most recent zmq error."""
     return _zmq_errno()
 
@@ -1487,17 +1483,14 @@ def zmq_version_info() -> tuple[int, int, int]:
     return (major, minor, patch)
 
 
-def has(capability) -> bool:
+def has(capability: str) -> bool:
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
 
     .. versionadded:: libzmq-4.1
     .. versionadded:: 14.1
     """
     _check_version((4, 1), 'zmq.has')
-    ccap: bytes
-    if isinstance(capability, str):
-        capability = capability.encode('utf8')
-    ccap = capability
+    ccap: bytes = capability.encode('utf8')
     return bool(zmq_has(ccap))
 
 
@@ -1578,6 +1571,8 @@ def zmq_poll(sockets, timeout: C.int = -1):
     """
     rc: C.int
     i: C.int
+    fileno: fd_t
+    events: C.int
     pollitems: pointer(zmq_pollitem_t) = NULL
     nsockets: C.int = len(sockets)
 
@@ -1596,8 +1591,9 @@ def zmq_poll(sockets, timeout: C.int = -1):
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif isinstance(s, int):
+            fileno = s
             pollitems[i].socket = NULL
-            pollitems[i].fd = s
+            pollitems[i].fd = fileno
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif hasattr(s, 'fileno'):
@@ -1618,17 +1614,19 @@ def zmq_poll(sockets, timeout: C.int = -1):
                 f"a fileno() method: {s!r}"
             )
 
-    ms_passed: int = 0
+    ms_passed: C.int = 0
+    tic: C.int
     try:
         while True:
-            start = time.monotonic()
+            start: C.int = monotonic()
             with nogil:
                 rc = zmq_poll_c(pollitems, nsockets, timeout)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:
                 if timeout > 0:
-                    ms_passed = int(1000 * (time.monotonic() - start))
+                    tic = monotonic()
+                    ms_passed = int(1000 * (tic - start))
                     if ms_passed < 0:
                         # don't allow negative ms_passed,
                         # which can happen on old Python versions without time.monotonic.
