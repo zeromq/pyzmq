@@ -84,6 +84,10 @@ jobs:
 
           - os: ubuntu-24.04
             python: "3.13"
+            backend: cffi
+
+          - os: ubuntu-24.04
+            python: "3.13"
 
           - os: ubuntu-24.04
             python: "3.13"
@@ -192,6 +196,12 @@ jobs:
         if: matrix.zmq
         run: |
           echo "ZMQ_PREFIX=${{ matrix.zmq }}" >> "$GITHUB_ENV"
+
+      - name: set $PYZMQ_BACKEND
+        if: matrix.backend
+        run: |
+          echo "PYZMQ_BACKEND=${{ matrix.backend }}" >> "$GITHUB_ENV"
+          pip install cffi
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'

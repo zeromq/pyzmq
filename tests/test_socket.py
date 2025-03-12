@@ -630,7 +630,7 @@ class TestSocket(BaseZMQTestCase):
         # sample the front and back of the received message
         # without checking the whole content
         byte = ord(c)
-        view = memoryview(rcvd)
+        view = memoryview(rcvd.buffer)
         assert len(view) == N
         assert view[0] == byte
         assert view[-1] == byte
