@@ -102,7 +102,6 @@ cdef extern from "zmq.h" nogil:
 
     int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout)
 
-    int zmq_device (int device_, void *insocket_, void *outsocket_)
     int zmq_proxy (void *frontend, void *backend, void *capture)
     int zmq_proxy_steerable (void *frontend,
                              void *backend,

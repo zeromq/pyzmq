@@ -105,7 +105,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_ctx_set,
     zmq_curve_keypair,
     zmq_curve_public,
-    zmq_device,
     zmq_disconnect,
     zmq_free_fn,
     zmq_getsockopt,
@@ -1678,42 +1677,6 @@ def zmq_poll(sockets, timeout: C.int = -1):
     return results
 
 
-# device functions
-
-
-def device(device_type: C.int, frontend: Socket, backend: Socket = None):
-    """
-    Start a zeromq device.
-
-    .. deprecated:: libzmq-3.2
-        Use zmq.proxy
-
-    Parameters
-    ----------
-    device_type : int
-        one of: QUEUE, FORWARDER, STREAMER
-        The type of device to start.
-    frontend : Socket
-        The Socket instance for the incoming traffic.
-    backend : Socket
-        The Socket instance for the outbound traffic.
-    """
-    if ZMQ_VERSION_MAJOR >= 3:
-        return proxy(frontend, backend)
-
-    rc: C.int = 0
-    while True:
-        with nogil:
-            rc = zmq_device(device_type, frontend.handle, backend.handle)
-        try:
-            _check_rc(rc)
-        except InterruptedSystemCall:
-            continue
-        else:
-            break
-    return rc
-
-
 def proxy(frontend: Socket, backend: Socket, capture: Socket = None):
     """
     Start a zeromq proxy (replacement for device).
@@ -2038,7 +2001,6 @@ __all__ = [
     'zmq_errno',
     'zmq_poll',
     'strerror',
-    'device',
     'proxy',
     'proxy_steerable',
 ]

@@ -9,8 +9,6 @@ int zmq_connect(void *socket, const char *endpoint);
 int zmq_errno(void);
 const char * zmq_strerror(int errnum);
 
-int zmq_device(int device, void *frontend, void *backend);
-
 int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();

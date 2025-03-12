@@ -9,7 +9,7 @@ from threading import Thread
 from typing import Any, Callable, List, Optional, Tuple
 
 import zmq
-from zmq import ENOTSOCK, ETERM, PUSH, QUEUE, Context, ZMQBindError, ZMQError, device
+from zmq import ENOTSOCK, ETERM, PUSH, QUEUE, Context, ZMQBindError, ZMQError, proxy
 
 
 class Device:
@@ -233,7 +233,7 @@ class Device:
         Do not call me directly, instead call ``self.start()``, just like a Thread.
         """
         ins, outs = self._setup_sockets()
-        device(self.device_type, ins, outs)
+        proxy(ins, outs)
 
     def _close_sockets(self):
         """Cleanup sockets we created"""
