@@ -10,6 +10,7 @@ import socket
 import sys
 import time
 import warnings
+from array import array
 from unittest import mock
 
 import pytest
@@ -468,10 +469,11 @@ class TestSocket(BaseZMQTestCase):
         a.send_multipart(msg)
 
         # default nbytes: fits in array
-        buf = bytearray(10)
+        # make sure itemsize > 1 is handled right
+        buf = array('Q', [0])
         nbytes = b.recv_into(buf)
         assert nbytes == len(msg[0])
-        assert buf[:nbytes] == msg[0]
+        assert buf.tobytes()[:nbytes] == msg[0]
 
         # default nbytes: truncates to sizeof(buf)
         buf = bytearray(4)
@@ -500,7 +502,8 @@ class TestSocket(BaseZMQTestCase):
 
     def test_recv_into_bad(self):
         a, b = self.create_bound_pair()
-        b.rcvtimeo = 1000
+        if not self.green:
+            b.rcvtimeo = 1000
 
         # bad calls
 

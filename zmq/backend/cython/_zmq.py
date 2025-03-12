@@ -62,6 +62,7 @@ from cython.cimports.cpython import (
     PyBytes_Size,
     PyErr_CheckSignals,
 )
+from cython.cimports.cpython.buffer import Py_buffer, PyBuffer_IsContiguous
 from cython.cimports.cpython.memoryview import PyMemoryView_GET_BUFFER
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
 
@@ -141,7 +142,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
 )
 from cython.cimports.zmq.backend.cython.libzmq import zmq_errno as _zmq_errno
 from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
-from cython.cimports.zmq.utils.buffers import asbuffer_r
 
 import zmq
 from zmq.constants import SocketOption, _OptType
@@ -247,6 +247,18 @@ def _copy_zmq_msg_bytes(zmq_msg: pointer(zmq_msg_t)) -> bytes:
     return PyBytes_FromStringAndSize(data_c, data_len_c)
 
 
+@cfunc
+@inline
+def _asbuffer(buf, data_c: pointer(p_void)) -> size_t:
+    """Get a C buffer from a memoryview"""
+    view = memoryview(buf)
+    pybuf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
+    if not PyBuffer_IsContiguous(pybuf, 'A'):
+        raise BufferError("memoryview: underlying buffer is not contiguous")
+    data_c[0] = pybuf.buf
+    return pybuf.len
+
+
 _gc = None
 
 
@@ -288,7 +300,7 @@ class Frame:
             self._failed_init = False
             return
 
-        asbuffer_r(data, cast(pointer(p_void), address(data_c)), address(data_len_c))
+        data_len_c = _asbuffer(data, cast(pointer(p_void), address(data_c)))
 
         # copy unspecified, apply copy_threshold
         if copy is None:
@@ -1193,7 +1205,12 @@ class Socket:
             return _recv_copy(self.handle, flags)
         else:
             frame = _recv_frame(self.handle, flags, track)
-            frame.more = self.get(zmq.RCVMORE)
+            more: bint = False
+            sz: size_t = sizeof(bint)
+            _getsockopt(
+                self.handle, ZMQ_RCVMORE, cast(p_void, address(more)), address(sz)
+            )
+            frame.more = more
             return frame
 
     def recv_into(self, buffer, /, *, nbytes=0, flags=0) -> C.int:
@@ -1238,22 +1255,20 @@ class Socket:
         """
         c_flags: C.int = flags
         _check_closed(self)
-        view = memoryview(buffer)
-        if not view.contiguous:
-            raise ValueError("Can only recv_into contiguous buffers")
-        if nbytes < 0:
+        c_nbytes: C.int = nbytes
+        if c_nbytes < 0:
             raise ValueError(f"{nbytes=} must be non-negative")
-        view_bytes: size_t = view.nbytes
-        c_nbytes: size_t = nbytes
-        if nbytes == 0:
-            c_nbytes = view_bytes
-        elif c_nbytes > view_bytes:
-            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
-
+        view = memoryview(buffer)
         # get C buffer
-        py_buf = PyMemoryView_GET_BUFFER(view)
+        py_buf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
         if py_buf.readonly:
             raise ValueError("Cannot recv_into readonly buffer")
+        if not PyBuffer_IsContiguous(py_buf, 'A'):
+            raise ValueError("Can only recv_into contiguous buffer")
+        if nbytes == 0:
+            c_nbytes = py_buf.len
+        elif c_nbytes > py_buf.len:
+            raise ValueError(f"{nbytes=} too big for memoryview of {py_buf.len}B")
 
         # call zmq_recv, with retries
         while True:
@@ -1391,11 +1406,10 @@ def _send_copy(handle: p_void, buf, flags: C.int = 0):
     """Send a message on this socket by copying its content."""
     rc: C.int
     msg = declare(zmq_msg_t)
-    c_bytes = declare(p_char)
-    c_bytes_len: Py_ssize_t = 0
+    c_bytes = declare(p_void)
 
     # copy to c array:
-    asbuffer_r(buf, cast(pointer(p_void), address(c_bytes)), address(c_bytes_len))
+    c_bytes_len = _asbuffer(buf, address(c_bytes))
 
     # Copy the msg before sending. This avoids any complications with
     # the GIL, etc.
@@ -1976,7 +1990,7 @@ def monitored_queue(
     in_msg = declare(zmq_msg_t)
     out_msg = declare(zmq_msg_t)
     swap_ids: bint
-    msg_c: p_char = NULL
+    msg_c: p_void = NULL
     msg_c_len = declare(Py_ssize_t)
     rc: C.int
 
@@ -1984,13 +1998,13 @@ def monitored_queue(
     swap_ids = in_socket.type == ZMQ_ROUTER and out_socket.type == ZMQ_ROUTER
 
     # build zmq_msg objects from str prefixes
-    asbuffer_r(in_prefix, cast(pointer(p_void), address(msg_c)), address(msg_c_len))
+    msg_c_len = _asbuffer(in_prefix, address(msg_c))
     rc = zmq_msg_init_size(address(in_msg), msg_c_len)
     _check_rc(rc)
 
     memcpy(zmq_msg_data(address(in_msg)), msg_c, zmq_msg_size(address(in_msg)))
 
-    asbuffer_r(out_prefix, cast(pointer(p_void), address(msg_c)), address(msg_c_len))
+    msg_c_len = _asbuffer(out_prefix, address(msg_c))
 
     rc = zmq_msg_init_size(address(out_msg), msg_c_len)
     _check_rc(rc)
