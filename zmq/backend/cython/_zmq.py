@@ -892,7 +892,7 @@ class Socket:
 
         return result
 
-    def bind(self, addr: str):
+    def bind(self, addr: str | bytes):
         """
         Bind the socket to an address.
 
@@ -908,14 +908,21 @@ class Socket:
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        b_addr: bytes = addr.encode('utf-8')
-        c_addr: p_char = b_addr
+        b_addr: bytes
+        if isinstance(addr, str):
+            b_addr = addr.encode('utf-8')
+        else:
+            b_addr = addr
+        try:
+            c_addr: p_char = b_addr
+        except TypeError:
+            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
 
         _check_closed(self)
-        rc = zmq_bind(self.handle, c_addr)
+        rc: C.int = zmq_bind(self.handle, c_addr)
         if rc != 0:
-            if IPC_PATH_MAX_LEN and _zmq_errno() == ENAMETOOLONG:
+            _errno: C.int = _zmq_errno()
+            if IPC_PATH_MAX_LEN and _errno == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
                     f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
@@ -924,7 +931,7 @@ class Socket:
                     'to check addr length (if it is defined).'
                 )
                 raise ZMQError(msg=msg)
-            elif _zmq_errno() == ENOENT:
+            elif _errno == ENOENT:
                 path = addr.split('://', 1)[-1]
                 msg = f'No such file or directory for ipc path "{path}".'
                 raise ZMQError(msg=msg)
@@ -937,7 +944,7 @@ class Socket:
             else:
                 break
 
-    def connect(self, addr: str) -> None:
+    def connect(self, addr: str | bytes) -> None:
         """
         Connect to a remote 0MQ socket.
 
@@ -950,8 +957,12 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        b_addr: bytes = addr.encode('utf-8')
-        c_addr: p_char = b_addr
+        if isinstance(addr, str):
+            addr = addr.encode('utf-8')
+        try:
+            c_addr: p_char = addr
+        except TypeError:
+            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
 
         _check_closed(self)
 
@@ -965,7 +976,7 @@ class Socket:
             else:
                 break
 
-    def unbind(self, addr):
+    def unbind(self, addr: str | bytes):
         """
         Unbind from an address (undoes a call to bind).
 
@@ -980,21 +991,19 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        c_addr: p_char
+
+        try:
+            c_addr: p_char = addr
+        except TypeError:
+            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
 
         _check_closed(self)
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
 
-        rc = zmq_unbind(self.handle, c_addr)
+        rc: C.int = zmq_unbind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
-    def disconnect(self, addr):
+    def disconnect(self, addr: str | bytes):
         """
         Disconnect from a remote 0MQ socket (undoes a call to connect).
 
@@ -1009,21 +1018,20 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        c_addr: p_char
-
-        _check_closed(self)
         if isinstance(addr, str):
             addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
+        try:
+            c_addr: p_char = addr
+        except TypeError:
+            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
 
-        rc = zmq_disconnect(self.handle, c_addr)
+        _check_closed(self)
+
+        rc: C.int = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
-    def monitor(self, addr, events: C.int = ZMQ_EVENT_ALL):
+    def monitor(self, addr: str | bytes | None, events: C.int = ZMQ_EVENT_ALL):
         """
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
@@ -1036,7 +1044,7 @@ class Socket:
 
         Parameters
         ----------
-        addr : str
+        addr : str | None
             The inproc url used for monitoring. Passing None as
             the addr will cause an existing socket monitor to be
             deregistered.
