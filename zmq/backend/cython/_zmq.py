@@ -1136,8 +1136,8 @@ class Socket:
             else:
                 if self.copy_threshold:
                     buf = memoryview(data)
-                    nbytes: C.int = buf.nbytes
-                    copy_threshold: C.int = self.copy_threshold
+                    nbytes: size_t = buf.nbytes
+                    copy_threshold: size_t = self.copy_threshold
                     # always copy messages smaller than copy_threshold
                     if nbytes < copy_threshold:
                         _send_copy(self.handle, buf, flags)
