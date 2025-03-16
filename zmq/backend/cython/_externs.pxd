@@ -7,7 +7,7 @@ cdef extern from "mutex.h" nogil:
     cdef int mutex_unlock(mutex_t*)
 
 cdef extern from "getpid_compat.h":
-    int getpid()
+    cdef int getpid()
 
 cdef extern from "ipcmaxlen.h":
-    int get_ipc_path_max_len()
+    cdef int get_ipc_path_max_len()

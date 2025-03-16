@@ -156,7 +156,7 @@ from zmq.error import (
     _check_version,
 )
 
-IPC_PATH_MAX_LEN = get_ipc_path_max_len()
+IPC_PATH_MAX_LEN: int = get_ipc_path_max_len()
 
 
 @cfunc
@@ -925,10 +925,11 @@ class Socket:
         rc: C.int = zmq_bind(self.handle, c_addr)
         if rc != 0:
             _errno: C.int = _zmq_errno()
-            if IPC_PATH_MAX_LEN and _errno == ENAMETOOLONG:
+            _ipc_max: C.int = get_ipc_path_max_len()
+            if _ipc_max and _errno == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
-                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
+                    f'ipc path "{path}" is longer than {_ipc_max} '
                     'characters (sizeof(sockaddr_un.sun_path)). '
                     'zmq.IPC_PATH_MAX_LEN constant can be used '
                     'to check addr length (if it is defined).'
