@@ -338,9 +338,9 @@ class Socket:
     def recv_into(self, buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
         view = memoryview(buffer)
         if not view.contiguous:
-            raise ValueError("Can only recv_into contiguous buffers")
+            raise BufferError("Can only recv_into contiguous buffers")
         if view.readonly:
-            raise ValueError("Cannot recv_into readonly buffer")
+            raise BufferError("Cannot recv_into readonly buffer")
         if nbytes < 0:
             raise ValueError(f"{nbytes=} must be non-negative")
         view_bytes = view.nbytes
