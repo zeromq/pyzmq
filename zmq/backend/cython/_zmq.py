@@ -659,6 +659,18 @@ class Context:
         return rc
 
 
+@cfunc
+@inline
+def _c_addr(addr) -> p_char:
+    if isinstance(addr, str):
+        addr = addr.encode('utf-8')
+    try:
+        c_addr: p_char = addr
+    except TypeError:
+        raise TypeError(f"Expected addr to be str, got addr={addr!r}")
+    return c_addr
+
+
 @cclass
 class Socket:
     """
@@ -908,16 +920,7 @@ class Socket:
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        b_addr: bytes
-        if isinstance(addr, str):
-            b_addr = addr.encode('utf-8')
-        else:
-            b_addr = addr
-        try:
-            c_addr: p_char = b_addr
-        except TypeError:
-            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
         rc: C.int = zmq_bind(self.handle, c_addr)
         if rc != 0:
@@ -957,13 +960,7 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        try:
-            c_addr: p_char = addr
-        except TypeError:
-            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
 
         while True:
@@ -991,14 +988,8 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-
-        try:
-            c_addr: p_char = addr
-        except TypeError:
-            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
-
         rc: C.int = zmq_unbind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
@@ -1018,13 +1009,7 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        try:
-            c_addr: p_char = addr
-        except TypeError:
-            raise TypeError(f"Expected addr to be str, got {addr!r}") from None
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
 
         rc: C.int = zmq_disconnect(self.handle, c_addr)
@@ -1052,23 +1037,10 @@ class Socket:
             default: zmq.EVENT_ALL
             The zmq event bitmask for which events will be sent to the monitor.
         """
-
-        if isinstance(addr, str):
-            # cast str to utf8 bytes
-            addr = addr.encode("utf-8")
-
-        # cast bytes to char*
-        c_addr: p_char
-
-        if addr is None:
-            c_addr = NULL
-        else:
-            # let Cython do the casting,
-            # but return a nicer error message if it fails
-            try:
-                c_addr = addr
-            except TypeError:
-                raise TypeError(f"Monitor addr must be str, got {addr!r}") from None
+        c_addr: p_char = NULL
+        if addr is not None:
+            c_addr = _c_addr(addr)
+        _check_closed(self)
 
         _check_rc(zmq_socket_monitor(self.handle, c_addr, events))
 
