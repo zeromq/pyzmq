@@ -63,8 +63,13 @@ from cython.cimports.cpython import (
     PyBytes_Size,
     PyErr_CheckSignals,
 )
-from cython.cimports.cpython.buffer import Py_buffer, PyBuffer_IsContiguous
-from cython.cimports.cpython.memoryview import PyMemoryView_GET_BUFFER
+from cython.cimports.cpython.buffer import (
+    Py_buffer,
+    PyBUF_ANY_CONTIGUOUS,
+    PyBUF_WRITABLE,
+    PyBuffer_Release,
+    PyObject_GetBuffer,
+)
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
 
 # cimports require Cython 3
@@ -245,14 +250,19 @@ def _copy_zmq_msg_bytes(zmq_msg: pointer(zmq_msg_t)) -> bytes:
 
 @cfunc
 @inline
-def _asbuffer(buf, data_c: pointer(p_void)) -> size_t:
+def _asbuffer(obj, data_c: pointer(p_void), writable: bint = False) -> size_t:
     """Get a C buffer from a memoryview"""
-    view = memoryview(buf)
-    pybuf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
-    if not PyBuffer_IsContiguous(pybuf, 'A'):
-        raise BufferError("memoryview: underlying buffer is not contiguous")
+    pybuf = declare(Py_buffer)
+    flags: C.int = PyBUF_ANY_CONTIGUOUS
+    if writable:
+        flags |= PyBUF_WRITABLE
+    rc: C.int = PyObject_GetBuffer(obj, address(pybuf), flags)
+    if rc < 0:
+        raise ValueError("Couldn't create buffer")
     data_c[0] = pybuf.buf
-    return pybuf.len
+    data_size: size_t = pybuf.len
+    PyBuffer_Release(address(pybuf))
+    return data_size
 
 
 _gc = None
@@ -1237,31 +1247,26 @@ class Socket:
         ------
         ZMQError
             for any of the reasons `zmq_recv` might fail.
-        ValueError
-            for invalid inputs, such as readonly or not contiguous buffers,
-            or invalid nbytes.
+        BufferError
+            for invalid buffers, such as readonly or not contiguous.
         """
         c_flags: C.int = flags
         _check_closed(self)
-        c_nbytes: C.int = nbytes
+        c_nbytes: size_t = nbytes
         if c_nbytes < 0:
             raise ValueError(f"{nbytes=} must be non-negative")
         view = memoryview(buffer)
-        # get C buffer
-        py_buf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
-        if py_buf.readonly:
-            raise ValueError("Cannot recv_into readonly buffer")
-        if not PyBuffer_IsContiguous(py_buf, 'A'):
-            raise ValueError("Can only recv_into contiguous buffer")
+        c_data = declare(pointer(C.void))
+        view_bytes: C.size_t = _asbuffer(view, address(c_data), True)
         if nbytes == 0:
-            c_nbytes = py_buf.len
-        elif c_nbytes > py_buf.len:
-            raise ValueError(f"{nbytes=} too big for memoryview of {py_buf.len}B")
+            c_nbytes = view_bytes
+        elif c_nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
 
         # call zmq_recv, with retries
         while True:
             with nogil:
-                rc: C.int = zmq_recv(self.handle, py_buf.buf, c_nbytes, c_flags)
+                rc: C.int = zmq_recv(self.handle, c_data, c_nbytes, c_flags)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:

@@ -513,11 +513,11 @@ class TestSocket(BaseZMQTestCase):
             b.recv_into(buf, nbytes=-1)
         # not contiguous
         buf = memoryview(bytearray(10))[::2]
-        with pytest.raises(ValueError):
+        with pytest.raises(BufferError):
             b.recv_into(buf)
         # readonly
         buf = memoryview(b"readonly")
-        with pytest.raises(ValueError):
+        with pytest.raises(BufferError):
             b.recv_into(buf)
         # too big
         buf = bytearray(10)
