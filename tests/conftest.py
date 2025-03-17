@@ -159,9 +159,9 @@ def assert_raises_errno(errno):
     try:
         yield
     except zmq.ZMQError as e:
-        assert (
-            e.errno == errno
-        ), f"wrong error raised, expected {zmq.ZMQError(errno)} got {zmq.ZMQError(e.errno)}"
+        assert e.errno == errno, (
+            f"wrong error raised, expected {zmq.ZMQError(errno)} got {zmq.ZMQError(e.errno)}"
+        )
     else:
         pytest.fail(f"Expected {zmq.ZMQError(errno)}, no error raised")
 

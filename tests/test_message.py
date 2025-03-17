@@ -15,8 +15,10 @@ else:
 
 import time
 
+import pytest
+
 import zmq
-from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_pypy
+from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_cpython_cffi, skip_pypy
 
 # some useful constants:
 
@@ -215,11 +217,18 @@ class TestFrame(BaseZMQTestCase):
         """test using a buffer as input"""
         ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
         zmq.Frame(memoryview(ins))
+        zmq.Frame(bytearray(5))
 
     def test_bad_buffer_in(self):
         """test using a bad object"""
-        self.assertRaises(TypeError, zmq.Frame, 5)
-        self.assertRaises(TypeError, zmq.Frame, object())
+        with pytest.raises(TypeError):
+            zmq.Frame(5)
+        with pytest.raises(TypeError):
+            zmq.Frame(object())
+        with pytest.raises(TypeError):
+            zmq.Frame("str")
+        with pytest.raises(BufferError):
+            zmq.Frame(memoryview(bytearray(10))[::2])
 
     def test_buffer_out(self):
         """receiving buffered output"""
@@ -230,6 +239,7 @@ class TestFrame(BaseZMQTestCase):
         assert outb is m.buffer
         assert m.buffer is m.buffer
 
+    @skip_cpython_cffi
     def test_memoryview_shape(self):
         """memoryview shape info"""
         data = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
@@ -278,6 +288,7 @@ class TestFrame(BaseZMQTestCase):
         assert s2 == s
         assert m.bytes == s
 
+    @skip_cpython_cffi
     def test_noncopying_recv(self):
         """check for clobbering message buffers"""
         null = b'\0' * 64
@@ -300,6 +311,7 @@ class TestFrame(BaseZMQTestCase):
                 assert m2.bytes == ff
                 assert type(m2.bytes) is bytes
 
+    @skip_cpython_cffi
     def test_noncopying_memoryview(self):
         """test non-copying memmoryview messages"""
         null = b'\0' * 64

@@ -27,7 +27,8 @@ except ImportError:
     have_gevent = False
 
 
-PYPY = platform.python_implementation() == 'PyPy'
+CFFI = zmq.backend.Socket.__module__.startswith("zmq.backend.cffi.")
+PYPY = platform.python_implementation() == 'PyPy' or CFFI
 
 # -----------------------------------------------------------------------------
 # skip decorators (directly from unittest)
@@ -38,7 +39,11 @@ def _id(x):
     return x
 
 
-skip_pypy = mark.skipif(PYPY, reason="Doesn't work on PyPy")
+skip_pypy = mark.skipif(PYPY, reason="Doesn't work on CFFI backend")
+skip_cpython_cffi = mark.skipif(
+    platform.python_implementation() == 'CPython' and CFFI,
+    reason="CFFI on CPython is unsupported",
+)
 require_zmq_4 = mark.skipif(zmq.zmq_version_info() < (4,), reason="requires zmq >= 4")
 
 # -----------------------------------------------------------------------------
@@ -129,6 +134,7 @@ class BaseZMQTestCase(TestCase):
         s2.setsockopt(zmq.LINGER, 0)
         s2.connect(f'{interface}:{port}')
         self.sockets.extend([s1, s2])
+        s2.setsockopt(zmq.LINGER, 0)
         return s1, s2
 
     def ping_pong(self, s1, s2, msg):

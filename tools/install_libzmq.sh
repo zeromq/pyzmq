@@ -6,9 +6,12 @@ LIBZMQ_VERSION=$(python buildutils/bundle.py)
 PYZMQ_DIR="$PWD"
 LICENSE_DIR="$PYZMQ_DIR/licenses"
 test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
-SHLIB_EXT="so"
+SHLIB_EXT=".so"
 if [[ "$(uname)" == "Darwin" ]]; then
-    SHLIB_EXT="dylib"
+    SHLIB_EXT=".dylib"
+    # make sure deployment target is set
+    echo "${MACOSX_DEPLOYMENT_TARGET=}"
+    test ! -z "${MACOSX_DEPLOYMENT_TARGET}"
     # need LT_MULTI_MODULE or libtool will strip out
     # all multi-arch symbols at the last step
     export LT_MULTI_MODULE=1
@@ -43,8 +46,8 @@ fi
 
 PREFIX="${ZMQ_PREFIX:-/usr/local}"
 
-if [ -f "$PREFIX/lib/libzmq.${SHLIB_EXT}" ]; then
-  echo "using $PREFIX/lib/libzmq.${SHLIB_EXT}"
+if [ -f "$PREFIX/lib/libzmq${SHLIB_EXT}" ]; then
+  echo "using $PREFIX/lib/libzmq${SHLIB_EXT}"
   exit 0
 fi
 

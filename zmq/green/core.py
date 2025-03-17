@@ -264,6 +264,23 @@ class _Socket(_original_Socket):
                 return msg
             self._wait_read()
 
+    def recv_into(self, buffer, /, *, nbytes=0, flags=0):
+        """recv_into, which will only block current greenlet"""
+        if flags & zmq.DONTWAIT:
+            return super().recv_into(buffer, nbytes=nbytes, flags=flags)
+        flags |= zmq.DONTWAIT
+        while True:
+            try:
+                recvd = super().recv_into(buffer, nbytes=nbytes, flags=flags)
+            except zmq.ZMQError as e:
+                if e.errno != zmq.EAGAIN:
+                    self.__state_changed()
+                    raise
+            else:
+                self.__state_changed()
+                return recvd
+            self._wait_read()
+
     def send_multipart(self, *args, **kwargs):
         """wrap send_multipart to prevent state_changed on each partial send"""
         self.__in_send_multipart = True

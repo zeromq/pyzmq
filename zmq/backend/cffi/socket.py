@@ -7,7 +7,7 @@ import errno as errno_mod
 
 import zmq
 from zmq.constants import SocketOption, _OptType
-from zmq.error import ZMQError, _check_rc, _check_version
+from zmq.error import ZMQError, _check_rc
 
 from ._cffi import ffi
 from ._cffi import lib as C
@@ -184,7 +184,6 @@ class Socket:
                 _check_rc(rc)
 
     def unbind(self, address):
-        _check_version((3, 2), "unbind")
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
@@ -197,7 +196,6 @@ class Socket:
         _check_rc(rc)
 
     def disconnect(self, address):
-        _check_version((3, 2), "disconnect")
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
@@ -337,6 +335,24 @@ class Socket:
         _check_rc(rc)
         return _bytes
 
+    def recv_into(self, buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
+        view = memoryview(buffer)
+        if not view.contiguous:
+            raise BufferError("Can only recv_into contiguous buffers")
+        if view.readonly:
+            raise BufferError("Cannot recv_into readonly buffer")
+        if nbytes < 0:
+            raise ValueError(f"{nbytes=} must be non-negative")
+        view_bytes = view.nbytes
+        if nbytes == 0:
+            nbytes = view_bytes
+        elif nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
+        c_buf = ffi.from_buffer(view)
+        rc: int = _retry_sys_call(C.zmq_recv, self._zmq_socket, c_buf, nbytes, flags)
+        _check_rc(rc)
+        return rc
+
     def monitor(self, addr, events=-1):
         """s.monitor(addr, flags)
 
@@ -354,8 +370,6 @@ class Socket:
         events : int [default: zmq.EVENT_ALL]
             The zmq event bitmask for which events will be sent to the monitor.
         """
-
-        _check_version((3, 2), "monitor")
         if events < 0:
             events = zmq.EVENT_ALL
         if addr is None:

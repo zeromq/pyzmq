@@ -21,7 +21,7 @@ option(ZMQ_DRAFT_API "whether to build the libzmq draft API" OFF)
 option(PYZMQ_LIBZMQ_RPATH "Add $ZMQ_PREFIX/lib to $RPATH (true by default). Set to false if libzmq will be bundled or relocated and RPATH is handled separately" ON)
 
 # anything new should start with PYZMQ_
-option(PYZMQ_LIBZMQ_NO_BUNDLE "Prohibit building bundled libzmq. Useful for repackaging, to allow default search for libzmq and requiring it to succeed." OFF)
+option(PYZMQ_NO_BUNDLE "Prohibit building bundled libzmq. Useful for repackaging, to allow default search for libzmq and requiring it to succeed." OFF)
 set(PYZMQ_LIBZMQ_VERSION "4.3.5" CACHE STRING "libzmq version when bundling")
 set(PYZMQ_LIBSODIUM_VERSION "1.0.20" CACHE STRING "libsodium version when bundling")
 set(PYZMQ_LIBZMQ_URL "" CACHE STRING "full URL to download bundled libzmq")
@@ -29,6 +29,7 @@ set(PYZMQ_LIBSODIUM_URL "" CACHE STRING "full URL to download bundled libsodium"
 set(PYZMQ_LIBSODIUM_CONFIGURE_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to ./configure for bundled libsodium")
 set(PYZMQ_LIBSODIUM_MSBUILD_ARGS "" CACHE STRING "semicolon-separated list of arguments to pass to msbuild for bundled libsodium")
 set(PYZMQ_LIBSODIUM_VS_VERSION "" CACHE STRING "Visual studio solution version for bundled libsodium (default: detect from MSVC_VERSION)")
+set(PYZMQ_BACKEND "" CACHE STRING "pyzmq backend to build ('cffi' or 'cython'). Default: cffi on PyPy, else Cython.")
 
 if (NOT CMAKE_BUILD_TYPE)
   # default to Release
@@ -57,6 +58,7 @@ foreach(_optname
   PYZMQ_LIBSODIUM_CONFIGURE_ARGS
   PYZMQ_LIBSODIUM_MSBUILD_ARGS
   PYZMQ_LIBSODIUM_VS_VERSION
+  PYZMQ_BACKEND
 )
   if (DEFINED ENV{${_optname}})
     if (_optname MATCHES ".*_ARGS")
@@ -367,8 +369,19 @@ set(EXT_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/_src")
 set(ZMQ_BUILDUTILS "${CMAKE_CURRENT_SOURCE_DIR}/buildutils")
 file(MAKE_DIRECTORY "${EXT_SRC_DIR}")
 
-if(Python_INTERPRETER_ID STREQUAL "PyPy")
+if (NOT PYZMQ_BACKEND)
+  if(Python_INTERPRETER_ID STREQUAL "PyPy")
+    set(PYZMQ_BACKEND "cffi")
+  else()
+    set(PYZMQ_BACKEND "cython")
+  endif()
+endif()
+
+if(PYZMQ_BACKEND STREQUAL "cffi")
   message(STATUS "Building CFFI backend")
+  if(NOT Python_INTERPRETER_ID STREQUAL "PyPy")
+    message(WARNING "Building CFFI backend on ${Python_INTERPRETER_ID}, not PyPy. This is not supported and may not work.")
+  endif()
   set(ZMQ_EXT_NAME "_cffi")
 
   set(ZMQ_BACKEND_DEST "zmq/backend/cffi")
@@ -381,8 +394,11 @@ if(Python_INTERPRETER_ID STREQUAL "PyPy")
             "${ZMQ_BUILDUTILS}/build_cffi.py"
             "${ZMQ_C}"
   )
-else()
+elseif(PYZMQ_BACKEND STREQUAL "cython")
   message(STATUS "Building Cython backend")
+  if(NOT Python_INTERPRETER_ID STREQUAL "Python")
+    message(WARNING "Building Cython backend on ${Python_INTERPRETER_ID}, not CPython. This is not supported and may not work.")
+  endif()
   find_program(CYTHON "cython")
 
   set(ZMQ_BACKEND_DEST "zmq/backend/cython")
@@ -395,11 +411,12 @@ else()
     VERBATIM
     COMMAND "${Python_EXECUTABLE}"
             -mcython
-            --3str
             --output-file ${ZMQ_C}
             --module-name "zmq.backend.cython._zmq"
             ${ZMQ_PYX}
   )
+else()
+  message(FATAL_ERROR "Unsupported PYZMQ_BACKEND=${PYZMQ_BACKEND}. Must be 'cffi' or 'cython'.")
 endif()
 
 file(MAKE_DIRECTORY ${ZMQ_BACKEND_DEST})

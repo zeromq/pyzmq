@@ -10,6 +10,7 @@ import socket
 import sys
 import time
 import warnings
+from array import array
 from unittest import mock
 
 import pytest
@@ -455,6 +456,81 @@ class TestSocket(BaseZMQTestCase):
         for i in range(3):
             assert self.recv_multipart(b) == [msg]
 
+    def test_recv_into(self):
+        a, b = self.create_bound_pair()
+        if not self.green:
+            b.rcvtimeo = 1000
+        msg = [
+            b'hello',
+            b'there world',
+            b'part 3',
+            b'rest',
+        ]
+        a.send_multipart(msg)
+
+        # default nbytes: fits in array
+        # make sure itemsize > 1 is handled right
+        buf = array('Q', [0])
+        nbytes = b.recv_into(buf)
+        assert nbytes == len(msg[0])
+        assert buf.tobytes()[:nbytes] == msg[0]
+
+        # default nbytes: truncates to sizeof(buf)
+        buf = bytearray(4)
+        nbytes = b.recv_into(buf)
+        # returned nbytes is the actual received length,
+        # which indicates truncation
+        assert nbytes == len(msg[1])
+        assert buf[:] == msg[1][: len(buf)]
+
+        # specify nbytes, truncates
+        buf = bytearray(10)
+        nbytes = 4
+        nbytes_recvd = b.recv_into(buf, nbytes=nbytes)
+        assert nbytes_recvd == len(msg[2])
+        assert buf[:nbytes] == msg[2][:nbytes]
+        # didn't recv excess bytes
+        assert buf[nbytes:] == bytearray(10 - nbytes)
+
+        # recv_into empty buffer discards everything
+        buf = bytearray(10)
+        view = memoryview(buf)[:0]
+        assert view.nbytes == 0
+        nbytes = b.recv_into(view)
+        assert nbytes == len(msg[3])
+        assert buf == bytearray(10)
+
+    def test_recv_into_bad(self):
+        a, b = self.create_bound_pair()
+        if not self.green:
+            b.rcvtimeo = 1000
+
+        # bad calls
+
+        # negative nbytes
+        buf = bytearray(10)
+        with pytest.raises(ValueError):
+            b.recv_into(buf, nbytes=-1)
+        # not contiguous
+        buf = memoryview(bytearray(10))[::2]
+        with pytest.raises(BufferError):
+            b.recv_into(buf)
+        # readonly
+        buf = memoryview(b"readonly")
+        with pytest.raises(BufferError):
+            b.recv_into(buf)
+        # too big
+        buf = bytearray(10)
+        with pytest.raises(ValueError):
+            b.recv_into(buf, nbytes=11)
+        # not memory-viewable
+        with pytest.raises(TypeError):
+            b.recv_into(pytest)
+
+        # make sure flags work
+        with pytest.raises(zmq.Again):
+            b.recv_into(bytearray(5), flags=zmq.DONTWAIT)
+
     def test_close_after_destroy(self):
         """s.close() after ctx.destroy() should be fine"""
         ctx = self.Context()
@@ -630,7 +706,7 @@ class TestSocket(BaseZMQTestCase):
         # sample the front and back of the received message
         # without checking the whole content
         byte = ord(c)
-        view = memoryview(rcvd)
+        view = memoryview(rcvd.buffer)
         assert len(view) == N
         assert view[0] == byte
         assert view[-1] == byte

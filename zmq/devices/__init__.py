@@ -3,7 +3,9 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
-from zmq import device
+from __future__ import annotations
+
+from zmq import DeviceType, proxy
 from zmq.devices import (
     basedevice,
     monitoredqueue,
@@ -17,7 +19,7 @@ from zmq.devices.monitoredqueuedevice import *
 from zmq.devices.proxydevice import *
 from zmq.devices.proxysteerabledevice import *
 
-__all__ = ['device']
+__all__ = []
 for submod in (
     basedevice,
     proxydevice,

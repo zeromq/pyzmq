@@ -7,7 +7,6 @@ import asyncio
 import json
 import os
 import sys
-from concurrent.futures import CancelledError
 from multiprocessing import Process
 
 import pytest
@@ -63,6 +62,61 @@ async def test_recv(create_bound_pair):
     assert f1.done()
     assert f1.result() == b"hi"
     assert recvd == b"there"
+
+
+async def test_recv_into(create_bound_pair):
+    a, b = create_bound_pair()
+    b.rcvtimeo = 1000
+    msg = [
+        b'hello',
+        b'there world',
+        b'part 3',
+        b'rest',
+    ]
+    a.send_multipart(msg)
+
+    # default nbytes: fits in array
+    buf = bytearray(10)
+    nbytes = await b.recv_into(buf)
+    assert nbytes == len(msg[0])
+    assert buf[:nbytes] == msg[0]
+
+    # default nbytes: truncates to sizeof(buf)
+    buf = bytearray(4)
+    nbytes = await b.recv_into(buf, flags=zmq.DONTWAIT)
+    # returned nbytes is the actual received length,
+    # which indicates truncation
+    assert nbytes == len(msg[1])
+    assert buf[:] == msg[1][: len(buf)]
+
+    # specify nbytes, truncates
+    buf = bytearray(10)
+    nbytes = 4
+    nbytes_recvd = await b.recv_into(buf, nbytes=nbytes)
+    assert nbytes_recvd == len(msg[2])
+
+    # recv_into empty buffer discards everything
+    buf = bytearray(10)
+    view = memoryview(buf)[:0]
+    assert view.nbytes == 0
+    nbytes = await b.recv_into(view)
+    assert nbytes == len(msg[3])
+
+
+async def test_recv_into_bad(create_bound_pair):
+    a, b = create_bound_pair()
+    b.rcvtimeo = 1000
+
+    # bad calls
+    # make sure flags work
+    with pytest.raises(zmq.Again):
+        await b.recv_into(bytearray(5), flags=zmq.DONTWAIT)
+
+    await a.send(b'msg')
+    # negative nbytes
+    buf = bytearray(10)
+    with pytest.raises(ValueError):
+        await b.recv_into(buf, nbytes=-1)
 
 
 @mark.skipif(not hasattr(zmq, "RCVTIMEO"), reason="requires RCVTIMEO")
@@ -121,13 +175,8 @@ async def test_recv_json_cancelled(push_pull):
     await asyncio.sleep(0)
     obj = dict(a=5)
     await a.send_json(obj)
-    # CancelledError change in 3.8 https://bugs.python.org/issue32528
-    if sys.version_info < (3, 8):
-        with pytest.raises(CancelledError):
-            recvd = await f
-    else:
-        with pytest.raises(asyncio.exceptions.CancelledError):
-            recvd = await f
+    with pytest.raises(asyncio.CancelledError):
+        recvd = await f
     assert f.done()
     # give it a chance to incorrectly consume the event
     events = await b.poll(timeout=5)

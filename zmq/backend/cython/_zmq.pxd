@@ -1,10 +1,10 @@
+# cython: language_level = 3str
 """zmq Cython backend augmented declarations"""
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
 from zmq.backend.cython.libzmq cimport zmq_msg_t
-
 
 cdef class Context:
 
@@ -48,3 +48,4 @@ cdef class Socket:
     # cpdef methods for direct-cython access:
     cpdef object send(self, data, int flags=*, bint copy=*, bint track=*)
     cpdef object recv(self, int flags=*, bint copy=*, bint track=*)
+    cpdef int recv_into(self, buffer, int nbytes=*, int flags=*)
