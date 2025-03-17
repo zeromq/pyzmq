@@ -422,12 +422,9 @@ endif()
 file(MAKE_DIRECTORY ${ZMQ_BACKEND_DEST})
 
 if(NOT "${SKBUILD_SABI_COMPONENT}" STREQUAL "")
-  # set stable API
-  # assume we are targeting >= current Python version
-  # this isn't required, but we can't seem to get `wheel.py-api`
-  # see https://github.com/scikit-build/scikit-build-core/issues/958
-  set(SABI_ARG "USE_SABI;${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
-  message(STATUS "Building with stable API ${SABI_ARG} for ${Python_SOABI}")
+  # set stable ABI
+  set(SABI_ARG "USE_SABI;${SKBUILD_SABI_VERSION}")
+  message(STATUS "Building with stable ABI ${Python_SOABI} for ${SKBUILD_SABI_VERSION}")
 endif()
 
 python_add_library(
