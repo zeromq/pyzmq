@@ -8,13 +8,10 @@ import pytest
 import zmq
 from zmq_test_utils import BaseZMQTestCase
 
+pytestmark = pytest.mark.skipif(not zmq.DRAFT_API, reason="draft api unavailable")
+
 
 class TestDraftSockets(BaseZMQTestCase):
-    def setUp(self):
-        if not zmq.DRAFT_API:
-            pytest.skip("draft api unavailable")
-        super().setUp()
-
     def test_client_server(self):
         client, server = self.create_bound_pair(zmq.CLIENT, zmq.SERVER)
         client.send(b'request')
@@ -45,3 +42,13 @@ class TestDraftSockets(BaseZMQTestCase):
                 received_count += 1
         # assert that we got *something*
         assert len(received.intersection(sent)) >= 5
+
+
+def test_draft_fd():
+    if zmq.zmq_version_info() < (4, 3, 2):
+        pytest.skip("requires libzmq 4.3.2 for zmq_poller_fd")
+    with zmq.Context() as ctx, ctx.socket(zmq.SERVER) as s:
+        fd = s.FD
+        assert isinstance(fd, int)
+        fd_2 = s.get(zmq.FD)
+        assert fd_2 == fd
