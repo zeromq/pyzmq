@@ -14,7 +14,6 @@ __version__: str
 from .backend import IPC_PATH_MAX_LEN as IPC_PATH_MAX_LEN
 from .backend import curve_keypair as curve_keypair
 from .backend import curve_public as curve_public
-from .backend import device as device
 from .backend import has as has
 from .backend import proxy as proxy
 from .backend import proxy_steerable as proxy_steerable

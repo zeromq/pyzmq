@@ -1,3 +1,4 @@
+# cython: language_level = 3str
 """zmq Cython backend augmented declarations"""
 
 # Copyright (C) PyZMQ Developers

@@ -1,3 +1,4 @@
+# cython: language_level = 3str
 # cython: freethreading_compatible = True
 """Cython backend for pyzmq"""
 
@@ -32,9 +33,9 @@ except ImportError:
     """
     raise ImportError(msg)
 
-import time
 import warnings
 from threading import Event
+from time import monotonic
 from weakref import ref
 
 import cython as C
@@ -62,8 +63,13 @@ from cython.cimports.cpython import (
     PyBytes_Size,
     PyErr_CheckSignals,
 )
-from cython.cimports.cpython.buffer import Py_buffer, PyBuffer_IsContiguous
-from cython.cimports.cpython.memoryview import PyMemoryView_GET_BUFFER
+from cython.cimports.cpython.buffer import (
+    Py_buffer,
+    PyBUF_ANY_CONTIGUOUS,
+    PyBUF_WRITABLE,
+    PyBuffer_Release,
+    PyObject_GetBuffer,
+)
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
 
 # cimports require Cython 3
@@ -92,7 +98,6 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     ZMQ_ROUTER,
     ZMQ_SNDMORE,
     ZMQ_TYPE,
-    ZMQ_VERSION_MAJOR,
     _zmq_version,
     fd_t,
     int64_t,
@@ -105,12 +110,10 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_ctx_set,
     zmq_curve_keypair,
     zmq_curve_public,
-    zmq_device,
     zmq_disconnect,
     zmq_free_fn,
     zmq_getsockopt,
     zmq_has,
-    zmq_init,
     zmq_join,
     zmq_leave,
     zmq_msg_close,
@@ -145,9 +148,15 @@ from cython.cimports.zmq.backend.cython.libzmq import zmq_poll as zmq_poll_c
 
 import zmq
 from zmq.constants import SocketOption, _OptType
-from zmq.error import InterruptedSystemCall, ZMQError, _check_version
+from zmq.error import (
+    Again,
+    ContextTerminated,
+    InterruptedSystemCall,
+    ZMQError,
+    _check_version,
+)
 
-IPC_PATH_MAX_LEN = get_ipc_path_max_len()
+IPC_PATH_MAX_LEN: int = get_ipc_path_max_len()
 
 
 @cfunc
@@ -164,20 +173,12 @@ def _check_rc(rc: C.int, error_without_errno: bint = False) -> C.int:
         return 0
     if rc == -1:  # if rc < -1, it's a bug in libzmq. Should we warn?
         if errno == EINTR:
-            from zmq.error import InterruptedSystemCall
-
             raise InterruptedSystemCall(errno)
         elif errno == EAGAIN:
-            from zmq.error import Again
-
             raise Again(errno)
         elif errno == ZMQ_ETERM:
-            from zmq.error import ContextTerminated
-
             raise ContextTerminated(errno)
         else:
-            from zmq.error import ZMQError
-
             raise ZMQError(errno)
     return 0
 
@@ -249,14 +250,19 @@ def _copy_zmq_msg_bytes(zmq_msg: pointer(zmq_msg_t)) -> bytes:
 
 @cfunc
 @inline
-def _asbuffer(buf, data_c: pointer(p_void)) -> size_t:
+def _asbuffer(obj, data_c: pointer(p_void), writable: bint = False) -> size_t:
     """Get a C buffer from a memoryview"""
-    view = memoryview(buf)
-    pybuf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
-    if not PyBuffer_IsContiguous(pybuf, 'A'):
-        raise BufferError("memoryview: underlying buffer is not contiguous")
+    pybuf = declare(Py_buffer)
+    flags: C.int = PyBUF_ANY_CONTIGUOUS
+    if writable:
+        flags |= PyBUF_WRITABLE
+    rc: C.int = PyObject_GetBuffer(obj, address(pybuf), flags)
+    if rc < 0:
+        raise ValueError("Couldn't create buffer")
     data_c[0] = pybuf.buf
-    return pybuf.len
+    data_size: size_t = pybuf.len
+    PyBuffer_Release(address(pybuf))
+    return data_size
 
 
 _gc = None
@@ -273,6 +279,10 @@ class Frame:
         hint: pointer(_zhint)
         if copy_threshold is None:
             copy_threshold = zmq.COPY_THRESHOLD
+
+        c_copy_threshold: C.size_t = 0
+        if copy_threshold is not None:
+            c_copy_threshold = copy_threshold
 
         zmq_msg_ptr: pointer(zmq_msg_t) = address(self.zmq_msg)
         # init more as False
@@ -303,13 +313,16 @@ class Frame:
         data_len_c = _asbuffer(data, cast(pointer(p_void), address(data_c)))
 
         # copy unspecified, apply copy_threshold
+        c_copy: bint = True
         if copy is None:
-            if copy_threshold and data_len_c < copy_threshold:
-                copy = True
+            if c_copy_threshold and data_len_c < c_copy_threshold:
+                c_copy = True
             else:
-                copy = False
+                c_copy = False
+        else:
+            c_copy = copy
 
-        if copy:
+        if c_copy:
             # copy message data instead of sharing memory
             rc = zmq_msg_init_size(zmq_msg_ptr, data_len_c)
             _check_rc(rc)
@@ -535,16 +548,13 @@ class Context:
             self._shadow = True
         else:
             self._shadow = False
-            if ZMQ_VERSION_MAJOR >= 3:
-                self.handle = zmq_ctx_new()
-            else:
-                self.handle = zmq_init(io_threads)
+            self.handle = zmq_ctx_new()
 
         if self.handle == NULL:
             raise ZMQError()
 
         rc: C.int = 0
-        if ZMQ_VERSION_MAJOR >= 3 and not self._shadow:
+        if not self._shadow:
             rc = zmq_ctx_set(self.handle, ZMQ_IO_THREADS, io_threads)
             _check_rc(rc)
 
@@ -649,6 +659,18 @@ class Context:
         return rc
 
 
+@cfunc
+@inline
+def _c_addr(addr) -> p_char:
+    if isinstance(addr, str):
+        addr = addr.encode('utf-8')
+    try:
+        c_addr: p_char = addr
+    except TypeError:
+        raise TypeError(f"Expected addr to be str, got addr={addr!r}")
+    return c_addr
+
+
 @cclass
 class Socket:
     """
@@ -715,7 +737,7 @@ class Socket:
         """Whether the socket is closed"""
         return _check_closed_deep(self)
 
-    def close(self, linger=None):
+    def close(self, linger: int | None = None):
         """
         Close the socket.
 
@@ -737,7 +759,7 @@ class Socket:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, address(linger_c), sizeof(int))
             rc = zmq_close(self.handle)
-            if rc < 0 and zmq_errno() != ENOTSOCK:
+            if rc < 0 and _zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
                 _check_rc(rc)
             self._closed = True
@@ -882,7 +904,7 @@ class Socket:
 
         return result
 
-    def bind(self, addr):
+    def bind(self, addr: str | bytes):
         """
         Bind the socket to an address.
 
@@ -898,31 +920,22 @@ class Socket:
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        c_addr: p_char
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
-        addr_b = addr
-        if isinstance(addr, str):
-            addr_b = addr.encode('utf-8')
-        elif isinstance(addr_b, bytes):
-            addr = addr_b.decode('utf-8')
-
-        if not isinstance(addr_b, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr_b
-        rc = zmq_bind(self.handle, c_addr)
+        rc: C.int = zmq_bind(self.handle, c_addr)
         if rc != 0:
-            if IPC_PATH_MAX_LEN and zmq_errno() == ENAMETOOLONG:
+            _errno: C.int = _zmq_errno()
+            _ipc_max: C.int = get_ipc_path_max_len()
+            if _ipc_max and _errno == ENAMETOOLONG:
                 path = addr.split('://', 1)[-1]
                 msg = (
-                    f'ipc path "{path}" is longer than {IPC_PATH_MAX_LEN} '
+                    f'ipc path "{path}" is longer than {_ipc_max} '
                     'characters (sizeof(sockaddr_un.sun_path)). '
                     'zmq.IPC_PATH_MAX_LEN constant can be used '
                     'to check addr length (if it is defined).'
                 )
                 raise ZMQError(msg=msg)
-            elif zmq_errno() == ENOENT:
+            elif _errno == ENOENT:
                 path = addr.split('://', 1)[-1]
                 msg = f'No such file or directory for ipc path "{path}".'
                 raise ZMQError(msg=msg)
@@ -935,7 +948,7 @@ class Socket:
             else:
                 break
 
-    def connect(self, addr):
+    def connect(self, addr: str | bytes) -> None:
         """
         Connect to a remote 0MQ socket.
 
@@ -948,14 +961,8 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        c_addr: p_char
-
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
 
         while True:
             try:
@@ -967,7 +974,7 @@ class Socket:
             else:
                 break
 
-    def unbind(self, addr):
+    def unbind(self, addr: str | bytes):
         """
         Unbind from an address (undoes a call to bind).
 
@@ -982,22 +989,13 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        c_addr: p_char
-
-        _check_version((3, 2), "unbind")
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
-
-        rc = zmq_unbind(self.handle, c_addr)
+        rc: C.int = zmq_unbind(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
-    def disconnect(self, addr):
+    def disconnect(self, addr: str | bytes):
         """
         Disconnect from a remote 0MQ socket (undoes a call to connect).
 
@@ -1012,22 +1010,14 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        rc: C.int
-        c_addr: p_char
-
-        _check_version((3, 2), "disconnect")
+        c_addr: p_char = _c_addr(addr)
         _check_closed(self)
-        if isinstance(addr, str):
-            addr = addr.encode('utf-8')
-        if not isinstance(addr, bytes):
-            raise TypeError(f'expected str, got: {addr!r}')
-        c_addr = addr
 
-        rc = zmq_disconnect(self.handle, c_addr)
+        rc: C.int = zmq_disconnect(self.handle, c_addr)
         if rc != 0:
             raise ZMQError()
 
-    def monitor(self, addr, events: C.int = ZMQ_EVENT_ALL):
+    def monitor(self, addr: str | bytes | None, events: C.int = ZMQ_EVENT_ALL):
         """
         Start publishing socket events on inproc.
         See libzmq docs for zmq_monitor for details.
@@ -1040,7 +1030,7 @@ class Socket:
 
         Parameters
         ----------
-        addr : str
+        addr : str | None
             The inproc url used for monitoring. Passing None as
             the addr will cause an existing socket monitor to be
             deregistered.
@@ -1048,28 +1038,14 @@ class Socket:
             default: zmq.EVENT_ALL
             The zmq event bitmask for which events will be sent to the monitor.
         """
-        _check_version((3, 2), "monitor")
-
-        if isinstance(addr, str):
-            # cast str to utf8 bytes
-            addr = addr.encode("utf-8")
-
-        # cast bytes to char*
-        c_addr: p_char
-
-        if addr is None:
-            c_addr = NULL
-        else:
-            # let Cython do the casting,
-            # but return a nicer error message if it fails
-            try:
-                c_addr = addr
-            except TypeError:
-                raise TypeError(f"Monitor addr must be str, got {addr!r}") from None
+        c_addr: p_char = NULL
+        if addr is not None:
+            c_addr = _c_addr(addr)
+        _check_closed(self)
 
         _check_rc(zmq_socket_monitor(self.handle, c_addr, events))
 
-    def join(self, group):
+    def join(self, group: str | bytes):
         """
         Join a RADIO-DISH group
 
@@ -1084,7 +1060,8 @@ class Socket:
             raise RuntimeError("libzmq must be built with draft support")
         if isinstance(group, str):
             group = group.encode('utf8')
-        rc: C.int = zmq_join(self.handle, group)
+        c_group: bytes = group
+        rc: C.int = zmq_join(self.handle, c_group)
         _check_rc(rc)
 
     def leave(self, group):
@@ -1160,8 +1137,10 @@ class Socket:
             else:
                 if self.copy_threshold:
                     buf = memoryview(data)
+                    nbytes: size_t = buf.nbytes
+                    copy_threshold: size_t = self.copy_threshold
                     # always copy messages smaller than copy_threshold
-                    if buf.nbytes < self.copy_threshold:
+                    if nbytes < copy_threshold:
                         _send_copy(self.handle, buf, flags)
                         return zmq._FINISHED_TRACKER
                 msg = Frame(data, track=track, copy_threshold=self.copy_threshold)
@@ -1249,31 +1228,26 @@ class Socket:
         ------
         ZMQError
             for any of the reasons `zmq_recv` might fail.
-        ValueError
-            for invalid inputs, such as readonly or not contiguous buffers,
-            or invalid nbytes.
+        BufferError
+            for invalid buffers, such as readonly or not contiguous.
         """
         c_flags: C.int = flags
         _check_closed(self)
-        c_nbytes: C.int = nbytes
+        c_nbytes: size_t = nbytes
         if c_nbytes < 0:
             raise ValueError(f"{nbytes=} must be non-negative")
         view = memoryview(buffer)
-        # get C buffer
-        py_buf: pointer(Py_buffer) = PyMemoryView_GET_BUFFER(view)
-        if py_buf.readonly:
-            raise ValueError("Cannot recv_into readonly buffer")
-        if not PyBuffer_IsContiguous(py_buf, 'A'):
-            raise ValueError("Can only recv_into contiguous buffer")
+        c_data = declare(pointer(C.void))
+        view_bytes: C.size_t = _asbuffer(view, address(c_data), True)
         if nbytes == 0:
-            c_nbytes = py_buf.len
-        elif c_nbytes > py_buf.len:
-            raise ValueError(f"{nbytes=} too big for memoryview of {py_buf.len}B")
+            c_nbytes = view_bytes
+        elif c_nbytes > view_bytes:
+            raise ValueError(f"{nbytes=} too big for memoryview of {view_bytes}B")
 
         # call zmq_recv, with retries
         while True:
             with nogil:
-                rc: C.int = zmq_recv(self.handle, py_buf.buf, c_nbytes, c_flags)
+                rc: C.int = zmq_recv(self.handle, c_data, c_nbytes, c_flags)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:
@@ -1318,7 +1292,7 @@ def _check_closed_deep(s: Socket) -> bint:
             s.handle, ZMQ_TYPE, cast(p_void, address(stype)), address(sz)
         )
         if rc < 0:
-            errno = zmq_errno()
+            errno = _zmq_errno()
             if errno == ENOTSOCK:
                 s._closed = True
                 return True
@@ -1473,7 +1447,7 @@ def _setsockopt(handle: p_void, option: C.int, optval: p_void, sz: size_t):
 # General utility functions
 
 
-def zmq_errno():
+def zmq_errno() -> C.int:
     """Return the integer errno of the most recent zmq error."""
     return _zmq_errno()
 
@@ -1495,17 +1469,14 @@ def zmq_version_info() -> tuple[int, int, int]:
     return (major, minor, patch)
 
 
-def has(capability) -> bool:
+def has(capability: str) -> bool:
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
 
     .. versionadded:: libzmq-4.1
     .. versionadded:: 14.1
     """
     _check_version((4, 1), 'zmq.has')
-    ccap: bytes
-    if isinstance(capability, str):
-        capability = capability.encode('utf8')
-    ccap = capability
+    ccap: bytes = capability.encode('utf8')
     return bool(zmq_has(ccap))
 
 
@@ -1586,6 +1557,8 @@ def zmq_poll(sockets, timeout: C.int = -1):
     """
     rc: C.int
     i: C.int
+    fileno: fd_t
+    events: C.int
     pollitems: pointer(zmq_pollitem_t) = NULL
     nsockets: C.int = len(sockets)
 
@@ -1596,11 +1569,6 @@ def zmq_poll(sockets, timeout: C.int = -1):
     if pollitems == NULL:
         raise MemoryError("Could not allocate poll items")
 
-    if ZMQ_VERSION_MAJOR < 3:
-        # timeout is us in 2.x, ms in 3.x
-        # expected input is ms (matches 3.x)
-        timeout = 1000 * timeout
-
     for i in range(nsockets):
         s, events = sockets[i]
         if isinstance(s, Socket):
@@ -1609,8 +1577,9 @@ def zmq_poll(sockets, timeout: C.int = -1):
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif isinstance(s, int):
+            fileno = s
             pollitems[i].socket = NULL
-            pollitems[i].fd = s
+            pollitems[i].fd = fileno
             pollitems[i].events = events
             pollitems[i].revents = 0
         elif hasattr(s, 'fileno'):
@@ -1631,17 +1600,19 @@ def zmq_poll(sockets, timeout: C.int = -1):
                 f"a fileno() method: {s!r}"
             )
 
-    ms_passed: int = 0
+    ms_passed: C.int = 0
+    tic: C.int
     try:
         while True:
-            start = time.monotonic()
+            start: C.int = monotonic()
             with nogil:
                 rc = zmq_poll_c(pollitems, nsockets, timeout)
             try:
                 _check_rc(rc)
             except InterruptedSystemCall:
                 if timeout > 0:
-                    ms_passed = int(1000 * (time.monotonic() - start))
+                    tic = monotonic()
+                    ms_passed = int(1000 * (tic - start))
                     if ms_passed < 0:
                         # don't allow negative ms_passed,
                         # which can happen on old Python versions without time.monotonic.
@@ -1676,42 +1647,6 @@ def zmq_poll(sockets, timeout: C.int = -1):
 
     free(pollitems)
     return results
-
-
-# device functions
-
-
-def device(device_type: C.int, frontend: Socket, backend: Socket = None):
-    """
-    Start a zeromq device.
-
-    .. deprecated:: libzmq-3.2
-        Use zmq.proxy
-
-    Parameters
-    ----------
-    device_type : int
-        one of: QUEUE, FORWARDER, STREAMER
-        The type of device to start.
-    frontend : Socket
-        The Socket instance for the incoming traffic.
-    backend : Socket
-        The Socket instance for the outbound traffic.
-    """
-    if ZMQ_VERSION_MAJOR >= 3:
-        return proxy(frontend, backend)
-
-    rc: C.int = 0
-    while True:
-        with nogil:
-            rc = zmq_device(device_type, frontend.handle, backend.handle)
-        try:
-            _check_rc(rc)
-        except InterruptedSystemCall:
-            continue
-        else:
-            break
-    return rc
 
 
 def proxy(frontend: Socket, backend: Socket, capture: Socket = None):
@@ -2038,7 +1973,6 @@ __all__ = [
     'zmq_errno',
     'zmq_poll',
     'strerror',
-    'device',
     'proxy',
     'proxy_steerable',
 ]

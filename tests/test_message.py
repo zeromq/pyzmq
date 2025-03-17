@@ -15,6 +15,8 @@ else:
 
 import time
 
+import pytest
+
 import zmq
 from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_cpython_cffi, skip_pypy
 
@@ -215,11 +217,18 @@ class TestFrame(BaseZMQTestCase):
         """test using a buffer as input"""
         ins = "§§¶•ªº˜µ¬˚…∆˙åß∂©œ∑´†≈ç√".encode()
         zmq.Frame(memoryview(ins))
+        zmq.Frame(bytearray(5))
 
     def test_bad_buffer_in(self):
         """test using a bad object"""
-        self.assertRaises(TypeError, zmq.Frame, 5)
-        self.assertRaises(TypeError, zmq.Frame, object())
+        with pytest.raises(TypeError):
+            zmq.Frame(5)
+        with pytest.raises(TypeError):
+            zmq.Frame(object())
+        with pytest.raises(TypeError):
+            zmq.Frame("str")
+        with pytest.raises(BufferError):
+            zmq.Frame(memoryview(bytearray(10))[::2])
 
     def test_buffer_out(self):
         """receiving buffered output"""
