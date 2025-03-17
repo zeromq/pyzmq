@@ -6,12 +6,13 @@ import time
 import pytest
 
 import zmq
-from zmq_test_utils import BaseZMQTestCase
+from zmq_test_utils import BaseZMQTestCase, skip_pypy
 
 pytestmark = pytest.mark.skipif(not zmq.DRAFT_API, reason="draft api unavailable")
 
 
 class TestDraftSockets(BaseZMQTestCase):
+    @skip_pypy
     def test_client_server(self):
         client, server = self.create_bound_pair(zmq.CLIENT, zmq.SERVER)
         client.send(b'request')
@@ -21,6 +22,15 @@ class TestDraftSockets(BaseZMQTestCase):
         reply = self.recv(client)
         assert reply == b'reply'
 
+    def test_client_server_frame(self):
+        client, server = self.create_bound_pair(zmq.CLIENT, zmq.SERVER)
+        client.send(b'request')
+        msg = self.recv(server, copy=False)
+        server.send(msg)
+        reply = self.recv(client)
+        assert reply == b'request'
+
+    @skip_pypy
     def test_radio_dish(self):
         dish, radio = self.create_bound_pair(zmq.DISH, zmq.RADIO)
         dish.rcvtimeo = 250
