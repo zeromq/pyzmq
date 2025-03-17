@@ -8,3 +8,9 @@ cdef extern from "Python.h":
   Py_ssize_t PyBytes_Size(object string) except -1
   # cpython.exc
   int PyErr_CheckSignals() except -1
+  # cpython.buffer
+  cdef enum:
+    PyBUF_ANY_CONTIGUOUS,
+    PyBUF_WRITABLE
+  int PyObject_GetBuffer(object obj, Py_buffer *view, int flags) except -1
+  void PyBuffer_Release(Py_buffer *view)
