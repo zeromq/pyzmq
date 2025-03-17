@@ -90,13 +90,16 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     ZMQ_ENOTSOCK,
     ZMQ_ETERM,
     ZMQ_EVENT_ALL,
+    ZMQ_FD,
     ZMQ_IDENTITY,
     ZMQ_IO_THREADS,
     ZMQ_LINGER,
     ZMQ_POLLIN,
+    ZMQ_POLLOUT,
     ZMQ_RCVMORE,
     ZMQ_ROUTER,
     ZMQ_SNDMORE,
+    ZMQ_THREAD_SAFE,
     ZMQ_TYPE,
     _zmq_version,
     fd_t,
@@ -136,9 +139,7 @@ from cython.cimports.zmq.backend.cython.libzmq import (
     zmq_poller_add,
     zmq_poller_destroy,
     zmq_poller_fd,
-    zmq_poller_modify,
     zmq_poller_new,
-    zmq_poller_remove,
     zmq_pollitem_t,
     zmq_proxy,
     zmq_proxy_steerable,
@@ -708,6 +709,7 @@ class Socket:
     ):
         # pre-init
         self.handle = NULL
+        self._draft_poller = NULL
         self._pid = 0
         self._shadow = False
         self.context = None
@@ -764,6 +766,12 @@ class Socket:
         if self.handle != NULL and not self._closed and getpid() == self._pid:
             if setlinger:
                 zmq_setsockopt(self.handle, ZMQ_LINGER, address(linger_c), sizeof(int))
+
+            # teardown draft poller
+            if self._draft_poller != NULL:
+                zmq_poller_destroy(address(self._draft_poller))
+                self._draft_poller = NULL
+
             rc = zmq_close(self.handle)
             if rc < 0 and _zmq_errno() != ENOTSOCK:
                 # ignore ENOTSOCK (closed by Context)
@@ -890,11 +898,48 @@ class Socket:
                 self.handle, option, cast(p_void, address(optval_int64_c)), address(sz)
             )
             result = optval_int64_c
+        elif option == ZMQ_FD and self._draft_poller != NULL:
+            # draft sockets use FD of a draft zmq_poller as proxy
+            rc = zmq_poller_fd(self._draft_poller, address(optval_fd_c))
+            _check_rc(rc)
+            result = optval_fd_c
         elif opt_type == _OptType.fd:
             sz = sizeof(fd_t)
-            _getsockopt(
-                self.handle, option, cast(p_void, address(optval_fd_c)), address(sz)
-            )
+            try:
+                _getsockopt(
+                    self.handle, option, cast(p_void, address(optval_fd_c)), address(sz)
+                )
+            except ZMQError as e:
+                # threadsafe sockets don't support ZMQ_FD (yet!)
+                # fallback on zmq_poller_fd as proxy with the same behavior
+                # until libzmq fixes this.
+                # if upstream fixes it, this branch will never be taken
+                if (
+                    option == ZMQ_FD
+                    and e.errno == zmq.Errno.EINVAL
+                    and self.get(ZMQ_THREAD_SAFE)
+                ):
+                    _check_version(
+                        (4, 3, 2), "draft socket FD support via zmq_poller_fd"
+                    )
+                    if not zmq.has('draft'):
+                        raise RuntimeError("libzmq must be built with draft support")
+
+                    # create a poller and retrieve its fd
+                    self._draft_poller = zmq_poller_new()
+                    if self._draft_poller == NULL:
+                        # failed (why?), raise original error
+                        raise
+                    # register self with poller
+                    rc = zmq_poller_add(
+                        self._draft_poller, self.handle, NULL, ZMQ_POLLIN | ZMQ_POLLOUT
+                    )
+                    _check_rc(rc)
+                    # use poller fd as proxy for ours
+                    rc = zmq_poller_fd(self._draft_poller, address(optval_fd_c))
+                    _check_rc(rc)
+                else:
+                    raise
             result = optval_fd_c
         else:
             # default is to assume int, which is what most new sockopts will be
@@ -1260,51 +1305,6 @@ class Socket:
                 continue
             else:
                 return rc
-
-
-@cclass
-class ZMQPoller:
-    def __init__(self):
-        _check_version((4, 3, 2), "zmq_poller_fd")
-        if not zmq.has('draft'):
-            raise RuntimeError("libzmq must be built with draft support")
-
-        self.handle = zmq_poller_new()
-        if self.handle == NULL:
-            raise ZMQError()
-        self._pid = getpid()
-
-    def close(self):
-        if self.handle != NULL and getpid() == self._pid:
-            # This sets self.handle = NULL
-            rc: C.int = zmq_poller_destroy(address(self.handle))
-            _check_rc(rc)
-
-    def add(self, socket: Socket, flags: C.short):
-        if self.handle == NULL:
-            raise RuntimeError("Poller has been destroyed")
-        rc: C.int = zmq_poller_add(self.handle, socket.handle, NULL, flags)
-        _check_rc(rc)
-
-    def modify(self, socket: Socket, flags: C.short):
-        if self.handle == NULL:
-            raise RuntimeError("Poller has been destroyed")
-        rc: C.int = zmq_poller_modify(self.handle, socket.handle, flags)
-        _check_rc(rc)
-
-    def remove(self, socket: Socket):
-        if self.handle == NULL:
-            raise RuntimeError("Poller has been destroyed")
-        rc: C.int = zmq_poller_remove(self.handle, socket.handle)
-        _check_rc(rc)
-
-    def fd(self) -> object:
-        if self.handle == NULL:
-            raise RuntimeError("Poller has been destroyed")
-        fd_: fd_t = declare(fd_t)
-        rc: C.int = zmq_poller_fd(self.handle, address(fd_))
-        _check_rc(rc)
-        return fd_
 
 
 # inline socket methods
@@ -2026,5 +2026,4 @@ __all__ = [
     'strerror',
     'proxy',
     'proxy_steerable',
-    'ZMQPoller',
 ]

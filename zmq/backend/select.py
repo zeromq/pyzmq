@@ -35,7 +35,6 @@ def select_backend(name: str) -> Dict:
     ns = {
         # private API
         'monitored_queue': mod.monitored_queue,
-        'ZMQPoller': mod.ZMQPoller,
     }
     ns.update({key: getattr(mod, key) for key in public_api})
     return ns

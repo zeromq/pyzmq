@@ -76,7 +76,6 @@
     #define zmq_poller_add(poller, socket, userdata, events) _missing
     #define zmq_poller_modify(poller, socket, events) _missing
     #define zmq_poller_remove(poller, socket) _missing
-    
 #endif
 #ifndef PYZMQ_DRAFT_432
     #define zmq_poller_fd(poller, fd) _missing

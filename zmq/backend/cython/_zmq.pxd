@@ -20,10 +20,6 @@ cdef class MessageTracker(object):
     cdef set events  # Message Event objects to track.
     cdef set peers  # Other Message or MessageTracker objects.
 
-cdef class ZMQPoller:
-    cdef void *handle  # The C handle for the underlying zmq object. NULL if closed
-    cdef int _pid    # the pid of the process which created me (for fork safety)
-
 cdef class Frame:
 
     cdef zmq_msg_t zmq_msg
@@ -48,6 +44,7 @@ cdef class Socket:
     cdef public bint _closed    # bool property for a closed socket.
     cdef public int copy_threshold # threshold below which pyzmq will always copy messages
     cdef int _pid               # the pid of the process which created me (for fork safety)
+    cdef void *_draft_poller  # The C handle for the zmq poller for draft socket zmq.FD support
 
     # cpdef methods for direct-cython access:
     cpdef object send(self, data, int flags=*, bint copy=*, bint track=*)
