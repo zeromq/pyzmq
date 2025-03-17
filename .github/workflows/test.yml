@@ -81,6 +81,7 @@ jobs:
 
           - os: ubuntu-24.04
             python: "3.12"
+            abi: cp311
 
           - os: ubuntu-24.04
             python: "3.13"
@@ -202,6 +203,11 @@ jobs:
         run: |
           echo "PYZMQ_BACKEND=${{ matrix.backend }}" >> "$GITHUB_ENV"
           pip install cffi
+
+      - name: set stable ABI
+        if: matrix.abi
+        run: |
+          echo "PIP_CONFIG_SETTINGS=wheel.py-api=${{ matrix.abi }}" >> "$GITHUB_ENV"
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
