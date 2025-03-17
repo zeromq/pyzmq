@@ -850,6 +850,10 @@ class Socket:
 
         See the 0MQ API documentation for details on specific options.
 
+        .. versionchanged:: 27
+            Added experimental support for ZMQ_FD for draft sockets via `zmq_poller_fd`.
+            Requires libzmq >=4.3.2 built with draft support.
+
         Parameters
         ----------
         option : int
