@@ -11,7 +11,7 @@ an overview of what the ØMQ API looks like in Python. For information on how to
 ØMQ in general, see the many examples in the excellent [ØMQ Guide], all of which
 have a version in Python.
 
-PyZMQ works with Python 3 (≥ 3.7), as well as PyPy via CFFI.
+PyZMQ works with Python 3 (≥ 3.8), as well as PyPy via CFFI.
 
 Please don't hesitate to report pyzmq-specific issues to our [tracker] on GitHub.
 General questions about ØMQ are better sent to the [ØMQ tracker] or [mailing list].

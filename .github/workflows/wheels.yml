@@ -62,7 +62,7 @@ jobs:
     name: wheel-${{ matrix.name }}
 
     env:
-      MACOSX_DEPLOYMENT_TARGET: "10.9"
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
       CIBW_BUILD: "${{ matrix.cibw.build || '*' }}"
       CIBW_SKIP: "${{ matrix.cibw.skip || '' }}"
       CIBW_ARCHS: "${{ matrix.cibw.arch || 'auto' }}"
@@ -73,17 +73,12 @@ jobs:
       matrix:
         include:
           - os: macos-13
-            name: mac-cpython
-            cibw:
-              build: "cp*"
-
-          - os: macos-13
             name: mac-pypy
             cibw:
               build: "pp*"
 
           - os: macos-14
-            name: mac-arm
+            name: mac-cpython
             cibw:
               arch: universal2
               build: "cp*"
@@ -125,8 +120,6 @@ jobs:
             architecture: x86
             cibw:
               build: "cp*win32"
-              # free-threaded doesn't seem to work on Windows
-              skip: "*t-win*"
 
           - os: windows-2019
             name: win-pypy
@@ -139,16 +132,13 @@ jobs:
             architecture: x64
             cibw:
               build: "cp*win_amd64"
-              # free-threaded doesn't seem to work on Windows
-              skip: "*t-win*"
 
           - os: windows-2022
             name: win_arm64
             architecture: x64
             cibw:
               arch: ARM64
-              # free-threaded doesn't seem to work on Windows
-              skip: "cp37* *t-win*"
+              skip: "cp37*"
 
     steps:
       - uses: actions/checkout@v4
@@ -228,12 +218,15 @@ jobs:
       - sdist
       - wheel
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
       - name: list wheels
-        run: ls -l dist
+        run: |
+          ls -l dist
+          python3 tools/wheel_summary.py dist | tee "$GITHUB_STEP_SUMMARY"
 
   upload-pypi:
     permissions:

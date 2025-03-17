@@ -25,6 +25,7 @@ from zmq import EVENTS, POLLIN, POLLOUT
 class _FutureEvent(NamedTuple):
     future: Future
     kind: str
+    args: tuple
     kwargs: dict
     msg: Any
     timer: Any
@@ -277,7 +278,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         Returns a Future whose result will be a multipart message.
         """
         return self._add_recv_event(
-            'recv_multipart', dict(flags=flags, copy=copy, track=track)
+            'recv_multipart', kwargs=dict(flags=flags, copy=copy, track=track)
         )
 
     def recv(  # type: ignore
@@ -289,7 +290,20 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
         Recommend using recv_multipart instead.
         """
-        return self._add_recv_event('recv', dict(flags=flags, copy=copy, track=track))
+        return self._add_recv_event(
+            'recv', kwargs=dict(flags=flags, copy=copy, track=track)
+        )
+
+    def recv_into(  # type: ignore
+        self, buf, /, *, nbytes: int = 0, flags: int = 0
+    ) -> Awaitable[int]:
+        """Receive a single zmq frame into a pre-allocated buffer.
+
+        Returns a Future, whose result will be the number of bytes received.
+        """
+        return self._add_recv_event(
+            'recv_into', args=(buf,), kwargs=dict(nbytes=nbytes, flags=flags)
+        )
 
     def send_multipart(  # type: ignore
         self, msg_parts: Any, flags: int = 0, copy: bool = True, track=False, **kwargs
@@ -456,14 +470,25 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
             # usually this will have been removed by being consumed
             return
 
-    def _add_recv_event(self, kind, kwargs=None, future=None):
+    def _add_recv_event(
+        self,
+        kind: str,
+        *,
+        args: tuple | None = None,
+        kwargs: dict[str, Any] | None = None,
+        future: Future | None = None,
+    ) -> Future:
         """Add a recv event, returning the corresponding Future"""
         f = future or self._Future()
+        if args is None:
+            args = ()
+        if kwargs is None:
+            kwargs = {}
         if kind.startswith('recv') and kwargs.get('flags', 0) & _zmq.DONTWAIT:
             # short-circuit non-blocking calls
             recv = getattr(self._shadow_sock, kind)
             try:
-                r = recv(**kwargs)
+                r = recv(*args, **kwargs)
             except Exception as e:
                 f.set_exception(e)
             else:
@@ -478,7 +503,9 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
-        _future_event = _FutureEvent(f, kind, kwargs, msg=None, timer=timer)
+        _future_event = _FutureEvent(
+            f, kind, args=args, kwargs=kwargs, msg=None, timer=timer
+        )
         self._recv_futures.append(_future_event)
 
         if self._shadow_sock.get(EVENTS) & POLLIN:
@@ -543,7 +570,9 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
 
         # we add it to the list of futures before we add the timeout as the
         # timeout will remove the future from recv_futures to avoid leaks
-        _future_event = _FutureEvent(f, kind, kwargs=kwargs, msg=msg, timer=timer)
+        _future_event = _FutureEvent(
+            f, kind, args=(), kwargs=kwargs, msg=msg, timer=timer
+        )
         self._send_futures.append(_future_event)
         # Don't let the Future sit in _send_futures after it's done
         f.add_done_callback(
@@ -564,7 +593,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
             return
         f = None
         while self._recv_futures:
-            f, kind, kwargs, _, timer = self._recv_futures.popleft()
+            f, kind, args, kwargs, _, timer = self._recv_futures.popleft()
             # skip any cancelled futures
             if f.done():
                 f = None
@@ -587,12 +616,14 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
             recv = self._shadow_sock.recv_multipart
         elif kind == 'recv':
             recv = self._shadow_sock.recv
+        elif kind == 'recv_into':
+            recv = self._shadow_sock.recv_into
         else:
             raise ValueError(f"Unhandled recv event type: {kind!r}")
 
         kwargs['flags'] |= _zmq.DONTWAIT
         try:
-            result = recv(**kwargs)
+            result = recv(*args, **kwargs)
         except Exception as e:
             f.set_exception(e)
         else:
@@ -604,7 +635,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
             return
         f = None
         while self._send_futures:
-            f, kind, kwargs, msg, timer = self._send_futures.popleft()
+            f, kind, args, kwargs, msg, timer = self._send_futures.popleft()
             # skip any cancelled futures
             if f.done():
                 f = None

@@ -9,8 +9,6 @@ int zmq_connect(void *socket, const char *endpoint);
 int zmq_errno(void);
 const char * zmq_strerror(int errnum);
 
-int zmq_device(int device, void *frontend, void *backend);
-
 int zmq_unbind(void *socket, const char *endpoint);
 int zmq_disconnect(void *socket, const char *endpoint);
 void* zmq_ctx_new();
@@ -46,6 +44,7 @@ int zmq_msg_close(zmq_msg_t *msg);
 int zmq_msg_copy(zmq_msg_t *dst, zmq_msg_t *src);
 int zmq_msg_send(zmq_msg_t *msg, void *socket, int flags);
 int zmq_msg_recv(zmq_msg_t *msg, void *socket, int flags);
+int zmq_recv(void *socket, void *buf, int nbytes, int flags);
 
 int zmq_getsockopt(void *socket,
                    int option_name,

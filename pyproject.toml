@@ -4,7 +4,7 @@ requires = [
   "cffi; implementation_name == 'pypy'",
   "cython>=3.0.0; implementation_name != 'pypy'",
   "packaging",
-  "scikit-build-core",
+  "scikit-build-core>=0.10",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -12,14 +12,14 @@ build-backend = "scikit_build_core.build"
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 [project]
 name = "pyzmq"
-version = "26.3.0.dev"
+version = "26.4.0.dev"
 authors = [
   { name = "PyZMQ Contributors", email = "zeromq-dev@lists.zeromq.org" },
   { name = "Brian E. Granger" },
   { name = "Min Ragan-Kelley" },
 ]
 license = { file = "LICENSE.md" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
@@ -32,7 +32,6 @@ classifiers = [
   "Topic :: System :: Networking",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -56,8 +55,12 @@ wheel.license-files = ["licenses/LICENSE*"]
 # 3.15 is required by scikit-build-core
 cmake.version = ">=3.15"
 # only build/install the pyzmq component
-cmake.targets = ["pyzmq"]
+build.targets = ["pyzmq"]
 install.components = ["pyzmq"]
+
+[[tool.scikit-build.overrides]]
+if.env.PYZMQ_BACKEND = "cffi"
+build.requires = ["cffi"]
 
 [tool.ruff]
 
@@ -116,7 +119,7 @@ skip = ["zmq/__init__.py"]
 github_url = "https://github.com/zeromq/pyzmq"
 
 [tool.tbump.version]
-current = "26.3.0.dev"
+current = "26.4.0.dev"
 regex = '''
   (?P<major>\d+)
   \.
@@ -143,7 +146,7 @@ search = '__version__: str = "{current_version}"'
 
 [tool.cibuildwheel]
 build-verbosity = "1"
-free-threaded-support = true
+enable = ["cpython-freethreading", "pypy"]
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 
@@ -166,12 +169,13 @@ before-all = "bash tools/install_libzmq.sh"
 repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.macos.environment]
-# note: everything here needs to also be duplicated in overrides below
 ZMQ_PREFIX = "/tmp/zmq"
-MACOSX_DEPLOYMENT_TARGET = "10.9"
+MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
+# free-threaded doesn't seem to work on Windows
+enable = ["pypy"]
 repair-wheel-command = """\
     delvewheel repair \
         -v \
@@ -191,10 +195,6 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-# mac-arm target is 10.15
-[[tool.cibuildwheel.overrides]]
-select = "*macos*{universal2,arm64}*"
-environment = { ZMQ_PREFIX = "/tmp/zmq", MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]

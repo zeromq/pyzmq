@@ -272,3 +272,8 @@ latex_documents = [
 
 # If false, no module index is generated.
 # latex_use_modindex = True
+
+linkcheck_ignore = [
+    r"https://github\.com(.*)#",  # javascript based anchors
+    r"https://github\.com/zeromq/pyzmq/(issues|commits)(.*)",  # too many links
+]

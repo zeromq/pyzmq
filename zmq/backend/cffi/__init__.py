@@ -3,6 +3,9 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+# for clearer error message on missing cffi
+import cffi  # noqa
+
 from zmq.backend.cffi import _poll, context, devices, error, message, socket, utils
 
 from ._cffi import ffi

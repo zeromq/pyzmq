@@ -82,6 +82,9 @@ class Frame(maybe_bufferable):
             self._bytes = data
 
         self._buffer = memoryview(data)
+        if not self._buffer.contiguous:
+            raise BufferError("memoryview: underlying buffer is not contiguous")
+        # from_buffer silently copies if memory is not contiguous
         c_data = ffi.from_buffer(self._buffer)
         data_len_c = self._buffer.nbytes
 

@@ -31,7 +31,6 @@ def curve_keypair():
     (public, secret) : two bytestrings
         The public and private key pair as 40 byte z85-encoded bytestrings.
     """
-    _check_version((3, 2), "curve_keypair")
     public = ffi.new('char[64]')
     private = ffi.new('char[64]')
     rc = C.zmq_curve_keypair(public, private)
@@ -73,6 +72,7 @@ def _retry_sys_call(f, *args, **kwargs):
             continue
         else:
             break
+    return rc
 
 
 __all__ = ['has', 'curve_keypair', 'curve_public']

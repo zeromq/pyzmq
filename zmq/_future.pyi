@@ -41,6 +41,9 @@ class _AsyncSocket(_zmq.Socket[Future]):
     def recv(
         self, flags: int = 0, copy: bool = True, track: bool = False
     ) -> Awaitable[bytes | _zmq.Frame]: ...
+    def recv_into(  # type: ignore
+        self, buffer: Any, /, *, nbytes: int = 0, flags: int = 0
+    ) -> Awaitable[int]: ...
     def send_multipart(  # type: ignore
         self,
         msg_parts: Sequence,

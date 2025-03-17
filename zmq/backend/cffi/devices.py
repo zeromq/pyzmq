@@ -9,10 +9,6 @@ from .socket import Socket
 from .utils import _retry_sys_call
 
 
-def device(device_type, frontend, backend):
-    return proxy(frontend, backend)
-
-
 def proxy(frontend, backend, capture=None):
     if isinstance(capture, Socket):
         capture = capture._zmq_socket
@@ -60,4 +56,4 @@ def proxy_steerable(frontend, backend, capture=None, control=None):
     )
 
 
-__all__ = ['device', 'proxy', 'proxy_steerable']
+__all__ = ['proxy', 'proxy_steerable']

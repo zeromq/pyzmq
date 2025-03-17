@@ -3,10 +3,25 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 from zmq import error
+from zmq.backend import proxy
+from zmq.constants import DeviceType
 from zmq.sugar import context, frame, poll, socket, tracker, version
 
-__all__ = []
+
+def device(device_type: DeviceType, frontend: socket.Socket, backend: socket.Socket):
+    """Deprecated alias for zmq.proxy
+
+    .. deprecated:: libzmq-3.2
+    .. deprecated:: 13.0
+    """
+
+    return proxy(frontend, backend)
+
+
+__all__ = ["device"]
 for submod in (context, error, frame, poll, socket, tracker, version):
     __all__.extend(submod.__all__)
 

@@ -8,6 +8,9 @@ LICENSE_DIR="$PYZMQ_DIR/licenses"
 test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
 
 if [[ "$(uname)" == "Darwin" ]]; then
+    # make sure deployment target is set
+    echo "${MACOSX_DEPLOYMENT_TARGET=}"
+    test ! -z "${MACOSX_DEPLOYMENT_TARGET}"
     # need LT_MULTI_MODULE or libtool will strip out
     # all multi-arch symbols at the last step
     export LT_MULTI_MODULE=1

@@ -181,11 +181,10 @@ got '{zmq.ZMQError(e.errno)}'",
 
     def _select_recv(self, multipart, socket, **kwargs):
         """call recv[_multipart] in a way that raises if there is nothing to receive"""
-        if zmq.zmq_version_info() >= (3, 1, 0):
-            # zmq 3.1 has a bug, where poll can return false positives,
-            # so we wait a little bit just in case
-            # See LIBZMQ-280 on JIRA
-            time.sleep(0.1)
+        # zmq 3.1 has a bug, where poll can return false positives,
+        # so we wait a little bit just in case
+        # See LIBZMQ-280 on JIRA
+        time.sleep(0.1)
 
         r, w, x = zmq.select([socket], [], [], timeout=kwargs.pop('timeout', 5))
         assert len(r) > 0, "Should have received a message"

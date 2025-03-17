@@ -7,6 +7,18 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.3
+
+pyzmq 26.3 drops support for Python 3.7 and adds wheels for PyPy 3.11
+
+The cffi backend can now be built on CPython by setting `PYZMQ_BACKEND=cffi`, e.g.
+
+```
+PYZMQ_BACKEND=cffi pip install --no-binary pyzmq cffi pyzmq
+```
+
+This is not fully supported, but can be used for testing.
+
 ### 26.2.1
 
 26.2.1 is a tiny bugfix release

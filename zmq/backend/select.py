@@ -11,7 +11,6 @@ public_api = [
     'Socket',
     'Frame',
     'Message',
-    'device',
     'proxy',
     'proxy_steerable',
     'zmq_poll',

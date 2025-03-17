@@ -2,7 +2,6 @@
 Test our typing with mypy
 """
 
-import os
 import sys
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen
@@ -10,6 +9,7 @@ from subprocess import PIPE, STDOUT, Popen
 import pytest
 
 pytest.importorskip("mypy")
+pytestmark = pytest.mark.skipif(sys.version_info < (3, 10), reason="targets 3.10")
 
 repo_root = Path(__file__).parents[1]
 
@@ -25,7 +25,9 @@ def run_mypy(*mypy_args):
     Captures output and reports it on errors
     """
     p = Popen(
-        [sys.executable, "-m", "mypy"] + list(mypy_args), stdout=PIPE, stderr=STDOUT
+        [sys.executable, "-m", "mypy", "--python-version=3.10"] + list(mypy_args),
+        stdout=PIPE,
+        stderr=STDOUT,
     )
     o, _ = p.communicate()
     out = o.decode("utf8", "replace")
