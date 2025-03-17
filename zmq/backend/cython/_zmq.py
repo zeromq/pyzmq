@@ -57,43 +57,25 @@ from cython import (
     size_t,
     sizeof,
 )
-
-# Cannot cimport these with Limited API yet
-# see https://github.com/cython/cython/issues/5634
-# from cython.cimports.cpython.buffer import (
-#     Py_buffer,
-#     PyBUF_ANY_CONTIGUOUS,
-#     PyBUF_WRITABLE,
-#     PyBuffer_Release,
-#     PyObject_GetBuffer,
-# )
-# from cython.cimports.cpython.bytes import (
-#     PyBytes_AsString,
-#     PyBytes_FromStringAndSize,
-#     PyBytes_Size,
-# )
-# from cython.cimports.cpython.exc import PyErr_CheckSignals
+from cython.cimports.cpython.buffer import (
+    Py_buffer,
+    PyBUF_ANY_CONTIGUOUS,
+    PyBUF_WRITABLE,
+    PyBuffer_Release,
+    PyObject_GetBuffer,
+)
+from cython.cimports.cpython.bytes import (
+    PyBytes_AsString,
+    PyBytes_FromStringAndSize,
+    PyBytes_Size,
+)
+from cython.cimports.cpython.exc import PyErr_CheckSignals
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
-
-# cimports require Cython 3
 from cython.cimports.libc.stdint import uint32_t
 from cython.cimports.libc.stdio import fprintf
 from cython.cimports.libc.stdio import stderr as cstderr
 from cython.cimports.libc.stdlib import free, malloc
 from cython.cimports.libc.string import memcpy
-
-# these should be from cython.cimports.cpython... above
-from cython.cimports.zmq.backend.cython._cpython import (
-    Py_buffer,
-    PyBUF_ANY_CONTIGUOUS,
-    PyBUF_WRITABLE,
-    PyBuffer_Release,
-    PyBytes_AsString,
-    PyBytes_FromStringAndSize,
-    PyBytes_Size,
-    PyErr_CheckSignals,
-    PyObject_GetBuffer,
-)
 from cython.cimports.zmq.backend.cython._externs import (
     get_ipc_path_max_len,
     getpid,
