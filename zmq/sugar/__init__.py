@@ -14,8 +14,8 @@ from zmq.sugar import context, frame, poll, socket, tracker, version
 def device(device_type: DeviceType, frontend: socket.Socket, backend: socket.Socket):
     """Deprecated alias for zmq.proxy
 
-    .. versiondeprecated:: libzmq-3.2
-    .. versiondeprecated:: 13.0
+    .. deprecated:: libzmq-3.2
+    .. deprecated:: 13.0
     """
 
     return proxy(frontend, backend)
