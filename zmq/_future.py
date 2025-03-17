@@ -206,7 +206,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
     _state = 0
     _shadow_sock: _zmq.Socket
     _poller_class = _AsyncPoller
-    _fd: object | None = None
+    _fd = None
 
     def __init__(
         self,
@@ -235,10 +235,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         self._recv_futures = deque()
         self._send_futures = deque()
         self._state = 0
-        if self._shadow_sock.THREAD_SAFE:
-            self._fd = None
-        else:
-            self._fd = self._shadow_sock.FD
+        self._fd = self._shadow_sock.FD
 
     @classmethod
     def from_socket(cls: type[T], socket: _zmq.Socket, io_loop: Any = None) -> T:
@@ -246,7 +243,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         return cls(_from_socket=socket, io_loop=io_loop)
 
     def close(self, linger: int | None = None) -> None:
-        if not self.closed:
+        if not self.closed and self._fd is not None:
             event_list: list[_FutureEvent] = list(
                 chain(self._recv_futures or [], self._send_futures or [])
             )
@@ -734,7 +731,7 @@ class _AsyncSocket(_Async, _zmq.Socket[Future]):
         called once during close
         """
         fd = self._shadow_sock
-        if self._shadow_sock.closed and self._fd is not None:
+        if self._shadow_sock.closed:
             fd = self._fd
-        if self._current_loop is not None and fd is not None:
+        if self._current_loop is not None:
             self._current_loop.remove_handler(fd)

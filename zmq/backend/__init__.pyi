@@ -33,8 +33,7 @@ class Socket:
     copy_threshold: int
 
     # specific option types
-    FD: object
-    THREAD_SAFE: bool
+    FD: int
 
     def __init__(
         self,

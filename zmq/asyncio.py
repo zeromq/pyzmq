@@ -15,9 +15,7 @@ from asyncio import Future, SelectorEventLoop
 from weakref import WeakKeyDictionary
 
 import zmq as _zmq
-from zmq import Socket as _Socket
 from zmq import _future
-from zmq.backend import ZMQPoller
 
 # registry of asyncio loop : selector thread
 _selectors: WeakKeyDictionary = WeakKeyDictionary()
@@ -141,8 +139,6 @@ class Socket(_AsyncIO, _future._AsyncSocket):
     """Socket returning asyncio Futures for send/recv/poll methods."""
 
     _poller_class = Poller
-    _zmqpoller: ZMQPoller | None = None
-    _shadow_sock: _Socket
 
     def _get_selector(self, io_loop=None):
         if io_loop is None:
@@ -151,11 +147,6 @@ class Socket(_AsyncIO, _future._AsyncSocket):
 
     def _init_io_state(self, io_loop=None):
         """initialize the ioloop event handler"""
-        if self._fd is None:
-            self._zmqpoller = ZMQPoller()
-            self._zmqpoller.add(self._shadow_sock, 0)
-            self._fd = self._zmqpoller.fd()
-
         self._get_selector(io_loop).add_reader(
             self._fd, lambda: self._handle_events(0, 0)
         )
@@ -166,23 +157,8 @@ class Socket(_AsyncIO, _future._AsyncSocket):
         called once at close
         """
         loop = self._current_loop
-        if loop and not loop.is_closed() and self._fd is not None:
+        if loop and not loop.is_closed() and self._fd != -1:
             self._get_selector(loop).remove_reader(self._fd)
-
-        if self._zmqpoller is not None:
-            self._fd = None
-            self._zmqpoller.remove(self._shadow_sock)
-            self._zmqpoller.close()
-            self._zmqpoller = None
-
-    def _update_handler(self, state: int):
-        """Update IOLoop handler with state.
-
-        zmq FD is always read-only.
-        """
-        if self._zmqpoller is not None:
-            self._zmqpoller.modify(self._shadow_sock, state)
-        super()._update_handler(state)  # type: ignore
 
 
 Poller._socket_class = Socket
