@@ -367,10 +367,10 @@ class Frame:
             _check_rc(rc)
         self._failed_init = False
 
-    def __del__(self):
+    def __dealloc__(self):
         if self._failed_init:
             return
-        # This simply decreases the 0MQ ref-count of zmq_msg.
+        # decrease the 0MQ ref-count of zmq_msg
         with nogil:
             rc: C.int = zmq_msg_close(address(self.zmq_msg))
         _check_rc(rc)
