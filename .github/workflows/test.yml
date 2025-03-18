@@ -213,7 +213,7 @@ jobs:
           echo "PYZMQ_LATEST_CYTHON=1" >> "$GITHUB_ENV"
           # pip won't install dev versions in isolated build env (build will...)
           pip install scikit-build-core https://github.com/cython/cython/archive/HEAD.tar.gz
-          echo "PIP_NO_BUILD_ISOLATION=1" >> "$GITHUB_ENV"
+          echo "PIP_NO_BUILD_ISOLATION=0" >> "$GITHUB_ENV"
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
