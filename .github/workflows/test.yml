@@ -27,6 +27,8 @@ env:
   FORCE_COLOR: "1"
   # only affects Windows, but easiest to set here for now
   SETUPTOOLS_ENABLE_FEATURES: "legacy-editable"
+  # don't compile Cython if we are building from source
+  NO_CYTHON_COMPILE: "true"
 
 jobs:
   test:
@@ -208,6 +210,7 @@ jobs:
         if: matrix.abi
         run: |
           echo "PIP_CONFIG_SETTINGS=wheel.py-api=${{ matrix.abi }}" >> "$GITHUB_ENV"
+          echo "PYZMQ_LATEST_CYTHON=1" >> "$GITHUB_ENV"
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'

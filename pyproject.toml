@@ -63,6 +63,11 @@ install.components = ["pyzmq"]
 if.env.PYZMQ_BACKEND = "cffi"
 build.requires = ["cffi"]
 
+[[tool.scikit-build.overrides]]
+if.any.env.PYZMQ_LATEST_CYTHON = true
+build.requires = ["cython @ https://github.com/cython/cython/archive/HEAD.tar.gz"]
+
+
 [tool.ruff]
 
 [tool.ruff.format]
@@ -152,6 +157,9 @@ test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 build-frontend = "build"
 
+[tool.cibuildwheel.environment]
+NO_CYTHON_COMPILE = "true"
+
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
 manylinux-x86_64-image = "manylinux2014"
@@ -211,12 +219,16 @@ config-settings."wheel.py-api" = "cp311"
 inherit.repair-wheel-command = "append"
 before-build = "pip install abi3audit"
 repair-wheel-command = "abi3audit --strict --report {wheel}"
+inherit.environment="append"
+environment = {PYZMQ_LATEST_CYTHON="1"}
 
 # for benchmarking, build limited cp312 as well
 [[tool.cibuildwheel.overrides]]
 select = "cp312-*"
 inherit.config-settings = "append"
 config-settings."wheel.py-api" = "cp312"
+inherit.environment="append"
+environment = {PYZMQ_LATEST_CYTHON="1"}
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
