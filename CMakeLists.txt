@@ -303,6 +303,16 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   endif()
 
   # use libzmq's own cmake, so we can import the libzmq-static target
+  # libzmq uses an ancient policy minimum, no longer supported
+  if ("${CMAKE_POLICY_VERSION_MINIMUM}" STREQUAL "")
+    # workaround https://github.com/zeromq/libzmq/pull/4776
+    if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+      set(CMAKE_POLICY_VERSION_MINIMUM "3.31")
+    else()
+      set(CMAKE_POLICY_VERSION_MINIMUM "${CMAKE_VERSION_MAJOR}.${CMAKE_VERSION_MINOR}")
+    endif()
+    message(STATUS "Setting CMAKE_POLICY_VERSION_MINIMUM=${CMAKE_POLICY_VERSION_MINIMUM} for libzmq")
+  endif()
   set(ENABLE_CURVE ON)
   set(ENABLE_DRAFTS ${ZMQ_DRAFT_API})
   set(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "OFF")
