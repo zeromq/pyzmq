@@ -2,7 +2,8 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3.0.0; implementation_name != 'pypy'",
+  "cython>=3; implementation_name != 'pypy'",
+  "cython>=3.1.0a1; implementation_name != 'pypy' and python_version >= '3.11'",
   "packaging",
   "scikit-build-core>=0.10",
 ]
@@ -61,6 +62,11 @@ install.components = ["pyzmq"]
 [[tool.scikit-build.overrides]]
 if.env.PYZMQ_BACKEND = "cffi"
 build.requires = ["cffi"]
+
+[[tool.scikit-build.overrides]]
+if.any.env.PYZMQ_LATEST_CYTHON = true
+build.requires = ["cython @ https://github.com/cython/cython/archive/HEAD.tar.gz"]
+
 
 [tool.ruff]
 
@@ -149,6 +155,10 @@ build-verbosity = "1"
 enable = ["cpython-freethreading", "pypy"]
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
+build-frontend = "build"
+
+[tool.cibuildwheel.environment]
+NO_CYTHON_COMPILE = "true"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
@@ -195,12 +205,30 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
 select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
+
+# build limited-api wheels for 3.11
+[[tool.cibuildwheel.overrides]]
+select = "cp311-*"
+inherit.config-settings = "append"
+config-settings."wheel.py-api" = "cp311"
+inherit.repair-wheel-command = "append"
+before-build = "pip install abi3audit"
+repair-wheel-command = "abi3audit --strict --report {wheel}"
+inherit.environment="append"
+environment = {PYZMQ_LATEST_CYTHON="1"}
+
+# for benchmarking, build limited cp312 as well
+[[tool.cibuildwheel.overrides]]
+select = "cp312-*"
+inherit.config-settings = "append"
+config-settings."wheel.py-api" = "cp312"
+inherit.environment="append"
+environment = {PYZMQ_LATEST_CYTHON="1"}
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
