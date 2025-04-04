@@ -7,6 +7,24 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 26
 
+### 26.4
+
+pyzmq 26.4
+
+New features:
+
+- [](#Socket.recv_into) for receiving directly into buffers.
+
+Changes:
+
+- Removed some supposedly dead code for unsupported libzmq < 3.2
+- Modernized some Cython that users _hopefully_ shouldn't notice
+
+Fixes:
+
+- Fix building bundled libzmq with cmake 4.
+  You can workaround this with `-C cmake.args="-DCMAKE_POLICY_VERSION_MINIMUM=3.14"` in earlier versions
+
 ### 26.3
 
 pyzmq 26.3 drops support for Python 3.7 and adds wheels for PyPy 3.11
@@ -93,6 +111,8 @@ This means:
 1. The license of the libzmq library (included in pyzmq wheels) starting with 4.3.5 is now Mozilla Public License 2.0 (MPL-2.0).
 1. when building pyzmq from source and it falls back on bundled libzmq, libzmq and libsodium are built as static libraries using their own build systems (CMake for libzmq, autotools for libsodium except on Windows where it uses msbuild)
    rather than bundling libzmq with tweetnacl as a Python Extension.
+1. Using pyzmq with the legacy libzmq 2.x is no longer supported.
+   The minimum required libzmq is 3.2.2.
 
 Since the new build system uses libzmq and libsodium's own build systems, evaluated at install time, building pyzmq with bundled libzmq from source should be much more likely to succeed on a variety of platforms than the previous method, where their build system was skipped and approximated as a Python extension.
 But I would also be _very_ surprised if I didn't break anything in the process of replacing 14 years of setup.py from scratch, especially cases like cross-compiling.
