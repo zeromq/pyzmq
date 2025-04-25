@@ -25,14 +25,12 @@ concurrency:
 
 env:
   FORCE_COLOR: "1"
-  # only affects Windows, but easiest to set here for now
-  SETUPTOOLS_ENABLE_FEATURES: "legacy-editable"
 
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    continue-on-error: ${{ matrix.zmq == 'head' }}
+    continue-on-error: ${{ matrix.zmq == 'head' || matrix.python == '3.14' }}
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "13.7"
@@ -43,10 +41,6 @@ jobs:
         include:
           - os: macos-13
             python: "3.8"
-
-          - os: macos-14
-            python: "3.12"
-            zmq: bundled
 
           - os: macos-14
             python: "3.13"
@@ -70,7 +64,6 @@ jobs:
 
           - os: ubuntu-22.04
             python: "3.9"
-            tornado: head
 
           - os: ubuntu-22.04
             python: "3.10"
@@ -81,6 +74,7 @@ jobs:
 
           - os: ubuntu-24.04
             python: "3.12"
+            tornado: head
 
           - os: ubuntu-24.04
             python: "3.13"
@@ -91,6 +85,13 @@ jobs:
 
           - os: ubuntu-24.04
             python: "3.13"
+            free_threading: free_threading
+
+          - os: ubuntu-24.04
+            python: "3.14"
+
+          - os: ubuntu-24.04
+            python: "3.14"
             free_threading: free_threading
 
           - os: windows-2022
@@ -110,43 +111,26 @@ jobs:
 
       - name: setup python
         uses: actions/setup-python@v5
-        if: ${{ !matrix.free_threading }}
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch || 'x64' }}
           # allows us to use '3.12' and get '-dev' while we wait
           allow-prereleases: true
+          freethreaded: ${{ matrix.free_threading == 'free_threading' }}
+          check-latest: ${{ matrix.python == '3.14' }}
           cache: pip
 
-      - name: setup python (free threading)
+      - name: setup free threading
         if: ${{ matrix.free_threading }}
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-name: nogil
-          condarc: |
-            channels:
-              - ad-testing/label/py313_nogil
-              - defaults
-          create-args: >-
-            python=${{ matrix.python-version }}
-            pip
-
-      - name: activate python (free threading)
-        if: ${{ matrix.free_threading }}
-        # light activate, just add env to path
-        # run this in micromamba-shell
-        # so we don't have to for the rest
         run: |
-          echo $PATH
-          echo "PATH=$PATH" >> "$GITHUB_ENV"
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
           # need prerelease Cython until 3.1 is out
           echo "PIP_PRE=1" >> "$GITHUB_ENV"
           echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
-        shell: micromamba-shell {0}
+          echo "EXTRA_PIP=--no-binary coverage" >> "$GITHUB_ENV"
 
       - name: setup coverage
-        if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
+        if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.14')
         run: |
           grep -v plugins .coveragerc > .coveragerc-save
           mv .coveragerc-save .coveragerc
@@ -159,7 +143,7 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade pip wheel
-          pip install -r test-requirements.txt
+          pip install ${EXTRA_PIP:-} -r test-requirements.txt
 
       - name: remove tornado
         if: matrix.tornado == 'none'
