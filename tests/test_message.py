@@ -37,6 +37,7 @@ def await_gc(gc_key):
     which can take some time to receive its DECREF message.
     """
     deadline = time.monotonic() + 3
+    gc.collect()
     while time.monotonic() < deadline:
         if gc_key in zmq_gc.refs:
             time.sleep(0.05)
@@ -56,6 +57,11 @@ class TestFrame(BaseZMQTestCase):
         super().tearDown()
         for i in range(3):
             gc.collect()
+
+        deadline = time.monotonic() + 3
+        while zmq_gc.refs and time.monotonic() < deadline:
+            time.sleep(0.05)
+
         # make sure we left no refs
         assert not zmq_gc.refs
 
