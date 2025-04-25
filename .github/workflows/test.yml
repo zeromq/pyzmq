@@ -116,7 +116,7 @@ jobs:
           architecture: ${{ matrix.arch || 'x64' }}
           # allows us to use '3.12' and get '-dev' while we wait
           allow-prereleases: true
-          freethreaded: ${{ matrix.free_threading == "free_threading" }}
+          freethreaded: ${{ matrix.free_threading == 'free_threading' }}
           check-latest: ${{ matrix.python == '3.14' }}
           cache: pip
 
