@@ -129,7 +129,7 @@ jobs:
           echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
 
       - name: setup coverage
-        if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.12')
+        if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.14')
         run: |
           grep -v plugins .coveragerc > .coveragerc-save
           mv .coveragerc-save .coveragerc
