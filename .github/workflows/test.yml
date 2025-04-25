@@ -30,7 +30,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    continue-on-error: ${{ matrix.zmq == 'head' }}
+    continue-on-error: ${{ matrix.zmq == 'head' || matrix.python == '3.14' }}
 
     env:
       MACOSX_DEPLOYMENT_TARGET: "13.7"
@@ -127,6 +127,7 @@ jobs:
           # need prerelease Cython until 3.1 is out
           echo "PIP_PRE=1" >> "$GITHUB_ENV"
           echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
+          echo "EXTRA_PIP=--no-binary coverage" >> "$GITHUB_ENV"
 
       - name: setup coverage
         if: startsWith(matrix.python, 'pypy') || startsWith(matrix.python, '3.14')
@@ -142,7 +143,7 @@ jobs:
       - name: install dependencies
         run: |
           pip install --upgrade pip wheel
-          pip install -r test-requirements.txt
+          pip install ${EXTRA_PIP:-} -r test-requirements.txt
 
       - name: remove tornado
         if: matrix.tornado == 'none'
