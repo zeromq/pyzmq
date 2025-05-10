@@ -14,8 +14,7 @@
 # details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02111-1301  USA.
+# along with Paramiko; if not, see <https://www.gnu.org/licenses/>.
 
 """
 Sample script showing how to do local port forwarding over paramiko.
