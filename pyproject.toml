@@ -216,6 +216,7 @@ select = "cp312-*"
 inherit.config-settings = "append"
 config-settings."wheel.py-api" = "cp312"
 before-build = "pip install abi3audit"
+inherit.repair-wheel-command = "append"
 repair-wheel-command = "abi3audit --strict --report {wheel}"
 
 # note: manylinux_2_28 builds are added
