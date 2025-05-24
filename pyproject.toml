@@ -2,8 +2,7 @@
 [build-system]
 requires = [
   "cffi; implementation_name == 'pypy'",
-  "cython>=3; implementation_name != 'pypy'",
-  "cython>=3.1.0a1; implementation_name != 'pypy' and python_version >= '3.11'",
+  "cython>=3.0.0; implementation_name != 'pypy'",
   "packaging",
   "scikit-build-core>=0.10",
 ]
@@ -211,28 +210,13 @@ select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
-# build limited-api wheels for 3.11
-[[tool.cibuildwheel.overrides]]
-select = "cp311-*"
-inherit.config-settings = "append"
-config-settings."wheel.py-api" = "cp311"
-inherit.repair-wheel-command = "append"
-before-build = "pip install abi3audit"
-repair-wheel-command = "abi3audit --strict --report {wheel}"
-inherit.environment="append"
-environment = {PYZMQ_LATEST_CYTHON="1"}
-
-# for benchmarking, build limited cp312 as well
+# build limited-api wheels for 3.12
 [[tool.cibuildwheel.overrides]]
 select = "cp312-*"
 inherit.config-settings = "append"
 config-settings."wheel.py-api" = "cp312"
-inherit.environment="append"
-environment = {PYZMQ_LATEST_CYTHON="1"}
+before-build = "pip install abi3audit"
+repair-wheel-command = "abi3audit --strict --report {wheel}"
 
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
-
-[[tool.cibuildwheel.overrides]]
-select = "cp313t-*"
-build-frontend = "pip; args: -v --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
