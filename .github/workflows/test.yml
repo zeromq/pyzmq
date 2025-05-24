@@ -25,6 +25,10 @@ concurrency:
 
 env:
   FORCE_COLOR: "1"
+  # only affects Windows, but easiest to set here for now
+  SETUPTOOLS_ENABLE_FEATURES: "legacy-editable"
+  # don't compile Cython if we are building from source
+  NO_CYTHON_COMPILE: "true"
 
 jobs:
   test:
@@ -71,10 +75,11 @@ jobs:
           - os: ubuntu-22.04
             python: "3.11"
             zmq: head
+            tornado: head
 
           - os: ubuntu-24.04
             python: "3.12"
-            tornado: head
+            abi: cp312
 
           - os: ubuntu-24.04
             python: "3.13"
@@ -124,9 +129,6 @@ jobs:
         if: ${{ matrix.free_threading }}
         run: |
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
-          # need prerelease Cython until 3.1 is out
-          echo "PIP_PRE=1" >> "$GITHUB_ENV"
-          echo "PIP_EXTRA_INDEX_URL=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" >> "$GITHUB_ENV"
           echo "EXTRA_PIP=--no-binary coverage" >> "$GITHUB_ENV"
 
       - name: setup coverage
@@ -186,6 +188,11 @@ jobs:
         run: |
           echo "PYZMQ_BACKEND=${{ matrix.backend }}" >> "$GITHUB_ENV"
           pip install cffi
+
+      - name: set stable ABI
+        if: matrix.abi
+        run: |
+          echo "PIP_CONFIG_SETTINGS=wheel.py-api=${{ matrix.abi }}" >> "$GITHUB_ENV"
 
       - name: install libzmq-dev
         if: matrix.zmq == 'head'
