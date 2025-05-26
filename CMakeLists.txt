@@ -5,13 +5,13 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(
   Python
-  COMPONENTS Interpreter Development.Module
+  COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT}
   REQUIRED)
 
 # Python_SOABI isn't always right when cross-compiling
 # SKBUILD_SOABI seems to be
 if (DEFINED SKBUILD_SOABI AND NOT "${SKBUILD_SOABI}" STREQUAL "${Python_SOABI}")
-  message(WARNING "SKBUILD_SOABI=${SKBUILD_SOABI} != Python_SOABI=${Python_SOABI}; likely cross-compiling, using SOABI=${SKBUILD_SOABI} from scikit-build")
+  message(WARNING "SKBUILD_SOABI=${SKBUILD_SOABI} != Python_SOABI=${Python_SOABI}; likely cross-compiling or Limited API, using SOABI=${SKBUILD_SOABI} from scikit-build")
   set(Python_SOABI "${SKBUILD_SOABI}")
 endif()
 
@@ -303,6 +303,16 @@ if (ZMQ_PREFIX STREQUAL "bundled")
   endif()
 
   # use libzmq's own cmake, so we can import the libzmq-static target
+  # libzmq uses an ancient policy minimum, no longer supported
+  if ("${CMAKE_POLICY_VERSION_MINIMUM}" STREQUAL "")
+    # workaround https://github.com/zeromq/libzmq/pull/4776
+    if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+      set(CMAKE_POLICY_VERSION_MINIMUM "3.31")
+    else()
+      set(CMAKE_POLICY_VERSION_MINIMUM "${CMAKE_VERSION_MAJOR}.${CMAKE_VERSION_MINOR}")
+    endif()
+    message(STATUS "Setting CMAKE_POLICY_VERSION_MINIMUM=${CMAKE_POLICY_VERSION_MINIMUM} for libzmq")
+  endif()
   set(ENABLE_CURVE ON)
   set(ENABLE_DRAFTS ${ZMQ_DRAFT_API})
   set(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "OFF")
@@ -421,9 +431,16 @@ endif()
 
 file(MAKE_DIRECTORY ${ZMQ_BACKEND_DEST})
 
+if(NOT "${SKBUILD_SABI_COMPONENT}" STREQUAL "")
+  # set stable ABI
+  set(SABI_ARG "USE_SABI;${SKBUILD_SABI_VERSION}")
+  message(STATUS "Building with stable ABI ${Python_SOABI} for ${SKBUILD_SABI_VERSION}")
+endif()
+
 python_add_library(
   ${ZMQ_EXT_NAME} MODULE
   WITH_SOABI
+  ${SABI_ARG}
   ${ZMQ_C}
 )
 

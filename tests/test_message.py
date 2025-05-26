@@ -4,7 +4,6 @@
 
 import copy
 import gc
-import sys
 
 try:
     from sys import getrefcount
@@ -18,6 +17,7 @@ import time
 import pytest
 
 import zmq
+from zmq.utils.garbage import gc as zmq_gc
 from zmq_test_utils import PYPY, BaseZMQTestCase, SkipTest, skip_cpython_cffi, skip_pypy
 
 # some useful constants:
@@ -30,29 +30,40 @@ if grc:
     view_rc = grc(x) - rc0
 
 
-def await_gc(obj, rc):
-    """wait for refcount on an object to drop to an expected value
+def await_gc(gc_key):
+    """wait for zmq garbage collection
 
     Necessary because of the zero-copy gc thread,
     which can take some time to receive its DECREF message.
     """
-    # count refs for this function
-    if sys.version_info < (3, 11):
-        my_refs = 2
-    else:
-        my_refs = 1
-    for i in range(50):
-        # rc + 2 because of the refs in this function
-        if grc(obj) <= rc + my_refs:
+    deadline = time.monotonic() + 3
+    gc.collect()
+    while time.monotonic() < deadline:
+        if gc_key in zmq_gc.refs:
+            time.sleep(0.05)
+        else:
+            gc.collect()
             return
-        time.sleep(0.05)
+    raise TimeoutError("gc not collected")
 
 
 class TestFrame(BaseZMQTestCase):
+    def setUp(self):
+        super().setUp()
+        # make sure we are starting clean
+        assert not zmq_gc.refs
+
     def tearDown(self):
         super().tearDown()
         for i in range(3):
             gc.collect()
+
+        deadline = time.monotonic() + 3
+        while zmq_gc.refs and time.monotonic() < deadline:
+            time.sleep(0.05)
+
+        # make sure we left no refs
+        assert not zmq_gc.refs
 
     @skip_pypy
     def test_above_30(self):
@@ -61,9 +72,10 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i) * x
             rc = grc(s)
             m = zmq.Frame(s, copy=False)
+            _gc_ref = next(iter(zmq_gc.refs))
             assert grc(s) == rc + 2
             del m
-            await_gc(s, rc)
+            await_gc(_gc_ref)
             assert grc(s) == rc
             del s
 
@@ -116,6 +128,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i) * x
             rc = rc_0 = grc(s)
             m = zmq.Frame(s, copy=False)
+            _gc_ref = next(iter(zmq_gc.refs))
             rc += 2
             assert grc(s) == rc
             m2 = copy.copy(m)
@@ -137,7 +150,7 @@ class TestFrame(BaseZMQTestCase):
             assert grc(s) == rc
             del m
             rc -= 2
-            await_gc(s, rc)
+            await_gc(_gc_ref)
             assert grc(s) == rc
             assert rc == rc_0
             del s
@@ -149,6 +162,7 @@ class TestFrame(BaseZMQTestCase):
             s = (2**i) * x
             rc = rc_0 = grc(s)
             m = zmq.Frame(s, copy=False)
+            _gc_ref = next(iter(zmq_gc.refs))
             rc += 2
             assert grc(s) == rc
             m2 = copy.copy(m)
@@ -169,7 +183,7 @@ class TestFrame(BaseZMQTestCase):
             assert grc(s) == rc
             del m2
             rc -= 2
-            await_gc(s, rc)
+            await_gc(_gc_ref)
             assert grc(s) == rc
             assert rc == rc_0
             del s

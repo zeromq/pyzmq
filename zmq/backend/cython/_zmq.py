@@ -57,12 +57,6 @@ from cython import (
     size_t,
     sizeof,
 )
-from cython.cimports.cpython import (
-    PyBytes_AsString,
-    PyBytes_FromStringAndSize,
-    PyBytes_Size,
-    PyErr_CheckSignals,
-)
 from cython.cimports.cpython.buffer import (
     Py_buffer,
     PyBUF_ANY_CONTIGUOUS,
@@ -70,9 +64,13 @@ from cython.cimports.cpython.buffer import (
     PyBuffer_Release,
     PyObject_GetBuffer,
 )
+from cython.cimports.cpython.bytes import (
+    PyBytes_AsString,
+    PyBytes_FromStringAndSize,
+    PyBytes_Size,
+)
+from cython.cimports.cpython.exc import PyErr_CheckSignals
 from cython.cimports.libc.errno import EAGAIN, EINTR, ENAMETOOLONG, ENOENT, ENOTSOCK
-
-# cimports require Cython 3
 from cython.cimports.libc.stdint import uint32_t
 from cython.cimports.libc.stdio import fprintf
 from cython.cimports.libc.stdio import stderr as cstderr
@@ -374,10 +372,10 @@ class Frame:
             _check_rc(rc)
         self._failed_init = False
 
-    def __del__(self):
+    def __dealloc__(self):
         if self._failed_init:
             return
-        # This simply decreases the 0MQ ref-count of zmq_msg.
+        # decrease the 0MQ ref-count of zmq_msg
         with nogil:
             rc: C.int = zmq_msg_close(address(self.zmq_msg))
         _check_rc(rc)

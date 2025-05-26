@@ -12,7 +12,7 @@ build-backend = "scikit_build_core.build"
 # ref: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 [project]
 name = "pyzmq"
-version = "26.4.0.dev"
+version = "26.4.0"
 authors = [
   { name = "PyZMQ Contributors", email = "zeromq-dev@lists.zeromq.org" },
   { name = "Brian E. Granger" },
@@ -61,6 +61,11 @@ install.components = ["pyzmq"]
 [[tool.scikit-build.overrides]]
 if.env.PYZMQ_BACKEND = "cffi"
 build.requires = ["cffi"]
+
+[[tool.scikit-build.overrides]]
+if.any.env.PYZMQ_LATEST_CYTHON = true
+build.requires = ["cython @ https://github.com/cython/cython/archive/HEAD.tar.gz"]
+
 
 [tool.ruff]
 
@@ -119,7 +124,7 @@ skip = ["zmq/__init__.py"]
 github_url = "https://github.com/zeromq/pyzmq"
 
 [tool.tbump.version]
-current = "26.4.0.dev"
+current = "26.4.0"
 regex = '''
   (?P<major>\d+)
   \.
@@ -149,6 +154,10 @@ build-verbosity = "1"
 enable = ["cpython-freethreading", "pypy"]
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
+build-frontend = "build"
+
+[tool.cibuildwheel.environment]
+NO_CYTHON_COMPILE = "true"
 
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
@@ -195,16 +204,20 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-
 # manylinux2010 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
 select = "cp3{7,8,9}-* pp3{7,8}-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
+# build limited-api wheels for 3.12
+[[tool.cibuildwheel.overrides]]
+select = "cp312-*"
+inherit.config-settings = "append"
+config-settings."wheel.py-api" = "cp312"
+before-build = "pip install abi3audit"
+inherit.repair-wheel-command = "append"
+repair-wheel-command = "abi3audit --strict --report {wheel}"
+
 # note: manylinux_2_28 builds are added
 # in .github/workflows/wheels.yml
-
-[[tool.cibuildwheel.overrides]]
-select = "cp313t-*"
-build-frontend = "pip; args: -v --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
