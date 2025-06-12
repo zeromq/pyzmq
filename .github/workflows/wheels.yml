@@ -116,18 +116,18 @@ jobs:
               build: "*musllinux*"
 
           - name: win32
-            os: windows-2019
+            os: windows-2022
             architecture: x86
             cibw:
               build: "cp*win32"
 
-          - os: windows-2019
+          - os: windows-2022
             name: win-pypy
             architecture: x64
             cibw:
               build: "pp*win_amd64"
 
-          - os: windows-2019
+          - os: windows-2022
             name: win_amd64
             architecture: x64
             cibw:
