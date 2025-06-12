@@ -204,11 +204,11 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-# manylinux2010 for (less) old cp37-9, pp37-8
+# manylinux2014 for (less) old cp37-9, pp37-8
 [[tool.cibuildwheel.overrides]]
 select = "cp3{7,8,9}-* pp3{7,8}-*"
-manylinux-x86_64-image = "manylinux2010"
-manylinux-i686-image = "manylinux2010"
+manylinux-x86_64-image = "manylinux2014"
+manylinux-i686-image = "manylinux2014"
 
 # build limited-api wheels for 3.12
 [[tool.cibuildwheel.overrides]]
