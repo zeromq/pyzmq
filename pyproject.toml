@@ -162,7 +162,7 @@ NO_CYTHON_COMPILE = "true"
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
 manylinux-x86_64-image = "manylinux_2_28"
-manylinux-i686-image = "manylinux_2_28"
+manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux_2_28"
 musllinux-aarch64-image = "musllinux_1_2"
 musllinux-i686-image = "musllinux_1_2"
