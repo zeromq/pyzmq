@@ -134,7 +134,9 @@ async def test_shadow_socket(context):
 
 
 async def test_shadow_socket_close(context, caplog):
-    with context.socket(zmq.PUSH) as push, context.socket(zmq.PULL) as pull:
+    with warnings.catch_warnings(record=True) as records, context.socket(
+        zmq.PUSH
+    ) as push, context.socket(zmq.PULL) as pull:
         push.linger = pull.linger = 0
         port = push.bind_to_random_port('tcp://127.0.0.1')
         pull.connect(f'tcp://127.0.0.1:{port}')
@@ -150,10 +152,10 @@ async def test_shadow_socket_close(context, caplog):
         stream.on_recv(print)
         # close the shadowed socket
         pull.close()
-    # run the event loop, which should see some events on the shadow socket
-    # but the socket has been closed!
-    with warnings.catch_warnings(record=True) as records:
+        # run the event loop, which should see some events on the shadow socket
+        # but the socket has been closed!
         await asyncio.sleep(0.2)
+        stream.close()
     warning_text = "\n".join(str(r.message) for r in records)
     assert "after closing socket" in warning_text
     assert "closed socket" in caplog.text
