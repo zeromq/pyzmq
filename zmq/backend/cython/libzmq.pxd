@@ -119,3 +119,10 @@ cdef extern from "zmq.h" nogil:
     uint32_t zmq_msg_routing_id(zmq_msg_t *msg)
     int zmq_msg_set_group(zmq_msg_t *msg, const char *group)
     const char *zmq_msg_group(zmq_msg_t *msg)
+
+    void *zmq_poller_new ()
+    int zmq_poller_destroy (void **poller_p_)
+    int zmq_poller_add (void *poller_, void *socket_, void *user_data_, short events_)
+    int zmq_poller_modify (void *poller_, void *socket_, short events_)
+    int zmq_poller_remove (void *poller_, void *socket_)
+    int zmq_poller_fd (void *poller_, fd_t *fd_)

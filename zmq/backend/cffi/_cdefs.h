@@ -68,6 +68,12 @@ typedef struct
 
 int zmq_poll(zmq_pollitem_t *items, int nitems, long timeout);
 
+// draft poller
+void *zmq_poller_new ();
+int zmq_poller_destroy (void **poller_p_);
+int zmq_poller_add (void *poller_, void *socket_, void *user_data_, short events_);
+int zmq_poller_fd (void *poller_, ZMQ_FD_T *fd_);
+
 // miscellany
 void * memcpy(void *restrict s1, const void *restrict s2, size_t n);
 void * malloc(size_t sz);

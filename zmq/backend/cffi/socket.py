@@ -4,10 +4,11 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno as errno_mod
+import warnings
 
 import zmq
 from zmq.constants import SocketOption, _OptType
-from zmq.error import ZMQError, _check_rc
+from zmq.error import ZMQError, _check_rc, _check_version
 
 from ._cffi import ffi
 from ._cffi import lib as C
@@ -49,7 +50,8 @@ def value_binary_data(val, length):
     return ffi.new(f'char[{length + 1:d}]', val), ffi.sizeof('char') * length
 
 
-ZMQ_FD_64BIT = ffi.sizeof('ZMQ_FD_T') == 8
+_fd_size = ffi.sizeof('ZMQ_FD_T')
+ZMQ_FD_64BIT = _fd_size == 8
 
 IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
 
@@ -100,6 +102,8 @@ class Socket:
     _closed = None
     _ref = None
     _shadow = False
+    _draft_poller = None
+    _draft_poller_ptr = None
     copy_threshold = 0
 
     def __init__(self, context=None, socket_type=None, shadow=0, copy_threshold=None):
@@ -108,6 +112,7 @@ class Socket:
         self.copy_threshold = copy_threshold
 
         self.context = context
+        self._draft_poller = self._draft_poller_ptr = None
         if shadow:
             self._zmq_socket = ffi.cast("void *", shadow)
             self._shadow = True
@@ -152,6 +157,10 @@ class Socket:
     def close(self, linger=None):
         rc = 0
         if not self._closed and hasattr(self, '_zmq_socket'):
+            if self._draft_poller_ptr is not None:
+                rc = C.zmq_poller_destroy(self._draft_poller_ptr)
+                self._draft_poller = self._draft_poller_ptr = None
+
             if self._zmq_socket is not None:
                 if linger is not None:
                     self.set(zmq.LINGER, linger)
@@ -242,11 +251,55 @@ class Socket:
         else:
             opt_type = option._opt_type
 
+        if option == zmq.FD and self._draft_poller is not None:
+            c_value_pointer, _ = new_pointer_from_opt(option)
+            C.zmq_poller_fd(self._draft_poller, ffi.cast('void*', c_value_pointer))
+            return int(c_value_pointer[0])
+
         c_value_pointer, c_sizet_pointer = new_pointer_from_opt(option, length=255)
 
-        _retry_sys_call(
-            C.zmq_getsockopt, self._zmq_socket, option, c_value_pointer, c_sizet_pointer
-        )
+        try:
+            _retry_sys_call(
+                C.zmq_getsockopt,
+                self._zmq_socket,
+                option,
+                c_value_pointer,
+                c_sizet_pointer,
+            )
+        except ZMQError as e:
+            if (
+                option == SocketOption.FD
+                and e.errno == zmq.Errno.EINVAL
+                and self.get(SocketOption.THREAD_SAFE)
+            ):
+                _check_version((4, 3, 2), "draft socket FD support via zmq_poller_fd")
+                if not zmq.has('draft'):
+                    raise RuntimeError("libzmq must be built with draft support")
+                warnings.warn(zmq.error.DraftFDWarning(), stacklevel=2)
+
+                # create a poller and retrieve its fd
+                self._draft_poller_ptr = ffi.new("void*[1]")
+                self._draft_poller_ptr[0] = self._draft_poller = C.zmq_poller_new()
+                if self._draft_poller == ffi.NULL:
+                    # failed (why?), raise original error
+                    self._draft_poller_ptr = self._draft_poller = None
+                    raise
+                # register self with poller
+                rc = C.zmq_poller_add(
+                    self._draft_poller,
+                    self._zmq_socket,
+                    ffi.NULL,
+                    zmq.POLLIN | zmq.POLLOUT,
+                )
+                _check_rc(rc)
+                # use poller fd as proxy for ours
+                rc = C.zmq_poller_fd(
+                    self._draft_poller, ffi.cast('void *', c_value_pointer)
+                )
+                _check_rc(rc)
+                return int(c_value_pointer[0])
+            else:
+                raise
 
         sz = c_sizet_pointer[0]
         v = value_from_opt_pointer(option, c_value_pointer, sz)
