@@ -151,7 +151,7 @@ search = '__version__: str = "{current_version}"'
 
 [tool.cibuildwheel]
 build-verbosity = "1"
-enable = ["cpython-freethreading", "pypy"]
+enable = ["cpython-freethreading", "pypy", "pypy-eol"]
 test-requires = ["pytest>=6", "importlib_metadata"]
 test-command = "pytest -vsx {package}/tools/test_wheel.py"
 build-frontend = "build"
