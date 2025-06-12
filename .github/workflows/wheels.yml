@@ -99,12 +99,12 @@ jobs:
               build: "*manylinux*"
 
           # additional manylinux variants, not specified in pyproject.toml:
-          # build with newer 2_28 for cpython >= 3.10, pypy 3.9
-          - name: manylinux-x86_64-2_28
-            cibw:
-              arch: x86_64
-              build: "cp31*-manylinux* pp39-manylinux*"
-              manylinux_x86_64_image: manylinux_2_28
+          # this is where we would add e.g. older manylinux_2014 builds
+          # - name: manylinux-x86_64-2014
+          #   cibw:
+          #     arch: x86_64
+          #     build: "cp31*-manylinux* pp39-manylinux*"
+          #     manylinux_x86_64_image: manylinux_2_28
 
           - name: musllinux
             cibw:
