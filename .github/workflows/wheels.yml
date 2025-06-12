@@ -108,6 +108,7 @@ jobs:
 
           - name: musllinux
             cibw:
+              arch: auto,auto32
               build: "*musllinux*"
 
           - name: musllinux-arm
