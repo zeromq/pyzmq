@@ -17,7 +17,7 @@ import zmq.asyncio as zaio
 
 
 @pytest.fixture
-def Context(event_loop):
+async def Context():
     return zaio.Context
 
 

@@ -1,17 +1,18 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+import pytest
+
 import zmq
 import zmq.asyncio
 from zmq.utils.monitor import recv_monitor_message
 from zmq_test_utils import require_zmq_4
 
 pytestmark = require_zmq_4
-import pytest
 
 
 @pytest.fixture(params=["zmq", "asyncio"])
-def Context(request, event_loop):
+async def Context(request):
     if request.param == "asyncio":
         return zmq.asyncio.Context
     else:

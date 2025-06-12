@@ -23,7 +23,7 @@ except ImportError:
 
 
 @pytest.fixture
-def Context(event_loop):
+async def Context():
     return zmq.asyncio.Context
 
 
@@ -93,7 +93,7 @@ def certs(secret_keys_dir):
 
 
 @pytest.fixture
-async def _async_setup(request, event_loop):
+async def _async_setup(request):
     """pytest doesn't support async setup/teardown"""
     instance = request.instance
     await instance.async_setup()
@@ -407,7 +407,7 @@ class TestAsyncioAuthentication(AuthTest):
         return AsyncioAuthenticator(self.context)
 
 
-async def test_ioloop_authenticator(context, event_loop, io_loop):
+async def test_ioloop_authenticator(context, io_loop):
     from tornado.ioloop import IOLoop
 
     with warnings.catch_warnings():

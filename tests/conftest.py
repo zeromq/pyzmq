@@ -41,13 +41,12 @@ def pytest_collection_modifyitems(items):
 
 
 @pytest.fixture
-async def io_loop(event_loop, request):
+async def io_loop(request):
     """Create tornado io_loop on current asyncio event loop"""
     if tornado is None:
         pytest.skip()
     io_loop = IOLoop.current()
-    assert asyncio.get_event_loop() is event_loop
-    assert io_loop.asyncio_loop is event_loop
+    assert io_loop.asyncio_loop is asyncio.get_running_loop()
 
     def _close():
         io_loop.close(all_fds=True)
@@ -68,15 +67,6 @@ def term_context(ctx, timeout):
         raise RuntimeError(
             f"context {ctx} could not terminate, open sockets likely remain in test"
         )
-
-
-@pytest.fixture
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-    # make sure selectors are cleared
-    assert dict(zmq.asyncio._selectors) == {}
 
 
 @pytest.fixture
