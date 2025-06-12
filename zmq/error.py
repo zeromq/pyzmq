@@ -7,6 +7,22 @@ from __future__ import annotations
 from errno import EINTR
 
 
+class DraftFDWarning(RuntimeWarning):
+    """Warning for using experimental FD on draft sockets.
+
+    .. versionadded:: 27
+    """
+
+    def __init__(self, msg=""):
+        if not msg:
+            msg = (
+                "pyzmq's back-fill socket.FD support on thread-safe sockets is experimental, and may be removed."
+                " This warning will go away automatically if/when libzmq implements socket.FD on thread-safe sockets."
+                " You can suppress this warning with `warnings.simplefilter('ignore', zmq.error.DraftFDWarning)"
+            )
+        super().__init__(msg)
+
+
 class ZMQBaseError(Exception):
     """Base exception class for 0MQ errors in Python."""
 
@@ -201,6 +217,7 @@ def _check_version(
 
 
 __all__ = [
+    "DraftFDWarning",
     "ZMQBaseError",
     "ZMQBindError",
     "ZMQError",

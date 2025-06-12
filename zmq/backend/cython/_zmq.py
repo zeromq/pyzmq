@@ -926,6 +926,7 @@ class Socket:
                     )
                     if not zmq.has('draft'):
                         raise RuntimeError("libzmq must be built with draft support")
+                    warnings.warn(zmq.error.DraftFDWarning(), stacklevel=2)
 
                     # create a poller and retrieve its fd
                     self._draft_poller = zmq_poller_new()

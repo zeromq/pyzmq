@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import errno as errno_mod
+import warnings
 
 import zmq
 from zmq.constants import SocketOption, _OptType
@@ -274,6 +275,7 @@ class Socket:
                 _check_version((4, 3, 2), "draft socket FD support via zmq_poller_fd")
                 if not zmq.has('draft'):
                     raise RuntimeError("libzmq must be built with draft support")
+                warnings.warn(zmq.error.DraftFDWarning(), stacklevel=2)
 
                 # create a poller and retrieve its fd
                 self._draft_poller_ptr = ffi.new("void*[1]")
