@@ -183,8 +183,6 @@ MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
-# free-threaded doesn't seem to work on Windows
-enable = ["pypy"]
 repair-wheel-command = """\
     delvewheel repair \
         -v \
@@ -204,9 +202,9 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
-# manylinux2014 for (less) old cp37-9, pp37-8
+# manylinux2014 for old Python <= 3.9
 [[tool.cibuildwheel.overrides]]
-select = "cp3{7,8,9}-* pp3{7,8}-*"
+select = "cp3{8,9}-* pp3{8,9}-*"
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 
