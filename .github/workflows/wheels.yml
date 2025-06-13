@@ -139,7 +139,11 @@ jobs:
             architecture: x64
             cibw:
               arch: ARM64
-              skip: "cp37*"
+              # FIXME:
+              # 313t fails with:
+              # Could NOT find Python (missing: Interpreter Development.Module) (found version "3.13.4")
+              # unclear why
+              skip: "cp313t*"
 
     steps:
       - uses: actions/checkout@v4
