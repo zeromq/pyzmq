@@ -5,11 +5,38 @@
 This is a coarse summary of changes in pyzmq versions.
 For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/commits).
 
+## 27
+
+### 27.0
+
+Breaking changes:
+
+There are no breaking code or API changes, only changes in the supported platforms of Linux wheels:
+
+- musllinux is updated from `1_1` (alpine 3.12) to `1_2` (alpine 3.13)
+- manylinux glibc is updated from glibc 2.17 (2014) to 2.28 for most manylinux wheels (Python >=3.10)
+- The oldest Python manylinux wheels (Python \<=3.9 and 32b i686 builds) are bumped from glibc 2.12 (2010) to 2.17 (2014)
+
+New **EXPERIMENTAL** features:
+
+- Experimental support for accessing `socket.FD` (and thereby compatibility with asyncio) for draft thread-safe libzmq sockets.
+  Relying on this produces a `zmq.error.DraftFDWarning` to communicate that support is experimental and may be removed.
+
+Maintenance changes:
+
+Two major changes are thanks to updating Cython to 3.1:
+
+- We now publish a wheel using the CPython 3.12 stable ABI.
+  That means wheel installs should work for the unreleased CPython 3.14 and beyond.
+  For the first time, the number of wheels published with pyzmq releases has _decreased_.
+  Free-threaded Python doesn't yet have a stable ABI,
+  so free-threaded CPython 3.14t still needs to compile from source until PyPI allows wheels for 3.14t.
+  Please let me know if this causes any problems!
+- We now publish free-threaded wheels for Windows (amd64 and win32, not yet arm)
+
 ## 26
 
 ### 26.4
-
-pyzmq 26.4
 
 New features:
 
