@@ -182,7 +182,8 @@ jobs:
         run: |
           curl -L -o android.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip
           echo "$ANDROID_SDK_SHA256 *android.zip" | shasum -c
-          unzip android.zip -d android-sdk
+          unzip android.zip -d android-sdk/cmdline-tools
+          mv -v android-sdk/cmdline-tools/cmdline-tools android-sdk/cmdline-tools/latest
           rm android.zip
           echo "ANDROID_HOME=$PWD/android-sdk" >> $GITHUB_ENV
         env:
