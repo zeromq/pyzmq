@@ -73,31 +73,31 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
-            name: mac-pypy
-            cibw:
-              build: "pp*"
-
-          - os: macos-14
-            name: mac-cpython
-            cibw:
-              arch: universal2
-              build: "cp*"
-
-          - name: manylinux-x86_64
-            cibw:
-              arch: x86_64
-              build: "*manylinux*"
-
-          - name: manylinux-i686
-            cibw:
-              arch: i686
-              build: "*manylinux*"
-
-          - name: manylinux-arm
-            os: ubuntu-24.04-arm
-            cibw:
-              build: "*manylinux*"
+          # - os: macos-13
+          #   name: mac-pypy
+          #   cibw:
+          #     build: "pp*"
+#
+          # - os: macos-14
+          #   name: mac-cpython
+          #   cibw:
+          #     arch: universal2
+          #     build: "cp*"
+#
+          # - name: manylinux-x86_64
+          #   cibw:
+          #     arch: x86_64
+          #     build: "*manylinux*"
+#
+          # - name: manylinux-i686
+          #   cibw:
+          #     arch: i686
+          #     build: "*manylinux*"
+#
+          # - name: manylinux-arm
+          #   os: ubuntu-24.04-arm
+          #   cibw:
+          #     build: "*manylinux*"
 
           # additional manylinux variants, not specified in pyproject.toml:
           # this is where we would add e.g. older manylinux_2014 builds
@@ -107,15 +107,15 @@ jobs:
           #     build: "cp31*-manylinux* pp39-manylinux*"
           #     manylinux_x86_64_image: manylinux_2_28
 
-          - name: musllinux
-            cibw:
-              arch: auto,auto32
-              build: "*musllinux*"
-
-          - name: musllinux-arm
-            os: ubuntu-24.04-arm
-            cibw:
-              build: "*musllinux*"
+          # - name: musllinux
+          #   cibw:
+          #     arch: auto,auto32
+          #     build: "*musllinux*"
+#
+          # - name: musllinux-arm
+          #   os: ubuntu-24.04-arm
+          #   cibw:
+          #     build: "*musllinux*"
 
           - name: android
             os: ubuntu-24.04
@@ -123,34 +123,34 @@ jobs:
               platform: android
               arch: all
 
-          - name: win32
-            os: windows-2022
-            architecture: x86
-            cibw:
-              build: "cp*win32"
-
-          - os: windows-2022
-            name: win-pypy
-            architecture: x64
-            cibw:
-              build: "pp*win_amd64"
-
-          - os: windows-2022
-            name: win_amd64
-            architecture: x64
-            cibw:
-              build: "cp*win_amd64"
-
-          - os: windows-2022
-            name: win_arm64
-            architecture: x64
-            cibw:
-              arch: ARM64
-              # FIXME:
-              # 313t fails with:
-              # Could NOT find Python (missing: Interpreter Development.Module) (found version "3.13.4")
-              # unclear why
-              skip: "cp313t*,cp314t*"
+          # - name: win32
+          #   os: windows-2022
+          #   architecture: x86
+          #   cibw:
+          #     build: "cp*win32"
+#
+          # - os: windows-2022
+          #   name: win-pypy
+          #   architecture: x64
+          #   cibw:
+          #     build: "pp*win_amd64"
+#
+          # - os: windows-2022
+          #   name: win_amd64
+          #   architecture: x64
+          #   cibw:
+          #     build: "cp*win_amd64"
+#
+          # - os: windows-2022
+          #   name: win_arm64
+          #   architecture: x64
+          #   cibw:
+          #     arch: ARM64
+          #     # FIXME:
+          #     # 313t fails with:
+          #     # Could NOT find Python (missing: Interpreter Development.Module) (found version "3.13.4")
+          #     # unclear why
+          #     skip: "cp313t*,cp314t*"
 
     steps:
       - uses: actions/checkout@v4
