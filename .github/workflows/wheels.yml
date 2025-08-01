@@ -149,7 +149,7 @@ jobs:
               # 313t fails with:
               # Could NOT find Python (missing: Interpreter Development.Module) (found version "3.13.4")
               # unclear why
-              skip: "cp313t*"
+              skip: "cp313t*,cp314t*"
 
     steps:
       - uses: actions/checkout@v4
