@@ -216,3 +216,14 @@ config-settings."wheel.py-api" = "cp312"
 before-build = "pip install abi3audit"
 inherit.repair-wheel-command = "append"
 repair-wheel-command = "abi3audit --strict --report {wheel}"
+
+# set autotools host for android cross-compile
+[[tool.cibuildwheel.overrides]]
+select = "*-android-x86_64"
+inherit.config-settings = "append"
+config-settings."cmake.define.PYZMQ_LIBSODIUM_CONFIGURE_ARGS" = "--host=x86_64-linux-android21"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-android-aarch64"
+inherit.config-settings = "append"
+config-settings."cmake.define.PYZMQ_LIBSODIUM_CONFIGURE_ARGS" = "--host=aarch64-linux-android21"
