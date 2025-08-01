@@ -267,6 +267,10 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         --disable-shared
         --enable-static
       )
+      message(STATUS "Cross: ${CMAKE_CROSSCOMPILING} $ENV{CIBW_HOST_TRIPLET}")
+      if("$ENV{CIBW_HOST_TRIPLET}")
+        list(APPEND libsodium_configure "--host=$ENV{CIBW_HOST_TRIPLET}")
+      endif()
       list(APPEND libsodium_configure ${PYZMQ_LIBSODIUM_CONFIGURE_ARGS})
       execute_process(
         COMMAND ${libsodium_configure}
