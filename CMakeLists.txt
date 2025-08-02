@@ -3,6 +3,7 @@ project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+message(STATUS "Building pyzmq for ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION}")
 
 if(ANDROID)
   # Android seems to need to link libpython,

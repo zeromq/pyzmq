@@ -172,6 +172,8 @@ musllinux-x86_64-image = "musllinux_1_2"
 ZMQ_PREFIX = "/usr/local"
 CFLAGS = "-Wl,-strip-all"
 CXXFLAGS = "-Wl,-strip-all"
+# 24 needed for c++
+ANDROID_API_LEVEL = "24"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
@@ -216,14 +218,3 @@ config-settings."wheel.py-api" = "cp312"
 before-build = "pip install abi3audit"
 inherit.repair-wheel-command = "append"
 repair-wheel-command = "abi3audit --strict --report {wheel}"
-
-# set autotools host for android cross-compile
-[[tool.cibuildwheel.overrides]]
-select = "*-android-x86_64"
-inherit.config-settings = "append"
-config-settings."cmake.define.PYZMQ_LIBSODIUM_CONFIGURE_ARGS" = "--host=x86_64-linux-android21"
-
-[[tool.cibuildwheel.overrides]]
-select = "*-android-arm64_v8a"
-inherit.config-settings = "append"
-config-settings."cmake.define.PYZMQ_LIBSODIUM_CONFIGURE_ARGS" = "--host=aarch64-linux-android21"
