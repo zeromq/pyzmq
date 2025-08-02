@@ -5,8 +5,12 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(
   Python
-  COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT}
-  REQUIRED)
+  COMPONENTS Interpreter
+  #Development.Module
+  Development.Embed
+  ${SKBUILD_SABI_COMPONENT}
+  REQUIRED
+)
 
 # Python_SOABI isn't always right when cross-compiling
 # SKBUILD_SOABI seems to be
