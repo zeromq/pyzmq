@@ -4,6 +4,10 @@
 message(CHECK_START "Looking for pyzmq-bundled libsodium")
 set(SODIUM_FOUND FALSE)
 
+# when cross-compiling, only look in the given path
+set(SAVE_ROOT_PATH_MODE "${CMAKE_FIND_ROOT_PATH_MODE_LIBRARY}")
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "NEVER")
+
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
 find_package(PkgConfig QUIET)
 if (PkgConfig_FOUND)
@@ -33,6 +37,9 @@ if (NOT SODIUM_FOUND)
     set(SODIUM_FOUND TRUE)
   endif()
 endif()
+
+# restore CMAKE_FIND_ROOT_PATH_MODE_LIBRARY
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "${SAVE_ROOT_PATH_MODE}")
 
 if (NOT SODIUM_FOUND)
   message(CHECK_FAIL "no")
