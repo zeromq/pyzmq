@@ -4,7 +4,8 @@
 message(CHECK_START "Looking for pyzmq-bundled libsodium")
 set(SODIUM_FOUND FALSE)
 
-# when cross-compiling, only look in the given path
+# when cross-compiling, paths are ignored by default
+# only search given PATHs, never root for libsodium
 set(SAVE_ROOT_PATH_MODE "${CMAKE_FIND_ROOT_PATH_MODE_LIBRARY}")
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY "NEVER")
 
@@ -31,7 +32,7 @@ if (NOT SODIUM_FOUND)
   message(STATUS "Found bundled ${SODIUM_LIBRARIES} in ${BUNDLE_DIR}")
   if (SODIUM_LIBRARIES)
     # pkg-config didn't work, what do we need?
-    if (NOT MSVC)
+    if (NOT MSVC AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
       list(APPEND SODIUM_LIBRARIES pthread)
     endif()
     set(SODIUM_FOUND TRUE)
