@@ -172,8 +172,6 @@ musllinux-x86_64-image = "musllinux_1_2"
 ZMQ_PREFIX = "/usr/local"
 CFLAGS = "-Wl,-strip-all"
 CXXFLAGS = "-Wl,-strip-all"
-# 24 needed for c++
-ANDROID_API_LEVEL = "24"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
@@ -203,6 +201,10 @@ repair-wheel-command = """\
 # due to https://github.com/zeromq/pyzmq/issues/1981
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
+
+[tool.cibuildwheel.android.environment]
+# 24 needed for c++
+ANDROID_API_LEVEL = "24"
 
 # manylinux2014 for old Python <= 3.9
 [[tool.cibuildwheel.overrides]]
