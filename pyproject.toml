@@ -211,7 +211,6 @@ repair-wheel-command = """\
 # 24 needed for c++
 ANDROID_API_LEVEL = "24"
 
-
 # manylinux2014 for old Python <= 3.9
 [[tool.cibuildwheel.overrides]]
 select = "cp3{8,9}-* pp3{8,9}-*"
