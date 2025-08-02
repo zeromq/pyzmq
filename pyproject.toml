@@ -202,11 +202,14 @@ repair-wheel-command = """\
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
 
+[tool.cibuildwheel.android]
+# can't test with {package}, just basic import
+test-requires = []
+test-command = "python -c 'import zmq'"
+
 [tool.cibuildwheel.android.environment]
 # 24 needed for c++
 ANDROID_API_LEVEL = "24"
-# can't test with {package}, just basic import
-test-command = "python -c 'import zmq'"
 
 
 # manylinux2014 for old Python <= 3.9

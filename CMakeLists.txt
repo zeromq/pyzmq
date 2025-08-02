@@ -28,9 +28,6 @@ if (DEFINED SKBUILD_SOABI AND NOT "${SKBUILD_SOABI}" STREQUAL "${Python_SOABI}")
   set(Python_SOABI "${SKBUILD_SOABI}")
 endif()
 
-message(STATUS "Using Python ${Python_INTERPRETER_ID} ${Python_EXECUTABLE} libs=${Python_LIBRARIES} lib=${Python_LIBRARY}")
-
-
 # legacy pyzmq env options, no PYZMQ_ prefix
 set(ZMQ_PREFIX "auto" CACHE STRING "libzmq installation prefix or 'bundled'")
 option(ZMQ_DRAFT_API "whether to build the libzmq draft API" OFF)
@@ -398,7 +395,7 @@ endif()
 
 #------- building pyzmq itself -------
 
-message(STATUS "Using Python ${Python_INTERPRETER_ID} ${Python_EXECUTABLE} libs=${Python_LIBRARIES} lib=${Python_LIBRARY}")
+message(STATUS "Using Python ${Python_INTERPRETER_ID} ${Python_EXECUTABLE}")
 
 set(EXT_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/_src")
 set(ZMQ_BUILDUTILS "${CMAKE_CURRENT_SOURCE_DIR}/buildutils")
