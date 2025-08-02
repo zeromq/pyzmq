@@ -56,8 +56,6 @@ wheel.license-files = ["licenses/LICENSE*"]
 cmake.version = ">=3.15"
 # only build/install the pyzmq component
 build.targets = ["pyzmq"]
-build.verbose = true
-cmake.args = ["--trace"]
 install.components = ["pyzmq"]
 
 [[tool.scikit-build.overrides]]
