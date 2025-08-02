@@ -480,9 +480,9 @@ else()
   message(FATAL_ERROR "should have a libzmq target ${libzmq_target} to link to...")
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-  message(STATUS "Android: linking ${PYTHON_LIBRARIES}")
-  target_link_libraries(${ZMQ_EXT_NAME} PRIVATE ${PYTHON_LIBRARIES})
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+  message(STATUS "Android: linking libpython ${Python_LIBRARIES}")
+  target_link_libraries(${ZMQ_EXT_NAME} PRIVATE Python::Python)
 endif()
 
 target_include_directories(${ZMQ_EXT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zmq/utils")
