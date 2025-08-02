@@ -153,8 +153,13 @@ search = '__version__: str = "{current_version}"'
 build-verbosity = "1"
 enable = ["cpython-freethreading", "pypy", "pypy-eol"]
 test-requires = ["pytest>=6", "importlib_metadata"]
-test-command = "pytest -vsx {package}/tools/test_wheel.py"
+test-sources = ["tools/test_wheel.py"]
+test-command = "python -m pytest -vsx tools/test_wheel.py"
 build-frontend = "build"
+
+# android test env doesn't work on GitHub CI
+# "x86_64 emulation currently requires hardware acceleration!"
+test-skip = "*-android*"
 
 [tool.cibuildwheel.environment]
 NO_CYTHON_COMPILE = "true"
@@ -201,6 +206,10 @@ repair-wheel-command = """\
 # due to https://github.com/zeromq/pyzmq/issues/1981
 "cmake.define.ZMQ_HAVE_IPC" = "OFF"
 "cmake.define.POLLER" = "select"
+
+[tool.cibuildwheel.android.environment]
+# 24 needed for c++
+ANDROID_API_LEVEL = "24"
 
 # manylinux2014 for old Python <= 3.9
 [[tool.cibuildwheel.overrides]]
