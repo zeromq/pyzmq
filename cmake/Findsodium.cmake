@@ -21,7 +21,8 @@ if (NOT SODIUM_FOUND)
   find_library(
       SODIUM_LIBRARIES
       NAMES libsodium.a libsodium.lib
-      PATH ${BUNDLE_DIR}/lib
+      PATHS ${BUNDLE_DIR}/lib
+      NO_DEFAULT_PATH
   )
   message(STATUS "Found bundled ${SODIUM_LIBRARIES} in ${BUNDLE_DIR}")
   if (SODIUM_LIBRARIES)
