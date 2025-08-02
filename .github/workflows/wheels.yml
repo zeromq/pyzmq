@@ -23,6 +23,7 @@ concurrency:
 
 env:
   PYTHONUNBUFFERED: "1"
+  SKBUILD_BUILD_VERBOSE: "true"
   # CIBW_PRERELEASE_PYTHONS: "1"
 
 jobs:
