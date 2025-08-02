@@ -15,11 +15,9 @@ def main() -> None:
     B = np.empty_like(A)
     assert not (A == B).all()
 
-    with (
-        zmq.Context() as ctx,
-        ctx.socket(zmq.PUSH) as push,
-        ctx.socket(zmq.PULL) as pull,
-    ):
+    with zmq.Context() as ctx, ctx.socket(zmq.PUSH) as push, ctx.socket(
+        zmq.PULL
+    ) as pull:
         push.bind(url)
         pull.connect(url)
         print("sending:\n", A)
