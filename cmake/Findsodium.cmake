@@ -32,7 +32,7 @@ if (NOT SODIUM_FOUND)
   message(STATUS "Found bundled ${SODIUM_LIBRARIES} in ${BUNDLE_DIR}")
   if (SODIUM_LIBRARIES)
     # pkg-config didn't work, what do we need?
-    if (NOT MSVC AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+    if (NOT MSVC AND NOT ANDROID)
       list(APPEND SODIUM_LIBRARIES pthread)
     endif()
     set(SODIUM_FOUND TRUE)

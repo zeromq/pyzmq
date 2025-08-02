@@ -4,7 +4,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+if(ANDROID)
   # Android seems to need to link libpython,
   # which means Development.Embed
   set(EXTRA_PYTHON_COMPONENT "Development.Embed")
@@ -480,7 +480,7 @@ else()
   message(FATAL_ERROR "should have a libzmq target ${libzmq_target} to link to...")
 endif()
 
-if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+if (ANDROID)
   message(STATUS "Android: linking libpython ${Python_LIBRARIES}")
   target_link_libraries(${ZMQ_EXT_NAME} PRIVATE Python::Python)
 endif()
