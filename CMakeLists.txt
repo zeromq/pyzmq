@@ -6,7 +6,7 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(
   Python
   COMPONENTS Interpreter
-  #Development.Module
+  Development.Module
   Development.Embed
   ${SKBUILD_SABI_COMPONENT}
   REQUIRED
