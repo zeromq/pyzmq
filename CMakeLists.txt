@@ -1,14 +1,22 @@
-cmake_minimum_required(VERSION 3.14...3.28)
+cmake_minimum_required(VERSION 3.14...4.1)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  # Android seems to need to link libpython,
+  # which means Development.Embed
+  set(EXTRA_PYTHON_COMPONENT "Development.Embed")
+endif()
+
 find_package(
   Python
-  COMPONENTS Interpreter
-  Development.Module
-  Development.Embed
-  ${SKBUILD_SABI_COMPONENT}
+  COMPONENTS
+    Interpreter
+    Development.Module
+    ${EXTRA_PYTHON_COMPONENT}
+    ${SKBUILD_SABI_COMPONENT}
   REQUIRED
 )
 
@@ -470,6 +478,11 @@ if (TARGET ${libzmq_target})
   endif()
 else()
   message(FATAL_ERROR "should have a libzmq target ${libzmq_target} to link to...")
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+  message(STATUS "Android: linking ${PYTHON_LIBRARIES}")
+  target_link_libraries(${ZMQ_EXT_NAME} PRIVATE ${PYTHON_LIBRARIES})
 endif()
 
 target_include_directories(${ZMQ_EXT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zmq/utils")
