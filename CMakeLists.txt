@@ -1,12 +1,25 @@
-cmake_minimum_required(VERSION 3.14...3.28)
+cmake_minimum_required(VERSION 3.14...4.1)
 project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+message(STATUS "Building pyzmq for ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION}")
+
+if(ANDROID)
+  # Android seems to need to link libpython,
+  # which means Development.Embed
+  set(EXTRA_PYTHON_COMPONENT "Development.Embed")
+endif()
+
 find_package(
   Python
-  COMPONENTS Interpreter Development.Module ${SKBUILD_SABI_COMPONENT}
-  REQUIRED)
+  COMPONENTS
+    Interpreter
+    Development.Module
+    ${EXTRA_PYTHON_COMPONENT}
+    ${SKBUILD_SABI_COMPONENT}
+  REQUIRED
+)
 
 # Python_SOABI isn't always right when cross-compiling
 # SKBUILD_SOABI seems to be
@@ -267,6 +280,15 @@ if (ZMQ_PREFIX STREQUAL "bundled")
         --disable-shared
         --enable-static
       )
+
+      # add --host for cross compiling
+      message(STATUS "Cross: ${CMAKE_CROSSCOMPILING} $ENV{CIBW_HOST_TRIPLET}")
+      if(CMAKE_CROSSCOMPILING AND DEFINED ENV{CIBW_HOST_TRIPLET})
+        message(STATUS "Cross compiling libsodium for host: $ENV{CIBW_HOST_TRIPLET}")
+        list(APPEND libsodium_configure "--host=$ENV{CIBW_HOST_TRIPLET}")
+        message(STATUS "Cross compiling libsodium for host: $ENV{CIBW_HOST_TRIPLET} ${libsodium_configure}")
+      endif()
+
       list(APPEND libsodium_configure ${PYZMQ_LIBSODIUM_CONFIGURE_ARGS})
       execute_process(
         COMMAND ${libsodium_configure}
@@ -454,6 +476,11 @@ if (TARGET ${libzmq_target})
   endif()
 else()
   message(FATAL_ERROR "should have a libzmq target ${libzmq_target} to link to...")
+endif()
+
+if (ANDROID)
+  message(STATUS "Android: linking libpython ${Python_LIBRARIES}")
+  target_link_libraries(${ZMQ_EXT_NAME} PRIVATE Python::Python)
 endif()
 
 target_include_directories(${ZMQ_EXT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/zmq/utils")
