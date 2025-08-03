@@ -283,7 +283,10 @@ if (ZMQ_PREFIX STREQUAL "bundled")
 
       # add --host for cross compiling
       message(STATUS "Cross: ${CMAKE_CROSSCOMPILING} $ENV{CIBW_HOST_TRIPLET}")
-      if(CMAKE_CROSSCOMPILING AND DEFINED ENV{CIBW_HOST_TRIPLET})
+      if(
+        (CMAKE_CROSSCOMPILING OR CIBW_PLATFORM MATCHES "iphone.*")
+        AND DEFINED ENV{CIBW_HOST_TRIPLET}
+      )
         message(STATUS "Cross compiling libsodium for host: $ENV{CIBW_HOST_TRIPLET}")
         list(APPEND libsodium_configure "--host=$ENV{CIBW_HOST_TRIPLET}")
         message(STATUS "Cross compiling libsodium for host: $ENV{CIBW_HOST_TRIPLET} ${libsodium_configure}")
