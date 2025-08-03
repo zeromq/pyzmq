@@ -9,7 +9,8 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ### 27.0.1
 
-27.0.1 adds wheels for android and free-threaded Python 3.14 (314t) thanks to cibuildwheel 3.1.
+27.0.1 adds wheels for android and free-threaded Python 3.14 (314t) thanks to cibuildwheel 3.1,
+and adds wheels for free-threaded Python for Windows on ARM.
 The android wheels are untested, so please report issues if you have them!
 There are no changes to pyzmq code in this release.
 
