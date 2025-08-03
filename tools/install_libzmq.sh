@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # script to install libzmq/libsodium for use in wheels
 set -ex
+env | grep CIBW
+env | grep -I ios
+
 LIBSODIUM_VERSION=$(python buildutils/bundle.py libsodium)
 LIBZMQ_VERSION=$(python buildutils/bundle.py)
 PYZMQ_DIR="$PWD"
