@@ -187,7 +187,7 @@ ZMQ_PREFIX = "/tmp/zmq"
 MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.cibuildwheel.ios]
-before-all = "brew install cmake ninja"
+xbuild-tools = ["cmake", "ninja"]
 
 [tool.cibuildwheel.ios.environment]
 ZMQ_PREFIX = "bundled"
