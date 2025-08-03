@@ -45,8 +45,7 @@ if [[ "$(uname)" == "Darwin" && "${CIBW_PLATFORM:-macos}" == "macos" ]]; then
         export CXXFLAGS="-arch ${arch} ${CXXFLAGS:-}"
         export LDFLAGS="-arch ${arch} ${LDFLAGS:-}"
     done
-
-if [[ "${CIBW_PLATFORM:-}" == "ios" ]]; then
+elif [[ "${CIBW_PLATFORM:-}" == "ios" ]]; then
     echo "building libzmq for ${CIBW_PLATFORM}"
     SHLIB_EXT=".dylib"
 fi
