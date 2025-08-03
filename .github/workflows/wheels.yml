@@ -141,16 +141,10 @@ jobs:
             cibw:
               build: "cp*win_amd64"
 
-          - os: windows-2022
+          - os: windows-11-arm
             name: win_arm64
-            architecture: x64
             cibw:
               arch: ARM64
-              # FIXME:
-              # 313t and 314t fail with:
-              # Could NOT find Python (missing: Interpreter Development.Module) (found version "3.13.4")
-              # unclear why
-              skip: "cp31{3,4}t*"
 
     steps:
       - uses: actions/checkout@v4
