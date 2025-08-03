@@ -7,7 +7,7 @@ PYZMQ_DIR="$PWD"
 LICENSE_DIR="$PYZMQ_DIR/licenses"
 test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
 SHLIB_EXT=".so"
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ "$(uname)" == "Darwin" && "${CIBW_PLATFORM:-macos}" == "macos" ]]; then
     SHLIB_EXT=".dylib"
     # make sure deployment target is set
     echo "${MACOSX_DEPLOYMENT_TARGET=}"
@@ -33,7 +33,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
             exit 1
             ;;
     esac
-    echo "building libzmq for mac ${ARCHS}"
+    echo "building libzmq for ${CIBW_PLATFORM:-macos} ${ARCHS}"
     export CXX="${CC:-clang++}"
     for arch in ${ARCHS}; do
         # seem to need ARCH in CXX for libtool
@@ -42,6 +42,10 @@ if [[ "$(uname)" == "Darwin" ]]; then
         export CXXFLAGS="-arch ${arch} ${CXXFLAGS:-}"
         export LDFLAGS="-arch ${arch} ${LDFLAGS:-}"
     done
+
+if [[ "${CIBW_PLATFORM:-}" == "ios" ]]; then
+    echo "building libzmq for ${CIBW_PLATFORM}"
+    SHLIB_EXT=".dylib"
 fi
 
 PREFIX="${ZMQ_PREFIX:-/usr/local}"

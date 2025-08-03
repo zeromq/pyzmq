@@ -73,6 +73,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: macos-15
+            name: ios
+            cibw:
+              platform: "ios"
+
           # - os: macos-13
           #   name: mac-pypy
           #   cibw:
