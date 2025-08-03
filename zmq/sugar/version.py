@@ -9,7 +9,7 @@ from typing import Match, cast
 
 from zmq.backend import zmq_version_info
 
-__version__: str = "27.0.0"
+__version__: str = "27.0.1"
 _version_pat = re.compile(r"(\d+)\.(\d+)\.(\d+)(.*)")
 _match = cast(Match, _version_pat.match(__version__))
 _version_groups = _match.groups()
