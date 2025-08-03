@@ -191,8 +191,10 @@ MACOSX_DEPLOYMENT_TARGET = "10.15"
 before-all = "brew upgrade cmake"
 xbuild-tools = ["cmake", "ninja"]
 
-[tool.cibuildwheel.ios.environment]
-ZMQ_PREFIX = "bundled"
+[tool.cibuildwheel.ios.config-settings]
+"cmake.define.ZMQ_PREFIX" = "bundled"
+"cmake.define.CMAKE_SYSTEM_NAME" = "iOS"
+"cmake.define.CMAKE_SYSTEM_VERSION" = "13"
 
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
