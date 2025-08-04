@@ -157,10 +157,6 @@ test-sources = ["tools/test_wheel.py"]
 test-command = "python -m pytest -vsx tools/test_wheel.py"
 build-frontend = "build"
 
-# android test env doesn't work on GitHub CI
-# "x86_64 emulation currently requires hardware acceleration!"
-test-skip = "*-android*"
-
 [tool.cibuildwheel.environment]
 NO_CYTHON_COMPILE = "true"
 
