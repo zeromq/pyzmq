@@ -111,6 +111,10 @@ jobs:
             python: "3.13"
             arch: x64
 
+          - os: windows-latest
+            python: "3.14"
+            arch: x64
+
     steps:
       - uses: actions/checkout@v4
 
