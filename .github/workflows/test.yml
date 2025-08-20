@@ -30,6 +30,11 @@ env:
   # don't compile Cython if we are building from source
   NO_CYTHON_COMPILE: "true"
 
+defaults:
+  run:
+    # use bash even on Windows
+    shell: bash
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -109,6 +114,10 @@ jobs:
 
           - os: windows-2022
             python: "3.13"
+            arch: x64
+
+          - os: windows-latest
+            python: "3.14"
             arch: x64
 
     steps:
