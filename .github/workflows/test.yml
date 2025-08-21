@@ -92,6 +92,8 @@ jobs:
 
           - os: ubuntu-24.04
             python: "3.13"
+            env: |
+              PYTHONDEVMODE=1
 
           - os: ubuntu-24.04
             python: "3.13"
@@ -133,6 +135,11 @@ jobs:
           freethreaded: ${{ matrix.free_threading == 'free_threading' }}
           check-latest: ${{ matrix.python == '3.14' }}
           cache: pip
+
+      - name: set environment variables
+        if: ${{ matrix.env }}
+        run: |
+          echo "${{ matrix.env }}" >> "$GITHUB_ENV"
 
       - name: setup free threading
         if: ${{ matrix.free_threading }}
