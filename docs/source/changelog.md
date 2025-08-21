@@ -7,11 +7,14 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 27
 
+### 27.0.2
+
+27.0.2 fixes a bug where bind/connect could fail with "Invalid Argument" (EINVAL) when Python is run in devmode or with `PYTHONMALLOC=debug`.
+
 ### 27.0.1
 
 27.0.1 adds wheels for android and free-threaded Python 3.14 (314t) thanks to cibuildwheel 3.1,
 and adds wheels for free-threaded Python for Windows on ARM.
-The android wheels are untested, so please report issues if you have them!
 There are no changes to pyzmq code in this release.
 
 ### 27.0
