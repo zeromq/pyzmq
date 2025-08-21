@@ -666,11 +666,16 @@ class Context:
 
 @cfunc
 @inline
-def _c_addr(addr) -> p_char:
+def _c_addr(addr) -> bytes:
+    """cast an address input to bytes
+
+    Expects a str, but accepts bytes
+    and raises informative TypeError otherwise.
+    """
     if isinstance(addr, str):
-        addr = addr.encode('utf-8')
+        addr = addr.encode("utf-8")
     try:
-        c_addr: p_char = addr
+        c_addr: bytes = addr
     except TypeError:
         raise TypeError(f"Expected addr to be str, got addr={addr!r}")
     return c_addr
@@ -974,7 +979,8 @@ class Socket:
             tcp, udp, pgm, epgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        c_addr: p_char = _c_addr(addr)
+        _addr_bytes: bytes = _c_addr(addr)
+        c_addr: p_char = _addr_bytes
         _check_closed(self)
         rc: C.int = zmq_bind(self.handle, c_addr)
         if rc != 0:
@@ -1015,7 +1021,8 @@ class Socket:
             encoded to utf-8 first.
         """
         rc: C.int
-        c_addr: p_char = _c_addr(addr)
+        _addr_bytes: bytes = _c_addr(addr)
+        c_addr: p_char = _addr_bytes
         _check_closed(self)
 
         while True:
@@ -1043,7 +1050,8 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        c_addr: p_char = _c_addr(addr)
+        _addr_bytes: bytes = _c_addr(addr)
+        c_addr: p_char = _addr_bytes
         _check_closed(self)
         rc: C.int = zmq_unbind(self.handle, c_addr)
         if rc != 0:
@@ -1064,7 +1072,8 @@ class Socket:
             tcp, udp, pgm, inproc and ipc. If the address is unicode, it is
             encoded to utf-8 first.
         """
-        c_addr: p_char = _c_addr(addr)
+        _addr_bytes: bytes = _c_addr(addr)
+        c_addr: p_char = _addr_bytes
         _check_closed(self)
 
         rc: C.int = zmq_disconnect(self.handle, c_addr)
@@ -1094,7 +1103,8 @@ class Socket:
         """
         c_addr: p_char = NULL
         if addr is not None:
-            c_addr = _c_addr(addr)
+            _addr_bytes: bytes = _c_addr(addr)
+            c_addr: p_char = _addr_bytes
         _check_closed(self)
 
         _check_rc(zmq_socket_monitor(self.handle, c_addr, events))
