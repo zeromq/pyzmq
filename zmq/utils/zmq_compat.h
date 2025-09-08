@@ -57,13 +57,17 @@
 
 // libzmq 4.2 draft API
 #ifdef ZMQ_BUILD_DRAFT_API
+  #define PYZMQ_DRAFT_API 1
     #if ZMQ_VERSION >= 40200
         #define PYZMQ_DRAFT_42
     #endif
     #if ZMQ_VERSION >= 40302
         #define PYZMQ_DRAFT_432
     #endif
+#else
+  #define PYZMQ_DRAFT_API 0
 #endif
+
 #ifndef PYZMQ_DRAFT_42
     #define zmq_join(s, group) _missing
     #define zmq_leave(s, group) _missing

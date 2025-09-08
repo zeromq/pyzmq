@@ -80,7 +80,10 @@ def get_library_dirs():
 
 
 COPY_THRESHOLD = 65536
-DRAFT_API = backend.has("draft")
+# zmq.DRAFT_API represents _both_ the current runtime-loaded libzmq
+# and pyzmq were built with drafts,
+# which is required for pyzmq draft support
+DRAFT_API: bool = backend.has('draft') and backend.PYZMQ_DRAFT_API
 
 __all__ = (
     [

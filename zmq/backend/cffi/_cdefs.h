@@ -94,3 +94,5 @@ int zmq_wrap_msg_init_data(zmq_msg_t *msg,
                       void *data,
                       size_t size,
                       void *hint);
+
+#define PYZMQ_DRAFT_API ...
