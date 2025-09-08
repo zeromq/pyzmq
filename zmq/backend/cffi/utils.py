@@ -75,4 +75,6 @@ def _retry_sys_call(f, *args, **kwargs):
     return rc
 
 
-__all__ = ['has', 'curve_keypair', 'curve_public']
+PYZMQ_DRAFT_API: bool = bool(C.PYZMQ_DRAFT_API)
+
+__all__ = ['has', 'curve_keypair', 'curve_public', 'PYZMQ_DRAFT_API']

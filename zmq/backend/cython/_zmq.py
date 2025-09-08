@@ -76,6 +76,7 @@ from cython.cimports.libc.stdio import fprintf
 from cython.cimports.libc.stdio import stderr as cstderr
 from cython.cimports.libc.stdlib import free, malloc
 from cython.cimports.libc.string import memcpy
+from cython.cimports.zmq.backend.cython import libzmq
 from cython.cimports.zmq.backend.cython._externs import (
     get_ipc_path_max_len,
     getpid,
@@ -162,6 +163,8 @@ from zmq.error import (
 )
 
 IPC_PATH_MAX_LEN: int = get_ipc_path_max_len()
+
+PYZMQ_DRAFT_API: bool = bool(libzmq.PYZMQ_DRAFT_API)
 
 
 @cfunc
@@ -929,8 +932,10 @@ class Socket:
                     _check_version(
                         (4, 3, 2), "draft socket FD support via zmq_poller_fd"
                     )
-                    if not zmq.has('draft'):
-                        raise RuntimeError("libzmq must be built with draft support")
+                    if not zmq.DRAFT_API:
+                        raise RuntimeError(
+                            "libzmq and pyzmq must be built with draft support"
+                        )
                     warnings.warn(zmq.error.DraftFDWarning(), stacklevel=2)
 
                     # create a poller and retrieve its fd
@@ -1120,8 +1125,8 @@ class Socket:
         .. versionadded:: 17
         """
         _check_version((4, 2), "RADIO-DISH")
-        if not zmq.has('draft'):
-            raise RuntimeError("libzmq must be built with draft support")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
         if isinstance(group, str):
             group = group.encode('utf8')
         c_group: bytes = group
@@ -1139,8 +1144,8 @@ class Socket:
         .. versionadded:: 17
         """
         _check_version((4, 2), "RADIO-DISH")
-        if not zmq.has('draft'):
-            raise RuntimeError("libzmq must be built with draft support")
+        if not zmq.DRAFT_API:
+            raise RuntimeError("libzmq and pyzmq must be built with draft support")
         rc: C.int = zmq_leave(self.handle, group)
         _check_rc(rc)
 
@@ -2027,6 +2032,7 @@ def monitored_queue(
 
 __all__ = [
     'IPC_PATH_MAX_LEN',
+    'PYZMQ_DRAFT_API',
     'Context',
     'Socket',
     'Frame',

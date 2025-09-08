@@ -406,7 +406,7 @@ async def test_poll_leak():
 
 
 async def test_draft_asyncio():
-    if not zmq.has("draft"):
+    if not zmq.DRAFT_API:
         pytest.skip("draft API")
     if zmq.zmq_version_info() < (4, 3, 2):
         pytest.skip("requires libzmq 4.3.2 for zmq_poller_fd")

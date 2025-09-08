@@ -273,7 +273,7 @@ class Socket:
                 and self.get(SocketOption.THREAD_SAFE)
             ):
                 _check_version((4, 3, 2), "draft socket FD support via zmq_poller_fd")
-                if not zmq.has('draft'):
+                if not zmq.DRAFT_API:
                     raise RuntimeError("libzmq must be built with draft support")
                 warnings.warn(zmq.error.DraftFDWarning(), stacklevel=2)
 
