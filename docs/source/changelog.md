@@ -7,6 +7,16 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 27
 
+### 27.1.0
+
+27.1.0 restores prior behavior where the constant `zmq.DRAFT_API` represents the actual availability of the draft API.
+This requires _both_ libzmq and pyzmq to be built with drafts enabled,
+not just libzmq.
+Restores behavior prior to pyzmq 23.
+In pyzmq 23-27.0, `zmq.DRAFT_API` was a synonym for `zmq.has("draft")`.
+It is relatively rare that these two definitions differ, but not impossible
+(e.g. libzmq built with drafts enabled, but pyzmq not).
+
 ### 27.0.2
 
 27.0.2 fixes a bug where bind/connect could fail with "Invalid Argument" (EINVAL) when Python is run in devmode or with `PYTHONMALLOC=debug`.
