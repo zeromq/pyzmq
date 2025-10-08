@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # script to install libzmq/libsodium for use in wheels
+echo $PATH
+env | grep CIBW
+env | grep -I ios
+env | grep MAC
+env | grep SDK
+
 set -ex
+
 LIBSODIUM_VERSION=$(python buildutils/bundle.py libsodium)
 LIBZMQ_VERSION=$(python buildutils/bundle.py)
 PYZMQ_DIR="$PWD"
 LICENSE_DIR="$PYZMQ_DIR/licenses"
 test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
 SHLIB_EXT=".so"
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ "$(uname)" == "Darwin" && "${CIBW_PLATFORM:-macos}" == "macos" ]]; then
     SHLIB_EXT=".dylib"
     # make sure deployment target is set
     echo "${MACOSX_DEPLOYMENT_TARGET=}"
@@ -33,7 +40,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
             exit 1
             ;;
     esac
-    echo "building libzmq for mac ${ARCHS}"
+    echo "building libzmq for ${CIBW_PLATFORM:-macos} ${ARCHS}"
     export CXX="${CC:-clang++}"
     for arch in ${ARCHS}; do
         # seem to need ARCH in CXX for libtool
@@ -42,6 +49,9 @@ if [[ "$(uname)" == "Darwin" ]]; then
         export CXXFLAGS="-arch ${arch} ${CXXFLAGS:-}"
         export LDFLAGS="-arch ${arch} ${LDFLAGS:-}"
     done
+elif [[ "${CIBW_PLATFORM:-}" == "ios" ]]; then
+    echo "building libzmq for ${CIBW_PLATFORM}"
+    SHLIB_EXT=".dylib"
 fi
 
 PREFIX="${ZMQ_PREFIX:-/usr/local}"
