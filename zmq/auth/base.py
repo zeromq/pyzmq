@@ -35,6 +35,22 @@ class Authenticator:
     main thread, other authentication classes (such as :mod:`zmq.auth.thread`)
     are provided.
 
+    Multiple Authenticators
+    -----------------------
+
+    .. versionadded:: 27.2
+
+    Multiple authenticators can run in the same process by binding to different
+    ZAP socket addresses. This allows different authentication policies for
+    different sets of sockets within the same application::
+
+        # Create two authenticators with different policies
+        frontend_auth = zmq.auth.asyncio.AsyncioAuthenticator()
+        frontend_auth.start(socket_addr="inproc://zap-frontend")
+
+        backend_auth = zmq.auth.asyncio.AsyncioAuthenticator()
+        backend_auth.start(socket_addr="inproc://zap-backend")
+
     Note:
 
     - libzmq provides four levels of security: default NULL (which the Authenticator does
@@ -77,11 +93,22 @@ class Authenticator:
         self.certs = {}
         self.log = log or logging.getLogger('zmq.auth')
 
-    def start(self) -> None:
-        """Create and bind the ZAP socket"""
+    def start(self, socket_addr="inproc://zeromq.zap.01") -> None:
+        """Create and bind the ZAP socket
+
+        Parameters
+        ----------
+        socket_addr : str, optional
+            The address to bind the ZAP socket to.
+            Default is "inproc://zeromq.zap.01"
+
+            .. versionadded:: 27.2
+                Support for custom socket addresses, enabling multiple
+                authenticators in the same process.
+        """
         self.zap_socket = self.context.socket(zmq.REP, socket_class=zmq.Socket)
         self.zap_socket.linger = 1
-        self.zap_socket.bind("inproc://zeromq.zap.01")
+        self.zap_socket.bind(socket_addr)
         self.log.debug("Starting")
 
     def stop(self) -> None:
