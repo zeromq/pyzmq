@@ -160,7 +160,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip install --upgrade pip wheel
+          python3 -m pip install --upgrade pip wheel
           pip install ${EXTRA_PIP:-} -r test-requirements.txt
 
       - name: remove tornado
