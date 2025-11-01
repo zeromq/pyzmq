@@ -17,7 +17,13 @@ from .base import Authenticator
 
 
 class AsyncioAuthenticator(Authenticator):
-    """ZAP authentication for use in the asyncio IO loop"""
+    """ZAP authentication for use in the asyncio IO loop
+
+    .. versionadded:: 27.2
+        Multiple authenticators can now run in the same process
+        by specifying different socket addresses in ``start()``.
+        See :class:`zmq.auth.Authenticator` for details and examples.
+    """
 
     __poller: Optional[Poller]
     __task: Any
@@ -46,9 +52,20 @@ class AsyncioAuthenticator(Authenticator):
                 msg = self.zap_socket.recv_multipart()
                 await self.handle_zap_message(msg)
 
-    def start(self) -> None:
-        """Start ZAP authentication"""
-        super().start()
+    def start(self, socket_addr="inproc://zeromq.zap.01") -> None:
+        """Start ZAP authentication
+
+        Parameters
+        ----------
+        socket_addr : str, optional
+            The address to bind the ZAP socket to.
+            Default is "inproc://zeromq.zap.01"
+
+            .. versionadded:: 27.2
+                Support for custom socket addresses, enabling multiple
+                authenticators in the same process.
+        """
+        super().start(socket_addr)
         self.__poller = Poller()
         self.__poller.register(self.zap_socket, zmq.POLLIN)
         self.__task = asyncio.ensure_future(self.__handle_zap())
