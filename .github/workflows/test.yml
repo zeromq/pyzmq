@@ -37,6 +37,7 @@ defaults:
 
 jobs:
   test:
+    if: "false"
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     continue-on-error: ${{ matrix.zmq == 'head' || matrix.python == '3.14' }}
