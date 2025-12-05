@@ -100,10 +100,21 @@ class ThreadAuthenticator(Authenticator):
         self.pipe_endpoint = f"inproc://{id(self)}.inproc"
         self.thread = None  # type: ignore
 
-    def start(self) -> None:
-        """Start the authentication thread"""
+    def start(self, socket_addr="inproc://zeromq.zap.01") -> None:
+        """Start the authentication thread
+
+        Parameters
+        ----------
+        socket_addr : str, optional
+            The address to bind the ZAP socket to.
+            Default is "inproc://zeromq.zap.01"
+
+            .. versionadded:: 27.2
+                Support for custom socket addresses, enabling multiple
+                authenticators in the same process.
+        """
         # start the Authenticator
-        super().start()
+        super().start(socket_addr)
 
         # create a socket pair to communicate with auth thread.
         self.pipe = self.context.socket(zmq.PAIR, socket_class=zmq.Socket)
