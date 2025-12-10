@@ -182,6 +182,16 @@ repair-wheel-command = "delocate-wheel --sanitize-rpaths --require-archs {deloca
 ZMQ_PREFIX = "/tmp/zmq"
 MACOSX_DEPLOYMENT_TARGET = "10.15"
 
+[tool.cibuildwheel.ios]
+# need cmake >=4 for https://github.com/pypa/cibuildwheel/issues/2435
+before-all = "brew upgrade cmake"
+xbuild-tools = ["cmake", "ninja"]
+
+[tool.cibuildwheel.ios.config-settings]
+"cmake.define.ZMQ_PREFIX" = "bundled"
+"cmake.define.CMAKE_SYSTEM_NAME" = "iOS"
+"cmake.define.CMAKE_SYSTEM_VERSION" = "13"
+
 [tool.cibuildwheel.windows]
 before-all = "python buildutils/bundle.py licenses"
 repair-wheel-command = """\
