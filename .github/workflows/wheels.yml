@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: setup python
         uses: actions/setup-python@v6
@@ -147,7 +147,7 @@ jobs:
               arch: ARM64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: setup python
         uses: actions/setup-python@v6
@@ -232,7 +232,7 @@ jobs:
       - sdist
       - wheel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/download-artifact@v5
         with:
           path: dist
