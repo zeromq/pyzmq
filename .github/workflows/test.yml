@@ -123,7 +123,7 @@ jobs:
             arch: x64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: setup python
         uses: actions/setup-python@v6
