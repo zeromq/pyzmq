@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ v*.*.* ]
+
+  pull_request:
+    branches: [ main ]
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [ armhf, arm64, amd64 ]
+        distribution: [ bookworm, trixie ]
+    permissions:
+      contents: write
+      discussions: write
+    steps:
+      - name: Checkout with token
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+          token: ${{ github.token }}
+
+      - name: Set up QEMU for multi-architecture builds
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build Project
+        uses: devcontainers/ci@v0.3
+        with:
+          subFolder: "${{ github.workspace }}"
+          configFile: .devcontainer/${{ matrix.architecture }}-${{ matrix.distribution }}-container/devcontainer.json
+          push: never
+          runCmd: |
+            ZMQ_BUILD_DRAFT=1
+            
+            sudo pack_python . -s fpm-deb || { echo "pack_python exited with $?"; exit 1; }
+
+            for package in $(find dist -name *.deb)
+            do
+              sudo apt install -y ./\$package
+            
+              python3 - <<'EOF'
+              import zmq
+              assert zmq.has("draft"), "Draft sockets NOT enabled"
+              print("Draft sockets enabled")
+              EOF
+            
+              sudo mv -vf $package $(dirname $package)/${{ matrix.distribution }}_$(basename $package)
+            done
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ startsWith(github.ref, 'refs/tags/')}}
+        with:
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.*deb

@@ -1,0 +1,3 @@
+[submodule ".devcontainer"]
+	path = .devcontainer
+	url = https://github.com/EffectiveRange/devcontainer-defs
