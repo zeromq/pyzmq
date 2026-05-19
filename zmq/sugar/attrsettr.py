@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import errno
-from typing import TypeVar, Union
+from typing import Any, TypeVar, Union
 
 from .. import constants
 
@@ -14,7 +14,7 @@ OptValT = Union[str, bytes, int]
 
 
 class AttributeSetter:
-    def __setattr__(self, key: str, value: OptValT) -> None:
+    def __setattr__(self, key: str, value: Any) -> None:
         """set zmq options by attribute"""
 
         if key in self.__dict__:
@@ -36,7 +36,7 @@ class AttributeSetter:
         else:
             self._set_attr_opt(upper_key, opt, value)
 
-    def _set_attr_opt(self, name: str, opt: int, value: OptValT) -> None:
+    def _set_attr_opt(self, name: str, opt: int, value: Any) -> None:
         """override if setattr should do something other than call self.set"""
         self.set(opt, value)
 
@@ -67,11 +67,11 @@ class AttributeSetter:
         """override if getattr should do something other than call self.get"""
         return self.get(opt)
 
-    def get(self, opt: int) -> OptValT:
+    def get(self, option: int) -> OptValT:
         """Override in subclass"""
         raise NotImplementedError("override in subclass")
 
-    def set(self, opt: int, val: OptValT) -> None:
+    def set(self, option: int, value: Any) -> None:
         """Override in subclass"""
         raise NotImplementedError("override in subclass")
 

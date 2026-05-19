@@ -3,13 +3,18 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from typing import Literal, overload
+
 import zmq
 from zmq.backend import Frame as FrameBase
 
 from .attrsettr import AttributeSetter
 
 
-def _draft(v, feature):
+def _draft(
+    v: tuple[int] | tuple[int, int] | tuple[int, int, int],
+    feature: str,
+) -> None:
     zmq.error._check_version(v, feature)
     if not zmq.DRAFT_API:
         raise RuntimeError(
@@ -65,11 +70,17 @@ class Frame(FrameBase, AttributeSetter):
         will be copied and messages larger than this will be shared with libzmq.
     """
 
-    def __getitem__(self, key):
+    @overload
+    def __getitem__(self, key: int | Literal["routing_id"]) -> int: ...
+    @overload
+    def __getitem__(self, key: bytes | Literal["group"]) -> str: ...
+    @overload
+    def __getitem__(self, key: str) -> int | str: ...
+    def __getitem__(self, key: int | str | bytes) -> int | str:
         # map Frame['User-Id'] to Frame.get('User-Id')
         return self.get(key)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the str form of the message."""
         nbytes = len(self)
         msg_suffix = ""
@@ -97,7 +108,7 @@ class Frame(FrameBase, AttributeSetter):
         return f"<{_module}.{self.__class__.__name__}({msg_bytes!r}{msg_suffix})>"
 
     @property
-    def group(self):
+    def group(self) -> str:
         """The RADIO-DISH group of the message.
 
         Requires libzmq >= 4.2 and pyzmq built with draft APIs enabled.
@@ -108,12 +119,12 @@ class Frame(FrameBase, AttributeSetter):
         return self.get('group')
 
     @group.setter
-    def group(self, group):
+    def group(self, group: str | bytes) -> None:
         _draft((4, 2), "RADIO-DISH")
         self.set('group', group)
 
     @property
-    def routing_id(self):
+    def routing_id(self) -> int:
         """The CLIENT-SERVER routing id of the message.
 
         Requires libzmq >= 4.2 and pyzmq built with draft APIs enabled.
@@ -124,11 +135,12 @@ class Frame(FrameBase, AttributeSetter):
         return self.get('routing_id')
 
     @routing_id.setter
-    def routing_id(self, routing_id):
+    def routing_id(self, routing_id: int) -> None:
         _draft((4, 2), "CLIENT-SERVER")
         self.set('routing_id', routing_id)
 
 
 # keep deprecated alias
 Message = Frame
+
 __all__ = ['Frame', 'Message']
