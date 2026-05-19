@@ -45,7 +45,7 @@ def _get_selector_windows(
     # detect add_reader instead of checking for proactor?
     if hasattr(asyncio, "ProactorEventLoop") and isinstance(
         asyncio_loop,
-        asyncio.ProactorEventLoop,  # type: ignore
+        asyncio.ProactorEventLoop,
     ):
         try:
             from tornado.platform.asyncio import AddThreadSelectorEventLoop
@@ -81,7 +81,7 @@ def _get_selector_windows(
             _selectors.pop(asyncio_loop, None)
             selector_loop.close()
 
-        asyncio_loop.close = _close_selector_and_loop  # type: ignore # mypy bug - assign a function to method
+        asyncio_loop.close = _close_selector_and_loop
         return selector_loop
     else:
         return asyncio_loop
@@ -196,9 +196,9 @@ _loop = None
 
 
 def _deprecated():
-    if _deprecated.called:  # type: ignore
+    if _deprecated.called:
         return
-    _deprecated.called = True  # type: ignore
+    _deprecated.called = True
 
     warnings.warn(
         "ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.",

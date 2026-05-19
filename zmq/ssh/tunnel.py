@@ -35,7 +35,7 @@ else:
 try:
     import pexpect
 except ImportError:
-    pexpect = None
+    pexpect = None  # type: ignore[assignment]
 
 
 class MaxRetryExceeded(Exception):

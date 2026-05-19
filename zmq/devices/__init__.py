@@ -27,4 +27,4 @@ for submod in (
     monitoredqueue,
     monitoredqueuedevice,
 ):
-    __all__.extend(submod.__all__)  # type: ignore
+    __all__.extend(submod.__all__)
