@@ -81,11 +81,11 @@ class MongoZMQ:
             reply = [id]
             if operation == 'add':
                 self.add_document(contents)
-                reply.append("success")
+                reply.append(b"success")
             elif operation == 'get':
                 doc = self.get_document_by_keys(contents)
                 json_doc = self._doc_to_json(doc)
-                reply.append(json_doc)
+                reply.append(json_doc.encode())
             else:
                 print('unknown request')
             socket.send_multipart(reply)
