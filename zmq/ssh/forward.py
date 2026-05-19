@@ -24,20 +24,30 @@ forwarding (the openssh -L option) from a local port through a tunneled
 connection to a destination reachable from the SSH server machine.
 """
 
+from __future__ import annotations
+
 import logging
 import select
 import socketserver
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import paramiko
 
 logger = logging.getLogger('ssh')
 
 
 class ForwardServer(socketserver.ThreadingTCPServer):
-    daemon_threads = True
-    allow_reuse_address = True
+    daemon_threads: bool = True
+    allow_reuse_address: bool = True
 
 
 class Handler(socketserver.BaseRequestHandler):
-    def handle(self):
+    ssh_transport: paramiko.Transport
+    chain_host: str
+    chain_port: int
+
+    def handle(self) -> None:
         try:
             chan = self.ssh_transport.open_channel(
                 'direct-tcpip',
@@ -80,7 +90,12 @@ class Handler(socketserver.BaseRequestHandler):
         logger.debug('Tunnel closed ')
 
 
-def forward_tunnel(local_port, remote_host, remote_port, transport):
+def forward_tunnel(
+    local_port: int,
+    remote_host: str,
+    remote_port: int,
+    transport: paramiko.Transport,
+) -> None:
     # this is a little convoluted, but lets me configure things for the Handler
     # object.  (SocketServer doesn't give Handlers any way to access the outer
     # server normally.)
