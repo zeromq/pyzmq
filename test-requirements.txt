@@ -18,5 +18,6 @@ setuptools; platform_python_implementation != "PyPy" # required for Cython tests
 tornado
 types-cffi
 types-gevent
+types-paramiko
 types-pexpect
 types-tornado
