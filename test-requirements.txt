@@ -16,8 +16,8 @@ pytest-cov==2.10.*
 pytest-rerunfailures
 setuptools; platform_python_implementation != "PyPy" # required for Cython tests after distutils deprecation
 tornado
-types-cffi
-types-gevent
-types-paramiko
-types-pexpect
-types-tornado
+types-cffi; platform_python_implementation != "PyPy"
+types-gevent; platform_python_implementation != "PyPy"
+types-paramiko; platform_python_implementation != "PyPy"
+types-pexpect; platform_python_implementation != "PyPy"
+types-tornado; platform_python_implementation != "PyPy"pn
