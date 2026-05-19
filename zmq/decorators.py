@@ -26,17 +26,31 @@ __all__ = (
 )
 
 from functools import wraps
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, cast
 
 import zmq
+
+if TYPE_CHECKING:
+    from contextlib import AbstractContextManager
+
+
+_CallableT = TypeVar('_CallableT', bound=Callable[..., object])
+
+
+class _DecoratorCallable(Protocol):
+    def __call__(self, func: _CallableT) -> _CallableT: ...
+
+
+_DecoratorTarget = Callable[..., "AbstractContextManager[Any]"]
 
 
 class _Decorator:
     '''The mini decorator factory'''
 
-    def __init__(self, target=None):
+    def __init__(self, target: _DecoratorTarget | None = None) -> None:
         self._target = target
 
-    def __call__(self, *dec_args, **dec_kwargs):
+    def __call__(self, *dec_args: Any, **dec_kwargs: Any) -> _DecoratorCallable:
         """
         The main logic of decorator
 
@@ -58,10 +72,11 @@ class _Decorator:
             *dec_args, **dec_kwargs
         )
 
-        def decorator(func):
+        def decorator(func: _CallableT) -> _CallableT:
             @wraps(func)
             def wrapper(*args, **kwargs):
                 target = self.get_target(*args, **kwargs)
+                assert target is not None
 
                 with target(*dec_args, **dec_kwargs) as obj:
                     # insert our object into args
@@ -77,18 +92,20 @@ class _Decorator:
 
                     return func(*args, **kwargs)
 
-            return wrapper
+            return cast("_CallableT", wrapper)
 
         return decorator
 
-    def get_target(self, *args, **kwargs):
+    def get_target(self, *args: Any, **kwargs: Any) -> _DecoratorTarget | None:
         """Return the target function
 
         Allows modifying args/kwargs to be passed.
         """
         return self._target
 
-    def process_decorator_args(self, *args, **kwargs):
+    def process_decorator_args(
+        self, *args: Any, **kwargs: Any
+    ) -> tuple[str | None, tuple[Any, ...], dict[str, Any]]:
         """Process args passed to the decorator.
 
         args not consumed by the decorator will be passed to the target factory
@@ -108,7 +125,7 @@ class _Decorator:
 class _ContextDecorator(_Decorator):
     """Decorator subclass for Contexts"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(zmq.Context)
 
 
@@ -118,18 +135,20 @@ class _SocketDecorator(_Decorator):
     Gets the context from other args.
     """
 
-    def process_decorator_args(self, *args, **kwargs):
+    def process_decorator_args(
+        self, *args: Any, **kwargs: Any
+    ) -> tuple[str | None, tuple[Any, ...], dict[str, Any]]:
         """Also grab context_name out of kwargs"""
         kw_name, args, kwargs = super().process_decorator_args(*args, **kwargs)
         self.context_name = kwargs.pop('context_name', 'context')
         return kw_name, args, kwargs
 
-    def get_target(self, *args, **kwargs):
+    def get_target(self, *args: Any, **kwargs: Any) -> _DecoratorTarget:
         """Get context, based on call-time args"""
         context = self._get_context(*args, **kwargs)
         return context.socket
 
-    def _get_context(self, *args, **kwargs):
+    def _get_context(self, *args: Any, **kwargs: Any) -> zmq.Context:
         """
         Find the ``zmq.Context`` from ``args`` and ``kwargs`` at call time.
 
@@ -156,7 +175,7 @@ class _SocketDecorator(_Decorator):
         return zmq.Context.instance()
 
 
-def context(*args, **kwargs):
+def context(*args: Any, **kwargs: Any) -> _DecoratorCallable:
     """Decorator for adding a Context to a function.
 
     Usage::
@@ -172,7 +191,7 @@ def context(*args, **kwargs):
     return _ContextDecorator()(*args, **kwargs)
 
 
-def socket(*args, **kwargs):
+def socket(*args: Any, **kwargs: Any) -> _DecoratorCallable:
     """Decorator for adding a socket to a function.
 
     Usage::
