@@ -655,11 +655,11 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
 
         Returns
         -------
-        None : if `copy` or not track
-            None if message was sent, raises an exception otherwise.
-        MessageTracker : if track and not copy
+        MessageTracker : if `data` is a :class:`Frame` or `copy=False`
             a MessageTracker object, whose `done` property will
             be False until the send is completed.
+        None : otherwise
+            None if message was sent, raises an exception otherwise.
 
         Raises
         ------
@@ -726,10 +726,11 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
 
         Returns
         -------
-        None : if copy or not track
-        MessageTracker : if track and not copy
+        MessageTracker : if any part is a :class:`Frame` or `copy=False`
             a MessageTracker object, whose `done` property will
-            be False until the last send is completed.
+            be False until the send is completed.
+        None : otherwise
+            None if message was sent, raises an exception otherwise.
         """
         # typecheck parts before sending:
         for i, msg in enumerate(msg_parts):
