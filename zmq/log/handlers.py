@@ -226,7 +226,7 @@ for name in "debug warn warning error critical fatal".split():
     setattr(
         TopicLogger,
         name,
-        lambda self, level, topic, msg, *args, **kwargs: meth(
-            self, level, topic + TOPIC_DELIM + msg, *args, **kwargs
+        lambda self, topic, msg, *args, **kwargs: meth(
+            self, topic + TOPIC_DELIM + msg, *args, **kwargs
         ),
     )
