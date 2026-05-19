@@ -5,6 +5,10 @@ from __future__ import annotations
 import errno
 import sys
 from enum import Enum, IntEnum, IntFlag
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 _HAUSNUMERO = 156384712
 
@@ -139,7 +143,7 @@ class SocketOption(IntEnum):
 
     _opt_type: _OptType
 
-    def __new__(cls, value: int, opt_type: _OptType = _OptType.int):
+    def __new__(cls, value: int, opt_type: _OptType = _OptType.int) -> Self:
         """Attach option type as `._opt_type`"""
         obj = int.__new__(cls, value)
         obj._value_ = value
