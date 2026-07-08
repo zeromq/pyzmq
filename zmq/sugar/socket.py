@@ -40,7 +40,9 @@ except AttributeError:
 
 _SocketType = TypeVar("_SocketType", bound="Socket")
 
-_JSONType: TypeAlias = "int | str | bool | list[_JSONType] | dict[str, _JSONType]"
+_JSONType: TypeAlias = (
+    "int | float | str | bool | list[_JSONType] | dict[str, _JSONType]"
+)
 
 
 class _SocketContext(Generic[_SocketType]):
