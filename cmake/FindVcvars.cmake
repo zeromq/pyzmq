@@ -1,4 +1,5 @@
-# unmodified from: https://raw.githubusercontent.com/scikit-build/cmake-FindVcvars/v1.12/FindVcvars.cmake
+# unmodified from: https://github.com/scikit-build/cmake-FindVcvars/raw/fea85911fb0bff0aeb5b89ab9e2fc9fea3de672d/FindVcvars.cmake
+# needs fixes post 1.12 for vs2006
 
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
@@ -179,6 +180,7 @@ to their associated toolset or Visual Studio major release:
 
   Example mappings:
 
+  - ``Vcvars_TOOLSET_145_MSVC_VERSIONS`` — MSVC versions associated with toolset ``v145`` (Visual Studio 2026)
   - ``Vcvars_TOOLSET_143_MSVC_VERSIONS`` — MSVC versions associated with toolset ``v143`` (Visual Studio 2022)
   - ``Vcvars_TOOLSET_142_MSVC_VERSIONS`` — MSVC versions associated with toolset ``v142`` (Visual Studio 2019)
   - ``Vcvars_TOOLSET_141_MSVC_VERSIONS`` — MSVC versions associated with toolset ``v141`` (Visual Studio 2017)
@@ -198,6 +200,7 @@ to their associated toolset or Visual Studio major release:
 
   Example aliases:
 
+  - ``Vcvars_VS18_MSVC_VERSIONS`` — aliases ``Vcvars_TOOLSET_145_MSVC_VERSIONS`` (Visual Studio 2026)
   - ``Vcvars_VS17_MSVC_VERSIONS`` — aliases ``Vcvars_TOOLSET_143_MSVC_VERSIONS`` (Visual Studio 2022)
   - ``Vcvars_VS16_MSVC_VERSIONS`` — aliases ``Vcvars_TOOLSET_142_MSVC_VERSIONS`` (Visual Studio 2019)
   - ``Vcvars_VS15_MSVC_VERSIONS`` — aliases ``Vcvars_TOOLSET_141_MSVC_VERSIONS`` (Visual Studio 2017)
@@ -224,6 +227,9 @@ cmake_minimum_required(VERSION 3.20.6...3.22.6 FATAL_ERROR)
 
 # See https://github.com/Kitware/CMake/blob/v4.0.3/Modules/Platform/Windows-MSVC.cmake#L72-L101
 
+set(Vcvars_TOOLSET_145_MSVC_VERSIONS # VS 2026
+  1959 1958 1957 1956 1955 1954 1953 1952 1951 1950
+  )
 set(Vcvars_TOOLSET_143_MSVC_VERSIONS # VS 2022
   1949 1948 1947 1946 1945 1944 1943 1942 1941 1940
   1939 1938 1937 1936 1935 1934 1933 1932 1931 1930
@@ -246,6 +252,7 @@ set(Vcvars_TOOLSET_60_MSVC_VERSIONS 1200) # VS 6.0
 
 # See https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering
 # and https://gitlab.kitware.com/cmake/cmake/-/merge_requests/9271
+set(Vcvars_VS18_MSVC_VERSIONS ${Vcvars_TOOLSET_145_MSVC_VERSIONS}) # VS 2026
 set(Vcvars_VS17_MSVC_VERSIONS ${Vcvars_TOOLSET_143_MSVC_VERSIONS}) # VS 2022
 set(Vcvars_VS16_MSVC_VERSIONS ${Vcvars_TOOLSET_142_MSVC_VERSIONS}) # VS 2019
 set(Vcvars_VS15_MSVC_VERSIONS ${Vcvars_TOOLSET_141_MSVC_VERSIONS}) # VS 2017
@@ -263,6 +270,7 @@ set(Vcvars_VS6_MSVC_VERSIONS ${Vcvars_TOOLSET_60_MSVC_VERSIONS}) # VS 6.0
 set(_Vcvars_MSVC_ARCH_REGEX "^(32|64)$")
 set(_Vcvars_MSVC_VERSION_REGEX "^[0-9][0-9][0-9][0-9]$")
 set(_Vcvars_SUPPORTED_MSVC_VERSIONS
+  ${Vcvars_TOOLSET_145_MSVC_VERSIONS} # VS 2026
   ${Vcvars_TOOLSET_143_MSVC_VERSIONS} # VS 2022
   ${Vcvars_TOOLSET_142_MSVC_VERSIONS} # VS 2019
   ${Vcvars_TOOLSET_141_MSVC_VERSIONS} # VS 2017
@@ -298,7 +306,9 @@ function(Vcvars_ConvertMsvcVersionToVsVersion msvc_version output_var)
     message(FATAL_ERROR "msvc_version is expected to match `${_Vcvars_MSVC_VERSION_REGEX}`")
   endif()
   # See https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering
-  if(msvc_version IN_LIST Vcvars_VS17_MSVC_VERSIONS) # VS 2022
+  if(msvc_version IN_LIST Vcvars_VS18_MSVC_VERSIONS) # VS 2026
+    set(vs_version "18")
+  elseif(msvc_version IN_LIST Vcvars_VS17_MSVC_VERSIONS) # VS 2022
     set(vs_version "17")
   elseif(msvc_version IN_LIST Vcvars_VS16_MSVC_VERSIONS) # VS 2019
     set(vs_version "16")
@@ -332,7 +342,9 @@ function(Vcvars_ConvertMsvcVersionToVcToolsetVersion msvc_version output_var)
   if(NOT msvc_version MATCHES ${_Vcvars_MSVC_VERSION_REGEX})
     message(FATAL_ERROR "msvc_version is expected to match `${_Vcvars_MSVC_VERSION_REGEX}`")
   endif()
-  if(msvc_version IN_LIST Vcvars_TOOLSET_143_MSVC_VERSIONS) # VS 2022
+  if(msvc_version IN_LIST Vcvars_TOOLSET_145_MSVC_VERSIONS) # VS 2026
+    set(vc_toolset_version "14.5")
+  elseif(msvc_version IN_LIST Vcvars_TOOLSET_143_MSVC_VERSIONS) # VS 2022
     set(vc_toolset_version "14.3")
   elseif(msvc_version IN_LIST Vcvars_TOOLSET_142_MSVC_VERSIONS) # VS 2019
     set(vc_toolset_version "14.2")
@@ -379,10 +391,23 @@ function(Vcvars_GetVisualStudioPaths msvc_version msvc_arch output_var)
   if(vs_version VERSION_GREATER_EQUAL "15.0")
     # Query the VS Installer tool for locations of VS 2017 and above.
     string(REGEX REPLACE "^([0-9]+)\.[0-9]+$" "\\1" vs_installer_version ${vs_version})
-    cmake_host_system_information(RESULT _vs_dir QUERY VS_${vs_installer_version}_DIR)
-    if(_vs_dir)
-      list(APPEND _vs_installer_paths "${_vs_dir}/VC/Auxiliary/Build")
+    # Probe the matching VS version and any newer versions, since a newer VS installation
+    # (e.g., VS 2026) may host older toolsets (e.g., v143) as optional components.
+    set(_known_vs_major_versions 15 16 17)  # VS 2017, 2019, 2022
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.2.0")
+      list(APPEND _known_vs_major_versions 18) # VS 2026
     endif()
+    foreach(_probe_vs IN LISTS _known_vs_major_versions)
+      if(_probe_vs LESS vs_installer_version)
+        continue()
+      endif()
+      cmake_host_system_information(RESULT _vs_dir QUERY VS_${_probe_vs}_DIR)
+      if(_vs_dir)
+        list(APPEND _vs_installer_paths "${_vs_dir}/VC/Auxiliary/Build")
+      endif()
+    endforeach()
+    unset(_probe_vs)
+    unset(_known_vs_major_versions)
   else()
     # Registry keys for locations of VS 2015 and below
     set(_hkeys
