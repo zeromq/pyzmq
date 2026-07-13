@@ -406,6 +406,7 @@ if (NOT PYZMQ_BACKEND)
     set(PYZMQ_BACKEND "cffi")
   else()
     set(PYZMQ_BACKEND "cython")
+    add_compile_definitions(CYTHON_USE_MODULE_STATE=1)
   endif()
 endif()
 
