@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from errno import EINTR
+from typing import Literal
 
 
 class DraftFDWarning(RuntimeWarning):
@@ -13,7 +14,7 @@ class DraftFDWarning(RuntimeWarning):
     .. versionadded:: 27
     """
 
-    def __init__(self, msg=""):
+    def __init__(self, msg: str = "") -> None:
         if not msg:
             msg = (
                 "pyzmq's back-fill socket.FD support on thread-safe sockets is experimental, and may be removed."
@@ -105,7 +106,11 @@ class ContextTerminated(ZMQError):
     .. versionadded:: 13.0
     """
 
-    def __init__(self, errno="ignored", msg="ignored"):
+    def __init__(
+        self,
+        errno: int | Literal["ignored"] = "ignored",
+        msg: str = "ignored",
+    ) -> None:
         from zmq import ETERM
 
         super().__init__(ETERM)
@@ -117,7 +122,11 @@ class Again(ZMQError):
     .. versionadded:: 13.0
     """
 
-    def __init__(self, errno="ignored", msg="ignored"):
+    def __init__(
+        self,
+        errno: int | Literal["ignored"] = "ignored",
+        msg: str = "ignored",
+    ) -> None:
         from zmq import EAGAIN
 
         super().__init__(EAGAIN)
@@ -135,15 +144,19 @@ class InterruptedSystemCall(ZMQError, InterruptedError):
     errno = EINTR
     strerror: str
 
-    def __init__(self, errno="ignored", msg="ignored"):
+    def __init__(
+        self,
+        errno: int | Literal["ignored"] = "ignored",
+        msg: str = "ignored",
+    ) -> None:
         super().__init__(EINTR)
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = super().__str__()
         return s + ": This call should have been retried. Please report this to pyzmq."
 
 
-def _check_rc(rc, errno=None, error_without_errno=True):
+def _check_rc(rc, errno: int | None = None, error_without_errno: bool = True) -> None:
     """internal utility for checking zmq return condition
 
     and raising the appropriate Exception class
@@ -177,9 +190,11 @@ class ZMQVersionError(NotImplementedError):
     .. versionadded:: 14.2
     """
 
-    min_version = None
+    msg: str
+    min_version: str
+    version: str
 
-    def __init__(self, min_version: str, msg: str = "Feature"):
+    def __init__(self, min_version: str, msg: str = "Feature") -> None:
         global _zmq_version
         if _zmq_version is None:
             from zmq import zmq_version
@@ -199,7 +214,7 @@ class ZMQVersionError(NotImplementedError):
 def _check_version(
     min_version_info: tuple[int] | tuple[int, int] | tuple[int, int, int],
     msg: str = "Feature",
-):
+) -> None:
     """Check for libzmq
 
     raises ZMQVersionError if current zmq version is not at least min_version

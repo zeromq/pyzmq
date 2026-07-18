@@ -221,7 +221,7 @@ class Authenticator:
         Currently this is a no-op because there is nothing to configure with GSSAPI.
         """
 
-    async def handle_zap_message(self, msg: list[bytes]):
+    async def handle_zap_message(self, msg: list[bytes]) -> None:
         """Perform ZAP authentication"""
         if len(msg) < 6:
             self.log.error("Invalid ZAP message, not enough frames: %r", msg)
