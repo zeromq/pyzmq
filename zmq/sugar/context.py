@@ -72,7 +72,7 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
     _instance_lock = Lock()
     _instance_pid: int | None = None
     _shadow = False
-    _shadow_obj = None
+    _shadow_obj: Context[_SocketType] | int | None = None
     _warn_destroy_close = False
     _sockets: WeakSet
     # mypy doesn't like a default value here
@@ -194,7 +194,7 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
 
         .. versionadded:: 14.1
         """
-        from pyczmq import zctx  # type: ignore
+        from pyczmq import zctx
 
         from zmq.utils.interop import cast_int_addr
 

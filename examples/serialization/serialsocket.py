@@ -81,7 +81,7 @@ class SerializingSocket(zmq.Socket):
         """recv a numpy array"""
         md = cast(dict[str, Any], self.recv_json(flags=flags))
         msg = self.recv(flags=flags, copy=copy, track=track)
-        A = numpy.frombuffer(msg, dtype=md['dtype'])  # type: ignore
+        A = numpy.frombuffer(msg, dtype=md['dtype'])
         return A.reshape(md['shape'])
 
 

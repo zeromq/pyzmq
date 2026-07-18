@@ -39,8 +39,7 @@ Context = _Context  # type: ignore
 Socket = _Socket  # type: ignore
 Poller = _Poller  # type: ignore
 
-from zmq.green.device import device  # type: ignore
+from zmq.green.device import device
 
 __all__: list[str] = []
-# adding `__all__` to __init__.pyi gets mypy all confused
-__all__.extend(_zmq.__all__)  # type: ignore
+__all__.extend(_zmq.__all__)

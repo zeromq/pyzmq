@@ -17,7 +17,7 @@ def cast_int_addr(n: Any) -> int:
     if isinstance(n, int):
         return n
     try:
-        import cffi  # type: ignore
+        import cffi
     except ImportError:
         pass
     else:

@@ -18,7 +18,7 @@ import pickle
 import warnings
 from collections.abc import Awaitable, Sequence
 from queue import Queue
-from typing import Any, Callable, Literal, cast, overload
+from typing import Any, Callable, Literal, overload
 
 from tornado.ioloop import IOLoop
 from tornado.log import gen_log
@@ -117,7 +117,7 @@ class ZMQStream:
         # that means
         self.io_loop = io_loop or IOLoop.current()
         self.poller = zmq.Poller()
-        self._fd = cast(int, self.socket.FD)
+        self._fd = self.socket.FD
 
         self._send_queue = Queue()
         self._recv_callback = None

@@ -102,7 +102,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
     """
 
     _shadow = False
-    _shadow_obj = None
+    _shadow_obj: zmq.Socket | int | None = None
     _monitor_socket = None
     _type_name = 'UNKNOWN'
 
@@ -153,7 +153,7 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
                 if isinstance(shadow, zmq.Socket):
                     shadow_context = shadow.context
                 try:
-                    shadow = cast(int, shadow.underlying)
+                    shadow = shadow.underlying
                 except AttributeError:
                     pass
             shadow_address = cast_int_addr(shadow)
@@ -1107,9 +1107,9 @@ class Socket(SocketBase, AttributeSetter, Generic[SocketReturnType]):
         # attach monitoring socket
         self.monitor(addr, events)
         # create new PAIR socket and connect it
-        self._monitor_socket = self.context.socket(zmq.PAIR)
-        self._monitor_socket.connect(addr)
-        return self._monitor_socket
+        self._monitor_socket = socket = self.context.socket(zmq.PAIR)
+        socket.connect(addr)
+        return socket
 
     def disable_monitor(self) -> None:
         """Shutdown the PAIR socket (created using get_monitor_socket)

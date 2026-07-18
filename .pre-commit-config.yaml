@@ -43,7 +43,7 @@ repos:
         exclude: zmq/constants.py
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: fc0f09a29bb495f4a91f00266155d6282d52485d  # frozen: v1.20.2
+    rev: d2823d321df3af8f878f7ee3414dc94d037145b9  # frozen: v2.1.0
     hooks:
       - id: mypy
         files: zmq/.*
@@ -53,7 +53,12 @@ repos:
         pass_filenames: false
         args: [zmq]
         additional_dependencies:
+          - tornado
+          - types-cffi
+          - types-gevent
           - types-paramiko
+          - types-pexpect
+          - types-tornado
 
   # github actions security checks
   - repo: https://github.com/zizmorcore/zizmor-pre-commit

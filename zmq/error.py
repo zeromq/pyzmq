@@ -177,7 +177,7 @@ class ZMQVersionError(NotImplementedError):
     .. versionadded:: 14.2
     """
 
-    min_version = None
+    min_version: str
 
     def __init__(self, min_version: str, msg: str = "Feature"):
         global _zmq_version
