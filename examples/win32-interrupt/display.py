@@ -11,7 +11,7 @@ def main(addrs: list[str]):
     control = context.socket(zmq.PUB)
     control.bind('inproc://control')
     updates = context.socket(zmq.SUB)
-    updates.setsockopt(zmq.SUBSCRIBE, "")
+    updates.setsockopt(zmq.SUBSCRIBE, b"")
     updates.connect('inproc://control')
     for addr in addrs:
         print("Connecting to: ", addr)

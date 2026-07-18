@@ -1,10 +1,12 @@
-from typing import Any, Callable, Optional, TypeVar, Union, overload
+from collections.abc import Sequence
+from typing import Any, Final, Protocol, overload, type_check_only
 
-from typing_extensions import Literal
+from _typeshed import HasFileno
+from typing_extensions import Buffer, Literal, Self
 
 import zmq
 
-from .select import select_backend
+from .select import select_backend as select_backend
 
 __all__ = [
     'Context',
@@ -24,31 +26,49 @@ __all__ = [
     'PYZMQ_DRAFT_API',
 ]
 
-# avoid collision in Frame.bytes
-_bytestr = bytes
-
-T = TypeVar("T")
+IPC_PATH_MAX_LEN: Final[int] = ...
+PYZMQ_DRAFT_API: Final[bool] = ...
 
 class Frame:
-    buffer: Any
-    bytes: bytes
     more: bool
     tracker: Any
+
     def __init__(
         self,
         data: Any = None,
         track: bool = False,
         copy: bool | None = None,
         copy_threshold: int | None = None,
-    ): ...
-    def copy_fast(self: T) -> T: ...
-    def get(self, option: int) -> int | _bytestr | str: ...
-    def set(self, option: int, value: int | _bytestr | str) -> None: ...
+    ) -> None: ...
+    def __len__(self) -> int: ...
+    def __copy__(self) -> Self: ...
+    def fast_copy(self) -> Self: ...
+
+    #
+    @overload
+    def get(self, option: int | Literal["routing_id"]) -> int: ...
+    @overload
+    def get(self, option: bytes | Literal["group"]) -> str: ...
+    @overload
+    def get(self, option: str) -> int | str: ...
+
+    #
+    @overload
+    def set(self, option: Literal["routing_id"], value: int) -> None: ...
+    @overload
+    def set(self, option: Literal["group"], value: str | bytes) -> None: ...
+    @overload
+    def set(self, option: int, value: int) -> None: ...
+
+    #
+    @property
+    def buffer(self) -> memoryview: ...
+    @property
+    def bytes(self) -> bytes: ...
 
 Message = Frame
 
 class Socket:
-    underlying: int
     context: zmq.Context
     copy_threshold: int
 
@@ -58,86 +78,162 @@ class Socket:
     def __init__(
         self,
         context: Context | None = None,
-        socket_type: int = 0,
+        socket_type: int = -1,
         shadow: int = 0,
-        copy_threshold: int | None = zmq.COPY_THRESHOLD,
+        copy_threshold: int | None = None,
     ) -> None: ...
-    def close(self, linger: int | None = ...) -> None: ...
-    def get(self, option: int) -> int | bytes | str: ...
-    def set(self, option: int, value: int | bytes | str) -> None: ...
-    def connect(self, url: str): ...
-    def disconnect(self, url: str) -> None: ...
-    def bind(self, url: str): ...
-    def unbind(self, url: str) -> None: ...
+
+    #
+    @property
+    def underlying(self) -> int: ...
+    @property
+    def closed(self) -> bool: ...
+
+    #
+    def close(self, linger: int | None = None) -> None: ...
+
+    #
+    def set(self, option: int, optval: int | bytes) -> None: ...
+    def get(self, option: int) -> int | bytes: ...
+
+    #
+    def bind(self, addr: str) -> None: ...
+    def connect(self, addr: str) -> None: ...
+    def unbind(self, addr: str | bytes) -> None: ...
+    def disconnect(self, addr: str | bytes) -> None: ...
+    def monitor(
+        self,
+        addr: str | bytes | None,
+        events: int = zmq.EVENT_ALL,
+    ) -> None: ...
+    def join(self, group: str | bytes) -> None: ...
+    def leave(self, group: str | bytes) -> None: ...
+
+    #
+    @overload  # data: Buffer, copy=True (default)
     def send(
         self,
-        data: Any,
-        flags: int = ...,
-        copy: bool = ...,
-        track: bool = ...,
-    ) -> zmq.MessageTracker | None: ...
-    @overload
-    def recv(
+        data: Buffer,
+        flags: int = 0,
+        copy: Literal[True] = True,
+        track: bool = False,
+    ) -> None: ...
+    @overload  # data: Buffer, copy=False (keyword)
+    def send(
         self,
-        flags: int = ...,
+        data: Buffer,
+        flags: int = 0,
         *,
         copy: Literal[False],
-        track: bool = ...,
-    ) -> zmq.Frame: ...
-    @overload
+        track: bool = False,
+    ) -> zmq.MessageTracker: ...
+    @overload  # data: Buffer, copy=False (positional)
+    def send(
+        self,
+        data: Buffer,
+        flags: int,
+        copy: Literal[False],
+        track: bool = False,
+    ) -> zmq.MessageTracker: ...
+    @overload  # data: Frame
+    def send(
+        self,
+        data: Frame,
+        flags: int = 0,
+        copy: bool = True,
+        track: bool = False,
+    ) -> zmq.MessageTracker: ...
+
+    #
+    @overload  # copy=True (default)
     def recv(
         self,
-        flags: int = ...,
-        *,
-        copy: Literal[True],
-        track: bool = ...,
-    ) -> bytes: ...
-    @overload
-    def recv(
-        self,
-        flags: int = ...,
+        flags: int = 0,
+        copy: Literal[True] = True,
         track: bool = False,
     ) -> bytes: ...
-    @overload
+    @overload  # copy=False (keyword)
     def recv(
         self,
-        flags: int | None = ...,
-        copy: bool = ...,
-        track: bool | None = False,
-    ) -> zmq.Frame | bytes: ...
-    def recv_into(self, buf, /, *, nbytes: int = 0, flags: int = 0) -> int: ...
-    def monitor(self, addr: str | None, events: int) -> None: ...
-    # draft methods
-    def join(self, group: str) -> None: ...
-    def leave(self, group: str) -> None: ...
+        flags: int = 0,
+        *,
+        copy: Literal[False],
+        track: bool = False,
+    ) -> zmq.Frame: ...
+    @overload  # copy=False (positional)
+    def recv(
+        self,
+        flags: int,
+        copy: Literal[False],
+        track: bool = False,
+    ) -> zmq.Frame: ...
+    @overload  # fallback overload (mypy bug workaround)
+    def recv(
+        self,
+        flags: int = 0,
+        copy: bool = True,
+        track: bool = False,
+    ) -> bytes | zmq.Frame: ...
+
+    #
+    def recv_into(
+        self, buffer: Buffer, /, *, nbytes: int = 0, flags: int = 0
+    ) -> int: ...
 
 class Context:
-    underlying: int
-    def __init__(self, io_threads: int = 1, shadow: int = 0): ...
-    def get(self, option: int) -> int | bytes | str: ...
-    def set(self, option: int, value: int | bytes | str) -> None: ...
-    def socket(self, socket_type: int) -> Socket: ...
+    handle: int
+    closed: bool
+
+    def __init__(self, io_threads: int = 1, shadow: int = 0) -> None: ...
+
+    #
+    @property
+    def underlying(self) -> int: ...
+
+    #
     def term(self) -> None: ...
+    def set(self, option: int, optval: int) -> None: ...
+    def get(self, option: int) -> int: ...
 
-IPC_PATH_MAX_LEN: int
-PYZMQ_DRAFT_API: bool
-
+def zmq_errno() -> int: ...
+def strerror(errno: int) -> str: ...
+def zmq_version_info() -> tuple[int, int, int]: ...
 def has(capability: str) -> bool: ...
 def curve_keypair() -> tuple[bytes, bytes]: ...
-def curve_public(secret_key: bytes) -> bytes: ...
-def strerror(errno: int | None = ...) -> str: ...
-def zmq_errno() -> int: ...
-def zmq_version() -> str: ...
-def zmq_version_info() -> tuple[int, int, int]: ...
+def curve_public(secret_key: str | bytes) -> bytes: ...
+
+#
+@overload
 def zmq_poll(
-    sockets: list[Any], timeout: int | None = ...
+    sockets: Sequence[tuple[Socket, int]],
+    timeout: int = -1,
 ) -> list[tuple[Socket, int]]: ...
+@overload
+def zmq_poll(
+    sockets: Sequence[tuple[int | HasFileno, int]],
+    timeout: int = -1,
+) -> list[tuple[int, int]]: ...
+
+#
 def proxy(frontend: Socket, backend: Socket, capture: Socket | None = None) -> int: ...
 def proxy_steerable(
     frontend: Socket,
     backend: Socket,
-    capture: Socket | None = ...,
-    control: Socket | None = ...,
+    capture: Socket | None = None,
+    control: Socket | None = None,
 ) -> int: ...
 
-monitored_queue = Callable | None
+@type_check_only
+class _MonitoredQueueFunction(Protocol):
+    def __call__(
+        self,
+        /,
+        in_socket: Socket,
+        out_socket: Socket,
+        mon_socket: Socket,
+        in_prefix: Buffer = b"in",
+        out_prefix: Buffer = b"out",
+    ) -> int: ...
+
+# None for the cffi backend
+monitored_queue: Final[_MonitoredQueueFunction | None] = ...

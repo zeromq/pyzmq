@@ -8,7 +8,7 @@ from __future__ import annotations
 import atexit
 import os
 from threading import Lock
-from typing import Any, Callable, Generic, TypeVar, overload
+from typing import Any, Callable, Generic, TypeVar, cast, overload
 from warnings import warn
 from weakref import WeakSet
 
@@ -381,7 +381,7 @@ class Context(ContextBase, AttributeSetter, Generic[_SocketType]):
     def _set_attr_opt(self, name: str, opt: int, value: OptValT) -> None:
         """set default sockopts as attributes"""
         if name in ContextOption.__members__:
-            return self.set(opt, value)
+            return self.set(opt, cast(int, value))
         elif name in SocketOption.__members__:
             self.sockopts[opt] = value
         else:
