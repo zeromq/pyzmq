@@ -367,7 +367,7 @@ class TestFrame(BaseZMQTestCase):
                 B = numpy.frombuffer(msg, A.dtype).reshape(A.shape)
                 assert_array_equal(A, B)
 
-            A = numpy.empty(shape, dtype=[('a', int), ('b', float), ('c', 'a32')])
+            A = numpy.empty(shape, dtype=[('a', int), ('b', float), ('c', 'S32')])
             A['a'] = 1024
             A['b'] = 1e9
             A['c'] = 'hello there'
