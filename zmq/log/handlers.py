@@ -46,14 +46,36 @@ from __future__ import annotations
 
 import logging
 from copy import copy
+from typing import TYPE_CHECKING, Any, Final, cast
 
 import zmq
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from types import TracebackType
+    from typing import type_check_only
+
+    from typing_extensions import TypeAlias, TypedDict, Unpack
+
+    # these aliases are based on the `logging` typeshed stdlib stubs
+    _SysExcInfo: TypeAlias = (
+        tuple[type[BaseException], BaseException, TracebackType | None]
+        | tuple[None, None, None]
+    )
+    _ExcInfo: TypeAlias = bool | _SysExcInfo | BaseException
+
+    @type_check_only
+    class _LogKwargs(TypedDict):
+        exc_info: _ExcInfo | None
+        stack_info: bool
+        stacklevel: int
+        extra: Mapping[str, object]
 
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
 
-TOPIC_DELIM = "::"  # delimiter for splitting topics on the receiving end.
+TOPIC_DELIM: Final = "::"  # delimiter for splitting topics on the receiving end.
 
 
 class PUBHandler(logging.Handler):
@@ -79,6 +101,7 @@ class PUBHandler(logging.Handler):
     message by: log.debug("subtopic.subsub::the real message")
     """
 
+    formatters: dict[int, logging.Formatter | None]
     ctx: zmq.Context
     socket: zmq.Socket
 
@@ -118,10 +141,10 @@ class PUBHandler(logging.Handler):
         return self._root_topic
 
     @root_topic.setter
-    def root_topic(self, value: str):
+    def root_topic(self, value: str) -> None:
         self.setRootTopic(value)
 
-    def setRootTopic(self, root_topic: str):
+    def setRootTopic(self, root_topic: str) -> None:
         """Set the root topic for this handler.
 
         This value is prepended to all messages published by this handler, and it
@@ -138,7 +161,11 @@ class PUBHandler(logging.Handler):
             root_topic = root_topic.decode("utf8")
         self._root_topic = root_topic
 
-    def setFormatter(self, fmt, level=logging.NOTSET):
+    def setFormatter(
+        self,
+        fmt: logging.Formatter | None,
+        level: int = logging.NOTSET,
+    ) -> None:
         """Set the Formatter for this handler.
 
         If no level is provided, the same format is used for all levels. This
@@ -150,11 +177,11 @@ class PUBHandler(logging.Handler):
         else:
             self.formatters[level] = fmt
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """Format a record."""
-        return self.formatters[record.levelno].format(record)
+        return cast("logging.Formatter", self.formatters[record.levelno]).format(record)
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         """Emit a log message on my socket."""
 
         # LogRecord.getMessage explicitly allows msg to be anything _castable_ to a str
@@ -203,7 +230,9 @@ class TopicLogger(logging.Logger):
         logger.debug('topic.sub', 'msg')
     """
 
-    def log(self, level, topic, msg, *args, **kwargs):
+    def log(  # type:ignore[override]
+        self, level: int, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+    ) -> None:
         """Log 'msg % args' with level and topic.
 
         To pass exception information, use the keyword argument exc_info
@@ -213,6 +242,27 @@ class TopicLogger(logging.Logger):
                     "mysterious problem", exc_info=1)
         """
         logging.Logger.log(self, level, f'{topic}{TOPIC_DELIM}{msg}', *args, **kwargs)
+
+    if TYPE_CHECKING:
+
+        def debug(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
+        def warn(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
+        def warning(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
+        def error(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
+        def critical(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
+        def fatal(  # type:ignore[override]
+            self, topic: str, msg: str, *args: Any, **kwargs: Unpack[_LogKwargs]
+        ) -> None: ...
 
 
 # Generate the methods of TopicLogger, since they are just adding a
