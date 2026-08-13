@@ -7,6 +7,8 @@ zeromq connections.
 #
 # Redistributed from IPython under the terms of the BSD License.
 
+from __future__ import annotations
+
 import atexit
 import os
 import re
@@ -16,21 +18,29 @@ import sys
 import warnings
 from getpass import getpass, getuser
 from multiprocessing import Process
+from typing import TYPE_CHECKING, Literal, cast, overload
 
-try:
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', DeprecationWarning)
-        import paramiko
+if TYPE_CHECKING:
+    import paramiko
 
-        SSHException = paramiko.ssh_exception.SSHException
-except ImportError:
-    paramiko = None  # type: ignore
-
-    class SSHException(Exception):  # type: ignore
-        pass
-
-else:
     from .forward import forward_tunnel
+
+    SSHException = paramiko.ssh_exception.SSHException
+else:
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', DeprecationWarning)
+            import paramiko
+
+            SSHException = paramiko.ssh_exception.SSHException
+    except ImportError:
+        paramiko = None  # type: ignore
+
+        class SSHException(Exception):  # type: ignore
+            pass
+
+    else:
+        from .forward import forward_tunnel
 
 try:
     import pexpect
@@ -42,7 +52,7 @@ class MaxRetryExceeded(Exception):
     pass
 
 
-def select_random_ports(n):
+def select_random_ports(n: int) -> list[int]:
     """Select and return n random ports that are available."""
     ports = []
     sockets = []
@@ -62,7 +72,11 @@ def select_random_ports(n):
 _password_pat = re.compile(rb'pass(word|phrase)', re.IGNORECASE)
 
 
-def try_passwordless_ssh(server, keyfile, paramiko=None):
+def try_passwordless_ssh(
+    server: str,
+    keyfile: str | None,
+    paramiko: bool | None = None,
+) -> bool:
     """Attempt to make an ssh connection without a password.
     This is mainly used for requiring password input only once
     when many tunnels may be connected to the same server.
@@ -78,7 +92,7 @@ def try_passwordless_ssh(server, keyfile, paramiko=None):
     return f(server, keyfile)
 
 
-def _try_passwordless_openssh(server, keyfile):
+def _try_passwordless_openssh(server: str, keyfile: str | None) -> bool:
     """Try passwordless login with shell ssh command."""
     if pexpect is None:
         raise ImportError("pexpect unavailable, use paramiko")
@@ -113,7 +127,7 @@ def _try_passwordless_openssh(server, keyfile):
     raise MaxRetryExceeded(f"Failed after {MAX_RETRY} attempts")
 
 
-def _try_passwordless_paramiko(server, keyfile):
+def _try_passwordless_paramiko(server: str, keyfile: str | None) -> bool:
     """Try passwordless login with paramiko."""
     if paramiko is None:
         msg = "Paramiko unavailable, "
@@ -145,9 +159,47 @@ def _try_passwordless_paramiko(server, keyfile):
         return True
 
 
+@overload
 def tunnel_connection(
-    socket, addr, server, keyfile=None, password=None, paramiko=None, timeout=60
-):
+    socket: socket.socket,
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    *,
+    paramiko: Literal[True],
+    timeout: int = 60,
+) -> Process: ...
+@overload
+def tunnel_connection(
+    socket: socket.socket,
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    *,
+    paramiko: Literal[False],
+    timeout: int = 60,
+) -> int: ...
+@overload
+def tunnel_connection(
+    socket: socket.socket,
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    paramiko: bool | None = None,
+    timeout: int = 60,
+) -> Process | int: ...
+def tunnel_connection(
+    socket: socket.socket,
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    paramiko: bool | None = None,
+    timeout: int = 60,
+) -> Process | int:
     """Connect a socket to an address via an ssh tunnel.
 
     This is a wrapper for socket.connect(addr), when addr is not accessible
@@ -168,7 +220,43 @@ def tunnel_connection(
     return tunnel
 
 
-def open_tunnel(addr, server, keyfile=None, password=None, paramiko=None, timeout=60):
+@overload
+def open_tunnel(
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    *,
+    paramiko: Literal[True],
+    timeout: int = 60,
+) -> tuple[str, Process]: ...
+@overload
+def open_tunnel(
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    *,
+    paramiko: Literal[False],
+    timeout: int = 60,
+) -> tuple[str, int]: ...
+@overload
+def open_tunnel(
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    paramiko: bool | None = None,
+    timeout: int = 60,
+) -> tuple[str, Process | int]: ...
+def open_tunnel(
+    addr: str,
+    server: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+    paramiko: bool | None = None,
+    timeout: int = 60,
+) -> tuple[str, Process | int]:
     """Open a tunneled connection from a 0MQ url.
 
     For use inside tunnel_connection.
@@ -186,10 +274,7 @@ def open_tunnel(addr, server, keyfile=None, password=None, paramiko=None, timeou
     rport = int(rport)
     if paramiko is None:
         paramiko = sys.platform == 'win32'
-    if paramiko:
-        tunnelf = paramiko_tunnel
-    else:
-        tunnelf = openssh_tunnel
+    tunnelf = paramiko_tunnel if paramiko else openssh_tunnel
 
     tunnel = tunnelf(
         lport,
@@ -204,8 +289,14 @@ def open_tunnel(addr, server, keyfile=None, password=None, paramiko=None, timeou
 
 
 def openssh_tunnel(
-    lport, rport, server, remoteip='127.0.0.1', keyfile=None, password=None, timeout=60
-):
+    lport: int,
+    rport: int,
+    server: str,
+    remoteip: str = '127.0.0.1',
+    keyfile: str | None = None,
+    password: str | None = None,
+    timeout: int = 60,
+) -> int:
     """Create an ssh tunnel using command-line ssh that connects port lport
     on this machine to localhost:rport on server.  The tunnel
     will automatically close when not in use, remaining open
@@ -298,11 +389,11 @@ def openssh_tunnel(
     raise MaxRetryExceeded(f"Failed after {MAX_RETRY} attempts")
 
 
-def _stop_tunnel(cmd):
+def _stop_tunnel(cmd: str) -> None:
     pexpect.run(cmd)
 
 
-def _split_server(server):
+def _split_server(server: str) -> tuple[str, str, int]:
     if '@' in server:
         username, server = server.split('@', 1)
     else:
@@ -316,8 +407,14 @@ def _split_server(server):
 
 
 def paramiko_tunnel(
-    lport, rport, server, remoteip='127.0.0.1', keyfile=None, password=None, timeout=60
-):
+    lport: int,
+    rport: int,
+    server: str,
+    remoteip: str = '127.0.0.1',
+    keyfile: str | None = None,
+    password: str | None = None,
+    timeout: int = 60,
+) -> Process:
     """launch a tunner with paramiko in a subprocess. This should only be used
     when shell ssh is unavailable (e.g. Windows).
 
@@ -374,7 +471,14 @@ def paramiko_tunnel(
     return p
 
 
-def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None):
+def _paramiko_tunnel(
+    lport: int,
+    rport: int,
+    server: str,
+    remoteip: str,
+    keyfile: str | None = None,
+    password: str | None = None,
+) -> None:
     """Function for actually starting a paramiko tunnel, to be passed
     to multiprocessing.Process(target=this), and not called directly.
     """
@@ -406,7 +510,12 @@ def _paramiko_tunnel(lport, rport, server, remoteip, keyfile=None, password=None
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     try:
-        forward_tunnel(lport, remoteip, rport, client.get_transport())
+        forward_tunnel(
+            lport,
+            remoteip,
+            rport,
+            cast("paramiko.Transport", client.get_transport()),
+        )
     except KeyboardInterrupt:
         print('SIGINT: Port forwarding stopped cleanly')
         sys.exit(0)
