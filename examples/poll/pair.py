@@ -34,8 +34,8 @@ assert socks[s1] == zmq.POLLOUT
 assert socks[s2] == zmq.POLLOUT
 
 # Now do a send on both, wait and test for zmq.POLLOUT|zmq.POLLIN
-s1.send('msg1')
-s2.send('msg2')
+s1.send(b'msg1')
+s2.send(b'msg2')
 time.sleep(1.0)
 socks = dict(poller.poll())
 assert socks[s1] == zmq.POLLOUT | zmq.POLLIN

@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from importlib import import_module
+from typing import Any
 
 public_api = [
     'Context',
@@ -24,7 +25,7 @@ public_api = [
 ]
 
 
-def select_backend(name: str) -> dict:
+def select_backend(name: str) -> dict[str, Any]:
     """Select the pyzmq backend"""
     try:
         mod = import_module(name)

@@ -71,7 +71,7 @@ class MongoZMQ:
             if len(msg) != 3:
                 error_msg = f'invalid message received: {msg}'
                 print(error_msg)
-                reply = [msg[0], error_msg]
+                reply = [msg[0], error_msg.encode()]
                 socket.send_multipart(reply)
                 continue
             id = msg[0]
