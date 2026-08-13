@@ -39,7 +39,7 @@ def run() -> None:
         )
         sys.exit(1)
 
-    ctx = zmq.Context.instance()
+    ctx = zmq.SyncContext.instance()
 
     # Start an authenticator for this context.
     auth = ThreadAuthenticator(ctx)

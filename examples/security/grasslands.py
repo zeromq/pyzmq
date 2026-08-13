@@ -14,7 +14,7 @@ Author: Chris Laws
 
 import zmq
 
-ctx = zmq.Context.instance()
+ctx: zmq.SyncContext = zmq.Context.instance()
 
 server = ctx.socket(zmq.PUSH)
 server.bind('tcp://*:9000')

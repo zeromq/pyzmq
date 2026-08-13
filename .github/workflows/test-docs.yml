@@ -42,6 +42,7 @@ jobs:
 
       - name: Install libzmq
         run: |
+          sudo apt-get -y update
           sudo apt-get -y install libzmq3-dev
 
       - name: Install pyzmq

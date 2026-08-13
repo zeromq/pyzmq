@@ -2,7 +2,7 @@ import time
 
 import zmq
 
-ctx = zmq.Context.instance()
+ctx: zmq.Context = zmq.Context.instance()
 
 url = 'tcp://127.0.0.1:5555'
 server = ctx.socket(zmq.SERVER)

@@ -35,7 +35,7 @@ def echo(server: zmqstream.ZMQStream, msg: list[bytes]) -> None:
 
 def setup_server(server_secret_file: str, endpoint: str = 'tcp://127.0.0.1:9000'):
     """setup a simple echo server with CURVE auth"""
-    server = zmq.Context.instance().socket(zmq.ROUTER)
+    server: zmq.Socket[bytes] = zmq.Context.instance().socket(zmq.ROUTER)
 
     server_public, server_secret = zmq.auth.load_certificate(server_secret_file)
     server.curve_secretkey = server_secret
@@ -63,7 +63,7 @@ def setup_client(
 ):
     """setup a simple client with CURVE auth"""
 
-    client = zmq.Context.instance().socket(zmq.DEALER)
+    client: zmq.Socket[bytes] = zmq.Context.instance().socket(zmq.DEALER)
 
     # We need two certificates, one for the client and one for
     # the server. The client must know the server's public key

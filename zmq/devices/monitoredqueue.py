@@ -42,7 +42,7 @@ def _monitored_queue(
 
 monitored_queue: Callable
 if _backend_mq is not None:
-    monitored_queue = _backend_mq  # type: ignore
+    monitored_queue = _backend_mq
 else:
     # backend has no monitored_queue
     monitored_queue = _monitored_queue
