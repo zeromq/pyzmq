@@ -197,7 +197,7 @@ class Device:
         return port
 
     def _setup_sockets(self) -> tuple[zmq.Socket, zmq.Socket]:
-        ctx: zmq.Context[zmq.Socket] = self.context_factory()  # type: ignore
+        ctx: zmq.Context[zmq.Socket] = self.context_factory()
         self._context = ctx
 
         # create the sockets
