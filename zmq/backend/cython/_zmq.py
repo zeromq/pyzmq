@@ -1174,11 +1174,11 @@ class Socket:
 
         Returns
         -------
-        None : if `copy` or not track
-            None if message was sent, raises an exception otherwise.
-        MessageTracker : if track and not copy
+        MessageTracker : if `data` is a :class:`Frame` or `copy=False`
             a MessageTracker object, whose `done` property will
             be False until the send is completed.
+        None : otherwise
+            None if message was sent, raises an exception otherwise.
 
         Raises
         ------
