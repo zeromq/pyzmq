@@ -196,9 +196,9 @@ _loop = None
 
 
 def _deprecated() -> None:
-    if _deprecated.called:
+    if _deprecated.called:  # type: ignore[attr-defined]
         return
-    _deprecated.called = True
+    _deprecated.called = True  # type: ignore[attr-defined]
 
     warnings.warn(
         "ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.",
