@@ -217,7 +217,7 @@ class TopicLogger(logging.Logger):
 
 # Generate the methods of TopicLogger, since they are just adding a
 # topic prefix to a message.
-for name in "debug warn warning error critical fatal".split():
+for name in "debug info warn warning error exception critical fatal".split():
     try:
         meth = getattr(logging.Logger, name)
     except AttributeError:
