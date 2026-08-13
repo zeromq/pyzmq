@@ -2,7 +2,7 @@ import time
 
 import zmq
 
-ctx = zmq.Context.instance()
+ctx: zmq.Context = zmq.Context.instance()
 radio = ctx.socket(zmq.RADIO)
 dish = ctx.socket(zmq.DISH)
 dish.rcvtimeo = 1000

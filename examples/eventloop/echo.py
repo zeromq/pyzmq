@@ -23,7 +23,7 @@ def echo(sock, events):
         ioloop.IOLoop.current().add_callback(echo, sock, events)
 
 
-ctx = zmq.Context.instance()
+ctx = zmq.Context()
 s = ctx.socket(zmq.ROUTER)
 s.bind('tcp://127.0.0.1:5555')
 
