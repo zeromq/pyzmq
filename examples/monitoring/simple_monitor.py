@@ -47,7 +47,7 @@ def event_monitor(monitor: zmq.Socket) -> None:
     print("event monitor thread done!")
 
 
-ctx = zmq.Context.instance()
+ctx: zmq.Context = zmq.Context.instance()
 rep = ctx.socket(zmq.REP)
 req = ctx.socket(zmq.REQ)
 
