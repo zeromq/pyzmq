@@ -174,4 +174,4 @@ def recv_array(socket: zmq.Socket, flags: int = 0, **kwargs) -> numpy.array:
 
 [blosc]: https://www.blosc.org
 [msgpack]: https://msgpack.org
-[msgspec]: https://jcristharif.com/msgspec/
+[msgspec]: https://msgspec.dev
