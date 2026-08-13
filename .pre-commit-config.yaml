@@ -53,7 +53,12 @@ repos:
         pass_filenames: false
         args: [zmq]
         additional_dependencies:
+          - tornado
+          - types-cffi
+          - types-gevent
           - types-paramiko
+          - types-pexpect
+          - types-tornado
 
   # github actions security checks
   - repo: https://github.com/zizmorcore/zizmor-pre-commit

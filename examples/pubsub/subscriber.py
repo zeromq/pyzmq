@@ -29,7 +29,7 @@ def recv_array(
     if header.get('done', False):
         return None
     msg = socket.recv(flags=flags, copy=copy, track=track)
-    A = numpy.frombuffer(msg, dtype=header['dtype'])  # type: ignore
+    A = numpy.frombuffer(msg, dtype=header['dtype'])
     return A.reshape(header['shape'])
 
 
