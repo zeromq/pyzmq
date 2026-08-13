@@ -343,11 +343,17 @@ def openssh_tunnel(
         ssh += f" -p {port}"
 
     cmd = f"{ssh} -O check {server}"
-    (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
+    (output, exitstatus) = cast(
+        "tuple[bytes, int]",
+        pexpect.run(cmd, withexitstatus=True),
+    )
     if not exitstatus:
         pid = int(output[output.find(b"(pid=") + 5 : output.find(b")")])
         cmd = f"{ssh} -O forward -L 127.0.0.1:{lport}:{remoteip}:{rport} {server}"
-        (output, exitstatus) = pexpect.run(cmd, withexitstatus=True)
+        (output, exitstatus) = cast(
+            "tuple[bytes, int]",
+            pexpect.run(cmd, withexitstatus=True),
+        )
         if not exitstatus:
             atexit.register(_stop_tunnel, cmd.replace("-O forward", "-O cancel", 1))
             return pid
@@ -377,7 +383,7 @@ def openssh_tunnel(
                 print(tunnel.after)
                 raise RuntimeError(f"tunnel '{cmd}' failed to start")
             else:
-                return tunnel.pid
+                return tunnel.pid  # type: ignore[return-value]
         else:
             if failed:
                 print("Password rejected, try again")
