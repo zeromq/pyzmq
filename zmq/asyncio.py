@@ -103,7 +103,7 @@ class _AsyncIO:
     _WRITE = selectors.EVENT_WRITE
     _READ = selectors.EVENT_READ
 
-    def _default_loop(self):
+    def _default_loop(self) -> asyncio.AbstractEventLoop:
         try:
             return asyncio.get_running_loop()
         except RuntimeError:
@@ -187,7 +187,7 @@ class ZMQEventLoop(SelectorEventLoop):
     pyzmq sockets should work with any asyncio event loop as of pyzmq 17.
     """
 
-    def __init__(self, selector=None):
+    def __init__(self, selector: selectors.BaseSelector | None = None) -> None:
         _deprecated()
         return super().__init__(selector)
 
@@ -195,10 +195,10 @@ class ZMQEventLoop(SelectorEventLoop):
 _loop = None
 
 
-def _deprecated():
-    if _deprecated.called:
+def _deprecated() -> None:
+    if _deprecated.called:  # type: ignore[attr-defined]
         return
-    _deprecated.called = True
+    _deprecated.called = True  # type: ignore[attr-defined]
 
     warnings.warn(
         "ZMQEventLoop and zmq.asyncio.install are deprecated in pyzmq 17. Special eventloop integration is no longer needed.",
@@ -210,7 +210,7 @@ def _deprecated():
 _deprecated.called = False  # type: ignore
 
 
-def install():
+def install() -> None:
     """DEPRECATED: No longer needed in pyzmq 17"""
     _deprecated()
 
