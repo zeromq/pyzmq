@@ -12,7 +12,8 @@ buildutils = Path(__file__).parent
 repo_root = buildutils.parent.resolve()
 licenses = repo_root / "licenses"
 
-bundled_libsodium_version = "1.0.21"
+# sync with CMakeLists.txt
+bundled_libsodium_version = "1.0.22"
 bundled_version = "4.3.5"
 
 
