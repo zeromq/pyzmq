@@ -1583,8 +1583,8 @@ def curve_public(secret_key) -> bytes:
 
     Parameters
     ----------
-    private
-        The private key as a 40 byte z85-encoded bytestring
+    secret_key
+        The secret key as a 40 byte z85-encoded bytestring
 
     Returns
     -------

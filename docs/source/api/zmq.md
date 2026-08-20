@@ -278,6 +278,21 @@ Each category of zmq constant is now available as an IntEnum.
 ```
 
 ```{eval-rst}
+.. module:: zmq.curve_keygen
+```
+
+````{seealso}
+You can also generate a curve keypair from the command-line,
+starting with pyzmq 27.2:
+
+```
+python3 -m zmq.curve_keygen [--json]
+```
+
+- [](../howto/curve)
+````
+
+```{eval-rst}
 .. autofunction:: zmq.get_includes
 ```
 
