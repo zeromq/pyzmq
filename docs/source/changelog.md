@@ -7,6 +7,19 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 27
 
+### 27.2.0
+
+27.2 is a small release, mostly updating the build process and typing.
+Lots of new type coverage.
+
+- Add `python3 -m zmq.curve_keygen` entrypoint for creating curve key pairs
+- Require Python 3.9 (drops Python 3.8)
+- Stop building wheels for free-threaded CPython 3.13 (cp313t)
+- Add wheels for free-threaded CPython 3.15 (cp315t)
+- Fix builds on Windows with Visual Studio 2026
+- Fix builds with upcoming Cython release
+- Add more type coverage, fix some typing, typing compatibility with mypy 2.1
+
 ### 27.1.0
 
 27.1.0 restores prior behavior where the constant `zmq.DRAFT_API` represents the actual availability of the draft API.
