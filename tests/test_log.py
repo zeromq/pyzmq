@@ -2,10 +2,13 @@
 # Distributed under the terms of the Modified BSD License.
 
 
+import asyncio
 import logging
+import threading
 import time
 
 import zmq
+import zmq.asyncio
 from zmq.log import handlers
 from zmq_test_utils import BaseZMQTestCase
 
@@ -191,3 +194,59 @@ class TestPubLog(BaseZMQTestCase):
         assert topic == b'zmq.INFO'
         assert received == b'hello\n'
         logger.removeHandler(handler)
+
+
+async def test_pubhandler_async_socket_emit_from_thread():
+    """emit() must not crash when called from a thread with no running
+    event loop, if the handler's socket belongs to an async Context that
+    has already been used from the loop thread (gh-1967)."""
+    actx = zmq.asyncio.Context()
+    pub = actx.socket(zmq.PUB)
+    pub.linger = 0
+    port = pub.bind_to_random_port('tcp://127.0.0.1')
+
+    ctx = zmq.Context()
+    sub = ctx.socket(zmq.SUB)
+    sub.linger = 0
+    sub.connect(f'tcp://127.0.0.1:{port}')
+    sub.setsockopt(zmq.SUBSCRIBE, b'')
+    await asyncio.sleep(0.2)  # let the subscription propagate
+
+    logger = logging.getLogger('zmqtest.threaded')
+    logger.setLevel(logging.DEBUG)
+    handler = handlers.PUBHandler(pub)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
+    try:
+        # log once on the loop thread, so the socket's bound loop gets recorded
+        logger.info('from loop')
+        assert sub.poll(2000)
+        assert sub.recv_multipart() == [b'INFO', b'from loop\n']
+
+        # now emit from a plain background thread with no event loop of its
+        # own, e.g. as asyncio.to_thread would do; before the fix this raised
+        # RuntimeError instead of being delivered
+        errors = []
+
+        def emit_from_thread():
+            try:
+                logger.info('from thread')
+            except Exception as e:
+                errors.append(e)
+
+        t = threading.Thread(target=emit_from_thread)
+        t.start()
+        t.join(timeout=5)
+        assert not errors, f"emit from a non-loop thread raised: {errors!r}"
+
+        # let the loop process the threadsafe-scheduled send
+        await asyncio.sleep(0.2)
+        assert sub.poll(2000)
+        assert sub.recv_multipart() == [b'INFO', b'from thread\n']
+    finally:
+        logger.removeHandler(handler)
+        pub.close()
+        sub.close()
+        actx.term()
+        ctx.term()

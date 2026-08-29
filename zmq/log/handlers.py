@@ -44,6 +44,7 @@ Code adapted from StarCluster:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from copy import copy
 from typing import TYPE_CHECKING, Any, Final, cast
@@ -104,6 +105,7 @@ class PUBHandler(logging.Handler):
     formatters: dict[int, logging.Formatter | None]
     ctx: zmq.Context
     socket: zmq.Socket
+    _emit_loop: asyncio.AbstractEventLoop | None
 
     def __init__(
         self,
@@ -113,6 +115,7 @@ class PUBHandler(logging.Handler):
     ) -> None:
         logging.Handler.__init__(self)
         self.root_topic = root_topic
+        self._emit_loop = None
         self.formatters = {
             logging.DEBUG: logging.Formatter(
                 "%(levelname)s %(filename)s:%(lineno)d - %(message)s\n"
@@ -212,7 +215,25 @@ class PUBHandler(logging.Handler):
 
         btopic = '.'.join(topic_list).encode("utf8", "replace")
 
-        self.socket.send_multipart([btopic, bmsg])
+        try:
+            self._emit_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+
+        try:
+            self.socket.send_multipart([btopic, bmsg])
+        except RuntimeError:
+            # self.socket may be a future-based socket (e.g. zmq.asyncio),
+            # whose send methods need a running event loop in the calling
+            # thread. If we've previously emitted from a loop, reschedule
+            # this send there instead of failing, so logging from a plain
+            # background thread (such as one started by asyncio.to_thread)
+            # doesn't crash the caller.
+            if self._emit_loop is None:
+                raise
+            self._emit_loop.call_soon_threadsafe(
+                self.socket.send_multipart, [btopic, bmsg]
+            )
 
 
 class TopicLogger(logging.Logger):
