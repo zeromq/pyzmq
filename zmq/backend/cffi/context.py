@@ -3,6 +3,8 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from typing import Any
+
 from zmq.constants import EINVAL, IO_THREADS
 from zmq.error import InterruptedSystemCall, ZMQError, _check_rc
 
@@ -16,7 +18,7 @@ class Context:
     _closed = True
     _shadow = False
 
-    def __init__(self, io_threads=1, shadow=None):
+    def __init__(self, io_threads: int = 1, shadow: Any | None = None) -> None:
         if shadow:
             self._zmq_ctx = ffi.cast("void *", shadow)
             self._shadow = True
@@ -33,15 +35,15 @@ class Context:
         self._closed = False
 
     @property
-    def underlying(self):
+    def underlying(self) -> int:
         """The address of the underlying libzmq context"""
         return int(ffi.cast('size_t', self._zmq_ctx))
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         return self._closed
 
-    def set(self, option, value):
+    def set(self, option: int, value: int) -> None:
         """set a context option
 
         see zmq_ctx_set
@@ -49,7 +51,7 @@ class Context:
         rc = C.zmq_ctx_set(self._zmq_ctx, option, value)
         _check_rc(rc)
 
-    def get(self, option):
+    def get(self, option: int) -> int:
         """get context option
 
         see zmq_ctx_get
@@ -58,7 +60,7 @@ class Context:
         _check_rc(rc, error_without_errno=False)
         return rc
 
-    def term(self):
+    def term(self) -> None:
         if self.closed:
             return
 

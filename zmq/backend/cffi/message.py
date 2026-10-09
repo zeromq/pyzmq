@@ -3,8 +3,11 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import errno
 from threading import Event
+from typing import TYPE_CHECKING
 
 import zmq
 import zmq.error
@@ -15,13 +18,18 @@ from ._cffi import lib as C
 
 zmq_gc = None
 
-try:
-    from __pypy__.bufferable import bufferable as maybe_bufferable
-except ImportError:
+if TYPE_CHECKING:
+    from typing_extensions import Buffer
+
     maybe_bufferable = object
+else:
+    try:
+        from __pypy__.bufferable import bufferable as maybe_bufferable
+    except ImportError:
+        maybe_bufferable = object
 
 
-def _content(obj):
+def _content(obj: Buffer) -> bytes:
     """Return content of obj as bytes"""
     if type(obj) is bytes:
         return obj
@@ -30,7 +38,7 @@ def _content(obj):
     return obj.tobytes()
 
 
-def _check_rc(rc):
+def _check_rc(rc: int) -> int:
     err = C.zmq_errno()
     if rc == -1:
         if err == errno.EINTR:
@@ -55,7 +63,13 @@ class Frame(maybe_bufferable):
     tracker_event = None
     zmq_msg = None
 
-    def __init__(self, data=None, track=False, copy=None, copy_threshold=None):
+    def __init__(
+        self,
+        data: Buffer | None = None,
+        track: bool = False,
+        copy: bool | None = None,
+        copy_threshold: int | None = None,
+    ) -> None:
         self._failed_init = True
 
         self.zmq_msg = ffi.cast('zmq_msg_t[1]', C.malloc(ffi.sizeof("zmq_msg_t")))
@@ -139,11 +153,11 @@ class Frame(maybe_bufferable):
             _check_rc(rc)
         self._failed_init = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         if not self.closed and not self._failed_init:
             self.close()
 
-    def close(self):
+    def close(self) -> None:
         if self.closed or self._failed_init or self.zmq_msg is None:
             return
         self.closed = True
@@ -166,31 +180,33 @@ class Frame(maybe_bufferable):
             self._buffer = memoryview(self._data)
 
     @property
-    def buffer(self):
+    def buffer(self) -> memoryview:
         if self._buffer is None:
             self._buffer_from_zmq_msg()
+        assert self._buffer is not None  # for type narrowing
         return self._buffer
 
     @property
-    def bytes(self):
+    def bytes(self) -> bytes:
         if self._bytes is None:
             self._bytes = self.buffer.tobytes()
         return self._bytes
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.buffer.nbytes
 
-    def __eq__(self, other):
+    def __eq__(self, other: Buffer, /) -> bool:
         return self.bytes == _content(other)
 
     @property
-    def done(self):
+    def done(self) -> bool:
+        assert self.tracker is not None
         return self.tracker.done()
 
-    def __buffer__(self, flags):
+    def __buffer__(self, flags: int) -> memoryview:
         return self.buffer
 
-    def __copy__(self):
+    def __copy__(self) -> Frame:
         """Create a shallow copy of the message.
 
         This does not copy the contents of the Frame, just the pointer.
@@ -200,7 +216,7 @@ class Frame(maybe_bufferable):
         """
         return self.fast_copy()
 
-    def fast_copy(self):
+    def fast_copy(self) -> Frame:
         """Fast shallow copy of the Frame.
 
         Does not copy underlying data.

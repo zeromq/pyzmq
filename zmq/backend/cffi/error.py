@@ -7,7 +7,7 @@ from ._cffi import ffi
 from ._cffi import lib as C
 
 
-def strerror(errno):
+def strerror(errno: int) -> str:
     return ffi.string(C.zmq_strerror(errno)).decode()
 
 
