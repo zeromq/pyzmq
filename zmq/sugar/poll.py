@@ -28,7 +28,7 @@ class Poller:
     def __contains__(self, socket: Any) -> bool:
         return socket in self._map
 
-    def register(self, socket: Any, flags: int = POLLIN | POLLOUT):
+    def register(self, socket: Any, flags: int = POLLIN | POLLOUT) -> None:
         """p.register(socket, flags=POLLIN|POLLOUT)
 
         Register a 0MQ socket or native fd for I/O monitoring.
@@ -59,11 +59,11 @@ class Poller:
             # ignore new sockets with no events
             pass
 
-    def modify(self, socket, flags=POLLIN | POLLOUT):
+    def modify(self, socket: Any, flags: int = POLLIN | POLLOUT) -> None:
         """Modify the flags for an already registered 0MQ socket or native fd."""
         self.register(socket, flags)
 
-    def unregister(self, socket: Any):
+    def unregister(self, socket: Any) -> None:
         """Remove a 0MQ socket or native fd for I/O monitoring.
 
         Parameters

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import time
 from threading import Event
+from typing import Final
 
 from zmq.backend import Frame
 from zmq.error import NotDone
@@ -32,7 +33,7 @@ class MessageTracker:
     events: set[Event]
     peers: set[MessageTracker]
 
-    def __init__(self, *towatch: tuple[MessageTracker | Event | Frame]):
+    def __init__(self, *towatch: MessageTracker | Event | Frame) -> None:
         """Create a message tracker to track a set of messages.
 
         Parameters
@@ -57,7 +58,7 @@ class MessageTracker:
                 raise TypeError(f"Require Events or Message Frames, not {type(obj)}")
 
     @property
-    def done(self):
+    def done(self) -> bool:
         """Is 0MQ completely done with the message(s) being tracked?"""
         for evt in self.events:
             if not evt.is_set():
@@ -67,7 +68,7 @@ class MessageTracker:
                 return False
         return True
 
-    def wait(self, timeout: float | int = -1):
+    def wait(self, timeout: float | int = -1) -> None:
         """Wait for 0MQ to be done with the message or until `timeout`.
 
         Parameters
@@ -111,6 +112,6 @@ class MessageTracker:
             tic = toc
 
 
-_FINISHED_TRACKER = MessageTracker()
+_FINISHED_TRACKER: Final[MessageTracker] = MessageTracker()
 
 __all__ = ['MessageTracker', '_FINISHED_TRACKER']
