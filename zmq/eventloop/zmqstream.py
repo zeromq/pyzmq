@@ -18,7 +18,7 @@ import pickle
 import warnings
 from collections.abc import Awaitable, Sequence
 from queue import Queue
-from typing import Any, Callable, Literal, overload
+from typing import TYPE_CHECKING, Any, Callable, Literal, overload
 
 from tornado.ioloop import IOLoop
 from tornado.log import gen_log
@@ -27,6 +27,24 @@ import zmq
 import zmq._future
 from zmq import POLLIN, POLLOUT
 from zmq.utils import jsonapi
+
+if TYPE_CHECKING:
+    from typing_extensions import Concatenate, ParamSpec, Self, TypeAlias, TypeVar
+
+    from zmq.sugar.socket import _SocketContext
+
+    _RecvT = TypeVar("_RecvT", bound=bytes | zmq.Frame)
+    _P = ParamSpec("_P")
+
+    _Ignored: TypeAlias = object
+
+    _CallbackRecv: TypeAlias = Callable[[list[_RecvT]], _Ignored]
+    _CallbackRecvStream: TypeAlias = Callable[["ZMQStream", list[_RecvT]], _Ignored]
+
+    _CallbackSend: TypeAlias = Callable[
+        [list[Any], zmq.MessageTracker | None],
+        _Ignored,
+    ]
 
 
 class ZMQStream:
@@ -95,7 +113,17 @@ class ZMQStream:
     _recv_copy: bool = False
     _fd: int
 
-    def __init__(self, socket: zmq.Socket, io_loop: IOLoop | None = None):
+    bind: Callable[[str], _SocketContext[zmq.Socket]]
+    bind_to_random_port: Callable[Concatenate[str, ...], int]
+    connect: Callable[[str], _SocketContext[zmq.Socket]]
+    setsockopt: Callable[[int, int | bytes], None]
+    getsockopt: Callable[[int], int | bytes]
+    setsockopt_string: Callable[Concatenate[int, str, ...], None]
+    setsockopt_unicode: Callable[Concatenate[int, str, ...], None]
+    getsockopt_string: Callable[Concatenate[int, ...], str]
+    getsockopt_unicode: Callable[Concatenate[int, ...], str]
+
+    def __init__(self, socket: zmq.Socket, io_loop: IOLoop | None = None) -> None:
         if isinstance(socket, zmq._future._AsyncSocket):
             warnings.warn(
                 f"""ZMQStream only supports the base zmq.Socket class.
@@ -140,52 +168,43 @@ class ZMQStream:
         self.setsockopt_unicode = self.socket.setsockopt_unicode
         self.getsockopt_unicode = self.socket.getsockopt_unicode
 
-    def stop_on_recv(self):
+    def stop_on_recv(self) -> None:
         """Disable callback and automatic receiving."""
         return self.on_recv(None)
 
-    def stop_on_send(self):
+    def stop_on_send(self) -> None:
         """Disable callback on sending."""
         return self.on_send(None)
 
-    def stop_on_err(self):
+    def stop_on_err(self) -> None:
         """DEPRECATED, does nothing"""
-        gen_log.warn("on_err does nothing, and will be removed")
+        gen_log.warning("on_err does nothing, and will be removed")
 
-    def on_err(self, callback: Callable):
+    def on_err(self, callback: Callable) -> None:
         """DEPRECATED, does nothing"""
-        gen_log.warn("on_err does nothing, and will be removed")
+        gen_log.warning("on_err does nothing, and will be removed")
 
     @overload
     def on_recv(
         self,
-        callback: Callable[[list[bytes]], Any],
+        callback: _CallbackRecv[bytes] | None,
+        copy: Literal[True] = True,
     ) -> None: ...
-
     @overload
     def on_recv(
         self,
-        callback: Callable[[list[bytes]], Any],
-        copy: Literal[True],
-    ) -> None: ...
-
-    @overload
-    def on_recv(
-        self,
-        callback: Callable[[list[zmq.Frame]], Any],
+        callback: _CallbackRecv[zmq.Frame],
         copy: Literal[False],
     ) -> None: ...
-
     @overload
     def on_recv(
         self,
-        callback: Callable[[list[zmq.Frame]], Any] | Callable[[list[bytes]], Any],
-        copy: bool = ...,
-    ): ...
-
+        callback: _CallbackRecv[_RecvT] | None,
+        copy: bool = True,
+    ) -> None: ...
     def on_recv(
         self,
-        callback: Callable[[list[zmq.Frame]], Any] | Callable[[list[bytes]], Any],
+        callback: _CallbackRecv[_RecvT] | None,
         copy: bool = True,
     ) -> None:
         """Register a callback for when a message is ready to recv.
@@ -225,41 +244,26 @@ class ZMQStream:
     @overload
     def on_recv_stream(
         self,
-        callback: Callable[[ZMQStream, list[bytes]], Any],
+        callback: _CallbackRecvStream[bytes] | None,
+        copy: Literal[True] = True,
     ) -> None: ...
-
     @overload
     def on_recv_stream(
         self,
-        callback: Callable[[ZMQStream, list[bytes]], Any],
-        copy: Literal[True],
-    ) -> None: ...
-
-    @overload
-    def on_recv_stream(
-        self,
-        callback: Callable[[ZMQStream, list[zmq.Frame]], Any],
+        callback: _CallbackRecvStream[zmq.Frame],
         copy: Literal[False],
     ) -> None: ...
-
     @overload
     def on_recv_stream(
         self,
-        callback: (
-            Callable[[ZMQStream, list[zmq.Frame]], Any]
-            | Callable[[ZMQStream, list[bytes]], Any]
-        ),
-        copy: bool = ...,
-    ): ...
-
+        callback: _CallbackRecvStream[_RecvT] | None,
+        copy: bool = True,
+    ) -> None: ...
     def on_recv_stream(
         self,
-        callback: (
-            Callable[[ZMQStream, list[zmq.Frame]], Any]
-            | Callable[[ZMQStream, list[bytes]], Any]
-        ),
+        callback: _CallbackRecvStream[_RecvT] | None,
         copy: bool = True,
-    ):
+    ) -> None:
         """Same as on_recv, but callback will get this stream as first argument
 
         callback must take exactly two arguments, as it will be called as::
@@ -277,9 +281,7 @@ class ZMQStream:
 
             self.on_recv(stream_callback, copy=copy)
 
-    def on_send(
-        self, callback: Callable[[Sequence[Any], zmq.MessageTracker | None], Any]
-    ):
+    def on_send(self, callback: _CallbackSend | None) -> None:
         """Register a callback to be called on each send
 
         There will be two arguments::
@@ -321,8 +323,8 @@ class ZMQStream:
 
     def on_send_stream(
         self,
-        callback: Callable[[ZMQStream, Sequence[Any], zmq.MessageTracker | None], Any],
-    ):
+        callback: Callable[[Self, list[Any], zmq.MessageTracker | None], Any] | None,
+    ) -> None:
         """Same as on_send, but callback will get this stream as first argument
 
         Callback will be passed three arguments::
@@ -336,7 +338,15 @@ class ZMQStream:
         else:
             self.on_send(lambda msg, status: callback(self, msg, status))
 
-    def send(self, msg, flags=0, copy=True, track=False, callback=None, **kwargs):
+    def send(
+        self,
+        msg: Any,
+        flags: int = 0,
+        copy: bool = True,
+        track: bool = False,
+        callback: _CallbackSend | None = None,
+        **kwargs: Any,
+    ) -> None:
         """Send a message, optionally also register a new callback for sends.
         See zmq.socket.send for details.
         """
@@ -350,7 +360,7 @@ class ZMQStream:
         flags: int = 0,
         copy: bool = True,
         track: bool = False,
-        callback: Callable | None = None,
+        callback: _CallbackSend | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a multipart message, optionally also register a new callback for sends.
@@ -371,9 +381,9 @@ class ZMQStream:
         u: str,
         flags: int = 0,
         encoding: str = 'utf-8',
-        callback: Callable | None = None,
+        callback: _CallbackSend | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Send a unicode message with an encoding.
         See zmq.socket.send_unicode for details.
         """
@@ -387,9 +397,9 @@ class ZMQStream:
         self,
         obj: Any,
         flags: int = 0,
-        callback: Callable | None = None,
+        callback: _CallbackSend | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Send json-serialized version of an object.
         See zmq.socket.send_json for details.
         """
@@ -401,9 +411,9 @@ class ZMQStream:
         obj: Any,
         flags: int = 0,
         protocol: int = -1,
-        callback: Callable | None = None,
+        callback: _CallbackSend | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Send a Python object as a message using pickle to serialize.
 
         See zmq.socket.send_json for details.
@@ -411,11 +421,15 @@ class ZMQStream:
         msg = pickle.dumps(obj, protocol)
         return self.send(msg, flags, callback=callback, **kwargs)
 
-    def _finish_flush(self):
+    def _finish_flush(self) -> None:
         """callback for unsetting _flushed flag."""
         self._flushed = False
 
-    def flush(self, flag: int = zmq.POLLIN | zmq.POLLOUT, limit: int | None = None):
+    def flush(
+        self,
+        flag: int = zmq.POLLIN | zmq.POLLOUT,
+        limit: int | None = None,
+    ) -> int:
         """Flush pending messages.
 
         This method safely handles all pending incoming and/or outgoing messages,
@@ -501,7 +515,7 @@ class ZMQStream:
         self._rebuild_io_state()
         return count
 
-    def set_close_callback(self, callback: Callable | None):
+    def set_close_callback(self, callback: Callable[[], _Ignored] | None) -> None:
         """Call the given callback when the stream is closed."""
         self._close_callback = callback
 
@@ -544,7 +558,12 @@ class ZMQStream:
             return True
         return False
 
-    def _run_callback(self, callback, *args, **kwargs):
+    def _run_callback(
+        self,
+        callback: Callable[_P, Any],
+        *args: _P.args,
+        **kwargs: _P.kwargs,
+    ) -> None:
         """Wrap running callbacks in try/except to allow us to
         close our socket."""
         try:
