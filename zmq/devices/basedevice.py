@@ -70,6 +70,7 @@ class Device:
     """
 
     daemon: bool
+    done: bool
     device_type: int
     in_type: int
     out_type: int
@@ -114,7 +115,7 @@ class Device:
         """
         self._in_binds.append(addr)
 
-    def bind_in_to_random_port(self, addr: str, *args, **kwargs) -> int:
+    def bind_in_to_random_port(self, addr: str, *args: int, **kwargs: int) -> int:
         """Enqueue a random port on the given interface for binding on
         in_socket.
 
@@ -149,7 +150,7 @@ class Device:
         """
         self._out_binds.append(addr)
 
-    def bind_out_to_random_port(self, addr: str, *args, **kwargs) -> int:
+    def bind_out_to_random_port(self, addr: str, *args: int, **kwargs: int) -> int:
         """Enqueue a random port on the given interface for binding on
         out_socket.
 
@@ -163,21 +164,21 @@ class Device:
 
         return port
 
-    def connect_out(self, addr: str):
+    def connect_out(self, addr: str) -> None:
         """Enqueue ZMQ address for connecting on out_socket.
 
         See zmq.Socket.connect for details.
         """
         self._out_connects.append(addr)
 
-    def setsockopt_out(self, opt: int, value: Any):
+    def setsockopt_out(self, opt: int, value: Any) -> None:
         """Enqueue setsockopt(opt, value) for out_socket
 
         See zmq.Socket.setsockopt for details.
         """
         self._out_sockopts.append((opt, value))
 
-    def _reserve_random_port(self, addr: str, *args, **kwargs) -> int:
+    def _reserve_random_port(self, addr: str, *args: int, **kwargs: int) -> int:
         with Context() as ctx:
             with ctx.socket(PUSH) as binder:
                 for i in range(5):

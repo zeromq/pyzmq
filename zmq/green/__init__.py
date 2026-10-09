@@ -39,7 +39,7 @@ Context = _Context  # type: ignore
 Socket = _Socket  # type: ignore
 Poller = _Poller  # type: ignore
 
-from zmq.green.device import device
+from zmq.green.device import device  # type: ignore[assignment]
 
 __all__: list[str] = []
 __all__.extend(_zmq.__all__)

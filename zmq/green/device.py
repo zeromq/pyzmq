@@ -2,11 +2,16 @@
 # Distributed under the terms of the Modified BSD License.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, NoReturn
+
+if TYPE_CHECKING:
+    from zmq.green.core import _Socket
+
 import zmq
 from zmq.green import Poller
 
 
-def device(device_type, isocket, osocket):
+def device(device_type: zmq.DeviceType, isocket: _Socket, osocket: _Socket) -> NoReturn:
     """Start a zeromq device (gevent-compatible).
 
     Unlike the true zmq.device, this does not release the GIL.
