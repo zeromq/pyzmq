@@ -1,3 +1,3 @@
 abi3audit
-cibuildwheel==4.2.*
+cibuildwheel==4.3.*
 delvewheel==1.13.*; sys_platform == 'win32'
