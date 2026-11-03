@@ -129,7 +129,7 @@ jobs:
           persist-credentials: false
 
       - name: setup python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.arch }}
