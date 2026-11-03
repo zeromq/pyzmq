@@ -267,16 +267,16 @@ class TopicLogger(logging.Logger):
 
 # Generate the methods of TopicLogger, since they are just adding a
 # topic prefix to a message.
-for name in "debug info warn warning error exception critical fatal".split():
+for _name in "debug info warn warning error exception critical fatal".split():
     try:
-        meth = getattr(logging.Logger, name)
+        _meth = getattr(logging.Logger, _name)
     except AttributeError:
         # some methods are missing, e.g. Logger.warn was removed from Python 3.13
         continue
     setattr(
         TopicLogger,
-        name,
-        lambda self, topic, msg, *args, **kwargs: meth(
+        _name,
+        lambda self, topic, msg, *args, **kwargs: _meth(
             self, topic + TOPIC_DELIM + msg, *args, **kwargs
         ),
     )
