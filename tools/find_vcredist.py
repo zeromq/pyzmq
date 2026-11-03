@@ -3,8 +3,8 @@ Locate the latest MSVC redist dir
 
 and add it to $GITHUB_PATH so delvewheel can find the DLLs
 
-finds 'C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC/14.38.33135/arm64/Microsoft.VC143.CRT'
-as of writing (2024-02-27)
+finds 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Redist\MSVC\14.51.36231\ARM64\Microsoft.VC145.CRT'
+as of writing (2026-11-02)
 """
 
 import os
@@ -17,7 +17,8 @@ def log(msg):
     print(msg, file=sys.stderr)
 
 
-vs_version = "2022"
+# 2026 is 18
+vs_version = "18"
 arch = os.environ.get("CIBW_ARCHS", "arm64")
 vc_redist_path = (
     Path("C:/Program Files/Microsoft Visual Studio")
