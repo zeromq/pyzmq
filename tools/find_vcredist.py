@@ -17,7 +17,8 @@ def log(msg):
     print(msg, file=sys.stderr)
 
 
-vs_version = "2026"
+# 2026 is 18
+vs_version = "18"
 arch = os.environ.get("CIBW_ARCHS", "arm64")
 vc_redist_path = (
     Path("C:/Program Files/Microsoft Visual Studio")
