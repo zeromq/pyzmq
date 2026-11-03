@@ -3,13 +3,18 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Final
+
 from zmq.error import InterruptedSystemCall, _check_rc, _check_version
 
 from ._cffi import ffi
 from ._cffi import lib as C
 
 
-def has(capability):
+def has(capability: str | bytes) -> bool:
     """Check for zmq capability by name (e.g. 'ipc', 'curve')
 
     .. versionadded:: libzmq-4.1
@@ -21,7 +26,7 @@ def has(capability):
     return bool(C.zmq_has(capability))
 
 
-def curve_keypair():
+def curve_keypair() -> tuple[bytes, bytes]:
     """generate a Z85 key pair for use with zmq.CURVE security
 
     Requires libzmq (≥ 4.0) to have been built with CURVE support.
@@ -38,7 +43,7 @@ def curve_keypair():
     return ffi.buffer(public)[:40], ffi.buffer(private)[:40]
 
 
-def curve_public(private):
+def curve_public(private: str | bytes) -> bytes:
     """Compute the public key corresponding to a private key for use
     with zmq.CURVE security
 
@@ -62,7 +67,7 @@ def curve_public(private):
     return ffi.buffer(public)[:40]
 
 
-def _retry_sys_call(f, *args, **kwargs):
+def _retry_sys_call(f: Callable[..., int], *args, **kwargs) -> int:
     """make a call, retrying if interrupted with EINTR"""
     while True:
         rc = f(*args)
@@ -75,6 +80,6 @@ def _retry_sys_call(f, *args, **kwargs):
     return rc
 
 
-PYZMQ_DRAFT_API: bool = bool(C.PYZMQ_DRAFT_API)
+PYZMQ_DRAFT_API: Final[bool] = bool(C.PYZMQ_DRAFT_API)
 
 __all__ = ['has', 'curve_keypair', 'curve_public', 'PYZMQ_DRAFT_API']

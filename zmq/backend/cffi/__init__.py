@@ -12,7 +12,7 @@ from ._cffi import ffi
 from ._cffi import lib as C
 
 
-def zmq_version_info():
+def zmq_version_info() -> tuple[int, int, int]:
     """Get libzmq version as tuple of ints"""
     major = ffi.new('int*')
     minor = ffi.new('int*')

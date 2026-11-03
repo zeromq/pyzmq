@@ -3,8 +3,16 @@
 # Copyright (C) PyZMQ Developers
 # Distributed under the terms of the Modified BSD License.
 
+from __future__ import annotations
+
 import errno as errno_mod
 import warnings
+from typing import TYPE_CHECKING, Any, Final
+
+if TYPE_CHECKING:
+    from typing_extensions import Buffer
+
+    from zmq.backend.cffi.context import Context
 
 import zmq
 from zmq.constants import SocketOption, _OptType
@@ -46,14 +54,14 @@ def value_int_pointer(val):
     return ffi.new('int*', val), ffi.sizeof('int')
 
 
-def value_binary_data(val, length):
+def value_binary_data(val, length: int):
     return ffi.new(f'char[{length + 1:d}]', val), ffi.sizeof('char') * length
 
 
 _fd_size = ffi.sizeof('ZMQ_FD_T')
 ZMQ_FD_64BIT = _fd_size == 8
 
-IPC_PATH_MAX_LEN = C.get_ipc_path_max_len()
+IPC_PATH_MAX_LEN: Final[int] = C.get_ipc_path_max_len()
 
 
 def new_pointer_from_opt(option, length=0):
@@ -106,7 +114,13 @@ class Socket:
     _draft_poller_ptr = None
     copy_threshold = 0
 
-    def __init__(self, context=None, socket_type=None, shadow=0, copy_threshold=None):
+    def __init__(
+        self,
+        context: Context | None = None,
+        socket_type: int | None = None,
+        shadow: Any = 0,
+        copy_threshold: int | None = None,
+    ) -> None:
         if copy_threshold is None:
             copy_threshold = zmq.COPY_THRESHOLD
         self.copy_threshold = copy_threshold
@@ -124,11 +138,11 @@ class Socket:
         self._closed = False
 
     @property
-    def underlying(self):
+    def underlying(self) -> int:
         """The address of the underlying libzmq socket"""
         return int(ffi.cast('size_t', self._zmq_socket))
 
-    def _check_closed_deep(self):
+    def _check_closed_deep(self) -> bool:
         """thorough check of whether the socket has been closed,
         even if by another entity (e.g. ctx.destroy).
 
@@ -151,10 +165,10 @@ class Socket:
         return False
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         return self._check_closed_deep()
 
-    def close(self, linger=None):
+    def close(self, linger: int | None = None) -> None:
         rc = 0
         if not self._closed and hasattr(self, '_zmq_socket'):
             if self._draft_poller_ptr is not None:
@@ -169,12 +183,12 @@ class Socket:
         if rc < 0:
             _check_rc(rc)
 
-    def bind(self, address):
+    def bind(self, address: str | bytes) -> None:
         if isinstance(address, str):
             address_b = address.encode('utf8')
         else:
             address_b = address
-        if isinstance(address, bytes):
+        if isinstance(address_b, bytes):
             address = address_b.decode('utf8')
         rc = C.zmq_bind(self._zmq_socket, address_b)
         if rc < 0:
@@ -192,25 +206,25 @@ class Socket:
             else:
                 _check_rc(rc)
 
-    def unbind(self, address):
+    def unbind(self, address: str | bytes) -> None:
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_unbind(self._zmq_socket, address)
         _check_rc(rc)
 
-    def connect(self, address):
+    def connect(self, address: str | bytes) -> None:
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_connect(self._zmq_socket, address)
         _check_rc(rc)
 
-    def disconnect(self, address):
+    def disconnect(self, address: str | bytes) -> None:
         if isinstance(address, str):
             address = address.encode('utf8')
         rc = C.zmq_disconnect(self._zmq_socket, address)
         _check_rc(rc)
 
-    def set(self, option, value):
+    def set(self, option: int, value: int | bytes) -> None:
         length = None
         if isinstance(value, str):
             raise TypeError("unicode not allowed, use bytes")
@@ -240,7 +254,7 @@ class Socket:
             c_sizet,
         )
 
-    def get(self, option):
+    def get(self, option: int) -> int | bytes:
         try:
             option = SocketOption(option)
         except ValueError:
@@ -337,7 +351,13 @@ class Socket:
         frame_copy.close()
         return tracker
 
-    def send(self, data, flags=0, copy=False, track=False):
+    def send(
+        self,
+        data: Buffer,
+        flags: int = 0,
+        copy: bool = False,
+        track: bool = False,
+    ) -> zmq.MessageTracker | None:
         if isinstance(data, str):
             raise TypeError("Message must be in bytes, not a unicode object")
 
@@ -364,7 +384,12 @@ class Socket:
                 frame.close()
             return tracker
 
-    def recv(self, flags=0, copy=True, track=False):
+    def recv(
+        self,
+        flags: int = 0,
+        copy: bool = True,
+        track: bool = False,
+    ) -> zmq.Frame | bytes:
         if copy:
             zmq_msg = ffi.new('zmq_msg_t*')
             C.zmq_msg_init(zmq_msg)
@@ -388,7 +413,7 @@ class Socket:
         _check_rc(rc)
         return _bytes
 
-    def recv_into(self, buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
+    def recv_into(self, buffer: Buffer, /, *, nbytes: int = 0, flags: int = 0) -> int:
         view = memoryview(buffer)
         if not view.contiguous:
             raise BufferError("Can only recv_into contiguous buffers")
@@ -406,7 +431,7 @@ class Socket:
         _check_rc(rc)
         return rc
 
-    def monitor(self, addr, events=-1):
+    def monitor(self, addr: str | bytes | None, events: int = -1) -> None:
         """s.monitor(addr, flags)
 
         Start publishing socket events on inproc.
