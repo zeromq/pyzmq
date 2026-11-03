@@ -7,6 +7,20 @@ For a full changelog, consult the [git log](https://github.com/zeromq/pyzmq/comm
 
 ## 27
 
+### 27.3.0
+
+27.3 is a small release.
+
+- Add lots more type coverage (thanks @jorenham!)
+- Fix default compiler flags for bundled libsodium/libzmq in wheels on mac and linux,
+  greatly improving default performance of CURVE security when installed from wheels.
+
+Changes related to updating cibuildwheel:
+
+- Add wheels for PyPy 3.12
+- i686 wheels target manylinux_2_28 instead of 2_17 (manylinux2014)
+- PyPy wheels for PyPy 3.11 and 3.12 target `pp80` instead of `pp73`
+
 ### 27.2.0
 
 27.2 is a small release, mostly updating the build process and typing.
