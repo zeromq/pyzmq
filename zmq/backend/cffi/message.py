@@ -34,9 +34,9 @@ def _check_rc(rc):
     err = C.zmq_errno()
     if rc == -1:
         if err == errno.EINTR:
-            raise zmq.error.InterrruptedSystemCall(err)
+            raise zmq.error.InterruptedSystemCall(err)
         elif err == errno.EAGAIN:
-            raise zmq.error.Again(errno)
+            raise zmq.error.Again(err)
         elif err == ETERM:
             raise zmq.error.ContextTerminated(err)
         else:
