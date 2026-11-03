@@ -10,6 +10,9 @@ test -d "$LICENSE_DIR" || mkdir "$LICENSE_DIR"
 SHLIB_EXT=".so"
 python3 buildutils/bundle.py licenses
 
+export CFLAGS="${CFLAGS:--O3}"
+export CXXFLAGS="${CXXFLAGS:--O3}"
+
 if [[ "$(uname)" == "Darwin" ]]; then
     SHLIB_EXT=".dylib"
     # make sure deployment target is set

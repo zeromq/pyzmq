@@ -155,7 +155,7 @@ NO_CYTHON_COMPILE = "true"
 [tool.cibuildwheel.linux]
 before-all = "bash tools/install_libzmq.sh"
 manylinux-x86_64-image = "manylinux_2_28"
-manylinux-i686-image = "manylinux2014"
+manylinux-i686-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 musllinux-aarch64-image = "musllinux_1_2"
 musllinux-i686-image = "musllinux_1_2"
@@ -163,8 +163,8 @@ musllinux-x86_64-image = "musllinux_1_2"
 
 [tool.cibuildwheel.linux.environment]
 ZMQ_PREFIX = "/usr/local"
-CFLAGS = "-Wl,-strip-all"
-CXXFLAGS = "-Wl,-strip-all"
+CFLAGS = "-O3 -Wl,-strip-all"
+CXXFLAGS = "-O3 -Wl,-strip-all"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
