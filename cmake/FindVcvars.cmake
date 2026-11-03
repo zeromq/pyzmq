@@ -1,5 +1,5 @@
 # unmodified from: https://github.com/scikit-build/cmake-FindVcvars/raw/fea85911fb0bff0aeb5b89ab9e2fc9fea3de672d/FindVcvars.cmake
-# needs fixes post 1.12 for vs2006
+# needs fixes post 1.12 for vs2026
 
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
