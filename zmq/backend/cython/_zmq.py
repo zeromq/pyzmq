@@ -1,5 +1,7 @@
 # cython: language_level = 3str
 # cython: freethreading_compatible = True
+# cython: subinterpreters_compatible = own_gil
+
 """Cython backend for pyzmq"""
 
 # Copyright (C) PyZMQ Developers
@@ -49,6 +51,7 @@ from cython import (
     cfunc,
     char,
     declare,
+    exceptval,
     inline,
     nogil,
     p_char,
@@ -169,7 +172,7 @@ PYZMQ_DRAFT_API: bool = bool(libzmq.PYZMQ_DRAFT_API)
 
 @cfunc
 @inline
-@C.exceptval(-1)
+@exceptval(-1)
 def _check_rc(rc: C.int, error_without_errno: bint = False) -> C.int:
     """internal utility for checking zmq return condition
 
@@ -1804,6 +1807,7 @@ def proxy_steerable(
 @cfunc
 @inline
 @nogil
+@exceptval(check=False)
 def _mq_relay(
     in_socket: p_void,
     out_socket: p_void,
@@ -1887,6 +1891,7 @@ def _mq_relay(
 @cfunc
 @inline
 @nogil
+@exceptval(check=False)
 def _mq_inline(
     in_socket: p_void,
     out_socket: p_void,
