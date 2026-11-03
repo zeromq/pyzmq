@@ -163,8 +163,8 @@ musllinux-x86_64-image = "musllinux_1_2"
 
 [tool.cibuildwheel.linux.environment]
 ZMQ_PREFIX = "/usr/local"
-CFLAGS = "-Wl,-strip-all"
-CXXFLAGS = "-Wl,-strip-all"
+CFLAGS = "-O3 -Wl,-strip-all"
+CXXFLAGS = "-O3 -Wl,-strip-all"
 
 [tool.cibuildwheel.macos]
 before-all = "bash tools/install_libzmq.sh"
