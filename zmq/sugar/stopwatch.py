@@ -10,7 +10,9 @@ class Stopwatch:
     You can use Python's builtin timers (time.monotonic, etc.).
     """
 
-    def __init__(self):
+    _start: float
+
+    def __init__(self) -> None:
         import warnings
 
         warnings.warn(
@@ -26,11 +28,11 @@ class Stopwatch:
         except AttributeError:
             self._monotonic = time.time
 
-    def start(self):
+    def start(self) -> None:
         """Start the counter"""
         self._start = self._monotonic()
 
-    def stop(self):
+    def stop(self) -> int:
         """Return time since start in microseconds"""
         stop = self._monotonic()
         return int(1e6 * (stop - self._start))
