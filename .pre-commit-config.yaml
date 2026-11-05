@@ -14,6 +14,13 @@ repos:
         pass_filenames: false
         additional_dependencies:
           - ruff
+
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 1.4.1
+    hooks:
+      - id: pyrefly-coverage-check
+        args: [--public-only, --project-excludes=zmq/tests/, zmq]
+
   - repo: https://github.com/executablebooks/mdformat
     rev: 2d496dbc18e31b83a1596685347ffe0b6041daf0  # frozen: 1.0.0
     hooks:
