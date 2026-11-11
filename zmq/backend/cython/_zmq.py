@@ -1451,18 +1451,30 @@ def _send_copy(handle: p_void, buf, flags: C.int = 0):
     msg = declare(zmq_msg_t)
     c_bytes = declare(p_void)
 
+    # Hold a buffer export on `buf` for the whole copy.
+    # _asbuffer() releases its own Py_buffer before returning the raw pointer,
+    # so a resizable exporter (e.g. bytearray) could otherwise be resized by
+    # another thread while memcpy runs without the GIL, leaving `c_bytes`
+    # dangling. With an export outstanding, such a resize raises BufferError
+    # in the other thread instead. Same approach as Socket.recv_into().
+    view = memoryview(buf)
     # copy to c array:
-    c_bytes_len = _asbuffer(buf, address(c_bytes))
+    c_bytes_len = _asbuffer(view, address(c_bytes))
 
     # Copy the msg before sending. This avoids any complications with
     # the GIL, etc.
     # If zmq_msg_init_* fails we must not call zmq_msg_close (Bus Error)
-    rc = zmq_msg_init_size(address(msg), c_bytes_len)
-    _check_rc(rc)
+    try:
+        rc = zmq_msg_init_size(address(msg), c_bytes_len)
+        _check_rc(rc)
+        with nogil:
+            memcpy(zmq_msg_data(address(msg)), c_bytes, c_bytes_len)
+    finally:
+        # data is copied; the caller's buffer may be resized again
+        view.release()
 
     while True:
         with nogil:
-            memcpy(zmq_msg_data(address(msg)), c_bytes, zmq_msg_size(address(msg)))
             rc = zmq_msg_send(address(msg), handle, flags)
         try:
             _check_rc(rc)
