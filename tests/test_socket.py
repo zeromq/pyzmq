@@ -8,6 +8,7 @@ import os
 import platform
 import socket
 import sys
+import threading
 import time
 import warnings
 from array import array
@@ -744,6 +745,45 @@ class TestSocket(BaseZMQTestCase):
         r2 = a.recv_serialized(deserialize)
         assert r2['content'] == msg['content']
         assert not r2['identities']
+
+    @skip_pypy
+    def test_send_copy_holds_buffer_export(self):
+        """send(copy=True) must keep the buffer export while copying (gh-2235)
+
+        A thread resizing the bytearray during the copy must get BufferError;
+        before the fix, pyzmq read freed memory and the interpreter crashed.
+        """
+        a, b = self.create_bound_pair(zmq.PUSH, zmq.PULL)
+        # keep memory bounded: the copy happens on every send() call,
+        # even when zmq_msg_send then fails with EAGAIN
+        a.setsockopt(zmq.SNDHWM, 2)
+        b.setsockopt(zmq.RCVHWM, 2)
+        size = 64 * 1024 * 1024
+        buf = bytearray(size)
+        stop = threading.Event()
+        errors = []
+
+        def mutate():
+            while not stop.is_set():
+                try:
+                    buf[:] = b"\0"
+                    buf[:] = bytearray(size)
+                except BufferError as e:
+                    errors.append(e)
+
+        t = threading.Thread(target=mutate)
+        t.start()
+        try:
+            deadline = time.monotonic() + 2
+            while time.monotonic() < deadline:
+                try:
+                    a.send(buf, flags=zmq.NOBLOCK)
+                except zmq.Again:
+                    pass
+        finally:
+            stop.set()
+            t.join()
+        assert errors, "resize never raised BufferError: export not held during copy"
 
 
 if have_gevent and not windows:
