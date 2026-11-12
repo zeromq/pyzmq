@@ -746,6 +746,7 @@ class TestSocket(BaseZMQTestCase):
         assert r2['content'] == msg['content']
         assert not r2['identities']
 
+    @skip_pypy
     def test_send_copy_holds_buffer_export(self):
         """send(copy=True) must keep the buffer export while copying (gh-2235)
 
