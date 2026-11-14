@@ -21,16 +21,33 @@ class TestPubLog(BaseZMQTestCase):
         logger.setLevel(logging.DEBUG)
         return logger
 
+    def tearDown(self):
+        # don't leave handlers with closed sockets behind if a test fails
+        logger = logging.getLogger('zmqtest')
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+        super().tearDown()
+
+    def wait_for_subscriptions(self, xpub, n=1):
+        """Wait until n new subscriptions have reached the XPUB socket
+
+        Subscriptions are delivered asynchronously, so messages published
+        before they arrive are dropped.
+        """
+        for _ in range(n):
+            msg = xpub.recv()
+            assert msg[:1] == b'\x01'
+
     def connect_handler(self, topic=None):
         topic = self.topic if topic is None else topic
         logger = self.logger
-        pub, sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        pub, sub = self.create_bound_pair(zmq.XPUB, zmq.SUB)
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
         handler.root_topic = topic
         logger.addHandler(handler)
         sub.setsockopt(zmq.SUBSCRIBE, topic.encode())
-        time.sleep(0.1)
+        self.wait_for_subscriptions(pub)
         return logger, handler, sub
 
     def test_init_iface(self):
@@ -62,7 +79,7 @@ class TestPubLog(BaseZMQTestCase):
         logger.removeHandler(handler)
 
     def test_init_socket(self):
-        pub, sub = self.create_bound_pair(zmq.PUB, zmq.SUB)
+        pub, sub = self.create_bound_pair(zmq.XPUB, zmq.SUB)
         logger = self.logger
         handler = handlers.PUBHandler(pub)
         handler.setLevel(logging.DEBUG)
@@ -73,9 +90,7 @@ class TestPubLog(BaseZMQTestCase):
         assert handler.ctx is pub.context
         assert handler.ctx is self.context
         sub.setsockopt(zmq.SUBSCRIBE, self.topic.encode())
-        import time
-
-        time.sleep(0.1)
+        self.wait_for_subscriptions(pub)
         msg1 = 'message'
         logger.info(msg1)
 
@@ -91,6 +106,7 @@ class TestPubLog(BaseZMQTestCase):
         self.sockets.append(sub2)
         sub2.connect(self.iface)
         sub2.setsockopt(zmq.SUBSCRIBE, b'')
+        self.wait_for_subscriptions(handler.socket)
         handler.root_topic = b'twoonly'
         msg1 = 'ignored'
         logger.info(msg1)
@@ -109,6 +125,7 @@ class TestPubLog(BaseZMQTestCase):
         self.sockets.append(sub_only_info)
         sub_only_info.connect(self.iface)
         sub_only_info.setsockopt(zmq.SUBSCRIBE, b'INFO')
+        self.wait_for_subscriptions(handler.socket, 2)
         handler.setRootTopic(b'')
         msg_debug = 'debug_message'
         logger.debug(msg_debug)
