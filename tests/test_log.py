@@ -67,7 +67,6 @@ class TestPubLog(BaseZMQTestCase):
         self.sockets.append(sub)
         sub.setsockopt(zmq.SUBSCRIBE, self.topic.encode())
         sub.connect(self.iface)
-        import time
 
         time.sleep(0.25)
         msg1 = 'message'
